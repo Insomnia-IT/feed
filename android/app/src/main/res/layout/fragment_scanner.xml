@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView_cameraScanning"
+        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <com.buildtoapp.mlbarcodescanner.GraphicOverlay
+        android:id="@+id/graphic_overlay"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/previewView_cameraScanning"
+        app:layout_constraintLeft_toLeftOf="@id/previewView_cameraScanning"
+        app:layout_constraintRight_toRightOf="@id/previewView_cameraScanning"
+        app:layout_constraintTop_toTopOf="@id/previewView_cameraScanning" />
+
+    <ImageView
+        android:layout_height="264dp"
+        android:layout_width="264dp"
+        android:src="@drawable/ic_scan_area"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

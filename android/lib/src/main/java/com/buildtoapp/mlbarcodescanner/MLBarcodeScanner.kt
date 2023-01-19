@@ -27,6 +27,8 @@ import com.google.mlkit.vision.barcode.common.Barcode
  * @param previewView camera preview object in your view
  * @param lifecycleOwner lifecycle owner of your view (viewLifecycleOwner in fragment and this in activity)
  * @param context ui context
+ * @param drawOverlay if set to true, will display a rectangle around detected barcode (default to true)
+ * @param drawBanner if set to true, will display detected barcode value on top of it's rectangle (default to false)
  * @param targetResolution resolution of the camera view (default to 768 * 1024)
  * @param supportedBarcodeFormats list of all supported barcode formats (default to all)
  */
@@ -37,6 +39,8 @@ class MLBarcodeScanner(
     private val focusBoxSize: Int,
     private val graphicOverlay: GraphicOverlay,
     private val previewView: PreviewView,
+    private val drawOverlay: Boolean = true,
+    private val drawBanner: Boolean = false,
     private val targetResolution: Size = Size(768, 1024),
     private val supportedBarcodeFormats: List<Int> = listOf(Barcode.FORMAT_ALL_FORMATS)
 ) : DefaultLifecycleObserver {
@@ -104,7 +108,7 @@ class MLBarcodeScanner(
         cameraProvider?.unbind(analysisUseCase)
         imageProcessor?.stop()
         imageProcessor = BarcodeScannerProcessor(
-            callback, focusBoxSize, supportedBarcodeFormats
+            callback, drawOverlay, drawBanner, focusBoxSize, supportedBarcodeFormats
         )
 
         val builder = ImageAnalysis.Builder()

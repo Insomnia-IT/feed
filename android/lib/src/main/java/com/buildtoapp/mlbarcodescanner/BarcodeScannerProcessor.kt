@@ -9,24 +9,20 @@ import com.google.mlkit.vision.common.InputImage
 
 internal class BarcodeScannerProcessor(
     private val callback: MLBarcodeCallback,
+    private val drawOverlay: Boolean,
+    private val drawBanner: Boolean,
     private val focusBoxSize: Int,
     supportedBarcodeFormats: List<Int> = listOf(Barcode.FORMAT_ALL_FORMATS)
 ) : VisionProcessorBase<List<Barcode>>() {
 
     // Note that if you know which format of barcode your app is dealing with, detection will be
     // faster to specify the supported barcode formats one by one
-    // TODO убрать ненужные типы
     private val barcodeScanner: BarcodeScanner = BarcodeScanning.getClient(
         if (supportedBarcodeFormats.size == 1) {
-            BarcodeScannerOptions.Builder().setBarcodeFormats(supportedBarcodeFormats.first())
-                .build()
+            BarcodeScannerOptions.Builder().setBarcodeFormats(supportedBarcodeFormats.first()).build()
         } else {
-            val moreFormats = supportedBarcodeFormats
-                .subList(1, supportedBarcodeFormats.size)
-                .toIntArray()
-            BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(supportedBarcodeFormats.first(), *moreFormats)
-                .build()
+            val moreFormats = supportedBarcodeFormats.subList(1, supportedBarcodeFormats.size).toIntArray()
+            BarcodeScannerOptions.Builder().setBarcodeFormats(supportedBarcodeFormats.first(), *moreFormats).build()
         }
     )
 
@@ -41,11 +37,14 @@ internal class BarcodeScannerProcessor(
 
     override fun onSuccess(results: List<Barcode>, graphicOverlay: GraphicOverlay) {
         for (barcode in results) {
-            val displayValue = barcode.displayValue
-            val rawValue = barcode.rawValue
-            if (displayValue != null && rawValue != null) { // TODO проверить, только ли в прицеле чекаются баркоды
-                callback.onNewBarcodeScanned(displayValue, rawValue)
+            val graphic = BarcodeGraphic(barcode, graphicOverlay, drawOverlay, drawBanner, focusBoxSize) { isInFocus ->
+                val displayValue = barcode.displayValue
+                val rawValue = barcode.rawValue
+                if (isInFocus && displayValue != null && rawValue != null) {
+                    callback.onNewBarcodeScanned(displayValue, rawValue)
+                }
             }
+            graphicOverlay.add(graphic)
         }
     }
 
