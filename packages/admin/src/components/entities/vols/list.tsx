@@ -16,8 +16,9 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 // import { Loader } from '@feed/ui/src/loader';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 import Select from 'rc-select';
-
+import { PublicStats } from '~/components/public-stats';
 import type { VolEntity } from '~/interfaces';
+import { Fragment } from 'react';
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const { sorter, tableProps } = useTable<VolEntity>({
@@ -109,6 +110,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     )}
                 />
             </Table>
+            <PublicStats />
         </List>
     );
 };
