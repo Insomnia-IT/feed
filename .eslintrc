@@ -1,0 +1,36 @@
+{
+    "extends": [
+        "./.eslintrc.js"
+    ],
+    "parserOptions": {
+        "project": "./tsconfig.eslint.json"
+    },
+    "settings": {
+        "import/parsers": {
+            "@typescript-eslint/parser": [
+                ".ts",
+                ".tsx"
+            ]
+        },
+        "import/resolver": {
+            "node": {
+                "moduleDirectory": [
+                    "node_modules",
+                    "./"
+                ],
+                "extensions": [
+                    ".js",
+                    ".ts",
+                    ".tsx",
+                    ".mjs"
+                ]
+            },
+            "typescript": {
+                "alwaysTryTypes": true,
+                "project": [
+                    "tsconfig.json"
+                ]
+            }
+        }
+    }
+}

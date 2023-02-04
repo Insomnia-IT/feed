@@ -1,0 +1,61 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ main, dev ]
+
+jobs:
+  build-apk:
+    runs-on: self-hosted
+    name: build apk
+    env:
+      YA_DISK_TOKEN: ${{ secrets.YA_DISK_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: paths
+        with:
+          filters: |
+            android:
+              - 'android/**'
+      - name: run dockerfile
+        if: steps.paths.outputs.android == 'true'
+        run: cd android && docker build --progress=plain --build-arg YA_DISK_TOKEN="${YA_DISK_TOKEN}" -t android-builder .
+
+  build:
+    runs-on: self-hosted
+    env:
+      IMAGE_NAME_BASENAME: feed
+    steps:
+    - uses: actions/checkout@v3
+# DB
+    - name: setup db dir
+      run: mkdir -p /root/feeddb
+# ADMIN
+    - name: build admin
+      run: docker build . --tag $IMAGE_NAME_BASENAME-admin:$GITHUB_SHA
+    - name: stop admin
+      run: docker rm -f $IMAGE_NAME_BASENAME-admin
+    - name: run admin
+      run: docker run -d -p 5000:5000 --network=apps -v /root/feeddb:/app/db --restart=always --name $IMAGE_NAME_BASENAME-admin $IMAGE_NAME_BASENAME-admin:$GITHUB_SHA
+# BACKUP
+    - name: build backup
+      run: cd backup && docker build . --tag $IMAGE_NAME_BASENAME-backup:$GITHUB_SHA
+    - name: stop backup
+      run: docker rm -f $IMAGE_NAME-backup
+    - name: run backup
+      run: docker run -d -v /root/feeddb:/db --restart=always --name $IMAGE_NAME_BASENAME-backup $IMAGE_NAME_BASENAME-backup:$GITHUB_SHA
+# CLIENT
+#     - name: copy ver
+#       run: cp pwa-ver.txt pwa-client
+#     - name: build client
+#       run: cd pwa-client && docker build . --tag $IMAGE_NAME-client:$GITHUB_SHA
+#     - name: stop client
+#       run: docker rm -f $IMAGE_NAME-client
+#     - name: run client
+#       run: docker run -d -p 9000:80 --network=apps --restart=always --name $IMAGE_NAME-client $IMAGE_NAME-client:$GITHUB_SHA
+# CLEANUP
+    - name: cleanup docker containers
+      run: docker container prune --filter "until=7d" -f
+    - name: cleanup docker images
+      run: docker image prune -a -f --filter "until=7d"

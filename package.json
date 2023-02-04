@@ -1,0 +1,36 @@
+{
+    "name": "feed",
+    "version": "1.0.0",
+    "private": true,
+    "license": "MIT",
+    "scripts": {
+        "bootstrap": "lerna clean -y && rimraf ./node_modules/ && yarn && lerna bootstrap",
+        "build": "nx run-many --target=build",
+        "build:since": "nx affected --target=build",
+        "dep": "nx dep",
+        "bl": "browserslist --update-db",
+        "lint:js": "lerna run lint:js",
+        "lint-fix:js": "lerna run lint-fix:js",
+        "lint:css": "stylelint ./packages/**/*.css",
+        "lint-fix:css": "stylelint --fix ./packages/**/*.css",
+        "lint:ts": "lerna run tc",
+        "lint": "npm-run-all -s lint:*",
+        "lint-fix": "npm-run-all -s lint-fix:*",
+        "tc": "lerna run tc",
+        "bw": "ynpx bundle-wizard \"https://ttgraf.com\"",
+        "todo": "leasot -x --reporter markdown 'packages/**/*.(ts|tsx)' > TODO.md",
+        "madge": "ynpx madge",
+        "stat": "tokei"
+    },
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "lerna": "^5.4.1",
+        "nx": "^15.6.3"
+    },
+    "dependencies": {
+        "cross-env": "^7.0.3",
+        "leasot": "^13.2.0"
+    }
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+
+echo "Job started: $(date)"
+
+TS=`date +%m_%d__%H_%M_%S`
+#
+/usr/bin/sqlite3 /db/app.db ".backup /db/app_${TS}.db"
+
+echo "Job finished: $(date)"

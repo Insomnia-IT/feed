@@ -1,0 +1,71 @@
+{
+    "extends": "./tsconfig.paths.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "baseUrl": "./",
+        "target": "es2020",
+        "module": "esnext",
+        "jsx": "react-jsx",
+        "lib": [
+            "es6",
+            "dom",
+            "es2021",
+            "dom.iterable",
+            "esnext"
+        ],
+        "strictPropertyInitialization": false,
+        "downlevelIteration": true,
+        "importHelpers": true,
+        "declaration": true,
+        "isolatedModules": true,
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "noImplicitThis": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitReturns": false,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "experimentalDecorators": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "skipDefaultLibCheck": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "noErrorTruncation": true,
+        "pretty": true,
+        "checkJs": false,
+        "allowJs": true,
+        "noEmit": true,
+        "typeRoots": [
+            "node_modules/@types",
+            "./types"
+        ],
+        "paths": {
+            "~/*": [
+                "./src/*"
+            ],
+            "@feed/ui/*": [
+                "./packages/ui/src"
+            ]
+        }
+    },
+    "linterOptions": {
+        "exclude": [
+            "node_modules",
+            "**/*.js"
+        ]
+    },
+    "exclude": [
+        "node_modules",
+        "**/*.js"
+    ],
+    "include": [
+        "src",
+        ".eslintrc.js",
+        "typings.d.ts"
+    ]
+}

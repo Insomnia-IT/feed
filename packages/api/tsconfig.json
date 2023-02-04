@@ -1,0 +1,44 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "declaration": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "es2021",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "allowJs": false,
+        "checkJs": false,
+        "esModuleInterop": true,
+        "incremental": true,
+        "skipLibCheck": true,
+        "strictNullChecks": false,
+        "noImplicitAny": false,
+        "strictBindCallApply": false,
+        "forceConsistentCasingInFileNames": false,
+        "noFallthroughCasesInSwitch": false,
+        "paths": {
+            "~/*": [
+                "./src/*"
+            ]
+        },
+        "rootDirs": [
+            "./",
+            "./src"
+        ]
+    },
+    "include": [
+        "src/**/*.js",
+        "src/**/*.ts",
+        "ormconfig.ts"
+    ],
+    "ts-node": {
+        // Do not forget to `npm i -D tsconfig-paths`
+        "require": [
+            "tsconfig-paths/register"
+        ]
+    }
+}

@@ -1,0 +1,34 @@
+{
+    "presets": [
+        "@babel/preset-env",
+        [
+            "@babel/preset-typescript",
+            {
+                "onlyRemoveTypeImports": true
+            }
+        ],
+        [
+            "@babel/react"
+        ]
+    ],
+    "plugins": [
+        [
+            "@babel/plugin-proposal-class-properties"
+        ],
+        "@babel/plugin-transform-runtime",
+        [
+            "@babel/plugin-transform-react-jsx",
+            {
+                "runtime": "automatic"
+            }
+        ],
+        [
+            "module-resolver",
+            {
+                "root": [
+                    "./src"
+                ]
+            }
+        ]
+    ]
+}

@@ -1,0 +1,110 @@
+{
+    "pages": {
+        "login": {
+            "signin": "Войти",
+            "signup": "Зарегистрироваться",
+            "username": "Логин",
+            "password": "Пароль",
+            "remember": "Запомнить меня",
+            "forgotPassword": "Забыли пароль?",
+            "title": "Войти в аккаунт",
+            "noAccount": "Нет аккаунта?"
+        },
+        "error": {
+            "info": "You may have forgotten to add the {{action}} component to {{resource}} resource.",
+            "404": "Опс, тут ничего нет!",
+            "resource404": "Are you sure you have created the {{resource}} resource.",
+            "backHome": "Вернуться"
+        }
+    },
+    "actions": {
+        "list": "Список",
+        "create": "Создать",
+        "edit": "Редактировать",
+        "show": "Показать"
+    },
+    "buttons": {
+        "create": "Создать",
+        "save": "Сохранить",
+        "logout": "Выход",
+        "delete": "Удалить",
+        "edit": "Редактировать",
+        "cancel": "Отмена",
+        "confirm": "Уверены?",
+        "filter": "Фильтр",
+        "clear": "Очистить",
+        "refresh": "Обновить",
+        "show": "Показать",
+        "undo": "Вернуть",
+        "import": "Импорт",
+        "clone": "Копия",
+        "notAccessTitle": "Нет доступа"
+    },
+    "warnWhenUnsavedChanges": "Are you sure you want to leave? You have unsaved changes.",
+    "notifications": {
+        "success": "Успешно",
+        "error": "Ошибка (status code: {{statusCode}})",
+        "undoable": "{{seconds}} секунд на отмену",
+        "createSuccess": "Создано {{resource}}",
+        "createError": "Ошибка создания {{resource}} (status code: {{statusCode}})",
+        "deleteSuccess": "Successfully deleted {{resource}}",
+        "deleteError": "Ошибка удаления {{resource}} (status code: {{statusCode}})",
+        "editSuccess": "Отредактировано {{resource}}",
+        "editError": "Ошибка редактирования {{resource}} (status code: {{statusCode}})",
+        "importProgress": "Импорт: {{processed}}/{{total}}"
+    },
+    "loading": "Загрузка",
+    "tags": {
+        "clone": "Копия"
+    },
+    "dashboard": {
+        "title": "Dashboard"
+    },
+    "departments": {
+        "departments": "Направления",
+        "fields": {
+            "id": "Id",
+            "title": "Title",
+            "category": "Category",
+            "status": {
+                "title": "Status",
+                "published": "Published",
+                "draft": "Draft",
+                "rejected": "Rejected"
+            },
+            "content": "Content",
+            "createdAt": "Created At"
+        },
+        "titles": {
+            "create": "Создать направление",
+            "edit": "Редактировать направление",
+            "list": "Список направлений",
+            "show": "Показать направление"
+        }
+    },
+    "vols": {
+        "vols": "Волонтеры",
+        "fields": {
+            "id": "Id",
+            "name": "Имя",
+            "category": "Category",
+            "status": {
+                "title": "Status",
+                "published": "Published",
+                "draft": "Draft",
+                "rejected": "Rejected"
+            },
+            "content": "Content",
+            "createdAt": "Created At"
+        },
+        "titles": {
+            "create": "Создать",
+            "edit": "Редактировать",
+            "list": "Волонтеры",
+            "show": "Показать"
+        }
+    },
+    "table": {
+        "actions": "Действия"
+    }
+}

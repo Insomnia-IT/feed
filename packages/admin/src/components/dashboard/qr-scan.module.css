@@ -1,0 +1,21 @@
+.qrScanVideo {
+    width: 100%;
+    height: auto;
+}
+
+.qr {
+    position: relative;
+
+    .flash {
+        position: fixed;
+        top: 2vw;
+        right: 2vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        svg {
+            width: 2em;
+        }
+    }
+}
