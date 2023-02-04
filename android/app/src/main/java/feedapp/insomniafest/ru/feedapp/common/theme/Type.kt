@@ -1,4 +1,4 @@
-package feedapp.insomniafest.ru.feedapp.ui.theme
+package feedapp.insomniafest.ru.feedapp.common.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle

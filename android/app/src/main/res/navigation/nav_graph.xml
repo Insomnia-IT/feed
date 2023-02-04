@@ -3,9 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
     app:startDestination="@id/scannerMainFragment">
-
     <fragment
         android:id="@+id/scannerMainFragment"
-        android:name="feedapp.insomniafest.ru.feedapp.scanner.presentation.main.ScannerMainFragment"
+        android:name="feedapp.insomniafest.ru.feedapp.presentation.scanner.ScannerMainFragment"
         android:label="ScannerMainFragment" />
+    <fragment
+        android:id="@+id/scannerFragment"
+        android:name="feedapp.insomniafest.ru.feedapp.presentation.scanner.ScannerFragment"
+        android:label="ScannerFragment" />
 </navigation>

@@ -1,4 +1,4 @@
-package feedapp.insomniafest.ru.feedapp.util
+package feedapp.insomniafest.ru.feedapp.common.util
 
 import android.app.Activity
 import android.content.Context
@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-object PermissionUtils {
+internal object PermissionUtils {
     private const val TAG = "FeedApp"
     private const val PERMISSION_REQUESTS = 1
 

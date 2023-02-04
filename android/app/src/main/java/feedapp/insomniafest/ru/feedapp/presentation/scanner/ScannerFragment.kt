@@ -1,22 +1,22 @@
-package feedapp.insomniafest.ru.feedapp.scanner.presentation.main
+package feedapp.insomniafest.ru.feedapp.presentation.scanner
 
 import android.Manifest
 import android.content.res.Resources
-import androidx.fragment.app.Fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.buildtoapp.mlbarcodescanner.MLBarcodeCallback
 import com.buildtoapp.mlbarcodescanner.MLBarcodeScanner
-import feedapp.insomniafest.ru.feedapp.R
-import feedapp.insomniafest.ru.feedapp.databinding.FragmentScannerBinding
-import feedapp.insomniafest.ru.feedapp.util.PermissionUtils
 import com.google.mlkit.vision.barcode.common.Barcode
+import feedapp.insomniafest.ru.feedapp.R
+import feedapp.insomniafest.ru.feedapp.common.util.PermissionUtils
+import feedapp.insomniafest.ru.feedapp.databinding.FragmentScannerBinding
 
 
-class ScannerMainFragment : Fragment(R.layout.fragment_scanner), MLBarcodeCallback {
-        private var _binding: FragmentScannerBinding? = null
+class ScannerFragment : Fragment(R.layout.fragment_scanner), MLBarcodeCallback {
+    private var _binding: FragmentScannerBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var barcodeScanner: MLBarcodeScanner
@@ -28,7 +28,11 @@ class ScannerMainFragment : Fragment(R.layout.fragment_scanner), MLBarcodeCallba
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!PermissionUtils.allRuntimePermissionsGranted(requireActivity(), REQUIRED_RUNTIME_PERMISSIONS)) {
+        if (!PermissionUtils.allRuntimePermissionsGranted(
+                requireActivity(),
+                REQUIRED_RUNTIME_PERMISSIONS
+            )
+        ) {
             PermissionUtils.getRuntimePermissions(requireActivity(), REQUIRED_RUNTIME_PERMISSIONS)
         }
     }

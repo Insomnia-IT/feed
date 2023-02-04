@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Кормитель</string>
+    <string name="NavHostFragmentTag">false</string>
 </resources>
