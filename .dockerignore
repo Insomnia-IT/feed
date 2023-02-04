@@ -1,0 +1,13 @@
+Dockerfile
+.git
+.env
+.temp_cache
+.husky
+node_modules
+**/.temp_cache
+**/node_modules
+**/build
+**/.next
+run.sh
+**/dist
+_db
