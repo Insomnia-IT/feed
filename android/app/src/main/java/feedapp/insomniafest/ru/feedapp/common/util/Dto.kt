@@ -1,4 +1,4 @@
-package feedapp.insomniafest.ru.feedapp.common
+package feedapp.insomniafest.ru.feedapp.common.util
 
 interface Dto<out Model> {
 

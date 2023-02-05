@@ -43,7 +43,7 @@ class NetworkModule {
             .addInterceptor(httpLoggingInterceptor)
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
-                    .addHeader("authorization", "Bearer 1649")
+
                     .build()
                 return@addInterceptor chain.proceed(request)
             }

@@ -1,7 +1,7 @@
 package feedapp.insomniafest.ru.feedapp.data.network
 
 import android.util.Log
-import feedapp.insomniafest.ru.feedapp.common.Dto
+import feedapp.insomniafest.ru.feedapp.common.util.Dto
 import retrofit2.Response
 
 sealed class ApiError(override val message: String = "") : RuntimeException(message) {
