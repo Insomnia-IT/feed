@@ -6,7 +6,7 @@ import { Refine } from '@pankod/refine-core';
 import routerProvider from '@pankod/refine-nextjs-router';
 import type { UserConfig } from 'next-i18next';
 
-import '@pankod/refine-antd/dist/styles.min.css';
+import '@pankod/refine-antd/dist/reset.css';
 
 // require('~/i18n');
 
