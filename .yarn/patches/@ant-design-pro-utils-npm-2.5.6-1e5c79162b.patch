@@ -1,0 +1,13 @@
+diff --git a/lib/useEditableArray/index.js b/lib/useEditableArray/index.js
+index d76f041a77af217988f15cf90bee62f4041c56d9..8b041c673bfe0c60e764088bfbaee6b84feaada8 100644
+--- a/lib/useEditableArray/index.js
++++ b/lib/useEditableArray/index.js
+@@ -23,7 +23,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+ var _icons = require("@ant-design/icons");
+ var _proProvider = require("@ant-design/pro-provider");
+ var _antd = require("antd");
+-var _useLazyKVMap3 = _interopRequireDefault(require("antd/es/table/hooks/useLazyKVMap"));
++var _useLazyKVMap3 = _interopRequireDefault(require("antd/lib/table/hooks/useLazyKVMap"));
+ var _useMergedState3 = _interopRequireDefault(require("rc-util/lib/hooks/useMergedState"));
+ var _get = _interopRequireDefault(require("rc-util/lib/utils/get"));
+ var _set = _interopRequireDefault(require("rc-util/lib/utils/set"));
