@@ -22,7 +22,8 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    internal fun provideVolunteersApi(retrofit : Retrofit) : VolunteersApi = retrofit.create(VolunteersApi::class.java)
+    internal fun provideVolunteersApi(retrofit: Retrofit): VolunteersApi =
+        retrofit.create(VolunteersApi::class.java)
 
     @Provides
     @Singleton
@@ -72,7 +73,7 @@ class NetworkModule {
     @Provides
     @Singleton
     fun providesVolunteersRepository(volunteersRemoteDataSource: VolunteersRemoteDataSource): VolunteersRepository {
-        return VolunteersRepositoryImpl(null, volunteersRemoteDataSource)
+        return VolunteersRepositoryImpl(null, volunteersRemoteDataSource) // TODO
     }
 
     @Provides

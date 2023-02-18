@@ -2,9 +2,8 @@ package feedapp.insomniafest.ru.feedapp.data.volunteers.repository
 
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
-import javax.inject.Inject
 
-internal class VolunteersRepositoryImpl @Inject constructor(
+internal class VolunteersRepositoryImpl(
     private val volunteersLocalDataSource: VolunteersLocalDataSource?,
     private val volunteersRemoteDataSource: VolunteersRemoteDataSource,
 ) : VolunteersRepository {

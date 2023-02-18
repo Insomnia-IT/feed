@@ -2,8 +2,8 @@ package feedapp.insomniafest.ru.feedapp.di
 
 import dagger.Component
 import feedapp.insomniafest.ru.feedapp.di.api.NetworkModule
-import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 import feedapp.insomniafest.ru.feedapp.presentation.main.MainActivity
+import feedapp.insomniafest.ru.feedapp.presentation.volunteers.ViewModelFactory
 import javax.inject.Singleton
 
 @Singleton
@@ -13,8 +13,7 @@ import javax.inject.Singleton
     ]
 )
 interface ApplicationComponent {
-
     fun inject(activity: MainActivity)
 
-    val volunteersRepository: VolunteersRepository
+    fun viewModelsFactory(): ViewModelFactory
 }
