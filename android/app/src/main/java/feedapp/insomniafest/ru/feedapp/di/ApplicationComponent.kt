@@ -1,10 +1,9 @@
 package feedapp.insomniafest.ru.feedapp.di
 
-import android.app.Application
-import android.content.Context
-import dagger.BindsInstance
 import dagger.Component
 import feedapp.insomniafest.ru.feedapp.di.api.NetworkModule
+import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
+import feedapp.insomniafest.ru.feedapp.presentation.main.MainActivity
 import javax.inject.Singleton
 
 @Singleton
@@ -15,11 +14,7 @@ import javax.inject.Singleton
 )
 interface ApplicationComponent {
 
-    @Component.Factory
-    interface Factory {
-        fun create(
-            @BindsInstance application: Application,
-            @BindsInstance applicationContext: Context
-        ): ApplicationComponent
-    }
+    fun inject(activity: MainActivity)
+
+    val volunteersRepository: VolunteersRepository
 }
