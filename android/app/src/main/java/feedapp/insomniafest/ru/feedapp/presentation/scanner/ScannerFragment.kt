@@ -1,25 +1,26 @@
 package feedapp.insomniafest.ru.feedapp.presentation.scanner
 
 import android.Manifest
-import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.buildtoapp.mlbarcodescanner.MLBarcodeCallback
-import com.buildtoapp.mlbarcodescanner.MLBarcodeScanner
-import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.Result
 import feedapp.insomniafest.ru.feedapp.R
 import feedapp.insomniafest.ru.feedapp.common.util.PermissionUtils
 import feedapp.insomniafest.ru.feedapp.databinding.FragmentScannerBinding
+import me.dm7.barcodescanner.zxing.ZXingScannerView
 
 
-class ScannerFragment : Fragment(R.layout.fragment_scanner), MLBarcodeCallback {
+class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.ResultHandler {
     private var _binding: FragmentScannerBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var barcodeScanner: MLBarcodeScanner
+    private lateinit var barcodeScanner: ZXingScannerView
 
     companion object {
         private val REQUIRED_RUNTIME_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
@@ -45,9 +46,24 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), MLBarcodeCallback {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = FragmentScannerBinding.inflate(layoutInflater)
 
-        initBarcodeScanner()
+        barcodeScanner = binding.scanner
+        barcodeScanner.setResultHandler(this)
+        setupFormats()
+        setupScanner()
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        barcodeScanner.setResultHandler(this)
+        setupScanner()
+        barcodeScanner.startCamera()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        barcodeScanner.stopCamera()
     }
 
     override fun onDestroyView() {
@@ -55,27 +71,23 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), MLBarcodeCallback {
         _binding = null
     }
 
-    private fun initBarcodeScanner() {
-        barcodeScanner = MLBarcodeScanner(
-            callback = this,
-            focusBoxSize = MetricUtils.dpToPx(264), // TODO
-            graphicOverlay = binding.graphicOverlay,
-            previewView = binding.previewViewCameraScanning,
-            lifecycleOwner = this,
-            context = requireContext(),
-            drawOverlay = true,
-            drawBanner = true,
-            supportedBarcodeFormats = listOf(Barcode.FORMAT_QR_CODE)
-        )
+    private fun setupScanner() {
+        barcodeScanner.setAutoFocus(true) // автофокус
+        barcodeScanner.flash = false // вспышка TODO
     }
 
-    override fun onNewBarcodeScanned(displayValue: String, rawValue: String) {
-        // todo: you can process your barcode here
-    }
-}
+    private fun setupFormats() {
+        val formats = listOf(BarcodeFormat.QR_CODE)
 
-private object MetricUtils {
-    fun dpToPx(dp: Int): Int {
-        return (dp * Resources.getSystem().displayMetrics.density).toInt()
+        barcodeScanner.setFormats(formats)
     }
+
+    override fun handleResult(result: Result?) {
+        Log.d("!@#$", "Result:${result?.text}")
+
+        Toast.makeText(context, result?.text, Toast.LENGTH_SHORT).show()
+
+        barcodeScanner.resumeCameraPreview(this)
+    }
+
 }
