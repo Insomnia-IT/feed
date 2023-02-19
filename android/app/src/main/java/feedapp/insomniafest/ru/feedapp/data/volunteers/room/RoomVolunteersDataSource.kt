@@ -1,5 +1,6 @@
 package feedapp.insomniafest.ru.feedapp.data.volunteers.room
 
+import androidx.core.text.isDigitsOnly
 import com.google.gson.Gson
 import feedapp.insomniafest.ru.feedapp.common.util.fromJson
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteerEntity
@@ -31,13 +32,17 @@ private fun VolunteerEntity.toVolunteer(gson: Gson): Volunteer {
         isBlocked = isBlocked,
         paid = paid,
         feedType = feedType,
-        activeFrom = activeFrom?.toBigDecimal(),// TODO
-        activeTo = activeTo?.toBigDecimal(),// TODO
+        activeFrom = activeFrom.getDouble(),
+        activeTo = activeTo.getDouble(),
         department = gson.fromJson(department),
         location = gson.fromJson(location),
         expired = expired,
         balance = balance,
     )
+}
+
+private fun String?.getDouble(): Double? {
+    return if (this != null && this.isDigitsOnly()) this.toDouble() else null
 }
 
 private fun Volunteer.toVolunteerEntity(gson: Gson) = VolunteerEntity(
@@ -49,8 +54,8 @@ private fun Volunteer.toVolunteerEntity(gson: Gson) = VolunteerEntity(
     isBlocked = isBlocked,
     paid = paid,
     feedType = feedType,
-    activeFrom = activeFrom?.toInt(),// TODO
-    activeTo = activeTo?.toInt(),// TODO
+    activeFrom = activeFrom.toString(),
+    activeTo = activeTo.toString(),
     department = gson.toJson(department),
     location = gson.toJson(location),
     expired = expired,

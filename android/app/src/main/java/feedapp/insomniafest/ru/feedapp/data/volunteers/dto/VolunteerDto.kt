@@ -5,7 +5,6 @@ import feedapp.insomniafest.ru.feedapp.common.util.Dto
 import feedapp.insomniafest.ru.feedapp.common.util.convertList
 import feedapp.insomniafest.ru.feedapp.common.util.getNotNull
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
-import java.math.BigDecimal
 
 internal class VolunteerDto: Dto<Volunteer> {
 
@@ -34,10 +33,10 @@ internal class VolunteerDto: Dto<Volunteer> {
     private val feedType: String? = null
 
     @SerializedName("active_from")
-    private val activeFrom: BigDecimal? = null
+    private val activeFrom: Double? = null
 
     @SerializedName("active_to")
-    private val activeTo: BigDecimal? = null
+    private val activeTo: Double? = null
 
     @SerializedName("department")
     private val department: List<DepartmentDto>? = null

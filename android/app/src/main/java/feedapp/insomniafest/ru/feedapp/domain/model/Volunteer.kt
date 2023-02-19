@@ -1,7 +1,6 @@
 package feedapp.insomniafest.ru.feedapp.domain.model
 
 import java.io.Serializable
-import java.math.BigDecimal
 
 data class Volunteer(
     val id: Int,
@@ -12,8 +11,8 @@ data class Volunteer(
     val isBlocked: Boolean,
     val paid: Boolean,
     val feedType: String? = null,
-    val activeFrom: BigDecimal? = null,
-    val activeTo: BigDecimal? = null,
+    val activeFrom: Double? = null,
+    val activeTo: Double? = null,
     val department: List<Department>,
     val location: List<Location>,
     val expired: Int,

@@ -8,7 +8,7 @@ import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteersListDao
 @Database(
     entities = [
         VolunteerEntity::class,
-    ], version = 1, exportSchema = true
+    ], version = 2, exportSchema = true
 )
 abstract class VolunteersDataBase: RoomDatabase() {
     abstract fun questVolunteersDao(): VolunteersListDao

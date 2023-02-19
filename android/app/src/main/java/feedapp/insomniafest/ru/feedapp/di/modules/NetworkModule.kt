@@ -45,7 +45,6 @@ class NetworkModule {
             .addInterceptor(httpLoggingInterceptor)
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
-
                     .build()
                 return@addInterceptor chain.proceed(request)
             }

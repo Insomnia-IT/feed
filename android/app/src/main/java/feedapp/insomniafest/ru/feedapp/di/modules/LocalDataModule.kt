@@ -16,16 +16,17 @@ class LocalDataModule {
     @Provides
     @Singleton
     internal fun providesDataBase(context: Context): VolunteersDataBase {
-        return Room.databaseBuilder(
-            context,
-            VolunteersDataBase::class.java,
-            "volunteer_data_base",
-        ).build()
+        return Room.databaseBuilder(context, VolunteersDataBase::class.java, "volunteer_data_base")
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
     @Singleton
-    internal fun providesVolunteersLocalDataSource(gson: Gson, volunteersDataBase: VolunteersDataBase): VolunteersLocalDataSource {
+    internal fun providesVolunteersLocalDataSource(
+        gson: Gson,
+        volunteersDataBase: VolunteersDataBase
+    ): VolunteersLocalDataSource {
         return RoomVolunteersDataSource(gson, volunteersDataBase.questVolunteersDao())
     }
 }

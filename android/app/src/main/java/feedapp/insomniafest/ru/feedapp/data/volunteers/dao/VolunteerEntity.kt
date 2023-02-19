@@ -32,10 +32,10 @@ data class VolunteerEntity(
     val feedType: String? = null,
 
     @ColumnInfo(name = "active_from")
-    val activeFrom: Int? = null, // BigDecimal? = null, // TODO
+    val activeFrom: String? = null, // Double
 
     @ColumnInfo(name = "active_to")
-    val activeTo: Int? = null, // BigDecimal? = null, // TODO
+    val activeTo: String? = null, // Double
 
     @ColumnInfo(name = "department")
     val department: String,
