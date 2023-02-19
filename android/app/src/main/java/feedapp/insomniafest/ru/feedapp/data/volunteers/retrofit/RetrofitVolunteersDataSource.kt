@@ -5,8 +5,7 @@ import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemo
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 
 internal class RetrofitVolunteersDataSource(
-    val api: VolunteersApi,
-    //private val converter: ResponseConverter = ResponseConverter,
+    private val api: VolunteersApi,
 ) : VolunteersRemoteDataSource {
     override suspend fun getVolunteersList(): List<Volunteer> {
         return api.getVolunteersList().let { response ->

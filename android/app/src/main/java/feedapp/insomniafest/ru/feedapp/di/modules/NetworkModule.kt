@@ -1,4 +1,4 @@
-package feedapp.insomniafest.ru.feedapp.di.api
+package feedapp.insomniafest.ru.feedapp.di.modules
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import feedapp.insomniafest.ru.feedapp.BuildConfig
 import feedapp.insomniafest.ru.feedapp.data.volunteers.VolunteersApi
+import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemoteDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRepositoryImpl
 import feedapp.insomniafest.ru.feedapp.data.volunteers.retrofit.RetrofitVolunteersDataSource
@@ -72,13 +73,16 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun providesVolunteersRepository(volunteersRemoteDataSource: VolunteersRemoteDataSource): VolunteersRepository {
-        return VolunteersRepositoryImpl(null, volunteersRemoteDataSource) // TODO
+    internal fun providesVolunteersRemoteDataSource(api: VolunteersApi): VolunteersRemoteDataSource {
+        return RetrofitVolunteersDataSource(api)
     }
 
     @Provides
     @Singleton
-    internal fun providesVolunteersRemoteDataSource(api: VolunteersApi): VolunteersRemoteDataSource {
-        return RetrofitVolunteersDataSource(api)
+    fun providesVolunteersRepository(
+        volunteersLocalDataSource: VolunteersLocalDataSource,
+        volunteersRemoteDataSource: VolunteersRemoteDataSource
+    ): VolunteersRepository {
+        return VolunteersRepositoryImpl(volunteersLocalDataSource, volunteersRemoteDataSource)
     }
 }

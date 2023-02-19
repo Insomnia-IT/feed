@@ -14,7 +14,7 @@ import javax.inject.Provider
 
 
 class VolunteersListViewModel @Inject constructor(
-    val volunteersRepository: VolunteersRepository
+    private val volunteersRepository: VolunteersRepository
 ) : BaseViewModel<VolunteersListEvent>() {
 
     private val _viewState = MutableLiveData<VolunteersState>(VolunteersState.Loading)
@@ -22,17 +22,17 @@ class VolunteersListViewModel @Inject constructor(
 
 
     init {
-        loadVolunteers()
+        getLocalElseLoad()
     }
 
-    fun reloadVolunteers() {
+    fun onReloadVolunteers() {
         loadVolunteers()
     }
 
     private fun loadVolunteers() {
         viewModelScope.launch {
             runCatching {
-                volunteersRepository.getVolunteersList()
+                volunteersRepository.loadVolunteersList()
             }.onSuccess {
                 _viewState.value = VolunteersState.Loaded(
                     volunteerList = it
@@ -40,12 +40,30 @@ class VolunteersListViewModel @Inject constructor(
                 VolunteersListEvent.UpdateVolunteers(it).post()
             }.onFailure {
                 Log.e("VolunteersListViewModel", it.message.orEmpty())
+                VolunteersListEvent.ErrorLoading(it.message.orEmpty()).post()
+            }
+        }
+    }
+
+    private fun getLocalElseLoad() {
+        viewModelScope.launch {
+            runCatching {
+                volunteersRepository.getLocalElseLoad()
+            }.onSuccess {
+                _viewState.value = VolunteersState.Loaded(
+                    volunteerList = it
+                )
+                VolunteersListEvent.UpdateVolunteers(it).post()
+            }.onFailure {
+                Log.e("VolunteersListViewModel", it.message.orEmpty())
+                VolunteersListEvent.ErrorLoading(it.message.orEmpty()).post()
             }
         }
     }
 }
 
 sealed class VolunteersListEvent {
+    class ErrorLoading(val error: String) : VolunteersListEvent()
     class UpdateVolunteers(
         val volunteers: List<Volunteer>,
     ) : VolunteersListEvent()

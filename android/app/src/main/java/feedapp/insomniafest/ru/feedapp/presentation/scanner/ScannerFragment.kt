@@ -89,5 +89,4 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
 
         barcodeScanner.resumeCameraPreview(this)
     }
-
 }

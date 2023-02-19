@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -31,20 +32,47 @@ class VolunteersListFragment : Fragment(R.layout.fragment_volunteers_list) {
 
         binding = FragmentVolunteersListBinding.inflate(layoutInflater)
 
+        binding.btnReload.setOnClickListener { onReloadVolunteers() }
+
         val manager = LinearLayoutManager(requireContext())
         adapter = VolunteersListAdapter()
-
         binding.recyclerView.layoutManager = manager
         binding.recyclerView.adapter = adapter
-
         // подписываемся на обновление списка волонтеров
         observe(viewModel.viewEvents, ::processEvent)
 
         return binding.root
     }
 
+    private fun onReloadVolunteers() {
+        setButtonLoading(true)
+        binding.errorMassage.text = ""
+        viewModel.onReloadVolunteers()
+    }
+
     private fun processEvent(event: VolunteersListEvent) = when (event) {
-        is VolunteersListEvent.UpdateVolunteers -> adapter.data = event.volunteers
+        is VolunteersListEvent.ErrorLoading -> {
+            binding.errorMassage.text = getString(R.string.error_massage, event.error) // TODO читаемые ошибки
+            setButtonLoading(false)
+        }
+        is VolunteersListEvent.UpdateVolunteers -> {
+            adapter.data = event.volunteers
+            binding.errorMassage.text = ""
+            Toast.makeText(context, R.string.volunteers_list_success_load, Toast.LENGTH_SHORT)
+                .show()
+            setButtonLoading(false)
+        }
+    }
+
+    private fun setButtonLoading(isLoading: Boolean) = when (isLoading) {
+        true -> {
+            binding.btnReload.visibility = View.GONE
+            binding.btnReloading.visibility = View.VISIBLE
+        }
+        false -> {
+            binding.btnReload.visibility = View.VISIBLE
+            binding.btnReloading.visibility = View.GONE
+        }
     }
 
 }

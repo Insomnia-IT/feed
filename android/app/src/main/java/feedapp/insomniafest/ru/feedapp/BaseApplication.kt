@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import feedapp.insomniafest.ru.feedapp.di.ApplicationComponent
 import feedapp.insomniafest.ru.feedapp.di.DaggerApplicationComponent
+import feedapp.insomniafest.ru.feedapp.di.modules.AppModule
 
 class BaseApplication : Application() {
 
@@ -11,7 +12,9 @@ class BaseApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appComponent = DaggerApplicationComponent.create()
+        this.appComponent = DaggerApplicationComponent.builder()
+            .appModule(AppModule(this))
+            .build()
     }
 }
 
