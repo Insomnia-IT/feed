@@ -55,19 +55,19 @@ internal class VolunteerDto: Dto<Volunteer> {
     override fun convert(): Volunteer {
         return Volunteer(
             id = getNotNull(id, "Volunteer/id"),
-            name = getNotNull(name, "Volunteer/name"),
+            name = name,
             nickname = nickname,
             qr = getNotNull(qr, "Volunteer/qr"),
             isActive = getNotNull(isActive, "Volunteer/isActive"),
             isBlocked = getNotNull(isBlocked, "Volunteer/isBlocked"),
             paid = getNotNull(paid, "Volunteer/paid"),
-            feedType = getNotNull(feedType, "Volunteer/feedType"),
-            activeFrom = getNotNull(activeFrom, "Volunteer/activeFrom"),
-            activeTo = getNotNull(activeTo, "Volunteer/activeTo"),
+            feedType = feedType,
+            activeFrom = activeFrom,
+            activeTo = activeTo,
             department = department.convertList(),
             location = location.convertList(),
             expired = getNotNull(expired, "Volunteer/expired"),
-            balance = getNotNull(balance, "Volunteer/balance"),
+            balance = balance,
         )
     }
 }

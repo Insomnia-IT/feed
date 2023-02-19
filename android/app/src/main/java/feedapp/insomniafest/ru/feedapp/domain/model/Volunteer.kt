@@ -5,7 +5,7 @@ import java.math.BigDecimal
 
 data class Volunteer(
     val id: Int,
-    val name: String,
+    val name: String?,
     val nickname: String? = null,
     val qr: String,
     val isActive: Boolean,
@@ -17,5 +17,5 @@ data class Volunteer(
     val department: List<Department>,
     val location: List<Location>,
     val expired: Int,
-    val balance: Int,
+    val balance: Int?,
 ) : Serializable
