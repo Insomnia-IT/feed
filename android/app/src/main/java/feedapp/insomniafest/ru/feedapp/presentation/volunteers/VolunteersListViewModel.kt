@@ -32,7 +32,8 @@ class VolunteersListViewModel @Inject constructor(
     private fun loadVolunteers() {
         viewModelScope.launch {
             runCatching {
-                volunteersRepository.loadVolunteersList()
+                volunteersRepository.updateVolunteersList()
+                volunteersRepository.getLocalVolunteersList()
             }.onSuccess {
                 _viewState.value = VolunteersState.Loaded(
                     volunteerList = it
@@ -48,7 +49,10 @@ class VolunteersListViewModel @Inject constructor(
     private fun getLocalElseLoad() {
         viewModelScope.launch {
             runCatching {
-                volunteersRepository.getLocalElseLoad()
+                volunteersRepository.getLocalVolunteersList().ifEmpty {
+                    volunteersRepository.updateVolunteersList()
+                    volunteersRepository.getLocalVolunteersList()
+                }
             }.onSuccess {
                 _viewState.value = VolunteersState.Loaded(
                     volunteerList = it

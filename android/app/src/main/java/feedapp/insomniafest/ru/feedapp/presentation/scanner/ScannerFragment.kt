@@ -8,10 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.Result
 import feedapp.insomniafest.ru.feedapp.R
+import feedapp.insomniafest.ru.feedapp.appComponent
 import feedapp.insomniafest.ru.feedapp.common.util.PermissionUtils
+import feedapp.insomniafest.ru.feedapp.common.util.observe
 import feedapp.insomniafest.ru.feedapp.databinding.FragmentScannerBinding
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 
@@ -21,6 +24,10 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
     private val binding get() = _binding!!
 
     private lateinit var barcodeScanner: ZXingScannerView
+
+    private val viewModel: ScannerViewModel by viewModels {
+        requireContext().appComponent.scannerViewModel()
+    }
 
     companion object {
         private val REQUIRED_RUNTIME_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
@@ -36,6 +43,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
         ) {
             PermissionUtils.getRuntimePermissions(requireActivity(), REQUIRED_RUNTIME_PERMISSIONS)
         }
+
     }
 
     override fun onCreateView(
@@ -50,6 +58,8 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
         barcodeScanner.setResultHandler(this)
         setupFormats()
         setupScanner()
+
+        observe(viewModel.viewEvents, ::processEvent)
 
         return binding.root
     }
@@ -87,6 +97,21 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
 
         Toast.makeText(context, result?.text, Toast.LENGTH_SHORT).show()
 
-        barcodeScanner.resumeCameraPreview(this)
+        viewModel.onQrScanned(result?.text.orEmpty())
+    }
+
+    private fun processEvent(event: ScannerEvent) = when (event) {
+        is ScannerEvent.UpdateVolunteerCounter -> {
+            binding.numberFed.text = event.numberFed.toString()
+
+            barcodeScanner.resumeCameraPreview(this) // TODO тут ли возобновлять работу?
+        }
+        is ScannerEvent.Error -> {
+            Toast.makeText(
+                context,
+                getString(R.string.loading_error, event.error),
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 }

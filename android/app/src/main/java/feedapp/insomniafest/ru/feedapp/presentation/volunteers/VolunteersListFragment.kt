@@ -52,7 +52,15 @@ class VolunteersListFragment : Fragment(R.layout.fragment_volunteers_list) {
 
     private fun processEvent(event: VolunteersListEvent) = when (event) {
         is VolunteersListEvent.ErrorLoading -> {
-            binding.errorMassage.text = getString(R.string.error_massage, event.error) // TODO читаемые ошибки
+            binding.errorMassage.text =
+                getString(R.string.error_massage, event.error) // TODO читаемые ошибки
+
+            Toast.makeText(
+                context,
+                getString(R.string.loading_error, event.error),
+                Toast.LENGTH_LONG
+            ).show()
+
             setButtonLoading(false)
         }
         is VolunteersListEvent.UpdateVolunteers -> {

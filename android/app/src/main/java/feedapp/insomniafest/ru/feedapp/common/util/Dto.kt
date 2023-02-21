@@ -1,5 +1,6 @@
 package feedapp.insomniafest.ru.feedapp.common.util
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -10,7 +11,17 @@ interface Dto<out Model> {
 
 fun <T> getNotNull(item: T?, field: String): T = item ?: convertError("'$field' must not be null")
 
-fun <T> List<Dto<T>>?.convertList(): List<T> = this?.map { it.convert() }.orEmpty()
+fun <T> List<Dto<T>>?.convertList(): List<T> {
+    return this?.mapNotNull {
+        try {
+            it.convert()
+        } catch (e: Exception) {
+            Log.w("ResponseConverter", "", e)
+            null
+        }
+    }.orEmpty()
+}
+
 
 fun convertError(error: String): Nothing = throw ConvertDtoException(error)
 
