@@ -6,4 +6,6 @@
     <string name="loading_gif">I\'m loading gif</string>
     <string name="loading_error">❗ ⛔ 🚨 💥 Ошибка: %1s </string>
     <string name="zero">0</string>
+    <string name="login_button">Войти</string>
+    <string name="login_placeholder">Логин</string>
 </resources>

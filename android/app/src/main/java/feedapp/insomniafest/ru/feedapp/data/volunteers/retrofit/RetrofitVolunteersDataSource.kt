@@ -13,4 +13,8 @@ internal class RetrofitVolunteersDataSource(
 
         return response.isSuccessful to response.body().convertList()
     }
+
+    override suspend fun checkLogin(login: String): Boolean {
+        return api.checkLogin("Bearer $login").isSuccessful
+    }
 }

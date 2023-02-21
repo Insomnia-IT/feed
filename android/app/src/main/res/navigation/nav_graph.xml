@@ -2,13 +2,17 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/scannerMainFragment">
+    app:startDestination="@id/loginFragment">
     <fragment
         android:id="@+id/scannerMainFragment"
         android:name="feedapp.insomniafest.ru.feedapp.presentation.scanner.ScannerMainFragment"
         android:label="ScannerMainFragment" />
     <fragment
-        android:id="@+id/scannerFragment"
-        android:name="feedapp.insomniafest.ru.feedapp.presentation.scanner.ScannerFragment"
-        android:label="ScannerFragment" />
+        android:id="@+id/loginFragment"
+        android:name="feedapp.insomniafest.ru.feedapp.presentation.login.LoginFragment"
+        android:label="LoginFragment" >
+        <action
+            android:id="@+id/to_scannerMainFragment"
+            app:destination="@id/scannerMainFragment" />
+    </fragment>
 </navigation>

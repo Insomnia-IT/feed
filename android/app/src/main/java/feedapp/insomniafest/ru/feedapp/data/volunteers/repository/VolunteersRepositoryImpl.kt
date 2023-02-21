@@ -18,4 +18,9 @@ internal class VolunteersRepositoryImpl(
         return volunteersLocalDataSource.getVolunteersList()
     }
 
+    override suspend fun checkLogin(login: String): Boolean {
+        // TODO локальная проверка логинов
+        return volunteersRemoteDataSource.checkLogin(login)
+    }
+
 }

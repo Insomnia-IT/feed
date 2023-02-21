@@ -26,7 +26,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
     private lateinit var barcodeScanner: ZXingScannerView
 
     private val viewModel: ScannerViewModel by viewModels {
-        requireContext().appComponent.scannerViewModel()
+        requireContext().appComponent.scannerViewModelFactory()
     }
 
     companion object {

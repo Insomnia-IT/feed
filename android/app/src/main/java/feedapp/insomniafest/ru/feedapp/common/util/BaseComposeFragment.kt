@@ -7,10 +7,9 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.fragment.app.Fragment
 import feedapp.insomniafest.ru.feedapp.databinding.FragmentBaseComposeBinding
 
-abstract class BaseComposeFragment : Fragment() {
+abstract class BaseComposeFragment : BaseFragment() {
 
     private var _binding: FragmentBaseComposeBinding? = null
     private val binding get() = _binding!!

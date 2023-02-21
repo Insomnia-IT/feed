@@ -7,6 +7,10 @@ import retrofit2.http.POST
 internal interface VolunteersApi {
     @POST("./vol_list")
     suspend fun getVolunteersList(
-        @Header("authorization")auth: String = "Bearer 1649"
     ): retrofit2.Response<List<VolunteerDto>> // TODO
+
+    @POST("./vol_list") // TODO обсудить другой запрос
+    suspend fun checkLogin(
+        @Header("authorization")auth: String,
+    ): retrofit2.Response<Unit>
 }
