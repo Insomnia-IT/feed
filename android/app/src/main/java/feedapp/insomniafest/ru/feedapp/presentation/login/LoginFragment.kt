@@ -15,8 +15,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import feedapp.insomniafest.ru.feedapp.R
@@ -38,14 +41,17 @@ class LoginFragment : BaseComposeFragment() {
 
     @Composable
     override fun FragmentContent() {
-
-
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val login = rememberSaveable { mutableStateOf("") }
+            fun onEnterClick() {
+                if (login.value.isNotBlank()) {
+                    viewModel.tryLogin(login.value)
+                }
+            }
 
             OutlinedTextField(
                 value = login.value,
@@ -57,14 +63,17 @@ class LoginFragment : BaseComposeFragment() {
                 singleLine = true,
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        viewModel.tryLogin(login.value)
+                        onEnterClick()
                     }
                 ),
+                textStyle = TextStyle(fontSize = 32.sp, textAlign = TextAlign.Center)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(21.dp))
             Button(
-                content = { Text(text = stringResource(R.string.login_button)) },
-                onClick = { viewModel.tryLogin(login.value) },
+                content = {
+                    Text(text = stringResource(R.string.login_button), fontSize = 21.sp)
+                },
+                onClick = ::onEnterClick,
             )
         }
     }
