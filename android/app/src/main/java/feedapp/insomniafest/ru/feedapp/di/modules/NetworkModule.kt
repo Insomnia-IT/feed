@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import feedapp.insomniafest.ru.feedapp.BuildConfig
+import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
 import feedapp.insomniafest.ru.feedapp.data.volunteers.VolunteersApi
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemoteDataSource
@@ -72,8 +73,11 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    internal fun providesVolunteersRemoteDataSource(api: VolunteersApi): VolunteersRemoteDataSource {
-        return RetrofitVolunteersDataSource(api)
+    internal fun providesVolunteersRemoteDataSource(
+        api: VolunteersApi,
+        appPreference: AppPreference
+    ): VolunteersRemoteDataSource {
+        return RetrofitVolunteersDataSource(api, appPreference)
     }
 
     @Provides

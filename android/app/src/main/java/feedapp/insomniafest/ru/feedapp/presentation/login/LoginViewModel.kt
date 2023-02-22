@@ -14,11 +14,12 @@ class LoginViewModel @Inject constructor(
     fun tryLogin(code: String) {
         launchIO {
             runCatching {
+                // TODO проверить сначало логин в базе
                 volunteersRepository.checkLogin(code)
             }.onSuccess { isSuccessful ->
                 if (isSuccessful) {
                     // TODO Сохранить логин в базу
-                    LoginEvent.Successful.post()
+                    LoginEvent.Successful(code).post()
                 } else {
                     LoginEvent.Error("Некорректный логин").post()
                 }
@@ -32,7 +33,7 @@ class LoginViewModel @Inject constructor(
 
 sealed class LoginEvent {
     class Error(val error: String) : LoginEvent()
-    object Successful : LoginEvent()
+    class Successful(val login: String) : LoginEvent()
 }
 
 class LoginViewModelFactory @Inject constructor( // TODO пора уже вынести

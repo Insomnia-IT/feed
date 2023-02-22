@@ -26,8 +26,13 @@ import feedapp.insomniafest.ru.feedapp.R
 import feedapp.insomniafest.ru.feedapp.appComponent
 import feedapp.insomniafest.ru.feedapp.common.util.BaseComposeFragment
 import feedapp.insomniafest.ru.feedapp.common.util.observe
+import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
+import javax.inject.Inject
 
 class LoginFragment : BaseComposeFragment() {
+
+    @Inject
+    lateinit var appPreference: AppPreference
 
     private val viewModel: LoginViewModel by viewModels {
         requireContext().appComponent.loginViewModelFactory()
@@ -35,6 +40,9 @@ class LoginFragment : BaseComposeFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireContext().appComponent.inject(this)
+
         observeBase(viewModel)
         observe(viewModel.viewEvents, ::processEvent)
     }
@@ -56,7 +64,6 @@ class LoginFragment : BaseComposeFragment() {
             OutlinedTextField(
                 value = login.value,
                 onValueChange = { login.value = it },
-                placeholder = { Text(text = stringResource(R.string.login_placeholder)) },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                 ),
@@ -86,7 +93,9 @@ class LoginFragment : BaseComposeFragment() {
                 Toast.LENGTH_LONG
             ).show()
         }
-        LoginEvent.Successful -> {
+        is LoginEvent.Successful -> {
+            appPreference.login = event.login
+
             view?.findNavController()?.navigate(R.id.to_scannerMainFragment)
         }
     }
