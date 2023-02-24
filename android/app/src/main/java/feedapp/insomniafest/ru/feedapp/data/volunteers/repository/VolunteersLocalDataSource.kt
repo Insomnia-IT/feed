@@ -9,4 +9,6 @@ interface VolunteersLocalDataSource {
     suspend fun saveRemoteResponse(response: List<Volunteer>)
 
     suspend fun getSavedLogins(): List<String>
+
+    suspend fun resetDatabaseIfNecessary(): Boolean
 }

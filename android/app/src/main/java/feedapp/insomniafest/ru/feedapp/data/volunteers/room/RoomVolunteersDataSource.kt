@@ -9,6 +9,7 @@ import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.LoginEntity
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteerEntity
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteersListDao
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
+import feedapp.insomniafest.ru.feedapp.data.volunteers.util.isNeedResetDatabase
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 
 class RoomVolunteersDataSource(
@@ -46,6 +47,15 @@ class RoomVolunteersDataSource(
 
     override suspend fun getSavedLogins(): List<String> {
         return loginDao.getAllLogin().map { it.login }
+    }
+
+    override suspend fun resetDatabaseIfNecessary(): Boolean {
+        return isNeedResetDatabase(appPreference.lastUpdate).also {
+            if (it) {
+                volunteersListDao.deleteAllVolunteers()
+                loginDao.deleteAllLogins()
+            }
+        }
     }
 }
 

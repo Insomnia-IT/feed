@@ -6,4 +6,5 @@ interface VolunteersRepository {
     suspend fun updateVolunteersList()
     suspend fun getLocalVolunteersList(): List<Volunteer>
     suspend fun checkLogin(login: String): Boolean
+    suspend fun resetDatabaseIfNecessary(): Boolean
 }

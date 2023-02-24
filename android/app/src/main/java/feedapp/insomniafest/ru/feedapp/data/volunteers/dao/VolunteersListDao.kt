@@ -18,4 +18,7 @@ interface VolunteersListDao {
     @Insert(entity = VolunteerEntity::class, onConflict = OnConflictStrategy.REPLACE)
     @JvmSuppressWildcards
     suspend fun saveAllVolunteersByLogin(entities: List<VolunteerEntity>)
+
+    @Query("DELETE FROM ${VolunteerEntity.TABLE_NAME}")
+    fun deleteAllVolunteers()
 }

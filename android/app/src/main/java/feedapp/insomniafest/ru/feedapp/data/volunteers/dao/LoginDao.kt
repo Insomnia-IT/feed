@@ -16,4 +16,7 @@ interface LoginDao {
 
     @Query("SELECT * FROM ${LoginEntity.TABLE_NAME} WHERE ${LoginEntity.LOGIN_COLUMN} = :login")
     suspend fun getLogin(login: String): LoginEntity
+
+    @Query("DELETE FROM ${LoginEntity.TABLE_NAME}")
+    fun deleteAllLogins()
 }

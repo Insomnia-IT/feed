@@ -31,4 +31,8 @@ internal class VolunteersRepositoryImpl(
             volunteersRemoteDataSource.checkLogin(login)
         }
     }
+
+    override suspend fun resetDatabaseIfNecessary(): Boolean {
+        return volunteersLocalDataSource.resetDatabaseIfNecessary()
+    }
 }

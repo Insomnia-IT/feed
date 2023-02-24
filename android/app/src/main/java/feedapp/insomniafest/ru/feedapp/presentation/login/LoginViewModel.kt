@@ -14,7 +14,8 @@ class LoginViewModel @Inject constructor(
     fun tryLogin(code: String) {
         launchIO {
             runCatching {
-                volunteersRepository.checkLogin(code) // При успехе логин сохраняется в sharedPreference
+                val formattedCode = code.filter { it.isDigit() }
+                volunteersRepository.checkLogin(formattedCode) // При успехе логин сохраняется в sharedPreference
             }.onSuccess { isSuccessful ->
                 if (isSuccessful) {
                     tryUpdateVolunteers()
@@ -32,15 +33,20 @@ class LoginViewModel @Inject constructor(
     private fun tryUpdateVolunteers() {
         launchIO {
             runCatching {
-                // TODO добавить сброс базы раз в сутки
-                // TODO не пускать дальше, если база пуста
                 volunteersRepository.updateVolunteersList()
             }.onSuccess {
                 LoginEvent.Successful.post()
             }.onFailure {
-                // был проверен логин по базе, инет соединения нет, обновиться не получилось, но можно пускать дальше
-                Log.e("LoginViewModel", it.message.orEmpty())
-                LoginEvent.Successful.post()
+                // был проверен логин по базе, инет соединения нет, обновиться не получилось,
+                // но можно пускать дальше, если база свежая
+
+                // проверяет, база текущего дня, если нет, сбрасывает все данные по логинам и волонтерам
+                val wasReset = volunteersRepository.resetDatabaseIfNecessary()
+                if (wasReset) {
+                    LoginEvent.Error("Hеобходимо интернет соединение чтобы продолжить").post()
+                } else {
+                    LoginEvent.Successful.post()
+                }
             }
         }
     }

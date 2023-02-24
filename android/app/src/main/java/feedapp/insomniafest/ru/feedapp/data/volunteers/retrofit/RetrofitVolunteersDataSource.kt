@@ -4,6 +4,7 @@ import feedapp.insomniafest.ru.feedapp.common.util.convertList
 import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
 import feedapp.insomniafest.ru.feedapp.data.volunteers.VolunteersApi
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemoteDataSource
+import feedapp.insomniafest.ru.feedapp.data.volunteers.util.getCurTime
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 
 internal class RetrofitVolunteersDataSource(
@@ -12,6 +13,7 @@ internal class RetrofitVolunteersDataSource(
 ) : VolunteersRemoteDataSource {
     override suspend fun getVolunteersList(): Pair<Boolean, List<Volunteer>> {
         val response = api.getVolunteersList(appPreference.login.loginPreparation())
+        if (response.isSuccessful) appPreference.lastUpdate = getCurTime()
         return response.isSuccessful to response.body().convertList()
     }
 
