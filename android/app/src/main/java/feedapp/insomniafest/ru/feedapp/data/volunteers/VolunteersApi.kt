@@ -10,7 +10,7 @@ internal interface VolunteersApi {
         @Header("authorization")auth: String,
     ): retrofit2.Response<List<VolunteerDto>>
 
-    @POST("./vol_list") // TODO обсудить другой запрос
+    @POST("./check_auth")
     suspend fun checkLogin(
         @Header("authorization")auth: String,
     ): retrofit2.Response<Unit>

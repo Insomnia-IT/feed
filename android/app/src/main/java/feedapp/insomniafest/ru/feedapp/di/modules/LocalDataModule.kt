@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
+import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.room.RoomVolunteersDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.room.VolunteersDataBase
@@ -25,8 +26,14 @@ class LocalDataModule {
     @Singleton
     internal fun providesVolunteersLocalDataSource(
         gson: Gson,
-        volunteersDataBase: VolunteersDataBase
+        volunteersDataBase: VolunteersDataBase,
+        appPreference: AppPreference,
     ): VolunteersLocalDataSource {
-        return RoomVolunteersDataSource(gson, volunteersDataBase.questVolunteersDao())
+        return RoomVolunteersDataSource(
+            gson,
+            volunteersDataBase.questVolunteersDao(),
+            volunteersDataBase.questLoginDao(),
+            appPreference,
+        )
     }
 }

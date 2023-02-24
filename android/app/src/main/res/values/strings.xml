@@ -3,8 +3,9 @@
     <string name="NavHostFragmentTag">false</string>
     <string name="volunteers_list_success_load">Список волонтеров обновлен 🌟</string>
     <string name="error_massage">При последней загрузке произошла следующая ошибка: \n %1s</string>
+    <string name="count_volunteers">Количество волонтеров: %1s</string>
     <string name="loading_gif">I\'m loading gif</string>
-    <string name="loading_error">❗ ⛔ 🚨 💥 Ошибка: %1s </string>
+    <string name="load_error">❗ ⛔ 🚨 💥 Ошибка: %1s </string>
     <string name="zero">0</string>
     <string name="login_button">Войти</string>
     <string name="login_placeholder">Логин</string>

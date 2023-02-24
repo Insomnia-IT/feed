@@ -1,5 +1,6 @@
 package feedapp.insomniafest.ru.feedapp.data.volunteers.repository
 
+import android.util.Log
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 
@@ -11,6 +12,9 @@ internal class VolunteersRepositoryImpl(
         val response = volunteersRemoteDataSource.getVolunteersList()
         if (response.first) {
             volunteersLocalDataSource.saveRemoteResponse(response.second)
+        } else {
+            // т.к. запрос только из авторизованной зоны, то это исключение не должно быть достижимо
+            throw RuntimeException("Некорректный логин")
         }
     }
 
@@ -19,8 +23,12 @@ internal class VolunteersRepositoryImpl(
     }
 
     override suspend fun checkLogin(login: String): Boolean {
-        // TODO локальная проверка логинов
-        return volunteersRemoteDataSource.checkLogin(login)
+        val savedLogins = volunteersLocalDataSource.getSavedLogins()
+        Log.e("!@#$", "Login ${savedLogins.toString()} | $login | ${login in savedLogins}")
+        return if (login in savedLogins) {
+            true
+        } else {
+            volunteersRemoteDataSource.checkLogin(login)
+        }
     }
-
 }

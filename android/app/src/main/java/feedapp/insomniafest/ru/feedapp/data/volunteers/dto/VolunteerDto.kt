@@ -54,6 +54,7 @@ internal class VolunteerDto: Dto<Volunteer> {
     override fun convert(): Volunteer {
         return Volunteer(
             id = getNotNull(id, "Volunteer/id"),
+            login_id = "",
             name = name,
             nickname = nickname,
             qr = getNotNull(qr, "Volunteer/qr"),

@@ -32,6 +32,6 @@ class VolunteersListAdapter : RecyclerView.Adapter<VolunteersListAdapter.PersonV
     override fun onBindViewHolder(holder: PersonViewHolder, position: Int) {
         val person = data[position]
 
-        holder.binding.name.text = person.name
+        holder.binding.name.text = person.name + "| ${person.login_id} |"
     }
 }

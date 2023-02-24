@@ -45,6 +45,13 @@
             android:textColor="@color/text_error"
             android:textSize="15sp"
             android:padding="10dp"/>
+
+        <TextView
+            android:id="@+id/count_volunteers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:padding="10dp"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

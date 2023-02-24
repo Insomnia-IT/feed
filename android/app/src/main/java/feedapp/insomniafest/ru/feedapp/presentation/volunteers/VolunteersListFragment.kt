@@ -52,23 +52,32 @@ class VolunteersListFragment : Fragment(R.layout.fragment_volunteers_list) {
 
     private fun processEvent(event: VolunteersListEvent) = when (event) {
         is VolunteersListEvent.ErrorLoading -> {
-            binding.errorMassage.text =
-                getString(R.string.error_massage, event.error) // TODO читаемые ошибки
-
-            Toast.makeText(
-                context,
-                getString(R.string.loading_error, event.error),
-                Toast.LENGTH_LONG
-            ).show()
-
+            showInfoAfterLoad(event)
             setButtonLoading(false)
         }
         is VolunteersListEvent.UpdateVolunteers -> {
             adapter.data = event.volunteers
+            showInfoAfterLoad(event)
+            setButtonLoading(false)
+        }
+    }
+
+    private fun showInfoAfterLoad(event: VolunteersListEvent) = when (event) {
+        is VolunteersListEvent.ErrorLoading -> {
+            binding.countVolunteers.text = ""
+            binding.errorMassage.text =
+                getString(R.string.error_massage, event.error) // TODO читаемые ошибки
+
+            Toast.makeText(context, getString(R.string.load_error, event.error), Toast.LENGTH_LONG)
+                .show()
+        }
+        is VolunteersListEvent.UpdateVolunteers -> {
             binding.errorMassage.text = ""
+            binding.countVolunteers.text =
+                getString(R.string.count_volunteers, event.volunteers.size.toString())
+
             Toast.makeText(context, R.string.volunteers_list_success_load, Toast.LENGTH_SHORT)
                 .show()
-            setButtonLoading(false)
         }
     }
 
@@ -82,5 +91,4 @@ class VolunteersListFragment : Fragment(R.layout.fragment_volunteers_list) {
             binding.btnReloading.visibility = View.GONE
         }
     }
-
 }

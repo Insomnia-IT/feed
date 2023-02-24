@@ -4,6 +4,7 @@ import java.io.Serializable
 
 data class Volunteer(
     val id: Int,
+    val login_id: String,
     val name: String?,
     val nickname: String? = null,
     val qr: String,

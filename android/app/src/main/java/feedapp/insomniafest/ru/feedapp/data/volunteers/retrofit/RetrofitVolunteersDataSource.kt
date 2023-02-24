@@ -12,12 +12,13 @@ internal class RetrofitVolunteersDataSource(
 ) : VolunteersRemoteDataSource {
     override suspend fun getVolunteersList(): Pair<Boolean, List<Volunteer>> {
         val response = api.getVolunteersList(appPreference.login.loginPreparation())
-
         return response.isSuccessful to response.body().convertList()
     }
 
     override suspend fun checkLogin(login: String): Boolean {
-        return api.checkLogin(login.loginPreparation()).isSuccessful
+        return api.checkLogin(login.loginPreparation()).isSuccessful.also {
+            if (it) appPreference.login = login // При успешной авторизации сохраняем логин
+        }
     }
 }
 

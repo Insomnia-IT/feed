@@ -10,6 +10,9 @@ data class VolunteerEntity(
     @ColumnInfo(name = "id")
     val id: Int,
 
+    @ColumnInfo(name = LOGIN_ID_COLUMN)
+    val login_id: String,
+
     @ColumnInfo(name = "name")
     val name: String? = null,
 
@@ -51,6 +54,7 @@ data class VolunteerEntity(
 ) {
     companion object {
         const val TABLE_NAME = "volunteers_list_entities_table"
+        const val LOGIN_ID_COLUMN = "login_id"
     }
 }
 

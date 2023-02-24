@@ -26,13 +26,8 @@ import feedapp.insomniafest.ru.feedapp.R
 import feedapp.insomniafest.ru.feedapp.appComponent
 import feedapp.insomniafest.ru.feedapp.common.util.BaseComposeFragment
 import feedapp.insomniafest.ru.feedapp.common.util.observe
-import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
-import javax.inject.Inject
 
 class LoginFragment : BaseComposeFragment() {
-
-    @Inject
-    lateinit var appPreference: AppPreference
 
     private val viewModel: LoginViewModel by viewModels {
         requireContext().appComponent.loginViewModelFactory()
@@ -89,13 +84,11 @@ class LoginFragment : BaseComposeFragment() {
         is LoginEvent.Error -> {
             Toast.makeText(
                 context,
-                getString(R.string.loading_error, event.error),
+                getString(R.string.load_error, event.error),
                 Toast.LENGTH_LONG
             ).show()
         }
-        is LoginEvent.Successful -> {
-            appPreference.login = event.login
-
+        LoginEvent.Successful -> {
             view?.findNavController()?.navigate(R.id.to_scannerMainFragment)
         }
     }

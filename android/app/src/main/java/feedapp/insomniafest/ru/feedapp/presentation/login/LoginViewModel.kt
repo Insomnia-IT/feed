@@ -14,18 +14,33 @@ class LoginViewModel @Inject constructor(
     fun tryLogin(code: String) {
         launchIO {
             runCatching {
-                // TODO проверить сначало логин в базе
-                volunteersRepository.checkLogin(code)
+                volunteersRepository.checkLogin(code) // При успехе логин сохраняется в sharedPreference
             }.onSuccess { isSuccessful ->
                 if (isSuccessful) {
-                    // TODO Сохранить логин в базу
-                    LoginEvent.Successful(code).post()
+                    tryUpdateVolunteers()
                 } else {
                     LoginEvent.Error("Некорректный логин").post()
                 }
             }.onFailure {
-                Log.e("VolunteersListViewModel", it.message.orEmpty())
-                LoginEvent.Error(it.message.orEmpty()).post()
+                Log.e("LoginViewModel", it.message.orEmpty())
+                LoginEvent.Error("Для проверки логина нужно интернет соединение")
+                    .post()
+            }
+        }
+    }
+
+    private fun tryUpdateVolunteers() {
+        launchIO {
+            runCatching {
+                // TODO добавить сброс базы раз в сутки
+                // TODO не пускать дальше, если база пуста
+                volunteersRepository.updateVolunteersList()
+            }.onSuccess {
+                LoginEvent.Successful.post()
+            }.onFailure {
+                // был проверен логин по базе, инет соединения нет, обновиться не получилось, но можно пускать дальше
+                Log.e("LoginViewModel", it.message.orEmpty())
+                LoginEvent.Successful.post()
             }
         }
     }
@@ -33,7 +48,7 @@ class LoginViewModel @Inject constructor(
 
 sealed class LoginEvent {
     class Error(val error: String) : LoginEvent()
-    class Successful(val login: String) : LoginEvent()
+    object Successful : LoginEvent()
 }
 
 class LoginViewModelFactory @Inject constructor( // TODO пора уже вынести

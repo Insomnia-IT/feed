@@ -109,7 +109,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
         is ScannerEvent.Error -> {
             Toast.makeText(
                 context,
-                getString(R.string.loading_error, event.error),
+                getString(R.string.load_error, event.error),
                 Toast.LENGTH_LONG
             ).show()
         }
