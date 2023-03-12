@@ -10,7 +10,7 @@ interface VolunteersListDao {
 
     @Transaction
     @Query("SELECT * FROM ${LoginEntity.TABLE_NAME}")
-    suspend fun getAllVolunteers(): List<LoginWithVolunteersEntity> // Возвращает список волонтеров у которых fereignKey равен текущему логину
+    suspend fun getAllVolunteers(): List<LoginWithVolunteersEntity> // для дебага
 
     @Insert(entity = VolunteerEntity::class, onConflict = OnConflictStrategy.REPLACE)
     suspend fun addVolunteer(volunteerEntity: VolunteerEntity)
@@ -20,5 +20,11 @@ interface VolunteersListDao {
     suspend fun saveAllVolunteersByLogin(entities: List<VolunteerEntity>)
 
     @Query("DELETE FROM ${VolunteerEntity.TABLE_NAME}")
-    fun deleteAllVolunteers()
+    suspend fun deleteAllVolunteers()
+
+    @Query("SELECT * FROM ${VolunteerEntity.TABLE_NAME} WHERE ${VolunteerEntity.ID_COLUMN} = :volunteerId")
+    suspend fun getVolunteerById(volunteerId: Int): VolunteerEntity
+
+    @Update(entity = VolunteerEntity::class, onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateVolunteer(volunteerEntity: VolunteerEntity)
 }

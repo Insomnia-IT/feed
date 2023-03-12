@@ -5,6 +5,8 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 abstract class BaseViewModel<E : Any> : ViewModel() {
     enum class Loader {
@@ -55,6 +57,29 @@ abstract class BaseViewModel<E : Any> : ViewModel() {
     }
 }
 
-inline fun <reified T, LD : LiveData<T>> Fragment.observe(liveData: LD, crossinline block: (T) -> Unit) {
+inline fun <reified T, LD : LiveData<T>> Fragment.observe(
+    liveData: LD,
+    crossinline block: (T) -> Unit
+) {
     liveData.observe(viewLifecycleOwner) { block(it) }
+}
+
+class NotNullMutableLiveData<T : Any>(value: T) : MutableLiveData<T>(value) {
+
+    constructor(initialValue: () -> T) : this(initialValue.invoke())
+
+    override fun getValue(): T = super.getValue()!!
+
+}
+
+@Throws(NullPointerException::class)
+fun <T : Any> MutableLiveData<T>.delegate(
+    transformer: ((T) -> T)? = null
+): ReadWriteProperty<Any, T> = object : ReadWriteProperty<Any, T> {
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
+        val newValue = transformer?.invoke(value) ?: value
+        this@delegate.postValue(newValue)
+    }
+
+    override fun getValue(thisRef: Any, property: KProperty<*>): T = value ?: error("стейт = null")
 }

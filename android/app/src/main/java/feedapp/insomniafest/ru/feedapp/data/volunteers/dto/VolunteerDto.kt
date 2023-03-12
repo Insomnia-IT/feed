@@ -4,9 +4,11 @@ import com.google.gson.annotations.SerializedName
 import feedapp.insomniafest.ru.feedapp.common.util.Dto
 import feedapp.insomniafest.ru.feedapp.common.util.convertList
 import feedapp.insomniafest.ru.feedapp.common.util.getNotNull
+import feedapp.insomniafest.ru.feedapp.domain.model.LoginId
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
+import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
 
-internal class VolunteerDto: Dto<Volunteer> {
+internal class VolunteerDto : Dto<Volunteer> {
 
     @SerializedName("id")
     private val id: Int? = null
@@ -33,10 +35,10 @@ internal class VolunteerDto: Dto<Volunteer> {
     private val feedType: String? = null
 
     @SerializedName("active_from")
-    private val activeFrom: Double? = null
+    private val activeFrom: Long? = null
 
     @SerializedName("active_to")
-    private val activeTo: Double? = null
+    private val activeTo: Long? = null
 
     @SerializedName("department")
     private val department: List<DepartmentDto>? = null
@@ -53,8 +55,8 @@ internal class VolunteerDto: Dto<Volunteer> {
 
     override fun convert(): Volunteer {
         return Volunteer(
-            id = getNotNull(id, "Volunteer/id"),
-            login_id = "",
+            id = VolunteerId(getNotNull(id, "Volunteer/id")),
+            login_id = LoginId(),
             name = name,
             nickname = nickname,
             qr = getNotNull(qr, "Volunteer/qr"),

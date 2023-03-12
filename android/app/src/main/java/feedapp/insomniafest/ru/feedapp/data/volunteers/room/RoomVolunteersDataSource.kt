@@ -1,16 +1,18 @@
 package feedapp.insomniafest.ru.feedapp.data.volunteers.room
 
-import androidx.core.text.isDigitsOnly
 import com.google.gson.Gson
 import feedapp.insomniafest.ru.feedapp.common.util.fromJson
+import feedapp.insomniafest.ru.feedapp.common.util.getLong
+import feedapp.insomniafest.ru.feedapp.common.util.isNeedResetDatabase
 import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.LoginDao
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.LoginEntity
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteerEntity
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteersListDao
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
-import feedapp.insomniafest.ru.feedapp.data.volunteers.util.isNeedResetDatabase
+import feedapp.insomniafest.ru.feedapp.domain.model.LoginId
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
+import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
 
 class RoomVolunteersDataSource(
     private val gson: Gson,
@@ -20,8 +22,7 @@ class RoomVolunteersDataSource(
 ) : VolunteersLocalDataSource {
     override suspend fun getVolunteersList(): List<Volunteer> {
         val loginId = loginDao.getLogin(appPreference.login)
-        val volunteersByLogin =
-            volunteersListDao.getVolunteersByLogin(loginId.login).first() // TODO убрать first
+        val volunteersByLogin = volunteersListDao.getVolunteersByLogin(loginId.login).first()
         return volunteersByLogin.volunteers.map { it.toVolunteer(gson) }
     }
 
@@ -32,6 +33,11 @@ class RoomVolunteersDataSource(
         val volunteersByLogin =
             volunteersListDao.getAllVolunteers()
         return volunteersByLogin.flatMap { it.volunteers.map { vol -> vol.toVolunteer(gson) } }
+    }
+
+    override suspend fun getVolunteerByQr(qr: String): Volunteer? {
+        val allVolunteers = getVolunteersList()
+        return allVolunteers.find { it.qr == qr }
     }
 
     override suspend fun saveRemoteResponse(response: List<Volunteer>) {
@@ -57,35 +63,35 @@ class RoomVolunteersDataSource(
             }
         }
     }
+
+    override suspend fun decFeedCounterById(volunteerId: VolunteerId) {
+        val volunteer = volunteersListDao.getVolunteerById(volunteerId.id)
+        if (volunteer.balance == null || volunteer.balance <= 0) throw Error("Отрицательный баланс кормления")
+        val decFeedVolunteer = volunteer.copy(balance = volunteer.balance.dec())
+        volunteersListDao.updateVolunteer(decFeedVolunteer)
+    }
 }
 
-private fun VolunteerEntity.toVolunteer(gson: Gson): Volunteer {
-
-    return Volunteer(
-        id = id,
-        login_id = login_id,
-        name = name,
-        nickname = nickname,
-        qr = qr,
-        isActive = isActive,
-        isBlocked = isBlocked,
-        paid = paid,
-        feedType = feedType,
-        activeFrom = activeFrom.getDouble(),
-        activeTo = activeTo.getDouble(),
-        department = gson.fromJson(department),
-        location = gson.fromJson(location),
-        expired = expired,
-        balance = balance,
-    )
-}
-
-private fun String?.getDouble(): Double? {
-    return if (this != null && this.isDigitsOnly()) this.toDouble() else null
-}
+private fun VolunteerEntity.toVolunteer(gson: Gson) = Volunteer(
+    id = VolunteerId(id),
+    login_id = LoginId(login_id),
+    name = name,
+    nickname = nickname,
+    qr = qr,
+    isActive = isActive,
+    isBlocked = isBlocked,
+    paid = paid,
+    feedType = feedType,
+    activeFrom = activeFrom.getLong(),
+    activeTo = activeTo.getLong(),
+    department = gson.fromJson(department),
+    location = gson.fromJson(location),
+    expired = expired,
+    balance = balance,
+)
 
 private fun Volunteer.toVolunteerEntity(gson: Gson, loginId: String) = VolunteerEntity(
-    id = id,
+    id = id.id,
     login_id = loginId,
     name = name,
     nickname = nickname,

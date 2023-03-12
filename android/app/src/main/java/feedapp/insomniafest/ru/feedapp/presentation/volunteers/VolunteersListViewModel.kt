@@ -4,11 +4,10 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import feedapp.insomniafest.ru.feedapp.common.util.BaseViewModel
+import feedapp.insomniafest.ru.feedapp.common.util.delegate
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -18,7 +17,9 @@ class VolunteersListViewModel @Inject constructor(
 ) : BaseViewModel<VolunteersListEvent>() {
 
     private val _viewState = MutableLiveData<VolunteersState>(VolunteersState.Loading)
+
     //val viewState: LiveData<VolunteersState> = _viewState
+    private var state by _viewState.delegate()
 
 
     init {
@@ -30,12 +31,12 @@ class VolunteersListViewModel @Inject constructor(
     }
 
     private fun reloadVolunteers() {
-        viewModelScope.launch {
+        launchIO {
             runCatching {
                 volunteersRepository.updateVolunteersList()
                 volunteersRepository.getLocalVolunteersList()
             }.onSuccess {
-                _viewState.value = VolunteersState.Loaded(
+                state = VolunteersState.Loaded(
                     volunteerList = it
                 )
                 VolunteersListEvent.UpdateVolunteers(it).post()
@@ -47,11 +48,11 @@ class VolunteersListViewModel @Inject constructor(
     }
 
     private fun getLocal() {
-        viewModelScope.launch {
+        launchIO {
             runCatching {
                 volunteersRepository.getLocalVolunteersList()
             }.onSuccess {
-                _viewState.value = VolunteersState.Loaded(
+                state = VolunteersState.Loaded(
                     volunteerList = it
                 )
                 VolunteersListEvent.UpdateVolunteers(it).post()

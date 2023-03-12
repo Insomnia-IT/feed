@@ -1,68 +1,73 @@
 package feedapp.insomniafest.ru.feedapp.presentation.scanner
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import feedapp.insomniafest.ru.feedapp.common.util.BaseViewModel
-import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
-import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
-import kotlinx.coroutines.launch
+import feedapp.insomniafest.ru.feedapp.common.util.NotNullMutableLiveData
+import feedapp.insomniafest.ru.feedapp.common.util.delegate
+import feedapp.insomniafest.ru.feedapp.domain.interactor.CreateTransactionInteractor
+import feedapp.insomniafest.ru.feedapp.domain.interactor.ScanError
 import javax.inject.Inject
 import javax.inject.Provider
 
 
 class ScannerViewModel @Inject constructor(
-    private val volunteersRepository: VolunteersRepository
+    private val createTransactionInteractor: CreateTransactionInteractor,
 ) : BaseViewModel<ScannerEvent>() {
 
-    private val _viewState = MutableLiveData(
+    private val _viewState = NotNullMutableLiveData(
         ScannerState(
-            0,
-            volunteersList = emptyList(),
-            fedVolunteers = emptyList(),
+            0, // TODO хранить нужно локально, чтобы перезагрузки не сбрасывали
         )
     )
+    private var state by _viewState.delegate()
 
-    fun onQrScanned(value: String) {
-        val curState = _viewState.value
-        curState?.let {
-            _viewState.value = curState.copy(numberFed = curState.numberFed.inc())
-            ScannerEvent.UpdateVolunteerCounter(curState.numberFed.inc()).post()
-        }
-        // TODO анализ  qr
-    }
-
-    private fun loadVolunteers() {
-        viewModelScope.launch {
-            val curState = _viewState.value
+    fun onQrScanned(qr: String) {
+        launchIO {
             runCatching {
-                volunteersRepository.getLocalVolunteersList()
+                createTransactionInteractor.invoke(qr)
             }.onSuccess {
-                _viewState.value = curState?.copy(
-                    volunteersList = it
-                )
-            }.onFailure {
-                Log.e("ScannerViewModel", it.message.orEmpty())
-                ScannerEvent.Error(it.message.orEmpty()).post()
+                ScannerEvent.SuccessScanAndContinue.post()
+            }.onFailure { error ->
+                Log.e("!#@$", "Ошибика: ${error.message}")
+                when (error) {
+                    is ScanError.BlockContinue -> ScannerEvent.ErrorScanAndContinue.post() // TODO сделать блокирующей
+                    is ScanError.CanContinue -> ScannerEvent.ErrorScanAndContinue.post()
+                    else -> ScannerEvent.Error(error.message.orEmpty())
+                }
             }
         }
+    }
+
+    fun onScanResultAddTransaction() {
+        // TODO сохранить транзакцию
+        updateVolunteerCounter()
+        ScannerEvent.ContinueScan("Покормлен", state.numberFed).post()
+    }
+
+    fun onScanResultCancelTransaction() {
+        // TODO забыть транзакцию
+        ScannerEvent.ContinueScan("Не покормлен", state.numberFed).post()
+    }
+
+    private fun updateVolunteerCounter() {
+        val curState = state as? ScannerState ?: return
+        state =
+            curState.copy(numberFed = curState.numberFed.inc()) // TODO из-за post в state, счетчик не сразу обновляется
     }
 
 }
 
 sealed class ScannerEvent {
     class Error(val error: String) : ScannerEvent()
-    class UpdateVolunteerCounter(
-        val numberFed: Int,
-    ) : ScannerEvent()
+    object SuccessScanAndContinue : ScannerEvent()
+    object ErrorScanAndContinue : ScannerEvent()
+    class ContinueScan(val message: String, val numberFed: Int) : ScannerEvent()
 }
 
 internal data class ScannerState(
     val numberFed: Int, // TODO удалить
-    val volunteersList: List<Volunteer>,
-    val fedVolunteers: List<Volunteer>,
 )
 
 class ScannerViewModelFactory @Inject constructor(

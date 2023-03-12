@@ -3,6 +3,7 @@ package feedapp.insomniafest.ru.feedapp.di
 import dagger.Component
 import feedapp.insomniafest.ru.feedapp.di.modules.AppModule
 import feedapp.insomniafest.ru.feedapp.di.modules.LocalDataModule
+import feedapp.insomniafest.ru.feedapp.di.modules.ModelModule
 import feedapp.insomniafest.ru.feedapp.di.modules.NetworkModule
 import feedapp.insomniafest.ru.feedapp.presentation.login.LoginFragment
 import feedapp.insomniafest.ru.feedapp.presentation.login.LoginViewModelFactory
@@ -15,6 +16,7 @@ import javax.inject.Singleton
 @Component(
     modules = [
         AppModule::class,
+        ModelModule::class,
         NetworkModule::class,
         LocalDataModule::class,
     ]

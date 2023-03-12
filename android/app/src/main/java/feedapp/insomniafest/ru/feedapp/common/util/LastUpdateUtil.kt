@@ -1,8 +1,27 @@
-package feedapp.insomniafest.ru.feedapp.data.volunteers.util
+package feedapp.insomniafest.ru.feedapp.common.util
 
 import java.util.*
 
 fun getCurTime() = Date().time
+
+enum class IsCurrentTime {
+    LESS,
+    SAME,
+    MORE,
+    NONE,
+}
+
+fun compareWithCurTime(milliseconds: Long?): IsCurrentTime {
+    if (milliseconds == null) return IsCurrentTime.NONE
+
+    val curTime = getCurTime()
+    return when {
+        curTime > milliseconds -> IsCurrentTime.MORE
+        curTime < milliseconds -> IsCurrentTime.LESS
+        else -> IsCurrentTime.SAME
+    }
+}
+
 
 const val fourHour = 1000 * 60 * 60 * 4 // 4 часа
 

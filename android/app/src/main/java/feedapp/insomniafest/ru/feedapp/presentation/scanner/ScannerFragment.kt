@@ -16,6 +16,8 @@ import feedapp.insomniafest.ru.feedapp.appComponent
 import feedapp.insomniafest.ru.feedapp.common.util.PermissionUtils
 import feedapp.insomniafest.ru.feedapp.common.util.observe
 import feedapp.insomniafest.ru.feedapp.databinding.FragmentScannerBinding
+import feedapp.insomniafest.ru.feedapp.presentation.scanner.choice_scan_result.ChoiceScanResultDialogFragment
+import feedapp.insomniafest.ru.feedapp.presentation.scanner.choice_scan_result.ChoiceScanResultStatus
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 
 
@@ -83,7 +85,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
 
     private fun setupScanner() {
         barcodeScanner.setAutoFocus(true) // автофокус
-        barcodeScanner.flash = false // вспышка TODO
+        barcodeScanner.flash = true // вспышка
     }
 
     private fun setupFormats() {
@@ -95,23 +97,55 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
     override fun handleResult(result: Result?) {
         Log.d("!@#$", "Result:${result?.text}")
 
-        Toast.makeText(context, result?.text, Toast.LENGTH_SHORT).show()
-
         viewModel.onQrScanned(result?.text.orEmpty())
     }
 
     private fun processEvent(event: ScannerEvent) = when (event) {
-        is ScannerEvent.UpdateVolunteerCounter -> {
-            binding.numberFed.text = event.numberFed.toString()
-
-            barcodeScanner.resumeCameraPreview(this) // TODO тут ли возобновлять работу?
-        }
         is ScannerEvent.Error -> {
-            Toast.makeText(
-                context,
-                getString(R.string.load_error, event.error),
-                Toast.LENGTH_LONG
-            ).show()
+            showToast(getString(R.string.load_error, event.error))
         }
+        is ScannerEvent.ContinueScan -> {
+            binding.numberFed.text = event.numberFed.toString()
+            showToast(message = event.message)
+            barcodeScanner.resumeCameraPreview(this)
+        }
+        is ScannerEvent.SuccessScanAndContinue -> {
+            showChoiceForSuccessResult()
+        }
+        ScannerEvent.ErrorScanAndContinue -> {
+            showChoiceForErrorResult()
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(
+            context,
+            message,
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun showChoiceForSuccessResult() {
+        ChoiceScanResultDialogFragment(
+            title = "Волонтера можно кормить",
+            message = "Хочу видеть этот текст слева",
+            status = ChoiceScanResultStatus.SUCCESS,
+            textLeftButton = "Кормить",
+            textRightButton = "Не кормить",
+            onLeftClickListener = viewModel::onScanResultAddTransaction,
+            onRightClickListener = viewModel::onScanResultCancelTransaction,
+        ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
+    }
+
+    private fun showChoiceForErrorResult() {
+        ChoiceScanResultDialogFragment(
+            title = "Можно кормить в долг",
+            message = "Хочу видеть этот текст слева",
+            status = ChoiceScanResultStatus.ERROR,
+            textLeftButton = "Не кормить",
+            textRightButton = "Кормить",
+            onLeftClickListener = viewModel::onScanResultCancelTransaction,
+            onRightClickListener = viewModel::onScanResultAddTransaction,
+        ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
     }
 }

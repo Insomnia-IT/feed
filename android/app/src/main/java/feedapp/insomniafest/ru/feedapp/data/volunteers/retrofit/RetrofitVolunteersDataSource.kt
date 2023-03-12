@@ -1,10 +1,10 @@
 package feedapp.insomniafest.ru.feedapp.data.volunteers.retrofit
 
 import feedapp.insomniafest.ru.feedapp.common.util.convertList
+import feedapp.insomniafest.ru.feedapp.common.util.getCurTime
 import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
 import feedapp.insomniafest.ru.feedapp.data.volunteers.VolunteersApi
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemoteDataSource
-import feedapp.insomniafest.ru.feedapp.data.volunteers.util.getCurTime
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 
 internal class RetrofitVolunteersDataSource(

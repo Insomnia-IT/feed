@@ -2,6 +2,7 @@ package feedapp.insomniafest.ru.feedapp.data.volunteers.repository
 
 import android.util.Log
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
+import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 
 internal class VolunteersRepositoryImpl(
@@ -22,6 +23,10 @@ internal class VolunteersRepositoryImpl(
         return volunteersLocalDataSource.getVolunteersList()
     }
 
+    override suspend fun getVolunteerByQr(qr: String): Volunteer? {
+        return volunteersLocalDataSource.getVolunteerByQr(qr)
+    }
+
     override suspend fun checkLogin(login: String): Boolean {
         val savedLogins = volunteersLocalDataSource.getSavedLogins()
         Log.e("!@#$", "Login ${savedLogins.toString()} | $login | ${login in savedLogins}")
@@ -34,5 +39,9 @@ internal class VolunteersRepositoryImpl(
 
     override suspend fun resetDatabaseIfNecessary(): Boolean {
         return volunteersLocalDataSource.resetDatabaseIfNecessary()
+    }
+
+    override suspend fun decFeedCounterById(volunteerId: VolunteerId) {
+        volunteersLocalDataSource.decFeedCounterById(volunteerId)
     }
 }

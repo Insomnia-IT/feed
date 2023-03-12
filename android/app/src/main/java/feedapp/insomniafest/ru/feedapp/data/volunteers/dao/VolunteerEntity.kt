@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = VolunteerEntity.TABLE_NAME)
 data class VolunteerEntity(
     @PrimaryKey
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = ID_COLUMN)
     val id: Int,
 
     @ColumnInfo(name = LOGIN_ID_COLUMN)
@@ -35,10 +35,10 @@ data class VolunteerEntity(
     val feedType: String? = null,
 
     @ColumnInfo(name = "active_from")
-    val activeFrom: String? = null, // Double
+    val activeFrom: String? = null, // Long
 
     @ColumnInfo(name = "active_to")
-    val activeTo: String? = null, // Double
+    val activeTo: String? = null, // Long
 
     @ColumnInfo(name = "department")
     val department: String,
@@ -54,6 +54,7 @@ data class VolunteerEntity(
 ) {
     companion object {
         const val TABLE_NAME = "volunteers_list_entities_table"
+        const val ID_COLUMN = "id"
         const val LOGIN_ID_COLUMN = "login_id"
     }
 }

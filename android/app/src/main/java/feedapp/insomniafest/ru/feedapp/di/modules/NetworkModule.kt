@@ -6,12 +6,12 @@ import dagger.Module
 import dagger.Provides
 import feedapp.insomniafest.ru.feedapp.BuildConfig
 import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
+import feedapp.insomniafest.ru.feedapp.data.transactions.TransactionApi
+import feedapp.insomniafest.ru.feedapp.data.transactions.repository.TransactionRemoteDataSource
+import feedapp.insomniafest.ru.feedapp.data.transactions.retrofit.RetrofitTransactionsDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.VolunteersApi
-import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemoteDataSource
-import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRepositoryImpl
 import feedapp.insomniafest.ru.feedapp.data.volunteers.retrofit.RetrofitVolunteersDataSource
-import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -26,6 +26,11 @@ class NetworkModule {
     @Singleton
     internal fun provideVolunteersApi(retrofit: Retrofit): VolunteersApi =
         retrofit.create(VolunteersApi::class.java)
+
+    @Provides
+    @Singleton
+    internal fun provideTransactionApi(retrofit: Retrofit): TransactionApi =
+        retrofit.create(TransactionApi::class.java)
 
     @Provides
     @Singleton
@@ -82,10 +87,10 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun providesVolunteersRepository(
-        volunteersLocalDataSource: VolunteersLocalDataSource,
-        volunteersRemoteDataSource: VolunteersRemoteDataSource
-    ): VolunteersRepository {
-        return VolunteersRepositoryImpl(volunteersLocalDataSource, volunteersRemoteDataSource)
+    internal fun providesTransactionsRemoteDataSource(
+        api: TransactionApi,
+    ): TransactionRemoteDataSource {
+        return RetrofitTransactionsDataSource(api)
     }
+
 }
