@@ -1,9 +1,7 @@
 package feedapp.insomniafest.ru.feedapp.data.volunteers.room
 
 import com.google.gson.Gson
-import feedapp.insomniafest.ru.feedapp.common.util.fromJson
-import feedapp.insomniafest.ru.feedapp.common.util.getLong
-import feedapp.insomniafest.ru.feedapp.common.util.isNeedResetDatabase
+import feedapp.insomniafest.ru.feedapp.common.util.*
 import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.LoginDao
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.LoginEntity
@@ -49,6 +47,10 @@ class RoomVolunteersDataSource(
                 loginId.login
             )
         })
+    }
+
+    override suspend fun getLastUpdate(): String {
+        return msToString4Login(appPreference.lastUpdate)
     }
 
     override suspend fun getSavedLogins(): List<String> {

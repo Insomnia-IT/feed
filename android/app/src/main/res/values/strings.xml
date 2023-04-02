@@ -4,6 +4,7 @@
     <string name="volunteers_list_success_load">Список волонтеров обновлен 🌟</string>
     <string name="error_massage">При последней загрузке произошла следующая ошибка: \n %1s</string>
     <string name="count_volunteers">Количество волонтеров: %1s</string>
+    <string name="login_last_update">Последняя синхронизация:</string>
     <string name="loading_gif">I\'m loading gif</string>
     <string name="load_error">❗ ⛔ 🚨 💥 Ошибка: %1s </string>
     <string name="zero">0</string>

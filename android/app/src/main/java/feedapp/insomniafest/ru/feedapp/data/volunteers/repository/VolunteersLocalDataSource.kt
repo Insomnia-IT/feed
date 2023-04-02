@@ -8,6 +8,7 @@ interface VolunteersLocalDataSource {
     suspend fun getAllVolunteersList(): List<Volunteer>
     suspend fun getVolunteerByQr(qr: String): Volunteer?
     suspend fun saveRemoteResponse(response: List<Volunteer>)
+    suspend fun getLastUpdate(): String
 
     suspend fun getSavedLogins(): List<String>
 

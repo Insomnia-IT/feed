@@ -8,6 +8,7 @@ interface VolunteersRepository {
     suspend fun getLocalVolunteersList(): List<Volunteer>
     suspend fun getVolunteerByQr(qr: String): Volunteer?
     suspend fun checkLogin(login: String): Boolean
+    suspend fun getLastUpdate(): String
     suspend fun resetDatabaseIfNecessary(): Boolean
     suspend fun decFeedCounterById(volunteerId: VolunteerId)
 }

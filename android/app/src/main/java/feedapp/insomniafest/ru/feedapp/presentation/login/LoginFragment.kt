@@ -10,6 +10,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -42,8 +43,15 @@ class LoginFragment : BaseComposeFragment() {
         observe(viewModel.viewEvents, ::processEvent)
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadLastUpdate()
+    }
+
     @Composable
     override fun FragmentContent() {
+        val lastUpdate = viewModel.viewState.observeAsState().value?.lastUpdate
+
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -56,6 +64,9 @@ class LoginFragment : BaseComposeFragment() {
                 }
             }
 
+            Text(text = stringResource(R.string.login_last_update), fontSize = 16.sp)
+            Text(text = lastUpdate ?: "...", fontSize = 21.sp)
+            Spacer(modifier = Modifier.height(21.dp))
             OutlinedTextField(
                 value = login.value,
                 onValueChange = { login.value = it },

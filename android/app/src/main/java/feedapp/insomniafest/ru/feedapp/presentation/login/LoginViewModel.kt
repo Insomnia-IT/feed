@@ -3,6 +3,7 @@ package feedapp.insomniafest.ru.feedapp.presentation.login
 import android.util.Log
 import androidx.lifecycle.*
 import feedapp.insomniafest.ru.feedapp.common.util.BaseViewModel
+import feedapp.insomniafest.ru.feedapp.common.util.delegate
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 import javax.inject.Inject
 import javax.inject.Provider
@@ -10,6 +11,24 @@ import javax.inject.Provider
 class LoginViewModel @Inject constructor(
     private val volunteersRepository: VolunteersRepository
 ) : BaseViewModel<LoginEvent>() {
+
+    private val _viewState = MutableLiveData<LoginState>(null)
+    private var state by _viewState.delegate()
+    val viewState: LiveData<LoginState> = _viewState
+
+    init {
+        loadLastUpdate()
+    }
+
+    fun loadLastUpdate() {
+        launchIO {
+            runCatching {
+                volunteersRepository.getLastUpdate()
+            }.onSuccess {
+                state = LoginState(it)
+            }
+        }
+    }
 
     fun tryLogin(code: String) {
         launchIO {
@@ -56,6 +75,8 @@ sealed class LoginEvent {
     class Error(val error: String) : LoginEvent()
     object Successful : LoginEvent()
 }
+
+data class LoginState(val lastUpdate: String)
 
 class LoginViewModelFactory @Inject constructor( // TODO пора уже вынести
     loginViewModel: Provider<LoginViewModel>

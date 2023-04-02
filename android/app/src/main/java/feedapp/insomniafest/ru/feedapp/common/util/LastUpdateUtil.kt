@@ -3,7 +3,7 @@ package feedapp.insomniafest.ru.feedapp.common.util
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun getCurTime() = Date().time // TODO LocalDateTime
+fun getCurTime() = Date().time 
 
 enum class IsCurrentTime {
     LESS,
@@ -12,7 +12,7 @@ enum class IsCurrentTime {
     NONE,
 }
 
-fun compareWithCurTime(milliseconds: Long?): IsCurrentTime { // TODO LocalDateTime
+fun compareWithCurTime(milliseconds: Long?): IsCurrentTime {
     if (milliseconds == null) return IsCurrentTime.NONE
 
     val curTime = getCurTime()
@@ -26,7 +26,7 @@ fun compareWithCurTime(milliseconds: Long?): IsCurrentTime { // TODO LocalDateTi
 
 const val fourHour = 1000 * 60 * 60 * 4 // 4 часа
 
-fun isNeedResetDatabase(lastUpdate: Long): Boolean { // TODO LocalDateTime
+fun isNeedResetDatabase(lastUpdate: Long): Boolean {
     val lastUp = Date(lastUpdate)
     val curDate = Date()
 
@@ -42,4 +42,6 @@ fun isNeedResetDatabase(lastUpdate: Long): Boolean { // TODO LocalDateTime
 }
 
 fun msToString(ms: Long): String = SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(Date(ms))
+// можно передавать паттерн, но мне влом
+fun msToString4Login(ms: Long): String = SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss ", Locale.getDefault()).format(Date(ms))
 

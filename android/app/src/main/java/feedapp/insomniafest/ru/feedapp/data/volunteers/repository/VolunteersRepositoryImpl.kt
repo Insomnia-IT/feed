@@ -37,6 +37,10 @@ internal class VolunteersRepositoryImpl(
         }
     }
 
+    override suspend fun getLastUpdate(): String {
+        return volunteersLocalDataSource.getLastUpdate()
+    }
+
     override suspend fun resetDatabaseIfNecessary(): Boolean {
         return volunteersLocalDataSource.resetDatabaseIfNecessary()
     }
