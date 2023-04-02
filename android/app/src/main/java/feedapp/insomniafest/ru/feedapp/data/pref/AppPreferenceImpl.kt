@@ -9,6 +9,7 @@ class AppPreferenceImpl @Inject constructor(context: Context) : AppPreference {
         const val LOGIN = "login"
         const val LAST_UPDATE = "last_update"
         const val LAST_TRANSACTION = "last_transaction"
+        const val EATING_TYPE = "eating_type"
     }
 
     private var preference = context.getSharedPreferences("app-pref", Context.MODE_PRIVATE)
@@ -29,6 +30,11 @@ class AppPreferenceImpl @Inject constructor(context: Context) : AppPreference {
         get() = getInt(LAST_TRANSACTION)
         set(value) {
             saveInt(LAST_TRANSACTION, value)
+        }
+    override var eatingType: Int
+        get() = getInt(EATING_TYPE)
+        set(value) {
+            saveInt(EATING_TYPE, value)
         }
 
     private fun saveString(key: String, value: String) {

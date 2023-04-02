@@ -3,7 +3,7 @@ package feedapp.insomniafest.ru.feedapp.common.util
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun getCurTime() = Date().time 
+fun getCurTime() = Date().time
 
 enum class IsCurrentTime {
     LESS,
@@ -41,7 +41,10 @@ fun isNeedResetDatabase(lastUpdate: Long): Boolean {
     }
 }
 
-fun msToString(ms: Long): String = SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(Date(ms))
+fun msToString(ms: Long): String =
+    SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(Date(ms))
+
 // можно передавать паттерн, но мне влом
-fun msToString4Login(ms: Long): String = SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss ", Locale.getDefault()).format(Date(ms))
+fun msToString4Login(ms: Long): String =
+    SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss ", Locale.getDefault()).format(Date(ms))
 

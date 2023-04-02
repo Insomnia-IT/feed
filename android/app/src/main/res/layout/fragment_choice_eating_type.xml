@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="30dp"
+        app:cornerRadius="12dp"
+        tools:ignore="UselessParent">
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="20dp">
+
+            <RadioButton
+                android:id="@+id/radioBreakfast"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="5dp"
+                android:textSize="30sp"
+                android:text="@string/eating_type_breakfast" />
+
+            <RadioButton
+                android:id="@+id/radioLunch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="5dp"
+                android:textSize="30sp"
+                android:text="@string/eating_type_lunch" />
+
+            <RadioButton
+                android:id="@+id/radioDinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="5dp"
+                android:textSize="30sp"
+                android:text="@string/eating_type_dinner" />
+
+            <RadioButton
+                android:id="@+id/radioLateDinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="5dp"
+                android:textSize="30sp"
+                android:text="@string/eating_late_dinner" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@drawable/background_right_button"
+            android:padding="4dp"
+            android:textAlignment="center"
+            android:textSize="31sp"
+            android:text="@string/apply"/>
+
+    </LinearLayout>
+
+</FrameLayout>

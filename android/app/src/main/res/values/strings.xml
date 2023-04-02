@@ -14,4 +14,9 @@
     <string name="scanner_remained">Ост.:</string>
     <string name="scanner_vegetarian">ВЕГ</string>
     <string name="scanner_meat_eater">МЯС</string>
+    <string name="eating_type_breakfast">Завтрак</string>
+    <string name="eating_type_lunch">Обед</string>
+    <string name="eating_type_dinner">Ужин</string>
+    <string name="eating_late_dinner">Ночной дожор</string>
+    <string name="apply">Применить</string>
 </resources>

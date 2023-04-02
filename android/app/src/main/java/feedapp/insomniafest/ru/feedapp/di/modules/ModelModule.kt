@@ -2,6 +2,8 @@ package feedapp.insomniafest.ru.feedapp.di.modules
 
 import dagger.Module
 import dagger.Provides
+import feedapp.insomniafest.ru.feedapp.data.eating_type.EatingTypeRepositoryImpl
+import feedapp.insomniafest.ru.feedapp.data.pref.AppPreference
 import feedapp.insomniafest.ru.feedapp.data.transactions.repository.TransactionLocalDataSource
 import feedapp.insomniafest.ru.feedapp.data.transactions.repository.TransactionRemoteDataSource
 import feedapp.insomniafest.ru.feedapp.data.transactions.repository.TransactionRepositoryImpl
@@ -11,6 +13,7 @@ import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRepo
 import feedapp.insomniafest.ru.feedapp.domain.interactor.CreateTransactionInteractor
 import feedapp.insomniafest.ru.feedapp.domain.interactor.SaveTransactionInteractor
 import feedapp.insomniafest.ru.feedapp.domain.interactor.SendTransactionsInteractor
+import feedapp.insomniafest.ru.feedapp.domain.repository.EatingTypeRepository
 import feedapp.insomniafest.ru.feedapp.domain.repository.TransactionRepository
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 import javax.inject.Singleton
@@ -59,5 +62,13 @@ class ModelModule {
         transactionRepository: TransactionRepository,
     ): SendTransactionsInteractor {
         return SendTransactionsInteractor(transactionRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun providesEatingTypeRepository(
+        appPreference: AppPreference,
+    ): EatingTypeRepository {
+        return EatingTypeRepositoryImpl(appPreference)
     }
 }
