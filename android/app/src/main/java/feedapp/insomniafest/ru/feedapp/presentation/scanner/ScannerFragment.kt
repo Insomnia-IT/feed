@@ -2,6 +2,7 @@ package feedapp.insomniafest.ru.feedapp.presentation.scanner
 
 import android.Manifest
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.Result
 import feedapp.insomniafest.ru.feedapp.R
@@ -27,6 +29,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
     private val binding get() = _binding!!
 
     private lateinit var barcodeScanner: ZXingScannerView
+    private lateinit var logOutTimer: CountDownTimer
 
     private val viewModel: ScannerViewModel by viewModels {
         requireContext().appComponent.scannerViewModelFactory()
@@ -57,6 +60,9 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = FragmentScannerBinding.inflate(layoutInflater)
 
+        logOutTimer = getLogOutTimer()
+        logOutTimer.start()
+
         barcodeScanner = binding.scanner
         barcodeScanner.setResultHandler(this)
         setupFormats()
@@ -72,6 +78,8 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
         barcodeScanner.setResultHandler(this)
         setupScanner()
         barcodeScanner.startCamera()
+
+        restartLogOutTimer()
     }
 
     override fun onPause() {
@@ -82,6 +90,8 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        logOutTimer.cancel()
     }
 
     private fun setupScanner() {
@@ -109,6 +119,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
             binding.numberFed.text = event.numberFed.toString()
             showToast(message = event.message)
             barcodeScanner.resumeCameraPreview(this)
+            restartLogOutTimer()
         }
         is ScannerEvent.SuccessScanAndContinue -> showChoiceForSuccessResult(event.volunteer)
         is ScannerEvent.ErrorScanAndContinue -> showChoiceForErrorResult(
@@ -164,5 +175,23 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
             textLeftButton = "Отмена",
             onLeftClickListener = viewModel::onScanResultCancelTransaction,
         ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
+    }
+
+
+    private fun getLogOutTimer(): CountDownTimer {
+        val logOutInterval: Long = 60 * 60 * 1000 // час
+
+        return object : CountDownTimer(logOutInterval, logOutInterval) {
+            override fun onTick(p0: Long) {}
+
+            override fun onFinish() {
+                findNavController().navigate(R.id.loginFragment)
+            }
+        }
+    }
+
+    private fun restartLogOutTimer() {
+        logOutTimer.cancel()
+        logOutTimer.start()
     }
 }
