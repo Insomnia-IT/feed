@@ -7,8 +7,8 @@ class SaveTransactionInteractor(
     private val volunteersRepository: VolunteersRepository,
     private val transactionRepository: TransactionRepository,
 ) {
-    suspend fun invoke() {
-        val volunteerId = transactionRepository.addLastTransaction() // запомнили транзакцию
+    suspend fun invoke(isSaveAnyway: Boolean) {
+        val volunteerId = transactionRepository.addLastTransaction(isSaveAnyway) // сохранили в бд транзакцию
 
         volunteersRepository.decFeedCounterById(volunteerId) // уменьшили баланс кормления
 

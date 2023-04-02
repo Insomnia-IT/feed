@@ -6,47 +6,39 @@ import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
 import feedapp.insomniafest.ru.feedapp.domain.repository.TransactionRepository
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
-
-sealed class ScanError : Error() {
-    class BlockContinue(val error: String) : ScanError()
-    class CanContinue(val error: String) : ScanError()
-}
+import feedapp.insomniafest.ru.feedapp.presentation.scanner.ScanResult
 
 class CreateTransactionInteractor(
     private val volunteersRepository: VolunteersRepository,
     private val transactionRepository: TransactionRepository,
 ) {
-    suspend fun invoke(qr: String) {
+    suspend fun invoke(qr: String): Pair<Volunteer, ScanResult> {
         val volunteer = getVolunteer(qr)
-        val isVolunteerAvailable = checkVolunteerAvailability(volunteer)
-        if (isVolunteerAvailable) {
-            transactionRepository.createTransaction(volunteer.id)
-        }
+        // сохраняем последнее id в любом случае (к примеру, чтобы кормить в долг)
+        transactionRepository.createTransaction(volunteer.id)
+
+        val scanResult = checkVolunteerAvailability(volunteer)
+
+        return volunteer to scanResult
     }
 
     private suspend fun getVolunteer(qr: String): Volunteer =
-        volunteersRepository.getVolunteerByQr(qr)
-            ?: throw ScanError.BlockContinue("Бейдж не найден: $qr")
+        volunteersRepository.getVolunteerByQr(qr) ?: throw Error("Бейдж не найден: $qr")
 
-    private suspend fun checkVolunteerAvailability(volunteer: Volunteer): Boolean = when {
-        !volunteer.isActive -> throw ScanError.BlockContinue("Бейдж не активирован в штабе")
-        volunteer.isBlocked -> throw ScanError.BlockContinue("Волонтер заблокирован")
+    private suspend fun checkVolunteerAvailability(volunteer: Volunteer): ScanResult = when {
+        !volunteer.isActive -> ScanResult.BlockContinue("Бейдж не активирован в штабе")
+        volunteer.isBlocked -> ScanResult.BlockContinue("Бан")
         // TODO не обрабатываются открытые даты заезда\отъезда (пока остается так (кайфово будет исправлять это на поле))
-        compareWithCurTime(volunteer.activeFrom) != IsCurrentTime.MORE -> throw ScanError.CanContinue(
-            "Волонтера еще не должно быть на поле (или дата заезда не определена)"
-        )
-        compareWithCurTime(volunteer.activeTo) != IsCurrentTime.LESS -> throw ScanError.CanContinue(
-            "Волонтера уже не должно быть на поле (или дата отъезда не определена"
-        )
-        (volunteer.balance
-            ?: 0) < 1 -> throw ScanError.CanContinue("Истрачен баланс кормлений на сегодня")
-        !availableFeedAgain(volunteer.id) -> throw ScanError.CanContinue("Волонтер уже ел за последние 3 часа")
-        else -> true
+        compareWithCurTime(volunteer.activeFrom) != IsCurrentTime.MORE -> ScanResult.CanContinue("Некорректная дата (волонтера еще не должно быть на поле)")
+        compareWithCurTime(volunteer.activeTo) != IsCurrentTime.LESS -> ScanResult.CanContinue("Некорректная дата (волонтера уже не должно быть на поле)")
+        (volunteer.balance ?: 0) < 1 -> ScanResult.CanContinue("0 кормежек")
+        !availableFeedAgain(volunteer.id) -> ScanResult.CanContinue("Менее 3х часов с последнего приема пищи")
+        else -> ScanResult.Success
     }
 
     // проверяем что кормили последний раз не ранее 3х часов назад
     private suspend fun availableFeedAgain(volunteerId: VolunteerId): Boolean {
-        val timestampLastFeed = transactionRepository.getTransactionsByVolId(volunteerId)
+        val timestampLastFeed = transactionRepository.getTransactionTimestampByVolId(volunteerId)
         return if (timestampLastFeed.isNotEmpty()) {
             val lastFeed = timestampLastFeed.maxOf { it }
             val threeHour = 1000 * 60 * 60 * 3

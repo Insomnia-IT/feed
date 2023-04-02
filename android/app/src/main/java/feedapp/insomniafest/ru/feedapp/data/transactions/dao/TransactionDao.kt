@@ -9,4 +9,16 @@ interface TransactionDao {
 
     @Insert(entity = TransactionEntity::class, onConflict = OnConflictStrategy.ABORT)
     suspend fun addTransaction(transactionEntity: TransactionEntity)
+
+    @Query("SELECT * FROM ${TransactionEntity.TABLE_NAME}")
+    suspend fun getAllTransactions(): List<TransactionEntity>
+
+    @Query("SELECT * FROM ${TransactionEntity.TABLE_NAME} WHERE ${TransactionEntity.IS_SYNCHRONIZED_COLUMN} = :isSynchronized")
+    suspend fun getAllNotSynchronizedTransactions(isSynchronized: Boolean = false): List<TransactionEntity>
+
+//    @Query("UPDATE ${TransactionEntity.TABLE_NAME} SET ${TransactionEntity.IS_SYNCHRONIZED_COLUMN} = :isSynchronize WHERE ${TransactionEntity.TRANSACTION_ID_COLUMN} = :id")
+//    suspend fun updateSynchronize(id: Int, isSynchronize: Boolean)
+
+    @Update(entity = TransactionEntity::class)
+    suspend fun updateSynchronize(transaction: TransactionEntity)
 }

@@ -11,14 +11,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import feedapp.insomniafest.ru.feedapp.R
+import feedapp.insomniafest.ru.feedapp.common.util.msToString
 import feedapp.insomniafest.ru.feedapp.databinding.FragmentChoiceResultBinding
+import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 
 enum class ChoiceScanResultStatus {
     SUCCESS,
-    ERROR
+    ERROR,
+    BLOCKING_ERROR,
 }
 
 class ChoiceScanResultDialogFragment(
+    private val volunteer: Volunteer?,
     private val title: String,
     private val message: String? = null,
     private val status: ChoiceScanResultStatus,
@@ -36,6 +40,7 @@ class ChoiceScanResultDialogFragment(
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.setCanceledOnTouchOutside(false) // отключение клика вне области диалогового окна (если нужно обрабатывать см onCancel)
         return dialog
     }
 
@@ -51,12 +56,44 @@ class ChoiceScanResultDialogFragment(
         when (status) {
             ChoiceScanResultStatus.SUCCESS -> binding.container.setBackgroundResource(R.drawable.background_post_scan_success)
             ChoiceScanResultStatus.ERROR -> binding.container.setBackgroundResource(R.drawable.background_post_scan_error)
+            ChoiceScanResultStatus.BLOCKING_ERROR -> binding.container.setBackgroundResource(R.drawable.background_post_scan_blocking_error)
         }
 
         binding.title.text = title
+        volunteer?.let {
+            binding.feedType.text = volunteer.feedType.orEmpty()
+
+            binding.name.text = volunteer.name.orEmpty()
+
+            binding.nickname.text = volunteer.nickname.orEmpty()
+
+            val activeFromTo = when {
+                volunteer.activeFrom != null && volunteer.activeTo != null -> {
+                    "C ${msToString(volunteer.activeFrom)} по ${msToString(volunteer.activeTo)}" // TODO
+                }
+                volunteer.activeFrom != null -> {
+                    "C ${msToString(volunteer.activeFrom)}" // TODO
+                }
+                volunteer.activeTo != null -> {
+                    "По ${msToString(volunteer.activeTo)}" // TODO
+                }
+                else -> null
+            }
+            activeFromTo?.let {
+                binding.activeFromTo.text = activeFromTo
+            }
+
+            if (volunteer.department.isNotEmpty()) {
+                binding.departmentTitle.visibility = View.VISIBLE
+                binding.department.text = volunteer.department.map { it.name }.joinToString("\n")
+            }
+
+            volunteer.balance?.let {
+                binding.balance.text = "Баланс $it" // TODO
+            }
+        }
         message?.let {
             binding.message.text = message
-            binding.message.visibility = View.VISIBLE
         }
 
         binding.leftButton.setOnClickListener {
@@ -71,6 +108,7 @@ class ChoiceScanResultDialogFragment(
                 dismiss()
             }
             binding.rightButton.text = textRightButton
+            binding.rightButton.visibility = View.VISIBLE
         }
 
         countDownTimer = getCountDown()
@@ -81,7 +119,6 @@ class ChoiceScanResultDialogFragment(
 
     override fun onDismiss(dialog: DialogInterface) {
         countDownTimer.cancel()
-        onLeftClickListener.invoke() // TODO пу пу пу, нужно по другому обрабатывать клик в не области
         super.onDismiss(dialog)
     }
 

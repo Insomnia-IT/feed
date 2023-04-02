@@ -29,7 +29,7 @@ internal class VolunteersRepositoryImpl(
 
     override suspend fun checkLogin(login: String): Boolean {
         val savedLogins = volunteersLocalDataSource.getSavedLogins()
-        Log.e("!@#$", "Login ${savedLogins.toString()} | $login | ${login in savedLogins}")
+        Log.e("!@#$", "Login $savedLogins | $login | ${login in savedLogins}")
         return if (login in savedLogins) {
             true
         } else {

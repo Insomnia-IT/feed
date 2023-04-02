@@ -7,14 +7,14 @@
 
     <LinearLayout
         android:id="@+id/container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="10dp"
+        android:padding="30dp"
         app:cornerRadius="12dp"
         tools:ignore="UselessParent">
 
@@ -24,12 +24,114 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
-            android:textAlignment="viewStart"
-            android:textSize="24sp"
+            android:layout_marginBottom="20dp"
+            android:textAlignment="center"
+            android:textSize="21sp"
             android:textStyle="bold"
 
-            tools:text="Какой-то заголовок" />
+            tools:text="Волонтера можно кормить"
+            tools:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/feed_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:textAlignment="center"
+            android:textSize="30sp"
+
+            tools:text="ФРИ"
+            tools:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="5dp"
+            android:textAlignment="center"
+            android:textSize="28sp"
+
+            tools:text="Александр Бронкин"
+            tools:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/nickname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="10dp"
+            android:textAlignment="center"
+            android:textSize="21sp"
+
+            tools:text="(Демьян)"
+            tools:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/active_from_to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="20dp"
+            android:textAlignment="center"
+            android:textSize="21sp"
+
+            tools:text="C 28 июня по 29 июля"
+            tools:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/department_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textAlignment="center"
+            android:textSize="21sp"
+
+            tools:text="Службы"
+            tools:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/department"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="20dp"
+            android:textAlignment="center"
+            android:textSize="21sp"
+
+            tools:text="Диафильминариум"
+            tools:visibility="visible" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="20dp"
+            android:textAlignment="center"
+            android:textSize="30sp"
+
+            tools:text="Баланс 4"
+            tools:visibility="visible" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/message"
@@ -38,11 +140,11 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="16dp"
-            android:textAlignment="viewStart"
+            android:textAlignment="center"
             android:textSize="21sp"
-            android:visibility="gone"
 
-            tools:text="Какой-то текст Какой-то текст" />
+            tools:text="Некорректная дата (волонтера еще не должно быть на поле)"
+            tools:visibility="visible" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -74,10 +176,12 @@
                 android:padding="4dp"
                 android:textAlignment="center"
                 android:textSize="21sp"
+                android:visibility="gone"
 
                 tools:ignore="Suspicious0dp" />
+
         </LinearLayout>
 
-
     </LinearLayout>
+
 </FrameLayout>

@@ -9,6 +9,8 @@ import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLoca
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemoteDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRepositoryImpl
 import feedapp.insomniafest.ru.feedapp.domain.interactor.CreateTransactionInteractor
+import feedapp.insomniafest.ru.feedapp.domain.interactor.SaveTransactionInteractor
+import feedapp.insomniafest.ru.feedapp.domain.interactor.SendTransactionsInteractor
 import feedapp.insomniafest.ru.feedapp.domain.repository.TransactionRepository
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 import javax.inject.Singleton
@@ -40,5 +42,22 @@ class ModelModule {
         transactionRepository: TransactionRepository,
     ): CreateTransactionInteractor {
         return CreateTransactionInteractor(volunteersRepository, transactionRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun providesSaveTransactionInteractor(
+        volunteersRepository: VolunteersRepository,
+        transactionRepository: TransactionRepository,
+    ): SaveTransactionInteractor {
+        return SaveTransactionInteractor(volunteersRepository, transactionRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun providesSendTransactionInteractor(
+        transactionRepository: TransactionRepository,
+    ): SendTransactionsInteractor {
+        return SendTransactionsInteractor(transactionRepository)
     }
 }

@@ -9,9 +9,13 @@ class DepartmentDto: Dto<Department> {
     @SerializedName("id")
     private val id: Int? = null
 
+    @SerializedName("name")
+    private val name: String? = null
+
     override fun convert(): Department {
         return Department(
-            id = getNotNull(id, "Department/id")
+            id = getNotNull(id, "Department/id"),
+            name = getNotNull(name, "Department/name"),
         )
     }
 }

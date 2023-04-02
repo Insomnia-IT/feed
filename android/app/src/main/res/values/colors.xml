@@ -9,5 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="text_error">#ff033e</color>
     <color name="green">#91dbc5</color>
-    <color name="error">#e52b50</color>
+    <color name="error">#F43933</color>
+    <color name="blocking_error">#EC0533</color>
 </resources>

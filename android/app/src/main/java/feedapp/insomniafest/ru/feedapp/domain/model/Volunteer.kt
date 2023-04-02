@@ -38,4 +38,5 @@ data class LocationVol(
 
 data class Department(
     val id: Int,
+    val name: String,
 ) : Serializable

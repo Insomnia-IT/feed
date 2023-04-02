@@ -1,8 +1,9 @@
 package feedapp.insomniafest.ru.feedapp.common.util
 
+import java.text.SimpleDateFormat
 import java.util.*
 
-fun getCurTime() = Date().time
+fun getCurTime() = Date().time // TODO LocalDateTime
 
 enum class IsCurrentTime {
     LESS,
@@ -11,7 +12,7 @@ enum class IsCurrentTime {
     NONE,
 }
 
-fun compareWithCurTime(milliseconds: Long?): IsCurrentTime {
+fun compareWithCurTime(milliseconds: Long?): IsCurrentTime { // TODO LocalDateTime
     if (milliseconds == null) return IsCurrentTime.NONE
 
     val curTime = getCurTime()
@@ -25,7 +26,7 @@ fun compareWithCurTime(milliseconds: Long?): IsCurrentTime {
 
 const val fourHour = 1000 * 60 * 60 * 4 // 4 часа
 
-fun isNeedResetDatabase(lastUpdate: Long): Boolean {
+fun isNeedResetDatabase(lastUpdate: Long): Boolean { // TODO LocalDateTime
     val lastUp = Date(lastUpdate)
     val curDate = Date()
 
@@ -39,3 +40,6 @@ fun isNeedResetDatabase(lastUpdate: Long): Boolean {
         else -> false
     }
 }
+
+fun msToString(ms: Long): String = SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(Date(ms))
+

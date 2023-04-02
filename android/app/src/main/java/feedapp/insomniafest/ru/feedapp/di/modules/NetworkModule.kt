@@ -89,8 +89,9 @@ class NetworkModule {
     @Singleton
     internal fun providesTransactionsRemoteDataSource(
         api: TransactionApi,
+        appPreference: AppPreference
     ): TransactionRemoteDataSource {
-        return RetrofitTransactionsDataSource(api)
+        return RetrofitTransactionsDataSource(api, appPreference)
     }
 
 }

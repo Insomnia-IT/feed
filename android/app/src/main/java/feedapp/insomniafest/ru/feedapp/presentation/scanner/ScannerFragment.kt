@@ -16,6 +16,7 @@ import feedapp.insomniafest.ru.feedapp.appComponent
 import feedapp.insomniafest.ru.feedapp.common.util.PermissionUtils
 import feedapp.insomniafest.ru.feedapp.common.util.observe
 import feedapp.insomniafest.ru.feedapp.databinding.FragmentScannerBinding
+import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.presentation.scanner.choice_scan_result.ChoiceScanResultDialogFragment
 import feedapp.insomniafest.ru.feedapp.presentation.scanner.choice_scan_result.ChoiceScanResultStatus
 import me.dm7.barcodescanner.zxing.ZXingScannerView
@@ -109,12 +110,15 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
             showToast(message = event.message)
             barcodeScanner.resumeCameraPreview(this)
         }
-        is ScannerEvent.SuccessScanAndContinue -> {
-            showChoiceForSuccessResult()
-        }
-        ScannerEvent.ErrorScanAndContinue -> {
-            showChoiceForErrorResult()
-        }
+        is ScannerEvent.SuccessScanAndContinue -> showChoiceForSuccessResult(event.volunteer)
+        is ScannerEvent.ErrorScanAndContinue -> showChoiceForErrorResult(
+            event.volunteer,
+            event.error
+        )
+        is ScannerEvent.BlockingErrorScan -> showChoiceForBlockingErrorResult(
+            event.volunteer,
+            event.error
+        )
     }
 
     private fun showToast(message: String) {
@@ -125,27 +129,40 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
         ).show()
     }
 
-    private fun showChoiceForSuccessResult() {
+    private fun showChoiceForSuccessResult(volunteer: Volunteer) {
         ChoiceScanResultDialogFragment(
+            volunteer = volunteer,
             title = "Волонтера можно кормить",
-            message = "Хочу видеть этот текст слева",
+            message = "Кормление произойдет автоматически",
             status = ChoiceScanResultStatus.SUCCESS,
             textLeftButton = "Кормить",
-            textRightButton = "Не кормить",
+            textRightButton = "Отмена",
             onLeftClickListener = viewModel::onScanResultAddTransaction,
             onRightClickListener = viewModel::onScanResultCancelTransaction,
         ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
     }
 
-    private fun showChoiceForErrorResult() {
+    private fun showChoiceForErrorResult(volunteer: Volunteer, error: String) {
         ChoiceScanResultDialogFragment(
+            volunteer = volunteer,
             title = "Можно кормить в долг",
-            message = "Хочу видеть этот текст слева",
+            message = error,
             status = ChoiceScanResultStatus.ERROR,
-            textLeftButton = "Не кормить",
-            textRightButton = "Кормить",
+            textLeftButton = "Отмена",
+            textRightButton = "Кормить в долг",
             onLeftClickListener = viewModel::onScanResultCancelTransaction,
             onRightClickListener = viewModel::onScanResultAddTransaction,
+        ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
+    }
+
+    private fun showChoiceForBlockingErrorResult(volunteer: Volunteer?, error: String) {
+        ChoiceScanResultDialogFragment(
+            volunteer = volunteer,
+            title = "Кормить нельзя",
+            message = error,
+            status = ChoiceScanResultStatus.BLOCKING_ERROR,
+            textLeftButton = "Отмена",
+            onLeftClickListener = viewModel::onScanResultCancelTransaction,
         ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
     }
 }
