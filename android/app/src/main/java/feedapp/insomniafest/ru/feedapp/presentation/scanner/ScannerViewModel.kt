@@ -52,6 +52,14 @@ class ScannerViewModel @Inject constructor(
         }
     }
 
+    fun onAnonymousClick() {
+        ScannerEvent.SuccessScanAndContinue(Volunteer.anonymous).post()
+    }
+
+    fun onBabyClick() {
+        ScannerEvent.SuccessScanAndContinue(Volunteer.baby).post()
+    }
+
     fun onScanResultAddTransaction() {
         val isSaveAnyway = true
         launchIO {

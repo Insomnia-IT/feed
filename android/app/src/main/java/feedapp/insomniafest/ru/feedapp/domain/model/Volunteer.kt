@@ -30,7 +30,37 @@ data class Volunteer(
     val location: List<LocationVol>,
     val expired: Int,
     val balance: Int?,
-) : Serializable
+) : Serializable {
+    companion object {
+        val anonymous = Volunteer(
+            id = VolunteerId(invalidId),
+            login_id = LoginId(),
+            name = "Уважаемый человек",
+            qr = "",
+            isActive = false,
+            isBlocked = false,
+            paid = true,
+            department = emptyList(),
+            location = emptyList(),
+            expired = 0,
+            balance = null,
+        )
+
+        val baby = Volunteer(
+            id = VolunteerId(invalidId),
+            login_id = LoginId(),
+            name = "Ребенок",
+            qr = "",
+            isActive = false,
+            isBlocked = false,
+            paid = false,
+            department = emptyList(),
+            location = emptyList(),
+            expired = 0,
+            balance = null,
+        )
+    }
+}
 
 data class LocationVol(
     val id: Int,

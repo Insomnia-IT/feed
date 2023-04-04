@@ -7,6 +7,7 @@
     <string name="login_last_update">Последняя синхронизация:</string>
     <string name="loading_gif">I\'m loading gif</string>
     <string name="load_error">❗ ⛔ 🚨 💥 Ошибка: %1s </string>
+    <string name="error">❗❗Ошибка❗❗</string>
     <string name="zero">0</string>
     <string name="login_button">Войти</string>
     <string name="login_placeholder">Логин</string>
@@ -14,9 +15,12 @@
     <string name="scanner_remained">Ост.:</string>
     <string name="scanner_vegetarian">ВЕГ</string>
     <string name="scanner_meat_eater">МЯС</string>
+    <string name="scanner_balance">Баланс %1s</string>
     <string name="eating_type_breakfast">Завтрак</string>
     <string name="eating_type_lunch">Обед</string>
     <string name="eating_type_dinner">Ужин</string>
     <string name="eating_late_dinner">Ночной дожор</string>
     <string name="apply">Применить</string>
+    <string name="scanner_feed_anonymous">Корм. анонима</string>
+    <string name="scaner_feed_baby">Корм. ребенка</string>
 </resources>

@@ -1,5 +1,6 @@
 package feedapp.insomniafest.ru.feedapp.presentation.scanner.choice_scan_result
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.graphics.Color
@@ -54,7 +55,10 @@ class ChoiceScanResultDialogFragment(
         _binding = FragmentChoiceResultBinding.inflate(layoutInflater)
 
         when (status) {
-            ChoiceScanResultStatus.SUCCESS -> binding.container.setBackgroundResource(R.drawable.background_post_scan_success)
+            ChoiceScanResultStatus.SUCCESS -> {
+                binding.container.setBackgroundResource(R.drawable.background_post_scan_success)
+                binding.status.visibility = View.GONE
+            }
             ChoiceScanResultStatus.ERROR -> binding.container.setBackgroundResource(R.drawable.background_post_scan_error)
             ChoiceScanResultStatus.BLOCKING_ERROR -> binding.container.setBackgroundResource(R.drawable.background_post_scan_blocking_error)
         }
@@ -69,13 +73,13 @@ class ChoiceScanResultDialogFragment(
 
             val activeFromTo = when {
                 volunteer.activeFrom != null && volunteer.activeTo != null -> {
-                    "C ${msToString(volunteer.activeFrom)} по ${msToString(volunteer.activeTo)}" // TODO
+                    "C ${msToString(volunteer.activeFrom)} по ${msToString(volunteer.activeTo)}"
                 }
                 volunteer.activeFrom != null -> {
-                    "C ${msToString(volunteer.activeFrom)}" // TODO
+                    "C ${msToString(volunteer.activeFrom)}"
                 }
                 volunteer.activeTo != null -> {
-                    "По ${msToString(volunteer.activeTo)}" // TODO
+                    "По ${msToString(volunteer.activeTo)}"
                 }
                 else -> null
             }
@@ -89,7 +93,7 @@ class ChoiceScanResultDialogFragment(
             }
 
             volunteer.balance?.let {
-                binding.balance.text = "Баланс $it" // TODO
+                binding.balance.text = getString(R.string.scanner_balance, it.toString())
             }
         }
         message?.let {
@@ -129,9 +133,10 @@ class ChoiceScanResultDialogFragment(
 
     private fun getCountDown(): CountDownTimer {
         return object : CountDownTimer(5500, 1000) {
+            @SuppressLint("SetTextI18n")
             override fun onTick(millisUntilFinished: Long) {
                 binding.leftButton.text =
-                    textLeftButton + " (" + (millisUntilFinished / 1000).toString() + ")" // TODO сделать по красоте
+                    "$textLeftButton ( ${(millisUntilFinished / 1000)} )"
             }
 
             override fun onFinish() {

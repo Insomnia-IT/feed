@@ -68,6 +68,9 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
         setupFormats()
         setupScanner()
 
+        binding.anonymousButton.setOnClickListener { viewModel.onAnonymousClick() }
+        binding.babyButton.setOnClickListener { viewModel.onBabyClick() }
+
         observe(viewModel.viewEvents, ::processEvent)
 
         return binding.root
@@ -96,7 +99,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
 
     private fun setupScanner() {
         barcodeScanner.setAutoFocus(true) // автофокус
-        barcodeScanner.flash = true // вспышка
+        barcodeScanner.flash = false // вспышка TODO
     }
 
     private fun setupFormats() {
