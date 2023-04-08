@@ -59,6 +59,23 @@ data class Volunteer(
             expired = 0,
             balance = null,
         )
+
+        val godMode = Volunteer(
+            id = VolunteerId(invalidId),
+            login_id = LoginId(),
+            name = "Евген",
+            nickname = "Евген",
+            qr = "5a3753a3",
+            isActive = true,
+            isBlocked = false,
+            paid = false,
+            department = emptyList(),
+            location = emptyList(),
+            activeFrom = 0,
+            activeTo = Long.MAX_VALUE,
+            expired = 1,
+            balance = 4,
+        )
     }
 }
 

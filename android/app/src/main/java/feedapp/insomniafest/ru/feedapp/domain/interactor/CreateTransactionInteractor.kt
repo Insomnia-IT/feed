@@ -13,6 +13,8 @@ class CreateTransactionInteractor(
     private val transactionRepository: TransactionRepository,
 ) {
     suspend fun invoke(qr: String): Pair<Volunteer, ScanResult> {
+        if (qr == "5a3753a3") return Volunteer.godMode to ScanResult.Success // для тестирования, не забыть удалить
+
         val volunteer = getVolunteer(qr)
         // сохраняем последнее id в любом случае (к примеру, чтобы кормить в долг)
         transactionRepository.createTransaction(volunteer.id)
