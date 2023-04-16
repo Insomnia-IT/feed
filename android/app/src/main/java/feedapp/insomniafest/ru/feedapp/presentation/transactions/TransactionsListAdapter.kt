@@ -32,6 +32,6 @@ class TransactionsListAdapter : RecyclerView.Adapter<TransactionsListAdapter.Per
     override fun onBindViewHolder(holder: PersonViewHolder, position: Int) {
         val transaction = data[position]
 
-        holder.binding.name.text = transaction.vol_id.toString() + " | " + msToString(transaction.ts) + " | " + transaction.isSynchronized // TODO
+        holder.binding.name.text = transaction.volId.toString() + " | " + msToString(transaction.ts) + " | " + transaction.isSynchronized // TODO
     }
 }

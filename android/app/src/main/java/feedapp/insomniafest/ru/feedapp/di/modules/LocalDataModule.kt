@@ -43,11 +43,9 @@ class LocalDataModule {
     @Singleton
     internal fun providesTransactionsLocalDataSource(
         feedAppDataBase: FeedAppDataBase,
-        appPreference: AppPreference,
     ): TransactionLocalDataSource {
         return RoomTransactionDataSource(
             feedAppDataBase.questTransactionDao(),
-            appPreference,
         )
     }
 }

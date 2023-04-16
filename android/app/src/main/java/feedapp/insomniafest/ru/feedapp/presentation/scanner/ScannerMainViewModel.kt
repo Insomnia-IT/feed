@@ -29,13 +29,8 @@ class ScannerMainViewModel @Inject constructor(
                 // логика для интерактора конечно же, но выносить ее мне влом
                 val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
-                val type = when {
-                    currentHour < 4 -> EatingType.LATE_DINNER
-                    currentHour < 11 -> EatingType.BREAKFAST
-                    currentHour < 16 -> EatingType.LUNCH
-                    currentHour in 16..20 -> EatingType.DINNER
-                    else -> EatingType.LATE_DINNER
-                }
+                val type = EatingType.getTypeByHour(currentHour)
+
                 eatingTypeRepository.saveEatingType(type)
 
                 ScannerMainEvent.ShowChoicerEatingType(type).post()

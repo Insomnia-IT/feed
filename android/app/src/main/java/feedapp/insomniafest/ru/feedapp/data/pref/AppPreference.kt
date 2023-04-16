@@ -1,8 +1,7 @@
 package feedapp.insomniafest.ru.feedapp.data.pref
 
 interface AppPreference {
-    var login: String
+    var login: String // обсудил, логин можно так хранить
     var lastUpdate: Long
-    var lastTransaction: Int
     var eatingType: Int
 }

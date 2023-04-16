@@ -1,6 +1,7 @@
 package feedapp.insomniafest.ru.feedapp.data.volunteers.repository
 
 import android.util.Log
+import feedapp.insomniafest.ru.feedapp.domain.model.FeedType
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
@@ -47,5 +48,13 @@ internal class VolunteersRepositoryImpl(
 
     override suspend fun decFeedCounterById(volunteerId: VolunteerId) {
         volunteersLocalDataSource.decFeedCounterById(volunteerId)
+    }
+
+    override suspend fun getVolunteersForPeriodByFeedType(
+        from: Long,
+        to: Long,
+        feedType: FeedType
+    ): List<Volunteer> {
+        return volunteersLocalDataSource.getVolunteersForPeriodByFeedType(from, to, feedType)
     }
 }

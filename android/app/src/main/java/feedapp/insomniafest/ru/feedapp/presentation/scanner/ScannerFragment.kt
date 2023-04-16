@@ -151,8 +151,8 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
             status = ChoiceScanResultStatus.SUCCESS,
             textLeftButton = "Кормить",
             textRightButton = "Отмена",
-            onLeftClickListener = viewModel::onScanResultAddTransaction,
-            onRightClickListener = viewModel::onScanResultCancelTransaction,
+            onCanceled = viewModel::onScanResultCancelTransaction,
+            onAccepted = viewModel::onScanResultAddTransaction,
         ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
     }
 
@@ -164,8 +164,8 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
             status = ChoiceScanResultStatus.ERROR,
             textLeftButton = "Отмена",
             textRightButton = "Кормить в долг",
-            onLeftClickListener = viewModel::onScanResultCancelTransaction,
-            onRightClickListener = viewModel::onScanResultAddTransaction,
+            onCanceled = viewModel::onScanResultCancelTransaction,
+            onAccepted = viewModel::onScanResultAddTransaction,
         ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
     }
 
@@ -176,7 +176,7 @@ class ScannerFragment : Fragment(R.layout.fragment_scanner), ZXingScannerView.Re
             message = error,
             status = ChoiceScanResultStatus.BLOCKING_ERROR,
             textLeftButton = "Отмена",
-            onLeftClickListener = viewModel::onScanResultCancelTransaction,
+            onCanceled = viewModel::onScanResultCancelTransaction,
         ).show(requireActivity().supportFragmentManager, "ChoiceScanResultDialogFragment")
     }
 

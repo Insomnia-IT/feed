@@ -29,8 +29,8 @@ class ChoiceScanResultDialogFragment(
     private val status: ChoiceScanResultStatus,
     private val textLeftButton: String,
     private val textRightButton: String? = null,
-    private val onLeftClickListener: () -> Unit,
-    private val onRightClickListener: () -> Unit = {},
+    private val onCanceled: () -> Unit,
+    private val onAccepted: ((Volunteer?) -> Unit)? = null,
 ) : DialogFragment(R.layout.fragment_choice_result) {
 
     private var _binding: FragmentChoiceResultBinding? = null
@@ -65,7 +65,7 @@ class ChoiceScanResultDialogFragment(
 
         binding.title.text = title
         volunteer?.let {
-            binding.feedType.text = volunteer.feedType.orEmpty()
+            binding.feedType.text = volunteer.feedType.toString()
 
             binding.name.text = volunteer.name.orEmpty()
 
@@ -101,14 +101,14 @@ class ChoiceScanResultDialogFragment(
         }
 
         binding.leftButton.setOnClickListener {
-            onLeftClickListener.invoke()
+            onCanceled.invoke()
             dismiss()
         }
         binding.leftButton.text = textLeftButton
 
         textRightButton?.let {
             binding.rightButton.setOnClickListener {
-                onRightClickListener.invoke()
+                onAccepted?.invoke(volunteer)
                 dismiss()
             }
             binding.rightButton.text = textRightButton
@@ -135,12 +135,25 @@ class ChoiceScanResultDialogFragment(
         return object : CountDownTimer(5500, 1000) {
             @SuppressLint("SetTextI18n")
             override fun onTick(millisUntilFinished: Long) {
-                binding.leftButton.text =
-                    "$textLeftButton ( ${(millisUntilFinished / 1000)} )"
+                when (status) {
+                    ChoiceScanResultStatus.SUCCESS -> {
+                        binding.rightButton.text =
+                            "$textLeftButton ( ${(millisUntilFinished / 1000)} )"
+                    }
+                    ChoiceScanResultStatus.ERROR -> {
+                        binding.leftButton.text =
+                            "$textLeftButton ( ${(millisUntilFinished / 1000)} )"
+                    }
+                    else -> {}
+                }
             }
 
             override fun onFinish() {
-                onLeftClickListener.invoke()
+                when (status) {
+                    ChoiceScanResultStatus.SUCCESS -> onAccepted?.invoke(volunteer)
+                    ChoiceScanResultStatus.ERROR -> onCanceled.invoke()
+                    else -> {}
+                }
                 dismiss()
             }
         }

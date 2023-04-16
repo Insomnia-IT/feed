@@ -8,10 +8,10 @@ internal class EatingTypeRepositoryImpl(
     private val appPreference: AppPreference,
 ) : EatingTypeRepository {
     override suspend fun saveEatingType(type: EatingType) {
-        appPreference.eatingType = type.ordinal
+        appPreference.eatingType = type.value
     }
 
     override suspend fun getEatingType(): EatingType {
-        return EatingType.fromOrdinal(appPreference.eatingType)
+        return EatingType.fromValue(appPreference.eatingType)
     }
 }

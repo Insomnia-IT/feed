@@ -1,16 +1,19 @@
 package feedapp.insomniafest.ru.feedapp.domain.repository
 
-import feedapp.insomniafest.ru.feedapp.domain.model.Transaction
-import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
+import feedapp.insomniafest.ru.feedapp.domain.model.*
 
 interface TransactionRepository {
-    suspend fun createTransaction(volunteerId: VolunteerId)
-
     suspend fun getTransactionTimestampByVolId(volunteerId: VolunteerId): List<Long>
 
-    suspend fun addLastTransaction(isSaveAnyway: Boolean = false): VolunteerId
+    suspend fun saveTransaction(volunteer: Volunteer, eatingType: EatingType)
 
     suspend fun getAllTransactions(): List<Transaction>
+    suspend fun getTransactionsForPeriodByFeedType(
+        from: Long,
+        to: Long,
+        feedType: FeedType
+    ): List<Transaction>
+
     suspend fun getAllNotSynchronizedTransactions(): List<Transaction>
 
     suspend fun updateSynchronize(transaction: Transaction)

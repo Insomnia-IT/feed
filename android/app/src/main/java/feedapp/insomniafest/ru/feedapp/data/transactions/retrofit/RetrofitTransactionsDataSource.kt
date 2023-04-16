@@ -15,7 +15,7 @@ internal class RetrofitTransactionsDataSource(
         val response = api.sendTransaction(
             appPreference.login.loginPreparation(),
             TransactionDto(
-                vol_id = transaction.vol_id,
+                vol_id = transaction.volId,
                 amount = "1",
                 ts = transaction.ts.toString(),
                 ulid = transaction.ulid,

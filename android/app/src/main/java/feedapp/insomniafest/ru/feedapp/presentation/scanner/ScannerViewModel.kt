@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import feedapp.insomniafest.ru.feedapp.common.util.BaseViewModel
 import feedapp.insomniafest.ru.feedapp.common.util.NotNullMutableLiveData
 import feedapp.insomniafest.ru.feedapp.common.util.delegate
-import feedapp.insomniafest.ru.feedapp.domain.interactor.CreateTransactionInteractor
 import feedapp.insomniafest.ru.feedapp.domain.interactor.SaveTransactionInteractor
+import feedapp.insomniafest.ru.feedapp.domain.interactor.TransactionVerificationInteractor
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import javax.inject.Inject
 import javax.inject.Provider
@@ -19,7 +19,7 @@ sealed class ScanResult {
 }
 
 class ScannerViewModel @Inject constructor(
-    private val createTransactionInteractor: CreateTransactionInteractor,
+    private val transactionVerificationInteractor: TransactionVerificationInteractor,
     private val saveTransactionInteractor: SaveTransactionInteractor,
 ) : BaseViewModel<ScannerEvent>() {
 
@@ -33,7 +33,7 @@ class ScannerViewModel @Inject constructor(
     fun onQrScanned(qr: String) {
         launchIO {
             runCatching {
-                createTransactionInteractor.invoke(qr)
+                transactionVerificationInteractor.invoke(qr)
             }.onSuccess { (volunteer, scanResult) ->
                 when (scanResult) {
                     ScanResult.Success -> ScannerEvent.SuccessScanAndContinue(volunteer).post()
@@ -60,26 +60,22 @@ class ScannerViewModel @Inject constructor(
         ScannerEvent.SuccessScanAndContinue(Volunteer.baby).post()
     }
 
-    fun onScanResultAddTransaction() {
-        val isSaveAnyway = true
+    fun onScanResultAddTransaction(volunteer: Volunteer?) {
+        if (volunteer == null) return
+
         launchIO {
             runCatching {
-                saveTransactionInteractor.invoke(isSaveAnyway)
+                saveTransactionInteractor.invoke(volunteer)
             }.onSuccess {
                 showThatWasFed()
             }.onFailure { error ->
-                if (isSaveAnyway) {
-                    showThatWasFed()
-                } else {
-                    Log.e("!#@$", "Ошибика: ${error.message}")
-                    ScannerEvent.Error(error.message.orEmpty()).post()
-                }
+                Log.e("!#@$", "Ошибика: ${error.message}")
+                ScannerEvent.Error(error.message.orEmpty()).post()
             }
         }
     }
 
     fun onScanResultCancelTransaction() {
-        // TODO забыть транзакцию
         ScannerEvent.ContinueScan("Не покормлен", state.numberFed).post()
     }
 

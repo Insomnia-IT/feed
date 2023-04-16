@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import feedapp.insomniafest.ru.feedapp.common.util.Dto
 import feedapp.insomniafest.ru.feedapp.common.util.convertList
 import feedapp.insomniafest.ru.feedapp.common.util.getNotNull
+import feedapp.insomniafest.ru.feedapp.domain.model.FeedType
 import feedapp.insomniafest.ru.feedapp.domain.model.LoginId
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
@@ -63,7 +64,7 @@ internal class VolunteerDto : Dto<Volunteer> {
             isActive = getNotNull(isActive, "Volunteer/isActive"),
             isBlocked = getNotNull(isBlocked, "Volunteer/isBlocked"),
             paid = getNotNull(paid, "Volunteer/paid"),
-            feedType = feedType,
+            feedType = FeedType.fromValue(feedType),
             activeFrom = activeFrom,
             activeTo = activeTo,
             department = department.convertList(),

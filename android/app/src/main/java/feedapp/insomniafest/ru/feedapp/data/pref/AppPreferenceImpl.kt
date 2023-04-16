@@ -8,7 +8,6 @@ class AppPreferenceImpl @Inject constructor(context: Context) : AppPreference {
     companion object {
         const val LOGIN = "login"
         const val LAST_UPDATE = "last_update"
-        const val LAST_TRANSACTION = "last_transaction"
         const val EATING_TYPE = "eating_type"
     }
 
@@ -25,11 +24,6 @@ class AppPreferenceImpl @Inject constructor(context: Context) : AppPreference {
         get() = getLong(LAST_UPDATE)
         set(value) {
             saveLong(LAST_UPDATE, value)
-        }
-    override var lastTransaction: Int
-        get() = getInt(LAST_TRANSACTION)
-        set(value) {
-            saveInt(LAST_TRANSACTION, value)
         }
     override var eatingType: Int
         get() = getInt(EATING_TYPE)

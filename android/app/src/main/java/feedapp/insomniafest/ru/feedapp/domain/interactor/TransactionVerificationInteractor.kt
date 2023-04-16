@@ -8,7 +8,7 @@ import feedapp.insomniafest.ru.feedapp.domain.repository.TransactionRepository
 import feedapp.insomniafest.ru.feedapp.domain.repository.VolunteersRepository
 import feedapp.insomniafest.ru.feedapp.presentation.scanner.ScanResult
 
-class CreateTransactionInteractor(
+class TransactionVerificationInteractor(
     private val volunteersRepository: VolunteersRepository,
     private val transactionRepository: TransactionRepository,
 ) {
@@ -16,8 +16,6 @@ class CreateTransactionInteractor(
         if (qr == "5a3753a3") return Volunteer.godMode to ScanResult.Success // для тестирования, не забыть удалить
 
         val volunteer = getVolunteer(qr)
-        // сохраняем последнее id в любом случае (к примеру, чтобы кормить в долг)
-        transactionRepository.createTransaction(volunteer.id)
 
         val scanResult = checkVolunteerAvailability(volunteer)
 

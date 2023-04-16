@@ -23,7 +23,7 @@ data class Volunteer(
     val isActive: Boolean,
     val isBlocked: Boolean,
     val paid: Boolean,
-    val feedType: String? = null,
+    val feedType: FeedType = FeedType.UNKNOWN,
     val activeFrom: Long? = null,
     val activeTo: Long? = null,
     val department: List<Department>,

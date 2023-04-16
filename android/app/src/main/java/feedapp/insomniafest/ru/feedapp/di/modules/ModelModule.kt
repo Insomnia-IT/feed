@@ -10,7 +10,8 @@ import feedapp.insomniafest.ru.feedapp.data.transactions.repository.TransactionR
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRemoteDataSource
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersRepositoryImpl
-import feedapp.insomniafest.ru.feedapp.domain.interactor.CreateTransactionInteractor
+import feedapp.insomniafest.ru.feedapp.domain.interactor.TransactionVerificationInteractor
+import feedapp.insomniafest.ru.feedapp.domain.interactor.GetStatisticsInteractor
 import feedapp.insomniafest.ru.feedapp.domain.interactor.SaveTransactionInteractor
 import feedapp.insomniafest.ru.feedapp.domain.interactor.SendTransactionsInteractor
 import feedapp.insomniafest.ru.feedapp.domain.repository.EatingTypeRepository
@@ -40,11 +41,11 @@ class ModelModule {
 
     @Provides
     @Singleton
-    fun providesCreateTransactionInteractor(
+    fun providesTransactionVerificationInteractor(
         volunteersRepository: VolunteersRepository,
         transactionRepository: TransactionRepository,
-    ): CreateTransactionInteractor {
-        return CreateTransactionInteractor(volunteersRepository, transactionRepository)
+    ): TransactionVerificationInteractor {
+        return TransactionVerificationInteractor(volunteersRepository, transactionRepository)
     }
 
     @Provides
@@ -52,8 +53,13 @@ class ModelModule {
     fun providesSaveTransactionInteractor(
         volunteersRepository: VolunteersRepository,
         transactionRepository: TransactionRepository,
+        eatingTypeRepository: EatingTypeRepository,
     ): SaveTransactionInteractor {
-        return SaveTransactionInteractor(volunteersRepository, transactionRepository)
+        return SaveTransactionInteractor(
+            volunteersRepository,
+            transactionRepository,
+            eatingTypeRepository
+        )
     }
 
     @Provides
@@ -70,5 +76,14 @@ class ModelModule {
         appPreference: AppPreference,
     ): EatingTypeRepository {
         return EatingTypeRepositoryImpl(appPreference)
+    }
+
+    @Provides
+    @Singleton
+    fun providesGetStatisticsInteractor(
+        volunteersRepository: VolunteersRepository,
+        transactionRepository: TransactionRepository,
+    ): GetStatisticsInteractor {
+        return GetStatisticsInteractor(volunteersRepository, transactionRepository)
     }
 }

@@ -1,36 +1,34 @@
 package feedapp.insomniafest.ru.feedapp.data.transactions.repository
 
-import feedapp.insomniafest.ru.feedapp.domain.model.Transaction
-import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
+import feedapp.insomniafest.ru.feedapp.domain.model.*
 import feedapp.insomniafest.ru.feedapp.domain.repository.TransactionRepository
 
 internal class TransactionRepositoryImpl(
     private val transactionLocalDataSource: TransactionLocalDataSource,
     private val transactionRemoteDataSource: TransactionRemoteDataSource,
 ) : TransactionRepository {
-    override suspend fun createTransaction(volunteerId: VolunteerId) {
-        transactionLocalDataSource.createTransaction(volunteerId)
-    }
 
     override suspend fun getTransactionTimestampByVolId(volunteerId: VolunteerId): List<Long> {
         return transactionLocalDataSource.getTransactionTimestampByVolId(volunteerId)
     }
 
-    override suspend fun addLastTransaction(isSaveAnyway: Boolean): VolunteerId {
-        val volId = try {
-            transactionLocalDataSource.addLastTransaction()
-        } catch (e: Throwable) {
-            if (isSaveAnyway) {
-                transactionLocalDataSource.addLastTransactionAnyway()
-            } else {
-                throw e
-            }
-        }
-        return volId
+    override suspend fun saveTransaction(
+        volunteer: Volunteer,
+        eatingType: EatingType,
+    ) {
+        transactionLocalDataSource.saveTransaction(volunteer, eatingType)
     }
 
     override suspend fun getAllTransactions(): List<Transaction> {
         return transactionLocalDataSource.getAllTransactions()
+    }
+
+    override suspend fun getTransactionsForPeriodByFeedType(
+        from: Long,
+        to: Long,
+        feedType: FeedType
+    ): List<Transaction> {
+        return transactionLocalDataSource.getTransactionsForPeriodByFeedType(from, to, feedType)
     }
 
     override suspend fun getAllNotSynchronizedTransactions(): List<Transaction> {

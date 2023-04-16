@@ -10,6 +10,7 @@ import feedapp.insomniafest.ru.feedapp.presentation.login.LoginViewModelFactory
 import feedapp.insomniafest.ru.feedapp.presentation.main.MainActivity
 import feedapp.insomniafest.ru.feedapp.presentation.scanner.ScannerMainViewModelFactory
 import feedapp.insomniafest.ru.feedapp.presentation.scanner.ScannerViewModelFactory
+import feedapp.insomniafest.ru.feedapp.presentation.statistics.StatisticsViewModelFactory
 import feedapp.insomniafest.ru.feedapp.presentation.transactions.TransactionsViewModelFactory
 import feedapp.insomniafest.ru.feedapp.presentation.volunteers.ViewModelFactory
 import javax.inject.Singleton
@@ -32,4 +33,5 @@ interface ApplicationComponent {
     fun viewModelsFactory(): ViewModelFactory
     fun loginViewModelFactory(): LoginViewModelFactory
     fun transactionsViewModelFactory(): TransactionsViewModelFactory
+    fun statisticsViewModelFactory(): StatisticsViewModelFactory
 }

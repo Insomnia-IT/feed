@@ -8,9 +8,11 @@ import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.LoginEntity
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteerEntity
 import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.VolunteersListDao
 import feedapp.insomniafest.ru.feedapp.data.volunteers.repository.VolunteersLocalDataSource
+import feedapp.insomniafest.ru.feedapp.domain.model.FeedType
 import feedapp.insomniafest.ru.feedapp.domain.model.LoginId
 import feedapp.insomniafest.ru.feedapp.domain.model.Volunteer
 import feedapp.insomniafest.ru.feedapp.domain.model.VolunteerId
+import feedapp.insomniafest.ru.feedapp.presentation.statistics.compareDates
 
 class RoomVolunteersDataSource(
     private val gson: Gson,
@@ -28,9 +30,25 @@ class RoomVolunteersDataSource(
      * Используется только для дебага
      **/
     override suspend fun getAllVolunteersList(): List<Volunteer> {
-        val volunteersByLogin =
-            volunteersListDao.getAllVolunteers()
+        val volunteersByLogin = volunteersListDao.getAllVolunteers()
         return volunteersByLogin.flatMap { it.volunteers.map { vol -> vol.toVolunteer(gson) } }
+    }
+
+    override suspend fun getVolunteersForPeriodByFeedType(
+        from: Long,
+        to: Long,
+        feedType: FeedType,
+    ): List<Volunteer> {
+        val volunteers = getVolunteersList()
+        // TODO не учитываются волонтеры с открытой датой
+        val volunteerByPeriod = volunteers.filter {
+            compareDates(from, it.activeFrom) == IsCurrentTime.MORE &&
+                compareDates(to, it.activeTo) == IsCurrentTime.LESS
+        }
+        return when (feedType) {
+            FeedType.UNKNOWN -> volunteerByPeriod
+            else -> volunteerByPeriod.filter { it.feedType == feedType }
+        }
     }
 
     override suspend fun getVolunteerByQr(qr: String): Volunteer? {
@@ -83,7 +101,7 @@ private fun VolunteerEntity.toVolunteer(gson: Gson) = Volunteer(
     isActive = isActive,
     isBlocked = isBlocked,
     paid = paid,
-    feedType = feedType,
+    feedType = FeedType.fromValue(feedType),
     activeFrom = activeFrom.getLong(),
     activeTo = activeTo.getLong(),
     department = gson.fromJson(department),
@@ -101,9 +119,9 @@ private fun Volunteer.toVolunteerEntity(gson: Gson, loginId: String) = Volunteer
     isActive = isActive,
     isBlocked = isBlocked,
     paid = paid,
-    feedType = feedType,
-    activeFrom = activeFrom.toString(),
-    activeTo = activeTo.toString(),
+    feedType = feedType.value,
+    activeFrom = activeFrom?.toString(),
+    activeTo = activeTo?.toString(),
     department = gson.toJson(department),
     location = gson.toJson(location),
     expired = expired,
