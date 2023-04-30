@@ -68,7 +68,7 @@ class RoomVolunteersDataSource(
     }
 
     override suspend fun getLastUpdate(): String {
-        return msToString4Login(appPreference.lastUpdate)
+        return msToString(appPreference.lastUpdate, "EEE, d MMM yyyy HH:mm:ss ")
     }
 
     override suspend fun getSavedLogins(): List<String> {

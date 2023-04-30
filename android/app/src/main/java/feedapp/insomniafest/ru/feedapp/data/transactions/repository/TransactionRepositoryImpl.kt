@@ -19,8 +19,8 @@ internal class TransactionRepositoryImpl(
         transactionLocalDataSource.saveTransaction(volunteer, eatingType)
     }
 
-    override suspend fun getAllTransactions(): List<Transaction> {
-        return transactionLocalDataSource.getAllTransactions()
+    override suspend fun getSeveralTransactions(count: Int): List<Transaction> {
+        return transactionLocalDataSource.getSeveralTransactions(count)
     }
 
     override suspend fun getTransactionsForPeriodByFeedType(

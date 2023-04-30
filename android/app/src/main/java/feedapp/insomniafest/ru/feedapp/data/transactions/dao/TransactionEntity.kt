@@ -13,6 +13,9 @@ data class TransactionEntity(
     @ColumnInfo(name = VOL_ID_COLUMN)
     val volId: Int,
 
+    @ColumnInfo(name = "vol_name")
+    val volName: String,
+
     @ColumnInfo(name = TIME_STAMP)
     val ts: Long,
 

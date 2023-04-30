@@ -35,12 +35,12 @@ class TransactionsListViewModel @Inject constructor(
     private fun loadTransactions() {
         launchIO {
             runCatching {
-                transactionRepository.getAllTransactions()
-            }.onSuccess { transactions ->
-                val countNotSynchronized = transactions.count { !it.isSynchronized }
-
-                state = TransactionsState(transactions = transactions)
-                TransactionsListEvent.UpdateTransactions(transactions, countNotSynchronized).post()
+                val transactions = transactionRepository.getSeveralTransactions(20)
+                val countNotSynchronized = transactionRepository.getAllNotSynchronizedTransactions().count()
+                transactions to countNotSynchronized
+            }.onSuccess {
+                state = TransactionsState(transactions = it.first)
+                TransactionsListEvent.UpdateTransactions(it.first, it.second).post()
             }.onFailure {
                 TransactionsListEvent.Error(it.message.orEmpty()).post()
             }

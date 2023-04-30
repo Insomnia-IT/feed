@@ -31,6 +31,7 @@ data class Volunteer(
     val expired: Int,
     val balance: Int?,
 ) : Serializable {
+    val volName by lazy { nickname ?: name ?: "Кто-то" }
     companion object {
         val anonymous = Volunteer(
             id = VolunteerId(invalidId),

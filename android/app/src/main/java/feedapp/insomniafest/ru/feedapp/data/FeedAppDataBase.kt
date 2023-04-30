@@ -11,7 +11,7 @@ import feedapp.insomniafest.ru.feedapp.data.volunteers.dao.*
         VolunteerEntity::class,
         LoginEntity::class,
         TransactionEntity::class,
-    ], version = 16, exportSchema = true
+    ], version = 18, exportSchema = true
 )
 abstract class FeedAppDataBase : RoomDatabase() {
     abstract fun questVolunteersDao(): VolunteersListDao

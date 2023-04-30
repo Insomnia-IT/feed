@@ -23,4 +23,7 @@
     <string name="apply">Применить</string>
     <string name="scanner_feed_anonymous">Корм. анонима</string>
     <string name="scaner_feed_baby">Корм. ребенка</string>
+    <string name="volunteer">Волонтер</string>
+    <string name="history_time">Время</string>
+    <string name="history_sync">Синх.</string>
 </resources>

@@ -11,7 +11,29 @@
     <TextView
         android:id="@+id/name"
         style="@style/TextAppearance.AppCompat.Body2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"/>
+
+    <TextView
+        android:id="@+id/date"
+        style="@style/TextAppearance.AppCompat.Body2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"/>
+
+    <TextView
+        android:id="@+id/feed_type"
+        style="@style/TextAppearance.AppCompat.Body2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/sync"
+        style="@style/TextAppearance.AppCompat.Body2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
 
 </LinearLayout>

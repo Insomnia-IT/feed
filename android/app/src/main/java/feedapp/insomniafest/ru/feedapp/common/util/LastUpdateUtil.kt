@@ -44,7 +44,6 @@ fun isNeedResetDatabase(lastUpdate: Long): Boolean {
 fun msToString(ms: Long): String =
     SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(Date(ms))
 
-// можно передавать паттерн, но мне влом
-fun msToString4Login(ms: Long): String =
-    SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss ", Locale.getDefault()).format(Date(ms))
+fun msToString(ms: Long, pattern: String): String =
+    SimpleDateFormat(pattern, Locale.getDefault()).format(Date(ms))
 

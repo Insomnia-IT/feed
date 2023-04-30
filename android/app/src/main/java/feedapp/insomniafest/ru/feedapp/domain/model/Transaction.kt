@@ -5,6 +5,7 @@ import java.io.Serializable
 data class Transaction(
     val id: Int,
     val volId: Int,
+    val volName: String,
     val ts: Long,
     val ulid: String,
     val eatingType: EatingType,

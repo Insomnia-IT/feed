@@ -10,8 +10,8 @@ interface TransactionDao {
     @Insert(entity = TransactionEntity::class, onConflict = OnConflictStrategy.ABORT)
     suspend fun addTransaction(transactionEntity: TransactionEntity)
 
-    @Query("SELECT * FROM ${TransactionEntity.TABLE_NAME}")
-    suspend fun getAllTransactions(): List<TransactionEntity>
+    @Query("SELECT * FROM ${TransactionEntity.TABLE_NAME} ORDER BY ${TransactionEntity.TIME_STAMP} DESC LIMIT :count")
+    suspend fun getSeveralTransactions(count: Int): List<TransactionEntity>
 
     @Query("SELECT * FROM ${TransactionEntity.TABLE_NAME} WHERE ${TransactionEntity.TIME_STAMP} >= :from AND ${TransactionEntity.TIME_STAMP} <= :to")
     suspend fun getAllTransactionsForPeriod(from: Long, to: Long): List<TransactionEntity>

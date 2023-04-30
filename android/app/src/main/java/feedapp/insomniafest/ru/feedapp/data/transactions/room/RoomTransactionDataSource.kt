@@ -22,6 +22,7 @@ internal class RoomTransactionDataSource(
         transactionDao.addTransaction(
             TransactionEntity(
                 volId = volunteer.id.id,
+                volName = volunteer.volName,
                 ts = curTime,
                 ulid = ULID.generate(curTime, entropy),
                 eatingType = eatingType.value,
@@ -31,8 +32,8 @@ internal class RoomTransactionDataSource(
         )
     }
 
-    override suspend fun getAllTransactions(): List<Transaction> {
-        return transactionDao.getAllTransactions().map { it.toTransaction() }
+    override suspend fun getSeveralTransactions(count: Int): List<Transaction> {
+        return transactionDao.getSeveralTransactions(count).map { it.toTransaction() }
     }
 
     override suspend fun getTransactionsForPeriodByFeedType(
@@ -58,28 +59,31 @@ internal class RoomTransactionDataSource(
     override suspend fun updateSynchronize(transaction: Transaction) {
         transactionDao.updateSynchronize(transaction.toTransactionEntity())
     }
-}
 
-private fun TransactionEntity.toTransaction(): Transaction {
-    return Transaction(
-        id = id!!,
-        volId = volId,
-        ts = ts,
-        ulid = ulid,
-        eatingType = EatingType.fromValue(eatingType),
-        feedType = FeedType.fromValue(feedType),
-        isSynchronized = isSynchronized,
-    )
-}
 
-private fun Transaction.toTransactionEntity(): TransactionEntity {
-    return TransactionEntity(
-        id = id,
-        volId = volId,
-        ts = ts,
-        ulid = ulid,
-        eatingType = eatingType.value,
-        feedType = feedType.value,
-        isSynchronized = isSynchronized,
-    )
+    private fun TransactionEntity.toTransaction(): Transaction {
+        return Transaction(
+            id = id!!,
+            volId = volId,
+            volName = volName,
+            ts = ts,
+            ulid = ulid,
+            eatingType = EatingType.fromValue(eatingType),
+            feedType = FeedType.fromValue(feedType),
+            isSynchronized = isSynchronized,
+        )
+    }
+
+    private fun Transaction.toTransactionEntity(): TransactionEntity {
+        return TransactionEntity(
+            id = id,
+            volId = volId,
+            volName = volName,
+            ts = ts,
+            ulid = ulid,
+            eatingType = eatingType.value,
+            feedType = feedType.value,
+            isSynchronized = isSynchronized,
+        )
+    }
 }

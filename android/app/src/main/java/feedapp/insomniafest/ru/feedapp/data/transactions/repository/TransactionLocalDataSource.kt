@@ -7,7 +7,8 @@ interface TransactionLocalDataSource {
 
     suspend fun saveTransaction(volunteer: Volunteer, eatingType: EatingType)
 
-    suspend fun getAllTransactions(): List<Transaction>
+    suspend fun getSeveralTransactions(count: Int): List<Transaction>
+
     suspend fun getTransactionsForPeriodByFeedType(
         from: Long,
         to: Long,
