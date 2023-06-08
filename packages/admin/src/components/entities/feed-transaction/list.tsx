@@ -30,6 +30,16 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [vols]);
 
+    const volQrById = useMemo(() => {
+        return (vols ? vols.data : []).reduce(
+            (acc, vol) => ({
+                ...acc,
+                [vol.id]: vol.qr
+            }),
+            {}
+        );
+    }, [vols]);
+
     const { data: kitchens } = useList<KitchenEntity>({
         resource: 'kitchens'
     });
@@ -57,6 +67,16 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     dataIndex='volunteer'
                     title='Волонтер'
                     render={(value) => <TextField value={value ? volNameById[value] : 'Аноним'} />}
+                    // filterDropdown={(props) => (
+                    //     <FilterDropdown {...props}>
+                    //         <Select style={selectStyle} placeholder='Волонтер' {...volSelectProps} />
+                    //     </FilterDropdown>
+                    // )}
+                />
+                <Table.Column
+                    dataIndex='volunteer'
+                    title='Бэйдж'
+                    render={(value) => <TextField value={value ? volQrById[value] : ''} />}
                     // filterDropdown={(props) => (
                     //     <FilterDropdown {...props}>
                     //         <Select style={selectStyle} placeholder='Волонтер' {...volSelectProps} />
