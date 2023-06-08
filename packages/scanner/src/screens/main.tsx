@@ -8,11 +8,12 @@ import { BtnSync } from '~/components/btn-sync';
 import { db } from '~/db';
 import { AppContext } from '~/app-context';
 import { MainScreenStats } from '~/components/main-screen-stats';
+import { ScanSimulator } from '~/components/scan-simulator';
 
 import css from '../app.module.css';
 
 export const MainScreen = React.memo(function MainScreen() {
-    const { appError, lastUpdate, setColor, setLastUpdated, setVolCount, volCount } = useContext(AppContext);
+    const { appError, isDev, lastUpdate, setColor, setLastUpdated, setVolCount, volCount } = useContext(AppContext);
     const [scanResult, setScanResult] = useState('');
 
     const closeFeedDialog = useCallback(() => {
@@ -34,6 +35,7 @@ export const MainScreen = React.memo(function MainScreen() {
             <BtnSync />
             {!scanResult && (
                 <>
+                    {isDev && <ScanSimulator withSelection setScanResult={setScanResult} />}
                     <QrScan onScan={setScanResult} />
                     <button className={css.anon} onClick={feedAnon}>
                         Кормить Анонима
