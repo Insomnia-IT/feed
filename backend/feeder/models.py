@@ -4,7 +4,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from feeder.mixins import TimeMixin
+from feeder.mixins import TimeMixin, CommentMixin, NameMixin
 
 
 def gen_uuid():
@@ -40,6 +40,7 @@ class Volunteer(TimeMixin):
         related_name='volunteers',
         verbose_name="Цвет бэджика",
     )
+    group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Групповой бейдж")
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
     ref_to = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Связан с ")
@@ -96,6 +97,17 @@ class Kitchen(TimeMixin):
     class Meta:
         verbose_name = "Кухня"
         verbose_name_plural = "Кухни"
+
+
+class GroupBadge(TimeMixin, CommentMixin, NameMixin):
+    qr = models.TextField(unique=True, verbose_name="QR-код")
+    
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Групповой бейдж"
+        verbose_name_plural = "Групповые бейджи"
 
 
 class Location(TimeMixin):
