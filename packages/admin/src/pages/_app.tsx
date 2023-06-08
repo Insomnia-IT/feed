@@ -13,6 +13,7 @@ import '@pankod/refine-antd/dist/reset.css';
 import antdLocale from 'antd/lib/locale/ru_RU';
 
 import { DepartmentCreate, DepartmentEdit, DepartmentList, DepartmentShow } from '~/components/entities/departments';
+import { GroupBadgeCreate, GroupBadgeEdit, GroupBadgeList, GroupBadgeShow } from '~/components/entities/group-badges';
 import { Sync } from '~/components/sync';
 // import { LocationCreate, LocationEdit, LocationList, LocationShow } from '~/components/entities/locations';
 import { VolCreate, VolEdit, VolList, VolShow } from '~/components/entities/vols';
@@ -86,16 +87,24 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                         icon: <Icons.FormatPainterOutlined />
                     },
                     {
+                        name: 'group-badges',
+                        list: GroupBadgeList,
+                        create: GroupBadgeCreate,
+                        edit: GroupBadgeEdit,
+                        show: GroupBadgeShow,
+                        icon: <Icons.ProfileOutlined />
+                    },
+                    {
                         name: 'feed-transaction',
                         list: FeedTransactionList,
                         create: FeedTransactionCreate,
                         icon: <Icons.HistoryOutlined />
                     },
-                    {
-                        name: 'stats',
-                        list: PublicStatistic,
-                        icon: <Icons.LineChartOutlined />
-                    },
+                    // {
+                    //     name: 'stats',
+                    //     list: PublicStatistic,
+                    //     icon: <Icons.LineChartOutlined />
+                    // },
                     {
                         name: 'sync',
                         list: Sync,

@@ -92,6 +92,28 @@
         "stats": "Статистика",
         "list": "Статистика"
     },
+    "group-badges": {
+        "group-badges": "Групповые бейджи",
+        "fields": {
+            "id": "Id",
+            "title": "Title",
+            "category": "Category",
+            "status": {
+                "title": "Status",
+                "published": "Published",
+                "draft": "Draft",
+                "rejected": "Rejected"
+            },
+            "content": "Content",
+            "createdAt": "Created At"
+        },
+        "titles": {
+            "create": "Создать групповой бейдж",
+            "edit": "Редактировать групповой бейдж",
+            "list": "Список групповых бейджей",
+            "show": "Показать групповой бейдж"
+        }
+    },
     "volunteers": {
         "volunteers": "Волонтеры",
         "fields": {

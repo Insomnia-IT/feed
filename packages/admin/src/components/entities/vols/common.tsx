@@ -1,6 +1,7 @@
 import { Checkbox, DatePicker, Form, Input, Select, useSelect } from '@pankod/refine-antd';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'antd';
+import type { DefaultOptionType } from 'rc-select/lib/Select';
 
 import { Rules } from '~/components/form';
 
@@ -9,7 +10,7 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 import dayjs from 'dayjs';
 
-import type { ColorTypeEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity } from '~/interfaces';
+import type { ColorTypeEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity, GroupBadgeEntity } from '~/interfaces';
 
 export const dateFormat = 'DD.MM.YYYY';
 
@@ -37,6 +38,11 @@ export const CreateEdit: FC = () => {
     const { selectProps: colorTypeSelectProps } = useSelect<ColorTypeEntity>({
         resource: 'colors',
         optionLabel: 'description'
+    });
+
+    const { selectProps: groupBadgeSelectProps } = useSelect<GroupBadgeEntity>({
+        resource: 'group-badges',
+        optionLabel: 'name'
     });
 
     const getDepartmentIds = (department) => {
@@ -137,6 +143,16 @@ export const CreateEdit: FC = () => {
                     </Form.Item>
                     <Form.Item label='Шеф' name='ref_to'>
                         <Select {...leadSelectProps} />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row gutter={[16, 16]}>
+                <Col span={8}>
+                    <Form.Item label='Групповой бейдж' name='group_badge'>
+                        <Select 
+                            {...groupBadgeSelectProps} 
+                            options={groupBadgeSelectProps.options ? [{ value: '', label: '' } as DefaultOptionType].concat(groupBadgeSelectProps.options) : undefined} 
+                        />
                     </Form.Item>
                 </Col>
             </Row>
