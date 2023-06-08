@@ -66,7 +66,8 @@ registerRoute(
         return (
             url.pathname !== '/service-worker.js' &&
             !url.pathname.endsWith('pwa-ver.txt') &&
-            !url.pathname.startsWith('/api/')
+            !url.pathname.startsWith('/api/') &&
+            !url.pathname.startsWith('/feedapi/')
         );
     },
     new CacheFirst({
