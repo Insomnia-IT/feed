@@ -20,7 +20,7 @@ export const PostScan: FC<{
                 .where('vol_id')
                 .equals(vol.id)
                 .filter((transaction) => {
-                    return transaction.ts > todayStart;
+                    return transaction.ts > todayStart && transaction.amount !== 0;
                 })
                 .toArray();
         }
@@ -31,10 +31,16 @@ export const PostScan: FC<{
     console.log({ vol, qrcode });
 
     const feed = useCallback(
-        async (isVegan: boolean | undefined) => {
+        async (
+            isVegan: boolean | undefined,
+            log?: {
+                error: boolean;
+                reason: string;
+            }
+        ) => {
             if (mealTime) {
                 try {
-                    await dbIncFeed(vol, mealTime, isVegan);
+                    await dbIncFeed(vol, mealTime, isVegan, log);
                     closeFeed();
                 } catch (e) {
                     console.error(e);
@@ -44,7 +50,18 @@ export const PostScan: FC<{
         [closeFeed, vol]
     );
 
-    const doFeed = useCallback((isVegan?: boolean) => void feed(isVegan), [feed]);
+    const doFeed = useCallback(
+        (isVegan?: boolean, reason?: string) => {
+            let log;
+            if (reason) {
+                log = { error: false, reason };
+            }
+            void feed(isVegan, log);
+        },
+        [feed]
+    );
+
+    const doNotFeed = useCallback((reason: string) => void feed(undefined, { error: true, reason }), [feed]);
 
     if (qrcode === 'anon') {
         setColor(AppColor.GREEN);
@@ -100,10 +117,10 @@ export const PostScan: FC<{
     if (msg.length > 0) {
         if (isRed) {
             setColor(AppColor.RED);
-            return <ErrorMsg close={closeFeed} msg={msg} />;
+            return <ErrorMsg close={closeFeed} doNotFeed={doNotFeed} msg={msg} />;
         } else {
             setColor(AppColor.YELLOW);
-            return <YellowCard close={closeFeed} doFeed={doFeed} vol={vol} msg={msg} />;
+            return <YellowCard close={closeFeed} doFeed={doFeed} doNotFeed={doNotFeed} vol={vol} msg={msg} />;
         }
     }
 
