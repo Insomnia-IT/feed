@@ -2,9 +2,15 @@ import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Input } from 'antd';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
+
+interface FeedTransactionMapped extends FeedTransactionEntity {
+    volNickname: string;
+    volBadge: string;
+}
 
 const mealTimeById = {
     breakfast: 'Завтрак',
@@ -14,10 +20,17 @@ const mealTimeById = {
 };
 
 export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
+    const [searchText, setSearchText] = useState('');
+    const [mappedData, setMappedData] = useState<Array<FeedTransactionMapped> | null>(null);
+    const [filteredData, setFilteredData] = useState<Array<FeedTransactionMapped> | null>(null);
+
     const { tableProps } = useTable<FeedTransactionEntity>();
 
     const { data: vols } = useList<VolEntity>({
         resource: 'volunteers'
+    });
+    const { data: kitchens } = useList<KitchenEntity>({
+        resource: 'kitchens'
     });
 
     const volNameById = useMemo(() => {
@@ -40,10 +53,6 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [vols]);
 
-    const { data: kitchens } = useList<KitchenEntity>({
-        resource: 'kitchens'
-    });
-
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
             (acc, kitchen) => ({
@@ -54,9 +63,36 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [kitchens]);
 
+    useEffect(() => {
+        if (tableProps.dataSource) {
+            setMappedData(
+                tableProps.dataSource.map((tx) => {
+                    return {
+                        ...tx,
+                        volNickname: volNameById[tx.volunteer] ?? 'Аноним',
+                        volBadge: volQrById[tx.volunteer] ?? '-'
+                    } as FeedTransactionMapped;
+                })
+            );
+        }
+    }, [tableProps.dataSource, volNameById, volQrById]);
+    useEffect(() => {
+        if (mappedData) {
+            setFilteredData(() => {
+                return searchText
+                    ? mappedData.filter((item) => {
+                          const searchTextInLowerCase = searchText.toLowerCase();
+                          return item.volNickname?.toLowerCase().includes(searchTextInLowerCase);
+                      })
+                    : mappedData;
+            });
+        }
+    }, [searchText, mappedData]);
+
     return (
         <List>
-            <Table {...tableProps} rowKey='ulid'>
+            <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            <Table dataSource={filteredData} rowKey='ulid'>
                 <Table.Column
                     dataIndex='dtime'
                     key='dtime'
@@ -64,25 +100,11 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     render={(value) => value && <DateField format='DD/MM/YY HH:mm:ss' value={value} />}
                 />
                 <Table.Column
-                    dataIndex='volunteer'
+                    dataIndex='volNickname'
                     title='Волонтер'
-                    render={(value) => <TextField value={value ? volNameById[value] : 'Аноним'} />}
-                    // filterDropdown={(props) => (
-                    //     <FilterDropdown {...props}>
-                    //         <Select style={selectStyle} placeholder='Волонтер' {...volSelectProps} />
-                    //     </FilterDropdown>
-                    // )}
+                    render={(value) => <TextField value={value} />}
                 />
-                <Table.Column
-                    dataIndex='volunteer'
-                    title='Бэйдж'
-                    render={(value) => <TextField value={value ? volQrById[value] : ''} />}
-                    // filterDropdown={(props) => (
-                    //     <FilterDropdown {...props}>
-                    //         <Select style={selectStyle} placeholder='Волонтер' {...volSelectProps} />
-                    //     </FilterDropdown>
-                    // )}
-                />
+                <Table.Column dataIndex='volBadge' title='Бэйдж' render={(value) => <TextField value={value} />} />
                 <Table.Column
                     dataIndex='is_vegan'
                     title='Веган'
