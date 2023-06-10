@@ -4,7 +4,9 @@ import css from './scan-simulator.module.css';
 
 const options = [
     { label: 'Artem', value: 'abcfd1e5' },
-    { label: 'no exists', value: 'qwerty1234' }
+    { label: 'no exists', value: 'qwerty1234' },
+    { label: 'gr b 1', value: 'sd12' },
+    { label: 'gr b empty', value: 'asasd23' }
 ];
 
 export const ScanSimulator: React.FC<{
