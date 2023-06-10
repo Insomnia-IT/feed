@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import cn from 'classnames';
 
 import { ErrorMsg, LastUpdated } from '~/components/misc/misc';
-import { PostScan } from '~/components/post-scan';
+import { PostScan } from '~/components/post-scan_new';
 import { QrScan } from '~/components/qr-scan';
 import { BtnSync } from '~/components/btn-sync';
 import { db } from '~/db';
