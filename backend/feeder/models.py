@@ -61,7 +61,7 @@ class Volunteer(TimeMixin):
         if self.active_from and now < self.active_from:
             expired = -1
         return expired
-    
+
     @property
     def paid(self):
         return self.feed_type != 1
@@ -157,6 +157,7 @@ class FeedTransaction(TimeMixin):
     dtime = models.DateTimeField()
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     meal_time = models.TextField(max_length=10, verbose_name="Время питания", validators=[validate_meal_time])
+    qr_code = models.CharField(max_length=255, null=True, verbose_name="QR код")
 
     class Meta:
         verbose_name = "Приём пищи"

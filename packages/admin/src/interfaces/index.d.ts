@@ -23,6 +23,7 @@ export interface VolEntity {
     // location?: LocationEntity[];
     badge_type?: number; //BadgeType
     feed_type?: number; //FeedTypeEntity;
+    qr_code?: string;
 }
 
 export interface KitchenEntity {

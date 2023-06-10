@@ -40,7 +40,7 @@ export const PostScan: FC<{
         ) => {
             if (mealTime) {
                 try {
-                    await dbIncFeed(vol, mealTime, isVegan, log);
+                    await dbIncFeed(qrcode, vol, mealTime, isVegan, log);
                     closeFeed();
                 } catch (e) {
                     console.error(e);
@@ -70,7 +70,7 @@ export const PostScan: FC<{
 
     if (!vol || !volTransactions) {
         if (!qrcode) return <ErrorMsg close={closeFeed} msg='Сбой чтения QR' />;
-        return <ErrorMsg close={closeFeed} msg={`Бейдж не найден: ${qrcode}`} />;
+        return <ErrorMsg close={closeFeed} doNotFeed={doNotFeed} msg={`Бейдж не найден: ${qrcode}`} />;
     }
 
     const msg: Array<string> = [];

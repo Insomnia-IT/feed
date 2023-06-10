@@ -8,8 +8,7 @@ import { Input } from 'antd';
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
 
 interface FeedTransactionMapped extends FeedTransactionEntity {
-    volNickname: string;
-    volBadge: string;
+    vol_nickname: string;
 }
 
 const mealTimeById = {
@@ -43,16 +42,6 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [vols]);
 
-    const volQrById = useMemo(() => {
-        return (vols ? vols.data : []).reduce(
-            (acc, vol) => ({
-                ...acc,
-                [vol.id]: vol.qr
-            }),
-            {}
-        );
-    }, [vols]);
-
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
             (acc, kitchen) => ({
@@ -69,20 +58,21 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 tableProps.dataSource.map((tx) => {
                     return {
                         ...tx,
-                        volNickname: volNameById[tx.volunteer] ?? 'Аноним',
-                        volBadge: volQrById[tx.volunteer] ?? '-'
-                    } as FeedTransactionMapped;
+                        vol_nickname: volNameById[tx.volunteer] ?? 'Аноним'
+                    };
                 })
             );
         }
-    }, [tableProps.dataSource, volNameById, volQrById]);
+    }, [tableProps.dataSource, volNameById]);
     useEffect(() => {
         if (mappedData) {
             setFilteredData(() => {
                 return searchText
                     ? mappedData.filter((item) => {
                           const searchTextInLowerCase = searchText.toLowerCase();
-                          return item.volNickname?.toLowerCase().includes(searchTextInLowerCase);
+                          return [item.vol_nickname, item.qr_code].some((text) => {
+                              return text?.toLowerCase().includes(searchTextInLowerCase);
+                          });
                       })
                     : mappedData;
             });
@@ -91,7 +81,11 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
 
     return (
         <List>
-            <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            <Input
+                value={searchText ?? undefined}
+                placeholder={'Имя волонтера, код бэйджа'}
+                onChange={(e) => setSearchText(e.target.value)}
+            ></Input>
             <Table dataSource={filteredData} rowKey='ulid'>
                 <Table.Column
                     dataIndex='dtime'
@@ -100,11 +94,11 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     render={(value) => value && <DateField format='DD/MM/YY HH:mm:ss' value={value} />}
                 />
                 <Table.Column
-                    dataIndex='volNickname'
+                    dataIndex='vol_nickname'
                     title='Волонтер'
                     render={(value) => <TextField value={value} />}
                 />
-                <Table.Column dataIndex='volBadge' title='Бэйдж' render={(value) => <TextField value={value} />} />
+                <Table.Column dataIndex='qr_code' title='Бэйдж' render={(value) => <TextField value={value ?? ''} />} />
                 <Table.Column
                     dataIndex='is_vegan'
                     title='Веган'
