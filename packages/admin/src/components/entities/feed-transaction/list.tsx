@@ -2,17 +2,14 @@ import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Button, Form, Input } from 'antd';
+import axios from 'axios';
 
 import { saveXLSX } from '~/shared/lib/saveXLSX';
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
 
 const ExcelJS = require('exceljs');
-
-interface FeedTransactionMapped extends FeedTransactionEntity {
-    vol_nickname: string;
-}
 
 const mealTimeById = {
     breakfast: 'Завтрак',
@@ -22,11 +19,16 @@ const mealTimeById = {
 };
 
 export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
-    const [searchText, setSearchText] = useState('');
-    const [mappedData, setMappedData] = useState<Array<FeedTransactionMapped> | null>(null);
-    const [filteredData, setFilteredData] = useState<Array<FeedTransactionMapped> | null>(null);
-
-    const { tableProps } = useTable<FeedTransactionEntity>();
+    const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
+        onSearch: (values) => {
+            return [
+                {
+                    field: 'search',
+                    value: values.search
+                }
+            ];
+        }
+    });
 
     const { data: vols } = useList<VolEntity>({
         resource: 'volunteers'
@@ -55,60 +57,34 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [kitchens]);
 
-    const createAndSaveXLSX = () => {
-        if (filteredData) {
-            const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet('Transactions log');
+    const createAndSaveXLSX = async (): Promise<void> => {
+        const { data } = await axios.get('http://localhost:4000/feedapi/v1/feed-transaction/?limit=10000');
+        const transactions = data.results as Array<FeedTransactionEntity>;
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Transactions log');
 
-            const header = ['Время', 'Волонтер', 'Бейдж', 'Веган', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
-            sheet.addRow(header);
+        const header = ['Время', 'Волонтер', 'Бейдж', 'Веган', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
+        sheet.addRow(header);
 
-            filteredData.forEach((tx) => {
-                sheet.addRow([
-                    tx.dtime,
-                    tx.vol_nickname,
-                    tx.qr_code,
-                    tx.is_vegan ? 'Да' : 'Нет',
-                    tx.meal_time,
-                    kitchenNameById[tx.kitchen],
-                    tx.amount,
-                    tx.reason
-                ]);
-            });
-            void saveXLSX(workbook, 'feed-transactions');
-        }
+        transactions.forEach((tx) => {
+            sheet.addRow([
+                tx.dtime,
+                tx.volunteer ? volNameById[tx.volunteer] : 'Аноним',
+                tx.qr_code,
+                tx.is_vegan ? 'Да' : 'Нет',
+                tx.meal_time,
+                kitchenNameById[tx.kitchen],
+                tx.amount,
+                tx.reason
+            ]);
+        });
+        void saveXLSX(workbook, 'feed-transactions');
     };
-
-    useEffect(() => {
-        if (tableProps.dataSource) {
-            setMappedData(
-                tableProps.dataSource.map((tx) => {
-                    return {
-                        ...tx,
-                        vol_nickname: volNameById[tx.volunteer] ?? 'Аноним'
-                    };
-                })
-            );
-        }
-    }, [tableProps.dataSource, volNameById]);
-    useEffect(() => {
-        if (mappedData) {
-            setFilteredData(() => {
-                return searchText
-                    ? mappedData.filter((item) => {
-                          const searchTextInLowerCase = searchText.toLowerCase();
-                          return [item.vol_nickname, item.qr_code].some((text) => {
-                              return text?.toLowerCase().includes(searchTextInLowerCase);
-                          });
-                      })
-                    : mappedData;
-            });
-        }
-    }, [searchText, mappedData]);
 
     const Footer = (): JSX.Element => {
         return (
-            <Button onClick={() => createAndSaveXLSX()} disabled={!filteredData}>
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            <Button onClick={() => createAndSaveXLSX()} disabled={!tableProps.dataSource}>
                 Выгрузить
             </Button>
         );
@@ -116,14 +92,15 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
 
     return (
         <List>
-            <Form style={{ marginBottom: '16px' }}>
-                <Input
-                    value={searchText ?? undefined}
-                    placeholder={'Имя волонтера, код бэйджа'}
-                    onChange={(e) => setSearchText(e.target.value)}
-                ></Input>
+            <Form {...searchFormProps}>
+                <Space align={'start'}>
+                    <Form.Item name='search'>
+                        <Input placeholder='Имя волонтера, код бэйджа' allowClear />
+                    </Form.Item>
+                    <Button onClick={searchFormProps.form?.submit}>Применить</Button>
+                </Space>
             </Form>
-            <Table dataSource={filteredData} rowKey='ulid' footer={Footer}>
+            <Table {...tableProps} rowKey='ulid' footer={Footer}>
                 <Table.Column
                     dataIndex='dtime'
                     key='dtime'
@@ -131,9 +108,9 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     render={(value) => value && <DateField format='DD/MM/YY HH:mm:ss' value={value} />}
                 />
                 <Table.Column
-                    dataIndex='vol_nickname'
+                    dataIndex='volunteer'
                     title='Волонтер'
-                    render={(value) => <TextField value={value} />}
+                    render={(value) => <TextField value={value ? volNameById[value] : 'Аноним'} />}
                 />
                 <Table.Column dataIndex='qr_code' title='Бейдж' render={(value) => <TextField value={value ?? ''} />} />
                 <Table.Column

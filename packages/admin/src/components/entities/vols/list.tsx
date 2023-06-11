@@ -35,7 +35,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
 
     const { data: volunteers } = useList<VolEntity>({
-        resource: 'volunteers'
+        resource: 'volunteers',
+        config: {
+            pagination: {
+                pageSize: 10000
+            }
+        }
     });
 
     const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
