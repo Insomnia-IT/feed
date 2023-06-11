@@ -17,10 +17,12 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 // import { Loader } from '@feed/ui/src/loader';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 import { useMemo, useState } from 'react';
-import { Input } from 'antd';
+import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
+import ExcelJS from 'exceljs';
 
 import type { VolEntity } from '~/interfaces';
+import { saveXLSX } from '~/shared/lib/saveXLSX';
 
 import { dateFormat } from './common';
 
@@ -91,10 +93,33 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return data.is_blocked === value;
     };
 
+    const createAndSaveXLSX = () => {
+        if (filteredData) {
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet('Volunteers');
+
+            const header = ['Аолонтер', 'Бейджа'];
+            sheet.addRow(header);
+
+            filteredData.forEach((vol) => {
+                sheet.addRow([vol.nickname, vol.qr]);
+            });
+            void saveXLSX(workbook, 'volunteers');
+        }
+    };
+
+    const Footer = (): JSX.Element => {
+        return (
+            <Button onClick={() => createAndSaveXLSX()} disabled={!filteredData}>
+                Выгрузить
+            </Button>
+        );
+    };
+
     return (
         <List>
             <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
-            <Table dataSource={filteredData} rowKey='id'>
+            <Table dataSource={filteredData} footer={Footer} rowKey='id'>
                 <Table.Column
                     dataIndex='nickname'
                     key='nickname'

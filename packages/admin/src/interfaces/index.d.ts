@@ -51,6 +51,8 @@ export interface FeedTransactionEntity {
     volunteer: number;
     is_vegan: boolean;
     reason: string;
+    kitchen: number;
+    qr_code: string;
 }
 
 export { DepartmentEntity } from '@feed/api/src/entities/department.entity';

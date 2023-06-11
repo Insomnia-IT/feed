@@ -3,9 +3,12 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 import { useEffect, useMemo, useState } from 'react';
-import { Input } from 'antd';
+import { Button, Form, Input } from 'antd';
 
+import { saveXLSX } from '~/shared/lib/saveXLSX';
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
+
+const ExcelJS = require('exceljs');
 
 interface FeedTransactionMapped extends FeedTransactionEntity {
     vol_nickname: string;
@@ -52,6 +55,30 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [kitchens]);
 
+    const createAndSaveXLSX = () => {
+        if (filteredData) {
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet('Transactions log');
+
+            const header = ['Время', 'Волонтер', 'Бейдж', 'Веган', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
+            sheet.addRow(header);
+
+            filteredData.forEach((tx) => {
+                sheet.addRow([
+                    tx.dtime,
+                    tx.vol_nickname,
+                    tx.qr_code,
+                    tx.is_vegan ? 'Да' : 'Нет',
+                    tx.meal_time,
+                    kitchenNameById[tx.kitchen],
+                    tx.amount,
+                    tx.reason
+                ]);
+            });
+            void saveXLSX(workbook, 'feed-transactions');
+        }
+    };
+
     useEffect(() => {
         if (tableProps.dataSource) {
             setMappedData(
@@ -79,14 +106,24 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         }
     }, [searchText, mappedData]);
 
+    const Footer = (): JSX.Element => {
+        return (
+            <Button onClick={() => createAndSaveXLSX()} disabled={!filteredData}>
+                Выгрузить
+            </Button>
+        );
+    };
+
     return (
         <List>
-            <Input
-                value={searchText ?? undefined}
-                placeholder={'Имя волонтера, код бэйджа'}
-                onChange={(e) => setSearchText(e.target.value)}
-            ></Input>
-            <Table dataSource={filteredData} rowKey='ulid'>
+            <Form style={{ marginBottom: '16px' }}>
+                <Input
+                    value={searchText ?? undefined}
+                    placeholder={'Имя волонтера, код бэйджа'}
+                    onChange={(e) => setSearchText(e.target.value)}
+                ></Input>
+            </Form>
+            <Table dataSource={filteredData} rowKey='ulid' footer={Footer}>
                 <Table.Column
                     dataIndex='dtime'
                     key='dtime'
@@ -98,7 +135,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     title='Волонтер'
                     render={(value) => <TextField value={value} />}
                 />
-                <Table.Column dataIndex='qr_code' title='Бэйдж' render={(value) => <TextField value={value ?? ''} />} />
+                <Table.Column dataIndex='qr_code' title='Бейдж' render={(value) => <TextField value={value ?? ''} />} />
                 <Table.Column
                     dataIndex='is_vegan'
                     title='Веган'
