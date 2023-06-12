@@ -1,15 +1,21 @@
 import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import type { CrudFilter, IResourceComponentsProps } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
-import { useMemo } from 'react';
-import { Button, Form, Input } from 'antd';
+import { useCallback, useMemo, useState } from 'react';
+import { Button, DatePicker, Form, Input } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
+
+import { apiDateFormat, dayjsExtended, formDateFormat } from '/shared/lib';
 
 import { saveXLSX } from '~/shared/lib/saveXLSX';
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
+import { NEW_API_URL } from '~/const';
 
 const ExcelJS = require('exceljs');
+
+const { RangePicker } = DatePicker;
 
 const mealTimeById = {
     breakfast: 'Завтрак',
@@ -19,14 +25,32 @@ const mealTimeById = {
 };
 
 export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
+    const [dateRange, setDateRange] = useState<Array<string> | null>(null);
+    const [searchText, setSearchText] = useState<string>('');
+    const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
     const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
         onSearch: (values) => {
-            return [
-                {
+            const filters = [];
+            if (searchText) {
+                filters.push({
                     field: 'search',
                     value: values.search
-                }
-            ];
+                });
+            }
+            if (dateRange) {
+                filters.push(
+                    {
+                        field: 'dtime_from',
+                        value: dateRange[0]
+                    },
+                    {
+                        field: 'dtime_to',
+                        value: dateRange[1]
+                    }
+                );
+            }
+            setFilters(filters);
+            return filters;
         }
     });
 
@@ -57,8 +81,15 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [kitchens]);
 
-    const createAndSaveXLSX = async (): Promise<void> => {
-        const { data } = await axios.get('http://localhost:4000/feedapi/v1/feed-transaction/?limit=10000');
+    const createAndSaveXLSX = useCallback(async (): Promise<void> => {
+        let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
+        if (filters) {
+            filters.map((filter, i) => {
+                url = url.concat(`&${filter.field}=${filter.value}`);
+            });
+        }
+
+        const { data } = await axios.get(url);
         const transactions = data.results as Array<FeedTransactionEntity>;
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet('Transactions log');
@@ -79,12 +110,28 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
             ]);
         });
         void saveXLSX(workbook, 'feed-transactions');
-    };
+    }, [filters, kitchenNameById, volNameById]);
+
+    const handleClickDownload = useCallback((): void => {
+        void createAndSaveXLSX();
+    }, [createAndSaveXLSX]);
+
+    const handleDateRangeChange = useCallback((range: Array<dayjsExtended.Dayjs> | null) => {
+        if (!range) return;
+        setDateRange([
+            dayjsExtended(dayjsExtended(range[0])).format(apiDateFormat),
+            dayjsExtended(dayjsExtended(range[1])).format(apiDateFormat)
+        ]);
+    }, []);
 
     const Footer = (): JSX.Element => {
         return (
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            <Button onClick={() => createAndSaveXLSX()} disabled={!tableProps.dataSource}>
+            <Button
+                type={'primary'}
+                onClick={handleClickDownload}
+                icon={<DownloadOutlined />}
+                disabled={!tableProps.dataSource}
+            >
                 Выгрузить
             </Button>
         );
@@ -95,8 +142,17 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
             <Form {...searchFormProps}>
                 <Space align={'start'}>
                     <Form.Item name='search'>
-                        <Input placeholder='Имя волонтера, код бэйджа' allowClear />
+                        <Input
+                            value={searchText}
+                            placeholder='Имя волонтера, код бэйджа'
+                            allowClear
+                            onChange={(value) => setSearchText(value)}
+                        />
                     </Form.Item>
+                    <Form.Item name='date'>
+                        <RangePicker format={formDateFormat} onChange={(range) => handleDateRangeChange(range)} />
+                    </Form.Item>
+
                     <Button onClick={searchFormProps.form?.submit}>Применить</Button>
                 </Space>
             </Form>
@@ -117,11 +173,6 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     dataIndex='is_vegan'
                     title='Веган'
                     render={(value) => <TextField value={value ? 'Да' : 'Нет'} />}
-                    // filterDropdown={(props) => (
-                    //     <FilterDropdown {...props}>
-                    //         <Select style={selectStyle} placeholder='Волонтер' {...volSelectProps} />
-                    //     </FilterDropdown>
-                    // )}
                 />
                 <Table.Column
                     dataIndex='meal_time'

@@ -10,8 +10,7 @@ import 'react-quill/dist/quill.snow.css';
 import dayjs from 'dayjs';
 
 import type { ColorTypeEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity } from '~/interfaces';
-
-export const dateFormat = 'DD.MM.YYYY';
+import { apiDateFormat } from '~/shared/lib';
 
 export const CreateEdit: FC = () => {
     const { selectProps: leadSelectProps } = useSelect<VolEntity>({
@@ -91,12 +90,12 @@ export const CreateEdit: FC = () => {
                                 getValueProps={getDateValue}
                                 rules={Rules.required}
                             >
-                                <DatePicker format={dateFormat} style={{ width: '100%' }} />
+                                <DatePicker format={apiDateFormat} style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label='До' name='active_to' getValueProps={getDateValue} rules={Rules.required}>
-                                <DatePicker format={dateFormat} style={{ width: '100%' }} />
+                                <DatePicker format={apiDateFormat} style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                     </Row>
