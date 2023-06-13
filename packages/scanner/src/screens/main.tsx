@@ -8,7 +8,7 @@ import { BtnSync } from '~/components/btn-sync';
 import { db } from '~/db';
 import { AppContext } from '~/app-context';
 import { MainScreenStats } from '~/components/main-screen-stats';
-import { ScanSimulator } from '~/components/scan-simulator';
+import { ScanSimulator } from '~/components/qr-scan-simulator';
 
 import css from '../app.module.css';
 
