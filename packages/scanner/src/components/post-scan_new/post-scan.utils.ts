@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import { MealTime, Transaction, Volunteer, FeedType, FeedWithBalance } from '~/db';
 import { isVolExpired } from '~/components/misc/misc';
 import { getMealTimeText } from '~/lib/utils';
@@ -52,3 +54,5 @@ export const validateVol = (
 
     return { msg, isRed };
 };
+
+export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();

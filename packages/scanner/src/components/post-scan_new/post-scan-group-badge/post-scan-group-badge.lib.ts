@@ -1,16 +1,6 @@
 import { Volunteer } from '~/db';
 
-export enum Scenarios {
-    'LOADING',
-    'GREEN',
-    'YELLOW',
-    'RED',
-    'ERROR_EMPTY',
-    'ERROR_VALIDATION'
-}
-
-export type ValidatedVol = {
-    vol: Volunteer;
+export type ValidatedVol = Volunteer & {
     msg: Array<string>;
     isRed: boolean;
 };

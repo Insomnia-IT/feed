@@ -1,0 +1,50 @@
+.groupBadgeInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+}
+
+.feedTypeInfo {
+	display: flex;
+    flex-direction: row;
+    gap: 2em;
+    justify-content: space-between;
+}
+
+.card {
+    display: flex;
+    align-content: space-around;
+    justify-content: space-around;
+    align-items: center;
+    width: 100vw;
+    height: 15vh;
+
+    button {
+        height: 100%;
+        padding: 1em;
+    }
+}
+
+.volunteerList {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25em;
+	font-size: 0.6em;
+	align-items: end;
+
+	.title {
+		&.red {
+			background-color: var(--c-red);
+		}
+
+		&.green {
+			background-color: var(--c-green);
+		}
+	}
+
+	.volonteerListItem {
+		display: flex;
+		flex-direction: row;
+		gap: 5em;
+	}
+}

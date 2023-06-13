@@ -15,7 +15,7 @@ export const PostScan: FC<{
     const groupBadge = useLiveQuery(async () => await db.groupBadges.where('qr').equals(qrcode).first(), [qrcode]);
 
     if (vol) return <PostScanVol qrcode={qrcode} vol={vol} closeFeed={closeFeed} />;
-    else if (groupBadge) return <PostScanGroupBadge qrcode={qrcode} groupBadge={groupBadge} closeFeed={closeFeed} />;
+    else if (groupBadge) return <PostScanGroupBadge groupBadge={groupBadge} closeFeed={closeFeed} />;
     else return <ErrorMsg close={closeFeed} msg={`Бейдж не найден: ${qrcode}`} />;
 });
 PostScan.displayName = 'PostScan';
