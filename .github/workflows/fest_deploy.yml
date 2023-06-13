@@ -10,9 +10,6 @@ jobs:
       IMAGE_NAME_BASENAME: feed-admin
       DB_DIR: /var/feed_db
     steps:
-    - uses: docker/setup-buildx-action@v2
-      with:
-        install: true
     - uses: actions/checkout@v3
 # DB
     - name: setup db dir
@@ -20,11 +17,11 @@ jobs:
 # ADMIN
     - name: build admin
       run: |
-          docker buildx build \
-             --output type=docker \
+          docker build \
+             --progress=plain \
              -t $IMAGE_NAME_BASENAME:$GITHUB_SHA  \
              --build-arg API_URL=https://feed.cherepusick.keenetic.name/api \
-             --build-arg NEW_API_URL=https://feedapp.insomniafest.ru/feedapi/v1 \
+             --build-arg NEW_API_URL=http://redmine.cb27.ru:18888/feedapi/v1 \
             .
     - name: stop admin
       run: docker rm -f $IMAGE_NAME_BASENAME
