@@ -23,7 +23,7 @@ from feeder.utils import sync_with_notion, calculate_statistics, STAT_DATE_FORMA
 class MultiSerializerViewSetMixin(object):
     def get_serializer_class(self):
         """
-        Смотрим на serializer class в self.serializer_action_classes, который представляет из себя 
+        Смотрим на serializer class в self.serializer_action_classes, который представляет из себя
         dict mapping action name (key) в serializer class (value), например::
         class MyViewSet(MultiSerializerViewSetMixin, ViewSet):
             serializer_class = MyDefaultSerializer
@@ -112,6 +112,7 @@ class FeedTypeViewSet(viewsets.ModelViewSet):
 
 class FeedTransactionFilter(django_filters.FilterSet):
     dtime_from = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='gte')
+    dtime_to = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='lte')
 
     class Meta:
         model = models.FeedTransaction
@@ -123,7 +124,7 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
     queryset = models.FeedTransaction.objects.all()
     serializer_class = serializers.FeedTransactionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['volunteer', ]
+    search_fields = ['volunteer__nickname', ]
     filterset_class = FeedTransactionFilter
     ordering = ('-dtime')
 
@@ -206,8 +207,8 @@ class Statistics(APIView):
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                name="date_from", 
-                type=OpenApiTypes.DATE, 
+                name="date_from",
+                type=OpenApiTypes.DATE,
                 location=OpenApiParameter.QUERY,
                 description="Begining of period. Optional. Default is today. Value must be in '{}' format.".format(STAT_DATE_FORMAT),
                 examples=[
@@ -216,8 +217,8 @@ class Statistics(APIView):
                 ]
             ),
             OpenApiParameter(
-                name="date_to", 
-                type=OpenApiTypes.DATE, 
+                name="date_to",
+                type=OpenApiTypes.DATE,
                 location=OpenApiParameter.QUERY,
                 description="End of period. Optional. Default is today. Value must be in '{}' format.".format(STAT_DATE_FORMAT),
                 examples=[

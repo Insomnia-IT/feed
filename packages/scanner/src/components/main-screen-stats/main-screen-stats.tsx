@@ -20,7 +20,7 @@ export const MainScreenStats = () => {
                 .where('ts')
                 .between(dayjs(today).add(7, 'h').unix(), dayjs(today).add(31, 'h').unix())
                 .filter((tx) => {
-                    return tx.mealTime === mealTime;
+                    return tx.mealTime === mealTime && tx.amount !== 0;
                 })
                 .count();
         },

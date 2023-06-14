@@ -19,4 +19,7 @@ dayjsExtended.extend(duration);
 dayjsExtended.extend(toObject);
 dayjsExtended.extend(utc);
 
-export default dayjsExtended;
+const apiDateFormat = 'YYYY-MM-DD';
+const formDateFormat = 'DD.MM.YYYY';
+
+export { dayjsExtended, apiDateFormat, formDateFormat };

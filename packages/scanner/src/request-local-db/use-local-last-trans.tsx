@@ -14,6 +14,7 @@ export const useLocalLastTrans = (): LocalLastTransHook => {
 
         return getLastTrans(0, limit)
             .then((txs) => {
+                txs = txs.filter((tx) => tx.amount !== 0);
                 setTransactions(txs);
                 setProgress(false);
                 return txs;

@@ -61,7 +61,7 @@ class Volunteer(TimeMixin):
         if self.active_from and now < self.active_from:
             expired = -1
         return expired
-    
+
     @property
     def paid(self):
         return self.feed_type != 1
