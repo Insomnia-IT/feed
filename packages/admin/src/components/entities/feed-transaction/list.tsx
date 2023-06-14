@@ -1,19 +1,17 @@
 import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from '@pankod/refine-antd';
-import type { CrudFilter, IResourceComponentsProps } from '@pankod/refine-core';
+import type { CrudFilter, IResourceComponentsProps, LogicalFilter } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 import { useCallback, useMemo, useState } from 'react';
 import { Button, DatePicker, Form, Input } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import ExcelJS from 'exceljs';
 
-import { apiDateFormat, dayjsExtended, formDateFormat } from '/shared/lib';
-
+import { apiDateFormat, dayjsExtended, formDateFormat } from '~/shared/lib';
 import { saveXLSX } from '~/shared/lib/saveXLSX';
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { NEW_API_URL } from '~/const';
-
-const ExcelJS = require('exceljs');
 
 const { RangePicker } = DatePicker;
 
@@ -29,8 +27,8 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState<string>('');
     const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
     const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
-        onSearch: (values) => {
-            const filters = [];
+        onSearch: (values: any) => {
+            const filters: any = [];
             filters.push({
                 field: 'search',
                 value: values.search
@@ -80,7 +78,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
         let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
         if (filters) {
-            filters.forEach((filter) => {
+            filters.forEach((filter: any) => {
                 if (filter.value) {
                     url = url.concat(`&${filter.field}=${filter.value}`);
                 }
@@ -147,11 +145,11 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                             value={searchText}
                             placeholder='Имя волонтера'
                             allowClear
-                            onChange={(value) => setSearchText(value)}
+                            onChange={(value: any) => setSearchText(value)}
                         />
                     </Form.Item>
                     <Form.Item name='date'>
-                        <RangePicker format={formDateFormat} onChange={(range) => handleDateRangeChange(range)} />
+                        <RangePicker format={formDateFormat} onChange={(range: any) => handleDateRangeChange(range)} />
                     </Form.Item>
 
                     <Button onClick={searchFormProps.form?.submit}>Применить</Button>
