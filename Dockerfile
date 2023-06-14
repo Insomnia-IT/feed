@@ -49,15 +49,17 @@ COPY ./packages/core/package.json /app/packages/core/package.json
 COPY ./packages/ui/package.json /app/packages/ui/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 
-RUN yarn --frozen-lockfile
+RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
+    yarn --frozen-lockfile
 
 COPY . /app
 
-RUN yarn build
+RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
+    yarn build
 
-RUN yarn --prod --frozen-lockfile
+# RUN yarn --prod --frozen-lockfile
 
-RUN /usr/local/bin/node-clean
+# RUN /usr/local/bin/node-clean
 
 
 FROM base as runner
@@ -114,7 +116,8 @@ RUN mkdir backend/ backend/logs/ backend/data/
 ENV PYTHONUNBUFFERED 1
 
 COPY ./backend/requirements.txt /app/backend
-RUN cd backend && pip install -r requirements.txt --no-cache-dir
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd backend && pip install -r requirements.txt
 
 COPY ./backend/config /app/backend/config
 COPY ./backend/feeder /app/backend/feeder

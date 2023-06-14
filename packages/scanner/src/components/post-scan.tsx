@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import dayjs from 'dayjs';
 
 import { AppColor, AppContext } from '~/app-context';
-import { db, dbIncFeed, FeedType, FeedWithBalance } from '~/db';
+import { db, dbIncFeed, FeedType, FeedWithBalance, MealTime } from '~/db';
 import { ErrorMsg, GreenAnonCard, GreenCard, isVolExpired, YellowCard } from '~/components/misc/misc';
 import { getMealTimeText } from '~/lib/utils';
 
@@ -94,23 +94,33 @@ export const PostScan: FC<{
     }
     if (mealTime && volTransactions.some((t) => t.mealTime === mealTime)) {
         msg.push(`Волонтер уже получил ${getMealTimeText(mealTime)}`);
-        if (vol.feed_type === FeedType.FT2) {
-            isRed = true;
-        } else {
-            const hasDebt = Object.values(
-                volTransactions.reduce(
-                    (acc, { mealTime }) => ({
-                        ...acc,
-                        [mealTime]: (acc[mealTime] || 0) + 1
-                    }),
-                    {} as { [mealTime: string]: number }
-                )
-            ).some((count) => count > 1);
+        isRed = true;
 
-            if (hasDebt) {
-                msg.push('Волонтер уже питался сегодня в долг');
-                isRed = true;
-            }
+        // const hasDebt = Object.values(
+        //     volTransactions.reduce(
+        //         (acc, { mealTime }) => ({
+        //             ...acc,
+        //             [mealTime]: (acc[mealTime] || 0) + 1
+        //         }),
+        //         {} as { [mealTime: string]: number }
+        //     )
+        // ).some((count) => count > 1);
+
+        // if (hasDebt) {
+        //     msg.push('Волонтер уже питался сегодня в долг');
+        //     isRed = true;
+        // }
+    }
+    if (msg.length && !isRed && volTransactions.some((t) => t.amount)) {
+        msg.push('Волонтер уже питался сегодня в долг');
+        isRed = true;
+    }
+    if (vol.feed_type === FeedType.FT2) {
+        if (mealTime === MealTime.night) {
+            msg.push('Платник не может питаться в дожор');
+        }
+        if (msg.length > 0) {
+            isRed = true;
         }
     }
 
