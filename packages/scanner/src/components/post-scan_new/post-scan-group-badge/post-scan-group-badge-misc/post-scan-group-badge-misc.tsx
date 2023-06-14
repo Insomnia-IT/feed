@@ -1,18 +1,12 @@
 import { FC } from 'react';
-import type { Volunteer } from '~/db';
 import cs from 'classnames';
 
+import type { Volunteer } from '~/db';
 import { ValidationGroups } from '../post-scan-group-badge.lib';
 import { getAllVols } from '../post-scan-group-badge.utils';
 import css from './post-scan-group-badge-misc.module.css';
 
 type TitleColor = 'red' | 'green';
-
-const TotalInfo: FC<{
-    title: string;
-    total: number;
-    fact?: number;
-}> = ({ fact, title, total }) => <span>{`${title}: ${Number.isInteger(fact) ? fact + '/' : ''}${total}`}</span>;
 
 const VolunteerList: FC<{
     title: string;
@@ -41,28 +35,25 @@ const GroupBadgeInfo: FC<{
     const totalVegs = vols.filter((vol) => vol.is_vegan).length;
     const totalMeats = vols.filter((vol) => !vol.is_vegan).length;
 
+    const _volsToFeed = volsToFeed ?? vols;
+
     return (
         <div className={css.groupBadgeInfo}>
             <div>
                 <span>({name})</span>
             </div>
+            <div className={css.total}>
+                <span>{`Порций: ${_volsToFeed.length}`}</span>
+            </div>
             <div className={css.feedTypeInfo}>
-                <>
-                    <TotalInfo
-                        title='Веганов'
-                        total={totalVegs}
-                        fact={volsToFeed?.filter((vol) => vol.is_vegan).length}
-                    />
-                    <TotalInfo
-                        title='Мясоедов'
-                        total={totalMeats}
-                        fact={volsToFeed?.filter((vol) => !vol.is_vegan).length}
-                    />
-                </>
+                <span>{`Веган: ${_volsToFeed.filter((vol) => vol.is_vegan).length}`}</span>
+                <span>{`Мясоед: ${_volsToFeed.filter((vol) => !vol.is_vegan).length}`}</span>
             </div>
-            <div>
-                <TotalInfo title={'Всего порций'} total={vols.length} fact={volsToFeed?.length} />
-            </div>
+            {volsToFeed && (
+                <div className={css.fact}>
+                    <span>{`Номинал бейджа: ${vols.length}(М${totalMeats}/В${totalVegs})`}</span>
+                </div>
+            )}
         </div>
     );
 };
@@ -70,14 +61,20 @@ const GroupBadgeInfo: FC<{
 export const GroupBadgeGreenCard: FC<{
     name: string;
     volsToFeed: Array<Volunteer>;
-    getDoFeed: (vols: Array<Volunteer>) => () => void;
+    doFeed: (vols: Array<Volunteer>) => void;
     close: () => void;
-}> = ({ close, getDoFeed, name, volsToFeed }) => (
+}> = ({ close, doFeed, name, volsToFeed }) => (
     <>
         <GroupBadgeInfo name={name} vols={volsToFeed} />
 
         <div className={css.card}>
-            <button type='button' onClick={getDoFeed(volsToFeed)}>
+            <button
+                type='button'
+                onClick={() => {
+                    doFeed(volsToFeed);
+                    close();
+                }}
+            >
                 Кормить
             </button>
             <button type='button' onClick={close}>
@@ -90,10 +87,10 @@ export const GroupBadgeGreenCard: FC<{
 export const GroupBadgeYellowCard: FC<{
     name: string;
     validationGroups: ValidationGroups;
-    getDoFeed: (vols: Array<Volunteer>) => () => void;
-    getDoNotFeed: (vols: Array<Volunteer>) => () => void;
+    doFeed: (vols: Array<Volunteer>) => void;
+    doNotFeed: (vols: Array<Volunteer>) => void;
     close: () => void;
-}> = ({ close, getDoFeed, getDoNotFeed, name, validationGroups }) => {
+}> = ({ close, doFeed, doNotFeed, name, validationGroups }) => {
     const { greens, reds, yellows } = validationGroups;
     const volsToFeed = [...greens, ...yellows];
 
@@ -101,15 +98,26 @@ export const GroupBadgeYellowCard: FC<{
         <>
             <GroupBadgeInfo name={name} vols={getAllVols(validationGroups)} volsToFeed={volsToFeed} />
 
-            {greens.length > 0 && <VolunteerList color='green' title='Поест' vols={greens} />}
-            {yellows.length > 0 && <VolunteerList title='Все равно поест' vols={yellows} />}
+            {yellows.length > 0 && <VolunteerList title='В долг' vols={yellows} />}
             {reds.length > 0 && <VolunteerList color='red' title='Не поест' vols={reds} />}
 
             <div className={css.card}>
-                <button type='button' onClick={getDoFeed(volsToFeed)}>
+                <button
+                    type='button'
+                    onClick={() => {
+                        doFeed(volsToFeed);
+                        close();
+                    }}
+                >
                     Все равно кормить
                 </button>
-                <button type='button' onClick={close}>
+                <button
+                    type='button'
+                    onClick={() => {
+                        doNotFeed(reds);
+                        close();
+                    }}
+                >
                     Отмена
                 </button>
             </div>

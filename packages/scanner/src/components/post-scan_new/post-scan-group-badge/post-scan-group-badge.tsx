@@ -56,18 +56,10 @@ export const PostScanGroupBadge: FC<{
     const { kitchenId, mealTime, setColor } = useContext(AppContext);
 
     // set callback to feed vols
-    const getDoFeed = useCallback((vols: Array<Volunteer>) => {
-        const feed = async (vols: Array<Volunteer>) => {
-            if (!vols) {
-                await Promise.reject(vols);
-                return;
-            }
+    const feedAsync = async (vols: Array<Volunteer>) =>
+        await Promise.all(vols.map((vol) => dbIncFeed(vol, mealTime!, vol.is_vegan)));
 
-            await Promise.all(vols.map((vol) => dbIncFeed(vol, mealTime!, vol.is_vegan)));
-        };
-
-        return () => void feed(vols);
-    }, []);
+    const doFeed = (vols: Array<Volunteer>) => void feedAsync(vols);
 
     useEffect(() => {
         // loading
@@ -167,16 +159,16 @@ export const PostScanGroupBadge: FC<{
                 <GroupBadgeGreenCard
                     name={name}
                     volsToFeed={validationGroups!.greens}
+                    doFeed={doFeed}
                     close={closeFeed}
-                    getDoFeed={getDoFeed}
                 />
             )}
 
             {Views.YELLOW === view && (
                 <GroupBadgeYellowCard
                     name={name}
-                    getDoFeed={getDoFeed}
-                    getDoNotFeed={(vols: Array<Volunteer>) => () => console.log('DUMMY: do not feed', vols)}
+                    doFeed={doFeed}
+                    doNotFeed={(vols: Array<Volunteer>) => console.log('TEST: do not feed', vols)}
                     close={closeFeed}
                     validationGroups={validationGroups!}
                 />

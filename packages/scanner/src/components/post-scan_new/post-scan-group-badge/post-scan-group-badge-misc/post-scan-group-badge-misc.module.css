@@ -2,6 +2,14 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
+
+	.total {
+			font-weight: bold;
+	}
+
+	.fact {
+			font-size: 0.75em;
+	}
 }
 
 .feedTypeInfo {
