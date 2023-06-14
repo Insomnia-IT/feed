@@ -100,11 +100,11 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                         create: FeedTransactionCreate,
                         icon: <Icons.HistoryOutlined />
                     },
-                    // {
-                    //     name: 'stats',
-                    //     list: PublicStatistic,
-                    //     icon: <Icons.LineChartOutlined />
-                    // },
+                    {
+                        name: 'stats',
+                        list: PublicStatistic,
+                        icon: <Icons.LineChartOutlined />
+                    },
                     {
                         name: 'sync',
                         list: Sync,
