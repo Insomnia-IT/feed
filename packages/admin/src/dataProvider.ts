@@ -60,7 +60,7 @@ export const crudDataProvider = (
                 params: {
                     ...filters?.reduce(
                         (acc, filter) =>
-                            isLogicalFilter(filter)
+                            isLogicalFilter(filter) && filter.value
                                 ? {
                                       ...acc,
                                       [filter.field]: filter.value

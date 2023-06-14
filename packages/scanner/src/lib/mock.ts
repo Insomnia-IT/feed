@@ -17,14 +17,13 @@ const createTestTrans = (type: 'now' | 'rnd', mealTime: MealTime): Transaction =
     const vol_id = rndInt(0, 600);
 
     return {
-        vol_id: vol_id,
+        vol_id,
         amount: 1,
         ts,
         ulid: ulid(ts),
         mealTime: mealTime,
         is_new: true,
-        is_vegan: rndInt(0, 1) ? true : false,
-        qr_code: vol_id.toString()
+        is_vegan: rndInt(0, 1) ? true : false
     };
 };
 

@@ -31,24 +31,20 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
     const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
         onSearch: (values) => {
             const filters = [];
-            if (searchText) {
-                filters.push({
-                    field: 'search',
-                    value: values.search
-                });
-            }
-            if (dateRange) {
-                filters.push(
-                    {
-                        field: 'dtime_from',
-                        value: dateRange[0]
-                    },
-                    {
-                        field: 'dtime_to',
-                        value: dateRange[1]
-                    }
-                );
-            }
+            filters.push({
+                field: 'search',
+                value: values.search
+            });
+            filters.push(
+                {
+                    field: 'dtime_from',
+                    value: dateRange ? dateRange[0] : null
+                },
+                {
+                    field: 'dtime_to',
+                    value: dateRange ? dateRange[1] : null
+                }
+            );
             setFilters(filters);
             return filters;
         }
@@ -84,8 +80,10 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
         let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
         if (filters) {
-            filters.map((filter, i) => {
-                url = url.concat(`&${filter.field}=${filter.value}`);
+            filters.forEach((filter) => {
+                if (filter.value) {
+                    url = url.concat(`&${filter.field}=${filter.value}`);
+                }
             });
         }
 
@@ -94,14 +92,14 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet('Transactions log');
 
-        const header = ['Время', 'Волонтер', 'Бейдж', 'Веган', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
+        const header = ['Время', 'ID волонтера', 'Волонтер', 'Веган', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
         sheet.addRow(header);
 
         transactions.forEach((tx) => {
             sheet.addRow([
                 tx.dtime,
+                tx.volunteer,
                 tx.volunteer ? volNameById[tx.volunteer] : 'Аноним',
-                tx.qr_code,
                 tx.is_vegan ? 'Да' : 'Нет',
                 tx.meal_time,
                 kitchenNameById[tx.kitchen],
@@ -117,11 +115,14 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
     }, [createAndSaveXLSX]);
 
     const handleDateRangeChange = useCallback((range: Array<dayjsExtended.Dayjs> | null) => {
-        if (!range) return;
-        setDateRange([
-            dayjsExtended(dayjsExtended(range[0])).format(apiDateFormat),
-            dayjsExtended(dayjsExtended(range[1])).format(apiDateFormat)
-        ]);
+        if (!range) {
+            setDateRange(null);
+        } else {
+            setDateRange([
+                dayjsExtended(dayjsExtended(range[0])).format(apiDateFormat),
+                dayjsExtended(dayjsExtended(range[1])).format(apiDateFormat)
+            ]);
+        }
     }, []);
 
     const Footer = (): JSX.Element => {
@@ -144,7 +145,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     <Form.Item name='search'>
                         <Input
                             value={searchText}
-                            placeholder='Имя волонтера, код бэйджа'
+                            placeholder='Имя волонтера'
                             allowClear
                             onChange={(value) => setSearchText(value)}
                         />
@@ -168,7 +169,11 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     title='Волонтер'
                     render={(value) => <TextField value={value ? volNameById[value] : 'Аноним'} />}
                 />
-                <Table.Column dataIndex='qr_code' title='Бейдж' render={(value) => <TextField value={value ?? ''} />} />
+                <Table.Column
+                    dataIndex='volunteer'
+                    title='ID волонтера'
+                    render={(value) => <TextField value={value ?? ''} />}
+                />
                 <Table.Column
                     dataIndex='is_vegan'
                     title='Веган'

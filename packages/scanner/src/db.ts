@@ -12,7 +12,6 @@ export interface Transaction {
     is_new: boolean;
     is_vegan: boolean;
     reason?: string | null;
-    qr_code: string | null;
 }
 
 export interface ServerTransaction {
@@ -22,7 +21,6 @@ export interface ServerTransaction {
     dtime: string;
     meal_time: MealTime;
     is_vegan: boolean;
-    qr_code: string;
 }
 
 export interface TransactionJoined extends Transaction {
@@ -79,7 +77,6 @@ export class MySubClassedDexie extends Dexie {
 export const db = new MySubClassedDexie();
 
 export const addTransaction = async (
-    qr_code: string,
     vol: Volunteer | undefined,
     mealTime: MealTime,
     isVegan = false,
@@ -105,13 +102,11 @@ export const addTransaction = async (
         ulid: ulid(ts),
         mealTime: MealTime[mealTime],
         is_new: true,
-        reason: reason,
-        qr_code
+        reason: reason
     });
 };
 
 export const dbIncFeed = async (
-    qr_code: string,
     vol: Volunteer | undefined,
     mealTime: MealTime,
     isVegan: boolean | undefined,
@@ -129,7 +124,7 @@ export const dbIncFeed = async (
             });
     }
 
-    return await addTransaction(qr_code, vol, mealTime, isVegan, log);
+    return await addTransaction(vol, mealTime, isVegan, log);
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {

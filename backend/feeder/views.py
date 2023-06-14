@@ -124,7 +124,7 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
     queryset = models.FeedTransaction.objects.all()
     serializer_class = serializers.FeedTransactionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['volunteer__nickname', 'qr_code', ]
+    search_fields = ['volunteer__nickname', ]
     filterset_class = FeedTransactionFilter
     ordering = ('-dtime')
 

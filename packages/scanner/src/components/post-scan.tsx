@@ -40,7 +40,7 @@ export const PostScan: FC<{
         ) => {
             if (mealTime) {
                 try {
-                    await dbIncFeed(qrcode, vol, mealTime, isVegan, log);
+                    await dbIncFeed(vol, mealTime, isVegan, log);
                     closeFeed();
                 } catch (e) {
                     console.error(e);
