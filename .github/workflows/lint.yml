@@ -1,0 +1,16 @@
+name: Lint
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: [self-hosted, rumsrv]
+    steps:
+    - uses: actions/checkout@v3
+    - name: yarn install
+      run: yarn --frozen-lockfile
+    - name: lint
+      run: yarn lint
+    - name: tc
+      run: yarn tc
