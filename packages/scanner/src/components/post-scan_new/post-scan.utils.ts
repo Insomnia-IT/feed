@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
+import { useCallback } from 'react';
 
-import { MealTime, Transaction, Volunteer, FeedType, FeedWithBalance } from '~/db';
+import { MealTime, Transaction, Volunteer, FeedType, FeedWithBalance, dbIncFeed } from '~/db';
 import { isVolExpired } from '~/components/misc/misc';
 import { getMealTimeText } from '~/lib/utils';
 
@@ -67,3 +68,21 @@ export const validateVol = (
 };
 
 export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
+
+export const useDoFeedVol = (vol: Volunteer | undefined, mealTime: MealTime | null, closeFeed: () => void) => {
+    const feed = useCallback(
+        async (isVegan: boolean | undefined) => {
+            if (mealTime) {
+                try {
+                    await dbIncFeed(vol, mealTime, isVegan);
+                    closeFeed();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        },
+        [closeFeed, vol]
+    );
+
+    return useCallback((isVegan?: boolean) => void feed(isVegan), [feed]);
+};

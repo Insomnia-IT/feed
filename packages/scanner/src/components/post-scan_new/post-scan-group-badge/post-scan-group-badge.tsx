@@ -152,7 +152,10 @@ export const PostScanGroupBadge: FC<{
             {Views.ERROR_EMPTY === view && <ErrorMsg close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />}
 
             {Views.ERROR_VALIDATION === view && (
-                <ErrorMsg close={closeFeed} msg={`Упс.. Ошибка при проверке волонтеров.`} />
+                <ErrorMsg
+                    close={closeFeed}
+                    msg={`Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!`}
+                />
             )}
 
             {Views.GREEN === view && (

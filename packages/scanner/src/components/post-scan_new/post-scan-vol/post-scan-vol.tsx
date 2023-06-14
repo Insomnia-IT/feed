@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { AppColor, AppContext } from '~/app-context';
 import { db, dbIncFeed, Volunteer } from '~/db';
 import { ErrorMsg, GreenCard, GreenAnonCard, YellowCard } from '~/components/misc';
-import { validateVol } from '../post-scan.utils';
+import { useDoFeedVol, validateVol } from '../post-scan.utils';
 
 export const PostScanVol: FC<{
     qrcode: string;
@@ -26,26 +26,7 @@ export const PostScanVol: FC<{
 
     const { kitchenId, mealTime, setColor } = useContext(AppContext);
 
-    const feed = useCallback(
-        async (isVegan: boolean | undefined) => {
-            if (mealTime) {
-                try {
-                    await dbIncFeed(vol, mealTime, isVegan);
-                    closeFeed();
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        },
-        [closeFeed, vol]
-    );
-
-    const doFeed = useCallback((isVegan?: boolean) => void feed(isVegan), [feed]);
-
-    if (qrcode === 'anon') {
-        setColor(AppColor.GREEN);
-        return <GreenAnonCard close={closeFeed} doFeed={doFeed} />;
-    }
+    const doFeed = useDoFeedVol(vol, mealTime, closeFeed);
 
     if (!volTransactions) {
         return <ErrorMsg close={closeFeed} msg={`Бейдж не найден: ${qrcode}`} />;
