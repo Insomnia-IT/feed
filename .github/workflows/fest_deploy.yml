@@ -21,7 +21,7 @@ jobs:
              --progress=plain \
              -t $IMAGE_NAME_BASENAME:$GITHUB_SHA  \
              --build-arg API_URL=https://feed.cherepusick.keenetic.name/api \
-             --build-arg NEW_API_URL=http://insomnia2022.cb27.ru:443/feedapi/v1 \
+             --build-arg NEW_API_URL=https://feedapp.insomniafest.ru/feedapi/v1 \
             .
     - name: stop admin
       run: docker rm -f $IMAGE_NAME_BASENAME
