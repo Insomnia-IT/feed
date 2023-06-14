@@ -4,8 +4,7 @@ import type { RadioChangeEvent } from '@pankod/refine-antd';
 import axios from 'axios';
 
 import { NEW_API_URL } from '~/const';
-
-import { dayjsExtended as dayjsExt, formDateFormat } from '/shared/lib';
+import { dayjsExtended as dayjsExt, formDateFormat } from '~/shared/lib';
 
 import type { EaterTypeExtended, IStatisticApi, IStatisticResponce } from '../types';
 import {
