@@ -3,11 +3,8 @@ import React, { useState } from 'react';
 import css from './scan-simulator.module.css';
 
 const options = [
-    { label: 'Artem', value: 'abcfd1e5' },
-    { label: 'no exists', value: 'qwerty1234' },
-    { label: 'gr b 1', value: 'sd12' },
-    { label: 'gr b 2', value: 'asasd23' },
-    { label: 'gr empty', value: 'emptier' }
+    { label: 'Артем Новиков', value: 'abcfd1e5' },
+    { label: 'не существует', value: 'qwerty1234' }
 ];
 
 export const ScanSimulator: React.FC<{
