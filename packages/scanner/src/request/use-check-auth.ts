@@ -14,7 +14,7 @@ export const useCheckAuth = (baseUrl: string, setAuth: (auth: boolean) => void):
                     return e;
                 })
                 .catch((e) => {
-                    if (e.response.status === 401) {
+                    if (e.response && e.response.status === 401) {
                         setAuth(false);
                     }
                     throw e;
