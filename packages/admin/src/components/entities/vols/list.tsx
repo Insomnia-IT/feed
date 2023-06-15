@@ -141,7 +141,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.name,
                     vol.lastname,
                     vol.departments ? vol.departments.map((department) => department.name).join(', ') : '',
-                    kitchenNameById[vol.kitchen],
+                    vol.kitchen ? kitchenNameById[vol.kitchen] : '',
                     vol.active_from ? dayjs(vol.active_from).format(formDateFormat) : '',
                     vol.active_to ? dayjs(vol.active_to).format(formDateFormat) : '',
                     vol.is_active ? 1 : 0,
