@@ -112,7 +112,7 @@ const App: FC = () => {
             console.log('online, check ver..');
             void axios.get('public/pwa-ver.txt').then(({ data }: any): void => {
                 console.log(`remote app ver: ${data}`);
-                if (data !== Number(ver)) {
+                if (data !== ver) {
                     console.log('new version, reloading...');
                     alert('Доступно обновление, приложение перезагрузиться');
                     clearCache();
