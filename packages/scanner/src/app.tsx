@@ -66,13 +66,13 @@ const App: FC = () => {
                 setPin(enteredPin);
                 setKitchenId(user.data.id);
             })
-            .catch((_) => {
-                localStorage.removeItem('pin');
-                localStorage.removeItem('kitchenId');
-                setAuth(false);
-                setPin(null);
-                setKitchenId(null);
-                alert('Неверный пин!');
+            .catch((e) => {
+                if (!e.response && enteredPin && enteredPin === storedPin) {
+                    setAuth(true);
+                } else {
+                    setAuth(false);
+                    alert('Неверный пин!');
+                }
             });
     }, [checkAuth]);
 
