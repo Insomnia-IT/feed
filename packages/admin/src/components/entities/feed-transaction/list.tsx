@@ -7,6 +7,7 @@ import { Button, DatePicker, Form, Input } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ExcelJS from 'exceljs';
+import dayjs from 'dayjs';
 
 import { apiDateFormat, dayjsExtended, formDateFormat } from '~/shared/lib';
 import { saveXLSX } from '~/shared/lib/saveXLSX';
@@ -31,7 +32,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
             const filters: any = [];
             filters.push({
                 field: 'search',
-                value: values.search
+                value: values.search ? values.search : null
             });
             filters.push(
                 {
@@ -48,10 +49,15 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         }
     });
 
-    const { data: vols } = useList<VolEntity>({
-        resource: 'volunteers'
+    const { data: vols, isLoading: volsIsLoading } = useList<VolEntity>({
+        resource: 'volunteers',
+        config: {
+            pagination: {
+                pageSize: 10000
+            }
+        }
     });
-    const { data: kitchens } = useList<KitchenEntity>({
+    const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
         resource: 'kitchens'
     });
 
@@ -90,16 +96,16 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet('Transactions log');
 
-        const header = ['Время', 'ID волонтера', 'Волонтер', 'Веган', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
+        const header = ['Время', 'ID волонтера', 'Волонтер', 'Тип питания', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
         sheet.addRow(header);
 
         transactions.forEach((tx) => {
             sheet.addRow([
-                tx.dtime,
+                dayjs(tx.dtime).format('DD/MM/YY HH:mm:ss'),
                 tx.volunteer,
                 tx.volunteer ? volNameById[tx.volunteer] : 'Аноним',
-                tx.is_vegan ? 'Да' : 'Нет',
-                tx.meal_time,
+                tx.is_vegan !== null ? (tx.is_vegan ? 'Веган' : 'Мясоед') : '',
+                mealTimeById[tx.meal_time],
                 kitchenNameById[tx.kitchen],
                 tx.amount,
                 tx.reason
@@ -118,23 +124,10 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         } else {
             setDateRange([
                 dayjsExtended(dayjsExtended(range[0])).format(apiDateFormat),
-                dayjsExtended(dayjsExtended(range[1])).format(apiDateFormat)
+                dayjsExtended(dayjsExtended(range[1])).add(1, 'd').format(apiDateFormat)
             ]);
         }
     }, []);
-
-    const Footer = (): JSX.Element => {
-        return (
-            <Button
-                type={'primary'}
-                onClick={handleClickDownload}
-                icon={<DownloadOutlined />}
-                disabled={!tableProps.dataSource}
-            >
-                Выгрузить
-            </Button>
-        );
-    };
 
     return (
         <List>
@@ -155,7 +148,20 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     <Button onClick={searchFormProps.form?.submit}>Применить</Button>
                 </Space>
             </Form>
-            <Table {...tableProps} rowKey='ulid' footer={Footer}>
+            <Table
+                {...tableProps}
+                rowKey='ulid'
+                footer={(data) => (
+                    <Button
+                        type={'primary'}
+                        onClick={handleClickDownload}
+                        icon={<DownloadOutlined />}
+                        disabled={!data && volsIsLoading && kitchensIsLoading}
+                    >
+                        Выгрузить
+                    </Button>
+                )}
+            >
                 <Table.Column
                     dataIndex='dtime'
                     key='dtime'
@@ -165,7 +171,9 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 <Table.Column
                     dataIndex='volunteer'
                     title='Волонтер'
-                    render={(value) => <TextField value={value ? volNameById[value] : 'Аноним'} />}
+                    render={(value) => {
+                        return <TextField value={value ? volNameById[value] : 'Аноним'} />;
+                    }}
                 />
                 <Table.Column
                     dataIndex='volunteer'
@@ -174,8 +182,8 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 />
                 <Table.Column
                     dataIndex='is_vegan'
-                    title='Веган'
-                    render={(value) => <TextField value={value ? 'Да' : 'Нет'} />}
+                    title='Тип питания'
+                    render={(value) => <TextField value={value !== null ? (value ? 'Веган' : 'Мясоед') : ''} />}
                 />
                 <Table.Column
                     dataIndex='meal_time'

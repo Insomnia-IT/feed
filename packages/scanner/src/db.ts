@@ -10,7 +10,7 @@ export interface Transaction {
     ts: number;
     mealTime: MealTime;
     is_new: boolean;
-    is_vegan: boolean;
+    is_vegan?: boolean;
     reason?: string | null;
 }
 
@@ -79,7 +79,7 @@ export const db = new MySubClassedDexie();
 export const addTransaction = async (
     vol: Volunteer | undefined,
     mealTime: MealTime,
-    isVegan = false,
+    isVegan: boolean | undefined,
     log?: {
         error: boolean;
         reason: string;

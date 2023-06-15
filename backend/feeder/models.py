@@ -150,7 +150,7 @@ def validate_meal_time(value):
 class FeedTransaction(TimeMixin):
     ulid = models.CharField(max_length=255, primary_key=True)
     volunteer = models.ForeignKey(Volunteer, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Волонтёр")
-    is_vegan = models.BooleanField(verbose_name="Вегетарианец?")
+    is_vegan = models.BooleanField(null=True, verbose_name="Вегетарианец?")
     kitchen = models.ForeignKey(Kitchen, on_delete=models.PROTECT, verbose_name="Кухня")
     amount = models.IntegerField(default=0, verbose_name="Количество")
     reason = models.CharField(max_length=255, null=True, blank=True, verbose_name="Причина")
