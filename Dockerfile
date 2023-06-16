@@ -54,6 +54,8 @@ RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
 
 COPY . /app
 
+RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/pwa-ver.txt
+
 RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
     yarn build
 
