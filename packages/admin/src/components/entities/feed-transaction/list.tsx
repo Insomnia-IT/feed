@@ -123,8 +123,8 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
             setDateRange(null);
         } else {
             setDateRange([
-                dayjsExtended(dayjsExtended(range[0])).format(apiDateFormat),
-                dayjsExtended(dayjsExtended(range[1])).add(1, 'd').format(apiDateFormat)
+                dayjsExtended(dayjsExtended(range[0])).startOf('day').toISOString(),
+                dayjsExtended(dayjsExtended(range[1])).startOf('day').add(1, 'd').toISOString()
             ]);
         }
     }, []);
