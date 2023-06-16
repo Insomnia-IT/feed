@@ -1,14 +1,14 @@
 import type { FC } from 'react';
-import { useCallback, useEffect, useContext, useState, memo } from 'react';
+import { useCallback, useEffect, useContext, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { AppColor, AppContext } from '~/app-context';
-import { db, dbIncFeed, GroupBadge, Volunteer } from '~/db';
+import { db, dbIncFeed, GroupBadge } from '~/db';
 import { ErrorMsg } from '~/components/misc';
-import { getTodayStart, validateVol } from '../post-scan.utils';
-import { ValidationGroups } from './post-scan-group-badge.lib';
+import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-scan.utils';
+import { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
-import { GroupBadgeGreenCard, GroupBadgeYellowCard } from './post-scan-group-badge-misc';
+import { GroupBadgeGreenCard, GroupBadgeRedCard, GroupBadgeYellowCard } from './post-scan-group-badge-misc';
 
 enum Views {
     'LOADING',
@@ -22,7 +22,7 @@ enum Views {
 export const PostScanGroupBadge: FC<{
     groupBadge: GroupBadge;
     closeFeed: () => void;
-}> = ({ closeFeed, groupBadge: { id, name } }) => {
+}> = ({ closeFeed, groupBadge: { id, name, qr } }) => {
     // get vols, and their transactions for today
     const vols = useLiveQuery(async () => {
         const todayStart = getTodayStart();
@@ -32,14 +32,7 @@ export const PostScanGroupBadge: FC<{
         // pre-fetching transactions by each vol
         await Promise.all(
             vols.map(async (vol) => {
-                vol.transactions = await db.transactions
-                    .where('vol_id')
-                    .equals(vol.id)
-
-                    .filter((transaction) => {
-                        return transaction.ts > todayStart;
-                    })
-                    .toArray();
+                vol.transactions = await getVolTransactionsAsync(vol, todayStart);
             })
         );
 
@@ -55,11 +48,25 @@ export const PostScanGroupBadge: FC<{
     // get app context
     const { kitchenId, mealTime, setColor } = useContext(AppContext);
 
-    // set callback to feed vols
-    const feedAsync = async (vols: Array<Volunteer>) =>
-        await Promise.all(vols.map((vol) => dbIncFeed(vol, mealTime!, vol.is_vegan)));
-
-    const doFeed = (vols: Array<Volunteer>) => void feedAsync(vols);
+    // set callback (not) to feed vols
+    const incFeedAsync = useCallback(
+        async (vols: Array<ValidatedVol>, error: boolean) =>
+            await Promise.all(
+                vols.map((vol) =>
+                    dbIncFeed(
+                        vol,
+                        mealTime!,
+                        undefined,
+                        !error && vol.msg.length === 0
+                            ? undefined
+                            : { error, reason: vol.msg.concat('Групповое питание').join(', ') }
+                    )
+                )
+            ),
+        []
+    );
+    const doFeed = useCallback((vols: Array<ValidatedVol>) => void incFeedAsync(vols, false), [incFeedAsync]);
+    const doNotFeed = useCallback((vols: Array<ValidatedVol>) => void incFeedAsync(vols, true), [incFeedAsync]);
 
     useEffect(() => {
         // loading
@@ -86,7 +93,7 @@ export const PostScanGroupBadge: FC<{
             // yellows have one or more messages but nobody has red color
             yellows: validatedVols.filter((vol) => vol.msg.length > 0 && !vol.isRed),
 
-            // reds are as yellows but everyone has red color instead
+            // reds are similar to yellows but everyone has red flag being true instead
             reds: validatedVols.filter((vol) => vol.msg.length > 0 && vol.isRed)
         });
     }, [vols]);
@@ -152,9 +159,18 @@ export const PostScanGroupBadge: FC<{
             {Views.ERROR_EMPTY === view && <ErrorMsg close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />}
 
             {Views.ERROR_VALIDATION === view && (
-                <ErrorMsg
+                <GroupBadgeRedCard
                     close={closeFeed}
-                    msg={`Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!`}
+                    doNotFeed={doNotFeed}
+                    msg={'Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!'}
+                    volsNotToFeed={vols!.map(
+                        (vol) =>
+                            ({
+                                ...vol,
+                                msg: [`Ошибка в проверке волонтеров в групповом бейдже(qr: ${qr}).`],
+                                isRed: true
+                            } as ValidatedVol)
+                    )}
                 />
             )}
 
@@ -171,13 +187,20 @@ export const PostScanGroupBadge: FC<{
                 <GroupBadgeYellowCard
                     name={name}
                     doFeed={doFeed}
-                    doNotFeed={(vols: Array<Volunteer>) => console.log('TEST: do not feed', vols)}
+                    doNotFeed={doNotFeed}
                     close={closeFeed}
                     validationGroups={validationGroups!}
                 />
             )}
 
-            {Views.RED === view && <ErrorMsg close={closeFeed} msg={`Никто не ест.`} />}
+            {Views.RED === view && (
+                <GroupBadgeRedCard
+                    close={closeFeed}
+                    doNotFeed={doNotFeed}
+                    msg={'Никто не ест.'}
+                    volsNotToFeed={validationGroups!.reds}
+                />
+            )}
         </>
     );
 };

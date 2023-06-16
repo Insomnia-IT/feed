@@ -4,8 +4,8 @@ import type { RadioChangeEvent } from '@pankod/refine-antd';
 import axios from 'axios';
 
 import { NEW_API_URL } from '~/const';
+import { dayjsExtended as dayjsExt, formDateFormat } from '~/shared/lib';
 
-import { default as dayjsExt } from '../lib/dateHelper';
 import type { EaterTypeExtended, IStatisticApi, IStatisticResponce } from '../types';
 import {
     convertResponceToData,
@@ -23,7 +23,6 @@ import { ColumnChart, IColumnChartData } from './column-chart';
 type StatisticViewType = 'date' | 'range';
 
 const { RangePicker } = DatePicker;
-const dateFormat = 'DD.MM.YYYY';
 
 function convertDateToStringForApi(date: dayjsExt.Dayjs | null | undefined) {
     if (!date) {
@@ -133,12 +132,12 @@ function PublicStatistic() {
                     {statisticViewType === 'date' ? (
                         <Space size={'small'}>
                             <Button onClick={() => changeDateByOneDay(date, 'decrement')}>{'<'}</Button>
-                            <DatePicker value={date} onChange={changeDate} format={dateFormat} allowClear={false} />
+                            <DatePicker value={date} onChange={changeDate} format={formDateFormat} allowClear={false} />
                             <Button onClick={() => changeDateByOneDay(date, 'increment')}>{'>'}</Button>
                         </Space>
                     ) : (
                         <RangePicker
-                            format={dateFormat}
+                            format={formDateFormat}
                             onChange={(range) => changeTimePeriod(range as Array<dayjsExt.Dayjs>)}
                         />
                     )}

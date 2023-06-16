@@ -16,13 +16,14 @@ import { useList } from '@pankod/refine-core';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 // import { Loader } from '@feed/ui/src/loader';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
-import { useMemo, useState } from 'react';
-import { Input } from 'antd';
+import { useCallback, useMemo, useState } from 'react';
+import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
+import ExcelJS from 'exceljs';
+import { DownloadOutlined } from '@ant-design/icons';
 
 import type { VolEntity } from '~/interfaces';
-
-import { dateFormat } from './common';
+import { formDateFormat, saveXLSX } from '~/shared/lib';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -33,7 +34,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
 
     const { data: volunteers } = useList<VolEntity>({
-        resource: 'volunteers'
+        resource: 'volunteers',
+        config: {
+            pagination: {
+                pageSize: 10000
+            }
+        }
     });
 
     const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
@@ -50,7 +56,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                       item.name,
                       item.lastname,
                       item.departments?.map(({ name }) => name).join(', '),
-                      item.active_from ? dayjs(item.active_from).format(dateFormat) : null
+                      item.active_from ? dayjs(item.active_from).format(formDateFormat) : null
                   ].some((text) => {
                       return text?.toLowerCase().includes(searchTextInLowerCase);
                   });
@@ -91,10 +97,37 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return data.is_blocked === value;
     };
 
+    const createAndSaveXLSX = useCallback(() => {
+        if (filteredData) {
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet('Volunteers');
+
+            const header = ['Аолонтер', 'Бейджа'];
+            sheet.addRow(header);
+
+            filteredData.forEach((vol) => {
+                sheet.addRow([vol.nickname, vol.qr]);
+            });
+            void saveXLSX(workbook, 'volunteers');
+        }
+    }, [filteredData]);
+
+    const handleClickDownload = useCallback((): void => {
+        void createAndSaveXLSX();
+    }, [createAndSaveXLSX]);
+
+    const Footer = (): JSX.Element => {
+        return (
+            <Button type={'primary'} onClick={handleClickDownload} icon={<DownloadOutlined />} disabled={!filteredData}>
+                Выгрузить
+            </Button>
+        );
+    };
+
     return (
         <List>
             <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
-            <Table dataSource={filteredData} rowKey='id'>
+            <Table dataSource={filteredData} footer={Footer} rowKey='id'>
                 <Table.Column
                     dataIndex='nickname'
                     key='nickname'
@@ -144,14 +177,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     dataIndex='active_from'
                     key='active_from'
                     title='От'
-                    render={(value) => value && <DateField format={dateFormat} value={value} />}
+                    render={(value) => value && <DateField format={formDateFormat} value={value} />}
                     sorter={getSorter('active_from')}
                 />
                 <Table.Column
                     dataIndex='active_to'
                     key='active_to'
                     title='До'
-                    render={(value) => value && <DateField format={dateFormat} value={value} />}
+                    render={(value) => value && <DateField format={formDateFormat} value={value} />}
                     sorter={getSorter('active_to')}
                 />
                 <Table.Column

@@ -23,6 +23,7 @@ export interface VolEntity {
     // location?: LocationEntity[];
     badge_type?: number; //BadgeType
     feed_type?: number; //FeedTypeEntity;
+    qr_code?: string;
     group_badge?: number | undefined;
 }
 
@@ -51,6 +52,7 @@ export interface FeedTransactionEntity {
     volunteer: number;
     is_vegan: boolean;
     reason: string;
+    kitchen: number;
 }
 
 export interface GroupBadgeEntity {

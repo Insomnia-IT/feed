@@ -1,10 +1,11 @@
-import { FC } from 'react';
+import { FC, useCallback } from 'react';
 import cs from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { ValidationGroups } from '../post-scan-group-badge.lib';
+import { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 import { getAllVols } from '../post-scan-group-badge.utils';
 import css from './post-scan-group-badge-misc.module.css';
+import { ErrorMsg } from '~/components/misc';
 
 type TitleColor = 'red' | 'green';
 
@@ -60,8 +61,8 @@ const GroupBadgeInfo: FC<{
 
 export const GroupBadgeGreenCard: FC<{
     name: string;
-    volsToFeed: Array<Volunteer>;
-    doFeed: (vols: Array<Volunteer>) => void;
+    volsToFeed: Array<ValidatedVol>;
+    doFeed: (vols: Array<ValidatedVol>) => void;
     close: () => void;
 }> = ({ close, doFeed, name, volsToFeed }) => (
     <>
@@ -72,6 +73,7 @@ export const GroupBadgeGreenCard: FC<{
                 type='button'
                 onClick={() => {
                     doFeed(volsToFeed);
+
                     close();
                 }}
             >
@@ -87,8 +89,8 @@ export const GroupBadgeGreenCard: FC<{
 export const GroupBadgeYellowCard: FC<{
     name: string;
     validationGroups: ValidationGroups;
-    doFeed: (vols: Array<Volunteer>) => void;
-    doNotFeed: (vols: Array<Volunteer>) => void;
+    doFeed: (vols: Array<ValidatedVol>) => void;
+    doNotFeed: (vols: Array<ValidatedVol>) => void;
     close: () => void;
 }> = ({ close, doFeed, doNotFeed, name, validationGroups }) => {
     const { greens, reds, yellows } = validationGroups;
@@ -106,6 +108,8 @@ export const GroupBadgeYellowCard: FC<{
                     type='button'
                     onClick={() => {
                         doFeed(volsToFeed);
+                        doNotFeed(reds);
+
                         close();
                     }}
                 >
@@ -114,7 +118,8 @@ export const GroupBadgeYellowCard: FC<{
                 <button
                     type='button'
                     onClick={() => {
-                        doNotFeed(reds);
+                        doNotFeed([...reds, ...yellows]);
+
                         close();
                     }}
                 >
@@ -123,4 +128,19 @@ export const GroupBadgeYellowCard: FC<{
             </div>
         </>
     );
+};
+
+export const GroupBadgeRedCard: FC<{
+    msg: string;
+    volsNotToFeed: Array<ValidatedVol>;
+    doNotFeed: (vols: Array<ValidatedVol>) => void;
+    close: () => void;
+}> = ({ close, doNotFeed, msg, volsNotToFeed }) => {
+    const handleClose = useCallback(() => {
+        doNotFeed(volsNotToFeed);
+
+        close();
+    }, [close, doNotFeed, volsNotToFeed]);
+
+    return <ErrorMsg msg={msg} close={handleClose} />;
 };

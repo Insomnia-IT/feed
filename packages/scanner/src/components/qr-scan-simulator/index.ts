@@ -1,1 +1,1 @@
-export * from './scan-simulator';
+export * from './qr-scan-simulator';

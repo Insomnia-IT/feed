@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import css from './scan-simulator.module.css';
+import css from './qr-scan-simulator.module.css';
 
 const options = [
     { label: 'Артем Новиков', value: 'abcfd1e5' },

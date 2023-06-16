@@ -25,8 +25,8 @@ export const crudDataProvider = (
 
         const {
             current = 1,
+            // mode = 'server'
             pageSize = 10
-            // mode = "server",
         } = pagination ?? {};
 
         const { headers: headersFromMeta, method } = metaData ?? {};
@@ -60,7 +60,7 @@ export const crudDataProvider = (
                 params: {
                     ...filters?.reduce(
                         (acc, filter) =>
-                            isLogicalFilter(filter)
+                            isLogicalFilter(filter) && filter.value
                                 ? {
                                       ...acc,
                                       [filter.field]: filter.value
@@ -68,7 +68,8 @@ export const crudDataProvider = (
                                 : acc,
                         {}
                     ),
-                    limit: 10000
+                    limit: pageSize,
+                    offset: (current - 1) * pageSize
                 },
                 headers: headersFromMeta
             }

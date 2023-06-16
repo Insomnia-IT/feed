@@ -14,9 +14,10 @@ const createTestTrans = (type: 'now' | 'rnd', mealTime: MealTime): Transaction =
         ts = dayjs().startOf('day').add(rndInt(7, 31), 'h');
     }
     ts = ts.unix();
+    const vol_id = rndInt(0, 600);
 
     return {
-        vol_id: rndInt(0, 600),
+        vol_id,
         amount: 1,
         ts,
         ulid: ulid(ts),

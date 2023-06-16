@@ -52,28 +52,41 @@ export const VolInfo: FC<{
 
 export const ErrorMsg: FC<{
     msg: string | Array<string>;
+    doNotFeed?: (reason: string) => void;
     close: () => void;
-}> = ({ close, msg }) => (
-    <div className={css.errorMsg}>
-        <div>
-            {Array.isArray(msg) ? (
-                msg.map((m) => (
-                    <span key={m}>
-                        {m}
-                        <br />
-                    </span>
-                ))
-            ) : (
-                <span>{msg}</span>
-            )}
+}> = ({ close, doNotFeed, msg }) => {
+    const handleClose = (): void => {
+        if (doNotFeed) {
+            if (msg instanceof Array) {
+                msg = msg.join(', ');
+            }
+            doNotFeed(msg);
+        }
+        close();
+    };
+
+    return (
+        <div className={css.errorMsg}>
+            <div>
+                {Array.isArray(msg) ? (
+                    msg.map((m) => (
+                        <span key={m}>
+                            {m}
+                            <br />
+                        </span>
+                    ))
+                ) : (
+                    <span>{msg}</span>
+                )}
+            </div>
+            <div className={css.card}>
+                <button type='button' onClick={() => handleClose()}>
+                    Закрыть
+                </button>
+            </div>
         </div>
-        <div className={css.card}>
-            <button type='button' onClick={close}>
-                Закрыть
-            </button>
-        </div>
-    </div>
-);
+    );
+};
 
 export const FeedLeft: FC<{
     msg: string;
@@ -122,28 +135,36 @@ export const GreenAnonCard: FC<{
 
 export const YellowCard: FC<{
     vol: Volunteer;
-    doFeed: () => void;
+    doFeed: (isVegan?: boolean, reason?: string) => void;
+    doNotFeed: (reason: string) => void;
     close: () => void;
     msg: Array<string>;
-}> = ({ close, doFeed, msg, vol }) => (
-    <>
-        <h4>
-            {msg.map((m) => (
-                <>
-                    {m}
-                    <br />
-                </>
-            ))}
-        </h4>
-        <VolInfo vol={vol} />
-        {/* <FeedLeft msg={`Осталось: ${vol.balance}`} /> */}
-        <div className={css.card}>
-            <button type='button' onClick={doFeed}>
-                Все равно кормить
-            </button>
-            <button type='button' onClick={close}>
-                Отмена
-            </button>
-        </div>
-    </>
-);
+}> = ({ close, doFeed, doNotFeed, msg, vol }) => {
+    const handleClose = (): void => {
+        doNotFeed(msg.join(', '));
+        close();
+    };
+
+    return (
+        <>
+            <h4>
+                {msg.map((m) => (
+                    <>
+                        {m}
+                        <br />
+                    </>
+                ))}
+            </h4>
+            <VolInfo vol={vol} />
+            {/* <FeedLeft msg={`Осталось: ${vol.balance}`} /> */}
+            <div className={css.card}>
+                <button type='button' onClick={() => doFeed(undefined, msg.join(', '))}>
+                    Все равно кормить
+                </button>
+                <button type='button' onClick={() => handleClose()}>
+                    Отмена
+                </button>
+            </div>
+        </>
+    );
+};

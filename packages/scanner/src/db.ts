@@ -11,6 +11,7 @@ export interface Transaction {
     mealTime: MealTime;
     is_new: boolean;
     is_vegan: boolean;
+    reason?: string | null;
 }
 
 export interface ServerTransaction {
@@ -86,23 +87,44 @@ export class MySubClassedDexie extends Dexie {
 
 export const db = new MySubClassedDexie();
 
-export const addTransaction = async (vol: Volunteer | undefined, mealTime: MealTime, isVegan = false): Promise<any> => {
+export const addTransaction = async (
+    vol: Volunteer | undefined,
+    mealTime: MealTime,
+    isVegan = false,
+    log?: {
+        error: boolean;
+        reason: string;
+    }
+): Promise<any> => {
     const ts = dayjs().unix();
+    let amount = 1;
+    let reason: string | null = null;
+    if (log) {
+        if (log.error) {
+            amount = 0;
+        }
+        reason = log.reason;
+    }
     await db.transactions.add({
         vol_id: vol ? vol.id : null,
         is_vegan: vol ? vol.is_vegan : isVegan,
         ts,
-        amount: 1,
+        amount: amount,
         ulid: ulid(ts),
         mealTime: MealTime[mealTime],
-        is_new: true
+        is_new: true,
+        reason: reason
     });
 };
 
 export const dbIncFeed = async (
     vol: Volunteer | undefined,
     mealTime: MealTime,
-    isVegan: boolean | undefined
+    isVegan: boolean | undefined,
+    log?: {
+        error: boolean;
+        reason: string;
+    }
 ): Promise<any> => {
     if (vol) {
         await db.volunteers
@@ -113,7 +135,7 @@ export const dbIncFeed = async (
             });
     }
 
-    return await addTransaction(vol, mealTime, isVegan);
+    return await addTransaction(vol, mealTime, isVegan, log);
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {
@@ -155,6 +177,7 @@ export function getFeedStats(statsDate: string): Promise<Array<Transaction>> {
     return db.transactions
         .where('ts')
         .between(dayjs(statsDate).add(7, 'h').unix(), dayjs(statsDate).add(31, 'h').unix())
+        .filter((tx) => tx.amount !== 0)
         .toArray();
 }
 

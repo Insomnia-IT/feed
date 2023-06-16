@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import { MealTime, Transaction, Volunteer, FeedType, FeedWithBalance, dbIncFeed } from '~/db';
+import { db, MealTime, Transaction, Volunteer, FeedType, FeedWithBalance, dbIncFeed } from '~/db';
 import { isVolExpired } from '~/components/misc/misc';
 import { getMealTimeText } from '~/lib/utils';
 
@@ -69,12 +69,12 @@ export const validateVol = (
 
 export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
 
-export const useDoFeedVol = (vol: Volunteer | undefined, mealTime: MealTime | null, closeFeed: () => void) => {
+export const useFeedVol = (vol: Volunteer | undefined, mealTime: MealTime | null, closeFeed: () => void) => {
     const feed = useCallback(
-        async (isVegan: boolean | undefined) => {
+        async (isVegan: boolean | undefined, log?: { error: boolean; reason: string }) => {
             if (mealTime) {
                 try {
-                    await dbIncFeed(vol, mealTime, isVegan);
+                    await dbIncFeed(vol, mealTime, isVegan, log);
                     closeFeed();
                 } catch (e) {
                     console.error(e);
@@ -84,5 +84,26 @@ export const useDoFeedVol = (vol: Volunteer | undefined, mealTime: MealTime | nu
         [closeFeed, vol]
     );
 
-    return useCallback((isVegan?: boolean) => void feed(isVegan), [feed]);
+    return [
+        useCallback(
+            (isVegan?: boolean, reason?: string) => {
+                let log;
+                if (reason) {
+                    log = { error: false, reason };
+                }
+                void feed(isVegan, log);
+            },
+            [feed]
+        ),
+        useCallback((reason: string) => void feed(undefined, { error: true, reason }), [feed])
+    ] as const;
 };
+
+export const getVolTransactionsAsync = async (vol: Volunteer, todayStart: number) =>
+    db.transactions
+        .where('vol_id')
+        .equals(vol.id)
+        .filter((transaction) => {
+            return transaction.ts > todayStart && transaction.amount !== 0;
+        })
+        .toArray();

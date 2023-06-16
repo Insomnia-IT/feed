@@ -1,10 +1,19 @@
 import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import type { CrudFilter, IResourceComponentsProps, LogicalFilter } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { Button, DatePicker, Form, Input } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import ExcelJS from 'exceljs';
 
+import { apiDateFormat, dayjsExtended, formDateFormat } from '~/shared/lib';
+import { saveXLSX } from '~/shared/lib/saveXLSX';
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
+import { NEW_API_URL } from '~/const';
+
+const { RangePicker } = DatePicker;
 
 const mealTimeById = {
     breakfast: 'Завтрак',
@@ -14,10 +23,36 @@ const mealTimeById = {
 };
 
 export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
-    const { tableProps } = useTable<FeedTransactionEntity>();
+    const [dateRange, setDateRange] = useState<Array<string> | null>(null);
+    const [searchText, setSearchText] = useState<string>('');
+    const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
+    const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
+        onSearch: (values: any) => {
+            const filters: any = [];
+            filters.push({
+                field: 'search',
+                value: values.search
+            });
+            filters.push(
+                {
+                    field: 'dtime_from',
+                    value: dateRange ? dateRange[0] : null
+                },
+                {
+                    field: 'dtime_to',
+                    value: dateRange ? dateRange[1] : null
+                }
+            );
+            setFilters(filters);
+            return filters;
+        }
+    });
 
     const { data: vols } = useList<VolEntity>({
         resource: 'volunteers'
+    });
+    const { data: kitchens } = useList<KitchenEntity>({
+        resource: 'kitchens'
     });
 
     const volNameById = useMemo(() => {
@@ -30,10 +65,6 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [vols]);
 
-    const { data: kitchens } = useList<KitchenEntity>({
-        resource: 'kitchens'
-    });
-
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
             (acc, kitchen) => ({
@@ -44,9 +75,87 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         );
     }, [kitchens]);
 
+    const createAndSaveXLSX = useCallback(async (): Promise<void> => {
+        let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
+        if (filters) {
+            filters.forEach((filter: any) => {
+                if (filter.value) {
+                    url = url.concat(`&${filter.field}=${filter.value}`);
+                }
+            });
+        }
+
+        const { data } = await axios.get(url);
+        const transactions = data.results as Array<FeedTransactionEntity>;
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Transactions log');
+
+        const header = ['Время', 'ID волонтера', 'Волонтер', 'Веган', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
+        sheet.addRow(header);
+
+        transactions.forEach((tx) => {
+            sheet.addRow([
+                tx.dtime,
+                tx.volunteer,
+                tx.volunteer ? volNameById[tx.volunteer] : 'Аноним',
+                tx.is_vegan ? 'Да' : 'Нет',
+                tx.meal_time,
+                kitchenNameById[tx.kitchen],
+                tx.amount,
+                tx.reason
+            ]);
+        });
+        void saveXLSX(workbook, 'feed-transactions');
+    }, [filters, kitchenNameById, volNameById]);
+
+    const handleClickDownload = useCallback((): void => {
+        void createAndSaveXLSX();
+    }, [createAndSaveXLSX]);
+
+    const handleDateRangeChange = useCallback((range: Array<dayjsExtended.Dayjs> | null) => {
+        if (!range) {
+            setDateRange(null);
+        } else {
+            setDateRange([
+                dayjsExtended(dayjsExtended(range[0])).format(apiDateFormat),
+                dayjsExtended(dayjsExtended(range[1])).format(apiDateFormat)
+            ]);
+        }
+    }, []);
+
+    const Footer = (): JSX.Element => {
+        return (
+            <Button
+                type={'primary'}
+                onClick={handleClickDownload}
+                icon={<DownloadOutlined />}
+                disabled={!tableProps.dataSource}
+            >
+                Выгрузить
+            </Button>
+        );
+    };
+
     return (
         <List>
-            <Table {...tableProps} rowKey='ulid'>
+            <Form {...searchFormProps}>
+                <Space align={'start'}>
+                    <Form.Item name='search'>
+                        <Input
+                            value={searchText}
+                            placeholder='Имя волонтера'
+                            allowClear
+                            onChange={(value: any) => setSearchText(value)}
+                        />
+                    </Form.Item>
+                    <Form.Item name='date'>
+                        <RangePicker format={formDateFormat} onChange={(range: any) => handleDateRangeChange(range)} />
+                    </Form.Item>
+
+                    <Button onClick={searchFormProps.form?.submit}>Применить</Button>
+                </Space>
+            </Form>
+            <Table {...tableProps} rowKey='ulid' footer={Footer}>
                 <Table.Column
                     dataIndex='dtime'
                     key='dtime'
@@ -57,21 +166,16 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                     dataIndex='volunteer'
                     title='Волонтер'
                     render={(value) => <TextField value={value ? volNameById[value] : 'Аноним'} />}
-                    // filterDropdown={(props) => (
-                    //     <FilterDropdown {...props}>
-                    //         <Select style={selectStyle} placeholder='Волонтер' {...volSelectProps} />
-                    //     </FilterDropdown>
-                    // )}
+                />
+                <Table.Column
+                    dataIndex='volunteer'
+                    title='ID волонтера'
+                    render={(value) => <TextField value={value ?? ''} />}
                 />
                 <Table.Column
                     dataIndex='is_vegan'
                     title='Веган'
                     render={(value) => <TextField value={value ? 'Да' : 'Нет'} />}
-                    // filterDropdown={(props) => (
-                    //     <FilterDropdown {...props}>
-                    //         <Select style={selectStyle} placeholder='Волонтер' {...volSelectProps} />
-                    //     </FilterDropdown>
-                    // )}
                 />
                 <Table.Column
                     dataIndex='meal_time'
