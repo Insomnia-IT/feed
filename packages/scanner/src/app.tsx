@@ -29,7 +29,8 @@ import { clearCache } from './lib/utils';
 import ver from '!!raw-loader!pwa-ver.txt';
 
 console.log(`local app ver: ${ver}`);
-const dev = process.env.NODE_ENV !== 'production';
+
+const isDev = process.env.NODE_ENV !== 'production';
 
 const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => (
     <div role='alert'>
@@ -94,7 +95,8 @@ const App: FC = () => {
             setVolCount,
             mealTime,
             setMealTime,
-            kitchenId
+            kitchenId,
+            isDev
         }),
         [pin, lastUpdate, volCount]
     );
@@ -156,7 +158,7 @@ const App: FC = () => {
                             </SwipeableViews>
                         </ViewContext.Provider>
                     )}
-                    {dev && <MockTrans />}
+                    {isDev && <MockTrans />}
                 </div>
             </AppContext.Provider>
         </ErrorBoundary>

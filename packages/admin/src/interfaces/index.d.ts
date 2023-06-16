@@ -25,6 +25,7 @@ export interface VolEntity {
     badge_type?: number; //BadgeType
     feed_type?: number; //FeedTypeEntity;
     qr_code?: string;
+    group_badge?: number | undefined;
 }
 
 export interface KitchenEntity {
@@ -53,6 +54,13 @@ export interface FeedTransactionEntity {
     is_vegan: boolean | null;
     reason: string;
     kitchen: number;
+}
+
+export interface GroupBadgeEntity {
+    id: number;
+    qr: string;
+    name: string;
+    comment?: string;
 }
 
 export { DepartmentEntity } from '@feed/api/src/entities/department.entity';

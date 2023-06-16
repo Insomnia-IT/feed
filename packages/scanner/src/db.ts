@@ -56,20 +56,31 @@ export interface Volunteer {
     feed_type: FeedType;
     departments: Array<{ name: string }>;
     kitchen: number;
+    group_badge: string | null;
+
+    transactions: Array<Transaction> | null;
 }
 
-const DB_VERSION = 9;
+export interface GroupBadge {
+    id: number;
+    name: string;
+    qr: string;
+}
+
+const DB_VERSION = 13;
 
 export class MySubClassedDexie extends Dexie {
     transactions!: Table<Transaction>;
     volunteers!: Table<Volunteer>;
+    groupBadges!: Table<GroupBadge>;
 
     constructor() {
         super('yclins');
         this.version(DB_VERSION).stores({
             transactions: '&&ulid, vol_id, amount, ts, mealTime, is_new, is_vegan',
             volunteers:
-                '&qr, *id, name, nickname, balance, is_blocked, is_active, is_vegan, feed_type, active_from, active_to, departments, location, kitchen'
+                '&qr, *id, name, nickname, balance, is_blocked, is_active, is_vegan, feed_type, active_from, active_to, departments, location, kitchen, group_badge, *transactions',
+            groupBadges: 'id, &qr'
         });
     }
 }

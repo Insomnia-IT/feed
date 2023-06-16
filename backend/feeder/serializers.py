@@ -42,6 +42,14 @@ class LocationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class GroupBadgeSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.GroupBadge
+        fields = '__all__'
+
+
 class ColorSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
 

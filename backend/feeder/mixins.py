@@ -37,3 +37,10 @@ class TimeMixin(models.Model):
 
     class Meta:
         abstract = True
+
+
+class CommentMixin(models.Model):
+    comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
+
+    class Meta:
+        abstract = True

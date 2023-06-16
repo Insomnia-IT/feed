@@ -71,7 +71,7 @@ class VolunteerFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.Volunteer
-        fields = ['departments', 'color_type', 'feed_type', 'kitchen']
+        fields = ['departments', 'color_type', 'feed_type', 'kitchen', 'group_badge']
 
 class VolunteerViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
@@ -89,6 +89,14 @@ class LocationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.Location.objects.all()
     serializer_class = serializers.LocationSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', ]
+
+
+class GroupBadgeViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.GroupBadge.objects.all()
+    serializer_class = serializers.GroupBadgeSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
 

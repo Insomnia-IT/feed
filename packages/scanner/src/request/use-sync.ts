@@ -4,6 +4,7 @@ import { useGetVols } from '~/request/use-get-vols';
 import { useSendTrans } from '~/request/use-send-trans';
 import { useGetTrans } from '~/request/use-get-trans';
 
+import { useGetGroupBadges } from './use-get-group-badges';
 import type { ApiHook } from './lib';
 
 export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
@@ -24,6 +25,13 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
         send: volsSend
         // updated: volsUpdated
     } = useGetVols(baseUrl, pin, setAuth);
+
+    const {
+        // error: volsError,
+        fetching: groupBadgesFetching,
+        send: groupBadgesSend
+        // updated: volsUpdated
+    } = useGetGroupBadges(baseUrl, pin, setAuth);
 
     const {
         // error: transError,
@@ -57,13 +65,23 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
             try {
                 await sendTransSend();
                 await volsSend();
+                await groupBadgesSend();
                 await getTransSend();
                 success();
             } catch (e) {
                 error(e);
             }
         });
-    }, [sendTransFetching, sendTransSend, volsFetching, volsSend, getTransFetching, getTransSend]);
+    }, [
+        sendTransFetching,
+        sendTransSend,
+        volsFetching,
+        volsSend,
+        groupBadgesFetching,
+        groupBadgesSend,
+        getTransFetching,
+        getTransSend
+    ]);
 
     return <ApiHook>useMemo(
         () => ({

@@ -29,6 +29,7 @@ export interface IAppContext {
     mealTime: MealTime | null;
     setMealTime: (mealTime: MealTime) => void;
     kitchenId: string | null;
+    isDev: boolean;
 }
 
 // @ts-ignore
