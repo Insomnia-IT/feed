@@ -1,8 +1,9 @@
-import { FC, useEffect } from 'react';
-import { useContext } from 'react';
+import type { FC } from 'react';
+import { useContext, useEffect } from 'react';
 
 import { AppColor, AppContext } from '~/app-context';
 import { GreenAnonCard } from '~/components/misc';
+
 import { useFeedVol } from '../post-scan.utils';
 
 export const PostScanAnon: FC<{

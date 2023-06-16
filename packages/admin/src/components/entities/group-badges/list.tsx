@@ -1,4 +1,13 @@
-import { DeleteButton, EditButton, ShowButton, getDefaultSortOrder, List, Space, Table, useTable} from '@pankod/refine-antd';
+import {
+    DeleteButton,
+    EditButton,
+    getDefaultSortOrder,
+    List,
+    ShowButton,
+    Space,
+    Table,
+    useTable
+} from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 

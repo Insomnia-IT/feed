@@ -10,7 +10,14 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 import dayjs from 'dayjs';
 
-import type { ColorTypeEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity, GroupBadgeEntity } from '~/interfaces';
+import type {
+    ColorTypeEntity,
+    DepartmentEntity,
+    FeedTypeEntity,
+    GroupBadgeEntity,
+    KitchenEntity,
+    VolEntity
+} from '~/interfaces';
 import { apiDateFormat } from '~/shared/lib';
 
 export const CreateEdit: FC = () => {
@@ -148,9 +155,15 @@ export const CreateEdit: FC = () => {
             <Row gutter={[16, 16]}>
                 <Col span={8}>
                     <Form.Item label='Групповой бейдж' name='group_badge'>
-                        <Select 
-                            {...groupBadgeSelectProps} 
-                            options={groupBadgeSelectProps.options ? [{ value: '', label: '' } as DefaultOptionType].concat(groupBadgeSelectProps.options) : undefined} 
+                        <Select
+                            {...groupBadgeSelectProps}
+                            options={
+                                groupBadgeSelectProps.options
+                                    ? [{ value: '', label: '' } as DefaultOptionType].concat(
+                                          groupBadgeSelectProps.options
+                                      )
+                                    : undefined
+                            }
                         />
                     </Form.Item>
                 </Col>

@@ -3,8 +3,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { useGetVols } from '~/request/use-get-vols';
 import { useSendTrans } from '~/request/use-send-trans';
 import { useGetTrans } from '~/request/use-get-trans';
-import { useGetGroupBadges } from './use-get-group-badges';
 
+import { useGetGroupBadges } from './use-get-group-badges';
 import type { ApiHook } from './lib';
 
 export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {

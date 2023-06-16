@@ -1,13 +1,14 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import { db, MealTime, Transaction, Volunteer, FeedType, FeedWithBalance, dbIncFeed } from '~/db';
+import type { Transaction, Volunteer } from '~/db';
+import { db, dbIncFeed, FeedType, FeedWithBalance, MealTime } from '~/db';
 import { isVolExpired } from '~/components/misc/misc';
 import { getMealTimeText } from '~/lib/utils';
 
 export const validateVol = (
     vol: Volunteer,
-    volTransactions: Transaction[],
+    volTransactions: Array<Transaction>,
     kitchenId: string,
     mealTime: MealTime
 ): { msg: Array<string>; isRed: boolean } => {

@@ -1,11 +1,14 @@
-import { FC, useCallback } from 'react';
+import type { FC } from 'react';
+import { useCallback } from 'react';
 import cs from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
-import { getAllVols } from '../post-scan-group-badge.utils';
-import css from './post-scan-group-badge-misc.module.css';
 import { ErrorMsg } from '~/components/misc';
+
+import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
+import { getAllVols } from '../post-scan-group-badge.utils';
+
+import css from './post-scan-group-badge-misc.module.css';
 
 type TitleColor = 'red' | 'green';
 

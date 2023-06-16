@@ -1,12 +1,15 @@
 import type { FC } from 'react';
-import { useCallback, useEffect, useContext, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { AppColor, AppContext } from '~/app-context';
-import { db, dbIncFeed, GroupBadge } from '~/db';
+import type { GroupBadge } from '~/db';
+import { db, dbIncFeed } from '~/db';
 import { ErrorMsg } from '~/components/misc';
+
 import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-scan.utils';
-import { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
+
+import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
 import { GroupBadgeGreenCard, GroupBadgeRedCard, GroupBadgeYellowCard } from './post-scan-group-badge-misc';
 

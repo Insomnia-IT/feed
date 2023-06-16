@@ -1,27 +1,32 @@
-import { Edit, Form, useForm, Table, TextField, Space, EditButton, Typography, useTable } from '@pankod/refine-antd';
+import { Edit, EditButton, Form, Space, Table, TextField, Typography, useForm, useTable } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 
 import 'react-mde/lib/styles/css/react-mde-all.css';
 
 import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
+
 import { CreateEdit } from './common';
 
 const { Title } = Typography;
 
 export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
-    const { formProps, saveButtonProps, id } = useForm<GroupBadgeEntity>();
+    const { formProps, id, saveButtonProps } = useForm<GroupBadgeEntity>();
 
     const { tableProps } = useTable<VolEntity>({
         resource: 'volunteers',
-        initialFilter: [{
-            field: 'group_badge',
-            operator: 'eq',
-            value: id
-        }],
-        initialSorter: [{
-            field: 'id',
-            order: 'desc'
-        }]
+        initialFilter: [
+            {
+                field: 'group_badge',
+                operator: 'eq',
+                value: id
+            }
+        ],
+        initialSorter: [
+            {
+                field: 'id',
+                order: 'desc'
+            }
+        ]
     });
 
     return (
@@ -60,7 +65,12 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                         dataIndex='actions'
                         render={(_, record) => (
                             <Space>
-                                <EditButton hideText size='small' resourceNameOrRouteName='volunteers' recordItemId={record.id} />
+                                <EditButton
+                                    hideText
+                                    size='small'
+                                    resourceNameOrRouteName='volunteers'
+                                    recordItemId={record.id}
+                                />
                             </Space>
                         )}
                     />

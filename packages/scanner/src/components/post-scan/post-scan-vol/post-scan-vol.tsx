@@ -3,8 +3,9 @@ import { useContext } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { AppColor, AppContext } from '~/app-context';
-import { Volunteer } from '~/db';
+import type { Volunteer } from '~/db';
 import { ErrorMsg, GreenCard, YellowCard } from '~/components/misc';
+
 import { getTodayStart, getVolTransactionsAsync, useFeedVol, validateVol } from '../post-scan.utils';
 
 export const PostScanVol: FC<{

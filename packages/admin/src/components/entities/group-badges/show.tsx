@@ -1,4 +1,4 @@
-import { Show,  Typography, EditButton, Space, Table, TextField, useTable } from '@pankod/refine-antd';
+import { EditButton, Show, Space, Table, TextField, Typography, useTable } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useShow } from '@pankod/refine-core';
 import dynamic from 'next/dynamic';
@@ -16,17 +16,21 @@ export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
 
     const { tableProps } = useTable<VolEntity>({
         resource: 'volunteers',
-        initialFilter: [{
-            field: 'group_badge',
-            operator: 'eq',
-            value: showId
-        }],
-        initialSorter: [{
-            field: 'id',
-            order: 'desc'
-        }]
+        initialFilter: [
+            {
+                field: 'group_badge',
+                operator: 'eq',
+                value: showId
+            }
+        ],
+        initialSorter: [
+            {
+                field: 'id',
+                order: 'desc'
+            }
+        ]
     });
-    
+
     return (
         <Show isLoading={isLoading}>
             <Title level={5}>Название</Title>
@@ -46,12 +50,7 @@ export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
                     title='Позывной'
                     render={(value) => <TextField value={value} />}
                 />
-                <Table.Column
-                    dataIndex='name'
-                    key='name'
-                    title='Имя'
-                    render={(value) => <TextField value={value} />}
-                />
+                <Table.Column dataIndex='name' key='name' title='Имя' render={(value) => <TextField value={value} />} />
                 <Table.Column
                     dataIndex='lastname'
                     key='lastname'
@@ -69,7 +68,12 @@ export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
                     dataIndex='actions'
                     render={(_, record) => (
                         <Space>
-                            <EditButton hideText size='small' resourceNameOrRouteName='volunteers' recordItemId={record.id} />
+                            <EditButton
+                                hideText
+                                size='small'
+                                resourceNameOrRouteName='volunteers'
+                                recordItemId={record.id}
+                            />
                         </Space>
                     )}
                 />

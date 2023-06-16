@@ -2,6 +2,7 @@ import { Create, Form, useForm } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 
 import type { GroupBadgeEntity } from '~/interfaces';
+
 import { CreateEdit } from './common';
 
 export const GroupBadgeCreate: FC<IResourceComponentsProps> = () => {
