@@ -63,9 +63,19 @@ const getStatsByDate = async (statsDate) => {
             txs = txs.filter((tx) => tx.mealTime === MealTime.night);
         }
 
-        const nt1 = txs.filter((tx) => !tx.is_vegan).length;
-        const nt2 = txs.filter((tx) => tx.is_vegan).length;
-        const total = txs.length;
+        const nt1 = txs.reduce((acc, curr) => {
+            if (!curr.is_vegan) {
+                return acc + curr.amount;
+            }
+            return acc;
+        }, 0);
+        const nt2 = txs.reduce((acc, curr) => {
+            if (curr.is_vegan) {
+                return acc + curr.amount;
+            }
+            return acc;
+        }, 0);
+        const total = nt1 + nt2;
 
         return <FeedStatsRecord>{
             [MT]: {

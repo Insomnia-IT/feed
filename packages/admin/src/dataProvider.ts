@@ -68,8 +68,9 @@ export const crudDataProvider = (
                                 : acc,
                         {}
                     ),
-                    limit: pageSize,
-                    offset: (current - 1) * pageSize
+                    limit: pagination?.pageSize ? pagination.pageSize : 10000,
+                    offset:
+                        pagination?.current && pagination?.pageSize ? (pagination.current - 1) * pagination.pageSize : 0
                 },
                 headers: headersFromMeta
             }
