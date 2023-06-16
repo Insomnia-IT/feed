@@ -21,8 +21,9 @@ import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
+import { FeedType } from '@feed/scanner/src/db';
 
-import type { VolEntity } from '~/interfaces';
+import type { KitchenEntity, VolEntity } from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
 
 const booleanFilters = [
@@ -46,6 +47,20 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         resource: 'departments',
         optionLabel: 'name'
     });
+
+    const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
+        resource: 'kitchens'
+    });
+
+    const kitchenNameById = useMemo(() => {
+        return (kitchens ? kitchens.data : []).reduce(
+            (acc, kitchen) => ({
+                ...acc,
+                [kitchen.id]: kitchen.name
+            }),
+            {}
+        );
+    }, [kitchens]);
 
     const filteredData = useMemo(() => {
         return searchText
@@ -102,32 +117,65 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet('Volunteers');
 
-            const header = ['Аолонтер', 'Бейджа'];
+            const header = [
+                'ID',
+                'Позывной',
+                'Имя',
+                'Фамилия',
+                'Службы',
+                'Кухня',
+                'От',
+                'До',
+                'Активирован',
+                'Заблокирован',
+                'Тип питания',
+                'Веган/мясоед',
+                'Комментарий'
+            ];
             sheet.addRow(header);
 
             filteredData.forEach((vol) => {
-                sheet.addRow([vol.nickname, vol.qr]);
+                sheet.addRow([
+                    vol.id,
+                    vol.nickname,
+                    vol.name,
+                    vol.lastname,
+                    vol.departments ? vol.departments.map((department) => department.name).join(', ') : '',
+                    vol.kitchen ? kitchenNameById[vol.kitchen] : '',
+                    vol.active_from ? dayjs(vol.active_from).format(formDateFormat) : '',
+                    vol.active_to ? dayjs(vol.active_to).format(formDateFormat) : '',
+                    vol.is_active ? 1 : 0,
+                    vol.is_blocked ? 1 : 0,
+                    vol.feed_type === FeedType.FT1 ? 'фри' : 'платно',
+                    vol.is_vegan ? 'веган' : 'мясоед',
+                    vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : ''
+                ]);
             });
             void saveXLSX(workbook, 'volunteers');
         }
-    }, [filteredData]);
+    }, [filteredData, kitchenNameById]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
     }, [createAndSaveXLSX]);
 
-    const Footer = (): JSX.Element => {
-        return (
-            <Button type={'primary'} onClick={handleClickDownload} icon={<DownloadOutlined />} disabled={!filteredData}>
-                Выгрузить
-            </Button>
-        );
-    };
-
     return (
         <List>
             <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
-            <Table dataSource={filteredData} footer={Footer} rowKey='id'>
+            <Table
+                dataSource={filteredData}
+                rowKey='id'
+                footer={() => (
+                    <Button
+                        type={'primary'}
+                        onClick={handleClickDownload}
+                        icon={<DownloadOutlined />}
+                        disabled={!filteredData && kitchensIsLoading}
+                    >
+                        Выгрузить
+                    </Button>
+                )}
+            >
                 <Table.Column
                     dataIndex='nickname'
                     key='nickname'

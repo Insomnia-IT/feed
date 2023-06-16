@@ -20,6 +20,7 @@ export interface VolEntity {
     departure_date?: Date;
     ref_to?: number; // chef
     departments?: Array<{ id: number; name: string }>; //DepartmentEntity[];
+    kitchen?: number;
     // location?: LocationEntity[];
     badge_type?: number; //BadgeType
     feed_type?: number; //FeedTypeEntity;
@@ -50,7 +51,7 @@ export interface FeedTransactionEntity {
     dtime: string;
     meal_time: string;
     volunteer: number;
-    is_vegan: boolean;
+    is_vegan: boolean | null;
     reason: string;
     kitchen: number;
 }
