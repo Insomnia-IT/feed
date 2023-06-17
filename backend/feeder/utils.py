@@ -131,7 +131,6 @@ def calculate_statistics(data):
         models.FeedTransaction.objects
             # shift date_to to include end of period
             .filter(dtime__range=(stat_date_from.datetime, stat_date_to.shift(days=+1).datetime))
-            .exclude(volunteer__exact=None)
             .values_list('dtime', 'meal_time', 'kitchen', 'amount', 'is_vegan')
     )
 
