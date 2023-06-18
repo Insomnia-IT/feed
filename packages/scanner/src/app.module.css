@@ -1,5 +1,7 @@
 :root {
     --fs: calc(4vw + 12px);
+    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 button {
@@ -13,8 +15,6 @@ button {
 }
 
 .app {
-    width: 100vw;
-    min-height: 100vh;
     font-size: var(--fs);
 
     h2 {
@@ -26,9 +26,9 @@ button {
         position: relative;
         width: 100vw;
         height: 100vh;
-        overflow: auto;
+        max-height: -webkit-fill-available;
 
-&.main {
+        &.main {
             display: flex;
             flex-direction: column;
             justify-content: space-evenly;

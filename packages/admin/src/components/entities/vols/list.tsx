@@ -34,7 +34,7 @@ const booleanFilters = [
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
 
-    const { data: volunteers } = useList<VolEntity>({
+    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
         config: {
             pagination: {
@@ -163,6 +163,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         <List>
             <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
             <Table
+                loading={volunteersIsLoading}
                 dataSource={filteredData}
                 rowKey='id'
                 footer={() => (
