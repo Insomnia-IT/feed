@@ -139,7 +139,7 @@ export const CreateEdit: FC = () => {
                         name='departments'
                         rules={Rules.required}
                     >
-                        <Select mode='multiple' {...departmentSelectProps} />
+                        <Select mode='multiple' {...departmentSelectProps} loading />
                     </Form.Item>
                     <Form.Item label='Должность' name='position'>
                         <Input />
@@ -148,23 +148,7 @@ export const CreateEdit: FC = () => {
                         <Select {...colorTypeSelectProps} />
                     </Form.Item>
                     <Form.Item label='Шеф' name='ref_to'>
-                        <Select {...leadSelectProps} />
-                    </Form.Item>
-                </Col>
-            </Row>
-            <Row gutter={[16, 16]}>
-                <Col span={8}>
-                    <Form.Item label='Групповой бейдж' name='group_badge'>
-                        <Select
-                            {...groupBadgeSelectProps}
-                            options={
-                                groupBadgeSelectProps.options
-                                    ? [{ value: '', label: '' } as DefaultOptionType].concat(
-                                          groupBadgeSelectProps.options
-                                      )
-                                    : undefined
-                            }
-                        />
+                        {!leadSelectProps.loading && <Select {...leadSelectProps} />}
                     </Form.Item>
                 </Col>
             </Row>
@@ -177,6 +161,9 @@ export const CreateEdit: FC = () => {
                 <Col span={8}>
                     <Form.Item label='Номер бейджа' name='badge_number'>
                         <Input />
+                    </Form.Item>
+                    <Form.Item label='Групповой бейдж' name='group_badge'>
+                        <Select allowClear {...groupBadgeSelectProps} />
                     </Form.Item>
                 </Col>
             </Row>

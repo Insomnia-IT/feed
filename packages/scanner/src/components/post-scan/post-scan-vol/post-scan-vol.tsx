@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { AppColor, AppContext } from '~/app-context';
-import type { Volunteer } from '~/db';
+import { FeedType, type Volunteer } from '~/db';
 import { ErrorMsg, GreenCard, YellowCard } from '~/components/misc';
 
 import { getTodayStart, getVolTransactionsAsync, useFeedVol, validateVol } from '../post-scan.utils';
@@ -23,7 +23,7 @@ export const PostScanVol: FC<{
         return <ErrorMsg close={closeFeed} doNotFeed={doNotFeed} msg={`Бейдж не найден: ${qrcode}`} />;
     }
 
-    const { isRed, msg } = validateVol(vol, volTransactions, kitchenId!, mealTime!);
+    const { isRed, msg } = validateVol(vol, volTransactions, kitchenId!, mealTime!, false);
 
     if (msg.length > 0) {
         if (isRed) {
@@ -35,6 +35,6 @@ export const PostScanVol: FC<{
         }
     }
 
-    setColor(AppColor.GREEN);
+    setColor(vol.feed_type === FeedType.Child ? AppColor.BLUE : AppColor.GREEN);
     return <GreenCard close={closeFeed} doFeed={doFeed} vol={vol} />;
 };

@@ -56,7 +56,7 @@ export interface Volunteer {
     feed_type: FeedType;
     departments: Array<{ name: string }>;
     kitchen: number;
-    group_badge: string | null;
+    group_badge: number | null;
 
     transactions: Array<Transaction> | null;
 }

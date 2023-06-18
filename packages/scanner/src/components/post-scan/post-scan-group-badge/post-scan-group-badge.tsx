@@ -18,6 +18,7 @@ enum Views {
     'GREEN',
     'YELLOW',
     'RED',
+    'BLUE',
     'ERROR_EMPTY',
     'ERROR_VALIDATION'
 }
@@ -86,7 +87,7 @@ export const PostScanGroupBadge: FC<{
 
         // pass each vol through validation and combine result
         const validatedVols = vols.map((vol) => {
-            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId!, mealTime!) };
+            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId!, mealTime!, true) };
         });
 
         setValidationGroups({
@@ -144,6 +145,10 @@ export const PostScanGroupBadge: FC<{
 
             case Views.YELLOW:
                 setColor(AppColor.YELLOW);
+                break;
+
+            case Views.BLUE:
+                setColor(AppColor.BLUE);
                 break;
 
             case Views.LOADING:
