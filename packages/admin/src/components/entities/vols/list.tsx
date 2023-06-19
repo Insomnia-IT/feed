@@ -22,7 +22,7 @@ import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 import { FeedType } from '@feed/scanner/src/db';
 
-import type { KitchenEntity, VolEntity, DepartmentEntity } from '~/interfaces';
+import type { DepartmentEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
 
 const booleanFilters = [
@@ -45,7 +45,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
         resource: 'departments',
         optionLabel: 'name'
-    });    
+    });
 
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
         resource: 'kitchens'

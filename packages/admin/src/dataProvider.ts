@@ -87,9 +87,7 @@ export const crudDataProvider = (
         const requestMethod = (method as MethodTypes) ?? 'get';
 
         const { data } = await httpClient[requestMethod](
-            `${apiUrl}/${resource}?${stringify(
-                { id__in: ids },
-                { arrayFormat: 'comma' })}`,
+            `${apiUrl}/${resource}?${stringify({ id__in: ids }, { arrayFormat: 'comma' })}`,
             { headers }
         );
 

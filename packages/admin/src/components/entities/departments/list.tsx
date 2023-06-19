@@ -3,15 +3,15 @@ import {
     EditButton,
     FilterDropdown,
     List,
+    Select,
     Space,
     Table,
-    useSelect,
     TextField,
-    Select
+    useSelect
 } from '@pankod/refine-antd';
 import { useMemo } from 'react';
-import { IResourceComponentsProps, useList } from '@pankod/refine-core';
-import { useMany } from '@pankod/refine-core';
+import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { useList, useMany } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
 import type { DepartmentEntity, VolEntity } from '~/interfaces';
@@ -30,13 +30,16 @@ export const DepartmentList: FC<IResourceComponentsProps> = () => {
         }
     });
 
-    const leadIds = useMemo(() => departments?.data?.filter((d) => Number.isInteger(d.lead)).map((d) => d.lead!.toString()) || [], [departments]);
+    const leadIds = useMemo(
+        () => departments?.data?.filter((d) => Number.isInteger(d.lead)).map((d) => d.lead!.toString()) || [],
+        [departments]
+    );
 
     const { data: leads } = useMany<Lead>({
         resource: 'volunteers',
         ids: leadIds,
         queryOptions: {
-            enabled: leadIds.length > 0,
+            enabled: leadIds.length > 0
         }
     });
 
@@ -44,22 +47,20 @@ export const DepartmentList: FC<IResourceComponentsProps> = () => {
         resource: 'volunteers',
         optionLabel: 'nickname'
     });
-    
-    const filteredSource = useMemo(() =>
-        departments?.data.map((d) => ({
-            ...(d as Omit<DepartmentEntity, 'lead'>),
-            lead: leads?.data?.find((v) => v.id === d.lead) ?? null
-    })), [departments, leads]);
-    
+
+    const filteredSource = useMemo(
+        () =>
+            departments?.data.map((d) => ({
+                ...(d as Omit<DepartmentEntity, 'lead'>),
+                lead: leads?.data?.find((v) => v.id === d.lead) ?? null
+            })),
+        [departments, leads]
+    );
+
     return (
         <List>
             <Table rowKey='id' dataSource={filteredSource}>
-                <Table.Column
-                    dataIndex='name'
-                    title='Название'
-                    render={renderText}
-                    sorter
-                />
+                <Table.Column dataIndex='name' title='Название' render={renderText} sorter />
                 <Table.Column<{ lead: Lead | null }>
                     dataIndex={['lead', 'nickname']}
                     title='Руководитель'
