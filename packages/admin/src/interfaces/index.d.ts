@@ -63,5 +63,10 @@ export interface GroupBadgeEntity {
     comment?: string;
 }
 
-export { DepartmentEntity } from '@feed/api/src/entities/department.entity';
+export interface DepartmentEntity {
+    id: number;
+    name: string;
+    lead: number | null;
+}
+
 export { LocationEntity } from '@feed/api/src/entities/location.entity';

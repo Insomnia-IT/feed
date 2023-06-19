@@ -1,24 +1,19 @@
 import arrow
 
-from django.shortcuts import render, get_object_or_404
-from rest_framework import generics
-from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.authentication import TokenAuthentication
+from rest_framework import serializers, viewsets, permissions, filters, mixins
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework.views import APIView
-from rest_framework import status
-from django.db import transaction
-from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiParameter, OpenApiExample
-from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import routers, serializers, viewsets, permissions
-from rest_framework.views import APIView
-from django_filters import rest_framework as django_filters
 
-from feeder import serializers, models, authentication
+from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiParameter, OpenApiExample
+
+from django_filters import rest_framework as django_filters
+from django_filters.rest_framework import DjangoFilterBackend
+
+from feeder import serializers, models
 from feeder.utils import sync_with_notion, calculate_statistics, STAT_DATE_FORMAT
+
+class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
+    pass
 
 class MultiSerializerViewSetMixin(object):
     def get_serializer_class(self):
@@ -44,7 +39,6 @@ class MultiSerializerViewSetMixin(object):
         except (KeyError, AttributeError):
             return super(MultiSerializerViewSetMixin, self).get_serializer_class()
 
-
 class DepartmentFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
 
@@ -62,6 +56,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     search_fields = ['name', ]
 
 class VolunteerFilter(django_filters.FilterSet):
+    id__in = NumberInFilter(field_name='id', lookup_expr='in')
     name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
     lastname = django_filters.CharFilter(field_name="lastname", lookup_expr='icontains')
     nickname = django_filters.CharFilter(field_name="nickname", lookup_expr='icontains')

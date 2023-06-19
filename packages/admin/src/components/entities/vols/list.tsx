@@ -11,7 +11,6 @@ import {
     TextField,
     useSelect
 } from '@pankod/refine-antd';
-import type { DepartmentEntity } from '@feed/api/src/entities/department.entity';
 import { useList } from '@pankod/refine-core';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 // import { Loader } from '@feed/ui/src/loader';
@@ -23,7 +22,7 @@ import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 import { FeedType } from '@feed/scanner/src/db';
 
-import type { KitchenEntity, VolEntity } from '~/interfaces';
+import type { DepartmentEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
 
 const booleanFilters = [
