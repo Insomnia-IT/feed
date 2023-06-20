@@ -10,7 +10,8 @@ export const validateVol = (
     vol: Volunteer,
     volTransactions: Array<Transaction>,
     kitchenId: string,
-    mealTime: MealTime
+    mealTime: MealTime,
+    isGroupScan: boolean
 ): { msg: Array<string>; isRed: boolean } => {
     const msg: Array<string> = [];
     let isRed = false;
@@ -32,26 +33,28 @@ export const validateVol = (
         isRed = true;
         msg.push('НЕТ ПИТАНИЯ, СХОДИ В ИЦ');
     }
-    if (volTransactions.some((t) => t.mealTime === mealTime)) {
+    if (volTransactions.some((t) => t.mealTime === mealTime) && vol.feed_type !== FeedType.Child) {
         msg.push(`Волонтер уже получил ${getMealTimeText(mealTime)}`);
-        isRed = true;
 
-        // const hasDebt = Object.values(
-        //     volTransactions.reduce(
-        //         (acc, { mealTime }) => ({
-        //             ...acc,
-        //             [mealTime]: (acc[mealTime] || 0) + 1
-        //         }),
-        //         {} as { [mealTime: string]: number }
-        //     )
-        // ).some((count) => count > 1);
+        if (vol.group_badge && !isGroupScan) {
+            const hasDebt = Object.values(
+                volTransactions.reduce(
+                    (acc, { mealTime }) => ({
+                        ...acc,
+                        [mealTime]: (acc[mealTime] || 0) + 1
+                    }),
+                    {} as { [mealTime: string]: number }
+                )
+            ).some((count) => count > 1);
 
-        // if (hasDebt) {
-        //     msg.push('Волонтер уже питался сегодня в долг');
-        //     isRed = true;
-        // }
+            if (hasDebt) {
+                isRed = true;
+            }
+        } else {
+            isRed = true;
+        }
     }
-    if (msg.length && !isRed && volTransactions.some((t) => t.amount)) {
+    if (msg.length && !isRed && volTransactions.some((t) => t.amount) && vol.feed_type !== FeedType.Child) {
         msg.push('Волонтер уже питался сегодня в долг');
         isRed = true;
     }

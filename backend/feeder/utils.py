@@ -14,6 +14,7 @@ from rest_framework.exceptions import APIException
 
 
 ZERO_HOUR = 4
+DAY_START_HOUR = 7
 
 STAT_DATE_FORMAT = 'YYYY-MM-DD'
 
@@ -130,22 +131,30 @@ def calculate_statistics(data):
     transactions = (
         models.FeedTransaction.objects
             # shift date_to to include end of period
-            .filter(dtime__range=(stat_date_from.datetime, stat_date_to.shift(days=+1).datetime))
-            .exclude(volunteer__exact=None)
+            .filter(dtime__range=(stat_date_from.shift(hours=+DAY_START_HOUR).datetime, stat_date_to.shift(days=+1, hours=+DAY_START_HOUR).datetime))
             .values_list('dtime', 'meal_time', 'kitchen', 'amount', 'is_vegan')
     )
 
     # set FACT statistics
-    fact_stat = [
-        {
-            'date': arrow.get(dtime).format(STAT_DATE_FORMAT),
+    fact_stat = []
+    for dtime, meal_time, kitchen_id, amount, is_vegan in transactions:
+        state_date = arrow.get(dtime)
+        fact_stat.append({
+            # day starts from 7AM
+            'date': (
+                (
+                    state_date.shift(days=-1) 
+                    if state_date.hour < DAY_START_HOUR and meal_time == meal_times[3] # = "night"
+                    else state_date
+                ).format(STAT_DATE_FORMAT)
+            ),
             'type': StatisticType.FACT.value,
             'meal_time': meal_time,
             'is_vegan': is_vegan,
             'amount': amount,
-            'kitchen_id': kitchen_id 
-        } for dtime, meal_time, kitchen_id, amount, is_vegan in transactions
-    ]
+            'kitchen_id': kitchen_id
+        })
+        
     
     # plan statistic
     plan_stat = []
