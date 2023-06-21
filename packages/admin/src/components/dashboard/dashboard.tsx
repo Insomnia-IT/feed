@@ -63,6 +63,7 @@ export const Dashboard: FC = () => {
     // const { isLoading: /*mutateIsLoading,*/ mutate } = mutationResult;
 
     const scanner = useRef<QrScanner | null>(null);
+    const video = useRef<HTMLVideoElement | null>(null);
 
     const loadingRef = useRef(false);
 
@@ -95,38 +96,41 @@ export const Dashboard: FC = () => {
         }
     }, []);
 
-    const onVideoReady = useCallback(
-        (ref: HTMLVideoElement) => {
-            if (!ref) {
-                scanner.current = null;
-                return;
-            }
+    useEffect(() => {
+        if (!video.current) return;
 
-            const s = new QrScanner(
-                ref,
-                ({ data }) => {
-                    // setError(null);
-                    // console.log(`read: ${data}`);
-                    void onScan(data);
-                    // console.log(`qr: ${data}`);
-                    // onScan(data);
+        const s = new QrScanner(
+            video.current,
+            ({ data }) => {
+                // setError(null);
+                // console.log(`read: ${data}`);
+                debugger;
+                void onScan(data);
+                // console.log(`qr: ${data}`);
+                // onScan(data);
+            },
+            {
+                onDecodeError: () => {
+                    // no handle
                 },
-                {
-                    onDecodeError: () => {
-                        // no handle
-                    },
-                    // maxScansPerSecond: 1,
-                    highlightScanRegion: true,
-                    highlightCodeOutline: true
-                }
-            );
+                // maxScansPerSecond: 1,
+                highlightScanRegion: true,
+                highlightCodeOutline: true
+            }
+        );
 
-            scanner.current = s;
+        scanner.current = s;
 
-            void s.start();
-        },
-        [onScan]
-    );
+        void s.start();
+
+        return () => {
+            s.destroy();
+        };
+    }, [onScan]);
+
+    const onVideoReady = (ref: HTMLVideoElement) => {
+        video.current = ref;
+    };
 
     useEffect(() => {
         // @ts-ignore
