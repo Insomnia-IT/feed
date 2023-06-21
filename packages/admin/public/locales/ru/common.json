@@ -149,6 +149,12 @@
             "show": "Показать"
         }
     },
+    "scanner-page": {
+        "scanner-page": "Кормитель",
+        "titles": {
+            "list": "Кормитель"
+        }
+    },
     "table": {
         "actions": "Действия"
     }
