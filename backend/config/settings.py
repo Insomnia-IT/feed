@@ -186,6 +186,8 @@ NOTION_AUTH_HEADER = os.environ.get("NOTION_AUTH_HEADER", "")
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h]
 
+CSRF_TRUSTED_ORIGINS = [h.strip() for h in os.environ.get("CSRF_TRUSTED_ORIGINS", "127.0.0.1,localhost").split(",") if h]
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
