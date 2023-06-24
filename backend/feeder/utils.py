@@ -95,10 +95,10 @@ def sync_with_notion() -> dict:
         volunteer.kitchen = models.Kitchen.objects.get(pk=1)
 
         if arrival_dt := item.get('arrival_date'):
-            volunteer.arrival_date = arrow.get(arrival_dt).replace(hour=ZERO_HOUR).datetime
+            volunteer.arrival_date = arrow.get(arrival_dt).datetime
             volunteer.active_from = volunteer.arrival_date
         if depart_dt := item.get('departure_date'):
-            volunteer.departure_date = arrow.get(depart_dt).replace(hour=ZERO_HOUR).datetime
+            volunteer.departure_date = arrow.get(depart_dt).datetime
             volunteer.active_to = volunteer.departure_date
 
         if color := item.get('color'):
