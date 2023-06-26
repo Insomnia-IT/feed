@@ -20,7 +20,6 @@ import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
-import { FeedType } from '@feed/scanner/src/db';
 
 import type { DepartmentEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
@@ -29,6 +28,19 @@ const booleanFilters = [
     { value: true, text: 'Да' },
     { value: false, text: 'Нет' }
 ];
+
+const stringFromFeedType = (feedType: number): string => {
+    switch (feedType) {
+        case 1:
+            return 'фри';
+        case 2:
+            return 'платно';
+        case 3:
+            return 'ребенок';
+        default:
+            return '';
+    }
+};
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
@@ -145,7 +157,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.active_to ? dayjs(vol.active_to).format(formDateFormat) : '',
                     vol.is_active ? 1 : 0,
                     vol.is_blocked ? 1 : 0,
-                    vol.feed_type === FeedType.FT1 ? 'фри' : 'платно',
+                    vol.feed_type ? stringFromFeedType(vol.feed_type) : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : ''
                 ]);
