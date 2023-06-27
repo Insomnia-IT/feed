@@ -49,8 +49,7 @@ button {
 .auth {
     display: flex;
     flex-direction: column;
-    gap: 2em;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     font-size: 2em;
     height: 400px;
