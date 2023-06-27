@@ -33,15 +33,13 @@ export const MainScreen = React.memo(function MainScreen() {
     return (
         <div className={cn(css.screen, css.main)}>
             <BtnSync />
-            {!scanResult && (
-                <>
-                    {isDev && <ScanSimulator withSelection setScanResult={setScanResult} />}
-                    <QrScan onScan={setScanResult} />
-                    <button className={css.anon} onClick={feedAnon}>
-                        Кормить Анонима
-                    </button>
-                </>
-            )}
+            <div className={cn(css.screen, css.main)} style={{ display: scanResult ? 'none' : '' }}>
+                {isDev && <ScanSimulator withSelection setScanResult={setScanResult} />}
+                <QrScan onScan={setScanResult} />
+                <button className={css.anon} onClick={feedAnon}>
+                    Кормить Анонима
+                </button>
+            </div>
             {scanResult && <PostScan closeFeed={closeFeedDialog} qrcode={scanResult} />}
 
             {appError && <ErrorMsg close={closeFeedDialog} msg={appError} />}
