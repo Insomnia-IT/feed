@@ -20,9 +20,8 @@ import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
-import { FeedType } from '@feed/scanner/src/db';
 
-import type { DepartmentEntity, KitchenEntity, VolEntity } from '~/interfaces';
+import type { DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
 
 const booleanFilters = [
@@ -51,6 +50,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         resource: 'kitchens'
     });
 
+    const { data: feedTypes, isLoading: feedTypesIsLoading } = useList<FeedTypeEntity>({
+        resource: 'feed-types'
+    });
+
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
             (acc, kitchen) => ({
@@ -60,6 +63,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {}
         );
     }, [kitchens]);
+
+    const feedTypeNameById = useMemo(() => {
+        return (feedTypes ? feedTypes.data : []).reduce(
+            (acc, feedType) => ({
+                ...acc,
+                [feedType.id]: feedType.name
+            }),
+            {}
+        );
+    }, [feedTypes]);
 
     const filteredData = useMemo(() => {
         return searchText
@@ -145,14 +158,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.active_to ? dayjs(vol.active_to).format(formDateFormat) : '',
                     vol.is_active ? 1 : 0,
                     vol.is_blocked ? 1 : 0,
-                    vol.feed_type === FeedType.FT1 ? 'фри' : 'платно',
+                    vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : ''
                 ]);
             });
             void saveXLSX(workbook, 'volunteers');
         }
-    }, [filteredData, kitchenNameById]);
+    }, [feedTypeNameById, filteredData, kitchenNameById]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
@@ -170,7 +183,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         type={'primary'}
                         onClick={handleClickDownload}
                         icon={<DownloadOutlined />}
-                        disabled={!filteredData && kitchensIsLoading}
+                        disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading}
                     >
                         Выгрузить
                     </Button>
