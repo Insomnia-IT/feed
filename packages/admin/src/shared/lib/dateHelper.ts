@@ -19,6 +19,6 @@ dayjsExtended.extend(duration);
 dayjsExtended.extend(toObject);
 dayjsExtended.extend(utc);
 
-const formDateFormat = 'DD-MM-YYYY';
+const formDateFormat = 'DD.MM.YYYY';
 
 export { dayjsExtended, formDateFormat };
