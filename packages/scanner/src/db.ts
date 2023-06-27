@@ -161,6 +161,7 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
                 vol.kitchen.toString() === kitchenId &&
                 !!vol.active_to &&
                 !!vol.active_from &&
+                !vol.is_blocked &&
                 dayjs(vol.active_from).unix() <= dayjs(statsDate).add(1, 'd').unix() &&
                 dayjs(vol.active_to).unix() >= dayjs(statsDate).unix() &&
                 (dayjs(vol.active_from).unix() < dayjs(statsDate).unix()

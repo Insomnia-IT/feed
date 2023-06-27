@@ -20,7 +20,7 @@ sas.attachTo(document, {
 const Video1: React.FC<{
     setRef: (ref: HTMLVideoElement) => void;
 }> = memo(
-    ({ setRef }) => <video className={css.qrScanVideo} height={'auto'} ref={setRef} width={'100%'} />,
+    ({ setRef }) => <video className={css.qrScanVideo} ref={setRef} />,
     () => true
 );
 Video1.displayName = 'Video1';
