@@ -85,8 +85,8 @@ export function handleDataForColumnChart(
             const resFact = data[date].fact[mealTime];
             const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
             dataForColumnChart.push(
-                { date, type: 'plan', mealTime, value: values.plan },
-                { date, type: 'fact', mealTime, value: values.fact }
+                { date, type: 'fact', mealTime, value: values.fact },
+                { date, type: 'plan', mealTime, value: values.plan }
             );
         }
         const resPlan = data[date].plan.total;
@@ -110,7 +110,7 @@ export function handleDataForLinearChart(data: IData, typeOfEater: EaterTypeExte
         const resPlan = data[date].plan.total;
         const resFact = data[date].fact.total;
         const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-        result.push({ type: 'plan', date, value: values.plan }, { type: 'fact', date, value: values.fact });
+        result.push({ type: 'fact', date, value: values.fact }, { type: 'plan', date, value: values.plan });
     }
     return result;
 }

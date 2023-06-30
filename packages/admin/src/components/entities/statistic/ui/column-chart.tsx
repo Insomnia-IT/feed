@@ -34,7 +34,7 @@ function createAnnotation(data: Array<IColumnChartAnnotationData>) {
         annotations.push({
             ...annotation,
             position: [`${(index / data.length) * 100 + 17}%`, '4%'],
-            content: `${datum.plan} / ${datum.fact}`
+            content: `${datum.fact} / ${datum.plan}`
         });
     });
     return annotations;
