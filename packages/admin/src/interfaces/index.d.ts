@@ -22,7 +22,7 @@ export interface VolEntity {
     departments?: Array<{ id: number; name: string }>; //DepartmentEntity[];
     kitchen?: number;
     // location?: LocationEntity[];
-    badge_type?: number; //BadgeType
+    color_type?: number; //BadgeType
     feed_type?: number; //FeedTypeEntity;
     qr_code?: string;
     group_badge?: number | undefined;
