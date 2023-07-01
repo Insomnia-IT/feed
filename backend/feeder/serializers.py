@@ -95,6 +95,46 @@ class SyncStatistic(serializers.Serializer):
     departments = SyncStatisticItem()
 
 
+class SyncFromItemSerializer(serializers.Serializer):
+    created = serializers.IntegerField()
+    total = serializers.IntegerField()
+
+
+class SyncToArrivedSerializer(serializers.Serializer):
+    success = serializers.IntegerField()
+    failed = serializers.IntegerField()
+    total = serializers.IntegerField()
+
+
+class SyncToSentSerializer(serializers.Serializer):
+    arrived = SyncToArrivedSerializer()
+
+class SyncWithItemSerializer(SyncFromItemSerializer):
+    sent = SyncToSentSerializer(required=False)
+
+
+class SyncWithSerializer(serializers.Serializer):
+    volunteers = SyncWithItemSerializer()
+    departments = SyncFromItemSerializer()
+
+
+class SyncToSentPartialSerializer(serializers.Serializer):
+    arrived = SyncToArrivedSerializer(required=False)
+    error = serializers.ListField(
+        child=serializers.CharField(allow_blank=True),
+        min_length=2
+    )
+
+
+class SyncWithPartialItemSerializer(SyncFromItemSerializer):
+    sent = SyncToSentPartialSerializer()
+
+
+class SyncWithPartialSerializer(serializers.Serializer):
+    volunteers = SyncWithPartialItemSerializer()
+    departments = SyncFromItemSerializer()
+
+
 class StatisticsRequestSerializer(serializers.Serializer):
     date_from = serializers.DateField()
     date_to = serializers.DateField()

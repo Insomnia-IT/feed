@@ -1,6 +1,6 @@
 import arrow
 
-from rest_framework import serializers, viewsets, permissions, filters, mixins
+from rest_framework import serializers, viewsets, permissions, filters, mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -146,12 +146,21 @@ class SyncWithNotion(APIView):
     """
     permission_classes = [permissions.IsAuthenticated, ]
 
-    @extend_schema(responses={200: serializers.SyncStatistic}, summary="Запуск синхронизации с Notion")
+    @extend_schema(
+        responses={
+            200: serializers.SyncWithSerializer,
+            202: serializers.SyncWithPartialSerializer
+        }, 
+        summary="Запуск синхронизации с Notion"
+    )
     def post(self, request):
         result = sync_with_notion()
-        return Response(
-            serializers.SyncStatistic(result).data
-        )
+
+        serializer = serializers.SyncWithPartialSerializer(data=result)
+        if serializer.is_valid():
+            return Response(serializer.validated_data, status=status.HTTP_202_ACCEPTED)
+
+        return Response(serializers.SyncWithSerializer(result).data)
 
 
 @extend_schema(tags=['feed', ], summary="Массовое добавление приёмов пищи")

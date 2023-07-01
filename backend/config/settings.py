@@ -188,6 +188,12 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,l
 
 CSRF_TRUSTED_ORIGINS = [h.strip() for h in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if h]
 
+AGREEMOD_PEOPLE_URL = os.environ.get("AGREEMOD_PEOPLE_URL", "")
+AGREEMOD_ARRIVED_PERSON_URL = os.environ.get("AGREEMOD_ARRIVED_PERSON_URL", "")
+AGREEMOD_ARRIVED_BULK_URL = os.environ.get("AGREEMOD_ARRIVED_BULK_URL", "")
+
+IS_SYNC_TO_NOTION_ON = os.environ.get("IS_SYNC_TO_NOTION_ON", "True")
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
