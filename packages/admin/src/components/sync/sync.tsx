@@ -12,9 +12,16 @@ export const Sync: FC = () => {
     const syncNotion = async () => {
         setDisabled(true);
         try {
-            await axios.post(`${apiUrl}/notion-sync`);
+            const response = await axios.post(`${apiUrl}/notion-sync`);
+            if (response.status === 202) {
+                alert('Синхронизация из Notion прошла успешно. Синхронизация в Notion выполнилась частично.');
+
+                console.log(response.data);
+            }
         } catch (e) {
             alert('При синхронизации возникла ошибка');
+
+            console.log(e);
         } finally {
             setDisabled(false);
         }

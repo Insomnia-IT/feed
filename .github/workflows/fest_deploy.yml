@@ -22,6 +22,7 @@ jobs:
              -t $IMAGE_NAME_BASENAME:$GITHUB_SHA  \
              --build-arg API_URL=https://feed.cherepusick.keenetic.name/api \
              --build-arg NEW_API_URL=https://feedapp.insomniafest.ru/feedapi/v1 \
+             --build-arg ENABLE_SYNC_TO_NOTION=True \
             .
     - name: stop admin
       run: docker rm -f $IMAGE_NAME_BASENAME
