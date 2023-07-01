@@ -5,6 +5,7 @@ import {
     EditButton,
     FilterDropdown,
     List,
+    NumberField,
     Select,
     Space,
     Table,
@@ -146,17 +147,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             const sheet = workbook.addWorksheet('Volunteers');
 
             const header = [
-                'Номер',
                 'ID',
                 'Позывной',
                 'Имя',
                 'Фамилия',
                 'Службы',
-                'Кухня',
+                'Роль',
                 'От',
                 'До',
                 'Активирован',
                 'Заблокирован',
+                'Кухня',
+                'Партия бейджа',
                 'Тип питания',
                 'Веган/мясоед',
                 'Комментарий',
@@ -166,17 +168,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
             filteredData.forEach((vol, index) => {
                 sheet.addRow([
-                    index + 1,
                     vol.id,
                     vol.nickname,
                     vol.name,
                     vol.lastname,
                     vol.departments ? vol.departments.map((department) => department.name).join(', ') : '',
-                    vol.kitchen ? kitchenNameById[vol.kitchen] : '',
+                    vol.role,
                     vol.active_from ? dayjs(vol.active_from).format(formDateFormat) : '',
                     vol.active_to ? dayjs(vol.active_to).format(formDateFormat) : '',
                     vol.is_active ? 1 : 0,
                     vol.is_blocked ? 1 : 0,
+                    vol.kitchen ? kitchenNameById[vol.kitchen] : '',
+                    vol.printing_batch,
                     vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
@@ -212,10 +215,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             >
                 <Table.Column<DepartmentEntity>
                     title=''
-                    dataIndex='actions_edit'
+                    dataIndex='actions'
                     render={(_, record) => (
                         <Space>
                             <EditButton hideText size='small' recordItemId={record.id} />
+                            <DeleteButton hideText size='small' recordItemId={record.id} />
                         </Space>
                     )}
                 />
@@ -265,13 +269,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     onFilter={onDepartmentFilter}
                 />
                 <Table.Column
-                    dataIndex='kitchen'
-                    key='kitchen'
-                    title='Кухня'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('kitchen')}
-                />
-                <Table.Column
                     dataIndex='active_from'
                     key='active_from'
                     title='От'
@@ -308,19 +305,30 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     onFilter={onBlockedFilter}
                 />
                 <Table.Column
+                    dataIndex='kitchen'
+                    key='kitchen'
+                    title='Кухня'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('kitchen')}
+                />
+                <Table.Column
+                    dataIndex='printing_batch'
+                    key='printing_batch'
+                    title={
+                        <span>
+                            Партия
+                            <br />
+                            Бейджа
+                        </span>
+                    }
+                    render={(value) => value && <NumberField value={value} />}
+                />
+
+                <Table.Column
                     dataIndex='comment'
                     key='comment'
                     title='Комментарий'
                     render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
-                />
-                <Table.Column<DepartmentEntity>
-                    title=''
-                    dataIndex='actions'
-                    render={(_, record) => (
-                        <Space>
-                            <DeleteButton hideText size='small' recordItemId={record.id} />
-                        </Space>
-                    )}
                 />
             </Table>
         </List>

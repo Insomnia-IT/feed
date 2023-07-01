@@ -257,6 +257,10 @@ def sync_from_notion(people):
 
         if not created and volunteer.is_active:
             print('skip, already activated {}'.format(volunteer.uuid))
+            if not volunteer.printing_batch:
+                volunteer.printing_batch = person.get('printing_batch')
+                volunteer.role = person.get('role')
+                volunteer.save()
             continue
 
         # otherwise set/update vol fields
@@ -268,7 +272,8 @@ def sync_from_notion(people):
         volunteer.is_vegan = person.get('is_vegan')
         volunteer.position = person.get('position')
         volunteer.badge_number = person.get('badge_number')
-        volunteer.comment =  person.get('comment')
+        volunteer.printing_batch = person.get('printing_batch')
+        volunteer.role = person.get('role')
 
         volunteer.feed_type = (
             feed_types[FeedType.PAID] if person.get('food_type') == 'Платно' 
