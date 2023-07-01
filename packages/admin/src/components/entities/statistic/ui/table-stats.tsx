@@ -5,7 +5,7 @@ import type { MealTime } from '../types';
 
 interface ITableStatData {
     key: string;
-    mealTimeType: MealTime | 'total';
+    mealTimeType: string;
     plan: number;
     fact: number;
 }
