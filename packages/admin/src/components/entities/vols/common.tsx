@@ -171,9 +171,18 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     >
                         <Select mode='multiple' {...departmentSelectProps} loading />
                     </Form.Item>
-                    <Form.Item label='Должность' name='position'>
-                        <Input />
-                    </Form.Item>
+                    <Row gutter={[16, 16]}>
+                        <Col span={12}>
+                            <Form.Item label='Должность' name='position'>
+                                <Input />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item label='Роль' name='role'>
+                                <Input />
+                            </Form.Item>
+                        </Col>
+                    </Row>
                     <Form.Item label='Цвет бейджика' name='color_type'>
                         <Select {...colorTypeSelectProps} />
                     </Form.Item>
@@ -189,9 +198,18 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     </Form.Item>
                 </Col>
                 <Col span={8}>
-                    <Form.Item label='Номер бейджа' name='badge_number'>
-                        <Input />
-                    </Form.Item>
+                    <Row gutter={[16, 16]}>
+                        <Col span={12}>
+                            <Form.Item label='Партия бейджа' name='printing_batch'>
+                                <Input readOnly />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item label='Номер бейджа' name='badge_number'>
+                                <Input readOnly />
+                            </Form.Item>
+                        </Col>
+                    </Row>
                     <Form.Item label='Групповой бейдж' name='group_badge'>
                         <Select allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
                     </Form.Item>
