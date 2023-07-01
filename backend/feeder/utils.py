@@ -280,25 +280,13 @@ def sync_from_notion(people):
         volunteer.balance = volunteer.feed_type.daily_amount
         volunteer.kitchen = default_kitchen
 
-        if arrival_date := person.get('arrival_date'):
-            volunteer.arrival_date = arrow.get(arrival_date).datetime
-        
-        # handle volunteer.active_from only if it's None
-        if not volunteer.active_from:
-            if arrived := person.get('arrived'):
-                volunteer.active_from = arrow.get(arrived).datetime
-            elif volunteer.arrival_date:
-                volunteer.active_from = volunteer.arrival_date
+        if arrival_dt := person.get('arrival_date'):
+            volunteer.arrival_date = arrow.get(arrival_dt).datetime
+            volunteer.active_from = volunteer.arrival_date
 
-        if departure_date := person.get('departure_date'):
-            volunteer.departure_date = arrow.get(departure_date).datetime
-
-        # handle volunteer.active_to only if it's None        
-        if not volunteer.active_to:
-            if leaving := person.get('leaving'):
-                volunteer.active_to = arrow.get(leaving).datetime
-            elif volunteer.departure_date:
-                volunteer.active_to = volunteer.departure_date
+        if depart_dt := person.get('departure_date'):
+            volunteer.departure_date = arrow.get(depart_dt).datetime
+            volunteer.active_to = volunteer.departure_date
 
         if color := person.get('color'):
             volunteer.color_type = (
