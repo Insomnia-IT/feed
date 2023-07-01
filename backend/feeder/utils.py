@@ -236,6 +236,8 @@ def sync_from_notion(people):
     # set total count of vols
     statistic['volunteers']['total'] = len(people)
 
+    notion_uuids = {}
+
     # handle each person to update vols
     for person in people:
         uuid = person.get('uuid')
@@ -247,9 +249,10 @@ def sync_from_notion(people):
         if created:
             statistic['volunteers']['created'] += 1
 
-        # skip processing if vol exists and has been modified
-        if not created and (volunteer.is_active or volunteer.is_blocked):
-            print('skip, already activated {}'.format(uuid))
+        notion_uuids[volunteer.uuid] = True
+
+        if not created and volunteer.is_active:
+            print('skip, already activated {}'.format(volunteer.uuid))
             continue
 
         # otherwise set/update vol fields
@@ -261,6 +264,7 @@ def sync_from_notion(people):
         volunteer.is_vegan = person.get('is_vegan')
         volunteer.position = person.get('position')
         volunteer.badge_number = person.get('badge_number')
+        volunteer.comment =  person.get('comment')
 
         volunteer.feed_type = (
             feed_types[FeedType.PAID] if person.get('food_type') == 'Платно' 
@@ -305,6 +309,15 @@ def sync_from_notion(people):
             )
         
         volunteer.save()
+
+    volunteers = models.Volunteer.objects.all()
+
+    for volunteer in volunteers:
+        if not volunteer.uuid in notion_uuids and not volunteer.is_active and not volunteer.is_blocked:
+            print('blocked, skipped in notion: {}'.format(volunteer.uuid))
+            volunteer.is_blocked = True
+            volunteer.comment = 'отсутствует в ноушен'
+            volunteer.save()
 
 
     print('sync-from stat:', statistic)
@@ -395,13 +408,14 @@ def calculate_statistics(data):
         #     Тех, у кого нет проставленных полей active_from и active_to мы игнорим.
         #     Также мы игнорим тех, у кого active_from меньше начала текущего дня статистики и у которых не проставлен флаг is_active.
         #     Также игнорим волонтеров, у которых стоит флаг paid и нет флага is_active.
+        #     Также игнорим волонтеров, у которых стоит флаг is_blocked.
         #     Ну и остальных проверяем по тому, что текущий день входит в интервал от active_from до active_to.
         volunteers = (
             models.Volunteer.objects
                 .exclude(
-                    (Q(active_from__exact=None) | Q(active_to__exact=None)) 
+                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True)) 
                     | (
-                        Q(is_active=False) 
+                        Q(is_active=False)
                         & (
                             Q(active_from__lt=current_stat_date.datetime) | (~Q(feed_type__exact=None) & Q(feed_type__paid=True))
                         )

@@ -20,7 +20,7 @@ sas.attachTo(document, {
 const Video1: React.FC<{
     setRef: (ref: HTMLVideoElement) => void;
 }> = memo(
-    ({ setRef }) => <video className={css.qrScanVideo} height={'auto'} ref={setRef} width={'100%'} />,
+    ({ setRef }) => <video className={css.qrScanVideo} ref={setRef} />,
     () => true
 );
 Video1.displayName = 'Video1';
@@ -30,6 +30,8 @@ export const QrScan: FC<{
     onScan: (v: string) => void;
 }> = memo(({ onScan, style }) => {
     const scanner = useRef<QrScanner | null>(null);
+    const video = useRef<HTMLVideoElement | null>(null);
+
     const [hasFlash, setHasFlash] = useState<boolean>(false);
     const { setError } = useContext(AppContext);
 
@@ -40,41 +42,37 @@ export const QrScan: FC<{
             });
     }, []);
 
-    const onVideoReady = useCallback(
-        (ref: HTMLVideoElement) => {
-            if (!ref) {
-                scanner.current = null;
-                return;
+    const onVideoReady = (ref: HTMLVideoElement) => {
+        video.current = ref;
+    };
+
+    useEffect(() => {
+        if (!video.current) return;
+
+        const s = new QrScanner(
+            video.current,
+            ({ data }) => {
+                setError(null);
+                console.log(`read: ${data}`);
+                onScan(data);
+            },
+            {
+                maxScansPerSecond: 1,
+                highlightScanRegion: true,
+                highlightCodeOutline: true
             }
+        );
 
-            const s = new QrScanner(
-                ref,
-                ({ data }) => {
-                    setError(null);
-                    console.log(`read: ${data}`);
-                    onScan(data);
-                },
-                {
-                    maxScansPerSecond: 1,
-                    highlightScanRegion: true,
-                    highlightCodeOutline: true
-                }
-            );
+        scanner.current = s;
 
-            scanner.current = s;
+        void s.start().then(() => {
+            updateFlashAvailability();
+        });
 
-            void s.start().then(() => {
-                updateFlashAvailability();
-                // QrScanner.listCameras(true).then(cameras => cameras.forEach(camera => {
-                //     const option = document.createElement('option');
-                //     option.value = camera.id;
-                //     option.text = camera.label;
-                //     camList.add(option);
-                // }));
-            });
-        },
-        [onScan, setError, updateFlashAvailability]
-    );
+        return () => {
+            s.destroy();
+        };
+    }, [onScan, setError, updateFlashAvailability]);
 
     const toggleFlash = useCallback((): void => {
         scanner.current && void scanner.current.toggleFlash();

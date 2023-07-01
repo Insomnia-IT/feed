@@ -1,5 +1,5 @@
+import type { TablePaginationConfig } from '@pankod/refine-antd';
 import {
-    Checkbox,
     DateField,
     DeleteButton,
     EditButton,
@@ -20,15 +20,16 @@ import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
-import { FeedType } from '@feed/scanner/src/db';
 
-import type { DepartmentEntity, KitchenEntity, VolEntity } from '~/interfaces';
+import type { ColorTypeEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
     { value: false, text: 'Нет' }
 ];
+
+const pagination: TablePaginationConfig = { showTotal: (total) => `Кол-во волонтеров: ${total}` };
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
@@ -51,6 +52,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         resource: 'kitchens'
     });
 
+    const { data: feedTypes, isLoading: feedTypesIsLoading } = useList<FeedTypeEntity>({
+        resource: 'feed-types'
+    });
+
+    const { data: colors, isLoading: colorsIsLoading } = useList<ColorTypeEntity>({
+        resource: 'colors'
+    });
+
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
             (acc, kitchen) => ({
@@ -60,6 +69,26 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {}
         );
     }, [kitchens]);
+
+    const feedTypeNameById = useMemo(() => {
+        return (feedTypes ? feedTypes.data : []).reduce(
+            (acc, feedType) => ({
+                ...acc,
+                [feedType.id]: feedType.name
+            }),
+            {}
+        );
+    }, [feedTypes]);
+
+    const colorNameById = useMemo(() => {
+        return (colors ? colors.data : []).reduce(
+            (acc, color) => ({
+                ...acc,
+                [color.id]: color.description
+            }),
+            {}
+        );
+    }, [colors]);
 
     const filteredData = useMemo(() => {
         return searchText
@@ -117,6 +146,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             const sheet = workbook.addWorksheet('Volunteers');
 
             const header = [
+                'Номер',
                 'ID',
                 'Позывной',
                 'Имя',
@@ -129,12 +159,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 'Заблокирован',
                 'Тип питания',
                 'Веган/мясоед',
-                'Комментарий'
+                'Комментарий',
+                'Цвет бейджа'
             ];
             sheet.addRow(header);
 
-            filteredData.forEach((vol) => {
+            filteredData.forEach((vol, index) => {
                 sheet.addRow([
+                    index + 1,
                     vol.id,
                     vol.nickname,
                     vol.name,
@@ -145,14 +177,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.active_to ? dayjs(vol.active_to).format(formDateFormat) : '',
                     vol.is_active ? 1 : 0,
                     vol.is_blocked ? 1 : 0,
-                    vol.feed_type === FeedType.FT1 ? 'фри' : 'платно',
+                    vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
-                    vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : ''
+                    vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
+                    vol.color_type ? colorNameById[vol.color_type] : ''
                 ]);
             });
             void saveXLSX(workbook, 'volunteers');
         }
-    }, [filteredData, kitchenNameById]);
+    }, [feedTypeNameById, filteredData, kitchenNameById]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
@@ -162,6 +195,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         <List>
             <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
             <Table
+                pagination={pagination}
                 loading={volunteersIsLoading}
                 dataSource={filteredData}
                 rowKey='id'
@@ -170,12 +204,28 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         type={'primary'}
                         onClick={handleClickDownload}
                         icon={<DownloadOutlined />}
-                        disabled={!filteredData && kitchensIsLoading}
+                        disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
                     >
                         Выгрузить
                     </Button>
                 )}
             >
+                <Table.Column<DepartmentEntity>
+                    title=''
+                    dataIndex='actions_edit'
+                    render={(_, record) => (
+                        <Space>
+                            <EditButton hideText size='small' recordItemId={record.id} />
+                        </Space>
+                    )}
+                />
+                <Table.Column
+                    dataIndex='id'
+                    key='id'
+                    title='ID'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('id')}
+                />
                 <Table.Column
                     dataIndex='nickname'
                     key='nickname'
@@ -225,20 +275,24 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     dataIndex='active_from'
                     key='active_from'
                     title='От'
-                    render={(value) => value && <DateField format={formDateFormat} value={value} />}
+                    render={(value) =>
+                        value && <DateField format={formDateFormat} value={value} style={{ whiteSpace: 'nowrap' }} />
+                    }
                     sorter={getSorter('active_from')}
                 />
                 <Table.Column
                     dataIndex='active_to'
                     key='active_to'
                     title='До'
-                    render={(value) => value && <DateField format={formDateFormat} value={value} />}
+                    render={(value) =>
+                        value && <DateField format={formDateFormat} value={value} style={{ whiteSpace: 'nowrap' }} />
+                    }
                     sorter={getSorter('active_to')}
                 />
                 <Table.Column
                     dataIndex='is_active'
                     key='is_active'
-                    title='Активирован'
+                    title='✅'
                     render={(value) => <ListBooleanPositive value={value} />}
                     sorter={getSorter('is_active')}
                     filters={booleanFilters}
@@ -247,7 +301,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 <Table.Column
                     dataIndex='is_blocked'
                     key='is_blocked'
-                    title='Заблокирован'
+                    title='❌'
                     render={(value) => <ListBooleanNegative value={value} />}
                     sorter={getSorter('is_blocked')}
                     filters={booleanFilters}
@@ -260,11 +314,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
                 />
                 <Table.Column<DepartmentEntity>
-                    title='Действия'
+                    title=''
                     dataIndex='actions'
                     render={(_, record) => (
                         <Space>
-                            <EditButton hideText size='small' recordItemId={record.id} />
                             <DeleteButton hideText size='small' recordItemId={record.id} />
                         </Space>
                     )}

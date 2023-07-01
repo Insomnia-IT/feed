@@ -7,5 +7,14 @@ export const Scanner: FC = () => {
         setOrigin(window.location.origin);
     });
 
-    return <center>{origin && <iframe src={`${origin}/scanner/`} style={{ height: '80vh', width: '40vh' }} />}</center>;
+    return (
+        <center>
+            {origin && (
+                <iframe
+                    src={`${origin}/scanner/`}
+                    style={{ height: '80vh', width: '40vh', border: '15px solid black', borderRadius: '15px' }}
+                />
+            )}
+        </center>
+    );
 };

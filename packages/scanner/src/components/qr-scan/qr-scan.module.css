@@ -1,6 +1,7 @@
 .qrScanVideo {
-    width: 100%;
-    height: auto;
+    width: 100vw;
+    height: 80vh;
+    margin: 10vh 0;
 }
 
 .qr {

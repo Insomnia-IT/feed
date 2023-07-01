@@ -109,7 +109,7 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                     {
                         name: 'scanner-page',
                         list: Scanner,
-                        icon: <Icons.MobileFilled />
+                        icon: <Icons.MobileOutlined />
                     },
                     {
                         name: 'sync',

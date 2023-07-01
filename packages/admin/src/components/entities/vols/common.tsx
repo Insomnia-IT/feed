@@ -1,7 +1,8 @@
+import type { FormInstance } from '@pankod/refine-antd';
 import { Checkbox, DatePicker, Form, Input, Select, useSelect } from '@pankod/refine-antd';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'antd';
-import type { DefaultOptionType } from 'rc-select/lib/Select';
+import { useMemo } from 'react';
 
 import { Rules } from '~/components/form';
 
@@ -18,9 +19,9 @@ import type {
     KitchenEntity,
     VolEntity
 } from '~/interfaces';
-import { apiDateFormat } from '~/shared/lib';
+import { formDateFormat } from '~/shared/lib';
 
-export const CreateEdit: FC = () => {
+export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const { selectProps: leadSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
         optionLabel: 'nickname'
@@ -63,6 +64,30 @@ export const CreateEdit: FC = () => {
         };
     };
 
+    const onGroupBadgeClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('group_badge', '');
+        });
+    };
+
+    const activeToValidationRules = useMemo(
+        () => [
+            {
+                required: true
+            },
+            {
+                validator: async (_, value) => {
+                    if (new Date(value) >= new Date(form.getFieldValue('active_from'))) {
+                        return Promise.resolve();
+                    }
+
+                    return Promise.reject(new Error("Дата 'До' не может быть меньше даты 'От'"));
+                }
+            }
+        ],
+        [form]
+    );
+
     return (
         <>
             <Row gutter={[16, 16]}>
@@ -103,12 +128,17 @@ export const CreateEdit: FC = () => {
                                 getValueProps={getDateValue}
                                 rules={Rules.required}
                             >
-                                <DatePicker format={apiDateFormat} style={{ width: '100%' }} />
+                                <DatePicker format={formDateFormat} style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item label='До' name='active_to' getValueProps={getDateValue} rules={Rules.required}>
-                                <DatePicker format={apiDateFormat} style={{ width: '100%' }} />
+                            <Form.Item
+                                label='До'
+                                name='active_to'
+                                getValueProps={getDateValue}
+                                rules={activeToValidationRules}
+                            >
+                                <DatePicker format={formDateFormat} style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -163,7 +193,7 @@ export const CreateEdit: FC = () => {
                         <Input />
                     </Form.Item>
                     <Form.Item label='Групповой бейдж' name='group_badge'>
-                        <Select allowClear {...groupBadgeSelectProps} />
+                        <Select allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
                     </Form.Item>
                 </Col>
             </Row>
