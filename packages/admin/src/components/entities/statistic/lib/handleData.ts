@@ -59,11 +59,11 @@ export function handleDataForTable(data: IData, date: string, typeOfEater: Eater
         fact.total += values.fact;
     }
     return [
-        { key: '1', mealTimeType: 'breakfast', plan: plan.breakfast, fact: fact.breakfast },
-        { key: '2', mealTimeType: 'lunch', plan: plan.lunch, fact: fact.lunch },
-        { key: '3', mealTimeType: 'dinner', plan: plan.dinner, fact: fact.dinner },
-        { key: '4', mealTimeType: 'night', plan: plan.night, fact: fact.night },
-        { key: '5', mealTimeType: 'total', plan: plan.total, fact: fact.total }
+        { key: '1', mealTimeType: 'Завтрак', plan: plan.breakfast, fact: fact.breakfast },
+        { key: '2', mealTimeType: 'Обед', plan: plan.lunch, fact: fact.lunch },
+        { key: '3', mealTimeType: 'Ужин', plan: plan.dinner, fact: fact.dinner },
+        { key: '4', mealTimeType: 'Дожор', plan: plan.night, fact: fact.night },
+        { key: '5', mealTimeType: 'Всего', plan: plan.total, fact: fact.total }
     ];
 }
 
@@ -85,8 +85,8 @@ export function handleDataForColumnChart(
             const resFact = data[date].fact[mealTime];
             const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
             dataForColumnChart.push(
-                { date, type: 'plan', mealTime, value: values.plan },
-                { date, type: 'fact', mealTime, value: values.fact }
+                { date, type: 'fact', mealTime, value: values.fact },
+                { date, type: 'plan', mealTime, value: values.plan }
             );
         }
         const resPlan = data[date].plan.total;
@@ -110,7 +110,7 @@ export function handleDataForLinearChart(data: IData, typeOfEater: EaterTypeExte
         const resPlan = data[date].plan.total;
         const resFact = data[date].fact.total;
         const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-        result.push({ type: 'plan', date, value: values.plan }, { type: 'fact', date, value: values.fact });
+        result.push({ type: 'fact', date, value: values.fact }, { type: 'plan', date, value: values.plan });
     }
     return result;
 }
