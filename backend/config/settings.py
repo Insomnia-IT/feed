@@ -192,7 +192,7 @@ AGREEMOD_PEOPLE_URL = os.environ.get("AGREEMOD_PEOPLE_URL", "")
 AGREEMOD_ARRIVED_PERSON_URL = os.environ.get("AGREEMOD_ARRIVED_PERSON_URL", "")
 AGREEMOD_ARRIVED_BULK_URL = os.environ.get("AGREEMOD_ARRIVED_BULK_URL", "")
 
-IS_SYNC_TO_NOTION_ON = os.environ.get("IS_SYNC_TO_NOTION_ON", "True")
+IS_SYNC_TO_NOTION_ON = os.environ.get("IS_SYNC_TO_NOTION_ON", "False")
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

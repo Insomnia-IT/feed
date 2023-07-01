@@ -117,6 +117,9 @@ RUN mkdir backend/ backend/logs/ backend/data/
 
 ENV PYTHONUNBUFFERED 1
 
+ARG ENABLE_SYNC_TO_NOTION
+ENV IS_SYNC_TO_NOTION_ON=${ENABLE_SYNC_TO_NOTION}
+
 COPY ./backend/requirements.txt /app/backend
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd backend && pip install -r requirements.txt

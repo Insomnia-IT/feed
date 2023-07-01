@@ -51,7 +51,7 @@ def convert_to_start_of_day_by_moscow(timestamp: int) -> int:
             .to('utc')
             .timestamp()
     )
-    
+
 
 def sync_to_notion(people):
     # init dict to accumulate statistic
@@ -126,11 +126,12 @@ def update_arrived(people):
     volunteers = {
         str(uuid): {
             'active_from': active_from,
-            'active_to': active_to
-        } for uuid, active_from, active_to in models.Volunteer.objects
+            'active_to': active_to,
+            'is_active': is_active
+        } for uuid, active_from, active_to, is_active in models.Volunteer.objects
             .filter(uuid__in=[person.get('uuid') for person in people])
             .exclude(active_from__exact=None, active_to__exact=None)
-            .values_list('uuid', 'active_from', 'active_to')
+            .values_list('uuid', 'active_from', 'active_to', 'is_active')
     }
 
     # filter volonteers according to people and needs of updating
@@ -141,9 +142,10 @@ def update_arrived(people):
         if vol := volunteers.get(uuid):
             active_from = vol.get('active_from')
             active_to = vol.get('active_to')
+            is_active = vol.get('is_active')
 
             # skip processing if active fields aren't modified
-            if not active_from or not active_to:
+            if not active_from or not active_to or not is_active:
                 continue
 
             # get start of day by Moscow for fields
@@ -154,12 +156,14 @@ def update_arrived(people):
             if registration_datetime == person.get('arrived') and departure_datetime == person.get('leaving'):
                 continue
 
-            # add for sending
-            data.append({
+            item = {
                 'uuid': uuid,
                 'registration_datetime': registration_datetime,
                 'departure_datetime': departure_datetime
-            })
+            }
+            # add for sending
+            data.append(item)
+            print('sync_to_notion item', item)
 
     # set total count of volunteers that can be processed
     statistic['total'] = len(data)
