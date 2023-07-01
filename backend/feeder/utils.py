@@ -268,7 +268,8 @@ def sync_from_notion(people):
         volunteer.lastname = person.get('lastname')
         volunteer.nickname = person.get('nickname')
         volunteer.email = person.get('email')
-        volunteer.qr = person.get('qr')
+        if created:
+            volunteer.qr = person.get('qr')
         volunteer.is_vegan = person.get('is_vegan')
         volunteer.position = person.get('position')
         volunteer.badge_number = person.get('badge_number')
