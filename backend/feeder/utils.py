@@ -47,7 +47,7 @@ def get_meal_times(is_paid) -> list:
 def convert_to_start_of_day_by_moscow(timestamp: int) -> int:
     return math.floor(
         arrow.get(timestamp)
-            .to('Europe/Moscow')
+            .to(TZ)
             .replace(hour=0, minute=0, second=0)
             .to('utc')
             .timestamp()
