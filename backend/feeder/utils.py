@@ -407,11 +407,12 @@ def calculate_statistics(data):
         #     Также мы игнорим тех, у кого active_from меньше начала текущего дня статистики и у которых не проставлен флаг is_active.
         #     Также игнорим волонтеров, у которых стоит флаг paid и нет флага is_active.
         #     Также игнорим волонтеров, у которых стоит флаг is_blocked.
+        #     Также игнорим волонтеров, у которых стоит тип питания "без питания" (FT4).
         #     Ну и остальных проверяем по тому, что текущий день входит в интервал от active_from до active_to.
         volunteers = (
             models.Volunteer.objects
                 .exclude(
-                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True)) 
+                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True) | Q(feed_type__code='FT4')) 
                     | (
                         Q(is_active=False)
                         & (
