@@ -49,6 +49,12 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         }
                     }
 
+                    results.forEach((vol, index) => {
+                        if (!vol.qr) {
+                            vol.qr = `empty${index}`;
+                        }
+                    });
+
                     try {
                         await db.volunteers.bulkAdd(results as Array<Volunteer>);
                     } catch (e) {
