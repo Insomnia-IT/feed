@@ -30,7 +30,8 @@ export interface TransactionJoined extends Transaction {
 export enum FeedType {
     FT1 = 1, // бесплатно
     FT2 = 2, // платно
-    Child = 3 // ребенок
+    Child = 3, // ребенок,
+    FT4 = 4 // без питания
 }
 
 export enum MealTime {
@@ -162,9 +163,10 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
                 !!vol.active_to &&
                 !!vol.active_from &&
                 !vol.is_blocked &&
-                dayjs(vol.active_from).unix() <= dayjs(statsDate).add(1, 'd').unix() &&
-                dayjs(vol.active_to).unix() >= dayjs(statsDate).unix() &&
-                (dayjs(vol.active_from).unix() < dayjs(statsDate).unix()
+                vol.feed_type !== FeedType.FT4 &&
+                dayjs(vol.active_from).startOf('day').unix() <= dayjs(statsDate).unix() &&
+                dayjs(vol.active_to).startOf('day').unix() >= dayjs(statsDate).unix() &&
+                (dayjs(vol.active_from).startOf('day').unix() < dayjs(statsDate).unix()
                     ? vol.is_active
                     : vol.feed_type === FeedType.FT2
                     ? vol.is_active

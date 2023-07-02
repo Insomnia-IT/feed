@@ -49,14 +49,10 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         }
                     }
 
-                    results.forEach((vol, index) => {
-                        if (!vol.qr) {
-                            vol.qr = `empty${index}`;
-                        }
-                    });
+                    const volunteers = (results as Array<Volunteer>).filter(({ qr }) => qr);
 
                     try {
-                        await db.volunteers.bulkAdd(results as Array<Volunteer>);
+                        await db.volunteers.bulkAdd(volunteers);
                     } catch (e) {
                         console.error(e);
                         rej(e);
