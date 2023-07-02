@@ -126,7 +126,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     };
 
     const handleOpenVolunteer = () => {
-        if(qrDuplicateVolunteer) {
+        if (qrDuplicateVolunteer) {
             window.location.href = `${window.location.origin}/volunteers/edit/${qrDuplicateVolunteer.id}`;
         }
     };
