@@ -136,12 +136,12 @@ class SyncWithPartialSerializer(serializers.Serializer):
 
 
 class StatisticsRequestSerializer(serializers.Serializer):
-    date_from = serializers.DateField()
-    date_to = serializers.DateField()
+    date_from = serializers.IntegerField()
+    date_to = serializers.IntegerField()
 
 
 class StatisticsResponseSerializer(serializers.Serializer):
-    date = serializers.DateField()
+    date = serializers.IntegerField()
     type = serializers.ChoiceField(choices=[type.value for type in StatisticType])
     is_vegan = serializers.BooleanField(allow_null=True)
     meal_time = serializers.CharField(max_length=10, validators=[models.validate_meal_time])

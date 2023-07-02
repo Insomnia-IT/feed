@@ -4,6 +4,8 @@ import type { ILinearChartData } from '../ui/linear-chart';
 import type { IColumnChartAnnotationData, IColumnChartData } from '../ui/column-chart';
 import type { ITableStatData } from '../ui/table-stats';
 
+import { dayjsExtended as dayjsExt } from '~/shared/lib';
+
 export function convertResponceToData(res: IStatisticResponce): IData {
     const result: IData = {};
 
@@ -11,11 +13,13 @@ export function convertResponceToData(res: IStatisticResponce): IData {
         const { amount, date, is_vegan, kitchen_id, meal_time, type } = datum;
         const eaterType: EaterType = is_vegan ? 'vegan' : 'meatEater';
 
-        if (!(date in result)) {
-            result[date] = JSON.parse(JSON.stringify(datumInstance));
+        const localDate = dayjsExt.unix(date).format('YYYY-MM-DD')        
+
+        if (!(localDate in result)) {
+            result[localDate] = JSON.parse(JSON.stringify(datumInstance));
         }
-        result[date][type][meal_time][eaterType] += amount;
-        result[date][type].total[eaterType] += amount;
+        result[localDate][type][meal_time][eaterType] += amount;
+        result[localDate][type].total[eaterType] += amount;
     });
     return result;
 }

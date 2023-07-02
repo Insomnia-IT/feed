@@ -380,11 +380,13 @@ def calculate_statistics(data):
         fact_stat.append({
             # day starts from 7AM
             'date': (
-                (
-                    state_date.shift(days=-1) 
-                    if state_date.hour < DAY_START_HOUR and meal_time == meal_times[3] # = "night"
-                    else state_date
-                ).format(STAT_DATE_FORMAT)
+                math.floor((
+                        state_date.shift(days=-1) 
+                        if state_date.hour < DAY_START_HOUR and meal_time == meal_times[3] # = "night"
+                        else state_date
+                    )
+                    .timestamp()
+                )
             ),
             'type': StatisticType.FACT.value,
             'meal_time': meal_time,
@@ -435,7 +437,7 @@ def calculate_statistics(data):
             if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:
                 for meal_time in get_meal_times(is_paid)[1:]:
                     plan_stat.append({
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
+                        'date': math.floor(current_stat_date.timestamp()),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "lunch", "dinner" (, is_paid ? "night") ]
                         'is_vegan': is_vegan,
@@ -446,7 +448,7 @@ def calculate_statistics(data):
             elif active_from_as_arrow != current_stat_date and active_to_as_arrow == current_stat_date:
                 for meal_time in get_meal_times(is_paid)[:2]:
                     plan_stat.append({
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
+                        'date': math.floor(current_stat_date.timestamp()),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch" ]
                         'is_vegan': is_vegan,
@@ -457,7 +459,7 @@ def calculate_statistics(data):
             else:
                 for meal_time in get_meal_times(is_paid):
                     plan_stat.append({
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
+                        'date': math.floor(current_stat_date.timestamp()),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
                         'is_vegan': is_vegan,
