@@ -89,15 +89,15 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         [form]
     );
 
-    const [qrDuplicateVolunteerId, setQrDuplicateVolunteerId] = useState<number | null>(null);
+    const [qrDuplicateVolunteer, setQrDuplicateVolunteer] = useState<VolEntity | null>(null);
 
     const checkQRDuplication = async (qr) => {
         const list = await dataProvider.getList<VolEntity>({
             filters: [{ field: 'qr', value: qr, operator: 'eq' }],
             resource: 'volunteers'
         });
-        if (list.data.length) {
-            setQrDuplicateVolunteerId(list.data[0].id);
+        if (list.data.length && list.data[0].id !== form.getFieldValue('id')) {
+            setQrDuplicateVolunteer(list.data[0]);
         }
     };
 
@@ -109,24 +109,30 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     };
 
     const clearDuplicateQR = async () => {
-        if (qrDuplicateVolunteerId) {
+        if (qrDuplicateVolunteer) {
             await dataProvider.update<VolEntity>({
-                id: qrDuplicateVolunteerId,
+                id: qrDuplicateVolunteer.id,
                 resource: 'volunteers',
                 variables: {
                     qr: null
                 }
             });
-            setQrDuplicateVolunteerId(null);
+            setQrDuplicateVolunteer(null);
         }
     };
 
-    const handleOk = () => {
+    const handleClear = () => {
         void clearDuplicateQR();
     };
 
+    const handleOpenVolunteer = () => {
+        if (qrDuplicateVolunteer) {
+            window.location.href = `${window.location.origin}/volunteers/edit/${qrDuplicateVolunteer.id}`;
+        }
+    };
+
     const handleCancel = () => {
-        setQrDuplicateVolunteerId(null);
+        setQrDuplicateVolunteer(null);
     };
 
     return (
@@ -258,13 +264,23 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
             </Row>
             <Modal
                 title='Дублирование QR'
-                open={qrDuplicateVolunteerId !== null}
-                onOk={handleOk}
+                open={qrDuplicateVolunteer !== null && !qrDuplicateVolunteer.is_active}
+                onOk={handleClear}
                 onCancel={handleCancel}
                 okText='Освободить'
             >
                 <p>Этот QR уже привязан к другому волонтеру.</p>
                 <p>Освободить этот QR код?</p>
+            </Modal>
+            <Modal
+                title='Дублирование QR'
+                open={qrDuplicateVolunteer !== null && qrDuplicateVolunteer.is_active}
+                onOk={handleOpenVolunteer}
+                onCancel={handleCancel}
+                okText='Открыть'
+            >
+                <p>Этот QR уже привязан к активированному волонтеру.</p>
+                <p>Открыть карточку этого волонтера?</p>
             </Modal>
         </>
     );
