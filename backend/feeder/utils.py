@@ -20,6 +20,7 @@ ZERO_HOUR = 4
 DAY_START_HOUR = 7
 
 STAT_DATE_FORMAT = 'YYYY-MM-DD'
+TZ = 'Europe/Moscow'
 
 class StatisticType(Enum):
     PLAN = 'plan'
@@ -365,8 +366,8 @@ def capitalize(s: str) -> str:
 
 def calculate_statistics(data):
     # convert from str to a datetime type (Arrow)
-    stat_date_from = arrow.get(data.get('date_from'))
-    stat_date_to = arrow.get(data.get('date_to'))
+    stat_date_from = arrow.get(data.get('date_from'), tzinfo=TZ)
+    stat_date_to = arrow.get(data.get('date_to'), tzinfo=TZ)
 
     # get transactions by criteria of fact statistic
     transactions = (
@@ -432,8 +433,8 @@ def calculate_statistics(data):
         # set PLAN statistics for current date
         for active_from, active_to, kitchen_id, is_vegan, is_paid in volunteers:
             # convert dates to Arrow and floor them to 'day'
-            active_from_as_arrow = arrow.get(active_from).floor('day')
-            active_to_as_arrow = arrow.get(active_to).floor('day')
+            active_from_as_arrow = arrow.get(active_from).to(TZ).floor('day')
+            active_to_as_arrow = arrow.get(active_to).to(TZ).floor('day')
 
             # skip breakfast
             if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:
