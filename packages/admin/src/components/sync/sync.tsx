@@ -14,7 +14,7 @@ export const Sync: FC = () => {
         try {
             const response = await axios.post(`${apiUrl}/notion-sync`);
             if (response.status === 202) {
-                alert('Синхронизация из Notion прошла успешно. Синхронизация в Notion выполнилась частично.');
+                alert('Данные из Notion получены успешно. Отправить список активированных не удалось.');
 
                 console.log(response.data);
             }
