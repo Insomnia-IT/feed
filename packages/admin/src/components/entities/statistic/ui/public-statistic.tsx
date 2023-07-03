@@ -24,7 +24,7 @@ type StatisticViewType = 'date' | 'range';
 
 const { RangePicker } = DatePicker;
 
-const convertDateToAPI = (date: dayjsExt.Dayjs | null | undefined) => !date ? dayjsExt().unix() : date.unix();
+const convertDateToAPI = (date: dayjsExt.Dayjs | null | undefined) => (!date ? dayjsExt().unix() : date.unix());
 
 function convertDateToString(date: dayjsExt.Dayjs | null | undefined) {
     if (!date) {

@@ -1,10 +1,10 @@
+import { dayjsExtended as dayjsExt } from '~/shared/lib';
+
 import type { EaterType, EaterTypeExtended, IData, IEaterTypeAmount, IStatisticResponce } from '../types';
 import { datumInstance, mealTimeArr } from '../types';
 import type { ILinearChartData } from '../ui/linear-chart';
 import type { IColumnChartAnnotationData, IColumnChartData } from '../ui/column-chart';
 import type { ITableStatData } from '../ui/table-stats';
-
-import { dayjsExtended as dayjsExt } from '~/shared/lib';
 
 export function convertResponceToData(res: IStatisticResponce): IData {
     const result: IData = {};
@@ -13,7 +13,7 @@ export function convertResponceToData(res: IStatisticResponce): IData {
         const { amount, date, is_vegan, kitchen_id, meal_time, type } = datum;
         const eaterType: EaterType = is_vegan ? 'vegan' : 'meatEater';
 
-        const localDate = dayjsExt.unix(date).format('YYYY-MM-DD')        
+        const localDate = dayjsExt.unix(date).format('YYYY-MM-DD');
 
         if (!(localDate in result)) {
             result[localDate] = JSON.parse(JSON.stringify(datumInstance));
