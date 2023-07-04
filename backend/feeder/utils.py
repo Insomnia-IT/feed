@@ -405,6 +405,7 @@ def calculate_statistics(data):
 
     # iterate over date range (day by day) between from and to
     for current_stat_date in arrow.Arrow.range('day', stat_date_from, stat_date_to):
+        current_stat_date = current_stat_date.to('utc')
         # Get volunteers by criterias of plan statistic.
         # 
         # The criterias:
