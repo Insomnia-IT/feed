@@ -33,7 +33,7 @@
       "updated_at": "2023-05-03T18:52:56.931Z",
       "name": "ребенок",
       "code": "FT3",
-      "paid": true,
+      "paid": false,
       "daily_amount": 3,
       "comment": null
     }

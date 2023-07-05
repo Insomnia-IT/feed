@@ -20,6 +20,7 @@ ZERO_HOUR = 4
 DAY_START_HOUR = 7
 
 STAT_DATE_FORMAT = 'YYYY-MM-DD'
+TZ = 'Europe/Moscow'
 
 class StatisticType(Enum):
     PLAN = 'plan'
@@ -46,7 +47,7 @@ def get_meal_times(is_paid) -> list:
 def convert_to_start_of_day_by_moscow(timestamp: int) -> int:
     return math.floor(
         arrow.get(timestamp)
-            .to('Europe/Moscow')
+            .to(TZ)
             .replace(hour=0, minute=0, second=0)
             .to('utc')
             .timestamp()
@@ -268,12 +269,15 @@ def sync_from_notion(people):
         volunteer.lastname = person.get('lastname')
         volunteer.nickname = person.get('nickname')
         volunteer.email = person.get('email')
-        volunteer.qr = person.get('qr')
+        if created:
+            volunteer.qr = person.get('qr')
         volunteer.is_vegan = person.get('is_vegan')
         volunteer.position = person.get('position')
         volunteer.badge_number = person.get('badge_number')
         volunteer.printing_batch = person.get('printing_batch')
         volunteer.role = person.get('role')
+        volunteer.comment = person.get('comment')
+        volunteer.is_blocked = False
 
         volunteer.feed_type = (
             feed_types[FeedType.PAID] if person.get('food_type') == 'Платно' 
@@ -362,8 +366,8 @@ def capitalize(s: str) -> str:
 
 def calculate_statistics(data):
     # convert from str to a datetime type (Arrow)
-    stat_date_from = arrow.get(data.get('date_from'))
-    stat_date_to = arrow.get(data.get('date_to'))
+    stat_date_from = arrow.get(data.get('date_from'), tzinfo=TZ)
+    stat_date_to = arrow.get(data.get('date_to'), tzinfo=TZ)
 
     # get transactions by criteria of fact statistic
     transactions = (
@@ -409,11 +413,12 @@ def calculate_statistics(data):
         #     Также мы игнорим тех, у кого active_from меньше начала текущего дня статистики и у которых не проставлен флаг is_active.
         #     Также игнорим волонтеров, у которых стоит флаг paid и нет флага is_active.
         #     Также игнорим волонтеров, у которых стоит флаг is_blocked.
+        #     Также игнорим волонтеров, у которых стоит тип питания "без питания" (FT4).
         #     Ну и остальных проверяем по тому, что текущий день входит в интервал от active_from до active_to.
         volunteers = (
             models.Volunteer.objects
                 .exclude(
-                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True)) 
+                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True) | Q(feed_type__code='FT4')) 
                     | (
                         Q(is_active=False)
                         & (
@@ -431,8 +436,8 @@ def calculate_statistics(data):
         # set PLAN statistics for current date
         for active_from, active_to, kitchen_id, is_vegan, is_paid in volunteers:
             # convert dates to Arrow and floor them to 'day'
-            active_from_as_arrow = arrow.get(active_from).floor('day')
-            active_to_as_arrow = arrow.get(active_to).floor('day')
+            active_from_as_arrow = arrow.get(active_from).to(TZ).floor('day')
+            active_to_as_arrow = arrow.get(active_to).to(TZ).floor('day')
 
             # skip breakfast
             if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:

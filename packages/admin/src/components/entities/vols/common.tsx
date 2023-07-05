@@ -1,8 +1,8 @@
 import type { FormInstance } from '@pankod/refine-antd';
-import { Checkbox, DatePicker, Form, Input, Select, useSelect } from '@pankod/refine-antd';
+import { Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'antd';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Rules } from '~/components/form';
 
@@ -20,6 +20,7 @@ import type {
     VolEntity
 } from '~/interfaces';
 import { formDateFormat } from '~/shared/lib';
+import { dataProvider } from '~/dataProvider';
 
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const { selectProps: leadSelectProps } = useSelect<VolEntity>({
@@ -88,6 +89,52 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         [form]
     );
 
+    const [qrDuplicateVolunteer, setQrDuplicateVolunteer] = useState<VolEntity | null>(null);
+
+    const checkQRDuplication = async (qr) => {
+        const list = await dataProvider.getList<VolEntity>({
+            filters: [{ field: 'qr', value: qr, operator: 'eq' }],
+            resource: 'volunteers'
+        });
+        if (list.data.length && list.data[0].id !== form.getFieldValue('id')) {
+            setQrDuplicateVolunteer(list.data[0]);
+        }
+    };
+
+    const onQRChange = (e) => {
+        const qr = e.target.value;
+        if (qr) {
+            void checkQRDuplication(qr);
+        }
+    };
+
+    const clearDuplicateQR = async () => {
+        if (qrDuplicateVolunteer) {
+            await dataProvider.update<VolEntity>({
+                id: qrDuplicateVolunteer.id,
+                resource: 'volunteers',
+                variables: {
+                    qr: null
+                }
+            });
+            setQrDuplicateVolunteer(null);
+        }
+    };
+
+    const handleClear = () => {
+        void clearDuplicateQR();
+    };
+
+    const handleOpenVolunteer = () => {
+        if (qrDuplicateVolunteer) {
+            window.location.href = `${window.location.origin}/volunteers/edit/${qrDuplicateVolunteer.id}`;
+        }
+    };
+
+    const handleCancel = () => {
+        setQrDuplicateVolunteer(null);
+    };
+
     return (
         <>
             <Row gutter={[16, 16]}>
@@ -155,7 +202,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         </Col>
                     </Row>
                     <Form.Item label='QR' name='qr' rules={Rules.required}>
-                        <Input />
+                        <Input onChange={onQRChange} />
                     </Form.Item>
                     <Form.Item label='Кухня' name='kitchen' rules={Rules.required}>
                         <Select {...kitchenSelectProps} />
@@ -215,6 +262,26 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     </Form.Item>
                 </Col>
             </Row>
+            <Modal
+                title='Дублирование QR'
+                open={qrDuplicateVolunteer !== null && !qrDuplicateVolunteer.is_active}
+                onOk={handleClear}
+                onCancel={handleCancel}
+                okText='Освободить'
+            >
+                <p>Этот QR уже привязан к другому волонтеру.</p>
+                <p>Освободить этот QR код?</p>
+            </Modal>
+            <Modal
+                title='Дублирование QR'
+                open={qrDuplicateVolunteer !== null && qrDuplicateVolunteer.is_active}
+                onOk={handleOpenVolunteer}
+                onCancel={handleCancel}
+                okText='Открыть'
+            >
+                <p>Этот QR уже привязан к активированному волонтеру.</p>
+                <p>Открыть карточку этого волонтера?</p>
+            </Modal>
         </>
     );
 };
