@@ -27,7 +27,7 @@ RUN echo "yarn cache clean --force && node-prune" > /usr/local/bin/node-clean &&
 RUN apk add --no-cache build-base libffi-dev icu-dev sqlite-dev
 COPY ./backend/icu/icu.c /app/backend/icu/
 RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
-RUN ls -1al app/backend/icu
+RUN ls -1al /app/backend/icu
 
 ENV YARN_CACHE_FOLDER=/root/.yarn
 COPY nginx.conf /app/
@@ -125,10 +125,10 @@ COPY ./backend/requirements.txt /app/backend
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd backend && pip install -r requirements.txt
 
+COPY --from=builder /app/backend/icu /app/backend/icu
 COPY ./backend/config /app/backend/config
 COPY ./backend/feeder /app/backend/feeder
 COPY ./backend/initial /app/backend/initial
-COPY ./backend/icu /app/backend/icu
 COPY ./backend/.gitignore /app/backend/
 COPY ./backend/manage.py /app/backend/
 COPY ./backend/create_user.py /app/backend/
