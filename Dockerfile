@@ -113,11 +113,6 @@ COPY --from=builder /app/nginx.conf /etc
 
 # jango backend
 WORKDIR /app
-
-COPY ./backend/icu/icu.c /app/backend/icu/
-RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
-RUN ls -1al app/backend/icu
-
 RUN mkdir backend/ backend/logs/ backend/data/
 
 ENV PYTHONUNBUFFERED 1

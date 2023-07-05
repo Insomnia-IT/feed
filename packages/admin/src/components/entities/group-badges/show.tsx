@@ -63,6 +63,20 @@ export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
                     title='Службы'
                     render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                 />
+                <Table.Column<GroupBadgeEntity>
+                    title='Действия'
+                    dataIndex='actions'
+                    render={(_, record) => (
+                        <Space>
+                            <EditButton
+                                hideText
+                                size='small'
+                                resourceNameOrRouteName='volunteers'
+                                recordItemId={record.id}
+                            />
+                        </Space>
+                    )}
+                />
             </Table>
         </Show>
     );
