@@ -1,4 +1,5 @@
 import arrow
+import math
 
 from rest_framework import serializers, viewsets, permissions, filters, mixins, status
 from rest_framework.response import Response
@@ -220,22 +221,22 @@ class Statistics(APIView):
         parameters=[
             OpenApiParameter(
                 name="date_from",
-                type=OpenApiTypes.DATE,
+                type=OpenApiTypes.INT,
                 location=OpenApiParameter.QUERY,
-                description="Begining of period. Optional. Default is today. Value must be in '{}' format.".format(STAT_DATE_FORMAT),
+                description="Begining of period. Optional. Default is today. Value must be in unix format.",
                 examples=[
-                    OpenApiExample('Yesterday', value=arrow.now().shift(days=-1).format(STAT_DATE_FORMAT)),
-                    OpenApiExample('Today', value=arrow.now().format(STAT_DATE_FORMAT))
+                    OpenApiExample('Yesterday', value=math.floor(arrow.now().shift(days=-1).timestamp())),
+                    OpenApiExample('Today', value=math.floor(arrow.now().timestamp()))
                 ]
             ),
             OpenApiParameter(
                 name="date_to",
-                type=OpenApiTypes.DATE,
+                type=OpenApiTypes.INT,
                 location=OpenApiParameter.QUERY,
-                description="End of period. Optional. Default is today. Value must be in '{}' format.".format(STAT_DATE_FORMAT),
+                description="End of period. Optional. Default is today. Value must be in unix format.",
                 examples=[
-                    OpenApiExample('Today', value=arrow.now().format(STAT_DATE_FORMAT)),
-                    OpenApiExample('Tomorrow', value=arrow.now().shift(days=+1).format(STAT_DATE_FORMAT))
+                    OpenApiExample('Today', value=math.floor(arrow.now().timestamp())),
+                    OpenApiExample('Tomorrow', value=math.floor(arrow.now().shift(days=+1).timestamp()))
                 ]
             )
         ],
@@ -244,7 +245,9 @@ class Statistics(APIView):
         },
     )
     def get(self, request):
-        today = arrow.now().format(STAT_DATE_FORMAT)
+        today = math.floor(
+            arrow.now().timestamp()
+        )
 
         date_from = request.GET.get('date_from', today)
         date_to = request.GET.get('date_to', today)

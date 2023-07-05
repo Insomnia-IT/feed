@@ -366,8 +366,8 @@ def capitalize(s: str) -> str:
 
 def calculate_statistics(data):
     # convert from str to a datetime type (Arrow)
-    stat_date_from = arrow.get(data.get('date_from'), tzinfo=TZ)
-    stat_date_to = arrow.get(data.get('date_to'), tzinfo=TZ)
+    stat_date_from = arrow.get(data.get('date_from'))
+    stat_date_to = arrow.get(data.get('date_to'))
 
     # get transactions by criteria of fact statistic
     transactions = (
@@ -384,11 +384,13 @@ def calculate_statistics(data):
         fact_stat.append({
             # day starts from 7AM
             'date': (
-                (
-                    state_date.shift(days=-1) 
-                    if state_date.hour < DAY_START_HOUR and meal_time == meal_times[3] # = "night"
-                    else state_date
-                ).format(STAT_DATE_FORMAT)
+                math.floor((
+                        state_date.shift(days=-1) 
+                        if state_date.hour < DAY_START_HOUR and meal_time == meal_times[3] # = "night"
+                        else state_date
+                    )
+                    .timestamp()
+                )
             ),
             'type': StatisticType.FACT.value,
             'meal_time': meal_time,
@@ -403,6 +405,7 @@ def calculate_statistics(data):
 
     # iterate over date range (day by day) between from and to
     for current_stat_date in arrow.Arrow.range('day', stat_date_from, stat_date_to):
+        current_stat_date = current_stat_date.to('utc')
         # Get volunteers by criterias of plan statistic.
         # 
         # The criterias:
@@ -433,14 +436,14 @@ def calculate_statistics(data):
         # set PLAN statistics for current date
         for active_from, active_to, kitchen_id, is_vegan, is_paid in volunteers:
             # convert dates to Arrow and floor them to 'day'
-            active_from_as_arrow = arrow.get(active_from).to(TZ).floor('day')
-            active_to_as_arrow = arrow.get(active_to).to(TZ).floor('day')
+            active_from_as_arrow = arrow.get(active_from).floor('day')
+            active_to_as_arrow = arrow.get(active_to).floor('day')
 
             # skip breakfast
             if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:
                 for meal_time in get_meal_times(is_paid)[1:]:
                     plan_stat.append({
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
+                        'date': math.floor(current_stat_date.timestamp()),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "lunch", "dinner" (, is_paid ? "night") ]
                         'is_vegan': is_vegan,
@@ -451,7 +454,7 @@ def calculate_statistics(data):
             elif active_from_as_arrow != current_stat_date and active_to_as_arrow == current_stat_date:
                 for meal_time in get_meal_times(is_paid)[:2]:
                     plan_stat.append({
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
+                        'date': math.floor(current_stat_date.timestamp()),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch" ]
                         'is_vegan': is_vegan,
@@ -462,7 +465,7 @@ def calculate_statistics(data):
             else:
                 for meal_time in get_meal_times(is_paid):
                     plan_stat.append({
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
+                        'date': math.floor(current_stat_date.timestamp()),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
                         'is_vegan': is_vegan,
