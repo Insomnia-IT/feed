@@ -25,9 +25,9 @@ RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 RUN echo "yarn cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
 
 RUN apk add --no-cache build-base libffi-dev icu-dev sqlite-dev
-COPY ./backend/icu/icu.c /app/backend/icu/
-RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
-RUN ls -1al app/backend/icu
+COPY ./packages/api/icu/icu.c /app/packages/api/icu/
+RUN gcc -fPIC -shared packages/api/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o packages/api/icu/libSqliteIcu.so
+RUN ls -1al /app/packages/api/icu
 
 ENV YARN_CACHE_FOLDER=/root/.yarn
 COPY nginx.conf /app/
@@ -114,6 +114,10 @@ COPY --from=builder /app/nginx.conf /etc
 # jango backend
 WORKDIR /app
 
+COPY ./backend/icu/icu.c /app/backend/icu/
+RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
+RUN ls -1al app/backend/icu
+
 RUN mkdir backend/ backend/logs/ backend/data/
 
 ENV PYTHONUNBUFFERED 1
@@ -128,7 +132,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY ./backend/config /app/backend/config
 COPY ./backend/feeder /app/backend/feeder
 COPY ./backend/initial /app/backend/initial
-COPY ./backend/icu /app/backend/icu
 COPY ./backend/.gitignore /app/backend/
 COPY ./backend/manage.py /app/backend/
 COPY ./backend/create_user.py /app/backend/
