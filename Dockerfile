@@ -75,6 +75,7 @@ EXPOSE 4301
 EXPOSE 80
 
 RUN apk add --no-cache nginx python3 py3-pip tzdata curl
+RUN apk add --no-cache icu-dev
 COPY nginx.conf /etc/nginx/nginx.conf
 
 ARG API_URL
@@ -120,7 +121,7 @@ RUN ls -1al /app/backend/icu
 # jango backend
 WORKDIR /app
 
-RUN mkdir backend/ backend/logs/ backend/data/
+RUN mkdir backend/logs/ backend/data/
 
 ENV PYTHONUNBUFFERED 1
 
