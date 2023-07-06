@@ -81,7 +81,7 @@ export const QrScan: FC<{
     useEffect(() => {
         // @ts-ignore
         function onHardwareScan({ detail: { scanCode } }): void {
-            onScan(scanCode);
+            onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 
         // @ts-ignore

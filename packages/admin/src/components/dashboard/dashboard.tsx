@@ -92,7 +92,7 @@ export const Dashboard: FC = () => {
             console.log(e);
             alert(`Ошибка поиска волонтера: ${e}`);
         } finally {
-            loadingRef.current = true;
+            loadingRef.current = false;
         }
     }, []);
 
@@ -104,7 +104,6 @@ export const Dashboard: FC = () => {
             ({ data }) => {
                 // setError(null);
                 // console.log(`read: ${data}`);
-                debugger;
                 void onScan(data);
                 // console.log(`qr: ${data}`);
                 // onScan(data);
@@ -135,7 +134,7 @@ export const Dashboard: FC = () => {
     useEffect(() => {
         // @ts-ignore
         function onHardwareScan({ detail: { scanCode } }): void {
-            void onScan(scanCode);
+            void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 
         // @ts-ignore

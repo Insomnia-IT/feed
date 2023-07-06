@@ -2,7 +2,7 @@ import type { FormInstance } from '@pankod/refine-antd';
 import { Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'antd';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Rules } from '~/components/form';
 
@@ -134,6 +134,21 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const handleCancel = () => {
         setQrDuplicateVolunteer(null);
     };
+
+    useEffect(() => {
+        // @ts-ignore
+        function onHardwareScan({ detail: { scanCode } }): void {
+            form.setFieldValue('qr', scanCode.replace(/[^A-Za-z0-9]/g, ''));
+        }
+
+        // @ts-ignore
+        document.addEventListener('scan', onHardwareScan);
+
+        return (): void => {
+            // @ts-ignore
+            document.removeEventListener('scan', onHardwareScan);
+        };
+    }, [form]);
 
     return (
         <>
