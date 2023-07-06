@@ -23,7 +23,10 @@ def load_icu(connection, **kwargs):
 
     try:
         connection.connection.enable_load_extension(True)
-        connection.connection.load_extension(extension_path)
+
+        # skip file extension for loading
+        connection.connection.load_extension(extension_path[:-3])
+
         connection.connection.enable_load_extension(False)
     except Exception as e:
         print('Failed to load ICU extension: {}.'.format(e))
