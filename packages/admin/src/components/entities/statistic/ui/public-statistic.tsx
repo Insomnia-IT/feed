@@ -24,9 +24,7 @@ type StatisticViewType = 'date' | 'range';
 
 const { RangePicker } = DatePicker;
 
-const convertDateToAPI = (date: dayjsExt.Dayjs | null | undefined) => (!date ? dayjsExt().unix() : date.unix());
-
-function convertDateToString(date: dayjsExt.Dayjs | null | undefined) {
+function convertDateToStringForApi(date: dayjsExt.Dayjs | null | undefined) {
     if (!date) {
         return dayjsExt().format('YYYY-MM-DD');
     }
@@ -67,9 +65,9 @@ function PublicStatistic() {
             setDate(date.add(-1, 'day'));
         }
     }, []);
-    const dateStr = convertDateToString(date);
-    const prevDateUnix = convertDateToAPI(date?.add(-1, 'day'));
-    const nextDateUnix = convertDateToAPI(date?.add(1, 'day'));
+    const dateStr = convertDateToStringForApi(date);
+    const prevDateStr = convertDateToStringForApi(date?.add(-1, 'day'));
+    const nextDateStr = convertDateToStringForApi(date?.add(1, 'day'));
 
     // Для выбора диапазона дат для линейчатого графика
     const [timePeriod, setTimePeriod] = useState([
@@ -80,13 +78,13 @@ function PublicStatistic() {
         if (!range) return;
         setTimePeriod([dayjsExt(range[0]), dayjsExt(range[1])]);
     }, []);
-    const startDatePeriodUnix = convertDateToAPI(timePeriod[0]);
-    const endDatePeriodUnix = convertDateToAPI(timePeriod[1]);
+    const startDatePeriodStr = convertDateToStringForApi(timePeriod[0]);
+    const endDatePeriodStr = convertDateToStringForApi(timePeriod[1]);
 
     // Запрос данных с сервера
-    let statsUrl = `${NEW_API_URL}/statistics/?date_from=${prevDateUnix}&date_to=${nextDateUnix}`;
+    let statsUrl = `${NEW_API_URL}/statistics/?date_from=${prevDateStr}&date_to=${nextDateStr}`;
     if (statisticViewType === 'range') {
-        statsUrl = `${NEW_API_URL}/statistics/?date_from=${startDatePeriodUnix}&date_to=${endDatePeriodUnix}`;
+        statsUrl = `${NEW_API_URL}/statistics/?date_from=${startDatePeriodStr}&date_to=${endDatePeriodStr}`;
     }
 
     const loadStats = async (url) => {

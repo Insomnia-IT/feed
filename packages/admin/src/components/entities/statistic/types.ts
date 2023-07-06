@@ -10,7 +10,7 @@ export type IEaterTypeAmount = {
 };
 
 export interface IStatisticApi {
-    date: number;
+    date: string;
     type: StatisticType;
     is_vegan: boolean;
     meal_time: MealTime;
