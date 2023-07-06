@@ -52,6 +52,10 @@ COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
     yarn --frozen-lockfile
 
+COPY ./backend/icu/icu.c /app/backend/icu/
+RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
+RUN ls -1al /app/backend/icu
+
 COPY . /app
 
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/pwa-ver.txt
@@ -113,6 +117,7 @@ COPY --from=builder /app/nginx.conf /etc
 
 # jango backend
 WORKDIR /app
+
 RUN mkdir backend/ backend/logs/ backend/data/
 
 ENV PYTHONUNBUFFERED 1
@@ -124,6 +129,7 @@ COPY ./backend/requirements.txt /app/backend
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd backend && pip install -r requirements.txt
 
+COPY --from=builder /app/backend/icu /app/backend/icu
 COPY ./backend/config /app/backend/config
 COPY ./backend/feeder /app/backend/feeder
 COPY ./backend/initial /app/backend/initial
