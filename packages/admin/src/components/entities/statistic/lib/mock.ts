@@ -1,10 +1,8 @@
-import { dayjsExtended as dayjsExt } from '~/shared/lib';
-
 import type { IStatisticResponce } from '../types';
 
 export const mock: IStatisticResponce = [
     {
-        date: dayjsExt('2023-05-25').unix(),
+        date: '2023-05-25',
         type: 'plan',
         is_vegan: false,
         meal_time: 'breakfast',
@@ -12,7 +10,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-25').unix(),
+        date: '2023-05-25',
         type: 'plan',
         is_vegan: true,
         meal_time: 'breakfast',
@@ -20,7 +18,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-25').unix(),
+        date: '2023-05-25',
         type: 'fact',
         is_vegan: false,
         meal_time: 'breakfast',
@@ -28,7 +26,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-25').unix(),
+        date: '2023-05-25',
         type: 'plan',
         is_vegan: false,
         meal_time: 'dinner',
@@ -36,7 +34,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-25').unix(),
+        date: '2023-05-25',
         type: 'fact',
         is_vegan: false,
         meal_time: 'dinner',
@@ -44,7 +42,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-26').unix(),
+        date: '2023-05-26',
         type: 'plan',
         is_vegan: false,
         meal_time: 'breakfast',
@@ -52,7 +50,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-26').unix(),
+        date: '2023-05-26',
         type: 'fact',
         is_vegan: false,
         meal_time: 'breakfast',
@@ -60,7 +58,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-26').unix(),
+        date: '2023-05-26',
         type: 'plan',
         is_vegan: false,
         meal_time: 'dinner',
@@ -68,7 +66,7 @@ export const mock: IStatisticResponce = [
         kitchen_id: 0
     },
     {
-        date: dayjsExt('2023-05-26').unix(),
+        date: '2023-05-26',
         type: 'fact',
         is_vegan: false,
         meal_time: 'dinner',
