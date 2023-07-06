@@ -114,6 +114,8 @@ COPY --from=builder /app/packages/scanner/package.json /app/packages/scanner/
 COPY --from=builder /app/packages/scanner/build/ /app/packages/scanner/build/
 
 COPY --from=builder /app/nginx.conf /etc
+COPY --from=builder /app/backend/icu/libSqliteIcu.so /app/backend/icu/
+RUN ls -1al /app/backend/icu
 
 # jango backend
 WORKDIR /app
@@ -129,7 +131,6 @@ COPY ./backend/requirements.txt /app/backend
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd backend && pip install -r requirements.txt
 
-COPY --from=builder /app/backend/icu /app/backend/icu
 COPY ./backend/config /app/backend/config
 COPY ./backend/feeder /app/backend/feeder
 COPY ./backend/initial /app/backend/initial
