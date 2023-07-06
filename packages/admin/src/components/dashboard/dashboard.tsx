@@ -135,7 +135,6 @@ export const Dashboard: FC = () => {
     useEffect(() => {
         // @ts-ignore
         function onHardwareScan({ detail: { scanCode } }): void {
-            scanCode = scanCode.replace(/[^A-Za-z0-9]/g, '');
             void onScan(scanCode);
         }
 
