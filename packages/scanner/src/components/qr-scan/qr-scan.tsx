@@ -54,7 +54,7 @@ export const QrScan: FC<{
             ({ data }) => {
                 setError(null);
                 console.log(`read: ${data}`);
-                onScan(data);
+                onScan(data.replace(/[^A-Za-z0-9]/g, ''));
             },
             {
                 maxScansPerSecond: 1,
