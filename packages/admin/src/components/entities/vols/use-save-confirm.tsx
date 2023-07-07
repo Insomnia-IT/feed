@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 
 const useSaveConfirm = (
-    form: FormInstance<{}>,
+    form: FormInstance,
     saveButtonProps: ButtonProps & {
         onClick: () => void;
     }

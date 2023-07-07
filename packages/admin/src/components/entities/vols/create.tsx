@@ -4,7 +4,7 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 import type { VolEntity } from '~/interfaces';
 
 import { CreateEdit } from './common';
-import useSaveConfirm from './useSaveConfirm';
+import useSaveConfirm from './use-save-confirm';
 
 export const VolCreate: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>();
