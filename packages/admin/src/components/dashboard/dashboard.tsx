@@ -104,7 +104,7 @@ export const Dashboard: FC = () => {
             ({ data }) => {
                 // setError(null);
                 // console.log(`read: ${data}`);
-                void onScan(data);
+                void onScan(data.replace(/[^A-Za-z0-9]/g, ''));
                 // console.log(`qr: ${data}`);
                 // onScan(data);
             },
