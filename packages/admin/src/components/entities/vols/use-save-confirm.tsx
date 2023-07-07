@@ -27,7 +27,7 @@ const useSaveConfirm = (
             const activeFrom = form.getFieldValue('active_from');
             if (!form.getFieldValue('is_active')) {
                 setShowConfirmationModalReason('is_active');
-            } else if (activeFrom && activeFrom.valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
+            } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
                 setShowConfirmationModalReason('active_from');
             } else {
                 saveButtonProps?.onClick();
