@@ -20,7 +20,8 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 import { useCallback, useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 
@@ -34,37 +35,37 @@ const booleanFilters = [
 
 const pagination: TablePaginationConfig = { showTotal: (total) => `Кол-во волонтеров: ${total}` };
 
-const datePickerFilterDropDown = ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: FilterDropdownProps) => (
+const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
     <div style={{ padding: 8 }}>
-      <DatePicker
-        format={formDateFormat}
-        value={selectedKeys[0] as unknown as Dayjs}
-        onChange={(value) => setSelectedKeys(value ? [value as unknown as React.Key] : [])}
-        style={{ marginBottom: 8, display: 'block' }}
-      />
-      <Space>
-        <Button
-          type="primary"
-          onClick={() => confirm()}
-          icon={<Icons.SearchOutlined />}
-          size="small"
-          style={{ width: 90 }}
-        >
-          Фильтр
-        </Button>
-        <Button
-          onClick={() => {
-            clearFilters?.();
-            confirm();
-          }}
-          size="small"
-          style={{ width: 90 }}
-        >
-          Очистить
-        </Button>
-      </Space>
+        <DatePicker
+            format={formDateFormat}
+            value={selectedKeys[0] as unknown as Dayjs}
+            onChange={(value) => setSelectedKeys(value ? [value as unknown as React.Key] : [])}
+            style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+            <Button
+                type='primary'
+                onClick={() => confirm()}
+                icon={<Icons.SearchOutlined />}
+                size='small'
+                style={{ width: 90 }}
+            >
+                Фильтр
+            </Button>
+            <Button
+                onClick={() => {
+                    clearFilters?.();
+                    confirm();
+                }}
+                size='small'
+                style={{ width: 90 }}
+            >
+                Очистить
+            </Button>
+        </Space>
     </div>
-  );
+);
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
