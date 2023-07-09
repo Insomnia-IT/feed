@@ -276,7 +276,8 @@ def sync_from_notion(people):
         volunteer.badge_number = person.get('badge_number')
         volunteer.printing_batch = person.get('printing_batch')
         volunteer.role = person.get('role')
-        volunteer.comment = person.get('comment')
+        if not volunteer.comment:
+            volunteer.comment = person.get('comment')
         volunteer.is_blocked = False
 
         volunteer.feed_type = (

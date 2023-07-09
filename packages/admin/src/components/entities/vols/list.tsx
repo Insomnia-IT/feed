@@ -1,13 +1,16 @@
-import type { FilterDropdownProps, TablePaginationConfig } from '@pankod/refine-antd';
+import type { FilterDropdownProps, MenuProps, TablePaginationConfig } from '@pankod/refine-antd';
 import {
     DateField,
     DatePicker,
     DeleteButton,
+    Dropdown,
     EditButton,
     FilterDropdown,
+    Form,
     Icons,
     List,
     NumberField,
+    Radio,
     Select,
     Space,
     Table,
@@ -18,7 +21,7 @@ import { useList } from '@pankod/refine-core';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 // import { Loader } from '@feed/ui/src/loader';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -27,6 +30,8 @@ import { DownloadOutlined } from '@ant-design/icons';
 
 import type { ColorTypeEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
+import { NEW_API_URL } from '~/const';
+import { axios } from '~/authProvider';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -69,6 +74,9 @@ const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSele
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
+    const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
+    const [feededIsLoading, setFeededIsLoading] = useState(false);
+    const [feededIds, setFeededIds] = useState({});
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
@@ -127,21 +135,23 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     }, [colors]);
 
     const filteredData = useMemo(() => {
-        return searchText
-            ? volunteers?.data.filter((item) => {
-                  const searchTextInLowerCase = searchText.toLowerCase();
-                  return [
-                      item.nickname,
-                      item.name,
-                      item.lastname,
-                      item.departments?.map(({ name }) => name).join(', '),
-                      item.active_from ? dayjs(item.active_from).format(formDateFormat) : null
-                  ].some((text) => {
-                      return text?.toLowerCase().includes(searchTextInLowerCase);
-                  });
-              })
-            : volunteers?.data;
-    }, [volunteers, searchText]);
+        return (
+            searchText
+                ? volunteers?.data.filter((item) => {
+                      const searchTextInLowerCase = searchText.toLowerCase();
+                      return [
+                          item.nickname,
+                          item.name,
+                          item.lastname,
+                          item.departments?.map(({ name }) => name).join(', '),
+                          item.active_from ? dayjs(item.active_from).format(formDateFormat) : null
+                      ].some((text) => {
+                          return text?.toLowerCase().includes(searchTextInLowerCase);
+                      });
+                  })
+                : volunteers?.data
+        )?.filter(({ id }) => !feededIds[id]);
+    }, [volunteers, searchText, feededIds]);
 
     // const { selectProps } = useSelect<VolEntity>({
     //     resource: 'volunteers'
@@ -233,23 +243,66 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         void createAndSaveXLSX();
     }, [createAndSaveXLSX]);
 
+    const loadTransactions = async () => {
+        const newFeededIds = {};
+        if (filterUnfeededType) {
+            const today = dayjs().startOf('day');
+            const from = filterUnfeededType === 'yesterday' ? today.subtract(1, 'day') : today;
+            const url = `${NEW_API_URL}/feed-transaction/?limit=100000&dtime_from=${from.toISOString()}&dtime_to=${from
+                .add(1, 'day')
+                .toISOString()}`;
+
+            try {
+                setFeededIsLoading(true);
+                const {
+                    data: { results }
+                } = await axios.get(url);
+                results.forEach(({ volunteer }) => {
+                    newFeededIds[volunteer] = true;
+                });
+            } finally {
+                setFeededIsLoading(false);
+            }
+        }
+        setFeededIds(newFeededIds);
+    };
+
+    useEffect(() => {
+        void loadTransactions();
+    }, [filterUnfeededType]);
+
     return (
         <List>
-            <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
             <Table
+                scroll={{ x: '100%' }}
                 pagination={pagination}
-                loading={volunteersIsLoading}
+                loading={volunteersIsLoading || feededIsLoading}
                 dataSource={filteredData}
                 rowKey='id'
                 footer={() => (
-                    <Button
-                        type={'primary'}
-                        onClick={handleClickDownload}
-                        icon={<DownloadOutlined />}
-                        disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
-                    >
-                        Выгрузить
-                    </Button>
+                    <Form layout='inline'>
+                        <Form.Item>
+                            <Button
+                                type={'primary'}
+                                onClick={handleClickDownload}
+                                icon={<DownloadOutlined />}
+                                disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
+                            >
+                                Выгрузить
+                            </Button>
+                        </Form.Item>
+                        <Form.Item>
+                            <Radio.Group
+                                value={filterUnfeededType}
+                                onChange={(e) => setfilterUnfeededType(e.target.value)}
+                            >
+                                <Radio.Button value=''>Все</Radio.Button>
+                                <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
+                                <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
+                            </Radio.Group>
+                        </Form.Item>
+                    </Form>
                 )}
             >
                 <Table.Column<DepartmentEntity>
