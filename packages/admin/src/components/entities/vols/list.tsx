@@ -40,6 +40,15 @@ const booleanFilters = [
 
 const pagination: TablePaginationConfig = { showTotal: (total) => `Кол-во волонтеров: ${total}` };
 
+export const isVolExpired = (vol: VolEntity): boolean => {
+    return (
+        !vol.active_to ||
+        !vol.active_from ||
+        dayjs() < dayjs(vol.active_from).startOf('day').add(7, 'hours') ||
+        dayjs() > dayjs(vol.active_to).endOf('day').add(7, 'hours')
+    );
+};
+
 const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
     <div style={{ padding: 8 }}>
         <DatePicker
@@ -150,8 +159,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                       });
                   })
                 : volunteers?.data
-        )?.filter(({ id }) => !feededIds[id]);
-    }, [volunteers, searchText, feededIds]);
+        )?.filter((volunteer) => !filterUnfeededType || !feededIds[volunteer.id] && volunteer.is_active && !volunteer.is_blocked && !isVolExpired(volunteer));
+    }, [volunteers, searchText, feededIds, filterUnfeededType]);
 
     // const { selectProps } = useSelect<VolEntity>({
     //     resource: 'volunteers'
