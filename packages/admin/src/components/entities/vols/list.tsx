@@ -159,7 +159,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                       });
                   })
                 : volunteers?.data
-        )?.filter((volunteer) => !filterUnfeededType || !feededIds[volunteer.id] && volunteer.is_active && !volunteer.is_blocked && !isVolExpired(volunteer));
+        )?.filter(
+            (volunteer) =>
+                !filterUnfeededType ||
+                (!feededIds[volunteer.id] && volunteer.is_active && !volunteer.is_blocked && !isVolExpired(volunteer))
+        );
     }, [volunteers, searchText, feededIds, filterUnfeededType]);
 
     // const { selectProps } = useSelect<VolEntity>({
