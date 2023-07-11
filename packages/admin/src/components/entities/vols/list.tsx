@@ -38,14 +38,17 @@ const booleanFilters = [
     { value: false, text: 'Нет' }
 ];
 
+const FEED_TYPE_WITHOUT_FEED = 4;
+
 const pagination: TablePaginationConfig = { showTotal: (total) => `Кол-во волонтеров: ${total}` };
 
-export const isVolExpired = (vol: VolEntity): boolean => {
+export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
+    const day = isYesterday ? dayjs().subtract(1, 'day') : dayjs();
     return (
         !vol.active_to ||
         !vol.active_from ||
-        dayjs() < dayjs(vol.active_from).startOf('day').add(7, 'hours') ||
-        dayjs() > dayjs(vol.active_to).endOf('day').add(7, 'hours')
+        day < dayjs(vol.active_from).startOf('day').add(7, 'hours') ||
+        day > dayjs(vol.active_to).endOf('day').add(7, 'hours')
     );
 };
 
@@ -160,9 +163,13 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                   })
                 : volunteers?.data
         )?.filter(
-            (volunteer) =>
+            (v) =>
                 !filterUnfeededType ||
-                (!feededIds[volunteer.id] && volunteer.is_active && !volunteer.is_blocked && !isVolExpired(volunteer))
+                (!feededIds[v.id] &&
+                    v.is_active &&
+                    !v.is_blocked &&
+                    !isVolExpired(v, filterUnfeededType === 'yesterday') &&
+                    v.feed_type !== FEED_TYPE_WITHOUT_FEED)
         );
     }, [volunteers, searchText, feededIds, filterUnfeededType]);
 
