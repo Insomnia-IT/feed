@@ -6,7 +6,7 @@ import axios from 'axios';
 import { NEW_API_URL } from '~/const';
 import { dayjsExtended as dayjsExt, formDateFormat } from '~/shared/lib';
 
-import type { EaterTypeExtended, IStatisticApi, IStatisticResponce } from '../types';
+import type { EaterTypeExtended, IStatisticApi, IStatisticResponce, MealTime, StatisticType } from '../types';
 import {
     convertResponceToData,
     handleDataForColumnChart,
@@ -90,6 +90,25 @@ function PublicStatistic() {
     const loadStats = async (url) => {
         const res = await axios.get(url);
         const sortedResponce = res.data.sort(sordResponceByDate);
+
+        try {
+            const type = 'plan' as StatisticType;
+            for (let date of new Set((sortedResponce as Array<{date: string}>).map((stat) => stat.date))) {
+                for (let meal_time of new Set((sortedResponce as Array<{meal_time: Omit<MealTime, 'total'>}>).map((stat) => stat.meal_time))) {
+                    console.log(
+                        `stat: type - ${type}, date - ${date}, meal_time - ${meal_time}:`,
+                        (sortedResponce as Array<{
+                            type: StatisticType;
+                            meal_time: Omit<MealTime, 'total'>;
+                            date: string;
+                        }>).filter((stat) => stat.type === type && stat.date === date && stat.meal_time === meal_time)
+                    );
+                }
+            }
+        } catch (error) {
+            console.log('stat, plan:', `logging failed - ${error}`)
+        }
+
         setResponce(sortedResponce);
     };
 

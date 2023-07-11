@@ -427,11 +427,11 @@ def calculate_statistics(data):
                     active_from__lt=current_stat_date.shift(days=+1).datetime, 
                     active_to__gte=current_stat_date.datetime
                 )
-                .values_list('active_from', 'active_to', 'kitchen__id', 'is_vegan', 'feed_type__paid')
+                .values_list('active_from', 'active_to', 'kitchen__id', 'is_vegan', 'feed_type__paid', 'id')
         )
 
         # set PLAN statistics for current date
-        for active_from, active_to, kitchen_id, is_vegan, is_paid in volunteers:
+        for active_from, active_to, kitchen_id, is_vegan, is_paid, id in volunteers:
             # convert dates to Arrow and floor them to 'day'
             active_from_as_arrow = arrow.get(active_from).to(TZ).floor('day')
             active_to_as_arrow = arrow.get(active_to).to(TZ).floor('day')
@@ -440,6 +440,7 @@ def calculate_statistics(data):
             if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:
                 for meal_time in get_meal_times(is_paid)[1:]:
                     plan_stat.append({
+                        'id': id,
                         'date': current_stat_date.format(STAT_DATE_FORMAT),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "lunch", "dinner" (, is_paid ? "night") ]
@@ -451,6 +452,7 @@ def calculate_statistics(data):
             elif active_from_as_arrow != current_stat_date and active_to_as_arrow == current_stat_date:
                 for meal_time in get_meal_times(is_paid)[:2]:
                     plan_stat.append({
+                        'id': id,
                         'date': current_stat_date.format(STAT_DATE_FORMAT),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch" ]
@@ -462,6 +464,7 @@ def calculate_statistics(data):
             else:
                 for meal_time in get_meal_times(is_paid):
                     plan_stat.append({
+                        'id': id,
                         'date': current_stat_date.format(STAT_DATE_FORMAT),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
