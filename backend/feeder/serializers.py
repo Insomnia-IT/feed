@@ -141,6 +141,7 @@ class StatisticsRequestSerializer(serializers.Serializer):
 
 
 class StatisticsResponseSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
     date = serializers.DateField()
     type = serializers.ChoiceField(choices=[type.value for type in StatisticType])
     is_vegan = serializers.BooleanField(allow_null=True)

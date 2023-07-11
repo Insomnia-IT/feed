@@ -35,6 +35,24 @@ const getStatsByDate = async (statsDate) => {
                     vol.feed_type !== FeedType.FT2
             );
         }
+
+        try {
+            console.log(
+                `stat: type - plan, date - ${statsDate}, meal_time - ${MT}:`,
+                vols.map((vol) => ({
+                    id: vol.id,
+                    date: statsDate,
+                    type: 'plan',
+                    meal_time: MT,
+                    is_vegan: vol.is_vegan,
+                    amount: 1,
+                    kitchen_id: vol.kitchen
+                }))
+            );
+        } catch (error) {
+            console.log('stat, plan:', `logging failed - ${error}`);
+        }
+
         const nt1 = vols.filter((vol) => !vol.is_vegan).length;
         const nt2 = vols.filter((vol) => vol.is_vegan).length;
         const total = vols.length;
