@@ -54,7 +54,7 @@ export const validateVol = (
             isRed = true;
         }
     }
-    if (msg.length && !isRed && volTransactions.some((t) => t.amount) && vol.feed_type !== FeedType.Child) {
+    if (msg.length && !isRed && volTransactions.some((t) => t.amount && t.reason) && vol.feed_type !== FeedType.Child) {
         msg.push('Волонтер уже питался сегодня в долг');
         isRed = true;
     }
