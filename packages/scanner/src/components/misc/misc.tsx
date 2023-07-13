@@ -6,7 +6,7 @@ import { FeedType } from '~/db';
 
 import css from './misc.module.css';
 
-const dateTimeFormat = 'DD MMM';
+const dateTimeFormat = 'DD MMM HH:mm';
 
 export type ValueOf<T> = T[keyof T];
 
