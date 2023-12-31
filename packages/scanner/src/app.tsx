@@ -112,11 +112,12 @@ const App: FC = () => {
     useEffect(() => {
         const checkVer = (): void => {
             console.log('online, check ver..');
-            void axios.get('public/pwa-ver.txt').then(({ data }: any): void => {
+            const hash = new Date().toISOString();
+            void axios.get(`public/pwa-ver.txt?h=${hash}`).then(({ data }: any): void => {
                 console.log(`remote app ver: ${data}`);
                 if (data !== ver) {
                     console.log('new version, reloading...');
-                    alert('Доступно обновление, приложение перезагрузиться');
+                    alert('Доступно обновление, приложение перезагрузится');
                     clearCache();
                 }
             });
