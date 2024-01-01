@@ -96,12 +96,23 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet('Transactions log');
 
-        const header = ['Время', 'ID волонтера', 'Волонтер', 'Тип питания', 'Прием пищи', 'Кухня', 'Кол-во', 'Причина'];
+        const header = [
+            'Дата',
+            'Время',
+            'ID волонтера',
+            'Волонтер',
+            'Тип питания',
+            'Прием пищи',
+            'Кухня',
+            'Кол-во',
+            'Причина'
+        ];
         sheet.addRow(header);
 
         transactions.forEach((tx) => {
             sheet.addRow([
                 dayjs(tx.dtime).format('DD.MM.YYYY'),
+                dayjs(tx.dtime).format('HH:mm:ss'),
                 tx.volunteer,
                 tx.volunteer ? volNameById[tx.volunteer] : 'Аноним',
                 tx.is_vegan !== null ? (tx.is_vegan ? 'Веган' : 'Мясоед') : '',
