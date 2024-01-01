@@ -101,7 +101,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
 
         transactions.forEach((tx) => {
             sheet.addRow([
-                dayjs(tx.dtime).format('DD/MM/YY HH:mm:ss'),
+                dayjs(tx.dtime).format('DD.MM.YYYY'),
                 tx.volunteer,
                 tx.volunteer ? volNameById[tx.volunteer] : 'Аноним',
                 tx.is_vegan !== null ? (tx.is_vegan ? 'Веган' : 'Мясоед') : '',
