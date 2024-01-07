@@ -42,6 +42,7 @@ const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => (
 
 const storedPin = localStorage.getItem('pin');
 const storedKitchenId = localStorage.getItem('kitchenId');
+const lastUpdatedLS = localStorage.getItem('lastUpdated');
 
 const App: FC = () => {
     const [appColor, setAppColor] = useState<AppColor | null>(null);
@@ -52,7 +53,7 @@ const App: FC = () => {
     const pinInputRef = useRef<HTMLInputElement | null>(null);
     const checkAuth = useCheckAuth(API_DOMAIN, setAuth);
     const appStyle = useMemo(() => ({ backgroundColor: Colors[appColor as AppColor] }), [appColor]);
-    const [lastUpdate, setLastUpdated] = useState<number | null>(null);
+    const [lastUpdate, setLastUpdated] = useState<number | null>(lastUpdatedLS ? +lastUpdatedLS : null);
     const [volCount, setVolCount] = useState<number>(0);
     const [currentView, setCurrentView] = useState<number>(0);
     const [kitchenId, setKitchenId] = useState<string | null>(storedKitchenId);

@@ -36,3 +36,15 @@ const mealTimes = {
 export const getMealTimeText = (mealTime: string): string => {
     return mealTimes[mealTime] || '';
 };
+
+/*** Функция для генерации строки query params из плоского объекта */
+export const queryParamsFromObject = (objParams: any): string | null => {
+    return typeof objParams === 'object'
+        ? Object.entries(objParams).reduce((acc, curr, index) => {
+              if (index > 0) {
+                  acc = acc + '&';
+              }
+              return acc + `${curr[0]}=${curr[1]}`;
+          }, '?')
+        : null;
+};

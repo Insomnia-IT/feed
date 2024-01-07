@@ -63,6 +63,7 @@ class VolunteerFilter(django_filters.FilterSet):
     phone = django_filters.CharFilter(field_name="phone", lookup_expr='icontains')
     email = django_filters.CharFilter(field_name="email", lookup_expr='icontains')
     qr = django_filters.CharFilter(field_name="qr", lookup_expr='iexact')
+    updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
     class Meta:
         model = models.Volunteer

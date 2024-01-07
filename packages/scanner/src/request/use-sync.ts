@@ -12,6 +12,8 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
     const [updated, setUpdated] = useState<any>(null);
     const [fetching, setFetching] = useState<any>(false);
 
+    const updateTimeStart = +new Date();
+
     const {
         // error: transError,
         fetching: sendTransFetching,
@@ -40,48 +42,51 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
         // updated: transUpdated
     } = useGetTrans(baseUrl, pin, setAuth);
 
-    const send = useCallback(() => {
-        if (sendTransFetching || volsFetching || getTransFetching) {
-            return;
-        }
-
-        setFetching(true);
-
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        return new Promise(async (res, rej) => {
-            const success = (): void => {
-                setFetching(false);
-                setError(null);
-                setUpdated(+new Date());
-                res(true);
-            };
-
-            const error = (err): void => {
-                setError(err);
-                setFetching(false);
-                rej(err);
-            };
-
-            try {
-                await sendTransSend();
-                await volsSend();
-                await groupBadgesSend();
-                await getTransSend();
-                success();
-            } catch (e) {
-                error(e);
+    const send = useCallback(
+        ({ lastUpdate }) => {
+            if (sendTransFetching || volsFetching || getTransFetching) {
+                return;
             }
-        });
-    }, [
-        sendTransFetching,
-        sendTransSend,
-        volsFetching,
-        volsSend,
-        groupBadgesFetching,
-        groupBadgesSend,
-        getTransFetching,
-        getTransSend
-    ]);
+
+            setFetching(true);
+
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            return new Promise(async (res, rej) => {
+                const success = (): void => {
+                    setFetching(false);
+                    setError(null);
+                    setUpdated(updateTimeStart);
+                    res(true);
+                };
+
+                const error = (err): void => {
+                    setError(err);
+                    setFetching(false);
+                    rej(err);
+                };
+
+                try {
+                    await sendTransSend();
+                    await volsSend({ updated_at__from: new Date(lastUpdate).toISOString(), limit: '10000' });
+                    await groupBadgesSend();
+                    await getTransSend();
+                    success();
+                } catch (e) {
+                    error(e);
+                }
+            });
+        },
+        [
+            sendTransFetching,
+            sendTransSend,
+            volsFetching,
+            volsSend,
+            groupBadgesFetching,
+            groupBadgesSend,
+            getTransFetching,
+            getTransSend
+        ]
+    );
 
     return <ApiHook>useMemo(
         () => ({

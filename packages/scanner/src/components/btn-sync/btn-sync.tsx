@@ -13,14 +13,12 @@ import css from './btn-sync.module.css';
 const SYNC_INTERVAL = 2 * 60 * 1000;
 
 export const BtnSync: React.FC = () => {
-    const { pin, setAuth, setLastUpdated, setVolCount } = useContext(AppContext);
+    const { lastUpdate, pin, setAuth, setLastUpdated, setVolCount } = useContext(AppContext);
     const { error, fetching, send, updated } = useSync(API_DOMAIN, pin, setAuth);
 
-    console.log({ error, fetching, updated });
-
     const click = useCallback(() => {
-        void send();
-    }, [send]);
+        void send({ lastUpdate });
+    }, [send, lastUpdate]);
 
     useEffect(() => {
         if (updated && !fetching) {
