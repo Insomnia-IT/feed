@@ -78,4 +78,8 @@ export interface DepartmentEntity {
     lead: number | null;
 }
 
-export { LocationEntity } from '@feed/api/src/entities/location.entity';
+export interface LocationEntity {
+    id: number;
+    name: string;
+    vol: VolEntity;
+}
