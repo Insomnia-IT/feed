@@ -32,9 +32,7 @@ RUN ls -1al /app/packages/api/icu
 ENV YARN_CACHE_FOLDER=/root/.yarn
 COPY nginx.conf /app/
 
-ARG API_URL
 ARG NEW_API_URL
-ENV API_URL_ENV=${API_URL}
 ENV NEW_API_URL_ENV=${NEW_API_URL}
 ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 
@@ -78,9 +76,7 @@ RUN apk add --no-cache nginx python3 py3-pip tzdata curl
 RUN apk add --no-cache icu-dev
 COPY nginx.conf /etc/nginx/nginx.conf
 
-ARG API_URL
 ARG NEW_API_URL
-ENV API_URL_ENV=${API_URL}
 ENV NEW_API_URL_ENV=${NEW_API_URL}
 ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 ARG ADMIN_BASE_PATH
