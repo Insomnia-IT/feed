@@ -55,3 +55,12 @@ admin / admin
 ```bash
 yarn run build
 ```
+
+# Создание микграции БД
+
+```bash
+cd ./backend
+python3 -m venv venv
+. ./venv/bin/activate
+python manage.py makemigrations
+```

@@ -66,6 +66,12 @@ export interface GroupBadgeEntity {
     comment?: string;
 }
 
+export interface VolunteerCustomFieldEntity {
+    id: number;
+    name: string;
+    comment?: string;
+}
+
 export interface DepartmentEntity {
     id: number;
     name: string;

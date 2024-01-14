@@ -49,6 +49,12 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
         model = models.GroupBadge
         fields = '__all__'
 
+class VolunteerCustomFieldSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.VolunteerCustomField
+        fields = '__all__'
 
 class ColorSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)

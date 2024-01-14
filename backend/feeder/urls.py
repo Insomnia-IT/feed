@@ -12,6 +12,7 @@ router.register(r'feed-types', views.FeedTypeViewSet)
 router.register(r'feed-transaction', views.FeedTransactionViewSet)
 router.register(r'kitchens', views.KitchenViewSet)
 router.register(r'group-badges', views.GroupBadgeViewSet)
+router.register(r'volunteer-custom-fields', views.VolunteerCustomFieldViewSet)
 
 urlpatterns = [
     path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

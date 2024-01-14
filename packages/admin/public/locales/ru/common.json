@@ -136,6 +136,19 @@
             "show": "Показать"
         }
     },
+    "volunteer-custom-fields": {
+        "volunteer-custom-fields": "Кастомные поля",
+        "fields": {
+            "id": "Id",
+            "name": "Название"
+        },
+        "titles": {
+            "create": "Создать кастомное поле",
+            "edit": "Редактировать кастомное поле",
+            "list": "Список кастомных полей",
+            "show": "Показать кастомное поле"
+        }
+    },
     "feed-transaction": {
         "feed-transaction": "История питания",
         "fields": {

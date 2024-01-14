@@ -111,6 +111,14 @@ class GroupBadge(TimeMixin, CommentMixin, NameMixin):
         verbose_name = "Групповой бейдж"
         verbose_name_plural = "Групповые бейджи"
 
+class VolunteerCustomField(TimeMixin, CommentMixin):
+    name = models.CharField(verbose_name='Название', unique=True, max_length=100)
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Кастомное поле волонтера"
+        verbose_name_plural = "Кастомные поля волонтера"
 
 class Location(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название", db_index=True)

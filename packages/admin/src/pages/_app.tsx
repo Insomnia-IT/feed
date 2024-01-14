@@ -31,6 +31,7 @@ import { PublicStatistic } from '~/components/entities/statistic';
 
 // eslint-disable-next-line no-restricted-imports
 import { i18n } from '../../next-i18next.config.mjs';
+import { VolunteerCustomFieldCreate, VolunteerCustomFieldEdit, VolunteerCustomFieldList, VolunteerCustomFieldShow } from '~/components/entities/volunteer-custom-fields';
 
 const CustomReadyPage: FC = () => <div> Custom Ready Page </div>;
 
@@ -78,6 +79,14 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                         edit: VolEdit,
                         show: VolShow,
                         icon: <Icons.UserOutlined />
+                    },
+                    {
+                        name: 'volunteer-custom-fields',
+                        list: VolunteerCustomFieldList,
+                        create: VolunteerCustomFieldCreate,
+                        edit: VolunteerCustomFieldEdit,
+                        show: VolunteerCustomFieldShow,
+                        icon: <Icons.InsertRowRightOutlined />
                     },
                     {
                         name: 'departments',

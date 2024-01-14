@@ -95,6 +95,13 @@ class GroupBadgeViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
 
+class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.VolunteerCustomField.objects.all()
+    serializer_class = serializers.VolunteerCustomFieldSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', ]
+
 
 class ColorViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
