@@ -35,14 +35,6 @@ python3 -m venv venv
 ```
 
 ```bash
-cd ./packages/api
-# yarn run _db:drop
-# yarn run db:seed
-yarn run db:sync
-yarn run dev
-```
-
-```bash
 cd ./packages/admin
 yarn run dev
 ```
