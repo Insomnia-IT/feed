@@ -29,9 +29,15 @@ import { PublicStatistic } from '~/components/entities/statistic';
 
 // import enUS from 'antd/lib/locale-provider/ru_RU';
 
+import {
+    VolunteerCustomFieldCreate,
+    VolunteerCustomFieldEdit,
+    VolunteerCustomFieldList,
+    VolunteerCustomFieldShow
+} from '~/components/entities/volunteer-custom-fields';
+
 // eslint-disable-next-line no-restricted-imports
 import { i18n } from '../../next-i18next.config.mjs';
-import { VolunteerCustomFieldCreate, VolunteerCustomFieldEdit, VolunteerCustomFieldList, VolunteerCustomFieldShow } from '~/components/entities/volunteer-custom-fields';
 
 const CustomReadyPage: FC = () => <div> Custom Ready Page </div>;
 

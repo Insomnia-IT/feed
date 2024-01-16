@@ -1,8 +1,4 @@
-import {
-    Edit,
-    Form,
-    useForm,
-} from '@pankod/refine-antd';
+import { Edit, Form, useForm } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 
 import 'react-mde/lib/styles/css/react-mde-all.css';
