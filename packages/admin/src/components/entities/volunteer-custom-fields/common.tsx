@@ -1,4 +1,4 @@
-import { Form, Input } from '@pankod/refine-antd';
+import { Form, Input, Select } from '@pankod/refine-antd';
 import dynamic from 'next/dynamic';
 
 import { Rules } from '~/components/form/rules';
@@ -9,6 +9,12 @@ export const CreateEdit: FC = () => (
     <>
         <Form.Item label='Название' name='name' rules={Rules.required}>
             <Input />
+        </Form.Item>
+        <Form.Item label='Тип данных' name='type' rules={Rules.required}>
+            <Select>
+                <Select.Option value='string'>Строка</Select.Option>
+                <Select.Option value='boolean'>Чекбокс</Select.Option>
+            </Select>
         </Form.Item>
         <Form.Item label='Комментарий' name='comment'>
             <ReactQuill />

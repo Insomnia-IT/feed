@@ -83,3 +83,10 @@ export interface LocationEntity {
     name: string;
     vol: VolEntity;
 }
+
+export interface CustomFieldEntity {
+    id: number;
+    name: string;
+    type: string;
+    comment: string;
+}

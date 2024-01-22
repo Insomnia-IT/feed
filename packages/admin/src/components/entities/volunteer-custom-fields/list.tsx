@@ -9,7 +9,6 @@ import {
     useTable
 } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { renderText } from '@feed/ui/src/table';
 
 import type { VolunteerCustomFieldEntity } from '~/interfaces';
 
@@ -30,8 +29,14 @@ export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
                     dataIndex='name'
                     key='name'
                     title='Название'
-                    render={renderText}
                     defaultSortOrder={getDefaultSortOrder('name', sorter)}
+                    sorter
+                />
+                <Table.Column
+                    dataIndex='type'
+                    key='type'
+                    title='Тип данных'
+                    defaultSortOrder={getDefaultSortOrder('type', sorter)}
                     sorter
                 />
                 <Table.Column

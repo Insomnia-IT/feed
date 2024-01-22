@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 
 import type {
     ColorTypeEntity,
+    CustomFieldEntity,
     DepartmentEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
@@ -150,6 +151,20 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         };
     }, [form]);
 
+    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+
+    const loadCustomFields = async () => {
+        const { data } = await dataProvider.getList<CustomFieldEntity>({
+            resource: 'volunteer-custom-fields'
+        });
+
+        setCustomFields(data);
+    };
+
+    useEffect(() => {
+        loadCustomFields();
+    }, []);
+
     return (
         <>
             <Row gutter={[16, 16]}>
@@ -275,6 +290,14 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     <Form.Item label='Групповой бейдж' name='group_badge'>
                         <Select allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
                     </Form.Item>
+                    {customFields.map(({ name, type }) => {
+                        return (
+                            <Form.Item label={name} name={name}>
+                                {type === 'boolean' && <Checkbox />}
+                                {type === 'string' && <Input />}
+                            </Form.Item>
+                        );
+                    })}
                 </Col>
             </Row>
             <Modal
