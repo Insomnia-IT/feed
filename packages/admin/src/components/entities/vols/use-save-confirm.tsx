@@ -2,6 +2,9 @@ import type { ButtonProps, FormInstance } from '@pankod/refine-antd';
 import { Modal } from '@pankod/refine-antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { dataProvider } from '~/dataProvider';
+import { VolCustomFieldValueEntity } from '~/interfaces';
+
 
 const useSaveConfirm = (
     form: FormInstance,
@@ -23,7 +26,40 @@ const useSaveConfirm = (
     };
 
     return {
-        onClick: () => {
+        onClick: async () => {
+            const id = form.getFieldValue('id');
+            const updatedCustomFields = form.getFieldValue('updated_custom_fields');
+            if(updatedCustomFields) {
+                for(let customFieldId in updatedCustomFields) {
+                    const { data: customValues } = await dataProvider.getList<VolCustomFieldValueEntity>({
+                        filters: [
+                            { field: 'volunteer', operator: 'eq' , value: id, },
+                            { field: 'custom_field', operator: 'eq' , value: customFieldId, },
+                        ],
+                        resource: 'volunteer-custom-field-values'
+                    });
+                    const value = updatedCustomFields[customFieldId].toString();
+
+                    if(customValues.length) {
+                        await dataProvider.update({
+                            resource: 'volunteer-custom-field-values',
+                            id: customValues[0].id,
+                            variables: {
+                                value
+                            }
+                        }); 
+                    } else {
+                        await dataProvider.create({ 
+                            resource: 'volunteer-custom-field-values',
+                            variables: {
+                                volunteer: id,
+                                custom_field: parseFloat(customFieldId),
+                                value
+                            }
+                         });
+                    }
+                }
+            }
             const activeFrom = form.getFieldValue('active_from');
             if (!form.getFieldValue('is_active')) {
                 setShowConfirmationModalReason('is_active');

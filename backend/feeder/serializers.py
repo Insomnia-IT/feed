@@ -18,9 +18,26 @@ class DepartmentNestedSerializer(serializers.ModelSerializer):
         model = models.Department
         fields = ['id', 'name']
 
+class VolunteerCustomFieldSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.VolunteerCustomField
+        fields = '__all__'
+
+class VolunteerCustomFieldValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VolunteerCustomFieldValue
+        fields =  '__all__'
+class VolunteerCustomFieldValueNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VolunteerCustomFieldValue
+        fields = ['custom_field', 'value']
+
 class VolunteerListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     departments = DepartmentNestedSerializer(many=True)
+    custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
 
     class Meta:
         model = models.Volunteer
@@ -28,6 +45,7 @@ class VolunteerListSerializer(serializers.ModelSerializer):
 
 class VolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
 
     class Meta:
         model = models.Volunteer
@@ -47,13 +65,6 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.GroupBadge
-        fields = '__all__'
-
-class VolunteerCustomFieldSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = models.VolunteerCustomField
         fields = '__all__'
 
 class ColorSerializer(serializers.ModelSerializer):

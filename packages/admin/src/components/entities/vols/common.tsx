@@ -290,11 +290,19 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     <Form.Item label='Групповой бейдж' name='group_badge'>
                         <Select allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
                     </Form.Item>
-                    {customFields.map(({ name, type }) => {
+                    {customFields.map(({ id, name, type }) => {
+                        const handleChange = (e) => {
+                            const value =  e.target[type === 'boolean' ? 'checked' : 'value'];
+                            form.setFieldValue(['updated_custom_fields', id.toString()], value);
+                        }
+                        const customFieldValues = form.getFieldValue('custom_field_values');
+                        if(!customFieldValues) return null;
+                        const customFieldValue = customFieldValues.find(({ custom_field })=> custom_field === id);
+                        debugger
                         return (
-                            <Form.Item label={name} name={name}>
-                                {type === 'boolean' && <Checkbox />}
-                                {type === 'string' && <Input />}
+                            <Form.Item key={name} label={name}>
+                                {type === 'boolean' && <Checkbox defaultChecked={customFieldValue ? customFieldValue.value === 'true' : false} onChange={handleChange} />}
+                                {type === 'string' && <Input defaultValue={customFieldValue ? customFieldValue.value : ''} onChange={handleChange} />}
                             </Form.Item>
                         );
                     })}

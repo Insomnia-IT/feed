@@ -90,3 +90,10 @@ export interface CustomFieldEntity {
     type: string;
     comment: string;
 }
+
+export interface VolCustomFieldValueEntity {
+    id: number;
+    volunteer: number;
+    custom_field: number;
+    value: string;
+}
