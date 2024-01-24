@@ -184,6 +184,36 @@ class FeedTransactionBulk(APIView):
         return Response(
             serializers.SimpleResponse({'success': True}).data
         )
+    
+class SyncWithFeeder(APIView):
+    """
+    Синхронизация транзакций с базой данных Кормителя
+    """
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def post(self, request):
+        serializer = serializers.SyncWithFeederRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_client_txs = serializer.data.get('transactions')
+        last_updated = serializer.data.get('last_updated')
+
+        # start transaction
+        # 1. new_server_txs
+        new_server_txs = list(models.FeedTransaction.objects.filter(created_at__gt=last_updated))
+        # 2. insert new_client_txs to db
+        new_client_txs_serializer = serializers.FeedTransactionSerializer(data=new_client_txs, many=True)
+        new_client_txs_serializer.is_valid(raise_exception=True)
+        new_client_txs_serializer.save()
+        # 3. new_last_updated
+        last_tx = models.FeedTransaction.objects.order_by('created_at').last()
+        # 4. response(new_last_updated, new_server_txs)
+        result={'last_updated': last_tx.created_at, 'transactions': new_server_txs}
+        # end transaction
+
+        return Response(
+            serializers.SyncWithFeederResponseSerializer(result).data
+        )
 
 
 class UpdateBalance(APIView):

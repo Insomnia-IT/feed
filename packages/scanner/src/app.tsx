@@ -99,7 +99,7 @@ const App: FC = () => {
             kitchenId,
             isDev
         }),
-        [pin, lastUpdate, volCount]
+        [pin, appError, lastUpdate, volCount, mealTime, kitchenId]
     );
 
     const viewContextValue: IViewContext = useMemo(

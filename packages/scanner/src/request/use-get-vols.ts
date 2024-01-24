@@ -4,7 +4,6 @@ import axios from 'axios';
 import type { ApiHook } from '~/request/lib';
 import type { Volunteer } from '~/db';
 import { db } from '~/db';
-import { queryParamsFromObject } from '~/lib/utils';
 
 export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<any>(null);
@@ -19,14 +18,13 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
 
             setFetching(true);
 
-            const filtersString = queryParamsFromObject(filters);
-
             return new Promise((res, rej) => {
                 axios
-                    .get(`${baseUrl}/volunteers/${filtersString}`, {
+                    .get(`${baseUrl}/volunteers`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
-                        }
+                        },
+                        params: filters
                     })
                     .then(async ({ data: { results } }) => {
                         setFetching(false);

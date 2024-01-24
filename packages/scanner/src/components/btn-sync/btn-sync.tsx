@@ -35,14 +35,14 @@ export const BtnSync: React.FC = () => {
             // clearTimeout(timer);
             if (navigator.onLine) {
                 console.log('online, updating...');
-                void send();
+                void send({ lastUpdate });
             }
         };
 
         const timer = setInterval(sync, SYNC_INTERVAL);
 
         return () => clearInterval(timer);
-    }, [send]);
+    }, [send, lastUpdate]);
 
     const success = !error && updated;
 

@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useGetVols } from '~/request/use-get-vols';
 import { useSendTrans } from '~/request/use-send-trans';
 import { useGetTrans } from '~/request/use-get-trans';
+import { useSyncTransactions } from '~/request/use-sync-trans';
 
 import { useGetGroupBadges } from './use-get-group-badges';
 import type { ApiHook } from './lib';
@@ -11,15 +12,6 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);
     const [fetching, setFetching] = useState<any>(false);
-
-    const updateTimeStart = +new Date();
-
-    const {
-        // error: transError,
-        fetching: sendTransFetching,
-        send: sendTransSend
-        // updated: transUpdated
-    } = useSendTrans(baseUrl, pin, setAuth);
 
     const {
         // error: volsError,
@@ -36,17 +28,19 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
     } = useGetGroupBadges(baseUrl, pin, setAuth);
 
     const {
-        // error: transError,
-        fetching: getTransFetching,
-        send: getTransSend
-        // updated: transUpdated
-    } = useGetTrans(baseUrl, pin, setAuth);
+        // error: volsError,
+        fetching: syncTransactionsFetching,
+        send: syncTransactionsSend
+        // updated: volsUpdated
+    } = useSyncTransactions(baseUrl, pin, setAuth);
 
     const send = useCallback(
         ({ lastUpdate }) => {
-            if (sendTransFetching || volsFetching || getTransFetching) {
+            if (volsFetching || syncTransactionsFetching) {
                 return;
             }
+
+            const updateTimeStart = +new Date();
 
             setFetching(true);
 
@@ -66,26 +60,16 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                 };
 
                 try {
-                    await sendTransSend();
                     await volsSend({ updated_at__from: new Date(lastUpdate).toISOString(), limit: '10000' });
+                    await syncTransactionsSend();
                     await groupBadgesSend();
-                    await getTransSend();
                     success();
                 } catch (e) {
                     error(e);
                 }
             });
         },
-        [
-            sendTransFetching,
-            sendTransSend,
-            volsFetching,
-            volsSend,
-            groupBadgesFetching,
-            groupBadgesSend,
-            getTransFetching,
-            getTransSend
-        ]
+        [volsFetching, syncTransactionsFetching, volsSend, syncTransactionsSend, groupBadgesSend]
     );
 
     return <ApiHook>useMemo(
