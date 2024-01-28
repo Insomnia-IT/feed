@@ -201,7 +201,7 @@ class SyncWithFeeder(APIView):
     @extend_schema(
         request=serializers.SyncWithFeederRequestSerializer(),
         responses={
-            200: serializers.SyncWithFeederResponseSerializer(many=True)
+            200: serializers.SyncWithFeederResponseSerializer()
         },
     )
     
