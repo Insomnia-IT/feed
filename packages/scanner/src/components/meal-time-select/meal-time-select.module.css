@@ -1,11 +1,11 @@
 .mealTimeSelectBlock {
-    padding: 15px;
-    margin: auto;
     display: flex;
     flex-direction: column;
+    gap: 15px;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    margin: auto;
+    padding: 15px;
 
     button {
         width: 50vw;

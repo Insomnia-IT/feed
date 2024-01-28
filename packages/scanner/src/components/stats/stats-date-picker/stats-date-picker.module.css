@@ -1,32 +1,33 @@
 .datePicker {
     display: flex;
-    align-items: center;
     gap: 2px;
+    align-items: center;
 
     .date {
         font-size: 0.75em;
     }
 
     .button {
-        line-height: 0;
         padding: 0;
-        border: 1px solid #d0d0d0;
+        border: 1px solid rgb(208 208 208);
         border-radius: 5px;
-
-        .svg {
-            height: 30px;
-            width: 30px
-        }
+        line-height: 0;
 
         @media --desktop {
             .svg {
-                height: 40px;
                 width: 40px;
+                height: 40px;
             }
         }
 
-        &:disabled, &:active {
-             opacity: 0.5;
-        };
+        .svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        &:disabled,
+        &:active {
+            opacity: 0.5;
+        }
     }
 }
