@@ -41,8 +41,11 @@ const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => (
 );
 
 const storedPin = localStorage.getItem('pin');
-const storedKitchenId = localStorage.getItem('kitchenId');
-const lastUpdatedLS = localStorage.getItem('lastUpdated');
+const storedKitchenId = Number(localStorage.getItem('kitchenId'));
+const lastSyncStartLS = localStorage.getItem('lastSyncStart');
+const debugModeLS = localStorage.getItem('debug');
+// TODO: Remove after test
+const deoptimizedSyncLS = localStorage.getItem('katya_testiruet');
 
 const App: FC = () => {
     const [appColor, setAppColor] = useState<AppColor | null>(null);
@@ -53,10 +56,10 @@ const App: FC = () => {
     const pinInputRef = useRef<HTMLInputElement | null>(null);
     const checkAuth = useCheckAuth(API_DOMAIN, setAuth);
     const appStyle = useMemo(() => ({ backgroundColor: Colors[appColor as AppColor] }), [appColor]);
-    const [lastUpdate, setLastUpdated] = useState<number | null>(lastUpdatedLS ? +lastUpdatedLS : null);
+    const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);
     const [volCount, setVolCount] = useState<number>(0);
     const [currentView, setCurrentView] = useState<number>(0);
-    const [kitchenId, setKitchenId] = useState<string | null>(storedKitchenId);
+    const [kitchenId, setKitchenId] = useState<number>(storedKitchenId);
 
     const tryAuth = useCallback(() => {
         const enteredPin = pinInputRef.current?.value || '';
@@ -66,7 +69,7 @@ const App: FC = () => {
                 localStorage.setItem('kitchenId', user.data.id);
                 setAuth(true);
                 setPin(enteredPin);
-                setKitchenId(user.data.id);
+                setKitchenId(+user.data.id);
             })
             .catch((e) => {
                 if (!e.response && enteredPin && enteredPin === storedPin) {
@@ -85,21 +88,23 @@ const App: FC = () => {
             setAuth,
             appError,
             setColor: setAppColor,
-            lastUpdate,
+            lastSyncStart,
             volCount,
             resetColor: () => setAppColor(null),
             setError: setAppError,
-            setLastUpdated: (ts) => {
-                localStorage.setItem('lastUpdated', String(ts));
-                setLastUpdated(ts);
+            setLastSyncStart: (ts) => {
+                localStorage.setItem('lastSyncStart', String(ts));
+                setLastSyncStart(ts);
             },
             setVolCount,
             mealTime,
             setMealTime,
             kitchenId,
-            isDev
+            isDev,
+            debugMode: debugModeLS,
+            deoptimizedSync: deoptimizedSyncLS
         }),
-        [pin, appError, lastUpdate, volCount, mealTime, kitchenId]
+        [pin, appError, lastSyncStart, volCount, mealTime, kitchenId]
     );
 
     const viewContextValue: IViewContext = useMemo(
@@ -160,7 +165,7 @@ const App: FC = () => {
                             </SwipeableViews>
                         </ViewContext.Provider>
                     )}
-                    {isDev && <MockTrans />}
+                    {(isDev || debugModeLS === '1') && <MockTrans />}
                 </div>
             </AppContext.Provider>
         </ErrorBoundary>

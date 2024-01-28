@@ -14,13 +14,15 @@ const createTestTrans = (type: 'now' | 'rnd', mealTime: MealTime): Transaction =
         ts = dayjs().startOf('day').add(rndInt(7, 31), 'h');
     }
     ts = ts.unix();
-    const vol_id = rndInt(0, 600);
+    const vol_id = rndInt(1, 600);
+    const kitchen = Number(localStorage.getItem('kitchenId'));
 
     return {
         vol_id,
         amount: 1,
         ts,
         ulid: ulid(ts),
+        kitchen,
         mealTime: mealTime,
         is_new: true,
         is_vegan: rndInt(0, 1) ? true : false

@@ -21,17 +21,19 @@ export interface IAppContext {
     resetColor: () => void;
     appError: string | null;
     setError: (err: string | null) => void;
-    setLastUpdated: (ts: number) => void;
+    setLastSyncStart: (ts: number) => void;
     setVolCount: (ts: number) => void;
     pin: string | null;
     setPin: (pin: string) => void;
     setAuth: (auth: boolean) => void;
-    lastUpdate: number | null;
+    lastSyncStart: number | null;
     volCount: number;
     mealTime: MealTime | null;
     setMealTime: (mealTime: MealTime) => void;
-    kitchenId: string | null;
+    kitchenId: number;
     isDev: boolean;
+    debugMode: string | null;
+    deoptimizedSync: string | null;
 }
 
 // @ts-ignore

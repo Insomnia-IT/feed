@@ -56,16 +56,20 @@ export const PostScanGroupBadge: FC<{
     const incFeedAsync = useCallback(
         async (vols: Array<ValidatedVol>, error: boolean) =>
             await Promise.all(
-                vols.map((vol) =>
-                    dbIncFeed(
-                        vol,
-                        mealTime!,
-                        undefined,
+                vols.map((vol) => {
+                    const log =
                         !error && vol.msg.length === 0
                             ? undefined
-                            : { error, reason: vol.msg.concat('Групповое питание').join(', ') }
-                    )
-                )
+                            : { error, reason: vol.msg.concat('Групповое питание').join(', ') };
+
+                    return dbIncFeed({
+                        vol,
+                        mealTime: mealTime!,
+                        isVegan: undefined,
+                        log,
+                        kitchenId
+                    });
+                })
             ),
         []
     );
@@ -87,7 +91,7 @@ export const PostScanGroupBadge: FC<{
 
         // pass each vol through validation and combine result
         const validatedVols = vols.map((vol) => {
-            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId!, mealTime!, true) };
+            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId, mealTime!, true) };
         });
 
         setValidationGroups({

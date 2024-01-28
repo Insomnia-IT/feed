@@ -25,4 +25,15 @@
     svg {
         width: 2em;
     }
+
+    .deoptimizedIcon {
+        top: -0.2em;
+        right: -0.2em;
+        content: '';
+        position: absolute;
+        width: 0.45em;
+        height: 0.45em;
+        background: #ffb110;
+        border-radius: 50%;
+    }
 }

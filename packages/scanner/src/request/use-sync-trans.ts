@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import type { IndexableType } from 'dexie';
@@ -6,8 +6,11 @@ import type { IndexableType } from 'dexie';
 import type { ApiHook } from '~/request/lib';
 import { db } from '~/db';
 import type { ServerTransaction, Transaction } from '~/db';
+import { AppContext } from '~/app-context';
 
 export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
+    const { kitchenId } = useContext(AppContext);
+
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);
     const [fetching, setFetching] = useState<any>(false);
@@ -17,22 +20,24 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
             return Promise.resolve(false);
         }
 
-        let lastTransactionsSync = localStorage.getItem('lastTransactionsSync');
+        let lastUpdatedServerTrans = localStorage.getItem('lastUpdatedServerTrans'); // Время записи последней известной Кормителю транзакции в бд Джанго
 
-        if (!lastTransactionsSync) {
-            lastTransactionsSync = dayjs().startOf('day').subtract(1, 'day').add(7, 'hours').toISOString();
+        if (!lastUpdatedServerTrans) {
+            lastUpdatedServerTrans = dayjs().startOf('day').subtract(1, 'day').add(7, 'hours').toISOString();
         }
 
         setFetching(true);
 
         try {
-            const transactions = await getNewClientTransactions();
+            const newClientTxs = await getNewClientTransactions();
+            const formattedNewClientTxs = formatClientTransactionsToServer(newClientTxs);
 
             const response = await axios.post<{ last_updated: string; transactions: Array<ServerTransaction> }>(
                 `${baseUrl}/feed-transaction/sync`,
                 {
-                    last_updated: lastTransactionsSync,
-                    transactions: transactions
+                    last_updated: lastUpdatedServerTrans,
+                    transactions: formattedNewClientTxs,
+                    kitchen_id: kitchenId
                 },
                 {
                     headers: {
@@ -41,11 +46,13 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
                 }
             );
 
-            await updateArrayTransactions(transactions, { is_new: false });
+            await markTransactionsAsUpdated(newClientTxs);
             await putNewServerTransactions(response.data.transactions);
             await deleteOutdatedTransactions();
 
-            localStorage.setItem('lastTransactionsSync', response.data.last_updated);
+            if (response.data.last_updated) {
+                localStorage.setItem('lastUpdatedServerTrans', response.data.last_updated);
+            }
 
             setUpdated(+new Date());
             return;
@@ -56,11 +63,12 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
             }
 
             setError(e);
-            return e;
+            console.error(error);
+            return Promise.reject(e);
         } finally {
             setFetching(false);
         }
-    }, [baseUrl, fetching, pin, setAuth]);
+    }, [baseUrl, error, fetching, kitchenId, pin, setAuth]);
 
     return <ApiHook>useMemo(
         () => ({
@@ -73,46 +81,51 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
     );
 };
 
-const getNewClientTransactions = async () => {
+const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
     const trans = await db.transactions.toArray();
 
-    const kitchen = Number(localStorage.getItem('kitchenId'));
-    return (trans || [])
-        .filter(({ is_new }) => is_new)
-        .map(({ amount, is_vegan, mealTime, reason, ts, ulid, vol_id }) => ({
-            volunteer: vol_id,
-            is_vegan,
-            amount,
-            dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
-            ulid,
-            meal_time: mealTime,
-            kitchen,
-            reason
-        }));
+    return (trans || []).filter(({ is_new }) => is_new);
 };
 
-const updateArrayTransactions = async (transactions, changes): Promise<void> => {
-    for (const transaction of transactions) {
-        await db.transactions.update(transaction.ulid, changes);
-    }
+const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
+    return trans.map(({ amount, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+        volunteer: vol_id,
+        is_vegan,
+        amount,
+        dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
+        ulid,
+        meal_time: mealTime,
+        kitchen,
+        reason
+    }));
+};
+
+const markTransactionsAsUpdated = async (trans): Promise<IndexableType> => {
+    return db.transactions.bulkPut(
+        trans.map((transaction) => ({
+            ...transaction,
+            is_new: false
+        }))
+    );
 };
 
 const putNewServerTransactions = async (data): Promise<IndexableType> => {
     const serverTransactions = data as Array<ServerTransaction>;
-    const transactions = serverTransactions.map(({ amount, dtime, is_vegan, meal_time, ulid, volunteer }) => ({
+    const transactions = serverTransactions.map(({ amount, dtime, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
         vol_id: volunteer,
         is_vegan,
         mealTime: meal_time,
         ulid,
         amount,
         ts: Math.floor(new Date(dtime).valueOf() / 1000),
-        is_new: false
+        is_new: false,
+        kitchen
     }));
 
     return db.transactions.bulkPut(transactions);
 };
 
-const deleteOutdatedTransactions = async (): Promise<Array<Transaction>> => {
+const deleteOutdatedTransactions = async (): Promise<number> => {
     const yesterdayTS = dayjs().startOf('day').subtract(1, 'day').add(7, 'hours').unix();
-    return db.transactions.where('ts').below(yesterdayTS).toArray();
+    return db.transactions.where('ts').below(yesterdayTS).delete();
 };

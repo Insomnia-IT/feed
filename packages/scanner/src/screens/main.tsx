@@ -13,7 +13,8 @@ import { ScanSimulator } from '~/components/qr-scan-simulator';
 import css from '../app.module.css';
 
 export const MainScreen = React.memo(function MainScreen() {
-    const { appError, isDev, lastUpdate, setColor, setLastUpdated, setVolCount, volCount } = useContext(AppContext);
+    const { appError, debugMode, isDev, lastSyncStart, setColor, setLastSyncStart, setVolCount, volCount } =
+        useContext(AppContext);
     const [scanResult, setScanResult] = useState('');
 
     const closeFeedDialog = useCallback(() => {
@@ -27,14 +28,14 @@ export const MainScreen = React.memo(function MainScreen() {
 
     useEffect(() => {
         void db.volunteers.count().then((c) => setVolCount(c));
-        setLastUpdated(Number(localStorage.getItem('lastUpdated')));
+        setLastSyncStart(Number(localStorage.getItem('lastSyncStart')));
     }, []);
 
     return (
         <div className={cn(css.screen, css.main)}>
             <BtnSync />
             <div className={cn(css.screen, css.main)} style={{ display: scanResult ? 'none' : '' }}>
-                {isDev && <ScanSimulator withSelection setScanResult={setScanResult} />}
+                {(isDev || debugMode === '1') && <ScanSimulator withSelection setScanResult={setScanResult} />}
                 <QrScan onScan={setScanResult} />
                 <button className={css.anon} onClick={feedAnon}>
                     Кормить Анонима
@@ -43,7 +44,7 @@ export const MainScreen = React.memo(function MainScreen() {
             {scanResult && <PostScan closeFeed={closeFeedDialog} qrcode={scanResult} />}
 
             {appError && <ErrorMsg close={closeFeedDialog} msg={appError} />}
-            <LastUpdated count={volCount} ts={lastUpdate || 0} />
+            <LastUpdated count={volCount} ts={lastSyncStart || 0} />
             <MainScreenStats />
         </div>
     );

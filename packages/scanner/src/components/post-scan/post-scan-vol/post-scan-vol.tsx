@@ -17,13 +17,13 @@ export const PostScanVol: FC<{
 
     const { kitchenId, mealTime, setColor } = useContext(AppContext);
 
-    const [doFeed, doNotFeed] = useFeedVol(vol, mealTime, closeFeed);
+    const [doFeed, doNotFeed] = useFeedVol(vol, mealTime, closeFeed, kitchenId);
 
     if (!volTransactions) {
         return <ErrorMsg close={closeFeed} doNotFeed={doNotFeed} msg={`Бейдж не найден: ${qrcode}`} />;
     }
 
-    const { isRed, msg } = validateVol(vol, volTransactions, kitchenId!, mealTime!, false);
+    const { isRed, msg } = validateVol(vol, volTransactions, kitchenId, mealTime!, false);
 
     if (msg.length > 0) {
         if (isRed) {

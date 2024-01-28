@@ -9,9 +9,9 @@ import { useFeedVol } from '../post-scan.utils';
 export const PostScanAnon: FC<{
     closeFeed: () => void;
 }> = ({ closeFeed }) => {
-    const { mealTime, setColor } = useContext(AppContext);
+    const { kitchenId, mealTime, setColor } = useContext(AppContext);
 
-    const [doFeed] = useFeedVol(undefined, mealTime, closeFeed);
+    const [doFeed] = useFeedVol(undefined, mealTime, closeFeed, kitchenId);
 
     useEffect(() => setColor(AppColor.GREEN), []);
 
