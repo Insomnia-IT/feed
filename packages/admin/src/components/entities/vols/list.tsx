@@ -1,9 +1,8 @@
-import type { FilterDropdownProps, MenuProps, TablePaginationConfig } from '@pankod/refine-antd';
+import type { FilterDropdownProps, TablePaginationConfig } from '@pankod/refine-antd';
 import {
     DateField,
     DatePicker,
     DeleteButton,
-    Dropdown,
     EditButton,
     FilterDropdown,
     Form,
@@ -305,6 +304,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         void createAndSaveXLSX();
     }, [createAndSaveXLSX]);
 
+    const handleClickCustomFields = useCallback((): void => {
+        window.location.href = `${window.location.origin}/volunteer-custom-fields`;
+    }, []);;
+
     const loadTransactions = async () => {
         const newFeededIds = {};
         if (filterUnfeededType) {
@@ -336,36 +339,41 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     return (
         <List>
             <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            <Form layout='inline' style={{ padding: "10px 0" }}>
+                <Form.Item>
+                    <Button
+                        type={'primary'}
+                        onClick={handleClickDownload}
+                        icon={<DownloadOutlined />}
+                        disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
+                    >
+                        Выгрузить
+                    </Button>
+                </Form.Item>
+                <Form.Item>
+                    <Radio.Group
+                        value={filterUnfeededType}
+                        onChange={(e) => setfilterUnfeededType(e.target.value)}
+                    >
+                        <Radio.Button value=''>Все</Radio.Button>
+                        <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
+                        <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item>
+                    <Button
+                        onClick={handleClickCustomFields}
+                    >
+                        Кастомные поля
+                    </Button>
+                </Form.Item>
+            </Form>
             <Table
                 scroll={{ x: '100%' }}
                 pagination={pagination}
                 loading={volunteersIsLoading || feededIsLoading}
                 dataSource={filteredData}
                 rowKey='id'
-                footer={() => (
-                    <Form layout='inline'>
-                        <Form.Item>
-                            <Button
-                                type={'primary'}
-                                onClick={handleClickDownload}
-                                icon={<DownloadOutlined />}
-                                disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
-                            >
-                                Выгрузить
-                            </Button>
-                        </Form.Item>
-                        <Form.Item>
-                            <Radio.Group
-                                value={filterUnfeededType}
-                                onChange={(e) => setfilterUnfeededType(e.target.value)}
-                            >
-                                <Radio.Button value=''>Все</Radio.Button>
-                                <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
-                                <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
-                            </Radio.Group>
-                        </Form.Item>
-                    </Form>
-                )}
             >
                 <Table.Column<DepartmentEntity>
                     title=''

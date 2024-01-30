@@ -92,7 +92,10 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                         create: VolunteerCustomFieldCreate,
                         edit: VolunteerCustomFieldEdit,
                         show: VolunteerCustomFieldShow,
-                        icon: <Icons.InsertRowRightOutlined />
+                        icon: <Icons.InsertRowRightOutlined />,
+                        options: {
+                            hide: true
+                        }
                     },
                     {
                         name: 'departments',
