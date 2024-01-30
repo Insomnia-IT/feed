@@ -1,5 +1,6 @@
 export interface VolEntity {
     id: number;
+    custom_field_values: Array<{ custom_field: number, value: string }>;
     uuid?: string;
     qr?: string;
     name?: string;
