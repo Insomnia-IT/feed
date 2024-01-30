@@ -28,7 +28,14 @@ import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 
-import type { ColorTypeEntity, CustomFieldEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity } from '~/interfaces';
+import type {
+    ColorTypeEntity,
+    CustomFieldEntity,
+    DepartmentEntity,
+    FeedTypeEntity,
+    KitchenEntity,
+    VolEntity
+} from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
@@ -54,12 +61,14 @@ export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
 };
 
 const getCustomValue = (vol, customField) => {
-    const value = vol.custom_field_values.find(customFieldValue => customFieldValue.custom_field === customField.id)?.value || '';
+    const value =
+        vol.custom_field_values.find((customFieldValue) => customFieldValue.custom_field === customField.id)?.value ||
+        '';
     if (customField.type === 'boolean') {
         return value === 'true';
-    } 
+    }
     return value;
-}
+};
 
 const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
     <div style={{ padding: 8 }}>
@@ -255,7 +264,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 'Веган/мясоед',
                 'Комментарий',
                 'Цвет бейджа',
-                ...(customFields?.map(field => field.name))
+                ...customFields?.map((field) => field.name)
             ];
             sheet.addRow(header);
 
@@ -277,13 +286,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
                     vol.color_type ? colorNameById[vol.color_type] : '',
-                    ...(customFields?.map(field => {
-                        const value = vol.custom_field_values.find(fieldValue => fieldValue.custom_field === field.id)?.value || '';
+                    ...customFields?.map((field) => {
+                        const value =
+                            vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)?.value ||
+                            '';
                         if (field.type === 'boolean') {
                             return value === 'true' ? 1 : 0;
                         }
                         return value;
-                    }))
+                    })
                 ]);
             });
             void saveXLSX(workbook, 'volunteers');
@@ -478,31 +489,40 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
                 />
 
-                {customFields?.map(customField => {
-                    const filterValues = volunteers ? Object.keys(volunteers.data.reduce((acc, vol) => {
-                        const value = getCustomValue(vol, customField);
-                        acc[value] = true;
-                        return acc;
-                    }, {})) : [];
+                {customFields?.map((customField) => {
+                    const filterValues = volunteers
+                        ? Object.keys(
+                              volunteers.data.reduce((acc, vol) => {
+                                  const value = getCustomValue(vol, customField);
+                                  acc[value] = true;
+                                  return acc;
+                              }, {})
+                          )
+                        : [];
 
-                    const filters = customField.type === 'boolean' ? booleanFilters : filterValues.map(value => ({ value, text: value || '(пустое значение)' }));
+                    const filters =
+                        customField.type === 'boolean'
+                            ? booleanFilters
+                            : filterValues.map((value) => ({ value, text: value || '(пустое значение)' }));
 
-                    return <Table.Column
-                        key={customField.name}
-                        title={customField.name}
-                        filters={filters}
-                        onFilter={(value, vol) => {
-                            const currentValue = getCustomValue(vol, customField);
-                            return value === currentValue;
-                        }}
-                        render={(vol) => {
-                            const value = getCustomValue(vol, customField);
-                            if (customField.type === 'boolean') {
-                                return <ListBooleanPositive value={value} />;
-                            }
-                            return value;
-                        }}
-                    />
+                    return (
+                        <Table.Column
+                            key={customField.name}
+                            title={customField.name}
+                            filters={filters}
+                            onFilter={(value, vol) => {
+                                const currentValue = getCustomValue(vol, customField);
+                                return value === currentValue;
+                            }}
+                            render={(vol) => {
+                                const value = getCustomValue(vol, customField);
+                                if (customField.type === 'boolean') {
+                                    return <ListBooleanPositive value={value} />;
+                                }
+                                return value;
+                            }}
+                        />
+                    );
                 })}
             </Table>
         </List>
