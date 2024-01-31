@@ -162,7 +162,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     };
 
     useEffect(() => {
-        loadCustomFields();
+        void loadCustomFields();
     }, []);
 
     return (

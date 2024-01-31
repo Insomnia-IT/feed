@@ -144,7 +144,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     };
 
     useEffect(() => {
-        loadCustomFields();
+        void loadCustomFields();
     }, []);
 
     const kitchenNameById = useMemo(() => {
@@ -306,7 +306,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const handleClickCustomFields = useCallback((): void => {
         window.location.href = `${window.location.origin}/volunteer-custom-fields`;
-    }, []);;
+    }, []);
 
     const loadTransactions = async () => {
         const newFeededIds = {};
@@ -339,7 +339,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     return (
         <List>
             <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
-            <Form layout='inline' style={{ padding: "10px 0" }}>
+            <Form layout='inline' style={{ padding: '10px 0' }}>
                 <Form.Item>
                     <Button
                         type={'primary'}
@@ -351,21 +351,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     </Button>
                 </Form.Item>
                 <Form.Item>
-                    <Radio.Group
-                        value={filterUnfeededType}
-                        onChange={(e) => setfilterUnfeededType(e.target.value)}
-                    >
+                    <Radio.Group value={filterUnfeededType} onChange={(e) => setfilterUnfeededType(e.target.value)}>
                         <Radio.Button value=''>Все</Radio.Button>
                         <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
                         <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item>
-                    <Button
-                        onClick={handleClickCustomFields}
-                    >
-                        Кастомные поля
-                    </Button>
+                    <Button onClick={handleClickCustomFields}>Кастомные поля</Button>
                 </Form.Item>
             </Form>
             <Table

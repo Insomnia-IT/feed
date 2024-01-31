@@ -11,7 +11,7 @@ const useSaveConfirm = (
     saveButtonProps: ButtonProps & {
         onClick: () => void;
     }
-): { onClick: () => void; renderModal: () => JSX.Element } => {
+): { onClick: () => Promise<void>; renderModal: () => JSX.Element } => {
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
     );
