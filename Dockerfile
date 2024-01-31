@@ -25,9 +25,6 @@ RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 RUN echo "yarn cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
 
 RUN apk add --no-cache build-base libffi-dev icu-dev sqlite-dev
-COPY ./packages/api/icu/icu.c /app/packages/api/icu/
-RUN gcc -fPIC -shared packages/api/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o packages/api/icu/libSqliteIcu.so
-RUN ls -1al /app/packages/api/icu
 
 ENV YARN_CACHE_FOLDER=/root/.yarn
 COPY nginx.conf /app/
@@ -42,7 +39,6 @@ COPY ./yarn.lock /app/yarn.lock
 COPY ./packages/admin/package.json /app/packages/admin/package.json
 COPY ./packages/admin/next-i18next.config.mjs /app/packages/admin/next-i18next.config.mjs
 COPY ./packages/admin/next.config.mjs /app/packages/admin/next.config.mjs
-COPY ./packages/api/package.json /app/packages/api/package.json
 COPY ./packages/core/package.json /app/packages/core/package.json
 COPY ./packages/ui/package.json /app/packages/ui/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
@@ -90,12 +86,6 @@ COPY --from=builder /app/postcss.config.js /app/
 COPY --from=builder /app/tsconfig.json /app/
 COPY --from=builder /app/tsconfig.paths.json /app/
 COPY --from=builder /app/package.json /app/
-
-COPY --from=builder /app/packages/api/.env.example /app/packages/api/.env
-COPY --from=builder /app/packages/api/package.json /app/packages/api/
-COPY --from=builder /app/packages/api/dist/ /app/packages/api/dist/
-COPY --from=builder /app/packages/api/tsconfig.json /app/packages/api/
-COPY --from=builder /app/packages/api/seed.js /app/packages/api/
 
 COPY --from=builder /app/packages/core/package.json /app/packages/core/
 COPY --from=builder /app/packages/core/webpack/ /app/packages/core/webpack/
