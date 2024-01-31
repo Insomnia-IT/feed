@@ -5,8 +5,8 @@ import assert from 'assert';
 
 import env from '../core/webpack/env.js';
 
-console.log(process.env.API_URL_ENV);
-assert(process.env.API_URL_ENV, 'env variables must be set');
+console.log(process.env.NEW_API_URL_ENV);
+assert(process.env.NEW_API_URL_ENV, 'env variables must be set');
 
 // TODO check https://github.com/vercel/next.js/issues/39161
 
