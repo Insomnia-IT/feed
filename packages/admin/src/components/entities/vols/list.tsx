@@ -1,9 +1,8 @@
-import type { FilterDropdownProps, MenuProps, TablePaginationConfig } from '@pankod/refine-antd';
+import type { FilterDropdownProps, TablePaginationConfig } from '@pankod/refine-antd';
 import {
     DateField,
     DatePicker,
     DeleteButton,
-    Dropdown,
     EditButton,
     FilterDropdown,
     Form,
@@ -28,10 +27,18 @@ import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 
-import type { ColorTypeEntity, DepartmentEntity, FeedTypeEntity, KitchenEntity, VolEntity } from '~/interfaces';
+import type {
+    ColorTypeEntity,
+    CustomFieldEntity,
+    DepartmentEntity,
+    FeedTypeEntity,
+    KitchenEntity,
+    VolEntity
+} from '~/interfaces';
 import { formDateFormat, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
+import { dataProvider } from '~/dataProvider';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -50,6 +57,16 @@ export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
         day < dayjs(vol.active_from).startOf('day').add(7, 'hours') ||
         day > dayjs(vol.active_to).endOf('day').add(7, 'hours')
     );
+};
+
+const getCustomValue = (vol, customField) => {
+    const value =
+        vol.custom_field_values.find((customFieldValue) => customFieldValue.custom_field === customField.id)?.value ||
+        '';
+    if (customField.type === 'boolean') {
+        return value === 'true';
+    }
+    return value;
 };
 
 const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
@@ -115,6 +132,20 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const { data: colors, isLoading: colorsIsLoading } = useList<ColorTypeEntity>({
         resource: 'colors'
     });
+
+    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+
+    const loadCustomFields = async () => {
+        const { data } = await dataProvider.getList<CustomFieldEntity>({
+            resource: 'volunteer-custom-fields'
+        });
+
+        setCustomFields(data);
+    };
+
+    useEffect(() => {
+        void loadCustomFields();
+    }, []);
 
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
@@ -231,7 +262,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 'Тип питания',
                 'Веган/мясоед',
                 'Комментарий',
-                'Цвет бейджа'
+                'Цвет бейджа',
+                ...customFields?.map((field) => field.name)
             ];
             sheet.addRow(header);
 
@@ -252,7 +284,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
-                    vol.color_type ? colorNameById[vol.color_type] : ''
+                    vol.color_type ? colorNameById[vol.color_type] : '',
+                    ...customFields?.map((field) => {
+                        const value =
+                            vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)?.value ||
+                            '';
+                        if (field.type === 'boolean') {
+                            return value === 'true' ? 1 : 0;
+                        }
+                        return value;
+                    })
                 ]);
             });
             void saveXLSX(workbook, 'volunteers');
@@ -262,6 +303,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
     }, [createAndSaveXLSX]);
+
+    const handleClickCustomFields = useCallback((): void => {
+        window.location.href = `${window.location.origin}/volunteer-custom-fields`;
+    }, []);
 
     const loadTransactions = async () => {
         const newFeededIds = {};
@@ -294,36 +339,34 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     return (
         <List>
             <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            <Form layout='inline' style={{ padding: '10px 0' }}>
+                <Form.Item>
+                    <Button
+                        type={'primary'}
+                        onClick={handleClickDownload}
+                        icon={<DownloadOutlined />}
+                        disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
+                    >
+                        Выгрузить
+                    </Button>
+                </Form.Item>
+                <Form.Item>
+                    <Radio.Group value={filterUnfeededType} onChange={(e) => setfilterUnfeededType(e.target.value)}>
+                        <Radio.Button value=''>Все</Radio.Button>
+                        <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
+                        <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item>
+                    <Button onClick={handleClickCustomFields}>Кастомные поля</Button>
+                </Form.Item>
+            </Form>
             <Table
                 scroll={{ x: '100%' }}
                 pagination={pagination}
                 loading={volunteersIsLoading || feededIsLoading}
                 dataSource={filteredData}
                 rowKey='id'
-                footer={() => (
-                    <Form layout='inline'>
-                        <Form.Item>
-                            <Button
-                                type={'primary'}
-                                onClick={handleClickDownload}
-                                icon={<DownloadOutlined />}
-                                disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
-                            >
-                                Выгрузить
-                            </Button>
-                        </Form.Item>
-                        <Form.Item>
-                            <Radio.Group
-                                value={filterUnfeededType}
-                                onChange={(e) => setfilterUnfeededType(e.target.value)}
-                            >
-                                <Radio.Button value=''>Все</Radio.Button>
-                                <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
-                                <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
-                            </Radio.Group>
-                        </Form.Item>
-                    </Form>
-                )}
             >
                 <Table.Column<DepartmentEntity>
                     title=''
@@ -446,6 +489,42 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     title='Комментарий'
                     render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
                 />
+
+                {customFields?.map((customField) => {
+                    const filterValues = volunteers
+                        ? Object.keys(
+                              volunteers.data.reduce((acc, vol) => {
+                                  const value = getCustomValue(vol, customField);
+                                  acc[value] = true;
+                                  return acc;
+                              }, {})
+                          )
+                        : [];
+
+                    const filters =
+                        customField.type === 'boolean'
+                            ? booleanFilters
+                            : filterValues.map((value) => ({ value, text: value || '(пустое значение)' }));
+
+                    return (
+                        <Table.Column
+                            key={customField.name}
+                            title={customField.name}
+                            filters={filters}
+                            onFilter={(value, vol) => {
+                                const currentValue = getCustomValue(vol, customField);
+                                return value === currentValue;
+                            }}
+                            render={(vol) => {
+                                const value = getCustomValue(vol, customField);
+                                if (customField.type === 'boolean') {
+                                    return <ListBooleanPositive value={value} />;
+                                }
+                                return value;
+                            }}
+                        />
+                    );
+                })}
             </Table>
         </List>
     );

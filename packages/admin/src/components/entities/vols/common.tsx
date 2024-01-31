@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 
 import type {
     ColorTypeEntity,
+    CustomFieldEntity,
     DepartmentEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
@@ -150,6 +151,20 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         };
     }, [form]);
 
+    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+
+    const loadCustomFields = async () => {
+        const { data } = await dataProvider.getList<CustomFieldEntity>({
+            resource: 'volunteer-custom-fields'
+        });
+
+        setCustomFields(data);
+    };
+
+    useEffect(() => {
+        void loadCustomFields();
+    }, []);
+
     return (
         <>
             <Row gutter={[16, 16]}>
@@ -275,6 +290,32 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     <Form.Item label='Групповой бейдж' name='group_badge'>
                         <Select allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
                     </Form.Item>
+                    {customFields.map(({ id, name, type }) => {
+                        const handleChange = (e) => {
+                            const value = e.target[type === 'boolean' ? 'checked' : 'value'];
+                            form.setFieldValue(['updated_custom_fields', id.toString()], value);
+                        };
+                        const customFieldValues = form.getFieldValue('custom_field_values');
+                        if (!customFieldValues) return null;
+                        const customFieldValue = customFieldValues.find(({ custom_field }) => custom_field === id);
+                        debugger;
+                        return (
+                            <Form.Item key={name} label={name}>
+                                {type === 'boolean' && (
+                                    <Checkbox
+                                        defaultChecked={customFieldValue ? customFieldValue.value === 'true' : false}
+                                        onChange={handleChange}
+                                    />
+                                )}
+                                {type === 'string' && (
+                                    <Input
+                                        defaultValue={customFieldValue ? customFieldValue.value : ''}
+                                        onChange={handleChange}
+                                    />
+                                )}
+                            </Form.Item>
+                        );
+                    })}
                 </Col>
             </Row>
             <Modal
