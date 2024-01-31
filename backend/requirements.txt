@@ -11,5 +11,5 @@ requests
 arrow
 drf-spectacular
 python-dotenv
-sentry-sdk
+sentry-sdk == 1.39.1
 dj-rest-auth
