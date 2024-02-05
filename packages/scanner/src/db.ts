@@ -12,6 +12,7 @@ export interface Transaction {
     is_new: boolean;
     is_vegan?: boolean;
     reason?: string | null;
+    kitchen: number;
 }
 
 export interface ServerTransaction {
@@ -21,6 +22,7 @@ export interface ServerTransaction {
     dtime: string;
     meal_time: MealTime;
     is_vegan: boolean;
+    kitchen: number;
 }
 
 export interface TransactionJoined extends Transaction {
@@ -68,7 +70,7 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 13;
+const DB_VERSION = 14;
 
 export class MySubClassedDexie extends Dexie {
     transactions!: Table<Transaction>;
@@ -78,9 +80,8 @@ export class MySubClassedDexie extends Dexie {
     constructor() {
         super('yclins');
         this.version(DB_VERSION).stores({
-            transactions: '&&ulid, vol_id, amount, ts, mealTime, is_new, is_vegan',
-            volunteers:
-                '&qr, *id, name, nickname, balance, is_blocked, is_active, is_vegan, feed_type, active_from, active_to, departments, location, kitchen, group_badge, *transactions',
+            transactions: '&&ulid, ts',
+            volunteers: '&qr, *id, group_badge, *transactions',
             groupBadges: 'id, &qr'
         });
     }
@@ -88,15 +89,22 @@ export class MySubClassedDexie extends Dexie {
 
 export const db = new MySubClassedDexie();
 
-export const addTransaction = async (
-    vol: Volunteer | undefined,
-    mealTime: MealTime,
-    isVegan: boolean | undefined,
+export const addTransaction = async ({
+    isVegan,
+    kitchenId,
+    log,
+    mealTime,
+    vol
+}: {
+    vol: Volunteer | undefined;
+    mealTime: MealTime;
+    isVegan: boolean | undefined;
+    kitchenId: number;
     log?: {
         error: boolean;
         reason: string;
-    }
-): Promise<any> => {
+    };
+}): Promise<any> => {
     const ts = dayjs().unix();
     let amount = 1;
     let reason: string | null = null;
@@ -110,6 +118,7 @@ export const addTransaction = async (
         vol_id: vol ? vol.id : null,
         is_vegan: vol ? vol.is_vegan : isVegan,
         ts,
+        kitchen: kitchenId,
         amount: amount,
         ulid: ulid(ts),
         mealTime: MealTime[mealTime],
@@ -118,15 +127,22 @@ export const addTransaction = async (
     });
 };
 
-export const dbIncFeed = async (
-    vol: Volunteer | undefined,
-    mealTime: MealTime,
-    isVegan: boolean | undefined,
+export const dbIncFeed = async ({
+    isVegan,
+    kitchenId,
+    log,
+    mealTime,
+    vol
+}: {
+    vol: Volunteer | undefined;
+    mealTime: MealTime;
+    isVegan: boolean | undefined;
     log?: {
         error: boolean;
         reason: string;
-    }
-): Promise<any> => {
+    };
+    kitchenId: number;
+}): Promise<any> => {
     if (vol) {
         await db.volunteers
             .where('id')
@@ -136,7 +152,7 @@ export const dbIncFeed = async (
             });
     }
 
-    return await addTransaction(vol, mealTime, isVegan, log);
+    return await addTransaction({ vol, mealTime, isVegan, log, kitchenId });
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {

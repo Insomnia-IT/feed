@@ -1,9 +1,9 @@
 .scanSimulatorBlock {
-    display: flex;
-    gap: 5px;
     position: absolute;
     top: 20vh;
     z-index: 1000;
+    display: flex;
+    gap: 5px;
 
     button {
         font-size: 0.8em;
@@ -14,7 +14,7 @@
     }
 
     select {
-        width: 100px;
         align-self: center;
+        width: 100px;
     }
 }

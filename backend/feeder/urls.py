@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include(router.urls)),
     # path('update-balance', views.UpdateBalance.as_view()),
     path('feed-transaction/bulk', views.FeedTransactionBulk.as_view()), 
+    path('feed-transaction/sync', views.SyncWithFeeder.as_view()), 
     path('statistics/', views.Statistics.as_view()),
     path('notion-sync', views.SyncWithNotion.as_view()),
 ]

@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiParameter,
 
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import transaction
 
 from feeder import serializers, models
 from feeder.utils import sync_with_notion, calculate_statistics, STAT_DATE_FORMAT
@@ -63,6 +64,8 @@ class VolunteerFilter(django_filters.FilterSet):
     phone = django_filters.CharFilter(field_name="phone", lookup_expr='icontains')
     email = django_filters.CharFilter(field_name="email", lookup_expr='icontains')
     qr = django_filters.CharFilter(field_name="qr", lookup_expr='iexact')
+    is_active = django_filters.CharFilter(field_name="is_active", lookup_expr='iexact')
+    updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
     class Meta:
         model = models.Volunteer
@@ -95,12 +98,17 @@ class LocationViewSet(viewsets.ModelViewSet):
     search_fields = ['name', ]
 
 
+class GroupBadgeFilter(django_filters.FilterSet):
+    created_at__from = django_filters.IsoDateTimeFilter(field_name="created_at", lookup_expr='gte')
+
+
 class GroupBadgeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.GroupBadge.objects.all()
     serializer_class = serializers.GroupBadgeSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
+    filterset_class = GroupBadgeFilter
 
 class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
@@ -203,6 +211,48 @@ class FeedTransactionBulk(APIView):
 
         return Response(
             serializers.SimpleResponse({'success': True}).data
+        )
+    
+class SyncWithFeeder(APIView):
+    """
+    Синхронизация транзакций с базой данных Кормителя
+    """
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @extend_schema(
+        request=serializers.SyncWithFeederRequestSerializer(),
+        responses={
+            200: serializers.SyncWithFeederResponseSerializer()
+        },
+    )
+    
+    @transaction.atomic
+    def post(self, request):
+        serializer = serializers.SyncWithFeederRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_client_txs = serializer.data.get('transactions')
+        last_updated = serializer.data.get('last_updated')
+        kitchen_id = serializer.data.get('kitchen_id')
+
+        # Выбираем новые транзакции для Кормителя
+        new_server_txs = list(models.FeedTransaction.objects.filter(created_at__gt=last_updated, kitchen_id=kitchen_id))
+        # Записываем новые клиентские транзакции в бд
+        new_client_txs_serializer = serializers.FeedTransactionSerializer(data=new_client_txs, many=True)
+        new_client_txs_serializer.is_valid(raise_exception=True)
+        new_client_txs_serializer.save()
+
+        last_tx = models.FeedTransaction.objects.order_by('created_at').last()
+ 
+        result = {}
+        
+        result['transactions'] = new_server_txs
+        if (last_tx):
+        # last_updated - Время записи последней транзакции
+            result['last_updated'] = last_tx.created_at
+        
+        return Response(
+            serializers.SyncWithFeederResponseSerializer(result).data
         )
 
 

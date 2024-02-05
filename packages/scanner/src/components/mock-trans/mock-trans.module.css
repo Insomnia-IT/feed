@@ -1,9 +1,9 @@
 .mockBlock {
+    position: absolute;
+    right: 2vw;
+    bottom: 10vh;
     display: flex;
     gap: 5px;
-    position: absolute;
-    bottom: 10vh;
-    right: 2vw;
 
     button {
         font-size: 0.8em;

@@ -9,16 +9,16 @@ button {
 }
 
 .anon {
-    padding: 10px;
     position: absolute;
     bottom: 20vh;
+    padding: 10px;
 }
 
 .app {
     font-size: var(--fs);
 
     h2 {
-        margin: 15px 0 10px 0;
+        margin: 15px 0 10px;
         text-align: center;
     }
 
@@ -26,7 +26,7 @@ button {
         position: relative;
         width: 100vw;
         height: 100vh;
-        max-height: -webkit-fill-available;
+        max-height: fill-available;
 
         &.main {
             display: flex;
@@ -37,11 +37,11 @@ button {
         }
 
         &.history {
-            /*background-color: var(--c-yellow);*/
+            /* background-color: var(--c-yellow); */
         }
 
         &.stats {
-            /*background-color: var(--c-blue);*/
+            /* background-color: var(--c-blue); */
         }
     }
 }
@@ -51,8 +51,8 @@ button {
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-    font-size: 2em;
     height: 400px;
+    font-size: 2em;
 
     input {
         width: 90vw;

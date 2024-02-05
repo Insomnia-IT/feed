@@ -1,19 +1,19 @@
 .groupBadgeInfo {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
 
-	.total {
-			font-weight: bold;
-	}
+    .total {
+        font-weight: bold;
+    }
 
-	.fact {
-			font-size: 0.75em;
-	}
+    .fact {
+        font-size: 0.75em;
+    }
 }
 
 .feedTypeInfo {
-	display: flex;
+    display: flex;
     flex-direction: row;
     gap: 2em;
     justify-content: space-between;
@@ -34,25 +34,25 @@
 }
 
 .volunteerList {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25em;
-	font-size: 0.6em;
-	align-items: end;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+    align-items: end;
+    font-size: 0.6em;
 
-	.title {
-		&.red {
-			background-color: var(--c-red);
-		}
+    .title {
+        &.red {
+            background-color: var(--c-red);
+        }
 
-		&.green {
-			background-color: var(--c-green);
-		}
-	}
+        &.green {
+            background-color: var(--c-green);
+        }
+    }
 
-	.volonteerListItem {
-		display: flex;
-		flex-direction: row;
-		gap: 5em;
-	}
+    .volonteerListItem {
+        display: flex;
+        flex-direction: row;
+        gap: 5em;
+    }
 }

@@ -9,14 +9,14 @@ import { getMealTimeText } from '~/lib/utils';
 export const validateVol = (
     vol: Volunteer,
     volTransactions: Array<Transaction>,
-    kitchenId: string,
+    kitchenId: number,
     mealTime: MealTime,
     isGroupScan: boolean
 ): { msg: Array<string>; isRed: boolean } => {
     const msg: Array<string> = [];
     let isRed = false;
 
-    if (vol.feed_type !== FeedType.Child && vol.kitchen.toString() !== kitchenId) {
+    if (vol.feed_type !== FeedType.Child && vol.kitchen.toString() !== kitchenId.toString()) {
         msg.push(`Кормится на кухне №${vol.kitchen}`);
     }
     if (!vol.is_active) {
@@ -73,19 +73,24 @@ export const validateVol = (
 
 export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
 
-export const useFeedVol = (vol: Volunteer | undefined, mealTime: MealTime | null, closeFeed: () => void) => {
+export const useFeedVol = (
+    vol: Volunteer | undefined,
+    mealTime: MealTime | null,
+    closeFeed: () => void,
+    kitchenId: number
+) => {
     const feed = useCallback(
         async (isVegan: boolean | undefined, log?: { error: boolean; reason: string }) => {
             if (mealTime) {
                 try {
-                    await dbIncFeed(vol, mealTime, isVegan, log);
+                    await dbIncFeed({ vol, mealTime, isVegan, log, kitchenId });
                     closeFeed();
                 } catch (e) {
                     console.error(e);
                 }
             }
         },
-        [closeFeed, vol]
+        [closeFeed, mealTime, vol]
     );
 
     return [

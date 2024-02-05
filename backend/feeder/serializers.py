@@ -167,6 +167,17 @@ class StatisticsResponseSerializer(serializers.Serializer):
     kitchen_id = serializers.IntegerField(allow_null=True)
 
 
+class SyncWithFeederRequestSerializer(serializers.Serializer):
+    last_updated = serializers.DateTimeField(allow_null=True)
+    transactions = FeedTransactionSerializer(many=True)
+    kitchen_id = serializers.IntegerField(allow_null=True)
+
+
+class SyncWithFeederResponseSerializer(serializers.Serializer):
+    last_updated = serializers.DateTimeField(allow_null=True)
+    transactions = FeedTransactionSerializer(many=True)
+
+
 class SimpleResponse(serializers.Serializer):
     success = serializers.BooleanField()
 

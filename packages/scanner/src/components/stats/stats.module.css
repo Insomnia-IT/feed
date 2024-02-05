@@ -1,8 +1,8 @@
 .statsInfoWrapper {
-    padding: 5px 5px 0 5px;
     display: flex;
     justify-content: space-between;
     align-items: start;
+    padding: 5px 5px 0;
 }
 
 .loading {

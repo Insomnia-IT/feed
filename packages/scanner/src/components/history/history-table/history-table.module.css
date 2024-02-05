@@ -8,26 +8,26 @@
         position: sticky;
         top: 0;
         background-color: var(--c-dark);
-        color: #fff;
+        color: rgb(255 255 255);
 
         th {
             padding: 10px;
+            border: 1px solid rgb(208 208 208);
+            border-top: none;
             font-weight: 500;
             text-align: left;
-            border: 1px solid #d0d0d0;
-            border-top: none;
         }
     }
 
-tbody {
-    tr:nth-child(even) {
-        background-color: var(--c-light);
-    }
+    tbody {
+        tr:nth-child(even) {
+            background-color: var(--c-light);
+        }
 
         td {
             padding: 10px;
+            border: 1px solid rgb(208 208 208);
             text-align: left;
-            border: 1px solid #d0d0d0;
         }
     }
 }

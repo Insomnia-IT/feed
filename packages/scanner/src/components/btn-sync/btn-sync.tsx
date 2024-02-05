@@ -13,23 +13,21 @@ import css from './btn-sync.module.css';
 const SYNC_INTERVAL = 2 * 60 * 1000;
 
 export const BtnSync: React.FC = () => {
-    const { pin, setAuth, setLastUpdated, setVolCount } = useContext(AppContext);
+    const { deoptimizedSync, lastSyncStart, pin, setAuth, setLastSyncStart, setVolCount } = useContext(AppContext);
     const { error, fetching, send, updated } = useSync(API_DOMAIN, pin, setAuth);
 
-    console.log({ error, fetching, updated });
-
     const click = useCallback(() => {
-        void send();
-    }, [send]);
+        void send({ lastSyncStart });
+    }, [send, lastSyncStart]);
 
     useEffect(() => {
         if (updated && !fetching) {
-            setLastUpdated(updated);
+            setLastSyncStart(updated);
             void db.volunteers.count().then((c) => {
                 setVolCount(c);
             });
         }
-    }, [fetching, setLastUpdated, setVolCount, updated]);
+    }, [fetching, setLastSyncStart, setVolCount, updated]);
 
     useEffect(() => {
         // TODO detect hanged requests
@@ -37,14 +35,14 @@ export const BtnSync: React.FC = () => {
             // clearTimeout(timer);
             if (navigator.onLine) {
                 console.log('online, updating...');
-                void send();
+                void send({ lastSyncStart });
             }
         };
 
         const timer = setInterval(sync, SYNC_INTERVAL);
 
         return () => clearInterval(timer);
-    }, [send]);
+    }, [send, lastSyncStart]);
 
     const success = !error && updated;
 
@@ -54,6 +52,7 @@ export const BtnSync: React.FC = () => {
             onClick={fetching ? nop : click}
             disabled={fetching}
         >
+            {deoptimizedSync === '1' && <div className={css.deoptimizedIcon}></div>}
             <Refresh />
         </button>
     );
