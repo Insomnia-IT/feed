@@ -71,6 +71,13 @@ class VolunteerFilter(django_filters.FilterSet):
         model = models.Volunteer
         fields = ['departments', 'color_type', 'feed_type', 'kitchen', 'group_badge']
 
+class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
+    id__in = NumberInFilter(field_name='id', lookup_expr='in')
+
+    class Meta:
+        model = models.VolunteerCustomFieldValue
+        fields = ['custom_field', 'volunteer']
+
 class VolunteerViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.Volunteer.objects.all()
@@ -102,6 +109,20 @@ class GroupBadgeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
     filterset_class = GroupBadgeFilter
+
+class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.VolunteerCustomField.objects.all()
+    serializer_class = serializers.VolunteerCustomFieldSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', ]
+
+class VolunteerCustomFieldValueViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.VolunteerCustomFieldValue.objects.all()
+    serializer_class = serializers.VolunteerCustomFieldValueSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = VolunteerCustomFieldValueFilter
 
 
 class ColorViewSet(viewsets.ModelViewSet):

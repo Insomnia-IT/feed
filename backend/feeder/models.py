@@ -111,6 +111,30 @@ class GroupBadge(TimeMixin, CommentMixin, NameMixin):
         verbose_name = "Групповой бейдж"
         verbose_name_plural = "Групповые бейджи"
 
+class VolunteerCustomField(TimeMixin, CommentMixin):
+    name = models.CharField(verbose_name='Название', unique=True, max_length=100)
+    type = models.CharField(verbose_name='Тип данных', max_length=20)
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Кастомное поле волонтера"
+        verbose_name_plural = "Кастомные поля волонтера"
+
+
+class VolunteerCustomFieldValue(TimeMixin):
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, verbose_name="Волонтер", related_name="custom_field_values")
+    custom_field = models.ForeignKey(VolunteerCustomField, on_delete=models.CASCADE, verbose_name="Кастомное поле")
+    value = models.TextField(verbose_name='Значение')
+    def __str__(self):
+        return self.value
+
+    class Meta:
+        verbose_name = "Значение кастомного поля волонтера"
+        verbose_name_plural = "Значения кастомных полей волонтера"
+        constraints = [
+            models.UniqueConstraint(fields=['volunteer', 'custom_field'], name='unique fields')
+        ]
 
 class Location(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название", db_index=True)

@@ -15,16 +15,17 @@ ac
         'sync',
         'stats',
         'group-badges',
+        'volunteer-custom-fields',
         'scanner-page'
     ])
-    .create('departments', 'group-badges')
-    .update('departments', 'group-badges')
+    .create(['departments', 'group-badges', 'volunteer-custom-fields'])
+    .update(['departments', 'group-badges', 'volunteer-custom-fields'])
     // admin
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.EDITOR)
-    .create(['departments', 'volunteers', 'locations', 'feed-transaction', 'group-badges'])
-    .update(['departments', 'volunteers', 'locations', 'group-badges'])
-    .delete(['departments', 'volunteers', 'locations', 'feed-transaction', 'group-badges']);
+    .create(['departments', 'volunteers', 'locations', 'feed-transaction', 'group-badges', 'volunteer-custom-fields'])
+    .update(['departments', 'volunteers', 'locations', 'group-badges', 'volunteer-custom-fields'])
+    .delete(['departments', 'volunteers', 'locations', 'feed-transaction', 'group-badges', 'volunteer-custom-fields']);
 
 export const ACL = {
     can: async ({ action, resource }) => {

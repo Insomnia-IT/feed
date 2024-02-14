@@ -29,6 +29,13 @@ import { PublicStatistic } from '~/components/entities/statistic';
 
 // import enUS from 'antd/lib/locale-provider/ru_RU';
 
+import {
+    VolunteerCustomFieldCreate,
+    VolunteerCustomFieldEdit,
+    VolunteerCustomFieldList,
+    VolunteerCustomFieldShow
+} from '~/components/entities/volunteer-custom-fields';
+
 // eslint-disable-next-line no-restricted-imports
 import { i18n } from '../../next-i18next.config.mjs';
 
@@ -78,6 +85,17 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                         edit: VolEdit,
                         show: VolShow,
                         icon: <Icons.UserOutlined />
+                    },
+                    {
+                        name: 'volunteer-custom-fields',
+                        list: VolunteerCustomFieldList,
+                        create: VolunteerCustomFieldCreate,
+                        edit: VolunteerCustomFieldEdit,
+                        show: VolunteerCustomFieldShow,
+                        icon: <Icons.InsertRowRightOutlined />,
+                        options: {
+                            hide: true
+                        }
                     },
                     {
                         name: 'departments',

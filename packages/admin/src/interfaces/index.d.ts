@@ -1,5 +1,6 @@
 export interface VolEntity {
     id: number;
+    custom_field_values: Array<{ custom_field: number; value: string }>;
     uuid?: string;
     qr?: string;
     name?: string;
@@ -66,10 +67,34 @@ export interface GroupBadgeEntity {
     comment?: string;
 }
 
+export interface VolunteerCustomFieldEntity {
+    id: number;
+    name: string;
+    comment?: string;
+}
+
 export interface DepartmentEntity {
     id: number;
     name: string;
     lead: number | null;
 }
 
-export { LocationEntity } from '@feed/api/src/entities/location.entity';
+export interface LocationEntity {
+    id: number;
+    name: string;
+    vol: VolEntity;
+}
+
+export interface CustomFieldEntity {
+    id: number;
+    name: string;
+    type: string;
+    comment: string;
+}
+
+export interface VolCustomFieldValueEntity {
+    id: number;
+    volunteer: number;
+    custom_field: number;
+    value: string;
+}
