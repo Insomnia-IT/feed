@@ -63,7 +63,7 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
             }
 
             setError(e);
-            console.error(error);
+            console.error(e);
             return Promise.reject(e);
         } finally {
             setFetching(false);

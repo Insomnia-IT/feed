@@ -54,12 +54,14 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                     setError(null);
                     setUpdated(updateTimeStart);
                     res(true);
+                    return;
                 };
 
                 const error = (err): void => {
                     setError(err);
                     setFetching(false);
                     rej(err);
+                    return;
                 };
 
                 try {
@@ -90,14 +92,15 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                             groupBadgesPromise,
                             syncTransactionsPromise
                         ]);
-                        results.forEach((res) => {
-                            if (res.status === 'rejected') {
-                                error(res.reason);
-                            }
-                        });
+                        const rejected = results.find((res) => res.status === 'rejected');
+                        if (rejected) {
+                            //@ts-ignore
+                            error(rejected?.reason);
+                        } else {
+                            success();
+                        }
                     }
                     console.timeEnd('Время синхронизации');
-                    success();
                 } catch (e) {
                     error(e);
                 }
