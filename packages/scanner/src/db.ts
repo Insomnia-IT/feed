@@ -80,7 +80,7 @@ export class MySubClassedDexie extends Dexie {
     constructor() {
         super('yclins');
         this.version(DB_VERSION).stores({
-            transactions: '&&ulid, ts',
+            transactions: '&&ulid, vol_id, ts',
             volunteers: '&qr, *id, group_badge, *transactions',
             groupBadges: 'id, &qr'
         });

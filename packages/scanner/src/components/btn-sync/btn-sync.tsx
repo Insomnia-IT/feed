@@ -16,9 +16,15 @@ export const BtnSync: React.FC = () => {
     const { deoptimizedSync, lastSyncStart, pin, setAuth, setLastSyncStart, setVolCount } = useContext(AppContext);
     const { error, fetching, send, updated } = useSync(API_DOMAIN, pin, setAuth);
 
-    const click = useCallback(() => {
-        void send({ lastSyncStart });
-    }, [send, lastSyncStart]);
+    const success = !error && updated;
+
+    const doSync = async () => {
+        try {
+            await send({ lastSyncStart });
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     useEffect(() => {
         if (updated && !fetching) {
@@ -35,21 +41,23 @@ export const BtnSync: React.FC = () => {
             // clearTimeout(timer);
             if (navigator.onLine) {
                 console.log('online, updating...');
-                void send({ lastSyncStart });
+                void doSync();
             }
         };
 
         const timer = setInterval(sync, SYNC_INTERVAL);
 
         return () => clearInterval(timer);
-    }, [send, lastSyncStart]);
+    }, [send, lastSyncStart, doSync]);
 
-    const success = !error && updated;
+    const handleClick = useCallback(() => {
+        void doSync();
+    }, [doSync]);
 
     return (
         <button
             className={cn(css.btnSync, error && css.error, success && css.success)}
-            onClick={fetching ? nop : click}
+            onClick={fetching ? nop : handleClick}
             disabled={fetching}
         >
             {deoptimizedSync === '1' && <div className={css.deoptimizedIcon}></div>}

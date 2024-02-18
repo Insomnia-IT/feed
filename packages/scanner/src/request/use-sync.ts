@@ -54,12 +54,14 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                     setError(null);
                     setUpdated(updateTimeStart);
                     res(true);
+                    return;
                 };
 
                 const error = (err): void => {
                     setError(err);
                     setFetching(false);
                     rej(err);
+                    return;
                 };
 
                 try {
@@ -75,19 +77,30 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                         await getTransSend();
                     } else {
                         console.log('%c Новый алгоритм ', 'background: green; color: white;');
-                        await volsSend({
+
+                        const volsPromise = volsSend({
                             updated_at__from: new Date(lastSyncStart).toISOString(),
-                            is_active: '1',
                             limit: '10000'
                         });
-                        await groupBadgesSend({
+                        const groupBadgesPromise = groupBadgesSend({
                             created_at__from: new Date(lastSyncStart).toISOString(),
                             limit: '1000'
                         });
-                        await syncTransactionsSend();
+                        const syncTransactionsPromise = syncTransactionsSend();
+                        const results = await Promise.allSettled([
+                            volsPromise,
+                            groupBadgesPromise,
+                            syncTransactionsPromise
+                        ]);
+                        const rejected = results.find((res) => res.status === 'rejected');
+                        if (rejected) {
+                            //@ts-ignore
+                            error(rejected?.reason);
+                        } else {
+                            success();
+                        }
                     }
                     console.timeEnd('Время синхронизации');
-                    success();
                 } catch (e) {
                     error(e);
                 }
