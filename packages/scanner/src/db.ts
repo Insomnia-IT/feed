@@ -70,7 +70,7 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 14;
+const DB_VERSION = 15;
 
 export class MySubClassedDexie extends Dexie {
     transactions!: Table<Transaction>;
