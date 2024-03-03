@@ -31,10 +31,15 @@ export const CustomSider: FC = () => {
 
     const [userName, setUserName] = useState();
 
-    useEffect(() => {
-        authProvider.getUserIdentity?.().then((user) => {
+    const loadUserName = async () => {
+        if (authProvider.getUserIdentity) {
+            const user = await authProvider.getUserIdentity();
             setUserName(user.username);
-        });
+        }
+    };
+
+    useEffect(() => {
+        void loadUserName();
     }, []);
 
     const renderTreeView = (tree: Array<ITreeMenu>, selectedKey: string): React.ReactFragment =>

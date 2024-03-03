@@ -38,7 +38,7 @@ export const LoginPage: FC = () => {
 
     const loadingRef = useRef(false);
 
-    const onScan = useCallback(async (qr: string) => {
+    const onScan = useCallback((qr: string) => {
         if (loadingRef.current) {
             return;
         }
