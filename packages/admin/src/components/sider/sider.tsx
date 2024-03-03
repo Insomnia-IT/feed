@@ -8,8 +8,10 @@ import {
     useTranslate
 } from '@pankod/refine-core';
 import { LogoutOutlined, UnorderedListOutlined } from '@ant-design/icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { ITreeMenu } from '@pankod/refine-core';
+
+import { authProvider } from '~/authProvider';
 
 import { antLayoutSider, antLayoutSiderMobile } from './styles';
 
@@ -26,6 +28,14 @@ export const CustomSider: FC = () => {
     const breakpoint = Grid.useBreakpoint();
 
     const isMobile = typeof breakpoint.lg === 'undefined' ? false : !breakpoint.lg;
+
+    const [userName, setUserName] = useState();
+
+    useEffect(() => {
+        authProvider.getUserIdentity?.().then((user) => {
+            setUserName(user.username);
+        });
+    }, []);
 
     const renderTreeView = (tree: Array<ITreeMenu>, selectedKey: string): React.ReactFragment =>
         tree.map((item: ITreeMenu) => {
@@ -76,6 +86,7 @@ export const CustomSider: FC = () => {
                     }
                 }}
             >
+                <Menu.Item>{userName}</Menu.Item>
                 {renderTreeView(menuItems, selectedKey)}
                 {isExistAuthentication && (
                     <Menu.Item key='logout' onClick={() => logout()} icon={<LogoutOutlined />}>

@@ -5,6 +5,8 @@ from rest_framework.authentication import TokenAuthentication as BaseTokenAuthen
 
 from feeder import models
 
+from feeder.models import Volunteer
+
 
 class KitchenPinAuthentication(BaseTokenAuthentication):
     keyword = 'K-PIN-CODE'
@@ -40,4 +42,41 @@ class KitchenUser(AnonymousUser):
 
     @property
     def is_kitchen(self):
+        return True
+    
+class QRAuthentication(BaseTokenAuthentication):
+    keyword = 'V-TOKEN'
+
+    def authenticate_credentials(self, key):
+
+        try:
+            volunteer = models.Volunteer.objects.get(qr=key)
+
+            user = QRUser()
+            user.id = volunteer.pk
+            user.username = volunteer.nickname
+            user.first_name = volunteer.name
+            user.last_name = volunteer.lastname
+
+        except models.Volunteer.DoesNotExist:
+            raise exceptions.AuthenticationFailed(_("Invalid token."))
+
+        return user, key
+
+
+class QRUser(AnonymousUser):
+    username = ""
+    first_name = ""
+    last_name = ""
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_volunteer(self):
         return True
