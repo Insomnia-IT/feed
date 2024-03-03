@@ -298,7 +298,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         const customFieldValues = form.getFieldValue('custom_field_values');
                         if (!customFieldValues) return null;
                         const customFieldValue = customFieldValues.find(({ custom_field }) => custom_field === id);
-                        debugger;
                         return (
                             <Form.Item key={name} label={name}>
                                 {type === 'boolean' && (

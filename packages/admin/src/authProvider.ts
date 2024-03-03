@@ -5,22 +5,35 @@ import { clearUserData, getUserData, setUserData, setUserInfo } from '~/auth';
 import { NEW_API_URL } from '~/const';
 
 export const authProvider: AuthProvider = {
-    login: async ({ password, username }) => {
+    login: async ({ isQR, password, username }) => {
         try {
             axios.defaults.headers.common = {};
 
-            const { data, status } = await axios.post(`${NEW_API_URL}/auth/login/`, {
-                username,
-                password
-            });
+            if (isQR && username && !password) {
+                const token = `V-TOKEN ${username}`;
+                const { data, status } = await axios.get(`${NEW_API_URL}/volunteers/?limit=1&qr=${username}`, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
 
-            if (status !== 200) return Promise.reject();
+                if (status !== 200) return Promise.reject();
 
-            const { key } = data;
+                setUserData(token);
+            } else {
+                const { data, status } = await axios.post(`${NEW_API_URL}/auth/login/`, {
+                    username,
+                    password
+                });
 
-            setUserData(key);
+                if (status !== 200) return Promise.reject();
 
-            return Promise.resolve('/');
+                const { key } = data;
+
+                setUserData(key);
+            }
+
+            return Promise.resolve('/volunteers');
         } catch (e) {
             return Promise.reject(e);
         }

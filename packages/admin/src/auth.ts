@@ -12,7 +12,7 @@ export interface UserData {
     id?: number | string;
     exp: number;
     iat: number;
-    roles: Array<AppRoles>;
+    roles: Array<AppRoles.ADMIN | AppRoles.EDITOR>;
     username: string;
 }
 
@@ -29,7 +29,7 @@ export const getUserData = async <T extends true | false>(ctx, decode: T): Promi
     }
 
     axios.defaults.headers.common = {
-        Authorization: `Token ${token}`
+        Authorization: token.startsWith('V-TOKEN ') ? token : `Token ${token}`
     };
 
     return decode
@@ -45,7 +45,7 @@ export const setUserData = (token: string): void => {
         path: '/'
     });
     axios.defaults.headers.common = {
-        Authorization: `Token ${token}`
+        Authorization: token.startsWith('V-TOKEN ') ? token : `Token ${token}`
     };
     clearUserInfo();
 };
@@ -69,15 +69,38 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         new Promise(async (resolve, reject) => {
             try {
-                const { data } = await axios.get(`${NEW_API_URL}/auth/user/`, {
-                    headers: {
-                        Authorization: `Token ${token}`
-                    }
-                });
+                if (token.startsWith('V-TOKEN')) {
+                    const { data } = await axios.get(
+                        `${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`,
+                        {
+                            headers: {
+                                Authorization: token
+                            }
+                        }
+                    );
+                    const { id, lastname, name, nickname } = data.results[0];
+                    const userData: UserData = {
+                        username: nickname,
+                        id: id,
+                        roles: [AppRoles.ADMIN], // TODO
+                        exp: 0,
+                        iat: 0
+                    };
 
-                setUserInfo(data);
+                    setUserInfo(userData);
 
-                resolve(data);
+                    resolve(userData);
+                } else {
+                    const { data } = await axios.get(`${NEW_API_URL}/auth/user/`, {
+                        headers: {
+                            Authorization: `Token ${token}`
+                        }
+                    });
+
+                    setUserInfo(data);
+
+                    resolve(data);
+                }
             } catch (e) {
                 reject(e);
             } finally {
