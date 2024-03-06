@@ -74,6 +74,12 @@ class ColorSerializer(serializers.ModelSerializer):
         model = models.Color
         fields = '__all__'
 
+class AccessRoleSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = models.AccessRole
+        fields = '__all__'
 
 class FeedTypeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -193,5 +199,7 @@ class UserDetailSerializer(serializers.Serializer):
     def get_roles(self, user):
         if getattr(user, 'is_kitchen', None):
             return ["KITCHEN", ]
+        if getattr(user, 'is_volunteer', None):
+            return [getattr(user, 'access_role', None), ]
         if user.is_staff or user.is_superuser:
             return ["ADMIN", ]

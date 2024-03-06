@@ -52,11 +52,16 @@ class QRAuthentication(BaseTokenAuthentication):
         try:
             volunteer = models.Volunteer.objects.get(qr=key)
 
+            if not volunteer.access_role:
+                raise exceptions.AuthenticationFailed(_("No access rights"))
+
             user = QRUser()
             user.id = volunteer.pk
             user.username = volunteer.nickname
             user.first_name = volunteer.name
             user.last_name = volunteer.lastname
+            user.access_role = volunteer.access_role
+
 
         except models.Volunteer.DoesNotExist:
             raise exceptions.AuthenticationFailed(_("Invalid token."))
@@ -68,6 +73,7 @@ class QRUser(AnonymousUser):
     username = ""
     first_name = ""
     last_name = ""
+    access_role = ""
 
     @property
     def is_anonymous(self):
