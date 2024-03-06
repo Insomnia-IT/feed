@@ -4,28 +4,36 @@ import { AppRoles, getUserData } from '~/auth';
 
 export const ac = new AccessControl();
 ac
-    // editor
-    .grant(AppRoles.EDITOR)
+    // Руководитель локации
+    .grant(AppRoles.DIRECTION_HEAD)
+    .read(['dashboard', 'volunteers'])
+    .create(['volunteers'])
+    .update(['volunteers'])
+    // Кот
+    .grant(AppRoles.CAT)
+    .extend(AppRoles.DIRECTION_HEAD)
     .read([
         'departments',
-        'volunteers',
-        'dashboard',
         'locations',
         'feed-transaction',
         'sync',
         'stats',
         'group-badges',
-        'volunteer-custom-fields',
         'scanner-page'
     ])
-    .create(['departments', 'group-badges', 'volunteer-custom-fields'])
-    .update(['departments', 'group-badges', 'volunteer-custom-fields'])
-    // admin
+    // Старший смены
+    .grant(AppRoles.SENIOR)
+    .extend(AppRoles.CAT)
+    .read(['volunteer-custom-fields'])
+    .create(['group-badges', 'volunteer-custom-fields'])
+    .update(['group-badges', 'volunteer-custom-fields'])
+    .delete(['volunteers'])
+    // Администратор
     .grant(AppRoles.ADMIN)
-    .extend(AppRoles.EDITOR)
-    .create(['departments', 'volunteers', 'locations', 'feed-transaction', 'group-badges', 'volunteer-custom-fields'])
-    .update(['departments', 'volunteers', 'locations', 'group-badges', 'volunteer-custom-fields'])
-    .delete(['departments', 'volunteers', 'locations', 'feed-transaction', 'group-badges', 'volunteer-custom-fields']);
+    .extend(AppRoles.SENIOR)
+    .create(['departments', 'locations', 'group-badges', 'volunteer-custom-fields', 'feed-transaction'])
+    .update(['departments', 'locations', 'group-badges', 'volunteer-custom-fields'])
+    .delete(['departments', 'locations', 'group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
 
 export const ACL = {
     can: async ({ action, resource }) => {
@@ -33,7 +41,6 @@ export const ACL = {
         const user = await getUserData(null, true);
         if (user) {
             const { roles } = user;
-
             roles.forEach((role: string) => {
                 switch (action) {
                     case 'list':
@@ -48,6 +55,9 @@ export const ACL = {
                         break;
                     case 'delete':
                         can = ac.can(role).delete(resource).granted;
+                        break;
+                    case 'full_edit':
+                        can = role === AppRoles.ADMIN;
                         break;
                 }
             });

@@ -11,7 +11,7 @@ PORT=4301 /app/node_modules/.bin/next start &
 cd /app/backend
 ./manage.py migrate
 ./manage.py shell < create_user.py
-./manage.py loaddata colors feed_types kitchens
+./manage.py loaddata colors feed_types kitchens access_roles
 ./manage.py runserver localhost:8000 &
 
 nginx

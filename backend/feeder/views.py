@@ -132,6 +132,13 @@ class ColorViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
 
+class AccessRoleViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.AccessRole.objects.all()
+    serializer_class = serializers.AccessRoleSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', ]
+
 
 @extend_schema(tags=['feed', ])
 class FeedTypeViewSet(viewsets.ModelViewSet):

@@ -2,6 +2,7 @@ import { AntdLayout, Grid, Menu, useMenu } from '@pankod/refine-antd';
 import {
     CanAccess,
     useIsExistAuthentication,
+    useList,
     useLogout,
     useRouterContext,
     useTitle,
@@ -12,6 +13,7 @@ import React, { useEffect, useState } from 'react';
 import type { ITreeMenu } from '@pankod/refine-core';
 
 import { authProvider } from '~/authProvider';
+import type { AccessRoleEntity } from '~/interfaces';
 
 import { antLayoutSider, antLayoutSiderMobile } from './styles';
 
@@ -29,18 +31,24 @@ export const CustomSider: FC = () => {
 
     const isMobile = typeof breakpoint.lg === 'undefined' ? false : !breakpoint.lg;
 
-    const [userName, setUserName] = useState();
+    const [userName, setUserName] = useState('');
+    const [accessRoleName, setAccessRoleName] = useState('');
+
+    const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
+        resource: 'access-roles'
+    });
 
     const loadUserName = async () => {
-        if (authProvider.getUserIdentity) {
+        if (authProvider.getUserIdentity && !accessRolesIsLoading) {
             const user = await authProvider.getUserIdentity();
             setUserName(user.username);
+            setAccessRoleName(accessRoles?.data.find((role) => role.id === user.roles[0])?.name ?? '');
         }
     };
 
     useEffect(() => {
         void loadUserName();
-    }, []);
+    }, [accessRolesIsLoading, accessRoles]);
 
     const renderTreeView = (tree: Array<ITreeMenu>, selectedKey: string): React.ReactFragment =>
         tree.map((item: ITreeMenu) => {
@@ -91,7 +99,13 @@ export const CustomSider: FC = () => {
                     }
                 }}
             >
-                <Menu.Item>{userName}</Menu.Item>
+                <Menu.Item>
+                    {accessRoleName && (
+                        <>
+                            {userName} ({accessRoleName})
+                        </>
+                    )}
+                </Menu.Item>
                 {renderTreeView(menuItems, selectedKey)}
                 {isExistAuthentication && (
                     <Menu.Item key='logout' onClick={() => logout()} icon={<LogoutOutlined />}>
