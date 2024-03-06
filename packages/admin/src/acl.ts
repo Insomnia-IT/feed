@@ -12,15 +12,7 @@ ac
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
-    .read([
-        'departments',
-        'locations',
-        'feed-transaction',
-        'sync',
-        'stats',
-        'group-badges',
-        'scanner-page'
-    ])
+    .read(['departments', 'locations', 'feed-transaction', 'sync', 'stats', 'group-badges', 'scanner-page'])
     // Старший смены
     .grant(AppRoles.SENIOR)
     .extend(AppRoles.CAT)
