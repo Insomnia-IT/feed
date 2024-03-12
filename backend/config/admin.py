@@ -15,12 +15,6 @@ class MyAdminSite(AdminSite):
 admin_site = MyAdminSite(name='admin')
 
 
-class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'lead')
-    ordering = ('name', 'code', 'lead',)
-
-
-admin_site.register(Department, DepartmentAdmin)
 admin_site.register(Volunteer)
 admin_site.register(Location)
 admin_site.register(Color)

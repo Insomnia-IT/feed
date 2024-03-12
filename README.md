@@ -15,6 +15,8 @@ docker-compose up
 # Установка
 ```bash
 cd ./backend
+python3 -m venv venv
+. ./venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -26,7 +28,6 @@ yarn run bootstrap
 
 ```bash
 cd ./backend
-python3 -m venv venv
 . ./venv/bin/activate
 ./manage.py migrate
 ./manage.py loaddata colors feed_types kitchens

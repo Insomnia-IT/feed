@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Python" name="Python facet">
+      <configuration sdkName="Python 3.8 (feed)" />
+    </facet>
+  </component>
   <component name="Go" enabled="true" />
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
@@ -12,6 +17,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="@types/react" level="application" />
+    <orderEntry type="library" name="Python 3.8 (feed) interpreter library" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_FOLDERS">
