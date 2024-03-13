@@ -28,6 +28,7 @@ import useCanAccess from './use-can-access';
 
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+    const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
 
     const { selectProps: leadSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
@@ -250,18 +251,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                 </Col>
                 <Col span={8}>
                     <Form.Item></Form.Item>
-                    <Row gutter={[16, 16]}>
-                        <Col span={12}>
-                            <Form.Item label='Должность' name='position'>
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item label='Роль' name='role'>
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
                     <Form.Item
                         label='Служба / Локация'
                         getValueProps={getDepartmentIds}
@@ -313,7 +302,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         </Col>
                     </Row>
                     <Form.Item label='Групповой бейдж' name='group_badge'>
-                        <Select allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
+                        <Select
+                            disabled={canEditGroupBadge}
+                            allowClear
+                            {...groupBadgeSelectProps}
+                            onClear={onGroupBadgeClear}
+                        />
                     </Form.Item>
                     {customFields.map(({ id, name, type }) => {
                         const handleChange = (e) => {
