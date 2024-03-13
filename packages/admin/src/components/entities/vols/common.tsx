@@ -302,7 +302,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         </Col>
                     </Row>
                     <Form.Item label='Групповой бейдж' name='group_badge'>
-                        <Select disabled={canEditGroupBadge} allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
+                        <Select
+                            disabled={canEditGroupBadge}
+                            allowClear
+                            {...groupBadgeSelectProps}
+                            onClear={onGroupBadgeClear}
+                        />
                     </Form.Item>
                     {customFields.map(({ id, name, type }) => {
                         const handleChange = (e) => {
