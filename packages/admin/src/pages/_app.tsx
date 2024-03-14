@@ -3,8 +3,8 @@ import { ConfigProvider, ErrorComponent, Icons, Layout, notificationProvider } f
 import type { AppProps } from 'next/app';
 import { Loader } from '@feed/ui/src/loader';
 import { Refine } from '@pankod/refine-core';
-// import routerProvider from '@pankod/refine-nextjs-router';
-import routerProvider from '@pankod/refine-react-router-v6';
+import routerProvider from '@pankod/refine-nextjs-router';
+// import routerProvider from '@pankod/refine-react-router-v6';
 import type { UserConfig } from 'next-i18next';
 
 import '@pankod/refine-antd/dist/reset.css';

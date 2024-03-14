@@ -53,6 +53,8 @@ export const ACL = {
                         break;
                 }
             });
+        } else {
+            window.location.href = `${window.location.origin}/login`;
         }
         return Promise.resolve({ can });
     }
