@@ -6,7 +6,6 @@ const useCanAccess = ({ action, resource }: { action: string; resource: string }
     const [canAccess, setCanAccess] = useState(false);
 
     const loadCanAccess = async () => {
-        debugger;
         const { can } = await ACL.can({ action, resource });
         setCanAccess(can);
     };

@@ -127,7 +127,7 @@ export const crudDataProvider = (
     },
 
     getOne: async ({ id, metaData, resource }) => {
-        const url = `${apiUrl}/${resource}/${id}`;
+        const url = `${apiUrl}/${resource}/${id}/`;
 
         const { headers, method } = metaData ?? {};
         const requestMethod = (method as MethodTypes) ?? 'get';
@@ -140,7 +140,7 @@ export const crudDataProvider = (
     },
 
     deleteOne: async ({ id, metaData, resource, variables }) => {
-        const url = `${apiUrl}/${resource}/${id}`;
+        const url = `${apiUrl}/${resource}/${id}/`;
 
         const { headers, method } = metaData ?? {};
         const requestMethod = (method as MethodTypesWithBody) ?? 'delete';
