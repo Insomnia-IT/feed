@@ -28,6 +28,7 @@ import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 
 import type {
+    AccessRoleEntity,
     ColorTypeEntity,
     CustomFieldEntity,
     DepartmentEntity,
@@ -39,6 +40,8 @@ import { formDateFormat, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
+
+import useCanAccess from './use-can-access';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -107,6 +110,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [feededIsLoading, setFeededIsLoading] = useState(false);
     const [feededIds, setFeededIds] = useState({});
 
+    const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
+
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
         config: {
@@ -131,6 +136,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const { data: colors, isLoading: colorsIsLoading } = useList<ColorTypeEntity>({
         resource: 'colors'
+    });
+
+    const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
+        resource: 'access-roles'
     });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
@@ -176,6 +185,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {}
         );
     }, [colors]);
+
+    const accessRoleById = useMemo(() => {
+        return (accessRoles ? accessRoles.data : []).reduce(
+            (acc, accessRole) => ({
+                ...acc,
+                [accessRole.id]: accessRole.name
+            }),
+            {}
+        );
+    }, [accessRoles]);
 
     const filteredData = useMemo(() => {
         return (
@@ -285,6 +304,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
                     vol.color_type ? colorNameById[vol.color_type] : '',
+                    vol.access_role ? accessRoleById[vol.access_role] : '',
                     ...customFields?.map((field) => {
                         const value =
                             vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)?.value ||
@@ -345,7 +365,13 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         type={'primary'}
                         onClick={handleClickDownload}
                         icon={<DownloadOutlined />}
-                        disabled={!filteredData && kitchensIsLoading && feedTypesIsLoading && colorsIsLoading}
+                        disabled={
+                            !filteredData &&
+                            kitchensIsLoading &&
+                            feedTypesIsLoading &&
+                            colorsIsLoading &&
+                            accessRolesIsLoading
+                        }
                     >
                         Выгрузить
                     </Button>
@@ -358,7 +384,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item>
-                    <Button onClick={handleClickCustomFields}>Кастомные поля</Button>
+                    <Button disabled={!canListCustomFields} onClick={handleClickCustomFields}>
+                        Кастомные поля
+                    </Button>
                 </Form.Item>
             </Form>
             <Table

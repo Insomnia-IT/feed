@@ -92,3 +92,10 @@ class VolunteerRoleViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     serializer_class = serializers.VolunteerRoleSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
+
+class AccessRoleViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.AccessRole.objects.all()
+    serializer_class = serializers.AccessRoleSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', ]

@@ -19,6 +19,11 @@ router.register(r'photos', photo.PhotoViewSet)
 router.register(r'staying', staying.StayingViewSet)
 router.register(r'transports', transport.TransportViewSet)
 
+router.register(r'access-roles', volunteer.AccessRoleViewSet)
+router.register(r'departments', direction.DepartmentViewSet)
+router.register(r'locations', direction.LocationViewSet)
+
+
 urlpatterns = [
     path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('schema/', SpectacularAPIView.as_view(), name='schema'),

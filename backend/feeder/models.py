@@ -73,7 +73,7 @@ class Person(TimeMixin, CommentMixin):
 
 class Photo(TimeMixin):
     """ Фотографии (людей) """
-    image = models.ImageField()
+    file_name = models.CharField(max_length=1000)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
 
 
@@ -123,7 +123,12 @@ class Volunteer(TimeMixin):
     badge_number = models.TextField(null=True, blank=True, verbose_name="Номер бейджа")
     printing_batch = models.IntegerField(null=True, blank=True, verbose_name="Партия бейджа")
     role = models.TextField(null=True, blank=True, verbose_name="Роль")
-
+    access_role = models.ForeignKey(
+        'AccessRole',
+        null=True, blank=True, on_delete=models.PROTECT,
+        related_name='volunteers',
+        verbose_name="Право доступа",
+    )
     departments = models.ManyToManyField('Department', verbose_name="Департамент")
     color_type = models.ForeignKey(
         'Color',
@@ -244,6 +249,17 @@ class Color(TimeMixin):
         verbose_name = "Цвет бэджика"
         verbose_name_plural = "Цвета бэджика"
 
+class AccessRole(TimeMixin):
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
+    name = models.CharField(max_length=255, verbose_name="название")
+    description = models.CharField(max_length=255, null=True, blank=True, verbose_name="Описание")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Право доступа"
+        verbose_name_plural = "Права доступа"
 
 class FeedType(TimeMixin):
     name = models.CharField(max_length=255, unique=True, verbose_name="Название")

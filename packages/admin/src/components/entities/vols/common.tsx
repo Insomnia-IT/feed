@@ -3,15 +3,16 @@ import { Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pa
 import dynamic from 'next/dynamic';
 import { Col, Row } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
+import { useCan } from '@pankod/refine-core';
 
 import { Rules } from '~/components/form';
 
-// import { Rules } from '~/components/form';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 import dayjs from 'dayjs';
 
 import type {
+    AccessRoleEntity,
     ColorTypeEntity,
     CustomFieldEntity,
     DepartmentEntity,
@@ -23,7 +24,12 @@ import type {
 import { formDateFormat } from '~/shared/lib';
 import { dataProvider } from '~/dataProvider';
 
+import useCanAccess from './use-can-access';
+
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
+    const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+    const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
+
     const { selectProps: leadSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
         optionLabel: 'nickname'
@@ -47,6 +53,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const { selectProps: colorTypeSelectProps } = useSelect<ColorTypeEntity>({
         resource: 'colors',
         optionLabel: 'description'
+    });
+
+    const { selectProps: accessRoleSelectProps } = useSelect<AccessRoleEntity>({
+        resource: 'access-roles',
+        optionLabel: 'name'
     });
 
     const { selectProps: groupBadgeSelectProps } = useSelect<GroupBadgeEntity>({
@@ -177,7 +188,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         </Col>
                         <Col span={12}>
                             <Form.Item name='is_blocked' valuePropName='checked'>
-                                <Checkbox>Заблокирован</Checkbox>
+                                <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                             </Form.Item>
                         </Col>
                     </Row>
@@ -246,7 +257,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         name='departments'
                         rules={Rules.required}
                     >
-                        <Select mode='multiple' {...departmentSelectProps} loading />
+                        <Select disabled={!canFullEditing} mode='multiple' {...departmentSelectProps} />
                     </Form.Item>
                     <Row gutter={[16, 16]}>
                         <Col span={12}>
@@ -262,6 +273,9 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     </Row>
                     <Form.Item label='Цвет бейджика' name='color_type'>
                         <Select {...colorTypeSelectProps} />
+                    </Form.Item>
+                    <Form.Item label='Право доступа' name='access_role'>
+                        <Select disabled={!canFullEditing} {...accessRoleSelectProps} />
                     </Form.Item>
                     <Form.Item label='Шеф' name='ref_to'>
                         {!leadSelectProps.loading && <Select {...leadSelectProps} />}
@@ -288,7 +302,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         </Col>
                     </Row>
                     <Form.Item label='Групповой бейдж' name='group_badge'>
-                        <Select allowClear {...groupBadgeSelectProps} onClear={onGroupBadgeClear} />
+                        <Select
+                            disabled={canEditGroupBadge}
+                            allowClear
+                            {...groupBadgeSelectProps}
+                            onClear={onGroupBadgeClear}
+                        />
                     </Form.Item>
                     {customFields.map(({ id, name, type }) => {
                         const handleChange = (e) => {

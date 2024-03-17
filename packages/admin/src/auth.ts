@@ -5,14 +5,16 @@ import { NEW_API_URL } from '~/const';
 
 export enum AppRoles {
     ADMIN = 'ADMIN',
-    EDITOR = 'EDITOR'
+    SENIOR = 'SENIOR',
+    CAT = 'CAT',
+    DIRECTION_HEAD = 'DIRECTION_HEAD'
 }
 
 export interface UserData {
     id?: number | string;
     exp: number;
     iat: number;
-    roles: Array<AppRoles.ADMIN | AppRoles.EDITOR>;
+    roles: Array<AppRoles.ADMIN | AppRoles.SENIOR | AppRoles.CAT | AppRoles.DIRECTION_HEAD>;
     username: string;
 }
 
@@ -78,11 +80,11 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                             }
                         }
                     );
-                    const { id, lastname, name, nickname } = data.results[0];
+                    const { access_role, id, lastname, name, nickname } = data.results[0];
                     const userData: UserData = {
                         username: nickname,
                         id: id,
-                        roles: [AppRoles.ADMIN], // TODO
+                        roles: [access_role],
                         exp: 0,
                         iat: 0
                     };

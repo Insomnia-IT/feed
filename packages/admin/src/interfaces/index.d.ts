@@ -30,6 +30,7 @@ export interface VolEntity {
     kitchen?: number;
     printing_batch?: number;
     role?: string;
+    access_role?: string;
 }
 
 export interface KitchenEntity {
@@ -44,6 +45,12 @@ export interface FeedTypeEntity {
 
 export interface ColorTypeEntity {
     id: number;
+    name: string;
+    description: string;
+}
+
+export interface AccessRoleEntity {
+    id: string;
     name: string;
     description: string;
 }

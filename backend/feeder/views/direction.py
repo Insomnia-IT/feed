@@ -32,3 +32,28 @@ class DirectionTypeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = DirectionFilter
     search_fields = ['name', ]
+
+
+class DepartmentFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
+
+    class Meta:
+        model = models.Department
+        fields = []
+
+class DepartmentViewSet(viewsets.ModelViewSet):
+    # authentication_classes = [authentication.KitchenPinAuthentication, TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.Department.objects.all()
+    serializer_class = serializers.DepartmentSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = DepartmentFilter
+    search_fields = ['name', ]
+
+
+class LocationViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, ]
+    queryset = models.Location.objects.all()
+    serializer_class = serializers.LocationSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', ]
