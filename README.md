@@ -30,7 +30,7 @@ yarn run bootstrap
 cd ./backend
 . ./venv/bin/activate
 ./manage.py migrate
-./manage.py loaddata colors feed_types kitchens access_roles
+./manage.py loaddata colors feed_types kitchens access_roles volunteer_roles participation_roles transports
 ./manage.py shell < create_user.py
 ./manage.py runserver localhost:8000
 ```

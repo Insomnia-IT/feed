@@ -1,0 +1,82 @@
+[
+  {
+    "model": "feeder.participationrole",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Организатор",
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.participationrole",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Лидер нефедеральной локации",
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.participationrole",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Зам.руководителя",
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.participationrole",
+    "pk": 4,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Бригадир",
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.participationrole",
+    "pk": 5,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Волонтёр",
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.participationrole",
+    "pk": 6,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Участник",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.participationrole",
+    "pk": 7,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Свои (плюсодин)",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.participationrole",
+    "pk": 8,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Подрядчик",
+      "is_team": false
+    }
+  }
+]

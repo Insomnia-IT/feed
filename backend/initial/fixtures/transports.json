@@ -1,0 +1,56 @@
+[
+  {
+    "model": "feeder.transport",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Не определен"
+    }
+  },
+  {
+    "model": "feeder.transport",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "На автобусе"
+    }
+  },
+  {
+    "model": "feeder.transport",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "На своей машине"
+    }
+  },
+  {
+    "model": "feeder.transport",
+    "pk": 4,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "На своей машине"
+    }
+  },
+  {
+    "model": "feeder.transport",
+    "pk": 5,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Своим ходом"
+    }
+  },
+  {
+    "model": "feeder.transport",
+    "pk": 6,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Трансфер от фестиваля"
+    }
+  }
+]
