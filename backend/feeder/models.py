@@ -1,5 +1,4 @@
 from uuid import uuid4
-from datetime import datetime
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -11,8 +10,98 @@ def gen_uuid():
     return str(uuid4())
 
 
+class Direction(TimeMixin, CommentMixin):
+    """ Службы и локации """
+    name = models.CharField(max_length=255)
+    type = models.ForeignKey('DirectionType', on_delete=models.PROTECT)
+    first_year = models.IntegerField(null=True, blank=True)
+    last_year = models.IntegerField(null=True, blank=True)
+    notion_id = models.CharField(max_length=255, db_index=True)
+
+
+class Staying(TimeMixin, CommentMixin):
+    """ Пребывание (заезды и отъезды) """
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE)
+    arrival_date = models.DateField()
+    arrival_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="arrivals")
+    arrival_registered = models.DateTimeField(null=True, blank=True)
+    departure_date = models.DateField()
+    departure_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="departures")
+    departure_registered = models.DateTimeField(null=True, blank=True)
+
+
+class Transport(TimeMixin):
+    """ Транспорт (Способы въезда и выезда) """
+    name = models.CharField(max_length=255)
+
+
+class VolunteerRole(TimeMixin):
+    """ Роли волонтеров """
+    name = models.CharField(max_length=255)
+    color = models.CharField(max_length=6)
+    is_leader = models.BooleanField(default=False)
+    is_team = models.BooleanField(default=False)
+
+
+class DirectionType(TimeMixin):
+    """ Типы служб и локаций """
+    name = models.CharField(max_length=255)
+    is_federal = models.BooleanField(default=False)
+
+
+class Gender(TimeMixin):
+    """ Пол """
+    name = models.CharField(max_length=255)
+
+
+class Person(TimeMixin, CommentMixin):
+    """ Личность """
+    name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255, null=True, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
+    nickname = models.CharField(max_length=255, null=True, blank=True)
+    other_names = models.TextField(null=True, blank=True)
+    gender = models.ForeignKey(Gender, null=True, blank=True, on_delete=models.PROTECT)
+    birth_date = models.DateField(null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True)
+    telegram = models.CharField(max_length=255, null=True, blank=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
+    is_vegan = models.BooleanField(default=False)
+    notion_id = models.CharField(max_length=255, db_index=True)
+
+
+class Photo(TimeMixin):
+    """ Фотографии (людей) """
+    file_name = models.CharField(max_length=1000)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+
+
+class ParticipationRole(TimeMixin):
+    """ Роли в участии """
+    name = models.CharField(max_length=255)
+    is_team = models.BooleanField(default=False)
+
+
+class Participation(TimeMixin):
+    """ Участие """
+    year = models.IntegerField()
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    direction = models.ForeignKey(Direction, on_delete=models.PROTECT)
+    role = models.ForeignKey(ParticipationRole, on_delete=models.PROTECT)
+    position = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=255, null=True, blank=True)
+    notion_id = models.CharField(max_length=255, db_index=True)
+
+
 class Volunteer(TimeMixin):
+    """ Волонтеры """
     uuid = models.UUIDField(default=gen_uuid, unique=True, db_index=True)
+    person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True)
+    gender = models.ForeignKey(Gender, on_delete=models.PROTECT, null=True, blank=True)
+    parent = models.ForeignKey('Volunteer', on_delete=models.SET_NULL, null=True, blank=True, related_name="parents")
+    directions = models.ManyToManyField(Direction)
+
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя")
     lastname = models.CharField(max_length=255, null=True, blank=True, verbose_name="Фамилия")
     nickname = models.CharField(max_length=255, null=True, blank=True, verbose_name="Ник")
@@ -50,7 +139,9 @@ class Volunteer(TimeMixin):
     group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Групповой бейдж")
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
-    ref_to = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Связан с ")
+    ref_to = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Связан с ", related_name="refs")
+    main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
+    notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
     class Meta:
         verbose_name = "Волонтёр"
@@ -58,17 +149,6 @@ class Volunteer(TimeMixin):
 
     def __str__(self):
         return u"{} ({})".format(self.name, self.nickname)
-
-    @property
-    def expired(self):
-        now = datetime.today()
-        expired = 0
-        if self.active_to and now > self.active_to:
-            expired = 1
-
-        if self.active_from and now < self.active_from:
-            expired = -1
-        return expired
 
     @property
     def paid(self):
@@ -108,7 +188,7 @@ class Kitchen(TimeMixin):
 
 class GroupBadge(TimeMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, verbose_name="QR-код")
-    
+
     def __str__(self):
         return self.name
 
@@ -116,9 +196,11 @@ class GroupBadge(TimeMixin, CommentMixin, NameMixin):
         verbose_name = "Групповой бейдж"
         verbose_name_plural = "Групповые бейджи"
 
+
 class VolunteerCustomField(TimeMixin, CommentMixin):
     name = models.CharField(verbose_name='Название', unique=True, max_length=100)
     type = models.CharField(verbose_name='Тип данных', max_length=20)
+
     def __str__(self):
         return self.name
 
@@ -131,6 +213,7 @@ class VolunteerCustomFieldValue(TimeMixin):
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, verbose_name="Волонтер", related_name="custom_field_values")
     custom_field = models.ForeignKey(VolunteerCustomField, on_delete=models.CASCADE, verbose_name="Кастомное поле")
     value = models.TextField(verbose_name='Значение')
+
     def __str__(self):
         return self.value
 
@@ -140,6 +223,7 @@ class VolunteerCustomFieldValue(TimeMixin):
         constraints = [
             models.UniqueConstraint(fields=['volunteer', 'custom_field'], name='unique fields')
         ]
+
 
 class Location(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название", db_index=True)
@@ -194,12 +278,14 @@ class FeedType(TimeMixin):
 
 meal_times = [ "breakfast", "lunch", "dinner", "night" ]
 
+
 def validate_meal_time(value):
     if not value in meal_times:
         raise ValidationError(
             _("%(value)s is not one of the possible values: %(meal_times)s"),
             params={"value": value, "meal_times": ", ".join(meal_times)},
         )
+
 
 class FeedTransaction(TimeMixin):
     ulid = models.CharField(max_length=255, primary_key=True)

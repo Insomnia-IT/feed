@@ -4,19 +4,55 @@ from feeder import models
 from feeder.utils import StatisticType
 
 
-class DepartmentSerializer(serializers.ModelSerializer):
+class PhotoSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = models.Department
+        model = models.Photo
         fields = '__all__'
 
-class DepartmentNestedSerializer(serializers.ModelSerializer):
+
+class DirectionTypeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = models.Department
+        model = models.DirectionType
+        fields = '__all__'
+
+
+class DirectionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    type = DirectionTypeSerializer()
+
+    class Meta:
+        model = models.Direction
+        fields = '__all__'
+
+
+class ParticipationRoleSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.ParticipationRole
+        fields = '__all__'
+
+
+class ParticipationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    role = ParticipationRoleSerializer()
+
+    class Meta:
+        model = models.Participation
+        fields = '__all__'
+
+
+class DirectionNestedSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.Direction
         fields = ['id', 'name']
+
 
 class VolunteerCustomFieldSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -25,23 +61,27 @@ class VolunteerCustomFieldSerializer(serializers.ModelSerializer):
         model = models.VolunteerCustomField
         fields = '__all__'
 
+
 class VolunteerCustomFieldValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VolunteerCustomFieldValue
         fields =  '__all__'
+
+
 class VolunteerCustomFieldValueNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VolunteerCustomFieldValue
         fields = ['custom_field', 'value']
 
+
 class VolunteerListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    departments = DepartmentNestedSerializer(many=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
 
     class Meta:
         model = models.Volunteer
         fields = '__all__'
+
 
 class VolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -52,11 +92,11 @@ class VolunteerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LocationSerializer(serializers.ModelSerializer):
+class VolunteerRoleSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = models.Location
+        model = models.VolunteerRole
         fields = '__all__'
 
 
@@ -66,6 +106,7 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.GroupBadge
         fields = '__all__'
+
 
 class ColorSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -80,6 +121,22 @@ class AccessRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AccessRole
         fields = '__all__'
+
+class PersonSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.Person
+        fields = '__all__'
+
+
+class GenderSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.Color
+        fields = '__all__'
+
 
 class FeedTypeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -158,12 +215,12 @@ class SyncWithPartialSerializer(serializers.Serializer):
     departments = SyncFromItemSerializer()
 
 
-class StatisticsRequestSerializer(serializers.Serializer):
+class FilterStatisticsSerializer(serializers.Serializer):
     date_from = serializers.DateField()
     date_to = serializers.DateField()
 
 
-class StatisticsResponseSerializer(serializers.Serializer):
+class StatisticsSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     date = serializers.DateField()
     type = serializers.ChoiceField(choices=[type.value for type in StatisticType])
@@ -203,3 +260,36 @@ class UserDetailSerializer(serializers.Serializer):
             return [getattr(user, 'access_role', None), ]
         if user.is_staff or user.is_superuser:
             return ["ADMIN", ]
+
+
+class TransportSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.Kitchen
+        fields = '__all__'
+
+
+class StayingSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    volunteer = VolunteerSerializer()
+    arrival_transport = TransportSerializer()
+    departure_transport = TransportSerializer()
+
+    class Meta:
+        model = models.VolunteerCustomField
+        fields = '__all__'
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.Department
+        fields = '__all__'
+
+class LocationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = models.Location
+        fields = '__all__'

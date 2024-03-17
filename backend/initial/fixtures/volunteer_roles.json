@@ -1,0 +1,194 @@
+[
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Организатор",
+      "color": "red",
+      "is_leader": true,
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Зам. руководителя",
+      "color": "green",
+      "is_leader": false,
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Бригадир",
+      "color": "green",
+      "is_leader": false,
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 4,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Волонтёр",
+      "color": "green",
+      "is_leader": false,
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 5,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Медик",
+      "color": "purple",
+      "is_leader": false,
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 6,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Лидер нефедеральной локации",
+      "color": "blue",
+      "is_leader": true,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 7,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Волонтёр нефедеральной локации",
+      "color": "blue",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 8,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Аниматор",
+      "color": "orange",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 9,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Лектор",
+      "color": "orange",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 8,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Мастер",
+      "color": "orange",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 9,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Артист",
+      "color": "orange",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 10,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Свои (плюсодины)",
+      "color": "yellow",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 10,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Сопровождающие (участников)",
+      "color": "yellow",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 11,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "VIP",
+      "color": "yellow",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 12,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Пресса",
+      "color": "yellow",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": 13,
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Подрядчик",
+      "color": "grey",
+      "is_leader": false,
+      "is_team": false
+    }
+  }
+]

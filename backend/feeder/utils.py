@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db.models import Q
 
 from feeder import models
-from feeder.models import meal_times 
+from feeder.models import meal_times
 
 from rest_framework.exceptions import APIException
 
@@ -72,7 +72,7 @@ def sync_to_notion(people):
         # get people from Notion API if it's None
         if not people:
             people = NotionAPIController.get_people()
-            
+
         # send info about arrived/leaving to Notion
         result = update_arrived(people)
 
@@ -139,7 +139,7 @@ def update_arrived(people):
     data = []
     for person in people:
         uuid = person.get('uuid')
-        
+
         if vol := volunteers.get(uuid):
             active_from = vol.get('active_from')
             active_to = vol.get('active_to')
@@ -193,11 +193,11 @@ def sync_from_notion(people):
     # init dict to accumulate statistic
     statistic = {
         'volunteers': {
-            'created': 0, 
+            'created': 0,
             'total': 0
         },
         'departments': {
-            'created': 0, 
+            'created': 0,
             'total': 0
         }
     }
@@ -220,9 +220,9 @@ def sync_from_notion(people):
         if created:
             statistic['departments']['created'] += 1
 
-    
+
     # VOLUNTEERS (vols)
-    
+
     # set feed types
     feed_types = {
         FeedType(feed_type.code) : feed_type
@@ -281,9 +281,9 @@ def sync_from_notion(people):
         volunteer.is_blocked = False
 
         volunteer.feed_type = (
-            feed_types[FeedType.PAID] if person.get('food_type') == 'Платно' 
-            else feed_types[FeedType.CHILD] if person.get('food_type') == 'Ребенок' 
-            else feed_types[FeedType.NO] if person.get('food_type') == 'Без питания' 
+            feed_types[FeedType.PAID] if person.get('food_type') == 'Платно'
+            else feed_types[FeedType.CHILD] if person.get('food_type') == 'Ребенок'
+            else feed_types[FeedType.NO] if person.get('food_type') == 'Без питания'
             else feed_types[FeedType.FREE]
         )
 
@@ -300,8 +300,8 @@ def sync_from_notion(people):
 
         if color := person.get('color'):
             volunteer.color_type = (
-                color_type 
-                if (color_type := models.Color.objects.filter(name=color).first()) 
+                color_type
+                if (color_type := models.Color.objects.filter(name=color).first())
                 else default_color_type
             )
 
@@ -309,7 +309,7 @@ def sync_from_notion(people):
             volunteer.departments.set(
                 models.Department.objects.filter(name__in=[capitalize(name) for name in service_or_location_names]).all()
             )
-        
+
         volunteer.save()
 
     volunteers = models.Volunteer.objects.all()
@@ -333,7 +333,7 @@ def sync_with_notion():
 
     # update local db based on data from Notion
     statistic = sync_from_notion(people)
-    
+
     if settings.IS_SYNC_TO_NOTION_ON == str(True):
         # back sync must not affect on sync in general
         # therefore just log error if back sync has failed
@@ -356,7 +356,7 @@ def sync_with_notion():
 
 
     print('sync stat', statistic)
-    
+
     return statistic
 
 
@@ -365,10 +365,10 @@ def capitalize(s: str) -> str:
         return s[0].title()+s[1:]
 
 
-def calculate_statistics(data):
+def calculate_statistics(date_from, date_to):
     # convert from str to a datetime type (Arrow)
-    stat_date_from = arrow.get(data.get('date_from'), tzinfo=TZ)
-    stat_date_to = arrow.get(data.get('date_to'), tzinfo=TZ)
+    stat_date_from = arrow.get(date_from, tzinfo=TZ)
+    stat_date_to = arrow.get(date_to, tzinfo=TZ)
 
     # get transactions by criteria of fact statistic
     transactions = (
@@ -386,7 +386,7 @@ def calculate_statistics(data):
             # day starts from 7AM
             'date': (
                 (
-                    state_date.shift(days=-1) 
+                    state_date.shift(days=-1)
                     if state_date.hour < DAY_START_HOUR and meal_time == meal_times[3] # = "night"
                     else state_date
                 ).format(STAT_DATE_FORMAT)
@@ -397,15 +397,15 @@ def calculate_statistics(data):
             'amount': amount,
             'kitchen_id': kitchen_id
         })
-        
-    
+
+
     # plan statistic
     plan_stat = []
 
     # iterate over date range (day by day) between from and to
     for current_stat_date in arrow.Arrow.range('day', stat_date_from, stat_date_to):
         # Get volunteers by criterias of plan statistic.
-        # 
+        #
         # The criterias:
         #     Тех, у кого нет проставленных полей active_from и active_to мы игнорим.
         #     Также мы игнорим тех, у кого active_from меньше начала текущего дня статистики и у которых не проставлен флаг is_active.
@@ -416,7 +416,7 @@ def calculate_statistics(data):
         volunteers = (
             models.Volunteer.objects
                 .exclude(
-                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True) | Q(feed_type__code='FT4')) 
+                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True) | Q(feed_type__code='FT4'))
                     | (
                         Q(is_active=False)
                         & (
@@ -425,7 +425,7 @@ def calculate_statistics(data):
                     )
                 )
                 .filter(
-                    active_from__lt=current_stat_date.shift(days=+1).datetime, 
+                    active_from__lt=current_stat_date.shift(days=+1).datetime,
                     active_to__gte=current_stat_date.datetime
                 )
                 .values_list('active_from', 'active_to', 'kitchen__id', 'is_vegan', 'feed_type__paid', 'id')
