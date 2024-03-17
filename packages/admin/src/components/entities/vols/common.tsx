@@ -30,11 +30,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
 
-    const { selectProps: leadSelectProps } = useSelect<VolEntity>({
-        resource: 'volunteers',
-        optionLabel: 'nickname'
-    });
-
     const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
         resource: 'departments',
         optionLabel: 'name'
@@ -275,10 +270,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         <Select {...colorTypeSelectProps} />
                     </Form.Item>
                     <Form.Item label='Право доступа' name='access_role'>
-                        <Select disabled={!canFullEditing} {...accessRoleSelectProps} />
-                    </Form.Item>
-                    <Form.Item label='Шеф' name='ref_to'>
-                        {!leadSelectProps.loading && <Select {...leadSelectProps} />}
+                        <Select allowClear disabled={!canFullEditing} {...accessRoleSelectProps} />
                     </Form.Item>
                 </Col>
             </Row>
@@ -303,7 +295,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     </Row>
                     <Form.Item label='Групповой бейдж' name='group_badge'>
                         <Select
-                            disabled={canEditGroupBadge}
+                            disabled={!canEditGroupBadge}
                             allowClear
                             {...groupBadgeSelectProps}
                             onClear={onGroupBadgeClear}
