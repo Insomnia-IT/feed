@@ -85,7 +85,7 @@ class VolunteerListSerializer(serializers.ModelSerializer):
 
 class VolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
+    custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
 
     class Meta:
         model = models.Volunteer

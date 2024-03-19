@@ -100,7 +100,7 @@ class Volunteer(TimeMixin):
     person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True)
     gender = models.ForeignKey(Gender, on_delete=models.PROTECT, null=True, blank=True)
     parent = models.ForeignKey('Volunteer', on_delete=models.SET_NULL, null=True, blank=True, related_name="parents")
-    directions = models.ManyToManyField(Direction)
+    directions = models.ManyToManyField(Direction, blank=True)
 
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя")
     lastname = models.CharField(max_length=255, null=True, blank=True, verbose_name="Фамилия")
