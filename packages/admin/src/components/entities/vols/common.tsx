@@ -78,6 +78,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         });
     };
 
+    const onAccessRoleClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('access_role', '');
+        });
+    };
+
     const activeToValidationRules = useMemo(
         () => [
             {
@@ -270,7 +276,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         <Select {...colorTypeSelectProps} />
                     </Form.Item>
                     <Form.Item label='Право доступа' name='access_role'>
-                        <Select allowClear disabled={!canFullEditing} {...accessRoleSelectProps} />
+                        <Select allowClear disabled={!canFullEditing} {...accessRoleSelectProps} onClear={onAccessRoleClear} />
                     </Form.Item>
                 </Col>
             </Row>
