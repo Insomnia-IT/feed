@@ -79,6 +79,7 @@ class DepartmentNestedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Department
+        fields = '__all__'
 
 class VolunteerListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
