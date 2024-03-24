@@ -28,6 +28,7 @@ import { clearCache } from './lib/utils';
 // eslint-disable-next-line import/no-unresolved
 import ver from '!!raw-loader!pwa-ver.txt';
 
+
 console.log(`local app ver: ${ver}`);
 
 const isDev = process.env.NODE_ENV !== 'production';
