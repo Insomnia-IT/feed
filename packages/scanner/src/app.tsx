@@ -47,8 +47,6 @@ const debugModeLS = localStorage.getItem('debug');
 // TODO: Remove after test
 const deoptimizedSyncLS = localStorage.getItem('katya_testiruet');
 
-//force
-
 const App: FC = () => {
     const [appColor, setAppColor] = useState<AppColor | null>(null);
     const [appError, setAppError] = useState<string | null>(null);
