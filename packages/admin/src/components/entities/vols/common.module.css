@@ -1,0 +1,217 @@
+.edit {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.edit__nav {
+    margin-right: 24px;
+    margin-left: -24px;
+    max-width: 224px;
+    background-color: white;
+}
+
+.navList {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.navList__item:not(:last-child) {
+    margin-bottom: 8px;
+}
+
+.navList__item {
+    padding: 0px 24px 0px 16px;
+    display: flex;
+    align-items: center;
+    width: 224px;
+    height: 40px;
+    font-size: 14px;
+    line-height: 157%;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.active {
+    border-right: 3px solid #1890ff;
+    background: #e6f7ff;
+}
+
+.formWrap {
+    width: 100%;
+    height: calc(100vh - 230px);
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.formWrap::-webkit-scrollbar {
+    width: 4px;
+}
+
+.formWrap::-webkit-scrollbar-thumb {
+    background-color: #1890ff;
+    border-radius: 5px;
+}
+
+.formWrap::-webkit-scrollbar-thumb:hover {
+    background-color: #0e5da7;
+}
+
+.formSection:not(:last-child) {
+    margin-bottom: 16px;
+}
+
+.formSection {
+    padding: 16px;
+    background-color: white;
+}
+
+.formSection__title {
+    margin-bottom: 16px;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 150%;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+/* personal */
+
+.personalWrap {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.photoWrap {
+    margin-right: 16px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.photo {
+    margin-bottom: 4px;
+    width: 112px;
+    height: 112px;
+    background-color: #f5f5f5;
+}
+
+.deletePhotoBtn {
+    border: none;
+    background-color: transparent;
+}
+
+.deletePhotoBtn {
+    display: flex;
+    align-items: center;
+    color: #1890ff;
+    cursor: pointer;
+    transition: color .3s ease-in-out;
+}
+
+.deletePhotoBtn:hover,
+.deletePhotoBtn:active {
+    color: #0e5da7;
+    transition: color .3s ease-in-out;
+}
+
+.personalInfoWrap {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+.nickNameLastnameWrap {
+    display: flex;
+    align-items: center;
+}
+
+.nameInput:not(:last-child) {
+    margin-right: 12px;
+}
+
+.nameInput {
+    flex-grow: 1;
+}
+
+.phoneInput {
+    margin-right: 12px;
+    flex-grow: 2;
+}
+
+.genderSelect {
+    flex-grow: 1;
+}
+
+.kitchenTypeWrap {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.kitchenSelect {
+    margin-right: 12px;
+    flex-grow: 1;
+}
+
+.typeMeal {
+    flex-grow: 1;
+}
+
+/* HR информация */
+
+.hrInputsWrap {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-grow: 1;
+}
+
+.hrInput:not(:last-child) {
+    margin-right: 12px;
+}
+
+.hrInput {
+    flex-grow: 1;
+}
+
+/* Даты на поле */
+
+.fieldsDates {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.dateInput:not(:last-child) {
+    margin-right: 12px;
+}
+
+.dateInput {
+    flex-grow: 1;
+}
+
+/* QR - info */
+
+.badgeQR {
+    flex-grow: 1;
+}
+
+.badgeInfoWrap {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-grow: 1;
+}
+
+.badgeInfo:not(:last-child) {
+    margin-right: 12px;
+}
+
+.badgeInfo {
+    flex-grow: 1;
+}
