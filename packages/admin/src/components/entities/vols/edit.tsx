@@ -16,6 +16,13 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                 ...saveButtonProps,
                 onClick
             }}
+            contentProps={{
+                style: {
+                    background: 'initial',
+                    boxShadow: 'initial',
+                    height: '100%'
+                }
+            }}
         >
             <Form {...formProps} layout='vertical'>
                 <CreateEdit form={form} />
