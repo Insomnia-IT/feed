@@ -7,6 +7,6 @@
         "./babel.config.js",
         "./src/**/*.ts",
         "./src/**/*.tsx",
-        "env.d.ts",
+        "env.d.ts"
     ]
 }
