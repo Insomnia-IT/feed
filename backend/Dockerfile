@@ -16,6 +16,10 @@ RUN mkdir logs/ data/
 
 ENV PYTHONUNBUFFERED 1
 
+RUN apt-get install libicu-dev libsqlite3-dev -y
+COPY ./icu/icu.c /app/icu/
+RUN gcc -fPIC -shared icu/icu.c -licui18n -licuuc -licudata -L/usr/local/lib -o icu/libSqliteIcu.so
+
 RUN pip install -r requirements.txt --no-cache-dir
 
 COPY ./config /app/config
@@ -24,10 +28,8 @@ COPY ./.gitignore /app/
 COPY ./manage.py /app/
 COPY ./Dockerfile /app/
 COPY ./docker-compose.yaml /app/
-COPY ./.env.sample /app/
-
-RUN apt-get install libicu-dev libsqlite3-dev -y
-COPY ./icu/icu.c /app/icu/
-RUN gcc -fPIC -shared icu/icu.c -licui18n -licuuc -licudata -L/usr/local/lib -o icu/libSqliteIcu.so
+COPY ./.env /app/
+COPY ./create_user.py /app/
+COPY ./initial /app/initial
 
 EXPOSE 8000
