@@ -26,4 +26,8 @@ COPY ./Dockerfile /app/
 COPY ./docker-compose.yaml /app/
 COPY ./.env.sample /app/
 
+RUN apt-get install libicu-dev libsqlite3-dev -y
+COPY ./icu/icu.c /app/icu/
+RUN gcc -fPIC -shared icu/icu.c -licui18n -licuuc -licudata -L/usr/local/lib -o icu/libSqliteIcu.so
+
 EXPOSE 8000

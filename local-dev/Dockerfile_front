@@ -1,0 +1,28 @@
+FROM node:18-alpine
+
+ENV YARN_CACHE_FOLDER=/root/.yarn
+ENV NODE_OPTIONS="--max_old_space_size=4000"
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 build-base libffi-dev
+RUN curl -sf https://gobinaries.com/tj/node-prune | sh
+RUN echo "yarn cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
+
+COPY ./package.json /app/package.json
+COPY ./yarn.lock /app/yarn.lock
+
+COPY ./packages/admin/package.json /app/packages/admin/package.json
+COPY ./packages/admin/next-i18next.config.mjs /app/packages/admin/next-i18next.config.mjs
+COPY ./packages/admin/next.config.mjs /app/packages/admin/next.config.mjs
+COPY ./packages/core/package.json /app/packages/core/package.json
+COPY ./packages/ui/package.json /app/packages/ui/package.json
+COPY ./packages/scanner/package.json /app/packages/scanner/package.json
+
+RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
+    yarn --frozen-lockfile
+
+COPY . /app
+
+EXPOSE 3001
+EXPOSE 3002
