@@ -1,36 +1,18 @@
 version: '3.5'
 
 x-defaults: &defaults
-  environment:
-    SECRET_KEY: ${SECRET_KEY}
-    DEBUG: ${DEBUG}
-    SENTRY_DSN: ${SENTRY_DSN}
-    DB_ENGINE: ${DB_ENGINE}
-    DB_HOST: ${DB_HOST}
-    DB_PORT: ${DB_PORT}
-    DB_NAME: ${DB_NAME}
-    DB_USER: ${DB_USER}
-    DB_PASSWORD: ${DB_PASSWORD}
-    EMAIL_HOST: ${EMAIL_HOST}
-    EMAIL_PORT: ${EMAIL_PORT}
-    EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-    EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-    EMAIL_FROM: ${EMAIL_FROM}
-    TIME_ZONE: ${TIME_ZONE}
-    ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-    PUBLIC_SITE_URL: ${PUBLIC_SITE_URL}
+  env_file:
+    - ./.env.sample
   volumes:
     - ./shared/:/shared
-    - ./data/:/app/data
-
+    - ../db/:/db
 
 services:
   backend:
-    image: ${IMAGE_NAME}
-    #command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn -c /app/gunicorn_config.py sublease.wsgi:application"
+    build:
+      dockerfile: Dockerfile
     command: bash -c "python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     container_name: feed_backend
-    restart: unless-stopped
     ports:
-       - 8000:8000
+      - 8000:8000
     <<: *defaults

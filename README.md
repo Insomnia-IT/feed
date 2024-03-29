@@ -1,14 +1,15 @@
 # feed monorepo
 
 
-## setup
+## Локальный запуск через докер
 
+Windows
+```cmd
+.\local-dev.cmd
+```
+Linux/MacOS
 ```bash
-echo -e "\n127.0.0.1\\tlocalhost.dev" | sudo tee -a /etc/hosts
-cd local-dev
-BUILDKIT_PROGRESS=plain docker-compose build
-docker-compose up
-#docker network inspect local-dev_default | grep Gateway
+./local-dev.sh
 ```
 
 
