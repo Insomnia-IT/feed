@@ -312,8 +312,8 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                 </div>
                 <div id='section2' className={styles.formSection}>
                     <p className={styles.formSection__title}>HR информация</p>
-                    <div className={styles.badgeInfoWrap}>
-                        <div className={styles.badgeInfo}>
+                    <div className={styles.hrInputsWrap}>
+                        <div className={styles.hrInput}>
                             <Form.Item label='Право доступа' name='access_role'>
                                 <Select
                                     allowClear
@@ -323,14 +323,9 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                 />
                             </Form.Item>
                         </div>
-                        <div className={styles.badgeInfo}>
-                            <Form.Item label='Групповой бейдж' name='group_badge'>
-                                <Select
-                                    disabled={!canEditGroupBadge}
-                                    allowClear
-                                    {...groupBadgeSelectProps}
-                                    onClear={onGroupBadgeClear}
-                                />
+                        <div className={styles.hrInput}>
+                            <Form.Item label='Роль' name='role'>
+                                <Input />
                             </Form.Item>
                         </div>
                     </div>
@@ -347,11 +342,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         </div>
                         <div className={styles.hrInput}>
                             <Form.Item label='Должность' name='position'>
-                                <Input />
-                            </Form.Item>
-                        </div>
-                        <div className={styles.hrInput}>
-                            <Form.Item label='Роль' name='role'>
                                 <Input />
                             </Form.Item>
                         </div>
@@ -384,10 +374,22 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                 </div>
                 <div id='section4' className={styles.formSection}>
                     <p className={styles.formSection__title}>Бейдж</p>
-                    <div className={styles.badgeQR}>
-                        <Form.Item label='QR бейджа' name='qr' rules={Rules.required}>
-                            <Input onChange={onQRChange} />
-                        </Form.Item>
+                    <div className={styles.badgeInfoWrap}>
+                        <div className={styles.badgeInfo}>
+                            <Form.Item label='QR бейджа' name='qr' rules={Rules.required}>
+                                <Input onChange={onQRChange} />
+                            </Form.Item>
+                        </div>
+                        <div className={styles.badgeInfo}>
+                            <Form.Item label='Групповой бейдж' name='group_badge'>
+                                <Select
+                                    disabled={!canEditGroupBadge}
+                                    allowClear
+                                    {...groupBadgeSelectProps}
+                                    onClear={onGroupBadgeClear}
+                                />
+                            </Form.Item>
+                        </div>
                     </div>
                     <div className={styles.badgeInfoWrap}>
                         <div className={styles.badgeInfo}>
