@@ -1,16 +1,17 @@
 import { Checkbox, DatePicker, Form, FormInstance, Input, Select, useSelect } from '@pankod/refine-antd';
 import { useEffect, useMemo, useState } from 'react';
-import { DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 import { Rules } from '~/components/form';
 import 'react-quill/dist/quill.snow.css';
 
 import type {
+    AccessRoleEntity,
     ColorTypeEntity,
     CustomFieldEntity,
     DepartmentEntity,
     FeedTypeEntity,
+    GroupBadgeEntity,
     KitchenEntity,
     VolEntity
 } from '~/interfaces';
@@ -22,6 +23,7 @@ import styles from './common.module.css';
 
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+    const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
 
     const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
         resource: 'departments',
@@ -42,6 +44,28 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         resource: 'colors',
         optionLabel: 'description'
     });
+
+    const { selectProps: accessRoleSelectProps } = useSelect<AccessRoleEntity>({
+        resource: 'access-roles',
+        optionLabel: 'name'
+    });
+
+    const { selectProps: groupBadgeSelectProps } = useSelect<GroupBadgeEntity>({
+        resource: 'group-badges',
+        optionLabel: 'name'
+    });
+
+    const onGroupBadgeClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('group_badge', '');
+        });
+    };
+
+    const onAccessRoleClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('access_role', '');
+        });
+    };
 
     const getDepartmentIds = (department) => {
         return {
@@ -89,19 +113,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         const qr = e.target.value;
         if (qr) {
             void checkQRDuplication(qr);
-        }
-    };
-
-    const clearDuplicateQR = async () => {
-        if (qrDuplicateVolunteer) {
-            await dataProvider.update<VolEntity>({
-                id: qrDuplicateVolunteer.id,
-                resource: 'volunteers',
-                variables: {
-                    qr: null
-                }
-            });
-            setQrDuplicateVolunteer(null);
         }
     };
 
@@ -231,10 +242,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     <div className={styles.personalWrap}>
                         <div className={styles.photoWrap}>
                             <img className={styles.photo} src='' alt='Photo' />
-                            <button className={styles.deletePhotoBtn}>
-                                <DeleteOutlined style={{ marginRight: '8px', color: 'inherit' }} />
-                                Удалить фото
-                            </button>
                         </div>
                         <div className={styles.personalInfoWrap}>
                             <div>
@@ -285,12 +292,48 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                             </Form.Item>
                         </div>
                     </div>
-                    <Form.Item label=' ' name='is_vegan' valuePropName='checked'>
-                        <Checkbox>Веган</Checkbox>
-                    </Form.Item>
+                    <div className={styles.isActiveCheckboxWrap}>
+                        <div className={styles.isActiveCheckbox}>
+                            <Form.Item name='is_vegan' valuePropName='checked'>
+                                <Checkbox>Веган</Checkbox>
+                            </Form.Item>
+                        </div>
+                        <div className={styles.isActiveCheckbox}>
+                            <Form.Item name='is_active' valuePropName='checked'>
+                                <Checkbox>Активирован</Checkbox>
+                            </Form.Item>
+                        </div>
+                        <div className={styles.isActiveCheckbox}>
+                            <Form.Item name='is_blocked' valuePropName='checked'>
+                                <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
+                            </Form.Item>
+                        </div>
+                    </div>
                 </div>
                 <div id='section2' className={styles.formSection}>
                     <p className={styles.formSection__title}>HR информация</p>
+                    <div className={styles.badgeInfoWrap}>
+                        <div className={styles.badgeInfo}>
+                            <Form.Item label='Право доступа' name='access_role'>
+                                <Select
+                                    allowClear
+                                    disabled={!canFullEditing}
+                                    {...accessRoleSelectProps}
+                                    onClear={onAccessRoleClear}
+                                />
+                            </Form.Item>
+                        </div>
+                        <div className={styles.badgeInfo}>
+                            <Form.Item label='Групповой бейдж' name='group_badge'>
+                                <Select
+                                    disabled={!canEditGroupBadge}
+                                    allowClear
+                                    {...groupBadgeSelectProps}
+                                    onClear={onGroupBadgeClear}
+                                />
+                            </Form.Item>
+                        </div>
+                    </div>
                     <div className={styles.hrInputsWrap}>
                         <div className={styles.hrInput}>
                             <Form.Item
@@ -361,24 +404,36 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                 </div>
                 <div id='section5' className={styles.formSection}>
                     <p className={styles.formSection__title}>Кастомные Поля</p>
-                    <Form.Item label=' ' valuePropName='checked'>
-                        <Checkbox>ClickMe</Checkbox>
-                    </Form.Item>
-                    <div className={styles.badgeInfo}>
-                        <Form.Item label='Random info'>
-                            <Input />
-                        </Form.Item>
-                    </div>
-                    <div className={styles.badgeInfo}>
-                        <Form.Item label='Random info'>
-                            <Input />
-                        </Form.Item>
-                    </div>
+                    {customFields.map(({ id, name, type }) => {
+                        const handleChange = (e) => {
+                            const value = e.target[type === 'boolean' ? 'checked' : 'value'];
+                            form.setFieldValue(['updated_custom_fields', id.toString()], value);
+                        };
+                        const customFieldValues = form.getFieldValue('custom_field_values');
+                        if (!customFieldValues) return null;
+                        const customFieldValue = customFieldValues.find(({ custom_field }) => custom_field === id);
+                        return (
+                            <Form.Item key={name} label={name}>
+                                {type === 'boolean' && (
+                                    <Checkbox
+                                        defaultChecked={customFieldValue ? customFieldValue.value === 'true' : false}
+                                        onChange={handleChange}
+                                    />
+                                )}
+                                {type === 'string' && (
+                                    <Input
+                                        defaultValue={customFieldValue ? customFieldValue.value : ''}
+                                        onChange={handleChange}
+                                    />
+                                )}
+                            </Form.Item>
+                        );
+                    })}
                 </div>
                 <div id='section6' className={styles.formSection}>
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div>
-                        <Form.Item label='Комментарий'>
+                        <Form.Item label='Комментарий' name='comment'>
                             <Input.TextArea autoSize={{ minRows: 6 }} />
                         </Form.Item>
                     </div>
