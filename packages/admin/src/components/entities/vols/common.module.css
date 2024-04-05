@@ -71,6 +71,9 @@
 }
 
 .formSection__title {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
     margin-bottom: 16px;
     font-weight: 500;
     font-size: 16px;
@@ -79,6 +82,20 @@
 }
 
 /* personal */
+
+.bannedWrap {
+    padding-left: 16px;
+}
+
+.bannedDescr {
+    padding: 1px 8px;
+    border: 1px solid #FFA39E;
+    border-radius: 2px;
+    background-color: #FFF1F0;
+    font-size: 12px;
+    line-height: 20px;
+    color: #F5222D;
+}
 
 .isActiveCheckboxWrap {
     display: flex;
@@ -188,6 +205,15 @@
     flex-grow: 1;
 }
 
+/* Кастомные поля */
+
+.customDescr {
+    padding: 60px 0;
+    margin: 0;
+    font-size: 25px;
+    text-align: center;
+}
+
 /* QR - info */
 
 .badgeQR {
@@ -207,4 +233,126 @@
 
 .badgeInfo {
     width: 50%;
+}
+
+/* модалка блокировки */
+
+.modalWrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modalWindow {
+    position: absolute;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    max-width: 416px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 24px;
+    padding-left: 62px;
+    background-color: white;
+}
+
+.carefulIcon {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    top: 24px;
+    left: 24px;
+    border: 2px solid #FAAD14;
+    border-radius: 50%;
+}
+
+.carefulDescr {
+    display: block;
+    color: #FAAD14;
+    font-size: 18px;
+    line-height: 150%;
+    font-weight: 500;
+}
+
+.modalTitle {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 150%;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.modalDescr {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 24px;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.modalButtonsWrap {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: end;
+}
+
+.modalButton {
+    padding: 4px 15px;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgba(0, 0, 0, 0.85);
+    cursor: pointer;
+    border-radius: 2px;
+    border: none;
+    background-color: transparent;
+}
+
+.block {
+    margin-right: 8px;
+    outline: 1px solid #D9D9D9;
+    transition: outline-color .3s ease-in-out;
+}
+
+.block:hover,
+.block:focus {
+    outline-color: #000000;
+    transition: outline-color .3s ease-in-out;
+}
+
+.cancel {
+    color: white;
+    background-color: #1890FF;
+    opacity: 1;
+    transition: opacity .3s ease-in-out;
+}
+
+.cancel:hover,
+.cancel:focus {
+    opacity: 0.8;
+    transition: opacity .3s ease-in-out;
+}
+
+.visuallyHidden {
+    position: absolute;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    overflow: hidden;
 }
