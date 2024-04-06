@@ -1,0 +1,478 @@
+openapi: 3.0.1
+info:
+  title: insomnia-synchronization
+  description: Синхронизация Админки и Интегратора
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /sync:
+    get:
+      summary: Прямая синхрронизация из интегртора в админку
+      parameters:
+      - name: from_date
+        in: query
+        schema:
+          type: string
+          format: date-time
+          example: "2019-05-17T11:00:00.000Z"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+  /back-sync:
+    post:
+      summary: Обратная синхрронизация из админки в интегратор
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackSyncBody'
+      responses:
+        "200":
+          description: OK
+components:
+  schemas:
+    SyncResponse:
+      type: object
+      required:
+        - badges
+        - arrivals
+        - engagements
+        - persons
+        - directions
+      properties:
+        badges:
+          type: object
+          properties:
+            inserted:
+              type: array
+              items:
+                $ref: '#/components/schemas/Badge'
+            updated:
+              type: array
+              items:
+                $ref: '#/components/schemas/Badge'
+            deleted:
+              type: array
+              items:
+                type: string
+                format: uuid
+        arrivals:
+          type: object
+          properties:
+            inserted:
+              type: array
+              items:
+                $ref: '#/components/schemas/Arrival'
+            updated:
+              type: array
+              items:
+                $ref: '#/components/schemas/Arrival'
+            deleted:
+              type: array
+              items:
+                type: string
+                format: uuid
+        engagements:
+          type: object
+          properties:
+            inserted:
+              type: array
+              items:
+                $ref: '#/components/schemas/Engagement'
+            updated:
+              type: array
+              items:
+                $ref: '#/components/schemas/Engagement'
+            deleted:
+              type: array
+              items:
+                type: string
+                format: uuid
+        persons:
+          type: object
+          properties:
+            inserted:
+              type: array
+              items:
+                $ref: '#/components/schemas/Person'
+            updated:
+              type: array
+              items:
+                $ref: '#/components/schemas/Person'
+            deleted:
+              type: array
+              items:
+                type: string
+                format: uuid
+        directions:
+          type: object
+          properties:
+            inserted:
+              type: array
+              items:
+                $ref: '#/components/schemas/Direction'
+            updated:
+              type: array
+              items:
+                $ref: '#/components/schemas/Direction'
+            deleted:
+              type: array
+              items:
+                type: string
+                format: uuid
+    BackSyncBody:
+      type: object
+      required:
+        - badges
+        - arrivals
+      properties:
+        from_date:
+          type: string
+          format: date-time
+          example: "2019-05-17T11:00:00.000Z"
+        badges:
+          type: object
+          properties:
+            inserted:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                  - badge
+                  - date
+                  - data
+                properties:
+                  actor_badge:
+                    type: string
+                    format: uuid
+                  date:
+                    type: string
+                    format: date-time
+                  data:
+                    $ref: '#/components/schemas/Badge'
+            updated:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                  - actor_badge
+                  - date
+                  - data
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  actor_badge:
+                    type: string
+                    format: uuid
+                  date:
+                    type: string
+                    format: date-time
+                  data:
+                    $ref: '#/components/schemas/Badge'
+            deleted:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                  - actor_badge
+                  - date
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  actor_badge:
+                    type: string
+                    format: uuid
+                  date:
+                    type: string
+                    format: date-time
+        arrivals:
+          type: object
+          properties:
+            inserted:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                  - badge
+                  - date
+                  - data
+                properties:
+                  actor_badge:
+                    type: string
+                    format: uuid
+                  date:
+                    type: string
+                    format: date-time
+                  data:
+                    $ref: '#/components/schemas/Arrival'
+            updated:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                  - actor_badge
+                  - date
+                  - data
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  actor_badge:
+                    type: string
+                    format: uuid
+                  date:
+                    type: string
+                    format: date-time
+                  data:
+                    $ref: '#/components/schemas/Arrival'
+            deleted:
+              type: array
+              items:
+                type: object
+                required:
+                  - id
+                  - actor_badge
+                  - date
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  actor_badge:
+                    type: string
+                    format: uuid
+                  date:
+                    type: string
+                    format: date-time
+    Badge:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        phone:
+          type: string
+        infant:
+          type: boolean
+        vegan: 
+          type: boolean
+        feed:
+          type: string
+          enum:
+            - FREE
+            - PAID
+            - NO
+        number:
+          type: string
+        batch:
+          type: string
+        role:
+          type: string
+          enum:
+            - ORGANIZER
+            - CAMP_LEAD
+            - VICE
+            - TEAM_LEAD
+            - VOLUNTEER
+            - CAMP_GUY
+            - PARTICIPANT
+            - FELLOW
+            - CONTRACTOR
+            - MEDIC? - TODO
+            - ANIMATOR? - TODO
+            - LECTOR? - TODO
+            - ARTIST? - TODO
+            - VIP? - TODO
+            - PRESS? - TODO
+            - Сопровождающие? - TODO
+        position:
+          type: string
+        photo:
+          type: string
+          example: https://upload.wikimedia.org/wikipedia/commons/f/f5/Example_image.jpg
+        person:
+          type: string
+          format: uuid
+        comment:
+          type: string
+        notion_id:
+          type: string
+          format: uuid
+    Arrival:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        badge:
+          type: string
+          format: uuid
+        engagement:
+          type: string
+          format: uuid
+        arrival_date:
+          type: string
+          format: date
+          example: "2024-05-17"
+        arrival_transport:
+          type: string
+          enum:
+            - UNDEFINED
+            - SELF
+            - BUS
+            - CAR
+            - TRANSFER
+            - MOVE
+        arrival_registered:
+          type: string
+          format: date-time
+          example: "2024-05-17T11:00:00Z"
+        departure_date:
+          type: string
+          format: date
+          example: "2024-05-17"
+        departure_transport:
+          type: string
+          enum:
+            - UNDEFINED
+            - SELF
+            - BUS
+            - CAR
+            - TRANSFER
+            - MOVE
+        departure_registered:
+          type: string
+          format: date-time
+          example: "2024-05-17T11:00:00Z"
+    Engagement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        year:
+          type: integer
+          example: 2023
+        person:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum:
+            - ORGANIZER
+            - CAMP_LEAD
+            - VICE
+            - TEAM_LEAD
+            - VOLUNTEER
+            - CAMP_GUY
+            - PARTICIPANT
+            - FELLOW
+            - CONTRACTOR
+        position:
+          type: string
+        status:
+          type: string
+          enum:
+            - PLANNED
+            - CANCELED
+            - PENDING
+            - CONFIRMED
+            - SKIPPED
+            - ARRIVED
+            - STARTED
+            - LEFT
+            - COMPLETE
+            - JOINED
+        direction:
+          type: string
+          format: uuid
+        notion_id:
+          type: string
+          format: uuid
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        nickname:
+          type: string
+        other_names:
+          type: string
+          example: 'Бонапарт, Тузик, Штиршиц'
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+        birth_date:
+          type: string
+          format: date
+          example: '1990-11-05'
+        phone:
+          type: string
+        telegram:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+        vegan:
+          type: boolean
+        notion_id:
+          type: string
+          format: uuid
+    Direction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        first_year:
+          type: integer
+          example: 2020
+        last_year:
+          type: integer
+          example: 2024
+        type:
+          type: string
+          enum:
+            - TODO
+        notion_id:
+          type: string
+          format: uuid
+    

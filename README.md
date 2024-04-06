@@ -22,10 +22,12 @@ pip install -r requirements.txt
 ```
 
 ```bash
-yarn run bootstrap
+yarn
 ```
 
 # Запуск
+
+Скопировать файл backend/.env.sample в backend/.env
 
 ```bash
 cd ./backend
