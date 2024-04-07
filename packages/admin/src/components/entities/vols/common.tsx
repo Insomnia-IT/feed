@@ -1,4 +1,5 @@
-import { Button, Checkbox, DatePicker, Form, FormInstance, Input, Select, useSelect } from '@pankod/refine-antd';
+import type { FormInstance } from '@pankod/refine-antd';
+import { Button, Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
 import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 
@@ -55,18 +56,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         optionLabel: 'name'
     });
 
-    const onGroupBadgeClear = () => {
-        setTimeout(() => {
-            form.setFieldValue('group_badge', '');
-        });
-    };
-
-    const onAccessRoleClear = () => {
-        setTimeout(() => {
-            form.setFieldValue('access_role', '');
-        });
-    };
-
     const getDepartmentIds = (department) => {
         return {
             value: department ? department.map((d) => d.id || d) : department
@@ -77,6 +66,18 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         return {
             value: value ? dayjs(value) : ''
         };
+    };
+
+    const onGroupBadgeClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('group_badge', '');
+        });
+    };
+
+    const onAccessRoleClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('access_role', '');
+        });
     };
 
     const activeToValidationRules = useMemo(
@@ -116,6 +117,33 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         }
     };
 
+    const clearDuplicateQR = async () => {
+        if (qrDuplicateVolunteer) {
+            await dataProvider.update<VolEntity>({
+                id: qrDuplicateVolunteer.id,
+                resource: 'volunteers',
+                variables: {
+                    qr: null
+                }
+            });
+            setQrDuplicateVolunteer(null);
+        }
+    };
+
+    const handleClear = () => {
+        void clearDuplicateQR();
+    };
+
+    const handleOpenVolunteer = () => {
+        if (qrDuplicateVolunteer) {
+            window.location.href = `${window.location.origin}/volunteers/edit/${qrDuplicateVolunteer.id}`;
+        }
+    };
+
+    const handleCancel = () => {
+        setQrDuplicateVolunteer(null);
+    };
+
     useEffect(() => {
         // @ts-ignore
         function onHardwareScan({ detail: { scanCode } }): void {
@@ -148,18 +176,14 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     // отсюда мой код
 
     const [activeAnchor, setActiveAnchor] = useState('section1');
-    const [isBlockWindowOpen, setIsBlockWindowOpen] = useState(false);
     const isBlocked = Form.useWatch('is_blocked', form);
+    const [open, setOpen] = useState(false);
 
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
         form.setFieldsValue({ is_blocked: !isBlocked });
-        setIsBlockWindowOpen(prev => !prev);
+        setOpen(false);
     };
-
-    const handleSetBlockWindowStatus = () => {
-        setIsBlockWindowOpen(prev => !prev);
-    }
 
     useEffect(() => {
         const formWrap = document.querySelector(`.${styles.formWrap}`);
@@ -220,7 +244,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         };
     }, [setActiveAnchor]);
 
-
     return (
         <div className={styles.edit}>
             <div className={styles.edit__nav}>
@@ -264,55 +287,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                 </ul>
             </div>
             <div className={styles.formWrap}>
-                {isBlockWindowOpen && (
-                    <div className={styles.modalWrap}>
-                        <div className={styles.modalWindow}>
-                            <span className={styles.carefulIcon}>
-                                <span className={styles.carefulDescr}>!</span>
-                            </span>
-                            <p className={styles.modalTitle}>
-                                {isBlocked
-                                    ? 'Разблокировать волонтера?'
-                                    : 'Заблокировать Волонтера?'
-                                }
-                            </p>
-                            <p className={styles.modalDescr}>
-                                {isBlocked
-                                    ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
-                                    : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'
-                                }
-                            </p>
-                            <div className={styles.modalButtonsWrap}>
-                                <Form.Item name='is_blocked' valuePropName='checked' style={{ marginBottom: '0' }}>
-                                    <button
-                                        type='button'
-                                        className={`${styles.modalButton} ${styles.block}`}
-                                        disabled={!canFullEditing}
-                                        onClick={handleToggleBlocked}>
-                                        {isBlocked
-                                            ? 'Разблокировать волонтера'
-                                            : 'Заблокировать Волонтера'
-                                        }
-                                    </button>
-                                </Form.Item>
-                                <button
-                                    type='button'
-                                    className={`${styles.modalButton} ${styles.cancel}`}
-                                    onClick={handleSetBlockWindowStatus}>
-                                    Оставить
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
                 <div id='section1' className={styles.formSection}>
                     <p className={styles.formSection__title}>
                         Персональная информация
                         {isBlocked && (
                             <div className={styles.bannedWrap}>
-                                <span className={styles.bannedDescr}>
-                                    Забанен
-                                </span>
+                                <span className={styles.bannedDescr}>Забанен</span>
                             </div>
                         )}
                     </p>
@@ -511,15 +491,35 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                             <Input.TextArea autoSize={{ minRows: 6 }} />
                         </Form.Item>
                     </div>
-                    <button
-                        type='button'
-                        className={`${styles.modalButton} ${styles.block}`}
-                        onClick={handleSetBlockWindowStatus}>
-                        {isBlocked
-                            ? 'Разблокировать волонтера'
-                            : 'Заблокировать Волонтера'
-                        }
-                    </button>
+                    <div>
+                        <Button type='default' onClick={() => setOpen(true)}>
+                            {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                        </Button>
+                        <Modal
+                            closable={false}
+                            centered
+                            open={open}
+                            okText={'Оставить'}
+                            cancelText={`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                            onOk={() => setOpen(false)}
+                            onCancel={handleToggleBlocked}
+                            width={420}
+                        >
+                            <div className={styles.modalWindow}>
+                                <span className={styles.carefulIcon}>
+                                    <span className={styles.carefulDescr}>!</span>
+                                </span>
+                                <p className={styles.modalTitle}>
+                                    {isBlocked ? 'Разблокировать волонтера?' : 'Заблокировать Волонтера?'}
+                                </p>
+                                <p className={styles.modalDescr}>
+                                    {isBlocked
+                                        ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
+                                        : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
+                                </p>
+                            </div>
+                        </Modal>
+                    </div>
                     <div className={styles.visuallyHidden}>
                         <Form.Item name='is_blocked' valuePropName='checked' style={{ marginBottom: '0' }}>
                             <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
@@ -527,6 +527,26 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     </div>
                 </div>
             </div>
+            <Modal
+                title='Дублирование QR'
+                open={qrDuplicateVolunteer !== null && !qrDuplicateVolunteer.is_active}
+                onOk={handleClear}
+                onCancel={handleCancel}
+                okText='Освободить'
+            >
+                <p>Этот QR уже привязан к другому волонтеру.</p>
+                <p>Освободить этот QR код?</p>
+            </Modal>
+            <Modal
+                title='Дублирование QR'
+                open={qrDuplicateVolunteer !== null && qrDuplicateVolunteer.is_active}
+                onOk={handleOpenVolunteer}
+                onCancel={handleCancel}
+                okText='Открыть'
+            >
+                <p>Этот QR уже привязан к активированному волонтеру.</p>
+                <p>Открыть карточку этого волонтера?</p>
+            </Modal>
         </div>
     );
 };

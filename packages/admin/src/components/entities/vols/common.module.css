@@ -4,18 +4,18 @@
 }
 
 .edit__nav {
+    max-width: 224px;
     margin-right: 24px;
     margin-left: -24px;
-    max-width: 224px;
     background-color: white;
 }
 
 .navList {
-    padding: 0;
-    margin: 0;
-    list-style: none;
     display: flex;
     flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .navList__item:not(:last-child) {
@@ -23,28 +23,28 @@
 }
 
 .navList__item {
-    padding: 0px 24px 0px 16px;
     display: flex;
     align-items: center;
     width: 224px;
     height: 40px;
+    padding: 0 24px 0 16px;
+    color: rgb(0 0 0 / 0.85);
     font-size: 14px;
     line-height: 157%;
     cursor: pointer;
-    color: rgba(0, 0, 0, 0.85);
 }
 
 .active {
-    border-right: 3px solid #1890ff;
-    background: #e6f7ff;
+    border-right: 3px solid rgb(24 144 255);
+    background: rgb(230 247 255);
 }
 
 .formWrap {
-    width: 100%;
-    height: calc(100vh - 230px);
-    overflow-y: scroll;
     display: flex;
     flex-direction: column;
+    overflow-y: scroll;
+    width: 100%;
+    height: calc(100vh - 230px);
 }
 
 .formWrap::-webkit-scrollbar {
@@ -52,12 +52,12 @@
 }
 
 .formWrap::-webkit-scrollbar-thumb {
-    background-color: #1890ff;
     border-radius: 5px;
+    background-color: rgb(24 144 255);
 }
 
 .formWrap::-webkit-scrollbar-thumb:hover {
-    background-color: #0e5da7;
+    background-color: rgb(14 93 167);
 }
 
 .formSection:not(:last-child) {
@@ -72,13 +72,13 @@
 
 .formSection__title {
     display: flex;
-    align-items: center;
     flex-wrap: nowrap;
+    align-items: center;
     margin-bottom: 16px;
+    color: rgb(0 0 0 / 0.85);
     font-weight: 500;
     font-size: 16px;
     line-height: 150%;
-    color: rgba(0, 0, 0, 0.85);
 }
 
 /* personal */
@@ -89,18 +89,18 @@
 
 .bannedDescr {
     padding: 1px 8px;
-    border: 1px solid #FFA39E;
+    border: 1px solid rgb(255 163 158);
     border-radius: 2px;
-    background-color: #FFF1F0;
+    background-color: rgb(255 241 240);
+    color: rgb(245 34 45);
     font-size: 12px;
     line-height: 20px;
-    color: #F5222D;
 }
 
 .isActiveCheckboxWrap {
     display: flex;
-    align-items: center;
     flex-wrap: nowrap;
+    align-items: center;
     width: 100%;
 }
 
@@ -114,17 +114,17 @@
 }
 
 .photoWrap {
-    margin-right: 16px;
     display: flex;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
+    margin-right: 16px;
 }
 
 .photo {
-    margin-bottom: 4px;
     width: 112px;
     height: 112px;
-    background-color: #f5f5f5;
+    margin-bottom: 4px;
+    background-color: rgb(245 245 245);
 }
 
 .personalInfoWrap {
@@ -148,8 +148,8 @@
 }
 
 .phoneInput {
-    margin-right: 12px;
     flex-grow: 2;
+    margin-right: 12px;
 }
 
 .genderSelect {
@@ -158,13 +158,13 @@
 
 .kitchenTypeWrap {
     display: flex;
-    align-items: center;
     flex-wrap: nowrap;
+    align-items: center;
 }
 
 .kitchenSelect {
-    margin-right: 12px;
     flex-grow: 1;
+    margin-right: 12px;
 }
 
 .typeMeal {
@@ -175,9 +175,9 @@
 
 .hrInputsWrap {
     display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
     flex-grow: 1;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .hrInput:not(:last-child) {
@@ -191,10 +191,10 @@
 /* Даты на поле */
 
 .fieldsDates {
-    flex-grow: 1;
     display: flex;
-    align-items: center;
+    flex-grow: 1;
     flex-wrap: nowrap;
+    align-items: center;
 }
 
 .dateInput:not(:last-child) {
@@ -208,8 +208,8 @@
 /* Кастомные поля */
 
 .customDescr {
-    padding: 60px 0;
     margin: 0;
+    padding: 60px 0;
     font-size: 25px;
     text-align: center;
 }
@@ -222,9 +222,9 @@
 
 .badgeInfoWrap {
     display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
     flex-grow: 1;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .badgeInfo:not(:last-child) {
@@ -237,122 +237,62 @@
 
 /* модалка блокировки */
 
-.modalWrap {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-
 .modalWindow {
-    position: absolute;
     display: flex;
-    flex-wrap: nowrap;
     flex-direction: column;
-    max-width: 416px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 24px;
-    padding-left: 62px;
+    flex-wrap: nowrap;
+    padding-left: 30px;
     background-color: white;
 }
 
 .carefulIcon {
     position: absolute;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
     top: 24px;
     left: 24px;
-    border: 2px solid #FAAD14;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgb(250 173 20);
     border-radius: 50%;
 }
 
 .carefulDescr {
     display: block;
-    color: #FAAD14;
+    color: rgb(250 173 20);
+    font-weight: 500;
     font-size: 18px;
     line-height: 150%;
-    font-weight: 500;
 }
 
 .modalTitle {
-    padding: 0;
     margin: 0;
     margin-bottom: 8px;
+    padding: 0;
+    color: rgb(0 0 0 / 0.85);
     font-weight: 500;
     font-size: 16px;
     line-height: 150%;
-    color: rgba(0, 0, 0, 0.85);
 }
 
 .modalDescr {
     margin: 0;
-    padding: 0;
     margin-bottom: 24px;
+    padding: 0;
+    color: rgb(0 0 0 / 0.85);
     font-weight: 400;
     font-size: 14px;
     line-height: 157%;
-    color: rgba(0, 0, 0, 0.85);
-}
-
-.modalButtonsWrap {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: end;
-}
-
-.modalButton {
-    padding: 4px 15px;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 157%;
-    color: rgba(0, 0, 0, 0.85);
-    cursor: pointer;
-    border-radius: 2px;
-    border: none;
-    background-color: transparent;
-}
-
-.block {
-    margin-right: 8px;
-    outline: 1px solid #D9D9D9;
-    transition: outline-color .3s ease-in-out;
-}
-
-.block:hover,
-.block:focus {
-    outline-color: #000000;
-    transition: outline-color .3s ease-in-out;
-}
-
-.cancel {
-    color: white;
-    background-color: #1890FF;
-    opacity: 1;
-    transition: opacity .3s ease-in-out;
-}
-
-.cancel:hover,
-.cancel:focus {
-    opacity: 0.8;
-    transition: opacity .3s ease-in-out;
 }
 
 .visuallyHidden {
     position: absolute;
-    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
     width: 1px;
     height: 1px;
     margin: -1px;
+    padding: 0;
     border: 0;
-    clip: rect(0, 0, 0, 0);
-    overflow: hidden;
 }
