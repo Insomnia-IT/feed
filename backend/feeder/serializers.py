@@ -21,7 +21,6 @@ class DirectionTypeSerializer(serializers.ModelSerializer):
 
 
 class DirectionSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
     type = DirectionTypeSerializer()
 
     class Meta:
@@ -38,7 +37,6 @@ class EngagementRoleSerializer(serializers.ModelSerializer):
 
 
 class EngagementSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
     role = EngagementRoleSerializer()
 
     class Meta:
@@ -130,8 +128,6 @@ class AccessRoleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PersonSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
     class Meta:
         model = models.Person
         fields = '__all__'
@@ -273,12 +269,11 @@ class TransportSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = models.Kitchen
+        model = models.Transport
         fields = '__all__'
 
 
 class ArrivalSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
     volunteer = VolunteerSerializer()
     arrival_transport = TransportSerializer()
     departure_transport = TransportSerializer()

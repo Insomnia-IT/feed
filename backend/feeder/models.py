@@ -12,6 +12,7 @@ def gen_uuid():
 
 class Direction(TimeMixin, CommentMixin):
     """ Службы и локации """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=255)
     type = models.ForeignKey('DirectionType', on_delete=models.PROTECT)
     first_year = models.IntegerField(null=True, blank=True)
@@ -21,6 +22,7 @@ class Direction(TimeMixin, CommentMixin):
 
 class Arrival(TimeMixin, CommentMixin):
     """ Пребывание (заезды и отъезды) """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE)
     arrival_date = models.DateField()
     arrival_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="arrivals")
@@ -31,11 +33,13 @@ class Arrival(TimeMixin, CommentMixin):
 
 
 class Transport(TimeMixin):
+    # TODO id string codes
     """ Транспорт (Способы въезда и выезда) """
     name = models.CharField(max_length=255)
 
 
 class VolunteerRole(TimeMixin):
+    # TODO id string codes
     """ Роли волонтеров """
     name = models.CharField(max_length=255)
     color = models.CharField(max_length=6)
@@ -44,19 +48,21 @@ class VolunteerRole(TimeMixin):
 
 
 class DirectionType(TimeMixin):
+    # TODO id string codes
     """ Типы служб и локаций """
     name = models.CharField(max_length=255)
     is_federal = models.BooleanField(default=False)
 
 
 class Gender(TimeMixin):
-    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     """ Пол """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
 
 
 class Person(TimeMixin, CommentMixin):
     """ Личность """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=255)
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
@@ -79,6 +85,7 @@ class Photo(TimeMixin):
 
 
 class EngagementRole(TimeMixin):
+    # TODO id string codes
     """ Роли в участии """
     name = models.CharField(max_length=255)
     is_team = models.BooleanField(default=False)
@@ -86,6 +93,7 @@ class EngagementRole(TimeMixin):
 
 class Engagement(TimeMixin):
     """ Участие """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     year = models.IntegerField()
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT)
