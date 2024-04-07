@@ -16,7 +16,7 @@ import { renderText } from '@feed/ui/src/table';
 
 import type { DepartmentEntity, VolEntity } from '~/interfaces';
 
-type Lead = Pick<VolEntity, 'id' | 'nickname'>;
+type Lead = Pick<VolEntity, 'id' | 'name'>;
 
 const selectStyle = { minWidth: 200 };
 
@@ -45,7 +45,7 @@ export const DepartmentList: FC<IResourceComponentsProps> = () => {
 
     const { selectProps: leadSelectProps } = useSelect<Lead>({
         resource: 'volunteers',
-        optionLabel: 'nickname'
+        optionLabel: 'name'
     });
 
     const filteredSource = useMemo(
@@ -62,7 +62,7 @@ export const DepartmentList: FC<IResourceComponentsProps> = () => {
             <Table rowKey='id' dataSource={filteredSource}>
                 <Table.Column dataIndex='name' title='Название' render={renderText} sorter />
                 <Table.Column<{ lead: Lead | null }>
-                    dataIndex={['lead', 'nickname']}
+                    dataIndex={['lead', 'name']}
                     title='Руководитель'
                     render={(value) => <TextField value={value} />}
                     filterDropdown={(props) => (

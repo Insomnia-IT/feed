@@ -202,9 +202,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 ? volunteers?.data.filter((item) => {
                       const searchTextInLowerCase = searchText.toLowerCase();
                       return [
-                          item.nickname,
                           item.name,
-                          item.lastname,
+                          item.first_name,
+                          item.last_name,
                           item.departments?.map(({ name }) => name).join(', '),
                           item.active_from ? dayjs(item.active_from).format(formDateFormat) : null
                       ].some((text) => {
@@ -289,9 +289,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             filteredData.forEach((vol, index) => {
                 sheet.addRow([
                     vol.id,
-                    vol.nickname,
                     vol.name,
-                    vol.lastname,
+                    vol.first_name,
+                    vol.last_name,
                     vol.departments ? vol.departments.map((department) => department.name).join(', ') : '',
                     vol.role,
                     vol.active_from ? dayjs(vol.active_from).format(formDateFormat) : '',
@@ -414,25 +414,25 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     sorter={getSorter('id')}
                 />
                 <Table.Column
-                    dataIndex='nickname'
-                    key='nickname'
-                    title='Позывной'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('nickname')}
-                />
-                <Table.Column
                     dataIndex='name'
                     key='name'
-                    title='Имя'
+                    title='Имя на бейдже'
                     render={(value) => <TextField value={value} />}
                     sorter={getSorter('name')}
                 />
                 <Table.Column
-                    dataIndex='lastname'
-                    key='lastname'
+                    dataIndex='first_name'
+                    key='first_name'
+                    title='Имя'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('first_name')}
+                />
+                <Table.Column
+                    dataIndex='last_name'
+                    key='last_name'
                     title='Фамилия'
                     render={(value) => <TextField value={value} />}
-                    sorter={getSorter('lastname')}
+                    sorter={getSorter('last_name')}
                 />
                 <Table.Column
                     dataIndex='departments'

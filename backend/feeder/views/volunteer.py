@@ -36,9 +36,9 @@ class MultiSerializerViewSetMixin(object):
 
 class VolunteerFilter(django_filters.FilterSet):
     id__in = NumberInFilter(field_name='id', lookup_expr='in')
+    first_name = django_filters.CharFilter(field_name="first_name", lookup_expr='icontains')
+    last_name = django_filters.CharFilter(field_name="last_name", lookup_expr='icontains')
     name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
-    lastname = django_filters.CharFilter(field_name="lastname", lookup_expr='icontains')
-    nickname = django_filters.CharFilter(field_name="nickname", lookup_expr='icontains')
     phone = django_filters.CharFilter(field_name="phone", lookup_expr='icontains')
     email = django_filters.CharFilter(field_name="email", lookup_expr='icontains')
     qr = django_filters.CharFilter(field_name="qr", lookup_expr='iexact')
@@ -66,7 +66,7 @@ class VolunteerViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
         'list': serializers.VolunteerListSerializer
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'lastname', 'nickname', 'phone', 'email', 'qr']
+    search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr']
     filterset_class = VolunteerFilter
 
 

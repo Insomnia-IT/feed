@@ -3,9 +3,9 @@ export interface VolEntity {
     custom_field_values: Array<{ custom_field: number; value: string }>;
     uuid?: string;
     qr?: string;
+    first_name?: string;
+    last_name?: string;
     name?: string;
-    lastname?: string;
-    nickname?: string;
     phone?: string;
     email?: string;
     photo?: string;

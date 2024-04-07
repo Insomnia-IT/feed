@@ -81,15 +81,15 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
             <Title level={5}>Волонтеры</Title>
             <Table {...tableProps} dataSource={dataSource} rowKey='id'>
                 <Table.Column
-                    dataIndex='nickname'
-                    key='nickname'
-                    title='Позывной'
+                    dataIndex='name'
+                    key='name'
+                    title='Имя на бейдже'
                     render={(value) => <TextField value={value} />}
                 />
-                <Table.Column dataIndex='name' key='name' title='Имя' render={(value) => <TextField value={value} />} />
+                <Table.Column dataIndex='first_name' key='first_name' title='Имя' render={(value) => <TextField value={value} />} />
                 <Table.Column
-                    dataIndex='lastname'
-                    key='lastname'
+                    dataIndex='last_name'
+                    key='last_name'
                     title='Фамилия'
                     render={(value) => <TextField value={value} />}
                 />

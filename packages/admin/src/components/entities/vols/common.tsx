@@ -244,24 +244,19 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                             <img className={styles.photo} src='' alt='Photo' />
                         </div>
                         <div className={styles.personalInfoWrap}>
-                            <div>
-                                <Form.Item label='Надпись на бейдже' name='nickname' rules={Rules.required}>
-                                    <Input />
-                                </Form.Item>
-                            </div>
                             <div className={styles.nickNameLastnameWrap}>
                                 <div className={styles.nameInput}>
-                                    <Form.Item label='Позывной' name='nickname' rules={Rules.required}>
+                                    <Form.Item label='Имя на бейдже' name='name' rules={Rules.required}>
                                         <Input />
                                     </Form.Item>
                                 </div>
                                 <div className={styles.nameInput}>
-                                    <Form.Item label='Имя' name='name'>
+                                    <Form.Item label='Имя' name='first_name'>
                                         <Input />
                                     </Form.Item>
                                 </div>
                                 <div className={styles.nameInput}>
-                                    <Form.Item label='Фамилия' name='lastname'>
+                                    <Form.Item label='Фамилия' name='last_name'>
                                         <Input />
                                     </Form.Item>
                                 </div>

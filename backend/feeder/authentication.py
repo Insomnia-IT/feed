@@ -57,9 +57,9 @@ class QRAuthentication(BaseTokenAuthentication):
 
             user = QRUser()
             user.id = volunteer.pk
-            user.username = volunteer.nickname
-            user.first_name = volunteer.name
-            user.last_name = volunteer.lastname
+            user.username = volunteer.name
+            user.first_name = volunteer.first_name
+            user.last_name = volunteer.last_name
             user.access_role = volunteer.access_role
 
 

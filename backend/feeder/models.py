@@ -102,9 +102,9 @@ class Volunteer(TimeMixin):
     parent = models.ForeignKey('Volunteer', on_delete=models.SET_NULL, null=True, blank=True, related_name="parents")
     directions = models.ManyToManyField(Direction, blank=True)
 
-    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя")
-    lastname = models.CharField(max_length=255, null=True, blank=True, verbose_name="Фамилия")
-    nickname = models.CharField(max_length=255, null=True, blank=True, verbose_name="Ник")
+    first_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя")
+    last_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Фамилия")
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя на бейдже")
     phone = models.CharField(max_length=255, null=True, blank=True, verbose_name="Телефон")
     email = models.CharField(max_length=255, null=True, blank=True, verbose_name="E-mail")
     photo = models.TextField(null=True, blank=True, verbose_name="Фотография")
@@ -148,7 +148,7 @@ class Volunteer(TimeMixin):
         verbose_name_plural = "Волонтёры"
 
     def __str__(self):
-        return u"{} ({})".format(self.name, self.nickname)
+        return u"{} ({})".format(self.first_name, self.name)
 
     @property
     def paid(self):
