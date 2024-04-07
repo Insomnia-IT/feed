@@ -265,9 +265,9 @@ def sync_from_notion(people):
             continue
 
         # otherwise set/update vol fields
-        volunteer.name = person.get('name')
-        volunteer.lastname = person.get('lastname')
-        volunteer.nickname = person.get('nickname')
+        volunteer.first_name = person.get('name')
+        volunteer.last_name = person.get('lastname')
+        volunteer.name = person.get('nickname')
         volunteer.email = person.get('email')
         if created:
             volunteer.qr = person.get('qr')

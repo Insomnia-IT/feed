@@ -12,6 +12,7 @@ def gen_uuid():
 
 class Direction(TimeMixin, CommentMixin):
     """ Службы и локации """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=255)
     type = models.ForeignKey('DirectionType', on_delete=models.PROTECT)
     first_year = models.IntegerField(null=True, blank=True)
@@ -19,8 +20,9 @@ class Direction(TimeMixin, CommentMixin):
     notion_id = models.CharField(max_length=255, db_index=True)
 
 
-class Staying(TimeMixin, CommentMixin):
+class Arrival(TimeMixin, CommentMixin):
     """ Пребывание (заезды и отъезды) """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE)
     arrival_date = models.DateField()
     arrival_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="arrivals")
@@ -32,10 +34,12 @@ class Staying(TimeMixin, CommentMixin):
 
 class Transport(TimeMixin):
     """ Транспорт (Способы въезда и выезда) """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
 
 
 class VolunteerRole(TimeMixin):
+    # TODO id string codes
     """ Роли волонтеров """
     name = models.CharField(max_length=255)
     color = models.CharField(max_length=6)
@@ -44,6 +48,7 @@ class VolunteerRole(TimeMixin):
 
 
 class DirectionType(TimeMixin):
+    # TODO id string codes
     """ Типы служб и локаций """
     name = models.CharField(max_length=255)
     is_federal = models.BooleanField(default=False)
@@ -51,11 +56,13 @@ class DirectionType(TimeMixin):
 
 class Gender(TimeMixin):
     """ Пол """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
 
 
 class Person(TimeMixin, CommentMixin):
     """ Личность """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=255)
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
@@ -77,18 +84,20 @@ class Photo(TimeMixin):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
 
 
-class ParticipationRole(TimeMixin):
+class EngagementRole(TimeMixin):
     """ Роли в участии """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
     is_team = models.BooleanField(default=False)
 
 
-class Participation(TimeMixin):
+class Engagement(TimeMixin):
     """ Участие """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     year = models.IntegerField()
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT)
-    role = models.ForeignKey(ParticipationRole, on_delete=models.PROTECT)
+    role = models.ForeignKey(EngagementRole, on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
     notion_id = models.CharField(max_length=255, db_index=True)
@@ -102,9 +111,9 @@ class Volunteer(TimeMixin):
     parent = models.ForeignKey('Volunteer', on_delete=models.SET_NULL, null=True, blank=True, related_name="parents")
     directions = models.ManyToManyField(Direction, blank=True)
 
-    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя")
-    lastname = models.CharField(max_length=255, null=True, blank=True, verbose_name="Фамилия")
-    nickname = models.CharField(max_length=255, null=True, blank=True, verbose_name="Ник")
+    first_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя")
+    last_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Фамилия")
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Имя на бейдже")
     phone = models.CharField(max_length=255, null=True, blank=True, verbose_name="Телефон")
     email = models.CharField(max_length=255, null=True, blank=True, verbose_name="E-mail")
     photo = models.TextField(null=True, blank=True, verbose_name="Фотография")
@@ -148,7 +157,7 @@ class Volunteer(TimeMixin):
         verbose_name_plural = "Волонтёры"
 
     def __str__(self):
-        return u"{} ({})".format(self.name, self.nickname)
+        return u"{} ({})".format(self.first_name, self.name)
 
     @property
     def paid(self):

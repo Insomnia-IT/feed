@@ -80,9 +80,9 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                             }
                         }
                     );
-                    const { access_role, id, lastname, name, nickname } = data.results[0];
+                    const { access_role, id, name } = data.results[0];
                     const userData: UserData = {
-                        username: nickname,
+                        username: name,
                         id: id,
                         roles: [access_role],
                         exp: 0,

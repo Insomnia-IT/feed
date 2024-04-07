@@ -65,7 +65,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         return (vols ? vols.data : []).reduce(
             (acc, vol) => ({
                 ...acc,
-                [vol.id]: vol.nickname
+                [vol.id]: vol.name
             }),
             {}
         );

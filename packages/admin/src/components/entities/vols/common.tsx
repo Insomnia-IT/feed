@@ -1,4 +1,5 @@
-import { Checkbox, DatePicker, Form, FormInstance, Input, Select, useSelect } from '@pankod/refine-antd';
+import type { FormInstance } from '@pankod/refine-antd';
+import { Checkbox, DatePicker, Form, Input, Select, useSelect } from '@pankod/refine-antd';
 import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 
@@ -47,6 +48,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
 
     const { selectProps: accessRoleSelectProps } = useSelect<AccessRoleEntity>({
         resource: 'access-roles',
+        optionLabel: 'name'
+    });
+
+    const { selectProps: genderSelectProps } = useSelect<AccessRoleEntity>({
+        resource: 'genders',
         optionLabel: 'name'
     });
 
@@ -244,24 +250,19 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                             <img className={styles.photo} src='' alt='Photo' />
                         </div>
                         <div className={styles.personalInfoWrap}>
-                            <div>
-                                <Form.Item label='Надпись на бейдже' name='nickname' rules={Rules.required}>
-                                    <Input />
-                                </Form.Item>
-                            </div>
                             <div className={styles.nickNameLastnameWrap}>
                                 <div className={styles.nameInput}>
-                                    <Form.Item label='Позывной' name='nickname' rules={Rules.required}>
+                                    <Form.Item label='Имя на бейдже' name='name' rules={Rules.required}>
                                         <Input />
                                     </Form.Item>
                                 </div>
                                 <div className={styles.nameInput}>
-                                    <Form.Item label='Имя' name='name'>
+                                    <Form.Item label='Имя' name='first_name'>
                                         <Input />
                                     </Form.Item>
                                 </div>
                                 <div className={styles.nameInput}>
-                                    <Form.Item label='Фамилия' name='lastname'>
+                                    <Form.Item label='Фамилия' name='last_name'>
                                         <Input />
                                     </Form.Item>
                                 </div>
@@ -274,7 +275,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                 </div>
                                 <div className={styles.genderSelect}>
                                     <Form.Item label='Пол волонтера' name='gender'>
-                                        <Select defaultValue='Не указано' />
+                                        <Select {...genderSelectProps} />
                                     </Form.Item>
                                 </div>
                             </div>
