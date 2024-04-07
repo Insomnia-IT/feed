@@ -50,6 +50,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         optionLabel: 'name'
     });
 
+    const { selectProps: genderSelectProps } = useSelect<AccessRoleEntity>({
+        resource: 'genders',
+        optionLabel: 'name'
+    });
+
     const { selectProps: groupBadgeSelectProps } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
         optionLabel: 'name'
@@ -269,7 +274,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                 </div>
                                 <div className={styles.genderSelect}>
                                     <Form.Item label='Пол волонтера' name='gender'>
-                                        <Select defaultValue='Не указано' />
+                                        <Select {...genderSelectProps} />
                                     </Form.Item>
                                 </div>
                             </div>

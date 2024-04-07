@@ -138,10 +138,10 @@ class PersonSerializer(serializers.ModelSerializer):
 
 
 class GenderSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
+    id = serializers.CharField(read_only=True)
 
     class Meta:
-        model = models.Color
+        model = models.Gender
         fields = '__all__'
 
 

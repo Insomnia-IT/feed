@@ -50,6 +50,7 @@ class DirectionType(TimeMixin):
 
 
 class Gender(TimeMixin):
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     """ Пол """
     name = models.CharField(max_length=255)
 
