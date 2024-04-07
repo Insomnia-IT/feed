@@ -28,7 +28,7 @@ export const LastUpdated: FC<{
 
 export const VolInfo: FC<{
     vol: Volunteer;
-}> = ({ vol: { active_from, active_to, departments, feed_type, is_vegan, first_name, name } }) => (
+}> = ({ vol: { active_from, active_to, departments, feed_type, first_name, is_vegan, name } }) => (
     <div className={css.volInfo}>
         <div className={css.feedType}>
             {feed_type === FeedType.FT2 ? 'платно' : feed_type === FeedType.Child ? 'ребенок' : 'фри'}

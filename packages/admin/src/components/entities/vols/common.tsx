@@ -1,4 +1,5 @@
-import { Checkbox, DatePicker, Form, FormInstance, Input, Select, useSelect } from '@pankod/refine-antd';
+import type { FormInstance } from '@pankod/refine-antd';
+import { Checkbox, DatePicker, Form, Input, Select, useSelect } from '@pankod/refine-antd';
 import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 

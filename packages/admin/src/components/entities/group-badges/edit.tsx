@@ -86,7 +86,12 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                     title='Имя на бейдже'
                     render={(value) => <TextField value={value} />}
                 />
-                <Table.Column dataIndex='first_name' key='first_name' title='Имя' render={(value) => <TextField value={value} />} />
+                <Table.Column
+                    dataIndex='first_name'
+                    key='first_name'
+                    title='Имя'
+                    render={(value) => <TextField value={value} />}
+                />
                 <Table.Column
                     dataIndex='last_name'
                     key='last_name'
