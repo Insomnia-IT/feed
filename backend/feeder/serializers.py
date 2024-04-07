@@ -29,8 +29,6 @@ class DirectionSerializer(serializers.ModelSerializer):
 
 
 class EngagementRoleSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
     class Meta:
         model = models.EngagementRole
         fields = '__all__'
@@ -266,8 +264,6 @@ class UserDetailSerializer(serializers.Serializer):
 
 
 class TransportSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
     class Meta:
         model = models.Transport
         fields = '__all__'

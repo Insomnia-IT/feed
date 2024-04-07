@@ -33,8 +33,8 @@ class Arrival(TimeMixin, CommentMixin):
 
 
 class Transport(TimeMixin):
-    # TODO id string codes
     """ Транспорт (Способы въезда и выезда) """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
 
 
@@ -85,8 +85,8 @@ class Photo(TimeMixin):
 
 
 class EngagementRole(TimeMixin):
-    # TODO id string codes
     """ Роли в участии """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
     is_team = models.BooleanField(default=False)
 

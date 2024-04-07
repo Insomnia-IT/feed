@@ -1,7 +1,7 @@
 [
   {
     "model": "feeder.engagementrole",
-    "pk": 1,
+    "pk": "ORGANIZER",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -11,7 +11,7 @@
   },
   {
     "model": "feeder.engagementrole",
-    "pk": 2,
+    "pk": "CAMP_LEAD",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -21,7 +21,7 @@
   },
   {
     "model": "feeder.engagementrole",
-    "pk": 3,
+    "pk": "VICE",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -31,7 +31,7 @@
   },
   {
     "model": "feeder.engagementrole",
-    "pk": 4,
+    "pk": "TEAM_LEAD",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -41,7 +41,7 @@
   },
   {
     "model": "feeder.engagementrole",
-    "pk": 5,
+    "pk": "VOLUNTEER",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -51,7 +51,17 @@
   },
   {
     "model": "feeder.engagementrole",
-    "pk": 6,
+    "pk": "CAMP_GUY",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Волонтёр нефедеральной локации",
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
+    "pk": "PARTICIPANT",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -61,7 +71,7 @@
   },
   {
     "model": "feeder.engagementrole",
-    "pk": 7,
+    "pk": "FELLOW",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -71,7 +81,7 @@
   },
   {
     "model": "feeder.engagementrole",
-    "pk": 8,
+    "pk": "CONTRACTOR",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
