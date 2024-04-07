@@ -29,20 +29,20 @@ class DirectionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ParticipationRoleSerializer(serializers.ModelSerializer):
+class EngagementRoleSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = models.ParticipationRole
+        model = models.EngagementRole
         fields = '__all__'
 
 
-class ParticipationSerializer(serializers.ModelSerializer):
+class EngagementSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    role = ParticipationRoleSerializer()
+    role = EngagementRoleSerializer()
 
     class Meta:
-        model = models.Participation
+        model = models.Engagement
         fields = '__all__'
 
 
@@ -277,14 +277,14 @@ class TransportSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class StayingSerializer(serializers.ModelSerializer):
+class ArrivalSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     volunteer = VolunteerSerializer()
     arrival_transport = TransportSerializer()
     departure_transport = TransportSerializer()
 
     class Meta:
-        model = models.VolunteerCustomField
+        model = models.Arrival
         fields = '__all__'
 
 class DepartmentSerializer(serializers.ModelSerializer):

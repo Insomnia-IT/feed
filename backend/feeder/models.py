@@ -19,7 +19,7 @@ class Direction(TimeMixin, CommentMixin):
     notion_id = models.CharField(max_length=255, db_index=True)
 
 
-class Staying(TimeMixin, CommentMixin):
+class Arrival(TimeMixin, CommentMixin):
     """ Пребывание (заезды и отъезды) """
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE)
     arrival_date = models.DateField()
@@ -78,18 +78,18 @@ class Photo(TimeMixin):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
 
 
-class ParticipationRole(TimeMixin):
+class EngagementRole(TimeMixin):
     """ Роли в участии """
     name = models.CharField(max_length=255)
     is_team = models.BooleanField(default=False)
 
 
-class Participation(TimeMixin):
+class Engagement(TimeMixin):
     """ Участие """
     year = models.IntegerField()
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT)
-    role = models.ForeignKey(ParticipationRole, on_delete=models.PROTECT)
+    role = models.ForeignKey(EngagementRole, on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
     notion_id = models.CharField(max_length=255, db_index=True)
