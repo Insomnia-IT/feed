@@ -33,9 +33,9 @@ class EngagementRoleSerializer(serializers.ModelSerializer):
         model = models.EngagementRole
         fields = '__all__'
 
-
 class EngagementSerializer(serializers.ModelSerializer):
     role = EngagementRoleSerializer()
+    direction = DirectionSerializer()
 
     class Meta:
         model = models.Engagement
@@ -77,6 +77,13 @@ class DepartmentNestedSerializer(serializers.ModelSerializer):
         model = models.Department
         fields = '__all__'
 
+class PersonSerializer(serializers.ModelSerializer):
+    engagements = EngagementSerializer(many=True)
+
+    class Meta:
+        model = models.Person
+        fields = '__all__'
+
 class VolunteerListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     departments = DepartmentNestedSerializer(many=True)
@@ -89,6 +96,7 @@ class VolunteerListSerializer(serializers.ModelSerializer):
 class VolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
+    person = PersonSerializer()
 
     class Meta:
         model = models.Volunteer
@@ -123,11 +131,6 @@ class AccessRoleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.AccessRole
-        fields = '__all__'
-
-class PersonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Person
         fields = '__all__'
 
 

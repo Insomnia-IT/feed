@@ -95,7 +95,7 @@ class Engagement(TimeMixin):
     """ Участие """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     year = models.IntegerField()
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="engagements")
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT)
     role = models.ForeignKey(EngagementRole, on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
