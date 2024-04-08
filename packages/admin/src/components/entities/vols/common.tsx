@@ -1,5 +1,5 @@
 import type { FormInstance } from '@pankod/refine-antd';
-import { Checkbox, DatePicker, Form, Input, Select, useSelect } from '@pankod/refine-antd';
+import { Button, Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
 import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 
@@ -61,18 +61,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         optionLabel: 'name'
     });
 
-    const onGroupBadgeClear = () => {
-        setTimeout(() => {
-            form.setFieldValue('group_badge', '');
-        });
-    };
-
-    const onAccessRoleClear = () => {
-        setTimeout(() => {
-            form.setFieldValue('access_role', '');
-        });
-    };
-
     const getDepartmentIds = (department) => {
         return {
             value: department ? department.map((d) => d.id || d) : department
@@ -83,6 +71,18 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         return {
             value: value ? dayjs(value) : ''
         };
+    };
+
+    const onGroupBadgeClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('group_badge', '');
+        });
+    };
+
+    const onAccessRoleClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('access_role', '');
+        });
     };
 
     const activeToValidationRules = useMemo(
@@ -122,6 +122,33 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         }
     };
 
+    const clearDuplicateQR = async () => {
+        if (qrDuplicateVolunteer) {
+            await dataProvider.update<VolEntity>({
+                id: qrDuplicateVolunteer.id,
+                resource: 'volunteers',
+                variables: {
+                    qr: null
+                }
+            });
+            setQrDuplicateVolunteer(null);
+        }
+    };
+
+    const handleClear = () => {
+        void clearDuplicateQR();
+    };
+
+    const handleOpenVolunteer = () => {
+        if (qrDuplicateVolunteer) {
+            window.location.href = `${window.location.origin}/volunteers/edit/${qrDuplicateVolunteer.id}`;
+        }
+    };
+
+    const handleCancel = () => {
+        setQrDuplicateVolunteer(null);
+    };
+
     useEffect(() => {
         // @ts-ignore
         function onHardwareScan({ detail: { scanCode } }): void {
@@ -154,8 +181,17 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     // отсюда мой код
 
     const [activeAnchor, setActiveAnchor] = useState('section1');
+    const isBlocked = Form.useWatch('is_blocked', form);
+    const [open, setOpen] = useState(false);
+
+    const handleToggleBlocked = () => {
+        const isBlocked = form.getFieldValue('is_blocked');
+        form.setFieldsValue({ is_blocked: !isBlocked });
+        setOpen(false);
+    };
 
     useEffect(() => {
+        const formWrap = document.querySelector(`.${styles.formWrap}`);
         const handleAnchorClick = (id) => {
             const targetSection = document.getElementById(id);
 
@@ -167,38 +203,51 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         };
 
         const handleScroll = () => {
-            const sections = document.querySelectorAll(`.${styles.formSection}`);
+            const formWrap = document.querySelector(`.${styles.formWrap}`);
+            if (!formWrap) return;
+
+            const formWrapRect = formWrap.getBoundingClientRect();
+            const sections = formWrap.querySelectorAll(`.${styles.formSection}`);
+
+            let closestSectionId = '';
+            let minDistance = Infinity;
 
             sections.forEach((section) => {
                 const rect = section.getBoundingClientRect();
 
-                if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
-                    setActiveAnchor(section.id);
+                const topDistance = Math.abs(rect.top - formWrapRect.top);
+                const bottomDistance = Math.abs(rect.bottom - formWrapRect.top);
+
+                const distance = Math.min(topDistance, bottomDistance);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestSectionId = section.id;
                 }
             });
+
+            if (closestSectionId) {
+                setActiveAnchor(closestSectionId);
+            }
         };
 
+        const handleNavItemClick = (e) => {
+            const id = e.target.getAttribute('data-id');
+            handleAnchorClick(id);
+        };
+
+        formWrap?.addEventListener('scroll', handleScroll);
         document.querySelectorAll(`.${styles.navList__item}`).forEach((item) => {
-            item.addEventListener('click', () => {
-                const id = item.getAttribute('data-id');
-                handleAnchorClick(id);
-            });
+            item.addEventListener('click', handleNavItemClick);
         });
 
-        const formWrap = document.querySelector(`.${styles.formWrap}`);
-        formWrap?.addEventListener('scroll', handleScroll);
-
         return () => {
+            document.removeEventListener('scroll', handleScroll);
             document.querySelectorAll(`.${styles.navList__item}`).forEach((item) => {
-                item.removeEventListener('click', () => {
-                    const id = item.getAttribute('data-id');
-                    handleAnchorClick(id);
-                });
+                item.removeEventListener('click', handleNavItemClick);
             });
-
-            formWrap?.removeEventListener('scroll', handleScroll);
         };
-    }, []);
+    }, [setActiveAnchor]);
 
     return (
         <div className={styles.edit}>
@@ -244,7 +293,14 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
             </div>
             <div className={styles.formWrap}>
                 <div id='section1' className={styles.formSection}>
-                    <p className={styles.formSection__title}>Персональная информация</p>
+                    <p className={styles.formSection__title}>
+                        Персональная информация
+                        {isBlocked && (
+                            <div className={styles.bannedWrap}>
+                                <span className={styles.bannedDescr}>Забанен</span>
+                            </div>
+                        )}
+                    </p>
                     <div className={styles.personalWrap}>
                         <div className={styles.photoWrap}>
                             <img className={styles.photo} src='' alt='Photo' />
@@ -302,11 +358,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         <div className={styles.isActiveCheckbox}>
                             <Form.Item name='is_active' valuePropName='checked'>
                                 <Checkbox>Активирован</Checkbox>
-                            </Form.Item>
-                        </div>
-                        <div className={styles.isActiveCheckbox}>
-                            <Form.Item name='is_blocked' valuePropName='checked'>
-                                <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                             </Form.Item>
                         </div>
                     </div>
@@ -440,8 +491,62 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                             <Input.TextArea autoSize={{ minRows: 6 }} />
                         </Form.Item>
                     </div>
+                    <div>
+                        <Button type='default' onClick={() => setOpen(true)}>
+                            {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                        </Button>
+                        <Modal
+                            closable={false}
+                            centered
+                            open={open}
+                            okText={'Оставить'}
+                            cancelText={`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                            onOk={() => setOpen(false)}
+                            onCancel={handleToggleBlocked}
+                            width={420}
+                        >
+                            <div className={styles.modalWindow}>
+                                <span className={styles.carefulIcon}>
+                                    <span className={styles.carefulDescr}>!</span>
+                                </span>
+                                <p className={styles.modalTitle}>
+                                    {isBlocked ? 'Разблокировать волонтера?' : 'Заблокировать Волонтера?'}
+                                </p>
+                                <p className={styles.modalDescr}>
+                                    {isBlocked
+                                        ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
+                                        : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
+                                </p>
+                            </div>
+                        </Modal>
+                    </div>
+                    <div className={styles.visuallyHidden}>
+                        <Form.Item name='is_blocked' valuePropName='checked' style={{ marginBottom: '0' }}>
+                            <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
+                        </Form.Item>
+                    </div>
                 </div>
             </div>
+            <Modal
+                title='Дублирование QR'
+                open={qrDuplicateVolunteer !== null && !qrDuplicateVolunteer.is_active}
+                onOk={handleClear}
+                onCancel={handleCancel}
+                okText='Освободить'
+            >
+                <p>Этот QR уже привязан к другому волонтеру.</p>
+                <p>Освободить этот QR код?</p>
+            </Modal>
+            <Modal
+                title='Дублирование QR'
+                open={qrDuplicateVolunteer !== null && qrDuplicateVolunteer.is_active}
+                onOk={handleOpenVolunteer}
+                onCancel={handleCancel}
+                okText='Открыть'
+            >
+                <p>Этот QR уже привязан к активированному волонтеру.</p>
+                <p>Открыть карточку этого волонтера?</p>
+            </Modal>
         </div>
     );
 };
