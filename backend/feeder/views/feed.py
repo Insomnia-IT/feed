@@ -24,7 +24,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.FeedTransaction
-        fields = ['kitchen']
+        fields = ['kitchen', 'volunteer']
 
 
 #@extend_schema(tags=['feed', ])
