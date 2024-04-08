@@ -48,8 +48,8 @@ export const FeedWithBalance = new Set([FeedType.FT1, FeedType.FT2, FeedType.Chi
 export interface Volunteer {
     qr: string;
     id: number;
+    first_name: string;
     name: string;
-    nickname: string;
     balance: number;
     is_active: boolean;
     is_blocked: boolean;

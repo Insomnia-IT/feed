@@ -22,16 +22,18 @@ pip install -r requirements.txt
 ```
 
 ```bash
-yarn run bootstrap
+yarn
 ```
 
 # Запуск
+
+Скопировать файл backend/.env.sample в backend/.env
 
 ```bash
 cd ./backend
 . ./venv/bin/activate
 ./manage.py migrate
-./manage.py loaddata colors feed_types kitchens access_roles volunteer_roles participation_roles transports
+./manage.py loaddata colors feed_types kitchens access_roles volunteer_roles engagement_roles transports genders
 ./manage.py shell < create_user.py
 ./manage.py runserver localhost:8000
 ```

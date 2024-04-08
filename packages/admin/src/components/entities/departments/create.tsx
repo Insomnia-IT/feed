@@ -8,7 +8,7 @@ export const DepartmentCreate: FC<IResourceComponentsProps> = () => {
     const { formProps, saveButtonProps } = useForm<DepartmentEntity>();
     const { selectProps: leadSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
-        optionLabel: 'nickname'
+        optionLabel: 'name'
     });
 
     return (

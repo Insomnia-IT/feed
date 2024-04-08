@@ -20,12 +20,12 @@ const VolunteerList: FC<{
     <div className={css.volunteerList}>
         <div className={css.volonteerListItem}>
             <span className={cs(css.title, color && css[color])}>{`${title}:`}</span>
-            <span>{vols[0].nickname}</span>
+            <span>{vols[0].name}</span>
         </div>
         {vols.length > 1 &&
             vols.slice(1).map((vol) => (
                 <div key={vol.id} className={css.volonteerListItem}>
-                    <span>{vol.nickname}</span>
+                    <span>{vol.name}</span>
                 </div>
             ))}
     </div>

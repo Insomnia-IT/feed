@@ -21,7 +21,6 @@ class DirectionTypeSerializer(serializers.ModelSerializer):
 
 
 class DirectionSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
     type = DirectionTypeSerializer()
 
     class Meta:
@@ -29,20 +28,17 @@ class DirectionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ParticipationRoleSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
+class EngagementRoleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.ParticipationRole
+        model = models.EngagementRole
         fields = '__all__'
 
 
-class ParticipationSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    role = ParticipationRoleSerializer()
+class EngagementSerializer(serializers.ModelSerializer):
+    role = EngagementRoleSerializer()
 
     class Meta:
-        model = models.Participation
+        model = models.Engagement
         fields = '__all__'
 
 
@@ -130,18 +126,16 @@ class AccessRoleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PersonSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
     class Meta:
         model = models.Person
         fields = '__all__'
 
 
 class GenderSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
+    id = serializers.CharField(read_only=True)
 
     class Meta:
-        model = models.Color
+        model = models.Gender
         fields = '__all__'
 
 
@@ -270,21 +264,18 @@ class UserDetailSerializer(serializers.Serializer):
 
 
 class TransportSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
     class Meta:
-        model = models.Kitchen
+        model = models.Transport
         fields = '__all__'
 
 
-class StayingSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
+class ArrivalSerializer(serializers.ModelSerializer):
     volunteer = VolunteerSerializer()
     arrival_transport = TransportSerializer()
     departure_transport = TransportSerializer()
 
     class Meta:
-        model = models.VolunteerCustomField
+        model = models.Arrival
         fields = '__all__'
 
 class DepartmentSerializer(serializers.ModelSerializer):

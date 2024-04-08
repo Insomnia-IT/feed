@@ -20,7 +20,7 @@ export const VolShow: FC<IResourceComponentsProps> = () => {
             <Checkbox value={record?.is_blocked} />
 
             <Title level={5}>Имя</Title>
-            <Text>{record?.name}</Text>
+            <Text>{record?.first_name}</Text>
 
             <Title level={5}>Должность</Title>
             <Text>{record?.position}</Text>

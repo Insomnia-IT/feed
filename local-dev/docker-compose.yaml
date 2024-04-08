@@ -6,7 +6,7 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
-    command: bash -c "python manage.py migrate && python manage.py shell < ./create_user.py && python manage.py loaddata colors feed_types kitchens access_roles volunteer_roles participation_roles transports departments && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    command: bash -c "python manage.py migrate && python manage.py shell < ./create_user.py && python manage.py loaddata colors feed_types kitchens access_roles volunteer_roles engagement_roles transports departments genders && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     container_name: feed_backend
     ports:
       - 8000:8000

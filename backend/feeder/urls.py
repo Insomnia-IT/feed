@@ -16,7 +16,7 @@ router.register(r'volunteer-custom-field-values', volunteer.VolunteerCustomField
 router.register(r'genders', gender.GenderViewSet)
 router.register(r'persons', person.PersonViewSet)
 router.register(r'photos', photo.PhotoViewSet)
-router.register(r'staying', staying.StayingViewSet)
+router.register(r'arrivals', staying.ArrivalViewSet)
 router.register(r'transports', transport.TransportViewSet)
 
 router.register(r'access-roles', volunteer.AccessRoleViewSet)

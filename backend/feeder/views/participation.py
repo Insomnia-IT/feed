@@ -6,28 +6,28 @@ from django_filters.rest_framework import DjangoFilterBackend
 from feeder import serializers, models
 
 
-class ParticipationFilter(django_filters.FilterSet):
+class EngagementFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
 
     class Meta:
-        model = models.Participation
+        model = models.Engagement
         fields = []
 
 
 class DirectionViewSet(viewsets.ModelViewSet):
     # authentication_classes = [authentication.KitchenPinAuthentication, TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated, ]
-    queryset = models.Participation.objects.all()
-    serializer_class = serializers.ParticipationSerializer
+    queryset = models.Engagement.objects.all()
+    serializer_class = serializers.EngagementSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = ParticipationFilter
+    filterset_class = EngagementFilter
     search_fields = ['name', ]
 
 
-class ParticipationRoleViewSet(viewsets.ModelViewSet):
+class EngagementRoleViewSet(viewsets.ModelViewSet):
     # authentication_classes = [authentication.KitchenPinAuthentication, TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated, ]
-    queryset = models.ParticipationRole.objects.all()
-    serializer_class = serializers.ParticipationRoleSerializer
+    queryset = models.EngagementRole.objects.all()
+    serializer_class = serializers.EngagementRoleSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]

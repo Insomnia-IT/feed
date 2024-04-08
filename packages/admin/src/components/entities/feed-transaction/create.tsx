@@ -20,7 +20,7 @@ export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
 
     const { selectProps: volSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
-        optionLabel: 'nickname'
+        optionLabel: 'name'
     });
 
     const { selectProps: kitchenSelectProps } = useSelect<KitchenEntity>({
