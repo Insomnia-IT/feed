@@ -464,7 +464,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                 <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>Заезд {index + 1}</div>
                                 <div className={styles.dateInput}>
                                     <Form.Item
-                                        label='Дата заезда'
+                                        label='Дата отъезда'
                                         name={['updated_arrivals', index, 'departure_date']}
                                         getValueProps={getDateValue}
                                         rules={activeToValidationRules(index)}
