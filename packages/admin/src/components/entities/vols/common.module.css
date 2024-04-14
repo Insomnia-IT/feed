@@ -312,11 +312,11 @@
     align-items: center;
 }
 
-.participationDescr:first-child {
+.engagementsDescr:first-child {
     margin-right: 16px;
 }
 
-.participationDescr {
+.engagementsDescr {
     font-size: 14px;
     line-height: 157%;
     color: black;
