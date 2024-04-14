@@ -105,3 +105,18 @@ export interface VolCustomFieldValueEntity {
     custom_field: number;
     value: string;
 }
+
+export interface TransportEntity {
+    id: number;
+    name: string;
+}
+
+export interface ArrivalEntity {
+    id: string;
+    arrival_date: string;
+    arrival_transport: string;
+    arrival_registered?: string;
+    departure_date: string;
+    departure_transport: string;
+    departure_registered?: string;
+}

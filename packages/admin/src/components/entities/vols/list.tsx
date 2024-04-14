@@ -356,6 +356,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         void loadTransactions();
     }, [filterUnfeededType]);
 
+    const formatDate = (value) => {
+        return new Date(value).toLocaleString('ru', { day: 'numeric', month: 'long' });
+    }
+
     return (
         <List>
             <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
@@ -452,6 +456,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     onFilter={onDepartmentFilter}
                 />
                 <Table.Column
+                    dataIndex='arrivals'
+                    key='arrivals'
+                    title='Даты на поле'
+                    render={(arrivals) =>
+                        <span style={{ whiteSpace: 'nowrap' }}>{arrivals.map(({ arrival_date, departure_date }) => [arrival_date, departure_date].map(formatDate).join(' - ')).join(', ') }</span>
+                    }
+                    // sorter={getSorter('active_from')}
+                    // filterDropdown={datePickerFilterDropDown}
+                    // onFilter={craeteDateFilter('active_from')}
+                />
+                {/* <Table.Column
                     dataIndex='active_from'
                     key='active_from'
                     title='От'
@@ -472,7 +487,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     sorter={getSorter('active_to')}
                     filterDropdown={datePickerFilterDropDown}
                     onFilter={craeteDateFilter('active_to')}
-                />
+                /> */}
                 <Table.Column
                     dataIndex='is_active'
                     key='is_active'

@@ -60,12 +60,33 @@ const useSaveConfirm = (
                     }
                 }
             }
-            const activeFrom = form.getFieldValue('active_from');
+            const arrivals = form.getFieldValue('arrivals');
+            const updatedArrivals = form.getFieldValue('updated_arrivals');
+            if(updatedArrivals) {
+                for(let i = 0; i < updatedArrivals.length; i++) {
+                    const updatedArrival = updatedArrivals[i];
+                    const arrival = arrivals.find(a => a.id === updatedArrival.id);
+                    if(JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
+                        await dataProvider.update({
+                            resource: 'arrivals',
+                            id: updatedArrival.id,
+                            variables: Object.keys(updatedArrival).reduce((acc, name) => ({
+                                ...acc,
+                                [name]: updatedArrival[name] !== arrival[name] ? updatedArrival[name] : undefined
+                            }), {})
+                        });
+                    }
+                }
+            }
+
+            const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
             if (!form.getFieldValue('is_active')) {
                 setShowConfirmationModalReason('is_active');
             } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
                 setShowConfirmationModalReason('active_from');
             } else {
+                form.setFieldValue('arrivals', undefined);
+
                 saveButtonProps?.onClick();
             }
         },

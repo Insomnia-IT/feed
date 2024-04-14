@@ -1,6 +1,6 @@
 import type { FormInstance } from '@pankod/refine-antd';
 import { Button, Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 
 import { Rules } from '~/components/form';
@@ -8,12 +8,14 @@ import 'react-quill/dist/quill.snow.css';
 
 import type {
     AccessRoleEntity,
+    ArrivalEntity,
     ColorTypeEntity,
     CustomFieldEntity,
     DepartmentEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
     KitchenEntity,
+    TransportEntity,
     VolEntity
 } from '~/interfaces';
 import { formDateFormat } from '~/shared/lib';
@@ -61,6 +63,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         optionLabel: 'name'
     });
 
+    const { selectProps: transportsSelectProps } = useSelect<TransportEntity>({
+        resource: 'transports',
+        optionLabel: 'name'
+    });
+
     const getDepartmentIds = (department) => {
         return {
             value: department ? department.map((d) => d.id || d) : department
@@ -70,6 +77,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const getDateValue = (value) => {
         return {
             value: value ? dayjs(value) : ''
+        };
+    };
+
+    const getRegisteredValue = (value) => {
+        return {
+            checked: Boolean(value)
         };
     };
 
@@ -85,14 +98,15 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         });
     };
 
-    const activeToValidationRules = useMemo(
-        () => [
+    // TODO
+    const activeToValidationRules = useCallback(
+        (index: number) => [
             {
                 required: true
             },
             {
                 validator: async (_, value) => {
-                    if (new Date(value) >= new Date(form.getFieldValue('active_from'))) {
+                    if (new Date(value) >= new Date(form.getFieldValue(['updated_arrivals', index, 'arrival_date']))) {
                         return Promise.resolve();
                     }
 
@@ -182,6 +196,16 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
 
     const [activeAnchor, setActiveAnchor] = useState('section1');
     const isBlocked = Form.useWatch('is_blocked', form);
+    const arrivals = Form.useWatch<ArrivalEntity[]>('arrivals');
+
+    const updatedArrivals = useMemo(() => arrivals?.map(arrival => ({ ...arrival })), [arrivals]);
+
+    useEffect(() => {
+        if(updatedArrivals) {
+            form.setFieldValue('updated_arrivals', updatedArrivals);
+        }
+    }, [updatedArrivals])
+
     const [open, setOpen] = useState(false);
 
     const handleToggleBlocked = () => {
@@ -401,28 +425,72 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                 </div>
                 <div id='section3' className={styles.formSection}>
                     <p className={styles.formSection__title}>Даты на поле</p>
-                    <div className={styles.fieldsDates}>
-                        <div className={styles.dateInput}>
-                            <Form.Item
-                                label='Дата заезда'
-                                name='active_from'
-                                getValueProps={getDateValue}
-                                rules={Rules.required}
-                            >
-                                <DatePicker format={formDateFormat} style={{ width: '100%' }} />
-                            </Form.Item>
-                        </div>
-                        <div className={styles.dateInput}>
-                            <Form.Item
-                                label='Дата отъезда'
-                                name='active_to'
-                                getValueProps={getDateValue}
-                                rules={activeToValidationRules}
-                            >
-                                <DatePicker format={formDateFormat} style={{ width: '100%' }} />
-                            </Form.Item>
-                        </div>
-                    </div>
+                    <Form.Item name='arrivals' hidden />
+                    {updatedArrivals?.map((arrival, index) => {
+                        const createRegisteredChange = (fieldName) => (e) => {
+                            const value = e.target.checked ? new Date().toISOString() : null;
+                            form.setFieldValue(['updated_arrivals', index, fieldName], value);
+                            arrival[fieldName] = value
+                        };
+                        return <Fragment key={index}>
+                            <div className={styles.dateWrap}>
+                                <div className={styles.dateLabel}>Заезд {index + 1}</div>
+                                <div className={styles.dateInput}>
+                                    <Form.Item
+                                        label='Дата заезда'
+                                        name={['updated_arrivals', index, 'arrival_date']}
+                                        getValueProps={getDateValue}
+                                        rules={Rules.required}
+                                    >
+                                        <DatePicker format={formDateFormat} style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </div>
+                                <div className={styles.dateInput}>
+                                    <Form.Item
+                                        label='Как добрался?'
+                                        name={['updated_arrivals', index, 'arrival_transport']}
+                                        rules={Rules.required}
+                                    >
+                                        <Select {...transportsSelectProps} style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </div>
+                                <div> 
+                                    <Form.Item label=' '>
+                                        <Checkbox defaultChecked={!!arrival.arrival_registered} onChange={createRegisteredChange('arrival_registered')}>Подтверждено</Checkbox>
+                                    </Form.Item>
+                                </div>
+                            </div>
+                            <div className={styles.dateWrap}>
+                                <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>Заезд {index + 1}</div>
+                                <div className={styles.dateInput}>
+                                    <Form.Item
+                                        label='Дата заезда'
+                                        name={['updated_arrivals', index, 'departure_date']}
+                                        getValueProps={getDateValue}
+                                        rules={activeToValidationRules(index)}
+                                    >
+                                        <DatePicker format={formDateFormat} style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </div>
+                                <div className={styles.dateInput}>
+                                    <Form.Item
+                                        label='Как уехал?'
+                                        name={['updated_arrivals', index, 'departure_transport']}
+                                        rules={Rules.required}
+                                    >
+                                        <Select {...transportsSelectProps} style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </div>
+                                <div> <Form.Item
+                                        label=' ' 
+                                    >
+                                        <Checkbox defaultChecked={!!arrival.departure_registered} onChange={createRegisteredChange('departure_registered')}>Подтверждено</Checkbox>
+                                    </Form.Item></div>
+                            </div>
+                        </Fragment>
+ 
+                    })}
+                   
                 </div>
                 <div id='section4' className={styles.formSection}>
                     <p className={styles.formSection__title}>Бейдж</p>
