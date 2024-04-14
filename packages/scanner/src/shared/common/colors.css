@@ -1,0 +1,15 @@
+:root {
+    --c-red: #ff0000;
+    --c-green: #00ff00;
+    --c-yellow: #fad900;
+    --c-dark: #333333;
+    --c-light: #f5f5f5;
+
+    --c-blue: #3D2EE8;
+    --c-white: #ffffff;
+    --c-grey:#F5F7F8;
+    --c-error: #DD2E4E;
+    --c-success: #1A9A6B;
+    --c-txt: #1B1B1B;
+    --c-secondary-txt: #8F8F8F;
+}
