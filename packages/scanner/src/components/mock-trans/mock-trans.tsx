@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 
-import { createMockData } from '~/lib/mock';
+import { createMockData } from '~/shared/lib/mock';
 import { db } from '~/db';
 import { AppContext } from '~/app-context';
 

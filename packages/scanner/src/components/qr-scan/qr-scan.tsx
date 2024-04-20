@@ -4,7 +4,7 @@ import QrScanner from 'qr-scanner';
 import sas from 'onscan.js/onscan';
 
 import { AppContext } from '~/app-context';
-import { ReactComponent as Flash } from '~/icons/flash.svg';
+import { ReactComponent as Flash } from '~/shared/icons/flash.svg';
 
 import css from './qr-scan.module.css';
 

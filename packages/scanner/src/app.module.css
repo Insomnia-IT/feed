@@ -17,11 +17,6 @@ button {
 .app {
     font-size: var(--fs);
 
-    h2 {
-        margin: 15px 0 10px;
-        text-align: center;
-    }
-
     .screen {
         position: relative;
         width: 100vw;
@@ -54,14 +49,14 @@ button {
     height: 400px;
     font-size: 2em;
 
-    input {
-        width: 90vw;
-        max-width: 8ch;
-        font-size: 10vw;
-    }
+    /*input {*/
+    /*    width: 90vw;*/
+    /*    max-width: 8ch;*/
+    /*    font-size: 10vw;*/
+    /*}*/
 
-    button {
-        width: 90vw;
-        padding: 1em;
-    }
+    /*button {*/
+    /*    width: 90vw;*/
+    /*    padding: 1em;*/
+    /*}*/
 }

@@ -1,0 +1,38 @@
+.backPopup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-index-popup);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+
+    &.show {
+        pointer-events: unset;
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.modal {
+    padding: 24px 16px 16px 16px;
+    border-radius: 16px;
+    background: var(--c-white);
+    width: 343px;
+    height: 180px;
+}
+
+.head {
+    padding-bottom: 16px;
+}
+
+.title {
+    font-weight: 600;
+    font-size: 24px;
+}

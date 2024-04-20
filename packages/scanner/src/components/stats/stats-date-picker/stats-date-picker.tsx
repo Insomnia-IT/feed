@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { StatsDateEnum } from '~/components/stats';
-import { ReactComponent as Prev } from '~/icons/arrow_left_small.svg';
-import { ReactComponent as Next } from '~/icons/arrow_right_small.svg';
+import { ReactComponent as Prev } from '~/shared/icons/arrow_left_small.svg';
+import { ReactComponent as Next } from '~/shared/icons/arrow_right_small.svg';
 
 import style from './stats-date-picker.module.css';
 

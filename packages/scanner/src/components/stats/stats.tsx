@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 
 import { StatsTable } from '~/components/stats/stats-table';
 import { useLocalStats } from '~/request-local-db';
-import { getStatsDates } from '~/lib/date';
+import { getStatsDates } from '~/shared/lib/date';
 import { ViewContext } from '~/view-context';
 import { StatsDatePicker } from '~/components/stats/stats-date-picker';
 

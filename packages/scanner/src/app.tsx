@@ -7,7 +7,7 @@ import type { FallbackProps } from 'react-error-boundary';
 import { ErrorBoundary } from 'react-error-boundary';
 import SwipeableViews from 'react-swipeable-views';
 
-import '~/lib/date';
+import '~/shared/lib/date';
 
 import type { AppColor, IAppContext } from '~/app-context';
 import { AppContext, Colors } from '~/app-context';
@@ -23,7 +23,7 @@ import { MealTimeSelect } from '~/components/meal-time-select';
 
 import type { IViewContext } from './view-context';
 import { ViewContext } from './view-context';
-import { clearCache } from './lib/utils';
+import { clearCache } from './shared/lib/utils';
 
 // eslint-disable-next-line import/no-unresolved
 import ver from '!!raw-loader!pwa-ver.txt';

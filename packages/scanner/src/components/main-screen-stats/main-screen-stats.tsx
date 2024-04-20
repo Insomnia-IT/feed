@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { AppContext } from '~/app-context';
 import type { Transaction } from '~/db';
 import { db, getVolsOnField } from '~/db';
-import { getToday } from '~/lib/date';
+import { getToday } from '~/shared/lib/date';
 
 import style from './main-screen-stats.module.css';
 

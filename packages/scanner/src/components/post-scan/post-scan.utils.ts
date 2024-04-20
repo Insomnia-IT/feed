@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import type { Transaction, Volunteer } from '~/db';
 import { db, dbIncFeed, FeedType, FeedWithBalance, MealTime } from '~/db';
 import { isVolExpired } from '~/components/misc/misc';
-import { getMealTimeText } from '~/lib/utils';
+import { getMealTimeText } from '~/shared/lib/utils';
 
 export const validateVol = (
     vol: Volunteer,

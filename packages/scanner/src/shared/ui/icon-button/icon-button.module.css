@@ -1,0 +1,14 @@
+.iconButton {
+    width: 52px;
+    height: 52px;
+    padding: 10px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.6);
+
+}
+
+.icon {
+    height: 42px;
+    width: 42px;
+}

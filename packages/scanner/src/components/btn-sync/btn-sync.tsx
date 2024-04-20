@@ -4,8 +4,8 @@ import cn from 'classnames';
 import { API_DOMAIN } from '~/config';
 import { AppContext } from '~/app-context';
 import { db } from '~/db';
-import { nop } from '~/lib/utils';
-import { ReactComponent as Refresh } from '~/icons/refresh.svg';
+import { nop } from '~/shared/lib/utils';
+import { ReactComponent as Refresh } from '~/shared/icons/refresh.svg';
 import { useSync } from '~/request';
 
 import css from './btn-sync.module.css';

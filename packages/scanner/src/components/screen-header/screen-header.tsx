@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 
-import { ReactComponent as Home } from '~/icons/arrow_left.svg';
+import { ReactComponent as Home } from '~/shared/icons/arrow_left.svg';
 import { ViewContext } from '~/view-context';
 
 import style from './screen-header.module.css';
