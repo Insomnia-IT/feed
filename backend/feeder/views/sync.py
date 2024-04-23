@@ -5,7 +5,6 @@ from drf_spectacular.utils import extend_schema
 from django.db import transaction
 
 from feeder import serializers, models
-from feeder.sync_script import sync_from_notion
 from feeder.utils import sync_with_notion, calculate_statistics, STAT_DATE_FORMAT
 
 
@@ -23,7 +22,6 @@ class SyncWithNotion(APIView):
         summary="Запуск синхронизации с Notion"
     )
     def post(self, request):
-        sync_from_notion()
         result = sync_with_notion()
 
         serializer = serializers.SyncWithPartialSerializer(data=result)

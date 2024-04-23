@@ -1,6 +1,8 @@
 from rest_framework import routers, serializers, viewsets
+from rest_framework.relations import PrimaryKeyRelatedField
 
 from feeder import models
+from feeder.models import Department
 from feeder.utils import StatisticType
 
 
@@ -96,6 +98,7 @@ class VolunteerListSerializer(serializers.ModelSerializer):
 class VolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
+    departments = PrimaryKeyRelatedField(many=True, queryset=Department.objects.all())
     person = PersonSerializer(required=False)
 
     class Meta:

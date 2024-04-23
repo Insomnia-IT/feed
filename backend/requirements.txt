@@ -1,5 +1,7 @@
 Django
 django-filter
+django-admin-list-filter-dropdown==1.0.3
+django-admin-rangefilter==0.8.1
 django-cors-headers
 djangorestframework
 psycopg2-binary

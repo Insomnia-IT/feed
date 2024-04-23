@@ -3,7 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from feeder.mixins import TimeMixin, CommentMixin, NameMixin, SaveSynchronisationDataMixin
+from feeder.mixins import TimeMixin, CommentMixin, NameMixin
 
 
 def gen_uuid():
@@ -103,7 +103,7 @@ class Engagement(TimeMixin):
     notion_id = models.CharField(max_length=255, db_index=True)
 
 
-class Volunteer(SaveSynchronisationDataMixin, TimeMixin):
+class Volunteer(TimeMixin):
     """ Волонтеры """
     uuid = models.UUIDField(default=gen_uuid, unique=True, db_index=True)
     person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True)

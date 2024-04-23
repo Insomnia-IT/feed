@@ -2,6 +2,7 @@ from django.db import models
 from rest_framework.exceptions import ValidationError
 
 from config.get_request import current_request
+from history.models import History
 
 
 class TitleMixin(models.Model):
@@ -49,47 +50,28 @@ class CommentMixin(models.Model):
         abstract = True
 
 
-class SaveSynchronisationDataMixin:
-
-    def save(self, *args, **kwargs):
-        from_sync = kwargs.pop('from_sync', False)
-        if from_sync:
-            request_user = None
+class SaveHistoryDataViewSetMixin:
+    def perform_create(self, serializer):
+        user = self.request.user
+        if hasattr(user, "uuid"):
+            request_user = user.uuid
         else:
-            user = current_request().user
-            if hasattr(user, "uuid"):
-                request_user = user.uuid
-            else:
-                raise ValidationError({"permission": "You do not have permissions to perform this action"})
-        updated = True
-        if not self.id:
-            updated = False
-        super(SaveSynchronisationDataMixin, self).save(*args, **kwargs)
-        data = {
-            "status": "updated" if updated else "inserted",
-            "object": self.__class__.__name__,
-            "actor_badge": request_user,
-            "date": self.updated_at if self.updated_at else self.created_at,
-            "data": {
-                "id": self.uuid,
-                "name": self.name,
-                "first_name": self.first_name,
-                "last_name": self.last_name,
-                "gender": self.gender.name if self.gender else None,
-                "phone": self.phone,
-                # "infant": true,
-                "vegan": self.is_vegan,
-                "feed": self.feed_type.name if self.feed_type else None,
-                "number": self.badge_number,
-                "batch": self.printing_batch,
-                "role": self.role,
-                "position": self.position,
-                "photo": self.photo,
-                "person": self.person.id if self.person else None,
-                "comment": self.comment,
-                "notion_id": self.notion_id,
-                "directions": self.directions.all().values_list('id', flat=True),
-            }
-        }
+            raise ValidationError({"permission": "You do not have permissions to perform this action"})
 
-        pass
+        super().perform_create(serializer)
+
+        instance = serializer.instance
+        History().entry_creation(status=History.STATUS_CREATE, instance=instance, request_user_uuid=request_user)
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        if hasattr(user, "uuid"):
+            request_user = user.uuid
+        else:
+            raise ValidationError({"permission": "You do not have permissions to perform this action"})
+
+        super().perform_update(serializer)
+
+        instance = serializer.instance
+        History().entry_creation(status=History.STATUS_UPDATE, instance=instance, request_user_uuid=request_user)
+

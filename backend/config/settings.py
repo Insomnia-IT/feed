@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'feeder',
     'history',
+    'synchronization',
 ]
 
 MIDDLEWARE = [
