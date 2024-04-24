@@ -1,7 +1,6 @@
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
-from config.get_request import current_request
 from history.models import History
 
 
@@ -74,4 +73,15 @@ class SaveHistoryDataViewSetMixin:
 
         instance = serializer.instance
         History().entry_creation(status=History.STATUS_UPDATE, instance=instance, request_user_uuid=request_user)
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        if hasattr(user, "uuid"):
+            request_user = user.uuid
+        else:
+            raise ValidationError({"permission": "You do not have permissions to perform this action"})
+
+        super().perform_destroy(instance)
+
+        History().entry_creation(status=History.STATUS_DELETE, instance=instance, request_user_uuid=request_user)
 

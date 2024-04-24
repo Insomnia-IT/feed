@@ -3,9 +3,16 @@ from datetime import datetime
 from django.db import models
 
 
+def instance_id_field(instance_name):
+    instance_id_dict = {
+        "volunteer": "uuid",
+        "arrival": "id"
+    }
+    return instance_id_dict.get(instance_name, "")
+
+
 def get_volunteer_data(instance):
     data = {
-        "id": instance.uuid,
         "name": instance.name,
         "first_name": instance.first_name,
         "last_name": instance.last_name,
@@ -27,9 +34,24 @@ def get_volunteer_data(instance):
     return data
 
 
+def get_arrival_data(instance):
+    data = {
+        "badge": instance.volunteer.uuid if instance.volunteer else None,
+        # "engagement": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "arrival_date": instance.arrival_date,
+        "arrival_transport": instance.arrival_transport,
+        "arrival_registered": instance.arrival_registered,
+        "departure_date": instance.departure_date,
+        "departure_transport": instance.departure_transport,
+        "departure_registered": instance.departure_registered,
+    }
+    return data
+
+
 def get_instance_data(instance):
     func = {
-        "volunteer": get_volunteer_data
+        "volunteer": get_volunteer_data,
+        "arrival": get_arrival_data,
     }
     instance_name = str(instance.__class__.__name__).lower()
     result = func.get(instance_name, None)
@@ -49,12 +71,12 @@ class History(models.Model):
         (STATUS_UPDATE, "updated"),
         (STATUS_DELETE, "deleted")
     )
-
+    object_id = models.UUIDField()
     status = models.CharField(max_length=16, choices=STATUS_CHOICES)
     object = models.CharField(max_length=32)
     actor_badge = models.UUIDField(blank=True, null=True)
     date = models.DateTimeField()
-    data = models.JSONField()
+    data = models.JSONField(blank=True, null=True)
 
     class Meta:
         verbose_name = "История"
@@ -67,13 +89,14 @@ class History(models.Model):
         self.status = status
         self.object = str(instance.__class__.__name__).lower()
         self.actor_badge = request_user_uuid
+        id_field = instance_id_field(self.object)
+        self.object_id = getattr(instance, id_field)
         if status == self.STATUS_CREATE:
             self.date = instance.created_at
+            self.data = get_instance_data(instance)
         elif status == self.STATUS_UPDATE:
             self.date = instance.updated_at
+            self.data = get_instance_data(instance)
         else:
             self.date = datetime.now()
-        self.data = get_instance_data(instance)
         self.save()
-
-
