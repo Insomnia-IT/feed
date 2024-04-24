@@ -1,4 +1,3 @@
-
 from rest_framework import viewsets, permissions, filters
 
 from feeder import serializers, models
