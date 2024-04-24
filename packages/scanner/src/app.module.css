@@ -21,7 +21,7 @@ button {
         position: relative;
         width: 100vw;
         height: 100vh;
-        max-height: fill-available;
+        /*max-height: fill-available;*/
 
         &.main {
             display: flex;
@@ -29,14 +29,6 @@ button {
             justify-content: space-evenly;
             align-items: center;
             text-align: center;
-        }
-
-        &.history {
-            /* background-color: var(--c-yellow); */
-        }
-
-        &.stats {
-            /* background-color: var(--c-blue); */
         }
     }
 }

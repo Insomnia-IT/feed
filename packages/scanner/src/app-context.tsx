@@ -31,6 +31,7 @@ export interface IAppContext {
     mealTime: MealTime | null;
     setMealTime: (mealTime: MealTime) => void;
     kitchenId: number;
+    setKitchenId: (kitchenId: number) => void;
     isDev: boolean;
     debugMode: string | null;
     deoptimizedSync: string | null;

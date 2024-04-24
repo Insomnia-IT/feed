@@ -58,7 +58,7 @@ export const QrScan: FC<{
             },
             {
                 maxScansPerSecond: 1,
-                highlightScanRegion: true,
+                // highlightScanRegion: true,
                 highlightCodeOutline: true
             }
         );

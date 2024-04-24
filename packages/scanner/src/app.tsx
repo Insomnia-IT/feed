@@ -20,6 +20,11 @@ import { useCheckAuth } from '~/request';
 import { MockTrans } from '~/components/mock-trans/mock-trans';
 import type { MealTime } from '~/db';
 import { MealTimeSelect } from '~/components/meal-time-select';
+import { Input } from '~/shared/ui/input/input';
+import { PinInput } from '~/shared/ui/pin-input/pin-input';
+import { Button } from '~/shared/ui/button/button';
+import { PinScreen } from '~/screens/pin-screen/pin-screen';
+import Modal from '~/shared/ui/modal/modal';
 
 import type { IViewContext } from './view-context';
 import { ViewContext } from './view-context';
@@ -100,6 +105,7 @@ const App: FC = () => {
             mealTime,
             setMealTime,
             kitchenId,
+            setKitchenId,
             isDev,
             debugMode: debugModeLS,
             deoptimizedSync: deoptimizedSyncLS
@@ -146,10 +152,13 @@ const App: FC = () => {
             <AppContext.Provider value={contextValue}>
                 <div className={css.app} style={appStyle}>
                     {!auth && (
-                        <div className={css.auth}>
-                            <input placeholder='PIN' ref={pinInputRef} type='number' />
-                            <button onClick={tryAuth}>ВОЙТИ</button>
-                        </div>
+                        <PinScreen />
+                        // <div className={css.auth}>
+                        //     {/*<input placeholder='PIN' ref={pinInputRef} type='number' />*/}
+                        //     <Button variant={'main'} onClick={tryAuth}>
+                        //         ВОЙТИ
+                        //     </Button>
+                        // </div>
                     )}
                     {auth && !mealTime && <MealTimeSelect />}
                     {auth && mealTime && (

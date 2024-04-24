@@ -1,0 +1,35 @@
+.input {
+    height: 46px;
+    border-radius: 16px;
+    padding: 12px;
+    border: 2px solid var(--c-grey);
+    background-color: var(--c-grey);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--c-txt);
+    transition: 0.3s;
+
+    &:focus {
+        border-color: var(--c-blue);
+    }
+
+    &.focus {
+        border-color: var(--c-blue);
+    }
+
+    &.error {
+        border: 2px solid var(--c-error);
+    }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}

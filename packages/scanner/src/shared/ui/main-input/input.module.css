@@ -1,0 +1,38 @@
+/*.input {*/
+/*    height: 46px;*/
+/*    border-radius: 6px;*/
+/*    padding: 12px;*/
+/*    border: 1px solid var(--gray-400);*/
+/*    background-color: var(--gray-100);*/
+/*    font-size: 14px;*/
+/*    line-height: 20px;*/
+/*    font-weight: 400;*/
+/*    color: var(--gray-1000);*/
+/*    transition: 0.3s;*/
+
+/*    &.error {*/
+/*        border: 1px solid var(--red-300);*/
+/*    }*/
+
+/*    &.orange:focus {*/
+/*        border-color: var(--orange-600);*/
+/*    }*/
+
+/*    &.blue:focus {*/
+/*        border-color: var(--blue-500);*/
+/*    }*/
+/*}*/
+
+/*.errorP {*/
+/*    color: var(--red-300);*/
+/*    font-size: 12px;*/
+/*    font-weight: 400;*/
+/*    line-height: 14px;*/
+/*    margin-top: 8px;*/
+/*}*/
+
+/*.clear {*/
+/*    border: none;*/
+/*    background-color: var(--white);*/
+/*    padding: 0;*/
+/*}*/
