@@ -63,7 +63,8 @@ class VolunteerViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     queryset = models.Volunteer.objects.all()
     serializer_class = serializers.VolunteerSerializer
     serializer_action_classes = {
-        'list': serializers.VolunteerListSerializer
+        'list': serializers.VolunteerListSerializer,
+        'retrieve': serializers.RetrieveVolunteerSerializer
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr']
