@@ -81,7 +81,14 @@ class SaveHistoryDataViewSetMixin:
         else:
             raise ValidationError({"permission": "You do not have permissions to perform this action"})
 
+        instance_id = instance.id
+
         super().perform_destroy(instance)
 
-        History().entry_creation(status=History.STATUS_DELETE, instance=instance, request_user_uuid=request_user)
+        History().entry_creation(
+            status=History.STATUS_DELETE,
+            instance=instance,
+            request_user_uuid=request_user,
+            instance_id=instance_id
+        )
 
