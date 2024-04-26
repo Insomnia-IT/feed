@@ -296,12 +296,6 @@ class TransportSerializer(serializers.ModelSerializer):
         model = models.Transport
         fields = '__all__'
 
-
-class ArrivalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Arrival
-        fields = '__all__'
-
 class DepartmentSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
 
