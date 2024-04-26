@@ -114,15 +114,21 @@
 }
 
 .photoWrap {
+    width: 112px;
+    height: 112px;
+    margin-right: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-right: 16px;
+    border-radius: 2px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-color: rgb(240, 240, 240);
 }
 
 .photo {
-    width: 112px;
-    height: 112px;
+    width: 100%;
     margin-bottom: 4px;
     background-color: rgb(245 245 245);
 }
@@ -295,4 +301,23 @@
     margin: -1px;
     padding: 0;
     border: 0;
+}
+
+.reactQuill * {
+    border-radius: 8px;
+}
+
+.blockButton {
+    display: flex;
+    align-items: center;
+}
+
+.engagementsDescr:first-child {
+    margin-right: 16px;
+}
+
+.engagementsDescr {
+    font-size: 14px;
+    line-height: 157%;
+    color: black;
 }

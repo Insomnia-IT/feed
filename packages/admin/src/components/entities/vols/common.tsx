@@ -2,10 +2,10 @@ import type { FormInstance } from '@pankod/refine-antd';
 import { Button, Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
+import { FrownOutlined, RadarChartOutlined, SmileOutlined } from '@ant-design/icons';
+import dynamic from 'next/dynamic';
 
 import { Rules } from '~/components/form';
-import 'react-quill/dist/quill.snow.css';
-
 import type {
     AccessRoleEntity,
     ArrivalEntity,
@@ -24,9 +24,14 @@ import { dataProvider } from '~/dataProvider';
 import useCanAccess from './use-can-access';
 import styles from './common.module.css';
 
+import 'react-quill/dist/quill.snow.css';
+import HorseIcon from '~/assets/icons/horse-icon';
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
+    const person = Form.useWatch('person');
 
     const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
         resource: 'departments',
@@ -273,6 +278,25 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         };
     }, [setActiveAnchor]);
 
+    function returnEngagementsLayout() {
+        if (!person) return null;
+        const engagementsArray = person.engagements;
+        if (engagementsArray.length) {
+            return engagementsArray.map((item) => {
+                return (
+                    <div key={item.id}>
+                        <span className={styles.engagementsDescr}>{`${item.year} год`}</span>
+                        <RadarChartOutlined style={{ marginRight: '3px' }} />
+                        <span className={styles.engagementsDescr}>{item.direction.name}</span>
+                        <span className={styles.engagementsDescr}>{`(${item.role.name})`}</span>
+                    </div>
+                );
+            });
+        } else {
+            return null;
+        }
+    }
+
     return (
         <div className={styles.edit}>
             <div className={styles.edit__nav}>
@@ -313,6 +337,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     >
                         Дополнительно
                     </li>
+                    <li
+                        className={`${styles.navList__item} ${activeAnchor === 'section7' ? styles.active : ''}`}
+                        data-id='section7'
+                    >
+                        Участие в прошлых годах
+                    </li>
                 </ul>
             </div>
             <div className={styles.formWrap}>
@@ -327,7 +357,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     </p>
                     <div className={styles.personalWrap}>
                         <div className={styles.photoWrap}>
-                            <img className={styles.photo} src='' alt='Photo' />
+                            <HorseIcon />
                         </div>
                         <div className={styles.personalInfoWrap}>
                             <div className={styles.nickNameLastnameWrap}>
@@ -567,14 +597,15 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                 </div>
                 <div id='section6' className={styles.formSection}>
                     <p className={styles.formSection__title}>Дополнительно</p>
-                    <div>
+                    <div className='commentArea'>
                         <Form.Item label='Комментарий' name='comment'>
-                            <Input.TextArea autoSize={{ minRows: 6 }} />
+                            <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
                         </Form.Item>
                     </div>
                     <div>
-                        <Button type='default' onClick={() => setOpen(true)}>
-                            {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                        <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)}>
+                            {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
+                            {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
                         </Button>
                         <Modal
                             closable={false}
@@ -605,7 +636,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         <Form.Item name='is_blocked' valuePropName='checked' style={{ marginBottom: '0' }}>
                             <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                         </Form.Item>
+                        <Form.Item name='person' hidden></Form.Item>
                     </div>
+                </div>
+                <div id='section7' className={styles.formSection}>
+                    <p className={styles.formSection__title}>Участие в прошлых годах</p>
+                    <div className={styles.engagementsWrap}>{returnEngagementsLayout()}</div>
                 </div>
             </div>
             <Modal

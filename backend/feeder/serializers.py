@@ -111,16 +111,22 @@ class VolunteerListSerializer(serializers.ModelSerializer):
         model = models.Volunteer
         fields = '__all__'
 
-class VolunteerSerializer(serializers.ModelSerializer):
+class RetrieveVolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
-    person = PersonSerializer()
     arrivals = ArrivalSerializer(many=True)
+    person = PersonSerializer(required=False, allow_null=True)
 
     class Meta:
         model = models.Volunteer
         fields = '__all__'
 
+
+class VolunteerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Volunteer
+        exclude = ['person']
 
 class VolunteerRoleSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -284,6 +290,17 @@ class UserDetailSerializer(serializers.Serializer):
         if user.is_staff or user.is_superuser:
             return ["ADMIN", ]
 
+
+class TransportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Transport
+        fields = '__all__'
+
+
+class ArrivalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Arrival
+        fields = '__all__'
 
 class DepartmentSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
