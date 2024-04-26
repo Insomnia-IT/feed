@@ -196,15 +196,15 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
 
     const [activeAnchor, setActiveAnchor] = useState('section1');
     const isBlocked = Form.useWatch('is_blocked', form);
-    const arrivals = Form.useWatch<ArrivalEntity[]>('arrivals');
+    const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
 
-    const updatedArrivals = useMemo(() => arrivals?.map(arrival => ({ ...arrival })), [arrivals]);
+    const updatedArrivals = useMemo(() => arrivals?.map((arrival) => ({ ...arrival })), [arrivals]);
 
     useEffect(() => {
-        if(updatedArrivals) {
+        if (updatedArrivals) {
             form.setFieldValue('updated_arrivals', updatedArrivals);
         }
-    }, [updatedArrivals])
+    }, [updatedArrivals]);
 
     const [open, setOpen] = useState(false);
 
@@ -430,67 +430,80 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         const createRegisteredChange = (fieldName) => (e) => {
                             const value = e.target.checked ? new Date().toISOString() : null;
                             form.setFieldValue(['updated_arrivals', index, fieldName], value);
-                            arrival[fieldName] = value
+                            arrival[fieldName] = value;
                         };
-                        return <Fragment key={index}>
-                            <div className={styles.dateWrap}>
-                                <div className={styles.dateLabel}>Заезд {index + 1}</div>
-                                <div className={styles.dateInput}>
-                                    <Form.Item
-                                        label='Дата заезда'
-                                        name={['updated_arrivals', index, 'arrival_date']}
-                                        getValueProps={getDateValue}
-                                        rules={Rules.required}
-                                    >
-                                        <DatePicker format={formDateFormat} style={{ width: '100%' }} />
-                                    </Form.Item>
+                        return (
+                            <Fragment key={index}>
+                                <div className={styles.dateWrap}>
+                                    <div className={styles.dateLabel}>Заезд {index + 1}</div>
+                                    <div className={styles.dateInput}>
+                                        <Form.Item
+                                            label='Дата заезда'
+                                            name={['updated_arrivals', index, 'arrival_date']}
+                                            getValueProps={getDateValue}
+                                            rules={Rules.required}
+                                        >
+                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} />
+                                        </Form.Item>
+                                    </div>
+                                    <div className={styles.dateInput}>
+                                        <Form.Item
+                                            label='Как добрался?'
+                                            name={['updated_arrivals', index, 'arrival_transport']}
+                                            rules={Rules.required}
+                                        >
+                                            <Select {...transportsSelectProps} style={{ width: '100%' }} />
+                                        </Form.Item>
+                                    </div>
+                                    <div>
+                                        <Form.Item label=' '>
+                                            <Checkbox
+                                                defaultChecked={!!arrival.arrival_registered}
+                                                onChange={createRegisteredChange('arrival_registered')}
+                                            >
+                                                Подтверждено
+                                            </Checkbox>
+                                        </Form.Item>
+                                    </div>
                                 </div>
-                                <div className={styles.dateInput}>
-                                    <Form.Item
-                                        label='Как добрался?'
-                                        name={['updated_arrivals', index, 'arrival_transport']}
-                                        rules={Rules.required}
-                                    >
-                                        <Select {...transportsSelectProps} style={{ width: '100%' }} />
-                                    </Form.Item>
+                                <div className={styles.dateWrap}>
+                                    <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>
+                                        Заезд {index + 1}
+                                    </div>
+                                    <div className={styles.dateInput}>
+                                        <Form.Item
+                                            label='Дата отъезда'
+                                            name={['updated_arrivals', index, 'departure_date']}
+                                            getValueProps={getDateValue}
+                                            rules={activeToValidationRules(index)}
+                                        >
+                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} />
+                                        </Form.Item>
+                                    </div>
+                                    <div className={styles.dateInput}>
+                                        <Form.Item
+                                            label='Как уехал?'
+                                            name={['updated_arrivals', index, 'departure_transport']}
+                                            rules={Rules.required}
+                                        >
+                                            <Select {...transportsSelectProps} style={{ width: '100%' }} />
+                                        </Form.Item>
+                                    </div>
+                                    <div>
+                                        {' '}
+                                        <Form.Item label=' '>
+                                            <Checkbox
+                                                defaultChecked={!!arrival.departure_registered}
+                                                onChange={createRegisteredChange('departure_registered')}
+                                            >
+                                                Подтверждено
+                                            </Checkbox>
+                                        </Form.Item>
+                                    </div>
                                 </div>
-                                <div> 
-                                    <Form.Item label=' '>
-                                        <Checkbox defaultChecked={!!arrival.arrival_registered} onChange={createRegisteredChange('arrival_registered')}>Подтверждено</Checkbox>
-                                    </Form.Item>
-                                </div>
-                            </div>
-                            <div className={styles.dateWrap}>
-                                <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>Заезд {index + 1}</div>
-                                <div className={styles.dateInput}>
-                                    <Form.Item
-                                        label='Дата отъезда'
-                                        name={['updated_arrivals', index, 'departure_date']}
-                                        getValueProps={getDateValue}
-                                        rules={activeToValidationRules(index)}
-                                    >
-                                        <DatePicker format={formDateFormat} style={{ width: '100%' }} />
-                                    </Form.Item>
-                                </div>
-                                <div className={styles.dateInput}>
-                                    <Form.Item
-                                        label='Как уехал?'
-                                        name={['updated_arrivals', index, 'departure_transport']}
-                                        rules={Rules.required}
-                                    >
-                                        <Select {...transportsSelectProps} style={{ width: '100%' }} />
-                                    </Form.Item>
-                                </div>
-                                <div> <Form.Item
-                                        label=' ' 
-                                    >
-                                        <Checkbox defaultChecked={!!arrival.departure_registered} onChange={createRegisteredChange('departure_registered')}>Подтверждено</Checkbox>
-                                    </Form.Item></div>
-                            </div>
-                        </Fragment>
- 
+                            </Fragment>
+                        );
                     })}
-                   
                 </div>
                 <div id='section4' className={styles.formSection}>
                     <p className={styles.formSection__title}>Бейдж</p>

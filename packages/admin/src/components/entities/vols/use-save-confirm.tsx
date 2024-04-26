@@ -62,18 +62,21 @@ const useSaveConfirm = (
             }
             const arrivals = form.getFieldValue('arrivals');
             const updatedArrivals = form.getFieldValue('updated_arrivals');
-            if(updatedArrivals) {
-                for(let i = 0; i < updatedArrivals.length; i++) {
+            if (updatedArrivals) {
+                for (let i = 0; i < updatedArrivals.length; i++) {
                     const updatedArrival = updatedArrivals[i];
-                    const arrival = arrivals.find(a => a.id === updatedArrival.id);
-                    if(JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
+                    const arrival = arrivals.find((a) => a.id === updatedArrival.id);
+                    if (JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
                         await dataProvider.update({
                             resource: 'arrivals',
                             id: updatedArrival.id,
-                            variables: Object.keys(updatedArrival).reduce((acc, name) => ({
-                                ...acc,
-                                [name]: updatedArrival[name] !== arrival[name] ? updatedArrival[name] : undefined
-                            }), {})
+                            variables: Object.keys(updatedArrival).reduce(
+                                (acc, name) => ({
+                                    ...acc,
+                                    [name]: updatedArrival[name] !== arrival[name] ? updatedArrival[name] : undefined
+                                }),
+                                {}
+                            )
                         });
                     }
                 }

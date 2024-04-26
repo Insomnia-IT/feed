@@ -14,11 +14,7 @@ export interface VolEntity {
     is_active?: boolean;
     is_blocked?: boolean;
     daily_eats?: number;
-    active_from?: Date;
     comment?: string;
-    active_to?: Date;
-    arrival_date?: Date;
-    departure_date?: Date;
     ref_to?: number; // chef
     departments?: Array<{ id: number; name: string }>; //DepartmentEntity[];
     kitchen?: number;
@@ -31,6 +27,7 @@ export interface VolEntity {
     printing_batch?: number;
     role?: string;
     access_role?: string;
+    arrivals: Array<ArrivalEntity>;
 }
 
 export interface KitchenEntity {
