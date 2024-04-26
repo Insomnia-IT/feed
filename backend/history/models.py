@@ -37,7 +37,6 @@ def get_volunteer_data(instance):
 def get_arrival_data(instance):
     data = {
         "badge": instance.volunteer.uuid if instance.volunteer else None,
-        # "engagement": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         "arrival_date": instance.arrival_date,
         "arrival_transport": instance.arrival_transport,
         "arrival_registered": instance.arrival_registered,
@@ -92,11 +91,11 @@ class History(models.Model):
         id_field = instance_id_field(self.object)
         self.object_id = getattr(instance, id_field)
         if status == self.STATUS_CREATE:
-            self.date = instance.created_at
+            self.date = instance.created_at if hasattr(instance, "created_at") else datetime.utcnow()
             self.data = get_instance_data(instance)
         elif status == self.STATUS_UPDATE:
-            self.date = instance.updated_at
+            self.date = instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow()
             self.data = get_instance_data(instance)
         else:
-            self.date = datetime.now()
+            self.date = instance.deleted_at if hasattr(instance, "deleted_at") else datetime.utcnow()
         self.save()
