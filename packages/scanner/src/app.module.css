@@ -8,12 +8,6 @@ button {
     font-size: var(--fs);
 }
 
-.anon {
-    position: absolute;
-    bottom: 20vh;
-    padding: 10px;
-}
-
 .app {
     font-size: var(--fs);
 
@@ -21,15 +15,7 @@ button {
         position: relative;
         width: 100vw;
         height: 100vh;
-        /*max-height: fill-available;*/
-
-        &.main {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            align-items: center;
-            text-align: center;
-        }
+        max-height: fill-available;
     }
 }
 

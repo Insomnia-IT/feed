@@ -26,7 +26,7 @@ export const clearCache = (): void => {
     window.location.reload();
 };
 
-const mealTimes = {
+export const mealTimes = {
     [MealTime.breakfast]: 'Завтрак',
     [MealTime.lunch]: 'Обед',
     [MealTime.dinner]: 'Ужин',

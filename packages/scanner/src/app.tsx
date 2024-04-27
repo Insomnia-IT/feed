@@ -14,7 +14,7 @@ import { AppContext, Colors } from '~/app-context';
 import { API_DOMAIN } from '~/config';
 import css from '~/app.module.css';
 import { HistoryScreen } from '~/screens/history-screen';
-import { MainScreen } from '~/screens/main';
+import { MainScreen } from '~/screens/main-screen/main';
 import { StatsScreen } from '~/screens/stats-screen';
 import { useCheckAuth } from '~/request';
 import { MockTrans } from '~/components/mock-trans/mock-trans';
@@ -174,7 +174,7 @@ const App: FC = () => {
                             </SwipeableViews>
                         </ViewContext.Provider>
                     )}
-                    {(isDev || debugModeLS === '1') && <MockTrans />}
+                    {/*{(isDev || debugModeLS === '1') && <MockTrans />}*/}
                 </div>
             </AppContext.Provider>
         </ErrorBoundary>

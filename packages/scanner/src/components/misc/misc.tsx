@@ -80,7 +80,7 @@ export const ErrorMsg: FC<{
                     <span>{msg}</span>
                 )}
             </div>
-            <div className={css.card}>
+            <div className={css.cardDefault}>
                 <button type='button' onClick={() => handleClose()}>
                     Закрыть
                 </button>
@@ -101,7 +101,7 @@ export const GreenCard: FC<{
     <>
         <VolInfo vol={vol} />
         {/* <FeedLeft msg={`Осталось: ${vol.balance}`} /> */}
-        <div className={css.card}>
+        <div className={css.cardDefault}>
             <button type='button' onClick={doFeed}>
                 Кормить
             </button>
@@ -116,7 +116,7 @@ export const GreenAnonCard: FC<{
     doFeed: (isVegan?: boolean) => void;
     close: () => void;
 }> = ({ close, doFeed }) => (
-    <>
+    <div className={css.card}>
         {'Вы уверены, что хотите покормить анонима?'}
         <div className={css.anoncard}>
             <button type='button' onClick={() => doFeed(false)}>
@@ -131,7 +131,7 @@ export const GreenAnonCard: FC<{
                 Отмена
             </button>
         </div>
-    </>
+    </div>
 );
 
 export const YellowCard: FC<{
@@ -158,7 +158,7 @@ export const YellowCard: FC<{
             </h4>
             <VolInfo vol={vol} />
             {/* <FeedLeft msg={`Осталось: ${vol.balance}`} /> */}
-            <div className={css.card}>
+            <div className={css.cardDefault}>
                 <button type='button' onClick={() => doFeed(undefined, msg.join(', '))}>
                     Все равно кормить
                 </button>

@@ -43,7 +43,7 @@ export const MainScreenStats = () => {
 
     return (
         <div className={style.mainScreenStats}>
-            <span>На поле: {volsOnField}</span>
+            {/*<span>На поле: {volsOnField}</span>*/}
             <span>Покормлено: {volsFedAmount}</span>
             <span>Осталось: {volsOnField > volsFedAmount ? volsOnField - volsFedAmount : 0}</span>
         </div>
