@@ -22,7 +22,7 @@ ReactDOM.render(<HotApp/>, document.getElementById('root'));*/
 //@ts-ignore
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 const dev = process.env.NODE_ENV !== 'production';
-
+console.log('index')
 root.render(
     <App/>
 );

@@ -1,0 +1,35 @@
+.feedAnonCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.buttonsBlock {
+  display: grid;
+  grid-template-areas: "a b" "c c" "d d";
+  gap: 8px;
+}
+
+.feedMeatEater {
+  grid-area: a;
+}
+
+.feedVegan {
+  grid-area: b;
+}
+
+.feedGroup {
+  grid-area: c;
+}
+
+.cancel {
+  grid-area: d;
+}
+

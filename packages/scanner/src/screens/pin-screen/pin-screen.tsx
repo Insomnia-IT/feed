@@ -21,9 +21,7 @@ export const PinScreen = (): React.ReactElement => {
     const checkAuth = useCheckAuth(API_DOMAIN, setAuth);
 
     const tryAuth = useCallback(() => {
-        console.log('auth');
         const enteredPin = pin || '';
-        console.log('enteredPin', enteredPin);
         checkAuth(enteredPin)
             .then((user) => {
                 localStorage.setItem('pin', enteredPin);

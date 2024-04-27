@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import cs from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { ErrorMsg } from '~/components/misc';
+import { ErrorCard } from '~/components/post-scan-cards/error-card';
 
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 import { getAllVols } from '../post-scan-group-badge.utils';
@@ -145,5 +145,5 @@ export const GroupBadgeRedCard: FC<{
         close();
     }, [close, doNotFeed, volsNotToFeed]);
 
-    return <ErrorMsg msg={msg} close={handleClose} />;
+    return <ErrorCard msg={msg} close={handleClose} />;
 };

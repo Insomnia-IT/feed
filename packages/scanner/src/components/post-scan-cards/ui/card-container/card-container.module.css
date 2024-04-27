@@ -1,0 +1,9 @@
+.cardContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 16px 16px;
+
+    height: 100vh;
+    width: 100vw;
+}

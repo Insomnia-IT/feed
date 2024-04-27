@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { db } from '~/db';
-import { ErrorMsg } from '~/components/misc/misc';
+import { ErrorCard } from '~/components/post-scan-cards/error-card';
 
 import { PostScanVol } from './post-scan-vol';
 import { PostScanAnon } from './post-scan-anon';
@@ -26,7 +26,7 @@ export const PostScan: FC<{
             {isAnon && <PostScanAnon closeFeed={closeFeed} />}
             {isVol && <PostScanVol qrcode={qrcode} vol={vol} closeFeed={closeFeed} />}
             {isGroupBadge && <PostScanGroupBadge groupBadge={groupBadge} closeFeed={closeFeed} />}
-            {isError && <ErrorMsg close={closeFeed} msg={`Бейдж не найден: ${qrcode}`} />}
+            {isError && <ErrorCard close={closeFeed} msg={`Бейдж не найден: ${qrcode}`} />}
         </>
     );
 });

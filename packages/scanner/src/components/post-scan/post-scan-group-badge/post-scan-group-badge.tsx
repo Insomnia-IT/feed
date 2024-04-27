@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { AppColor, useApp } from '~/model/app-provider/app-provider';
 import type { GroupBadge } from '~/db';
 import { db, dbIncFeed } from '~/db';
-import { ErrorMsg } from '~/components/misc';
+import { ErrorCard } from '~/components/post-scan-cards/error-card';
 
 import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-scan.utils';
 
@@ -64,7 +64,7 @@ export const PostScanGroupBadge: FC<{
 
                     return dbIncFeed({
                         vol,
-                        mealTime: mealTime,
+                        mealTime: mealTime!,
                         isVegan: undefined,
                         log,
                         kitchenId
@@ -91,7 +91,7 @@ export const PostScanGroupBadge: FC<{
 
         // pass each vol through validation and combine result
         const validatedVols = vols.map((vol) => {
-            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId, mealTime, true) };
+            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId, mealTime!, true) };
         });
 
         setValidationGroups({
@@ -166,9 +166,9 @@ export const PostScanGroupBadge: FC<{
 
     return (
         <>
-            {Views.LOADING === view && <ErrorMsg close={closeFeed} msg={`Загрузка...`} />}
+            {Views.LOADING === view && <ErrorCard close={closeFeed} msg={`Загрузка...`} />}
 
-            {Views.ERROR_EMPTY === view && <ErrorMsg close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />}
+            {Views.ERROR_EMPTY === view && <ErrorCard close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />}
 
             {Views.ERROR_VALIDATION === view && (
                 <GroupBadgeRedCard

@@ -86,7 +86,7 @@ export const AppProvider = (props) => {
             debugMode: debugModeLS,
             deoptimizedSync: deoptimizedSyncLS
         }),
-        [pin, appError, lastSyncStart, volCount, mealTime, kitchenId]
+        [auth, pin, appError, lastSyncStart, volCount, mealTime, kitchenId]
     );
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
@@ -95,7 +95,7 @@ export const AppProvider = (props) => {
 export function useApp(): IAppContext {
     const context = useContext(AppContext);
     if (context === null) {
-        throw new Error('useApp must be used within a AppProvider');
+        throw new Error('useApp must be used within an AppProvider');
     }
     return context;
 }

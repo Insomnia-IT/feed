@@ -11,7 +11,6 @@ import { useView } from '~/model/view-provider';
 export const Screens = () => {
     const { auth, mealTime } = useApp();
     const { currentView, setCurrentView } = useView();
-    console.log('screen');
     return (
         <div>
             {!auth && <PinScreen />}
