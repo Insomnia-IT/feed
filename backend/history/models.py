@@ -27,7 +27,7 @@ def get_volunteer_data(instance):
         "role": instance.role,
         "position": instance.position,
         "photo": instance.photo,
-        "person": instance.person.id if instance.person else None,
+        "person": str(instance.person.id) if instance.person else None,
         "comment": instance.comment,
         "notion_id": instance.notion_id,
         "departments": list(instance.departments.all().values_list("name", flat=True)),
