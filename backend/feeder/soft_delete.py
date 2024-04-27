@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from django.db import models
-from rest_framework.viewsets import ModelViewSet
 
 
 class SoftDeleteQuerySet(models.QuerySet):
@@ -35,7 +34,7 @@ class SoftDeleteManager(models.Manager):
         return super(SoftDeleteManager, self).all()
 
 
-class SoftDeleteModelMixin:
+class SoftDeleteModelMixin(models.Model):
     deleted_at = models.DateTimeField(editable=False, null=True, default=None)
 
     class Meta:
@@ -51,8 +50,3 @@ class SoftDeleteModelMixin:
 
     def hard_delete(self):
         super(SoftDeleteModelMixin, self).delete()
-
-
-class SoftDeleteViewMixin(ModelViewSet):
-    def get_queryset(self):
-        return super().get_queryset().alive()

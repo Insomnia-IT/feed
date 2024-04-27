@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions, filters
 
 from feeder import serializers, models
-from feeder.mixins import SaveHistoryDataViewSetMixin
+from feeder.views.mixins import SaveHistoryDataViewSetMixin
 
 
 class ArrivalViewSet(SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
