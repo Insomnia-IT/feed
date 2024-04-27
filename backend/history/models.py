@@ -91,9 +91,13 @@ class History(models.Model):
         self.status = status
         self.object = str(instance.__class__.__name__).lower()
         self.actor_badge = request_user_uuid
-        id_field = instance_id_field(self.object)
-        object_id = getattr(instance, id_field)
-        self.object_id = object_id if isinstance(object_id, uuid.UUID) else instance_id
+        if hasattr(instance, "uuid"):
+            self.object_id = instance.uuid
+        elif instance_id:
+            self.object_id = instance_id
+        else:
+            id_field = instance_id_field(self.object)
+            self.object_id = getattr(instance, id_field)
         if status == self.STATUS_CREATE:
             self.date = instance.created_at if hasattr(instance, "created_at") else datetime.utcnow()
             self.data = get_instance_data(instance)
