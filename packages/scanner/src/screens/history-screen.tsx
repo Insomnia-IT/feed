@@ -4,7 +4,7 @@ import cn from 'classnames';
 import { History } from '~/components/history';
 import { ScreenHeader } from '~/components/screen-header';
 
-import css from '../app.module.css';
+import css from '../app/app.module.css';
 
 export const HistoryScreen: React.FC = () => {
     return (

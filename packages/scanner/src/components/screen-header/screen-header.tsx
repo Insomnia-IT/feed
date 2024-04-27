@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
 
 import { ReactComponent as Home } from '~/shared/icons/arrow_left.svg';
-import { ViewContext } from '~/view-context';
+import { useView } from '~/model/view-provider/view-provider';
 
 import style from './screen-header.module.css';
 
 export function ScreenHeader({ children }): JSX.Element {
-    const { setCurrentView } = useContext(ViewContext);
+    const { setCurrentView } = useView();
     const change = (index: number): void => {
         setCurrentView(index);
     };

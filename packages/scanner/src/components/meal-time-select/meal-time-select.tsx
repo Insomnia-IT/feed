@@ -1,14 +1,14 @@
 import React, { useContext } from 'react';
 
 import { MealTime } from '~/db';
-import { AppContext } from '~/app-context';
 import { Button } from '~/shared/ui/button/button';
+import { useApp } from '~/model/app-provider';
 
 import logo from './logo.png';
 import css from './meal-time-select.module.css';
 
 export const MealTimeSelect = () => {
-    const { setMealTime } = useContext(AppContext);
+    const { setMealTime } = useApp();
     return (
         <div className={css.mealTimeSelectBlock}>
             <img src={logo} width={101} height={101} />

@@ -3,13 +3,13 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { ErrorMsg, LastUpdated } from '~/components/misc/misc';
 import { PostScan } from '~/components/post-scan';
 import { db } from '~/db';
-import { AppContext } from '~/app-context';
 import { Scan } from '~/components/scan/scan';
+import { useApp } from '~/model/app-provider';
 
 import css from './main.module.css';
 
 export const MainScreen = React.memo(function MainScreen() {
-    const { appError, lastSyncStart, setColor, setLastSyncStart, setVolCount, volCount } = useContext(AppContext);
+    const { appError, lastSyncStart, setColor, setLastSyncStart, setVolCount, volCount } = useApp();
     const [scanResult, setScanResult] = useState('');
     const closeFeedDialog = useCallback(() => {
         setColor(null);

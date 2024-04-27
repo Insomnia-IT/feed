@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback } from 'react';
 
 import { IconButton } from '~/shared/ui/icon-button/icon-button';
 import { Clock } from '~/shared/ui/icons/clock';
@@ -6,8 +6,8 @@ import { mealTimes } from '~/shared/lib/utils';
 import { GearAlt } from '~/shared/ui/icons/gear-alt';
 import { Button } from '~/shared/ui/button/button';
 import { QrScan } from '~/components/qr-scan';
-import { AppContext } from '~/app-context';
 import { MainScreenStats } from '~/components/main-screen-stats';
+import { useApp } from '~/model/app-provider';
 
 import css from './scan.module.css';
 
@@ -18,7 +18,7 @@ interface ScanProps {
 export const Scan = (props: ScanProps) => {
     const { onScan } = props;
 
-    const { mealTime } = useContext(AppContext);
+    const { mealTime } = useApp();
 
     const feedAnon = () => {
         onScan('anon');

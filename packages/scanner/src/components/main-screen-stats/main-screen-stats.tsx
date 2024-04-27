@@ -2,16 +2,16 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import dayjs from 'dayjs';
 
-import { AppContext } from '~/app-context';
 import type { Transaction } from '~/db';
 import { db, getVolsOnField } from '~/db';
 import { getToday } from '~/shared/lib/date';
+import { useApp } from '~/model/app-provider';
 
 import style from './main-screen-stats.module.css';
 
 export const MainScreenStats = () => {
     const [volsFedAmount, setVolsFedAmount] = useState(0);
-    const { mealTime } = useContext(AppContext);
+    const { mealTime } = useApp();
 
     const volsOnField = useLiveQuery(async () => (await getVolsOnField(getToday())).length, [mealTime], 0);
 

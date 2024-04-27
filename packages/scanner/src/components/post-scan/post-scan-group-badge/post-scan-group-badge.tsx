@@ -1,8 +1,8 @@
 import type { FC } from 'react';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { AppColor, AppContext } from '~/app-context';
+import { AppColor, useApp } from '~/model/app-provider/app-provider';
 import type { GroupBadge } from '~/db';
 import { db, dbIncFeed } from '~/db';
 import { ErrorMsg } from '~/components/misc';
@@ -50,7 +50,7 @@ export const PostScanGroupBadge: FC<{
     const [validationGroups, setValidationGroups] = useState<ValidationGroups>();
 
     // get app context
-    const { kitchenId, mealTime, setColor } = useContext(AppContext);
+    const { kitchenId, mealTime, setColor } = useApp();
 
     // set callback (not) to feed vols
     const incFeedAsync = useCallback(
@@ -64,7 +64,7 @@ export const PostScanGroupBadge: FC<{
 
                     return dbIncFeed({
                         vol,
-                        mealTime: mealTime!,
+                        mealTime: mealTime,
                         isVegan: undefined,
                         log,
                         kitchenId
@@ -91,7 +91,7 @@ export const PostScanGroupBadge: FC<{
 
         // pass each vol through validation and combine result
         const validatedVols = vols.map((vol) => {
-            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId, mealTime!, true) };
+            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId, mealTime, true) };
         });
 
         setValidationGroups({

@@ -3,8 +3,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { StatsTable } from '~/components/stats/stats-table';
 import { useLocalStats } from '~/request-local-db';
 import { getStatsDates } from '~/shared/lib/date';
-import { ViewContext } from '~/view-context';
 import { StatsDatePicker } from '~/components/stats/stats-date-picker';
+import { useView } from '~/model/view-provider/view-provider';
 
 import style from './stats.module.css';
 
@@ -22,7 +22,7 @@ export enum TableType {
 export const Stats = React.memo(function Stats() {
     const { today, tomorrow, yesterday } = getStatsDates();
     const { error, progress, stats, update } = useLocalStats();
-    const { currentView } = useContext(ViewContext);
+    const { currentView } = useView();
 
     const [tableType, setTableType] = useState<TableType>(TableType.default);
     const [statsDate, setStatsDate] = useState<StatsDateEnum>(StatsDateEnum.today);

@@ -1,17 +1,17 @@
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useGetVols } from '~/request/use-get-vols';
 import { useSyncTransactions } from '~/request/use-sync-trans';
-import { AppContext } from '~/app-context';
 import { useGetTrans } from '~/request/use-get-trans';
 import { useSendTrans } from '~/request/use-send-trans';
 import { db } from '~/db';
+import { useApp } from '~/model/app-provider';
 
 import { useGetGroupBadges } from './use-get-group-badges';
 import type { ApiHook } from './lib';
 
 export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const { deoptimizedSync } = useContext(AppContext);
+    const { deoptimizedSync } = useApp();
 
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);

@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 
 import { HistoryTable } from '~/components/history/history-table';
-import { ViewContext } from '~/view-context';
 import { useLocalLastTrans } from '~/request-local-db/use-local-last-trans';
+import { useView } from '~/model/view-provider/view-provider';
 
 import style from './history.module.css';
 
 export const History: React.FC = () => {
-    const { currentView } = useContext(ViewContext);
+    const { currentView } = useView();
     const [limit, setLimit] = useState<number>(20);
     const [end, setEnd] = useState<boolean>(false);
 

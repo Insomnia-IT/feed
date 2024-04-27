@@ -1,15 +1,15 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { PinInput } from '~/shared/ui/pin-input/pin-input';
 import { Button } from '~/shared/ui/button/button';
 import { useCheckAuth } from '~/request';
 import { API_DOMAIN } from '~/config';
-import { AppContext } from '~/app-context';
+import { useApp } from '~/model/app-provider';
 
 import css from './pin-screen.module.css';
 
 export const PinScreen = (): React.ReactElement => {
-    const { setAuth, setKitchenId } = useContext(AppContext);
+    const { setAuth, setKitchenId } = useApp();
 
     const [pin, setPin] = useState('');
     const storedPin = localStorage.getItem('pin');

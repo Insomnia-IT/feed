@@ -1,19 +1,19 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import cn from 'classnames';
 
 import { API_DOMAIN } from '~/config';
-import { AppContext } from '~/app-context';
 import { db } from '~/db';
 import { nop } from '~/shared/lib/utils';
 import { ReactComponent as Refresh } from '~/shared/icons/refresh.svg';
 import { useSync } from '~/request';
+import { useApp } from '~/model/app-provider';
 
 import css from './btn-sync.module.css';
 
 const SYNC_INTERVAL = 2 * 60 * 1000;
 
 export const BtnSync: React.FC = () => {
-    const { deoptimizedSync, lastSyncStart, pin, setAuth, setLastSyncStart, setVolCount } = useContext(AppContext);
+    const { deoptimizedSync, lastSyncStart, pin, setAuth, setLastSyncStart, setVolCount } = useApp();
     const { error, fetching, send, updated } = useSync(API_DOMAIN, pin, setAuth);
 
     const success = !error && updated;

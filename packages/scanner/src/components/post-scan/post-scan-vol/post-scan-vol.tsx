@@ -1,10 +1,9 @@
 import type { FC } from 'react';
-import { useContext } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { AppColor, AppContext } from '~/app-context';
 import { FeedType, type Volunteer } from '~/db';
 import { ErrorMsg, GreenCard, YellowCard } from '~/components/misc';
+import { AppColor, useApp } from '~/model/app-provider';
 
 import { getTodayStart, getVolTransactionsAsync, useFeedVol, validateVol } from '../post-scan.utils';
 
@@ -15,7 +14,7 @@ export const PostScanVol: FC<{
 }> = ({ closeFeed, qrcode, vol }) => {
     const volTransactions = useLiveQuery(async () => await getVolTransactionsAsync(vol, getTodayStart()), [vol]);
 
-    const { kitchenId, mealTime, setColor } = useContext(AppContext);
+    const { kitchenId, mealTime, setColor } = useApp();
 
     const [doFeed, doNotFeed] = useFeedVol(vol, mealTime, closeFeed, kitchenId);
 
