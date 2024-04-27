@@ -59,7 +59,7 @@ class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
         fields = ['custom_field', 'volunteer']
 
 
-class VolunteerViewSet(SaveHistoryDataViewSetMixin, SoftDeleteViewSetMixin, viewsets.ModelViewSet):
+class VolunteerViewSet(SaveHistoryDataViewSetMixin, SoftDeleteViewSetMixin, MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.Volunteer.objects.all()
     serializer_class = serializers.VolunteerSerializer
