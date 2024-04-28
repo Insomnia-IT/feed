@@ -5,6 +5,9 @@ export const mealTimeArr: Array<MealTime> = ['breakfast', 'lunch', 'dinner', 'ni
 export type EaterType = 'vegan' | 'meatEater';
 export type EaterTypeExtended = EaterType | 'all';
 
+export type KitcheId = 'first' | 'second';
+export type KitchenIdExtended = KitcheId | 'all';
+
 export type IEaterTypeAmount = {
     [eaterType in EaterType]: number;
 };
@@ -25,9 +28,14 @@ export type DataType = {
     };
 };
 
-export interface IData {
+export type DataByDate = {
     [date: string]: DataType;
 }
+
+export interface IData {
+    [kitchenId: string]: DataByDate
+}
+
 export const datumInstance: DataType = {
     plan: {
         breakfast: { meatEater: 0, vegan: 0 },
@@ -43,4 +51,10 @@ export const datumInstance: DataType = {
         night: { meatEater: 0, vegan: 0 },
         total: { meatEater: 0, vegan: 0 }
     }
-};
+}
+
+export const dataEmpty: IData = {
+    all: {},
+    first: {},
+    second: {}
+}
