@@ -28,13 +28,6 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState<string>('');
     const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
     const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
-        initialFilter: [
-            {
-                field: 'volunteer',
-                operator: 'eq',
-                value: 558
-            }
-        ],
         onSearch: (values: any) => {
             const filters: any = [];
             filters.push({
