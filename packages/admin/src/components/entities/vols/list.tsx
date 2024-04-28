@@ -72,37 +72,41 @@ const getCustomValue = (vol, customField) => {
     return value;
 };
 
-const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
-    <div style={{ padding: 8 }}>
-        <DatePicker
-            format={formDateFormat}
-            value={selectedKeys[0] as unknown as Dayjs}
-            onChange={(value) => setSelectedKeys(value ? [value as unknown as React.Key] : [])}
-            style={{ marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-            <Button
-                type='primary'
-                onClick={() => confirm()}
-                icon={<Icons.SearchOutlined />}
-                size='small'
-                style={{ width: 90 }}
-            >
-                Фильтр
-            </Button>
-            <Button
-                onClick={() => {
-                    clearFilters?.();
-                    confirm();
-                }}
-                size='small'
-                style={{ width: 90 }}
-            >
-                Очистить
-            </Button>
-        </Space>
-    </div>
-);
+const formatDate = (value) => {
+    return new Date(value).toLocaleString('ru', { day: 'numeric', month: 'long' });
+};
+
+// const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
+//     <div style={{ padding: 8 }}>
+//         <DatePicker
+//             format={formDateFormat}
+//             value={selectedKeys[0] as unknown as Dayjs}
+//             onChange={(value) => setSelectedKeys(value ? [value as unknown as React.Key] : [])}
+//             style={{ marginBottom: 8, display: 'block' }}
+//         />
+//         <Space>
+//             <Button
+//                 type='primary'
+//                 onClick={() => confirm()}
+//                 icon={<Icons.SearchOutlined />}
+//                 size='small'
+//                 style={{ width: 90 }}
+//             >
+//                 Фильтр
+//             </Button>
+//             <Button
+//                 onClick={() => {
+//                     clearFilters?.();
+//                     confirm();
+//                 }}
+//                 size='small'
+//                 style={{ width: 90 }}
+//             >
+//                 Очистить
+//             </Button>
+//         </Space>
+//     </div>
+// );
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
@@ -364,10 +368,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     useEffect(() => {
         void loadTransactions();
     }, [filterUnfeededType]);
-
-    const formatDate = (value) => {
-        return new Date(value).toLocaleString('ru', { day: 'numeric', month: 'long' });
-    };
 
     return (
         <List>

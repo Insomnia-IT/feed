@@ -7,14 +7,25 @@ import { CreateEdit } from './common';
 import useSaveConfirm from './use-save-confirm';
 
 export const VolCreate: FC<IResourceComponentsProps> = () => {
-    const { form, formProps, saveButtonProps } = useForm<VolEntity>();
-    const { onClick, renderModal } = useSaveConfirm(form, saveButtonProps);
+    const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+        onMutationSuccess: (e) => {
+            onMutationSuccess(e);
+        }
+    });
+    const { onClick, renderModal, onMutationSuccess } = useSaveConfirm(form, saveButtonProps);
 
     return (
         <Create
             saveButtonProps={{
                 ...saveButtonProps,
                 onClick
+            }}
+            contentProps={{
+                style: {
+                    background: 'initial',
+                    boxShadow: 'initial',
+                    height: '100%'
+                }
             }}
         >
             <Form {...formProps} layout='vertical'>

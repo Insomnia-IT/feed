@@ -1,9 +1,10 @@
 import type { FormInstance } from '@pankod/refine-antd';
 import { Button, Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { FrownOutlined, RadarChartOutlined, SmileOutlined } from '@ant-design/icons';
+import { FrownOutlined, RadarChartOutlined, SmileOutlined, DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
 import dynamic from 'next/dynamic';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Rules } from '~/components/form';
 import type {
@@ -27,6 +28,8 @@ import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+
+type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
@@ -85,12 +88,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         };
     };
 
-    const getRegisteredValue = (value) => {
-        return {
-            checked: Boolean(value)
-        };
-    };
-
     const onGroupBadgeClear = () => {
         setTimeout(() => {
             form.setFieldValue('group_badge', '');
@@ -103,7 +100,25 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         });
     };
 
-    // TODO
+    const activeFromValidationRules = useCallback(
+        (index: number) => [
+            {
+                required: true
+            },
+            {
+                validator: async (_, value) => {
+                    const prevArrivalDate = new Date(form.getFieldValue(['updated_arrivals', index - 1, 'arrival_date']));
+                    if(index > 0 && prevArrivalDate > value) {
+                        return Promise.reject(new Error(`Дата заезда в Заезде ${index + 1} должна быть позднее Даты заезда в Заезде ${index}`));
+                    }
+
+                    return Promise.resolve();
+                }
+            }
+        ],
+        [form]
+    );
+
     const activeToValidationRules = useCallback(
         (index: number) => [
             {
@@ -115,7 +130,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         return Promise.resolve();
                     }
 
-                    return Promise.reject(new Error("Дата 'До' не может быть меньше даты 'От'"));
+                    return Promise.reject(new Error("Дата заезда не может быть меньше Даты отъезда"));
                 }
             }
         ],
@@ -203,13 +218,25 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const isBlocked = Form.useWatch('is_blocked', form);
     const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
 
-    const updatedArrivals = useMemo(() => arrivals?.map((arrival) => ({ ...arrival })), [arrivals]);
+    const [updatedArrivals, setUpdatedArrivals] = useState<UpdatedArrival[]>([]);
 
     useEffect(() => {
-        if (updatedArrivals) {
-            form.setFieldValue('updated_arrivals', updatedArrivals);
-        }
-    }, [updatedArrivals]);
+        setUpdatedArrivals(arrivals ?? [{
+            id: uuidv4()
+        }]);
+    }, [arrivals]);
+
+    useEffect(() => {
+        form.setFieldValue('updated_arrivals', updatedArrivals);
+    }, [updatedArrivals, form]);
+
+    // const updatedArrivals = useMemo(() => arrivals ? arrivals.map((arrival) => ({ ...arrival })) : [{}], [arrivals]);
+
+    // useEffect(() => {
+    //     if (updatedArrivals) {
+    //         form.setFieldValue('updated_arrivals', updatedArrivals);
+    //     }
+    // }, [updatedArrivals]);
 
     const [open, setOpen] = useState(false);
 
@@ -296,6 +323,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
             return null;
         }
     }
+
+    const addArrival = () => {
+        setUpdatedArrivals([...updatedArrivals, {
+            id: uuidv4(),
+        }]);
+    };
 
     return (
         <div className={styles.edit}>
@@ -457,23 +490,38 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                     <p className={styles.formSection__title}>Даты на поле</p>
                     <Form.Item name='arrivals' hidden />
                     {updatedArrivals?.map((arrival, index) => {
+                        const createChange = (fieldName) => (value) => {
+                            const newUpdaterdArrivals = updatedArrivals.slice();
+                            newUpdaterdArrivals[index] = { ...arrival, [fieldName]: value };
+                            setUpdatedArrivals(newUpdaterdArrivals)
+                        };
+
                         const createRegisteredChange = (fieldName) => (e) => {
                             const value = e.target.checked ? new Date().toISOString() : null;
-                            form.setFieldValue(['updated_arrivals', index, fieldName], value);
-                            arrival[fieldName] = value;
+                            const newUpdaterdArrivals = updatedArrivals.slice();
+                            newUpdaterdArrivals[index] = { ...arrival, [fieldName]: value };
+                            setUpdatedArrivals(newUpdaterdArrivals)
+                        };
+
+                        const deleteArrival = () => {
+                            const newUpdatedArrivals = updatedArrivals.filter(({ id }) => id !== arrival.id);
+                            setUpdatedArrivals(newUpdatedArrivals);
                         };
                         return (
-                            <Fragment key={index}>
+                            <Fragment key={arrival.id}>
                                 <div className={styles.dateWrap}>
-                                    <div className={styles.dateLabel}>Заезд {index + 1}</div>
+                                    <div className={styles.dateLabel}>
+                                        <div>Заезд {index + 1}</div>
+                                        <Button className={styles.deleteButton} danger type='link' icon={<DeleteOutlined />} onClick={deleteArrival} style={{ visibility: updatedArrivals.length === 1 ? 'hidden' : undefined }}>Удалить</Button>
+                                    </div>
                                     <div className={styles.dateInput}>
                                         <Form.Item
                                             label='Дата заезда'
                                             name={['updated_arrivals', index, 'arrival_date']}
                                             getValueProps={getDateValue}
-                                            rules={Rules.required}
+                                            rules={activeFromValidationRules(index)}
                                         >
-                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} />
+                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} onChange={createChange('arrival_date')} />
                                         </Form.Item>
                                     </div>
                                     <div className={styles.dateInput}>
@@ -482,13 +530,13 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                             name={['updated_arrivals', index, 'arrival_transport']}
                                             rules={Rules.required}
                                         >
-                                            <Select {...transportsSelectProps} style={{ width: '100%' }} />
+                                            <Select {...transportsSelectProps} style={{ width: '100%' }} onChange={createChange('arrival_transport')} />
                                         </Form.Item>
                                     </div>
                                     <div>
                                         <Form.Item label=' '>
                                             <Checkbox
-                                                defaultChecked={!!arrival.arrival_registered}
+                                                checked={!!arrival.arrival_registered}
                                                 onChange={createRegisteredChange('arrival_registered')}
                                             >
                                                 Подтверждено
@@ -498,7 +546,8 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                 </div>
                                 <div className={styles.dateWrap}>
                                     <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>
-                                        Заезд {index + 1}
+                                        <div>Заезд {index + 1}</div>
+                                        <Button className={styles.deleteButton} danger type='link' icon={<DeleteOutlined />}>Удалить</Button>
                                     </div>
                                     <div className={styles.dateInput}>
                                         <Form.Item
@@ -507,7 +556,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                             getValueProps={getDateValue}
                                             rules={activeToValidationRules(index)}
                                         >
-                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} />
+                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} onChange={createChange('departure_date')} />
                                         </Form.Item>
                                     </div>
                                     <div className={styles.dateInput}>
@@ -516,14 +565,13 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                             name={['updated_arrivals', index, 'departure_transport']}
                                             rules={Rules.required}
                                         >
-                                            <Select {...transportsSelectProps} style={{ width: '100%' }} />
+                                            <Select {...transportsSelectProps} style={{ width: '100%' }} onChange={createChange('departure_transport')} />
                                         </Form.Item>
                                     </div>
                                     <div>
-                                        {' '}
                                         <Form.Item label=' '>
                                             <Checkbox
-                                                defaultChecked={!!arrival.departure_registered}
+                                                checked={!!arrival.departure_registered}
                                                 onChange={createRegisteredChange('departure_registered')}
                                             >
                                                 Подтверждено
@@ -534,6 +582,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                             </Fragment>
                         );
                     })}
+                    <Button className={styles.addArrivalButton} type='primary' icon={<PlusSquareOutlined />} onClick={addArrival}>Добавить заезд</Button>
                 </div>
                 <div id='section4' className={styles.formSection}>
                     <p className={styles.formSection__title}>Бейдж</p>

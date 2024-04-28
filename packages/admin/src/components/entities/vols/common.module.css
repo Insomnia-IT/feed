@@ -321,3 +321,12 @@
     line-height: 157%;
     color: black;
 }
+
+.deleteButton {
+    margin-top: 7px;
+    padding: 0;
+}
+
+.addArrivalButton {
+    float: right;
+}
