@@ -11,7 +11,11 @@ const useSaveConfirm = (
     saveButtonProps: ButtonProps & {
         onClick: () => void;
     }
-): { onClick: () => Promise<void>; renderModal: () => JSX.Element } => {
+): {
+    onClick: () => void;
+    renderModal: () => JSX.Element;
+    onMutationSuccess: ({ data }: { data: any }) => Promise<void>;
+} => {
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
     );
@@ -26,8 +30,17 @@ const useSaveConfirm = (
     };
 
     return {
-        onClick: async () => {
-            const id = form.getFieldValue('id');
+        onClick: () => {
+            const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
+            if (!form.getFieldValue('is_active')) {
+                setShowConfirmationModalReason('is_active');
+            } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
+                setShowConfirmationModalReason('active_from');
+            } else {
+                saveButtonProps?.onClick();
+            }
+        },
+        onMutationSuccess: async ({ data: { id } }) => {
             const updatedCustomFields = form.getFieldValue('updated_custom_fields');
             if (updatedCustomFields) {
                 for (const customFieldId in updatedCustomFields) {
@@ -60,13 +73,62 @@ const useSaveConfirm = (
                     }
                 }
             }
-            const activeFrom = form.getFieldValue('active_from');
-            if (!form.getFieldValue('is_active')) {
-                setShowConfirmationModalReason('is_active');
-            } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
-                setShowConfirmationModalReason('active_from');
-            } else {
-                saveButtonProps?.onClick();
+            const arrivals = form.getFieldValue('arrivals') ?? [];
+            const updatedArrivals = form.getFieldValue('updated_arrivals');
+            if (updatedArrivals) {
+                const serializeDate = (value) => {
+                    return dayjs(value).format('YYYY-MM-DD');
+                };
+                for (let i = 0; i < updatedArrivals.length; i++) {
+                    const updatedArrival = updatedArrivals[i];
+
+                    const arrival = arrivals.find((a) => a.id === updatedArrival.id);
+                    if (arrival) {
+                        if (JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
+                            const serializeField = (obj, fieldName) => {
+                                if (fieldName === 'arrival_date' || fieldName === 'departure_date') {
+                                    return serializeDate(obj[fieldName]);
+                                }
+                                return obj[fieldName];
+                            };
+                            await dataProvider.update({
+                                resource: 'arrivals',
+                                id: updatedArrival.id,
+                                variables: Object.keys(updatedArrival).reduce(
+                                    (acc, name) => ({
+                                        ...acc,
+                                        [name]:
+                                            updatedArrival[name] !== arrival[name]
+                                                ? serializeField(updatedArrival, name)
+                                                : undefined
+                                    }),
+                                    {}
+                                )
+                            });
+                        }
+                    } else {
+                        await dataProvider.create({
+                            resource: 'arrivals',
+                            variables: {
+                                ...updatedArrival,
+                                arrival_date: serializeDate(updatedArrival.arrival_date),
+                                departure_date: serializeDate(updatedArrival.departure_date),
+                                volunteer: id
+                            }
+                        });
+                    }
+                }
+
+                for (let i = 0; i < arrivals.length; i++) {
+                    const arrivalId = arrivals[i].id;
+                    const upadatedArrival = updatedArrivals.find((a) => a.id === arrivalId);
+                    if (!upadatedArrival) {
+                        await dataProvider.deleteOne({
+                            resource: 'arrivals',
+                            id: arrivalId
+                        });
+                    }
+                }
             }
         },
         renderModal: () => {

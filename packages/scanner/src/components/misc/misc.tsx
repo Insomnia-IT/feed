@@ -11,11 +11,10 @@ const dateTimeFormat = 'DD MMM HH:mm';
 export type ValueOf<T> = T[keyof T];
 
 export const isVolExpired = (vol: Volunteer): boolean => {
-    return (
-        !vol.active_to ||
-        !vol.active_from ||
-        dayjs() < dayjs(vol.active_from).startOf('day').add(7, 'hours') ||
-        dayjs() > dayjs(vol.active_to).endOf('day').add(7, 'hours')
+    return vol.arrivals.every(
+        ({ arrival_date, departure_date }) =>
+            dayjs() < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
+            dayjs() > dayjs(departure_date).endOf('day').add(7, 'hours')
     );
 };
 
@@ -26,30 +25,39 @@ export const LastUpdated: FC<{
     <div className={css.lastUpdated}>{`Обновлено: ${dayjs(ts).format(dateTimeFormat)} (${count})`}</div>
 );
 
+const formatDate = (value) => {
+    return new Date(value).toLocaleString('ru', { day: 'numeric', month: 'long' });
+};
+
 export const VolInfo: FC<{
     vol: Volunteer;
-}> = ({ vol: { active_from, active_to, departments, feed_type, first_name, is_vegan, name } }) => (
-    <div className={css.volInfo}>
-        <div className={css.feedType}>
-            {feed_type === FeedType.FT2 ? 'платно' : feed_type === FeedType.Child ? 'ребенок' : 'фри'}
+}> = ({ vol: { arrivals, departments, feed_type, first_name, is_vegan, name } }) => {
+    return (
+        <div className={css.volInfo}>
+            <div className={css.feedType}>
+                {feed_type === FeedType.FT2 ? 'платно' : feed_type === FeedType.Child ? 'ребенок' : 'фри'}
+            </div>
+            <div>{is_vegan ? 'веган' : 'мясоед'}</div>
+            <div>
+                <span>
+                    {first_name} ({name})
+                </span>
+            </div>
+            <div className={css.volDates}>
+                {arrivals
+                    .map(({ arrival_date, departure_date }) =>
+                        [arrival_date, departure_date].map(formatDate).join(' - ')
+                    )
+                    .join(', ')}
+            </div>
+            <div className={css.misc}>
+                {departments && departments.length > 0 && (
+                    <div>Службы: {departments.map(({ name }) => name).join(', ')}</div>
+                )}
+            </div>
         </div>
-        <div>{is_vegan ? 'веган' : 'мясоед'}</div>
-        <div>
-            <span>
-                {first_name} ({name})
-            </span>
-        </div>
-        <div className={css.volDates}>
-            {active_from && <span>{`c ${dayjs(active_from).format(dateTimeFormat)}`}</span>}
-            {active_to && <span>{`по ${dayjs(active_to).format(dateTimeFormat)}`}</span>}
-        </div>
-        <div className={css.misc}>
-            {departments && departments.length > 0 && (
-                <div>Службы: {departments.map(({ name }) => name).join(', ')}</div>
-            )}
-        </div>
-    </div>
-);
+    );
+};
 
 export const ErrorMsg: FC<{
     msg: string | Array<string>;

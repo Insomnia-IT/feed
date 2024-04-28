@@ -23,7 +23,7 @@ class Direction(TimeMixin, CommentMixin):
 class Arrival(TimeMixin, CommentMixin):
     """ Пребывание (заезды и отъезды) """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE)
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="arrivals")
     arrival_date = models.DateField()
     arrival_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="arrivals")
     arrival_registered = models.DateTimeField(null=True, blank=True)
