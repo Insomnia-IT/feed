@@ -2,7 +2,13 @@ import type { FormInstance } from '@pankod/refine-antd';
 import { Button, Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { FrownOutlined, RadarChartOutlined, SmileOutlined, DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
+import {
+    DeleteOutlined,
+    FrownOutlined,
+    PlusSquareOutlined,
+    RadarChartOutlined,
+    SmileOutlined
+} from '@ant-design/icons';
 import dynamic from 'next/dynamic';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -107,9 +113,15 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
             },
             {
                 validator: async (_, value) => {
-                    const prevArrivalDate = new Date(form.getFieldValue(['updated_arrivals', index - 1, 'arrival_date']));
-                    if(index > 0 && prevArrivalDate > value) {
-                        return Promise.reject(new Error(`Дата заезда в Заезде ${index + 1} должна быть позднее Даты заезда в Заезде ${index}`));
+                    const prevArrivalDate = new Date(
+                        form.getFieldValue(['updated_arrivals', index - 1, 'arrival_date'])
+                    );
+                    if (index > 0 && prevArrivalDate > value) {
+                        return Promise.reject(
+                            new Error(
+                                `Дата заезда в Заезде ${index + 1} должна быть позднее Даты заезда в Заезде ${index}`
+                            )
+                        );
                     }
 
                     return Promise.resolve();
@@ -130,7 +142,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         return Promise.resolve();
                     }
 
-                    return Promise.reject(new Error("Дата заезда не может быть меньше Даты отъезда"));
+                    return Promise.reject(new Error('Дата заезда не может быть меньше Даты отъезда'));
                 }
             }
         ],
@@ -218,12 +230,16 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const isBlocked = Form.useWatch('is_blocked', form);
     const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
 
-    const [updatedArrivals, setUpdatedArrivals] = useState<UpdatedArrival[]>([]);
+    const [updatedArrivals, setUpdatedArrivals] = useState<Array<UpdatedArrival>>([]);
 
     useEffect(() => {
-        setUpdatedArrivals(arrivals ?? [{
-            id: uuidv4()
-        }]);
+        setUpdatedArrivals(
+            arrivals ?? [
+                {
+                    id: uuidv4()
+                }
+            ]
+        );
     }, [arrivals]);
 
     useEffect(() => {
@@ -325,9 +341,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     }
 
     const addArrival = () => {
-        setUpdatedArrivals([...updatedArrivals, {
-            id: uuidv4(),
-        }]);
+        setUpdatedArrivals([
+            ...updatedArrivals,
+            {
+                id: uuidv4()
+            }
+        ]);
     };
 
     return (
@@ -493,14 +512,14 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                         const createChange = (fieldName) => (value) => {
                             const newUpdaterdArrivals = updatedArrivals.slice();
                             newUpdaterdArrivals[index] = { ...arrival, [fieldName]: value };
-                            setUpdatedArrivals(newUpdaterdArrivals)
+                            setUpdatedArrivals(newUpdaterdArrivals);
                         };
 
                         const createRegisteredChange = (fieldName) => (e) => {
                             const value = e.target.checked ? new Date().toISOString() : null;
                             const newUpdaterdArrivals = updatedArrivals.slice();
                             newUpdaterdArrivals[index] = { ...arrival, [fieldName]: value };
-                            setUpdatedArrivals(newUpdaterdArrivals)
+                            setUpdatedArrivals(newUpdaterdArrivals);
                         };
 
                         const deleteArrival = () => {
@@ -512,7 +531,16 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                 <div className={styles.dateWrap}>
                                     <div className={styles.dateLabel}>
                                         <div>Заезд {index + 1}</div>
-                                        <Button className={styles.deleteButton} danger type='link' icon={<DeleteOutlined />} onClick={deleteArrival} style={{ visibility: updatedArrivals.length === 1 ? 'hidden' : undefined }}>Удалить</Button>
+                                        <Button
+                                            className={styles.deleteButton}
+                                            danger
+                                            type='link'
+                                            icon={<DeleteOutlined />}
+                                            onClick={deleteArrival}
+                                            style={{ visibility: updatedArrivals.length === 1 ? 'hidden' : undefined }}
+                                        >
+                                            Удалить
+                                        </Button>
                                     </div>
                                     <div className={styles.dateInput}>
                                         <Form.Item
@@ -521,7 +549,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                             getValueProps={getDateValue}
                                             rules={activeFromValidationRules(index)}
                                         >
-                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} onChange={createChange('arrival_date')} />
+                                            <DatePicker
+                                                format={formDateFormat}
+                                                style={{ width: '100%' }}
+                                                onChange={createChange('arrival_date')}
+                                            />
                                         </Form.Item>
                                     </div>
                                     <div className={styles.dateInput}>
@@ -530,7 +562,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                             name={['updated_arrivals', index, 'arrival_transport']}
                                             rules={Rules.required}
                                         >
-                                            <Select {...transportsSelectProps} style={{ width: '100%' }} onChange={createChange('arrival_transport')} />
+                                            <Select
+                                                {...transportsSelectProps}
+                                                style={{ width: '100%' }}
+                                                onChange={createChange('arrival_transport')}
+                                            />
                                         </Form.Item>
                                     </div>
                                     <div>
@@ -547,7 +583,14 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                 <div className={styles.dateWrap}>
                                     <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>
                                         <div>Заезд {index + 1}</div>
-                                        <Button className={styles.deleteButton} danger type='link' icon={<DeleteOutlined />}>Удалить</Button>
+                                        <Button
+                                            className={styles.deleteButton}
+                                            danger
+                                            type='link'
+                                            icon={<DeleteOutlined />}
+                                        >
+                                            Удалить
+                                        </Button>
                                     </div>
                                     <div className={styles.dateInput}>
                                         <Form.Item
@@ -556,7 +599,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                             getValueProps={getDateValue}
                                             rules={activeToValidationRules(index)}
                                         >
-                                            <DatePicker format={formDateFormat} style={{ width: '100%' }} onChange={createChange('departure_date')} />
+                                            <DatePicker
+                                                format={formDateFormat}
+                                                style={{ width: '100%' }}
+                                                onChange={createChange('departure_date')}
+                                            />
                                         </Form.Item>
                                     </div>
                                     <div className={styles.dateInput}>
@@ -565,7 +612,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                                             name={['updated_arrivals', index, 'departure_transport']}
                                             rules={Rules.required}
                                         >
-                                            <Select {...transportsSelectProps} style={{ width: '100%' }} onChange={createChange('departure_transport')} />
+                                            <Select
+                                                {...transportsSelectProps}
+                                                style={{ width: '100%' }}
+                                                onChange={createChange('departure_transport')}
+                                            />
                                         </Form.Item>
                                     </div>
                                     <div>
@@ -582,7 +633,14 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
                             </Fragment>
                         );
                     })}
-                    <Button className={styles.addArrivalButton} type='primary' icon={<PlusSquareOutlined />} onClick={addArrival}>Добавить заезд</Button>
+                    <Button
+                        className={styles.addArrivalButton}
+                        type='primary'
+                        icon={<PlusSquareOutlined />}
+                        onClick={addArrival}
+                    >
+                        Добавить заезд
+                    </Button>
                 </div>
                 <div id='section4' className={styles.formSection}>
                     <p className={styles.formSection__title}>Бейдж</p>

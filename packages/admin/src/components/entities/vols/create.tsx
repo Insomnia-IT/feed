@@ -12,7 +12,7 @@ export const VolCreate: FC<IResourceComponentsProps> = () => {
             onMutationSuccess(e);
         }
     });
-    const { onClick, renderModal, onMutationSuccess } = useSaveConfirm(form, saveButtonProps);
+    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
 
     return (
         <Create

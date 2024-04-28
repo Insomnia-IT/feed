@@ -11,7 +11,11 @@ const useSaveConfirm = (
     saveButtonProps: ButtonProps & {
         onClick: () => void;
     }
-): { onClick: () => Promise<void>; renderModal: () => JSX.Element, onMutationSuccess: ({ data }: { data: any }) => void } => {
+): {
+    onClick: () => Promise<void>;
+    renderModal: () => JSX.Element;
+    onMutationSuccess: ({ data }: { data: any }) => void;
+} => {
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
     );
@@ -74,26 +78,29 @@ const useSaveConfirm = (
             if (updatedArrivals) {
                 const serializeDate = (value) => {
                     return dayjs(value).format('YYYY-MM-DD');
-                }
+                };
                 for (let i = 0; i < updatedArrivals.length; i++) {
                     const updatedArrival = updatedArrivals[i];
-                    
+
                     const arrival = arrivals.find((a) => a.id === updatedArrival.id);
-                    if(arrival) {
+                    if (arrival) {
                         if (JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
                             const serializeField = (obj, fieldName) => {
-                                if(fieldName === 'arrival_date' || fieldName === 'departure_date') {
+                                if (fieldName === 'arrival_date' || fieldName === 'departure_date') {
                                     return serializeDate(obj[fieldName]);
                                 }
                                 return obj[fieldName];
-                            }
+                            };
                             await dataProvider.update({
                                 resource: 'arrivals',
                                 id: updatedArrival.id,
                                 variables: Object.keys(updatedArrival).reduce(
                                     (acc, name) => ({
                                         ...acc,
-                                        [name]: updatedArrival[name] !== arrival[name] ? serializeField(updatedArrival, name) : undefined
+                                        [name]:
+                                            updatedArrival[name] !== arrival[name]
+                                                ? serializeField(updatedArrival, name)
+                                                : undefined
                                     }),
                                     {}
                                 )
@@ -106,7 +113,7 @@ const useSaveConfirm = (
                                 ...updatedArrival,
                                 arrival_date: serializeDate(updatedArrival.arrival_date),
                                 departure_date: serializeDate(updatedArrival.departure_date),
-                                volunteer: id,
+                                volunteer: id
                             }
                         });
                     }
@@ -115,7 +122,7 @@ const useSaveConfirm = (
                 for (let i = 0; i < arrivals.length; i++) {
                     const arrivalId = arrivals[i].id;
                     const upadatedArrival = updatedArrivals.find((a) => a.id === arrivalId);
-                    if(!upadatedArrival) {
+                    if (!upadatedArrival) {
                         await dataProvider.deleteOne({
                             resource: 'arrivals',
                             id: arrivalId
