@@ -246,14 +246,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         form.setFieldValue('updated_arrivals', updatedArrivals);
     }, [updatedArrivals, form]);
 
-    // const updatedArrivals = useMemo(() => arrivals ? arrivals.map((arrival) => ({ ...arrival })) : [{}], [arrivals]);
-
-    // useEffect(() => {
-    //     if (updatedArrivals) {
-    //         form.setFieldValue('updated_arrivals', updatedArrivals);
-    //     }
-    // }, [updatedArrivals]);
-
     const [open, setOpen] = useState(false);
 
     const handleToggleBlocked = () => {
