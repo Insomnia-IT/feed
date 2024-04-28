@@ -9,7 +9,7 @@ import useSaveConfirm from './use-save-confirm';
 export const VolCreate: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
-            onMutationSuccess(e);
+            void onMutationSuccess(e);
         }
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);

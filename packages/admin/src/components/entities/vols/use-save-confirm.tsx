@@ -12,9 +12,9 @@ const useSaveConfirm = (
         onClick: () => void;
     }
 ): {
-    onClick: () => Promise<void>;
+    onClick: () => void;
     renderModal: () => JSX.Element;
-    onMutationSuccess: ({ data }: { data: any }) => void;
+    onMutationSuccess: ({ data }: { data: any }) => Promise<void>;
 } => {
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
@@ -30,7 +30,7 @@ const useSaveConfirm = (
     };
 
     return {
-        onClick: async () => {
+        onClick: () => {
             const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
             if (!form.getFieldValue('is_active')) {
                 setShowConfirmationModalReason('is_active');
