@@ -6,7 +6,7 @@ from history.models import History
 
 class HistorySerializer(serializers.ModelSerializer):
     actor_id = serializers.SerializerMethodField()
-    created_by_sync = serializers.SerializerMethodField()
+    by_sync = serializers.SerializerMethodField()
 
     class Meta:
         model = History
@@ -19,5 +19,5 @@ class HistorySerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
-    def get_created_by_sync(self, obj):
+    def get_by_sync(self, obj):
         return not obj.actor_badge
