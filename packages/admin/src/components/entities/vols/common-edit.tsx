@@ -106,7 +106,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         });
     };
 
-
     const activeFromValidationRules = useCallback(
         (index: number) => [
             {
@@ -497,7 +496,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                     </div>
                 </div>
-               <div id='section3' className={styles.formSection}>
+                <div id='section3' className={styles.formSection}>
                     <p className={styles.formSection__title}>Даты на поле</p>
                     <Form.Item name='arrivals' hidden />
                     {updatedArrivals?.map((arrival, index) => {
