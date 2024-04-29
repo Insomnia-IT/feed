@@ -76,8 +76,8 @@ class History(models.Model):
     object_id = models.UUIDField()
     status = models.CharField(max_length=16, choices=STATUS_CHOICES)
     object = models.CharField(max_length=32)
-    actor_badge = models.UUIDField(blank=True, null=True)
-    date = models.DateTimeField()
+    actor_badge = models.CharField(max_length=128, blank=True, null=True)
+    action_at = models.DateTimeField()
     data = models.JSONField(blank=True, null=True)
 
     class Meta:
@@ -90,7 +90,7 @@ class History(models.Model):
     def entry_creation(self, status, instance, request_user_uuid, instance_id=None):
         self.status = status
         self.object = str(instance.__class__.__name__).lower()
-        self.actor_badge = request_user_uuid
+        self.actor_badge = str(request_user_uuid)
         if hasattr(instance, "uuid"):
             self.object_id = instance.uuid
         elif instance_id:
@@ -99,11 +99,10 @@ class History(models.Model):
             id_field = instance_id_field(self.object)
             self.object_id = getattr(instance, id_field)
         if status == self.STATUS_CREATE:
-            self.date = instance.created_at if hasattr(instance, "created_at") else datetime.utcnow()
-            self.data = get_instance_data(instance)
+            self.action_at = instance.created_at if hasattr(instance, "created_at") else datetime.utcnow()
         elif status == self.STATUS_UPDATE:
-            self.date = instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow()
-            self.data = get_instance_data(instance)
+            self.action_at = instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow()
         else:
-            self.date = instance.deleted_at if hasattr(instance, "deleted_at") else datetime.utcnow()
+            self.action_at = instance.deleted_at if hasattr(instance, "deleted_at") else datetime.utcnow()
+        self.data = get_instance_data(instance)
         self.save()

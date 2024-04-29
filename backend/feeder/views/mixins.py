@@ -1,8 +1,10 @@
+from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
 
 from history.models import History
 
+User = get_user_model()
 
 class SoftDeleteViewSetMixin(ModelViewSet):
     def get_queryset(self):
@@ -21,37 +23,34 @@ class SoftDeleteViewSetMixin(ModelViewSet):
     #     instance.hard_delete()
 
 
+def get_request_user_id(user):
+    if hasattr(user, "uuid"):
+        return user.uuid
+    if isinstance(user, User):
+        return user.id
+
+    raise ValidationError({"permission": "You do not have permissions to perform this action"})
+
+
 class SaveHistoryDataViewSetMixin(ModelViewSet):
     def perform_create(self, serializer):
-        user = self.request.user
-        if hasattr(user, "uuid"):
-            request_user = user.uuid
-        else:
-            raise ValidationError({"permission": "You do not have permissions to perform this action"})
+        user_id = get_request_user_id(self.request.user)
 
         super().perform_create(serializer)
 
         instance = serializer.instance
-        History().entry_creation(status=History.STATUS_CREATE, instance=instance, request_user_uuid=request_user)
+        History().entry_creation(status=History.STATUS_CREATE, instance=instance, request_user_uuid=user_id)
 
     def perform_update(self, serializer):
-        user = self.request.user
-        if hasattr(user, "uuid"):
-            request_user = user.uuid
-        else:
-            raise ValidationError({"permission": "You do not have permissions to perform this action"})
+        user_id = get_request_user_id(self.request.user)
 
         super().perform_update(serializer)
 
         instance = serializer.instance
-        History().entry_creation(status=History.STATUS_UPDATE, instance=instance, request_user_uuid=request_user)
+        History().entry_creation(status=History.STATUS_UPDATE, instance=instance, request_user_uuid=user_id)
 
     def perform_destroy(self, instance):
-        user = self.request.user
-        if hasattr(user, "uuid"):
-            request_user = user.uuid
-        else:
-            raise ValidationError({"permission": "You do not have permissions to perform this action"})
+        user_id = get_request_user_id(self.request.user)
 
         instance_id = instance.id
 
@@ -60,6 +59,6 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         History().entry_creation(
             status=History.STATUS_DELETE,
             instance=instance,
-            request_user_uuid=request_user,
+            request_user_uuid=user_id,
             instance_id=instance_id
         )
