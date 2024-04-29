@@ -1,7 +1,7 @@
 import { Button, Table } from '@pankod/refine-antd';
 import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
@@ -27,16 +27,16 @@ export function CommonFoodTest() {
     const router = useRouter();
     const [foodCount, setFoodCount] = useState(0);
 
-    const handleClick = () => {
-        router.push('/feed-transaction/create');
+    const handleCreateClick = () => {
+        void router.push('/feed-transaction/create');
     };
     const URL_TRANSACTION = `${NEW_API_URL}/feed-transaction/?volunteer=`;
-    async function getFoodData() {
+    const loadFoodData = async () => {
         const response = await axios.get(`${URL_TRANSACTION}${volId}`);
         const result: IData = response.data;
-        setFoodCount(result.results.length);
-        return setFoodData(result);
-    }
+        setFoodCount(result.count);
+        setFoodData(result.results);
+    };
 
     const generateRandomString = () => {
         return Math.random().toString(36).substring(2, 15);
@@ -80,7 +80,11 @@ export function CommonFoodTest() {
         }
     }
 
-    const [foodData, setFoodData] = useState(getFoodData);
+    const [foodData, setFoodData] = useState<FeedTransactionEntity[]>([]);
+
+    useEffect(() => {
+        void loadFoodData();
+    }, []);
 
     const columns = [
         {
@@ -144,9 +148,7 @@ export function CommonFoodTest() {
         night: 'Дожор'
     };
 
-    const createAndSaveXLSX = useCallback(async (): Promise<void> => {
-        const data = foodData;
-        const transactions = data.results as Array<FeedTransactionEntity>;
+    const createAndSaveXLSX = useCallback(() => {
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet('Transactions log');
 
@@ -163,7 +165,7 @@ export function CommonFoodTest() {
         ];
         sheet.addRow(header);
 
-        transactions?.forEach((tx) => {
+        foodData?.forEach((tx) => {
             sheet.addRow([
                 dayjs(tx.dtime).format('DD.MM.YYYY'),
                 dayjs(tx.dtime).format('HH:mm:ss'),
@@ -185,7 +187,7 @@ export function CommonFoodTest() {
     return (
         <div>
             <div className={styles.buttonsWrap}>
-                <Button onClick={handleClick}>
+                <Button onClick={handleCreateClick}>
                     <PlusSquareOutlined />
                     Добавить порцию
                 </Button>
@@ -200,7 +202,7 @@ export function CommonFoodTest() {
                     </Button>
                 </div>
             </div>
-            <Table columns={columns} dataSource={foodData.results} rowKey={generateRandomString} />
+            <Table columns={columns} dataSource={foodData} rowKey={generateRandomString} />
         </div>
     );
 }
