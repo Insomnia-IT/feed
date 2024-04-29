@@ -22,6 +22,7 @@ import type {
     FeedTypeEntity,
     GroupBadgeEntity,
     KitchenEntity,
+    TransportEntity,
     VolEntity
 } from '~/interfaces';
 import { formDateFormat } from '~/shared/lib';
