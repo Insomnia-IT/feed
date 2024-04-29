@@ -3,7 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from feeder.mixins import TimeMixin, CommentMixin, NameMixin
+from feeder.mixins import TimeMixin, CommentMixin, NameMixin, SaveHistoryDataModelMixin
 from feeder.soft_delete import SoftDeleteModelMixin
 
 
@@ -21,7 +21,7 @@ class Direction(TimeMixin, CommentMixin):
     notion_id = models.CharField(max_length=255, db_index=True)
 
 
-class Arrival(TimeMixin, CommentMixin):
+class Arrival(TimeMixin, CommentMixin, SaveHistoryDataModelMixin):
     """ Пребывание (заезды и отъезды) """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE)
@@ -104,7 +104,7 @@ class Engagement(TimeMixin):
     notion_id = models.CharField(max_length=255, db_index=True)
 
 
-class Volunteer(TimeMixin, SoftDeleteModelMixin):
+class Volunteer(TimeMixin, SoftDeleteModelMixin, SaveHistoryDataModelMixin):
     """ Волонтеры """
     uuid = models.UUIDField(default=gen_uuid, unique=True, db_index=True)
     person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True)
