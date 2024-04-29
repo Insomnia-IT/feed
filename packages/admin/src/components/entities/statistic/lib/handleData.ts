@@ -1,5 +1,12 @@
-import type { EaterType, EaterTypeExtended, IData, IEaterTypeAmount, IStatisticResponce, KitchenIdExtended } from '../types';
-import { datumInstance, mealTimeArr, dataEmpty } from '../types';
+import type {
+    EaterType,
+    EaterTypeExtended,
+    IData,
+    IEaterTypeAmount,
+    IStatisticResponce,
+    KitchenIdExtended
+} from '../types';
+import { dataEmpty, datumInstance, mealTimeArr } from '../types';
 import type { ILinearChartData } from '../ui/linear-chart';
 import type { IColumnChartAnnotationData, IColumnChartData } from '../ui/column-chart';
 import type { ITableStatData } from '../ui/table-stats';
@@ -10,7 +17,7 @@ export function convertResponceToData(res: IStatisticResponce): IData {
     res.forEach((datum) => {
         const { amount, date, is_vegan, kitchen_id, meal_time, type } = datum;
         const eaterType: EaterType = is_vegan ? 'vegan' : 'meatEater';
-        const kitchenId: KitchenIdExtended = (kitchen_id == 1) ? 'first' : 'second';
+        const kitchenId: KitchenIdExtended = kitchen_id == 1 ? 'first' : 'second';
 
         if (!(date in result[kitchenId])) {
             result[kitchenId][date] = JSON.parse(JSON.stringify(datumInstance));
@@ -48,7 +55,12 @@ function findValuesForTypeEaters(
 }
 
 /**Преобразование данных для сравнительной сводной таблицы*/
-export function handleDataForTable(data: IData, date: string, typeOfEater: EaterTypeExtended, kitchenId: KitchenIdExtended): Array<ITableStatData> {
+export function handleDataForTable(
+    data: IData,
+    date: string,
+    typeOfEater: EaterTypeExtended,
+    kitchenId: KitchenIdExtended
+): Array<ITableStatData> {
     if (!(date in data)) {
         return [];
     }
@@ -107,7 +119,11 @@ export function handleDataForColumnChart(
     return { dataForColumnChart, dataForAnnotation };
 }
 /**Преобразование данных от сервера для линейного графика*/
-export function handleDataForLinearChart(data: IData, typeOfEater: EaterTypeExtended, kitchenId: KitchenIdExtended): Array<ILinearChartData> {
+export function handleDataForLinearChart(
+    data: IData,
+    typeOfEater: EaterTypeExtended,
+    kitchenId: KitchenIdExtended
+): Array<ILinearChartData> {
     const result: Array<ILinearChartData> = [];
     if (Object.keys(data).length === 0) {
         return result;

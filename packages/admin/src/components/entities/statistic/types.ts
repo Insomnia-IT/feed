@@ -30,10 +30,10 @@ export type DataType = {
 
 export type DataByDate = {
     [date: string]: DataType;
-}
+};
 
 export interface IData {
-    [kitchenId: string]: DataByDate
+    [kitchenId: string]: DataByDate;
 }
 
 export const datumInstance: DataType = {
@@ -51,10 +51,10 @@ export const datumInstance: DataType = {
         night: { meatEater: 0, vegan: 0 },
         total: { meatEater: 0, vegan: 0 }
     }
-}
+};
 
 export const dataEmpty: IData = {
     all: {},
     first: {},
     second: {}
-}
+};

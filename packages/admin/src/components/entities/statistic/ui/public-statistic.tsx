@@ -6,7 +6,14 @@ import axios from 'axios';
 import { NEW_API_URL } from '~/const';
 import { dayjsExtended as dayjsExt, formDateFormat } from '~/shared/lib';
 
-import type { EaterTypeExtended, KitchenIdExtended, IStatisticApi, IStatisticResponce, MealTime, StatisticType } from '../types';
+import type {
+    EaterTypeExtended,
+    IStatisticApi,
+    IStatisticResponce,
+    KitchenIdExtended,
+    MealTime,
+    StatisticType
+} from '../types';
 import {
     convertResponceToData,
     handleDataForColumnChart,
