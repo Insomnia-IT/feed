@@ -196,19 +196,19 @@
 
 /* Даты на поле */
 
-.fieldsDates {
+.dateWrap {
     display: flex;
-    flex-grow: 1;
     flex-wrap: nowrap;
-    align-items: center;
+    gap: 12px;
 }
 
-.dateInput:not(:last-child) {
-    margin-right: 12px;
+.dateLabel {
+    color: rgb(141 149 158);
+    font-weight: 500;
 }
 
 .dateInput {
-    flex-grow: 1;
+    flex: 1;
 }
 
 /* Кастомные поля */
@@ -333,4 +333,13 @@
 .resultDescr {
     margin-right: 16px;
     font-size: 14px;
+}
+
+.deleteButton {
+    margin-top: 7px;
+    padding: 0;
+}
+
+.addArrivalButton {
+    float: right;
 }

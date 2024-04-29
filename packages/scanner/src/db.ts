@@ -54,8 +54,7 @@ export interface Volunteer {
     is_active: boolean;
     is_blocked: boolean;
     is_vegan: boolean;
-    active_from: string | null;
-    active_to: string | null;
+    arrivals: Array<Arrival>;
     feed_type: FeedType;
     departments: Array<{ name: string }>;
     kitchen: number;
@@ -64,13 +63,23 @@ export interface Volunteer {
     transactions: Array<Transaction> | null;
 }
 
+export interface Arrival {
+    id: string;
+    arrival_date: string;
+    arrival_transport: string;
+    arrival_registered?: string;
+    departure_date: string;
+    departure_transport: string;
+    departure_registered?: string;
+}
+
 export interface GroupBadge {
     id: number;
     name: string;
     qr: string;
 }
 
-const DB_VERSION = 15;
+const DB_VERSION = 16;
 
 export class MySubClassedDexie extends Dexie {
     transactions!: Table<Transaction>;
@@ -79,11 +88,15 @@ export class MySubClassedDexie extends Dexie {
 
     constructor() {
         super('yclins');
-        this.version(DB_VERSION).stores({
-            transactions: '&&ulid, vol_id, ts',
-            volunteers: '&qr, *id, group_badge, *transactions',
-            groupBadges: 'id, &qr'
-        });
+        this.version(DB_VERSION)
+            .stores({
+                transactions: '&&ulid, vol_id, ts',
+                volunteers: '&qr, *id, group_badge, *transactions',
+                groupBadges: 'id, &qr'
+            })
+            .upgrade((trans) => {
+                return trans.table('volunteers').clear();
+            });
     }
 }
 
@@ -176,17 +189,18 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
         .filter((vol) => {
             return (
                 vol.kitchen.toString() === kitchenId &&
-                !!vol.active_to &&
-                !!vol.active_from &&
                 !vol.is_blocked &&
                 vol.feed_type !== FeedType.FT4 &&
-                dayjs(vol.active_from).startOf('day').unix() <= dayjs(statsDate).unix() &&
-                dayjs(vol.active_to).startOf('day').unix() >= dayjs(statsDate).unix() &&
-                (dayjs(vol.active_from).startOf('day').unix() < dayjs(statsDate).unix()
-                    ? vol.is_active
-                    : vol.feed_type === FeedType.FT2
-                    ? vol.is_active
-                    : true)
+                vol.arrivals.some(
+                    ({ arrival_date, arrival_registered, departure_date }) =>
+                        dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
+                        dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
+                        (dayjs(arrival_date).startOf('day').unix() < dayjs(statsDate).unix()
+                            ? !!arrival_registered
+                            : vol.feed_type === FeedType.FT2
+                            ? !!arrival_registered
+                            : true)
+                )
             );
         })
         .toArray();
