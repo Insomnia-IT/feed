@@ -9,6 +9,7 @@ import { useList } from '@pankod/refine-core';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { saveXLSX } from '~/shared/lib/saveXLSX';
+import { NEW_API_URL } from '~/const';
 
 import styles from './common.module.css';
 
@@ -29,15 +30,9 @@ export function CommonFoodTest() {
     const handleClick = () => {
         router.push('/feed-transaction/create');
     };
-    const configAxios = {
-        headers: {
-            accept: 'application/json',
-            Authorization: 'K-PIN-CODE 111'
-        }
-    };
-    const URL_TRANSACTION = 'https://srv.rumyantsev.com/feedapi/v1/feed-transaction/?volunteer=';
+    const URL_TRANSACTION = `${NEW_API_URL}/feed-transaction/?volunteer=`;
     async function getFoodData() {
-        const response = await axios.get(`${URL_TRANSACTION}${volId}`, configAxios);
+        const response = await axios.get(`${URL_TRANSACTION}${volId}`);
         const result: IData = response.data;
         setFoodCount(result.results.length);
         return setFoodData(result);
