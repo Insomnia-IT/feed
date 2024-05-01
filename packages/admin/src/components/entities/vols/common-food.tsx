@@ -39,8 +39,12 @@ export function CommonFoodTest() {
     };
 
     function formatDate(isoDateString: string) {
-        return new Date(isoDateString)
-        .toLocaleString('ru', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+        return new Date(isoDateString).toLocaleString('ru', {
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
     function translateMealType(mealType: string) {
@@ -56,7 +60,7 @@ export function CommonFoodTest() {
         }
     }
 
-    const [foodData, setFoodData] = useState<FeedTransactionEntity[]>([]);
+    const [foodData, setFoodData] = useState<Array<FeedTransactionEntity>>([]);
 
     useEffect(() => {
         void loadFoodData();
