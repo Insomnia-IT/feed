@@ -44,7 +44,7 @@
     flex-direction: column;
     overflow-y: scroll;
     width: 100%;
-    height: calc(100vh - 230px);
+    height: calc(100vh - 290px);
 }
 
 .formWrap::-webkit-scrollbar {
@@ -320,6 +320,19 @@
     font-size: 14px;
     line-height: 157%;
     color: black;
+}
+
+.buttonsWrap {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.resultDescr {
+    margin-right: 16px;
+    font-size: 14px;
 }
 
 .deleteButton {
