@@ -38,33 +38,9 @@ export function CommonFoodTest() {
         setFoodData(result.results);
     };
 
-    const generateRandomString = () => {
-        return Math.random().toString(36).substring(2, 15);
-    };
-
     function formatDate(isoDateString: string) {
-        const date = new Date(isoDateString);
-        const day = date.getDate();
-        const monthIndex = date.getMonth();
-        const hours = date.getHours();
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const months = [
-            'января',
-            'февраля',
-            'марта',
-            'апреля',
-            'мая',
-            'июня',
-            'июля',
-            'августа',
-            'сентября',
-            'октября',
-            'ноября',
-            'декабря'
-        ];
-        const formattedDate = `${day} ${months[monthIndex]}, ${hours}:${minutes}`;
-
-        return formattedDate;
+        return new Date(isoDateString)
+        .toLocaleString('ru', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
     }
 
     function translateMealType(mealType: string) {
@@ -202,7 +178,7 @@ export function CommonFoodTest() {
                     </Button>
                 </div>
             </div>
-            <Table columns={columns} dataSource={foodData} rowKey={generateRandomString} />
+            <Table columns={columns} dataSource={foodData} rowKey='ulid' />
         </div>
     );
 }
