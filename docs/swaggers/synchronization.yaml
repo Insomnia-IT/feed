@@ -48,221 +48,78 @@ components:
         - directions
       properties:
         badges:
-          type: object
-          properties:
-            inserted:
-              type: array
-              items:
-                $ref: '#/components/schemas/Badge'
-            updated:
-              type: array
-              items:
-                $ref: '#/components/schemas/Badge'
-            deleted:
-              type: array
-              items:
-                type: string
-                format: uuid
+          type: array
+          items:
+            $ref: '#/components/schemas/Badge'
         arrivals:
-          type: object
-          properties:
-            inserted:
-              type: array
-              items:
-                $ref: '#/components/schemas/Arrival'
-            updated:
-              type: array
-              items:
-                $ref: '#/components/schemas/Arrival'
-            deleted:
-              type: array
-              items:
-                type: string
-                format: uuid
+          type: array
+          items:
+            $ref: '#/components/schemas/Arrival'
         engagements:
-          type: object
-          properties:
-            inserted:
-              type: array
-              items:
-                $ref: '#/components/schemas/Engagement'
-            updated:
-              type: array
-              items:
-                $ref: '#/components/schemas/Engagement'
-            deleted:
-              type: array
-              items:
-                type: string
-                format: uuid
+          type: array
+          items:
+            $ref: '#/components/schemas/Engagement'
         persons:
-          type: object
-          properties:
-            inserted:
-              type: array
-              items:
-                $ref: '#/components/schemas/Person'
-            updated:
-              type: array
-              items:
-                $ref: '#/components/schemas/Person'
-            deleted:
-              type: array
-              items:
-                type: string
-                format: uuid
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
         directions:
-          type: object
-          properties:
-            inserted:
-              type: array
-              items:
-                $ref: '#/components/schemas/Direction'
-            updated:
-              type: array
-              items:
-                $ref: '#/components/schemas/Direction'
-            deleted:
-              type: array
-              items:
-                type: string
-                format: uuid
+          type: array
+          items:
+            $ref: '#/components/schemas/Direction'
     BackSyncBody:
       type: object
       required:
         - badges
         - arrivals
       properties:
-        from_date:
-          type: string
-          format: date-time
-          example: "2019-05-17T11:00:00.000Z"
         badges:
-          type: object
-          properties:
-            inserted:
-              type: array
-              items:
-                type: object
-                required:
-                  - id
-                  - badge
-                  - date
-                  - data
-                properties:
-                  actor_badge:
-                    type: string
-                    format: uuid
-                  date:
-                    type: string
-                    format: date-time
-                  data:
-                    $ref: '#/components/schemas/Badge'
-            updated:
-              type: array
-              items:
-                type: object
-                required:
-                  - id
-                  - actor_badge
-                  - date
-                  - data
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  actor_badge:
-                    type: string
-                    format: uuid
-                  date:
-                    type: string
-                    format: date-time
-                  data:
-                    $ref: '#/components/schemas/Badge'
-            deleted:
-              type: array
-              items:
-                type: object
-                required:
-                  - id
-                  - actor_badge
-                  - date
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  actor_badge:
-                    type: string
-                    format: uuid
-                  date:
-                    type: string
-                    format: date-time
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - badge
+              - date
+              - data
+            properties:
+              actor_badge:
+                type: string
+                format: uuid
+              date:
+                type: string
+                format: date-time
+              data:
+                $ref: '#/components/schemas/Badge'
         arrivals:
-          type: object
-          properties:
-            inserted:
-              type: array
-              items:
-                type: object
-                required:
-                  - id
-                  - badge
-                  - date
-                  - data
-                properties:
-                  actor_badge:
-                    type: string
-                    format: uuid
-                  date:
-                    type: string
-                    format: date-time
-                  data:
-                    $ref: '#/components/schemas/Arrival'
-            updated:
-              type: array
-              items:
-                type: object
-                required:
-                  - id
-                  - actor_badge
-                  - date
-                  - data
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  actor_badge:
-                    type: string
-                    format: uuid
-                  date:
-                    type: string
-                    format: date-time
-                  data:
-                    $ref: '#/components/schemas/Arrival'
-            deleted:
-              type: array
-              items:
-                type: object
-                required:
-                  - id
-                  - actor_badge
-                  - date
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  actor_badge:
-                    type: string
-                    format: uuid
-                  date:
-                    type: string
-                    format: date-time
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - badge
+              - date
+              - data
+            properties:
+              actor_badge:
+                type: string
+                format: uuid
+              date:
+                type: string
+                format: date-time
+              data:
+                $ref: '#/components/schemas/Arrival'
     Badge:
       type: object
+      required:
+        - id
       properties:
         id:
           type: string
           format: uuid
+        deleted:
+          type: boolean
+          example: false
         name:
           type: string
         first_name:
@@ -303,13 +160,13 @@ components:
             - PARTICIPANT
             - FELLOW
             - CONTRACTOR
-            - MEDIC? - TODO
-            - ANIMATOR? - TODO
-            - LECTOR? - TODO
-            - ARTIST? - TODO
-            - VIP? - TODO
-            - PRESS? - TODO
-            - Сопровождающие? - TODO
+            - MEDIC
+            - ANIMATOR
+            - LECTOR
+            - ARTIST
+            - VIP
+            - PRESS
+            - ART_FELLOW
         position:
           type: string
         photo:
@@ -325,16 +182,31 @@ components:
           format: uuid
     Arrival:
       type: object
+      required:
+        - id
       properties:
         id:
           type: string
           format: uuid
+        deleted:
+          type: boolean
+          example: false
         badge:
           type: string
           format: uuid
-        engagement:
+        status:
           type: string
-          format: uuid
+          enum:
+            - PLANNED
+            - CANCELED
+            - PENDING
+            - CONFIRMED
+            - SKIPPED
+            - ARRIVED
+            - STARTED
+            - LEFT
+            - COMPLETE
+            - JOINED
         arrival_date:
           type: string
           format: date
@@ -348,10 +220,6 @@ components:
             - CAR
             - TRANSFER
             - MOVE
-        arrival_registered:
-          type: string
-          format: date-time
-          example: "2024-05-17T11:00:00Z"
         departure_date:
           type: string
           format: date
@@ -365,16 +233,17 @@ components:
             - CAR
             - TRANSFER
             - MOVE
-        departure_registered:
-          type: string
-          format: date-time
-          example: "2024-05-17T11:00:00Z"
     Engagement:
       type: object
+      required:
+        - id
       properties:
         id:
           type: string
           format: uuid
+        deleted:
+          type: boolean
+          example: false
         year:
           type: integer
           example: 2023
@@ -416,10 +285,15 @@ components:
           format: uuid
     Person:
       type: object
+      required:
+        - id
       properties:
         id:
           type: string
           format: uuid
+        deleted:
+          type: boolean
+          example: false
         name:
           type: string
         first_name:
@@ -456,10 +330,15 @@ components:
           format: uuid
     Direction:
       type: object
+      required:
+        - id
       properties:
         id:
           type: string
           format: uuid
+        deleted:
+          type: boolean
+          example: false
         name:
           type: string
         first_year:
