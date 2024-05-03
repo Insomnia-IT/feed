@@ -14,6 +14,7 @@ def instance_id_field(instance_name):
 
 def get_volunteer_data(instance):
     data = {
+        "badge": str(instance.uuid),
         "name": instance.name,
         "first_name": instance.first_name,
         "last_name": instance.last_name,
@@ -39,11 +40,11 @@ def get_arrival_data(instance):
     data = {
         "badge": str(instance.volunteer.uuid) if instance.volunteer else None,
         "arrival_date": instance.arrival_date.strftime("%Y-%m-%d") if instance.arrival_date else None,
-        "arrival_transport": instance.arrival_transport.name if instance.arrival_transport else None,
+        "arrival_transport": instance.arrival_transport.id if instance.arrival_transport else None,
         "arrival_registered": (instance.arrival_registered.strftime("%Y-%m-%d")
                                if instance.arrival_registered else None),
         "departure_date": instance.departure_date.strftime("%Y-%m-%d") if instance.departure_date else None,
-        "departure_transport": instance.departure_transport.name if instance.departure_transport else None,
+        "departure_transport": instance.departure_transport.id if instance.departure_transport else None,
         "departure_registered": (instance.departure_registered.strftime("%Y-%m-%d")
                                  if instance.departure_registered else None),
     }
