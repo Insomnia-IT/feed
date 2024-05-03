@@ -6,7 +6,14 @@ import axios from 'axios';
 import { NEW_API_URL } from '~/const';
 import { dayjsExtended as dayjsExt, formDateFormat } from '~/shared/lib';
 
-import type { EaterTypeExtended, IStatisticApi, IStatisticResponce, MealTime, StatisticType } from '../types';
+import type {
+    EaterTypeExtended,
+    IStatisticApi,
+    IStatisticResponce,
+    KitchenIdExtended,
+    MealTime,
+    StatisticType
+} from '../types';
 import {
     convertResponceToData,
     handleDataForColumnChart,
@@ -42,6 +49,10 @@ function PublicStatistic() {
     // Фильтр типа питания
     const [typeOfEater, setTypeOfEater] = useState<EaterTypeExtended>('all');
     const changeTypeOfEater = (e: RadioChangeEvent) => setTypeOfEater(e.target?.value);
+
+    // Фильтр кухни
+    const [kitchenId, setKitchenId] = useState<KitchenIdExtended>('all');
+    const changeKitchenId = (e: RadioChangeEvent) => setKitchenId(e.target?.value);
 
     // Данные для дальнейшей обработки и отображения
     const [responce, setResponce] = useState<IStatisticResponce>([]);
@@ -121,16 +132,16 @@ function PublicStatistic() {
     }, [statsUrl]);
     // Преобразование данных с сервера для таблицы и графиков
     const dataForTable: Array<ITableStatData> = useMemo(
-        () => handleDataForTable(data, dateStr, typeOfEater),
-        [responce, typeOfEater]
+        () => handleDataForTable(data, dateStr, typeOfEater, kitchenId),
+        [responce, typeOfEater, kitchenId]
     );
     const { dataForAnnotation, dataForColumnChart } = useMemo(
-        () => handleDataForColumnChart(data, typeOfEater),
-        [responce, typeOfEater]
+        () => handleDataForColumnChart(data, typeOfEater, kitchenId),
+        [responce, typeOfEater, kitchenId]
     );
     const dataForLinearChart: Array<ILinearChartData> = useMemo(
-        () => handleDataForLinearChart(data, typeOfEater),
-        [responce, typeOfEater]
+        () => handleDataForLinearChart(data, typeOfEater, kitchenId),
+        [responce, typeOfEater, kitchenId]
     );
 
     return (
@@ -149,6 +160,13 @@ function PublicStatistic() {
                         <Radio.Button value='all'>Все</Radio.Button>
                         <Radio.Button value='meatEater'>Мясоеды</Radio.Button>
                         <Radio.Button value='vegan'>Вегетерианцы</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item label='Кухня'>
+                    <Radio.Group value={kitchenId} onChange={changeKitchenId}>
+                        <Radio.Button value='all'>Все</Radio.Button>
+                        <Radio.Button value='first'>Первая</Radio.Button>
+                        <Radio.Button value='second'>Вторая</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item>
