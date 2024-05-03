@@ -84,10 +84,28 @@ class PersonSerializer(serializers.ModelSerializer):
         model = models.Person
         fields = '__all__'
 
+class TransportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Transport
+        fields = '__all__'
+
+
+class ArrivalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Arrival
+        fields = '__all__'
+
+class VolunteerListArrivalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Arrival
+        fields = ['arrival_date', 'departure_date', 'arrival_registered']
+
+
 class VolunteerListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     departments = DepartmentNestedSerializer(many=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
+    arrivals = VolunteerListArrivalSerializer(many=True)
 
     class Meta:
         model = models.Volunteer
@@ -96,6 +114,7 @@ class VolunteerListSerializer(serializers.ModelSerializer):
 class RetrieveVolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
+    arrivals = ArrivalSerializer(many=True)
     person = PersonSerializer(required=False, allow_null=True)
 
     class Meta:
@@ -275,12 +294,6 @@ class UserDetailSerializer(serializers.Serializer):
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transport
-        fields = '__all__'
-
-
-class ArrivalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Arrival
         fields = '__all__'
 
 class DepartmentSerializer(serializers.ModelSerializer):

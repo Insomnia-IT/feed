@@ -54,11 +54,11 @@ const pagination: TablePaginationConfig = { showTotal: (total) => `Кол-во �
 
 export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
     const day = isYesterday ? dayjs().subtract(1, 'day') : dayjs();
-    return (
-        !vol.active_to ||
-        !vol.active_from ||
-        day < dayjs(vol.active_from).startOf('day').add(7, 'hours') ||
-        day > dayjs(vol.active_to).endOf('day').add(7, 'hours')
+    return vol.arrivals.every(
+        ({ arrival_date, arrival_registered, departure_date }) =>
+            !arrival_registered ||
+            day < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
+            day > dayjs(departure_date).endOf('day').add(7, 'hours')
     );
 };
 
@@ -72,37 +72,41 @@ const getCustomValue = (vol, customField) => {
     return value;
 };
 
-const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
-    <div style={{ padding: 8 }}>
-        <DatePicker
-            format={formDateFormat}
-            value={selectedKeys[0] as unknown as Dayjs}
-            onChange={(value) => setSelectedKeys(value ? [value as unknown as React.Key] : [])}
-            style={{ marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-            <Button
-                type='primary'
-                onClick={() => confirm()}
-                icon={<Icons.SearchOutlined />}
-                size='small'
-                style={{ width: 90 }}
-            >
-                Фильтр
-            </Button>
-            <Button
-                onClick={() => {
-                    clearFilters?.();
-                    confirm();
-                }}
-                size='small'
-                style={{ width: 90 }}
-            >
-                Очистить
-            </Button>
-        </Space>
-    </div>
-);
+const formatDate = (value) => {
+    return new Date(value).toLocaleString('ru', { day: 'numeric', month: 'long' });
+};
+
+// const datePickerFilterDropDown = ({ clearFilters, confirm, selectedKeys, setSelectedKeys }: FilterDropdownProps) => (
+//     <div style={{ padding: 8 }}>
+//         <DatePicker
+//             format={formDateFormat}
+//             value={selectedKeys[0] as unknown as Dayjs}
+//             onChange={(value) => setSelectedKeys(value ? [value as unknown as React.Key] : [])}
+//             style={{ marginBottom: 8, display: 'block' }}
+//         />
+//         <Space>
+//             <Button
+//                 type='primary'
+//                 onClick={() => confirm()}
+//                 icon={<Icons.SearchOutlined />}
+//                 size='small'
+//                 style={{ width: 90 }}
+//             >
+//                 Фильтр
+//             </Button>
+//             <Button
+//                 onClick={() => {
+//                     clearFilters?.();
+//                     confirm();
+//                 }}
+//                 size='small'
+//                 style={{ width: 90 }}
+//             >
+//                 Очистить
+//             </Button>
+//         </Space>
+//     </div>
+// );
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
@@ -206,7 +210,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                           item.first_name,
                           item.last_name,
                           item.departments?.map(({ name }) => name).join(', '),
-                          item.active_from ? dayjs(item.active_from).format(formDateFormat) : null
+                          ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
                       ].some((text) => {
                           return text?.toLowerCase().includes(searchTextInLowerCase);
                       });
@@ -272,9 +276,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 'Фамилия',
                 'Службы',
                 'Роль',
-                'От',
-                'До',
-                'Активирован',
+                'Текущий завезд активирован',
+                'Текущий завезд от',
+                'Текущий завезд до',
+                'Будущий завезд от',
+                'Будущий завезд до',
                 'Заблокирован',
                 'Кухня',
                 'Партия бейджа',
@@ -287,6 +293,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             sheet.addRow(header);
 
             filteredData.forEach((vol, index) => {
+                const currentArrival = vol.arrivals.find(
+                    ({ arrival_date, departure_date }) =>
+                        dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
+                );
+                const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
                 sheet.addRow([
                     vol.id,
                     vol.name,
@@ -294,9 +305,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.last_name,
                     vol.departments ? vol.departments.map((department) => department.name).join(', ') : '',
                     vol.role,
-                    vol.active_from ? dayjs(vol.active_from).format(formDateFormat) : '',
-                    vol.active_to ? dayjs(vol.active_to).format(formDateFormat) : '',
-                    vol.is_active ? 1 : 0,
+                    currentArrival?.arrival_registered ? 1 : 0,
+                    currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
+                    currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
+                    futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
+                    futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
                     vol.is_blocked ? 1 : 0,
                     vol.kitchen ? kitchenNameById[vol.kitchen] : '',
                     vol.printing_batch,
@@ -452,26 +465,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     onFilter={onDepartmentFilter}
                 />
                 <Table.Column
-                    dataIndex='active_from'
-                    key='active_from'
-                    title='От'
-                    render={(value) =>
-                        value && <DateField format={formDateFormat} value={value} style={{ whiteSpace: 'nowrap' }} />
-                    }
-                    sorter={getSorter('active_from')}
-                    filterDropdown={datePickerFilterDropDown}
-                    onFilter={craeteDateFilter('active_from')}
-                />
-                <Table.Column
-                    dataIndex='active_to'
-                    key='active_to'
-                    title='До'
-                    render={(value) =>
-                        value && <DateField format={formDateFormat} value={value} style={{ whiteSpace: 'nowrap' }} />
-                    }
-                    sorter={getSorter('active_to')}
-                    filterDropdown={datePickerFilterDropDown}
-                    onFilter={craeteDateFilter('active_to')}
+                    dataIndex='arrivals'
+                    key='arrivals'
+                    title='Даты на поле'
+                    render={(arrivals) => (
+                        <span style={{ whiteSpace: 'nowrap' }}>
+                            {arrivals
+                                .map(({ arrival_date, departure_date }) =>
+                                    [arrival_date, departure_date].map(formatDate).join(' - ')
+                                )
+                                .join(', ')}
+                        </span>
+                    )}
                 />
                 <Table.Column
                     dataIndex='is_active'
