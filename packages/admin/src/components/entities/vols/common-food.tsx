@@ -163,7 +163,7 @@ export function CommonFoodTest() {
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
-    }, [createAndSaveXLSX]);
+    }, [createAndSaveXLSX, foodData]);
     return (
         <div>
             <div className={styles.buttonsWrap}>
