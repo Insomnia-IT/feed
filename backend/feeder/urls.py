@@ -34,6 +34,6 @@ urlpatterns = [
     path('feed-transaction/bulk', feed.FeedTransactionBulk.as_view()),
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
-    path('notion-sync', sync.SyncWithNotion.as_view()),
+    # path('notion-sync', sync.SyncWithNotion.as_view()),
 ]
 
