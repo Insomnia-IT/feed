@@ -24,11 +24,11 @@ export const VolCreate: FC<IResourceComponentsProps> = () => {
                 style: {
                     background: 'initial',
                     boxShadow: 'initial',
-                    height: '100%'
+                    height: '100%',
                 }
             }}
         >
-            <Form {...formProps} layout='vertical'>
+            <Form  {...formProps} layout='vertical'>
                 <CreateEdit form={form} />
             </Form>
             {renderModal()}

@@ -343,3 +343,107 @@
 .addArrivalButton {
     float: right;
 }
+
+.modalButtonWrap {
+    display: flex;
+}
+
+.onCancelButton {
+    margin-right: 10px;
+}
+
+@media (max-width: 1366px) {
+    .edit__nav {
+        display: none;
+    }
+
+    .formWrap {
+        height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .nickNameLastnameWrap {
+        flex-direction: column;
+    }
+
+    .nameInput {
+        width: 100%;
+    }
+
+    .photoWrap {
+        position: absolute;
+        margin-right: 0;
+        top: 70px;
+        right: 10px;
+        z-index: 1000;
+    }
+
+    .padInp {
+        padding-right: 130px;
+    }
+
+    .phoneInput {
+        width: 100%;
+    }
+
+    .genderSelect {
+        width: 100%;
+    }
+
+    .dateWrap {
+        position: relative;
+        flex-direction: column;
+    }
+
+    .dateWrap * {
+        margin-bottom: 0;
+    }
+
+    .dateCheck {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
+    .deleteButton {
+        position: absolute;
+        top: 22px;
+        right: 150px;
+        z-index: 1000;
+    }
+}
+
+@media (max-width: 576px) {
+
+    .hrInputsWrap {
+        flex-direction: column;
+    }
+
+    .hrInput {
+        width: 100%;
+    }
+
+    .deleteButton {
+        top: 0;
+        right: 12px;
+    }
+
+    .badgeInfoWrap {
+        flex-direction: column;
+    }
+
+    .badgeInfo {
+        width: 100%;
+    }
+
+    .modalButtonWrap {
+        margin-left: -35px;
+    }
+
+    .resultDescr {
+        display: block;
+        margin-bottom: 5px;
+    }
+}

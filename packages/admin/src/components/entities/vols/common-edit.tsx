@@ -404,12 +404,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.personalInfoWrap}>
                             <div className={styles.nickNameLastnameWrap}>
-                                <div className={styles.nameInput}>
+                                <div className={`${styles.nameInput} ${styles.padInp}`}>
                                     <Form.Item label='Имя на бейдже' name='name' rules={Rules.required}>
                                         <Input />
                                     </Form.Item>
                                 </div>
-                                <div className={styles.nameInput}>
+                                <div className={`${styles.nameInput} ${styles.padInp}`}>
                                     <Form.Item label='Имя' name='first_name'>
                                         <Input />
                                     </Form.Item>
@@ -560,7 +560,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             />
                                         </Form.Item>
                                     </div>
-                                    <div>
+                                    <div className={styles.dateCheck}>
                                         <Form.Item label=' '>
                                             <Checkbox
                                                 checked={!!arrival.arrival_registered}
@@ -610,7 +610,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             />
                                         </Form.Item>
                                     </div>
-                                    <div>
+                                    <div className={styles.dateCheck}>
                                         <Form.Item label=' '>
                                             <Checkbox
                                                 checked={!!arrival.departure_registered}
@@ -714,6 +714,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             onOk={() => setOpen(false)}
                             onCancel={handleToggleBlocked}
                             width={420}
+                            footer={null}
                         >
                             <div className={styles.modalWindow}>
                                 <span className={styles.carefulIcon}>
@@ -727,6 +728,14 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
                                         : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
                                 </p>
+                                <div className={styles.modalButtonWrap}>
+                                    <Button className={styles.onCancelButton} onClick={() => setOpen(false)}>
+                                        {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                                    </Button>
+                                    <Button type='primary' onClick={handleToggleBlocked}>
+                                        {'Оставить'}
+                                    </Button>
+                                </div>
                             </div>
                         </Modal>
                     </div>
