@@ -22,6 +22,21 @@ export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
         ]
     });
 
+    const getSorter = (field: string) => {
+        return (a, b) => {
+            const x = a[field] ?? '';
+            const y = b[field] ?? '';
+
+            if (x < y) {
+                return -1;
+            }
+            if (x > y) {
+                return 1;
+            }
+            return 0;
+        };
+    };
+
     return (
         <List>
             <Table {...tableProps} rowKey='id'>
@@ -30,14 +45,14 @@ export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
                     key='name'
                     title='Название'
                     defaultSortOrder={getDefaultSortOrder('name', sorter)}
-                    sorter
+                    sorter={getSorter('name')}
                 />
                 <Table.Column
                     dataIndex='type'
                     key='type'
                     title='Тип данных'
                     defaultSortOrder={getDefaultSortOrder('type', sorter)}
-                    sorter
+                    sorter={getSorter('type')}
                 />
                 <Table.Column
                     dataIndex='comment'
