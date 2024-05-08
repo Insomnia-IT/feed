@@ -20,7 +20,7 @@ export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
                 order: 'asc'
             }
         ],
-        initialPageSize : 1000,
+        initialPageSize: 1000,
         hasPagination: false
     });
 
