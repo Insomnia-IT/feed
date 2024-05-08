@@ -19,7 +19,9 @@ export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
                 field: 'id',
                 order: 'asc'
             }
-        ]
+        ],
+        initialPageSize : 1000,
+        hasPagination: false
     });
 
     const getSorter = (field: string) => {
