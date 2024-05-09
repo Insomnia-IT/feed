@@ -74,7 +74,7 @@ export const validateVol = (
 export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
 
 export const useFeedVol = (
-    vol: Volunteer | undefined,
+    vol: Volunteer | undefined | null,
     mealTime: MealTime | null,
     closeFeed: () => void,
     kitchenId: number
@@ -90,7 +90,7 @@ export const useFeedVol = (
                 }
             }
         },
-        [closeFeed, mealTime, vol]
+        [closeFeed, kitchenId, mealTime, vol]
     );
 
     return [

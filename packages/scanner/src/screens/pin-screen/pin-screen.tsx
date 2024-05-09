@@ -38,7 +38,7 @@ export const PinScreen = (): React.ReactElement => {
                     alert('Неверный пин!');
                 }
             });
-    }, [checkAuth, pin]);
+    }, [checkAuth, pin, storedPin]);
 
     return (
         <div className={css.pinScreen}>

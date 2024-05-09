@@ -1,6 +1,5 @@
 .mainScreenStats {
     position: absolute;
-    z-index: var(--z-main-screen-button);
 
     display: flex;
     flex-direction: column;

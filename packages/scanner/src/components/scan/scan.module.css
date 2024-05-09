@@ -11,6 +11,7 @@
 }
 
 .overlay {
+  display: flex;
   position: absolute;
   left: 50%;
   top: 50%;
@@ -33,7 +34,6 @@
   left: 16px;
   right: 16px;
   top: 20px;
-  z-index: var(--z-main-screen-button);
   height: 52px;
 }
 
@@ -43,14 +43,10 @@
   bottom: 21px;
   left: 50%;
   transform: translateX(-50%);
-
-  z-index: var(--z-main-screen-button);
 }
 
 .mealTimeText {
   font-weight: 600;
   font-size: 16px;
   color: var(--c-white);
-
-  z-index: var(--z-main-screen-button);
 }

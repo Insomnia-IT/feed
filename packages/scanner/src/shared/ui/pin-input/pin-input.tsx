@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { memo, useRef, useState } from 'react';
 
 import { Input } from '~/shared/ui/input/input';
 
@@ -9,7 +9,7 @@ interface PinInputProps {
     error?: string;
 }
 
-export const PinInput = function PinInput(props: PinInputProps): React.ReactElement {
+export const PinInput = memo(function PinInput(props: PinInputProps): React.ReactElement {
     const { error, onChange } = props;
 
     const [pin, setPin] = useState('');
@@ -97,4 +97,4 @@ export const PinInput = function PinInput(props: PinInputProps): React.ReactElem
             {!!error && <p className={css.errorText}>{error}</p>}
         </div>
     );
-};
+});

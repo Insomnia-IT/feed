@@ -1,11 +1,10 @@
 import React, { useContext, useMemo, useState } from 'react';
 
-export interface IViewContext {
+interface IViewContext {
     currentView: number;
     setCurrentView: (any) => void;
 }
 
-// @ts-ignore
 const ViewContext = React.createContext<IViewContext | null>(null);
 
 export const ViewProvider = (props) => {

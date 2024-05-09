@@ -2,9 +2,9 @@ import SwipeableViews from 'react-swipeable-views';
 
 import { PinScreen } from '~/screens/pin-screen/pin-screen';
 import { MealTimeSelect } from '~/components/meal-time-select';
-import { MainScreen } from '~/screens/main-screen/main';
-import { HistoryScreen } from '~/screens/history-screen';
-import { StatsScreen } from '~/screens/stats-screen';
+import { MainScreen } from '~/screens/main-screen';
+import { HistoryScreen } from '~/screens/history-screen/history-screen';
+import { StatsScreen } from '~/screens/stats-screen/stats-screen';
 import { useApp } from '~/model/app-provider';
 import { useView } from '~/model/view-provider';
 

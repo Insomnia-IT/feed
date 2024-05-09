@@ -4,8 +4,9 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { FeedType, type Volunteer } from '~/db';
 import { AppColor, useApp } from '~/model/app-provider';
 import { WarningCard } from '~/components/post-scan-cards/warning-card';
-import { FeedCard } from '~/components/post-scan-cards/feed-card';
-import { ErrorCard } from '~/components/post-scan-cards/error-card';
+import { FeedCard } from '~/components/post-scan-cards/feed-card/feed-card';
+import { ErrorCard } from '~/components/post-scan-cards/error-card/error-card';
+import { FeedErrorCard } from '~/components/post-scan-cards/feed-error-card/feed-error-card';
 
 import { getTodayStart, getVolTransactionsAsync, useFeedVol, validateVol } from '../post-scan.utils';
 
@@ -28,14 +29,11 @@ export const PostScanVol: FC<{
 
     if (msg.length > 0) {
         if (isRed) {
-            setColor(AppColor.RED);
-            return <ErrorCard close={closeFeed} doNotFeed={doNotFeed} msg={msg} />;
+            return <FeedErrorCard close={closeFeed} doNotFeed={doNotFeed} msg={msg} vol={vol} />;
         } else {
-            setColor(AppColor.YELLOW);
             return <WarningCard close={closeFeed} doFeed={doFeed} doNotFeed={doNotFeed} vol={vol} msg={msg} />;
         }
     }
 
-    setColor(vol.feed_type === FeedType.Child ? AppColor.BLUE : AppColor.GREEN);
     return <FeedCard close={closeFeed} doFeed={doFeed} vol={vol} />;
 };

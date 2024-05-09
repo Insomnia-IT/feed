@@ -1,3 +1,7 @@
+.cardContainer {
+  padding-top: 32px;
+}
+
 .feedAnonCard {
   display: flex;
   flex-direction: column;

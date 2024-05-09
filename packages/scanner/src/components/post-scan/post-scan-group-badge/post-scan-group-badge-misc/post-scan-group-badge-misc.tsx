@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import cs from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { ErrorCard } from '~/components/post-scan-cards/error-card';
+import { ErrorCard } from '~/components/post-scan-cards/error-card/error-card';
 
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 import { getAllVols } from '../post-scan-group-badge.utils';

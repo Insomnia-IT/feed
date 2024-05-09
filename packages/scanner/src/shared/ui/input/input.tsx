@@ -3,7 +3,7 @@ import cn from 'classnames';
 
 import css from './input.module.css';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.ComponentProps<'input'> {
     error?: boolean;
     focus?: boolean;
 }

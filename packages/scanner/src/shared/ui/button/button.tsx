@@ -1,22 +1,22 @@
 import React from 'react';
 import cn from 'classnames';
 
-import styles from './button.module.css';
+import css from './button.module.css';
 
 type ButtonVariant = 'main' | 'secondary' | 'alternative';
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends React.ComponentProps<'button'> {
     variant?: ButtonVariant;
 }
 
 export const Button = (props: ButtonProps): React.ReactElement => {
-    const { children, className, variant = 'main', ...otherProps } = props;
+    const { children, className = '', variant = 'main', ...restProps } = props;
 
     const mods = {
-        [styles[variant]]: Boolean(variant)
+        [css[variant]]: Boolean(variant)
     };
 
     return (
-        <button className={cn(styles.button, mods, [className])} {...otherProps}>
+        <button className={cn(css.button, mods, [className])} {...restProps}>
             {children}
         </button>
     );

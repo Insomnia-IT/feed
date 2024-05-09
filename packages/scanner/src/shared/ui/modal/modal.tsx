@@ -3,7 +3,7 @@ import cn from 'classnames';
 
 import css from './modal.module.css';
 
-interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ModalProps extends React.ComponentProps<'div'> {
     active?: boolean;
     classModal?: string;
     classTitle?: string;
@@ -13,7 +13,7 @@ interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Modal = (props: ModalProps): React.ReactElement => {
-    const { active, children, classModal, classTitle, noClose, onClose, title } = props;
+    const { active, children, classModal, classTitle, onClose, title } = props;
 
     const [isOpen, setIsOpen] = useState(false);
 

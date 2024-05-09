@@ -16,7 +16,7 @@ export const Colors = {
     [AppColor.BLUE]: '#AAFFFF'
 };
 
-export interface IAppContext {
+interface IAppContext {
     setColor: (c: AppColor | null) => void;
     resetColor: () => void;
     appError: string | null;

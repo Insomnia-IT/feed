@@ -2,7 +2,7 @@ import type { FC } from 'react';
 
 import type { Volunteer } from '~/db';
 import css from '~/components/misc/misc.module.css';
-import { VolInfo } from '~/components/post-scan-cards/vol-info';
+import { VolInfo } from '~/components/post-scan-cards/vol-info/vol-info';
 import { CardContainer } from '~/components/post-scan-cards/ui/card-container/card-container';
 
 export const WarningCard: FC<{

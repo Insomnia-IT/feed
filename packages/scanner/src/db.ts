@@ -96,7 +96,7 @@ export const addTransaction = async ({
     mealTime,
     vol
 }: {
-    vol: Volunteer | undefined;
+    vol?: Volunteer | null;
     mealTime: MealTime;
     isVegan: boolean | undefined;
     kitchenId: number;
@@ -134,9 +134,9 @@ export const dbIncFeed = async ({
     mealTime,
     vol
 }: {
-    vol: Volunteer | undefined;
+    vol?: Volunteer | null;
     mealTime: MealTime;
-    isVegan: boolean | undefined;
+    isVegan?: boolean | undefined;
     log?: {
         error: boolean;
         reason: string;

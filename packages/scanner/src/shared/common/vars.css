@@ -3,7 +3,6 @@
     --header-h-mobile: 3rem;
 
     --z-index-popup: 10;
-    --z-scan-overlay: 1;
-    --z-main-screen-button: 2;
-
+    --z-scan-overlay: -1;
+    --z-scan-qrscan: -2;
 }

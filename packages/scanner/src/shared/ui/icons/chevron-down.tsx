@@ -8,7 +8,7 @@ interface ChevronDownProps {
 }
 
 export const ChevronDown = (props: ChevronDownProps): React.ReactElement => {
-    const { className, color = 'black' } = props;
+    const { className = '', color = 'black' } = props;
 
     return (
         <IconContainer className={className}>

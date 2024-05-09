@@ -8,47 +8,53 @@ import { Button } from '~/shared/ui/button/button';
 import { QrScan } from '~/components/qr-scan';
 import { MainScreenStats } from '~/components/main-screen-stats';
 import { useApp } from '~/model/app-provider';
+import { ScanSimulator } from '~/components/qr-scan-simulator';
+import { BtnSync } from '~/components/btn-sync';
+import { useView } from '~/model/view-provider';
+import { ScanStatus } from '~/components/scan-status';
+import { useScan } from '~/model/scan-provider/scan-provider';
 
 import css from './scan.module.css';
 
-interface ScanProps {
-    onScan: (value: string) => void;
-}
-
-export const Scan = (props: ScanProps) => {
-    const { onScan } = props;
-
-    const { mealTime } = useApp();
+export const Scan = () => {
+    const { setCurrentView } = useView();
+    const { debugMode, isDev, mealTime } = useApp();
+    const { handleScan } = useScan();
 
     const feedAnon = () => {
-        onScan('anon');
+        handleScan('anon');
     };
 
-    const handleScan = useCallback((value: string) => {
-        onScan(value);
-    }, []);
+    const handleHistoryClick = (): void => {
+        setCurrentView(1);
+    };
+    const handleOptionsClick = (): void => {
+        console.log('options');
+    };
 
     return (
-        <div className={css.scan}>
-            <div className={css.head}>
-                <IconButton>
-                    <Clock color='white' />
-                </IconButton>
-                <p className={css.mealTimeText}>{mealTime ? mealTimes[mealTime] : ''}</p>
-                <IconButton>
-                    <GearAlt color='white' />
-                </IconButton>
+        <>
+            <div className={css.overlay}>
+                <ScanStatus />
             </div>
-            <Button className={css.anonButton} onClick={feedAnon}>
-                Кормить Анонима
-            </Button>
-            <div className={css.overlay}></div>
-            {/*<BtnSync />*/}
+            <QrScan onScan={handleScan} />
             <div className={css.scan}>
-                {/*{(isDev || debugMode === '1') && <ScanSimulator withSelection setScanResult={setScanResult} />}*/}
-                <QrScan onScan={handleScan} />
+                <BtnSync />
+                <div className={css.head}>
+                    <IconButton onClick={handleHistoryClick}>
+                        <Clock color='white' />
+                    </IconButton>
+                    <p className={css.mealTimeText}>{mealTime ? mealTimes[mealTime] : ''}</p>
+                    <IconButton onClick={handleOptionsClick}>
+                        <GearAlt color='white' />
+                    </IconButton>
+                </div>
+                <Button className={css.anonButton} onClick={feedAnon}>
+                    Кормить Анонима
+                </Button>
+                <div>{(isDev || debugMode === '1') && <ScanSimulator withSelection setScanResult={handleScan} />}</div>
+                <MainScreenStats />
             </div>
-            <MainScreenStats />
-        </div>
+        </>
     );
 };

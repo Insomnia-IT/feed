@@ -28,4 +28,9 @@
         color: var(--c-txt);
         background: var(--c-white);
     }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
 }

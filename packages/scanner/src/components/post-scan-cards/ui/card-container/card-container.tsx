@@ -1,7 +1,16 @@
+import cn from 'classnames';
+import React from 'react';
+
 import css from './card-container.module.css';
 
-export const CardContainer = (props) => {
-    const { children } = props;
+type CardColors = 'red' | 'white' | 'blue';
 
-    return <div className={css.cardContainer}>{children}</div>;
+interface CardContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+    cardColor?: CardColors;
+}
+
+export const CardContainer = (props: CardContainerProps) => {
+    const { cardColor = 'white', children, className = '' } = props;
+
+    return <div className={cn(css.cardContainer, {}, [css[cardColor], className])}>{children}</div>;
 };

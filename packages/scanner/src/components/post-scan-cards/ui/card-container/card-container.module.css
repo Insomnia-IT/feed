@@ -2,8 +2,20 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 32px 16px 16px 16px;
+    padding: 76px 16px 16px 16px;
 
     height: 100vh;
     width: 100vw;
+
+    &.white {
+        background: var(--c-white);
+    }
+
+    &.red {
+        background: var(--c-error);
+    }
+
+    &.blue {
+        background: var(--c-blue);
+    }
 }
