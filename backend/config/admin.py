@@ -15,7 +15,6 @@ class MyAdminSite(AdminSite):
 admin_site = MyAdminSite(name='admin')
 
 
-admin_site.register(Volunteer)
 admin_site.register(Location)
 admin_site.register(Color)
 admin_site.register(FeedType)

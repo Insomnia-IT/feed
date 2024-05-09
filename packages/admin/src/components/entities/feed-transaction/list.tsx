@@ -139,7 +139,6 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
             ]);
         }
     }, []);
-
     return (
         <List>
             <Form {...searchFormProps}>

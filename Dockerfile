@@ -121,6 +121,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY ./backend/config /app/backend/config
 COPY ./backend/feeder /app/backend/feeder
+COPY ./backend/history /app/backend/history
+COPY ./backend/synchronization /app/backend/synchronization
 COPY ./backend/initial /app/backend/initial
 COPY ./backend/.gitignore /app/backend/
 COPY ./backend/manage.py /app/backend/

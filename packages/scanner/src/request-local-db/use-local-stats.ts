@@ -20,19 +20,31 @@ const getStatsByDate = async (statsDate) => {
     const onFieldPromises = MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
         let vols = await getVolsOnField(statsDate);
         if (MT === MealTime.breakfast) {
-            vols = vols.filter((vol) => !!vol.active_from && dayjs(vol.active_from).unix() < dayjs(statsDate).unix());
+            vols = vols.filter((vol) =>
+                vol.arrivals.some(
+                    ({ arrival_date, departure_date }) =>
+                        dayjs(arrival_date).unix() < dayjs(statsDate).unix() &&
+                        dayjs(departure_date).unix() >= dayjs(statsDate).unix()
+                )
+            );
         }
         if (MT === MealTime.dinner) {
-            vols = vols.filter(
-                (vol) => !!vol.active_to && dayjs(vol.active_to).unix() > dayjs(statsDate).add(1, 'd').unix()
+            vols = vols.filter((vol) =>
+                vol.arrivals.some(
+                    ({ arrival_date, departure_date }) =>
+                        dayjs(arrival_date).unix() < dayjs(statsDate).unix() &&
+                        dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix()
+                )
             );
         }
         if (MT === MealTime.night) {
-            vols = vols.filter(
-                (vol) =>
-                    !!vol.active_to &&
-                    dayjs(vol.active_to).unix() > dayjs(statsDate).add(1, 'd').unix() &&
-                    vol.feed_type !== FeedType.FT2
+            vols = vols.filter((vol) =>
+                vol.arrivals.some(
+                    ({ arrival_date, departure_date }) =>
+                        dayjs(arrival_date).unix() < dayjs(statsDate).unix() &&
+                        dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix() &&
+                        vol.feed_type !== FeedType.FT2
+                )
             );
         }
 
