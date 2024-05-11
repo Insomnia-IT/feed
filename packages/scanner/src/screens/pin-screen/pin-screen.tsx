@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { PinInput } from '~/shared/ui/pin-input/pin-input';
 import { Button } from '~/shared/ui/button/button';
@@ -9,6 +9,8 @@ import { useApp } from '~/model/app-provider';
 import css from './pin-screen.module.css';
 
 export const PinScreen = (): React.ReactElement => {
+    const [error, setError] = useState<null | string>(null);
+
     const { pin, setAuth, setKitchenId, setPin } = useApp();
 
     const storedPin = localStorage.getItem('pin');
@@ -20,6 +22,7 @@ export const PinScreen = (): React.ReactElement => {
     const checkAuth = useCheckAuth(API_DOMAIN, setAuth);
 
     const tryAuth = useCallback(() => {
+        setError(null);
         const enteredPin = pin || '';
         checkAuth(enteredPin)
             .then((user) => {
@@ -34,10 +37,10 @@ export const PinScreen = (): React.ReactElement => {
                     setAuth(true);
                 } else {
                     setAuth(false);
-                    alert('Неверный пин!');
+                    setError('Пин-код неверный, попробуйте еще раз');
                 }
             });
-    }, [checkAuth, pin, storedPin]);
+    }, [pin, checkAuth, setAuth, setPin, setKitchenId, storedPin]);
 
     return (
         <div className={css.pinScreen}>
@@ -46,7 +49,7 @@ export const PinScreen = (): React.ReactElement => {
                     <h1 className={css.title}>Пин-код от кухни</h1>
                     <p className={css.desc}>Совершенно секретный код можно узнать у Бюро</p>
                 </div>
-                <PinInput onChange={handleChangeInput} />
+                <PinInput onChange={handleChangeInput} error={error} />
                 <Button className={css.button} variant={'main'} onClick={() => tryAuth()}>
                     Войти
                 </Button>

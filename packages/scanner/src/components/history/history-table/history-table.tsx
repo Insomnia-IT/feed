@@ -1,35 +1,39 @@
-import React from 'react';
+import React, { memo } from 'react';
 import dayjs from 'dayjs';
 
+import { Text } from '~/shared/ui/typography';
 import type { TransactionJoined } from '~/db';
+import { Cell, HeadCell, Row, Table, TBody, Thead } from '~/shared/ui/table/table';
 
-import style from './history-table.module.css';
+import css from './history-table.module.css';
 
 interface HistoryListProps {
     transactions: Array<TransactionJoined>;
 }
-
-export const HistoryTable = React.memo(function HistoryTable({ transactions }: HistoryListProps) {
-    const txItems = transactions.map((transaction, index) => {
-        return (
-            <tr key={index}>
-                <td>{transaction.vol ? transaction.vol.name : 'Аноним'}</td>
-                <td>{transaction.is_vegan ? 'Веган' : 'Мясоед'}</td>
-                <td>{dayjs.unix(transaction.ts).format('YYYY.MM.DD HH:mm:ss').toString()}</td>
-            </tr>
-        );
-    });
-
+export const HistoryTable = memo(function HistoryTable({ transactions }: HistoryListProps) {
     return (
-        <table className={style.table}>
-            <thead>
-                <tr>
-                    <th scope='col'>Волонтер</th>
-                    <th scope='col'>Тип</th>
-                    <th scope='col'>Время</th>
-                </tr>
-            </thead>
-            <tbody>{txItems}</tbody>
-        </table>
+        <div className={css.historyTable}>
+            <Text>
+                <span className={css.meat}>🥩 Мясоеды</span> / <span className={css.vegan}>🥦 Веганы</span>
+            </Text>
+            <Table className={css.table}>
+                <Thead>
+                    <Row>
+                        <HeadCell scope='col'>Волонтер</HeadCell>
+                        <HeadCell scope='col'>Тип</HeadCell>
+                        <HeadCell scope='col'>Время</HeadCell>
+                    </Row>
+                </Thead>
+                <TBody>
+                    {transactions.map((transaction, index) => (
+                        <Row key={index}>
+                            <Cell>{transaction.vol ? transaction.vol.name : 'Аноним'}</Cell>
+                            <Cell>{transaction.is_vegan ? '🥦' : '🥩'}</Cell>
+                            <Cell>{dayjs.unix(transaction.ts).format('mm:ss').toString()}</Cell>
+                        </Row>
+                    ))}
+                </TBody>
+            </Table>
+        </div>
     );
 });

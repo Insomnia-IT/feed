@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { StatsTable } from '~/components/stats/stats-table';
 import { useLocalStats } from '~/request-local-db';
@@ -29,10 +29,8 @@ export const Stats = React.memo(function Stats() {
     const [formattedDate, setFormattedDate] = useState<string>(today);
 
     useEffect(() => {
-        if (currentView === 2) {
-            updateStats();
-        }
-    }, [currentView, formattedDate]);
+        updateStats();
+    }, []);
 
     useEffect(() => {
         if (statsDate === StatsDateEnum.today) {

@@ -1,21 +1,24 @@
-import React, { useContext } from 'react';
+import React from 'react';
 
-import { ReactComponent as Home } from '~/shared/icons/arrow_left.svg';
-import { useView } from '~/model/view-provider/view-provider';
+import { ChevronLeft } from '~/shared/ui/icons/chevron-left';
+import { Title } from '~/shared/ui/typography';
 
-import style from './screen-header.module.css';
+import css from './screen-header.module.css';
 
-export function ScreenHeader({ children }): JSX.Element {
-    const { setCurrentView } = useView();
-    const change = (index: number): void => {
-        setCurrentView(index);
+interface ScreenHeaderProps {
+    title: string;
+    onClickBack: () => void;
+}
+export function ScreenHeader({ onClickBack, title }: ScreenHeaderProps): JSX.Element {
+    const handleClickBack = () => {
+        onClickBack();
     };
     return (
-        <header className={style.header}>
-            <button className={style.button} onClick={() => change(0)}>
-                <Home />
+        <header className={css.header}>
+            <button className={css.button} onClick={handleClickBack}>
+                <ChevronLeft />
             </button>
-            <h1>{children}</h1>
+            <Title className={css.title}>{title}</Title>
         </header>
     );
 }

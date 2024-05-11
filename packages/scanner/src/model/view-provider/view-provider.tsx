@@ -1,16 +1,22 @@
 import React, { useContext, useMemo, useState } from 'react';
 
 interface IViewContext {
-    currentView: number;
+    currentView: AppViews;
     setCurrentView: (any) => void;
 }
 
 const ViewContext = React.createContext<IViewContext | null>(null);
 
+export enum AppViews {
+    MAIN = 'main',
+    HISTORY = 'history',
+    STATS = 'stats'
+}
+
 export const ViewProvider = (props) => {
     const { children } = props;
 
-    const [currentView, setCurrentView] = useState<number>(0);
+    const [currentView, setCurrentView] = useState<AppViews>(AppViews.MAIN);
 
     const viewContextValue: IViewContext = useMemo(
         () => ({
@@ -19,11 +25,7 @@ export const ViewProvider = (props) => {
         }),
         [currentView]
     );
-    return (
-        <div>
-            <ViewContext.Provider value={viewContextValue}>{children}</ViewContext.Provider>
-        </div>
-    );
+    return <ViewContext.Provider value={viewContextValue}>{children}</ViewContext.Provider>;
 };
 
 export function useView(): IViewContext {

@@ -1,16 +1,20 @@
 import React from 'react';
-import cn from 'classnames';
 
 import { History } from '~/components/history';
 import { ScreenHeader } from '~/components/screen-header';
-
-import css from '../../app/app.module.css';
-
+import { ScreenWrapper } from '~/shared/ui/screen-wrapper/screen-wrapper';
+import { AppViews, useView } from '~/model/view-provider';
 export const HistoryScreen: React.FC = () => {
+    const { setCurrentView } = useView();
     return (
-        <div className={cn(css.screen, css.history)}>
-            <ScreenHeader>История</ScreenHeader>
+        <ScreenWrapper>
+            <ScreenHeader
+                title='История'
+                onClickBack={() => {
+                    setCurrentView(AppViews.MAIN);
+                }}
+            />
             <History />
-        </div>
+        </ScreenWrapper>
     );
 };

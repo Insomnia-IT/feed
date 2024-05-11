@@ -18,7 +18,6 @@ export const MainScreen = React.memo(function MainScreen() {
         void db.volunteers.count().then((c) => setVolCount(c));
         setLastSyncStart(Number(localStorage.getItem('lastSyncStart')));
     }, [setLastSyncStart, setVolCount]);
-    console.log('view', view);
 
     return (
         <div className={css.main}>

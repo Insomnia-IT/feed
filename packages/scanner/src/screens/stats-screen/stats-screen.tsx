@@ -8,7 +8,12 @@ import { Stats } from '../../components/stats';
 export const StatsScreen = () => {
     return (
         <div className={cn(css.screen, css.stats)}>
-            <ScreenHeader>Статистика</ScreenHeader>
+            <ScreenHeader
+                title='Статистика'
+                onClickBack={() => {
+                    console.log();
+                }}
+            />
             <Stats />
         </div>
     );

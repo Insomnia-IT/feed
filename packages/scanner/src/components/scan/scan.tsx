@@ -10,7 +10,7 @@ import { ScanScreenStats } from '~/components/scan-screen-stats';
 import { useApp } from '~/model/app-provider';
 import { ScanSimulator } from '~/components/qr-scan-simulator';
 import { BtnSync } from '~/components/btn-sync';
-import { useView } from '~/model/view-provider';
+import { AppViews, useView } from '~/model/view-provider';
 import { ScanStatus } from '~/components/scan-status';
 import { useScan } from '~/model/scan-provider/scan-provider';
 
@@ -26,7 +26,7 @@ export const Scan = () => {
     };
 
     const handleHistoryClick = (): void => {
-        setCurrentView(1);
+        setCurrentView(AppViews.HISTORY);
     };
     const handleOptionsClick = (): void => {
         console.log('options');

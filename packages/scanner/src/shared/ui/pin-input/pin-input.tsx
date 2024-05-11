@@ -6,7 +6,7 @@ import css from './pin-input.module.css';
 
 interface PinInputProps {
     onChange?: (string) => void;
-    error?: string;
+    error?: string | null;
 }
 
 export const PinInput = memo(function PinInput(props: PinInputProps): React.ReactElement {

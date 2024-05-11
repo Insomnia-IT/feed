@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { HistoryTable } from '~/components/history/history-table';
 import { useLocalLastTrans } from '~/request-local-db/use-local-last-trans';
-import { useView } from '~/model/view-provider/view-provider';
+import { AppViews, useView } from '~/model/view-provider/view-provider';
+import { StatsBlock } from '~/components/history/stats-block/stats-block';
 
-import style from './history.module.css';
+import css from './history.module.css';
 
 export const History: React.FC = () => {
     const { currentView } = useView();
@@ -14,14 +15,31 @@ export const History: React.FC = () => {
     const { error, progress, transactions, update } = useLocalLastTrans();
 
     const tableRef = React.useRef<HTMLDivElement | null>(null);
+    useEffect(() => {
+        console.log('tableRef.current', tableRef.current);
+        const handleScroll = (): void => {
+            if (tableRef.current) {
+                const { clientHeight, scrollHeight, scrollTop } = tableRef.current;
+                if (scrollTop + clientHeight === scrollHeight) {
+                    !end && setLimit((prevLimit) => prevLimit + 20);
+                }
+            }
+        };
+        if (tableRef.current) {
+            tableRef.current.addEventListener('scroll', handleScroll);
+        }
+        return () => {
+            tableRef.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     useEffect(() => {
-        if (currentView === 0) {
+        if (currentView !== AppViews.HISTORY) {
             tableRef.current?.scrollTo(0, 0);
             setEnd(false);
             setLimit(20);
         }
-        if (currentView === 1) {
+        if (currentView === AppViews.HISTORY) {
             void update(limit).then((txs) => {
                 if (txs.length < limit) {
                     setEnd(true);
@@ -30,18 +48,14 @@ export const History: React.FC = () => {
         }
     }, [limit, currentView, update]);
 
-    const handleScroll = (): void => {
-        if (tableRef.current) {
-            const { clientHeight, scrollHeight, scrollTop } = tableRef.current;
-            if (scrollTop + clientHeight === scrollHeight) {
-                !end && setLimit((prevLimit) => prevLimit + 20);
-            }
-        }
-    };
-
     return (
-        <div className={style.history} ref={tableRef} onScroll={handleScroll}>
-            {transactions && !error && <HistoryTable transactions={transactions} />}
+        <div className={css.history} ref={tableRef}>
+            {transactions && !error && (
+                <>
+                    <StatsBlock />
+                    <HistoryTable transactions={transactions} />
+                </>
+            )}
             {progress && <div>Загрузка...</div>}
             {error && <div>Что-то пошло не так</div>}
         </div>

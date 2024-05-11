@@ -1,26 +1,24 @@
-import SwipeableViews from 'react-swipeable-views';
-
 import { PinScreen } from '~/screens/pin-screen/pin-screen';
 import { MealTimeSelect } from '~/components/meal-time-select';
 import { MainScreen } from '~/screens/main-screen';
 import { HistoryScreen } from '~/screens/history-screen/history-screen';
 import { StatsScreen } from '~/screens/stats-screen/stats-screen';
 import { useApp } from '~/model/app-provider';
-import { useView } from '~/model/view-provider';
+import { AppViews, useView } from '~/model/view-provider';
 
 export const Screens = () => {
     const { auth, mealTime } = useApp();
-    const { currentView, setCurrentView } = useView();
+    const { currentView } = useView();
     return (
         <div>
             {!auth && <PinScreen />}
             {auth && !mealTime && <MealTimeSelect />}
             {auth && mealTime && (
-                <SwipeableViews enableMouseEvents index={currentView} onChangeIndex={(index) => setCurrentView(index)}>
-                    <MainScreen />
-                    <HistoryScreen />
-                    <StatsScreen />
-                </SwipeableViews>
+                <>
+                    {currentView === AppViews.MAIN && <MainScreen />}
+                    {currentView === AppViews.HISTORY && <HistoryScreen />}
+                    {currentView === AppViews.STATS && <StatsScreen />}
+                </>
             )}
             {/*{(isDev || debugModeLS === '1') && <MockTrans />}*/}
         </div>
