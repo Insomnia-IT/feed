@@ -56,6 +56,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     onBlur={() => {
                         setFocus(false);
                     }}
+                    type={'number'}
                 />
                 <Input
                     tabIndex={-1}

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 
 import { PinInput } from '~/shared/ui/pin-input/pin-input';
 import { Button } from '~/shared/ui/button/button';
@@ -9,9 +9,8 @@ import { useApp } from '~/model/app-provider';
 import css from './pin-screen.module.css';
 
 export const PinScreen = (): React.ReactElement => {
-    const { setAuth, setKitchenId } = useApp();
+    const { pin, setAuth, setKitchenId, setPin } = useApp();
 
-    const [pin, setPin] = useState('');
     const storedPin = localStorage.getItem('pin');
 
     const handleChangeInput = useCallback((value) => {

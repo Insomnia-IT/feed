@@ -11,7 +11,7 @@ import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-sca
 
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
-import { GroupBadgeGreenCard, GroupBadgeRedCard, GroupBadgeYellowCard } from './post-scan-group-badge-misc';
+import { GroupBadgeErrorCard, GroupBadgeSuccessCard, GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 
 enum Views {
     'LOADING',
@@ -50,7 +50,7 @@ export const PostScanGroupBadge: FC<{
     const [validationGroups, setValidationGroups] = useState<ValidationGroups>();
 
     // get app context
-    const { kitchenId, mealTime, setColor } = useApp();
+    const { kitchenId, mealTime } = useApp();
 
     // set callback (not) to feed vols
     const incFeedAsync = useCallback(
@@ -134,44 +134,14 @@ export const PostScanGroupBadge: FC<{
         // all vols or some of them eat but there is messages to show
         setView(Views.YELLOW);
     }, [validationGroups]);
-
-    useEffect(() => {
-        switch (view) {
-            case Views.ERROR_EMPTY:
-            case Views.ERROR_VALIDATION:
-            case Views.RED:
-                setColor(AppColor.RED);
-                break;
-
-            case Views.GREEN:
-                setColor(AppColor.GREEN);
-                break;
-
-            case Views.YELLOW:
-                setColor(AppColor.YELLOW);
-                break;
-
-            case Views.BLUE:
-                setColor(AppColor.BLUE);
-                break;
-
-            case Views.LOADING:
-                setColor(null);
-                break;
-
-            default:
-                break;
-        }
-    }, [view]);
-
     return (
         <>
-            {Views.LOADING === view && <ErrorCard close={closeFeed} msg={`Загрузка...`} />}
+            {Views.LOADING === view && <ErrorCard close={closeFeed} title='Загрузка...' msg='' />}
 
             {Views.ERROR_EMPTY === view && <ErrorCard close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />}
 
             {Views.ERROR_VALIDATION === view && (
-                <GroupBadgeRedCard
+                <GroupBadgeErrorCard
                     close={closeFeed}
                     doNotFeed={doNotFeed}
                     msg={'Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!'}
@@ -187,7 +157,7 @@ export const PostScanGroupBadge: FC<{
             )}
 
             {Views.GREEN === view && (
-                <GroupBadgeGreenCard
+                <GroupBadgeSuccessCard
                     name={name}
                     volsToFeed={validationGroups!.greens}
                     doFeed={doFeed}
@@ -196,7 +166,7 @@ export const PostScanGroupBadge: FC<{
             )}
 
             {Views.YELLOW === view && (
-                <GroupBadgeYellowCard
+                <GroupBadgeWarningCard
                     name={name}
                     doFeed={doFeed}
                     doNotFeed={doNotFeed}
@@ -206,7 +176,7 @@ export const PostScanGroupBadge: FC<{
             )}
 
             {Views.RED === view && (
-                <GroupBadgeRedCard
+                <GroupBadgeErrorCard
                     close={closeFeed}
                     doNotFeed={doNotFeed}
                     msg={'Никто не ест.'}

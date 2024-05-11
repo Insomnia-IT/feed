@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 
 import { FeedType, type Volunteer } from '~/db';
 import { AppColor, useApp } from '~/model/app-provider';
-import { WarningCard } from '~/components/post-scan-cards/warning-card';
+import { FeedWarningCard } from '~/components/post-scan-cards/feed-warning-card/feed-warning-card';
 import { FeedCard } from '~/components/post-scan-cards/feed-card/feed-card';
 import { ErrorCard } from '~/components/post-scan-cards/error-card/error-card';
 import { FeedErrorCard } from '~/components/post-scan-cards/feed-error-card/feed-error-card';
@@ -31,7 +31,7 @@ export const PostScanVol: FC<{
         if (isRed) {
             return <FeedErrorCard close={closeFeed} doNotFeed={doNotFeed} msg={msg} vol={vol} />;
         } else {
-            return <WarningCard close={closeFeed} doFeed={doFeed} doNotFeed={doNotFeed} vol={vol} msg={msg} />;
+            return <FeedWarningCard close={closeFeed} doFeed={doFeed} doNotFeed={doNotFeed} vol={vol} msg={msg} />;
         }
     }
 

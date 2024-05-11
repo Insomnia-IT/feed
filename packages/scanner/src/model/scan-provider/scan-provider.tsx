@@ -30,7 +30,6 @@ export const ScanProvider = ({ children }) => {
     const [qrcode, setQrcode] = useState<string>('');
     const [groupBadge, setGroupBadge] = useState<null | GroupBadge>();
     const [errorMessage, setErrorMessage] = useState<string>('');
-
     const reset = () => {
         setView('scan');
         setVol(null);
@@ -63,6 +62,7 @@ export const ScanProvider = ({ children }) => {
         }
 
         setView('error');
+        setErrorMessage('Бейдж не найден');
     }, []);
 
     const viewContextValue: IScanContext = useMemo(

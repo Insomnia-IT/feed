@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { memo } from 'react';
 
 import { useScan } from '~/model/scan-provider/scan-provider';
-import { FeedAnonCard, FeedCard, WarningCard } from '~/components/post-scan-cards';
+import { FeedAnonCard, FeedCard, FeedWarningCard } from '~/components/post-scan-cards';
 import { FeedErrorCard } from '~/components/post-scan-cards/feed-error-card/feed-error-card';
 import { useFeedVol, validateVol } from '~/components/post-scan/post-scan.utils';
 import { useApp } from '~/model/app-provider';
@@ -36,7 +36,7 @@ export const PostScan: FC = memo(() => {
             {postScanView === 'anon' && <FeedAnonCard close={handleCloseCard} doFeed={doFeed} />}
             {postScanView === 'vol-feed' && vol && <FeedCard doFeed={doFeed} close={handleCloseCard} vol={vol} />}
             {postScanView === 'vol-warning' && vol && (
-                <WarningCard
+                <FeedWarningCard
                     close={handleCloseCard}
                     doFeed={doFeed}
                     doNotFeed={doNotFeed}

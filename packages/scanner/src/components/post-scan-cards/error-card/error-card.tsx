@@ -1,42 +1,28 @@
 import type { FC } from 'react';
 
-import css from '~/components/misc/misc.module.css';
 import { CardContainer } from '~/components/post-scan-cards/ui/card-container/card-container';
+import { Button } from '~/shared/ui/button';
+import { Text, Title } from '~/shared/ui/typography';
+
+import css from './error-card.module.css';
 
 export const ErrorCard: FC<{
-    msg: string | Array<string>;
+    title?: string;
+    msg: string;
     doNotFeed?: (reason: string) => void;
     close: () => void;
-}> = ({ close, doNotFeed, msg }) => {
-    const handleClose = (): void => {
-        if (doNotFeed) {
-            if (msg instanceof Array) {
-                msg = msg.join(', ');
-            }
-            doNotFeed(msg);
-        }
-        close();
-    };
-
+}> = ({ close, msg = 'Бейдж не найден', title = 'Ошибка сканирования' }) => {
     return (
         <CardContainer>
-            <div className={css.errorMsg}>
-                <div>
-                    {Array.isArray(msg) ? (
-                        msg.map((m) => (
-                            <span key={m}>
-                                {m}
-                                <br />
-                            </span>
-                        ))
-                    ) : (
-                        <span>{msg}</span>
-                    )}
+            <div className={css.errorCard}>
+                <div className={css.info}>
+                    <Title>{title}</Title>
+                    <Text className={css.text}>{msg}</Text>
                 </div>
-                <div className={css.cardDefault}>
-                    <button type='button' onClick={() => handleClose()}>
+                <div className={css.buttonsBlock}>
+                    <Button variant='secondary' onClick={close}>
                         Закрыть
-                    </button>
+                    </Button>
                 </div>
             </div>
         </CardContainer>

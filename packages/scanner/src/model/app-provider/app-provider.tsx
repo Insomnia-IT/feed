@@ -55,7 +55,7 @@ export const AppProvider = (props) => {
     const [appColor, setAppColor] = useState<AppColor | null>(null);
     const [appError, setAppError] = useState<string | null>(null);
     const [mealTime, setMealTime] = useState<MealTime | null>(null);
-    const [pin, setPin] = useState<string | null>(storedPin);
+    const [pin, setPin] = useState<string | null>('');
     const [auth, setAuth] = useState<boolean>(false);
     const [kitchenId, setKitchenId] = useState<number>(storedKitchenId);
     const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);

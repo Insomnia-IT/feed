@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import dayjs from 'dayjs';
 
@@ -9,7 +9,7 @@ import { useApp } from '~/model/app-provider';
 
 import style from './main-screen-stats.module.css';
 
-export const MainScreenStats = () => {
+export const ScanScreenStats = () => {
     const [volsFedAmount, setVolsFedAmount] = useState(0);
     const { mealTime } = useApp();
 
@@ -43,7 +43,6 @@ export const MainScreenStats = () => {
 
     return (
         <div className={style.mainScreenStats}>
-            {/*<span>На поле: {volsOnField}</span>*/}
             <span>Покормлено: {volsFedAmount}</span>
             <span>Осталось: {volsOnField > volsFedAmount ? volsOnField - volsFedAmount : 0}</span>
         </div>

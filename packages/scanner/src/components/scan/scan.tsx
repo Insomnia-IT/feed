@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import { IconButton } from '~/shared/ui/icon-button/icon-button';
 import { Clock } from '~/shared/ui/icons/clock';
@@ -6,7 +6,7 @@ import { mealTimes } from '~/shared/lib/utils';
 import { GearAlt } from '~/shared/ui/icons/gear-alt';
 import { Button } from '~/shared/ui/button/button';
 import { QrScan } from '~/components/qr-scan';
-import { MainScreenStats } from '~/components/main-screen-stats';
+import { ScanScreenStats } from '~/components/scan-screen-stats';
 import { useApp } from '~/model/app-provider';
 import { ScanSimulator } from '~/components/qr-scan-simulator';
 import { BtnSync } from '~/components/btn-sync';
@@ -52,8 +52,8 @@ export const Scan = () => {
                 <Button className={css.anonButton} onClick={feedAnon}>
                     Кормить Анонима
                 </Button>
-                <div>{(isDev || debugMode === '1') && <ScanSimulator withSelection setScanResult={handleScan} />}</div>
-                <MainScreenStats />
+                {(isDev || debugMode === '1') && <ScanSimulator withSelection setScanResult={handleScan} />}
+                <ScanScreenStats />
             </div>
         </>
     );
