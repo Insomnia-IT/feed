@@ -5,6 +5,7 @@
     gap: 12px;
     padding: 16px;
     background: var(--c-white);
+    width: 100%;
 }
 
 .meat {
@@ -17,4 +18,12 @@
 
 .table {
     width: 100%;
+}
+
+.first {
+    max-width: 0;
+    width: 70%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }

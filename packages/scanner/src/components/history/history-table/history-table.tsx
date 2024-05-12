@@ -19,7 +19,9 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
             <Table className={css.table}>
                 <THead>
                     <Row>
-                        <HeadCell scope='col'>Волонтер</HeadCell>
+                        <HeadCell className={css.first} scope='col'>
+                            Волонтер
+                        </HeadCell>
                         <HeadCell scope='col'>Тип</HeadCell>
                         <HeadCell scope='col'>Время</HeadCell>
                     </Row>
@@ -27,7 +29,7 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                 <TBody>
                     {transactions.map((transaction, index) => (
                         <Row key={index}>
-                            <Cell>{transaction.vol ? transaction.vol.name : 'Аноним'}</Cell>
+                            <Cell className={css.first}>{transaction.vol ? transaction.vol.name : 'Аноним'}</Cell>
                             <Cell>{transaction.is_vegan ? '🥦' : '🥩'}</Cell>
                             <Cell>{dayjs.unix(transaction.ts).format('mm:ss').toString()}</Cell>
                         </Row>

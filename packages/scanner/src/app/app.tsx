@@ -22,7 +22,6 @@ const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => (
 
 const App: FC = () => {
     useCheckVersion();
-    console.log('app');
     return (
         // @ts-ignore
         <ErrorBoundary fallback={ErrorFallback as ReactElement}>
