@@ -23,6 +23,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         }
     });
 
+    useEffect(() => {
+        const updateReturnButtons = document.querySelector('.ant-page-header-heading-extra ');
+        updateReturnButtons?.remove();
+    });
+
     const items = [
         {
             key: '1',

@@ -11,7 +11,6 @@ export interface VolEntity {
     photo?: string;
     position?: string;
     is_vegan?: boolean; // nutritionType
-    is_active?: boolean;
     is_blocked?: boolean;
     daily_eats?: number;
     comment?: string;
@@ -108,12 +107,18 @@ export interface TransportEntity {
     name: string;
 }
 
+export interface StatusEntity {
+    id: string;
+    name: string;
+    visible: boolean;
+    description: string;
+}
+
 export interface ArrivalEntity {
     id: string;
     arrival_date: string;
     arrival_transport: string;
-    arrival_registered?: string;
     departure_date: string;
     departure_transport: string;
-    departure_registered?: string;
+    status: string;
 }

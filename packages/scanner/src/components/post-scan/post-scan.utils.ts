@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
 import type { Transaction, Volunteer } from '~/db';
-import { db, dbIncFeed, FeedType, FeedWithBalance, MealTime } from '~/db';
+import { db, dbIncFeed, FeedType, FeedWithBalance, isActivatedStatus, MealTime } from '~/db';
 import { isVolExpired } from '~/components/misc/misc';
 import { getMealTimeText } from '~/lib/utils';
 
@@ -19,7 +19,7 @@ export const validateVol = (
     if (vol.feed_type !== FeedType.Child && vol.kitchen.toString() !== kitchenId.toString()) {
         msg.push(`Кормится на кухне №${vol.kitchen}`);
     }
-    if (!vol.is_active) {
+    if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
         msg.push('Бейдж не активирован в штабе');
     }
     if (vol.is_blocked) {

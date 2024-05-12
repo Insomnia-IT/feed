@@ -1,12 +1,9 @@
-import type { FilterDropdownProps, TablePaginationConfig } from '@pankod/refine-antd';
+import type { TablePaginationConfig } from '@pankod/refine-antd';
 import {
-    DateField,
-    DatePicker,
     DeleteButton,
     EditButton,
     FilterDropdown,
     Form,
-    Icons,
     List,
     NumberField,
     Radio,
@@ -18,11 +15,9 @@ import {
 } from '@pankod/refine-antd';
 import { useList } from '@pankod/refine-core';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
-// import { Loader } from '@feed/ui/src/loader';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
-import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
@@ -36,7 +31,7 @@ import type {
     KitchenEntity,
     VolEntity
 } from '~/interfaces';
-import { formDateFormat, saveXLSX } from '~/shared/lib';
+import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
@@ -55,8 +50,8 @@ const pagination: TablePaginationConfig = { showTotal: (total) => `Кол-во �
 export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
     const day = isYesterday ? dayjs().subtract(1, 'day') : dayjs();
     return vol.arrivals.every(
-        ({ arrival_date, arrival_registered, departure_date }) =>
-            !arrival_registered ||
+        ({ arrival_date, departure_date, status }) =>
+            !isActivatedStatus(status) ||
             day < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
             day > dayjs(departure_date).endOf('day').add(7, 'hours')
     );
@@ -220,7 +215,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             (v) =>
                 !filterUnfeededType ||
                 (!feededIds[v.id] &&
-                    v.is_active &&
                     !v.is_blocked &&
                     !isVolExpired(v, filterUnfeededType === 'yesterday') &&
                     v.feed_type !== FEED_TYPE_WITHOUT_FEED)
@@ -252,16 +246,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return data.departments.some((d) => d.id === value);
     };
 
-    const onActiveFilter = (value, data) => {
-        return data.is_active === value;
-    };
-
     const onBlockedFilter = (value, data) => {
         return data.is_blocked === value;
-    };
-
-    const craeteDateFilter = (fieldName) => (filterValue, data) => {
-        return dayjs(data[fieldName]).startOf('day').unix() === filterValue.startOf('day').unix();
     };
 
     const createAndSaveXLSX = useCallback(() => {
@@ -276,11 +262,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 'Фамилия',
                 'Службы',
                 'Роль',
-                'Текущий завезд активирован',
-                'Текущий завезд от',
-                'Текущий завезд до',
-                'Будущий завезд от',
-                'Будущий завезд до',
+                'Статус текущего завезда',
+                'Текущий заезд от',
+                'Текущий заезд до',
+                'Статус будущего завезда',
+                'Будущий заезд от',
+                'Будущий заезд до',
                 'Заблокирован',
                 'Кухня',
                 'Партия бейджа',
@@ -305,9 +292,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.last_name,
                     vol.departments ? vol.departments.map((department) => department.name).join(', ') : '',
                     vol.role,
-                    currentArrival?.arrival_registered ? 1 : 0,
+                    currentArrival?.status || '',
                     currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
                     currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
+                    futureArrival?.status || '',
                     futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
                     futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
                     vol.is_blocked ? 1 : 0,
@@ -368,6 +356,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     useEffect(() => {
         void loadTransactions();
     }, [filterUnfeededType]);
+
+    const getOnField = (vol: VolEntity) => {
+        const day = dayjs();
+        return vol.arrivals.some(
+            ({ arrival_date, departure_date, status }) =>
+                isActivatedStatus(status) &&
+                day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+        );
+    };
 
     return (
         <List>
@@ -479,13 +477,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     )}
                 />
                 <Table.Column
-                    dataIndex='is_active'
-                    key='is_active'
-                    title='✅'
-                    render={(value) => <ListBooleanPositive value={value} />}
-                    sorter={getSorter('is_active')}
+                    key='on_field'
+                    title='На поле'
                     filters={booleanFilters}
-                    onFilter={onActiveFilter}
+                    onFilter={(value, vol) => {
+                        const currentValue = getOnField(vol as VolEntity);
+                        return value === currentValue;
+                    }}
+                    render={(vol) => {
+                        const value = getOnField(vol as VolEntity);
+                        return <ListBooleanPositive value={value} />;
+                    }}
                 />
                 <Table.Column
                     dataIndex='is_blocked'

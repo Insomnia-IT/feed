@@ -1,0 +1,112 @@
+[
+  {
+    "model": "feeder.status",
+    "pk": "PLANNED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Планируется",
+      "visible": true,
+      "description": "только добавлен в команду"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "CANCELED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Отменилось",
+      "visible": false,
+      "description": "предупредил, что не сможет"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "PENDING",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Ждём ответа",
+      "visible": true,
+      "description": "долго не отвечает на запрос HR"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "CONFIRMED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Подтверждено накануне",
+      "visible": true,
+      "description": "при обзвоне накануне заезда на поле подтвердил планы"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "SKIPPED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Не доехал",
+      "visible": false,
+      "description": "ожидался на поле, но не появился / не включился в работу городской службы"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "ARRIVED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Заехал на поле",
+      "visible": true,
+      "description": "заезд отмечен в Бюро"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "STARTED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Приступил",
+      "visible": true,
+      "description": "начал работу в городской службе / руководитель отметил на поле"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "LEFT",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Ушел",
+      "visible": false,
+      "description": "перевелся в другое направление или вовсе уехал"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "COMPLETE",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Состоялось",
+      "visible": true,
+      "description": "подтверждено, что побывал на поле / отработал в городской службе"
+    }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "JOINED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "Прибился",
+      "visible": true,
+      "description": "подключился к работе прямо на месте"
+    }
+  }
+]

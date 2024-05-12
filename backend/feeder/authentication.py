@@ -43,7 +43,7 @@ class KitchenUser(AnonymousUser):
     @property
     def is_kitchen(self):
         return True
-    
+
 class QRAuthentication(BaseTokenAuthentication):
     keyword = 'V-TOKEN'
 
@@ -61,6 +61,7 @@ class QRAuthentication(BaseTokenAuthentication):
             user.first_name = volunteer.first_name
             user.last_name = volunteer.last_name
             user.access_role = volunteer.access_role
+            user.uuid = volunteer.uuid
 
 
         except models.Volunteer.DoesNotExist:
@@ -74,6 +75,7 @@ class QRUser(AnonymousUser):
     first_name = ""
     last_name = ""
     access_role = ""
+    uuid = ""
 
     @property
     def is_anonymous(self):

@@ -51,7 +51,6 @@ export interface Volunteer {
     first_name: string;
     name: string;
     balance: number;
-    is_active: boolean;
     is_blocked: boolean;
     is_vegan: boolean;
     arrivals: Array<Arrival>;
@@ -65,12 +64,11 @@ export interface Volunteer {
 
 export interface Arrival {
     id: string;
+    status: string;
     arrival_date: string;
     arrival_transport: string;
-    arrival_registered?: string;
     departure_date: string;
     departure_transport: string;
-    departure_registered?: string;
 }
 
 export interface GroupBadge {
@@ -79,7 +77,7 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 16;
+const DB_VERSION = 17;
 
 export class MySubClassedDexie extends Dexie {
     transactions!: Table<Transaction>;
@@ -183,6 +181,10 @@ export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<A
     });
 }
 
+export function isActivatedStatus(status: string): boolean {
+    return ['ARRIVED', 'STARTED', 'JOINED'].includes(status);
+}
+
 export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
     const kitchenId = localStorage.getItem('kitchenId');
     return db.volunteers
@@ -192,13 +194,13 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
                 !vol.is_blocked &&
                 vol.feed_type !== FeedType.FT4 &&
                 vol.arrivals.some(
-                    ({ arrival_date, arrival_registered, departure_date }) =>
+                    ({ arrival_date, departure_date, status }) =>
                         dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
                         dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
                         (dayjs(arrival_date).startOf('day').unix() < dayjs(statsDate).unix()
-                            ? !!arrival_registered
+                            ? isActivatedStatus(status)
                             : vol.feed_type === FeedType.FT2
-                            ? !!arrival_registered
+                            ? isActivatedStatus(status)
                             : true)
                 )
             );
