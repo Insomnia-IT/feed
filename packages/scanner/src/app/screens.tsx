@@ -6,9 +6,10 @@ import { StatsScreen } from '~/screens/stats-screen/stats-screen';
 import { useApp } from '~/model/app-provider';
 import { AppViews, useView } from '~/model/view-provider';
 import { SettingsScreen } from '~/screens/settings-screen/settings-screen';
+import { MockTrans } from '~/components/mock-trans/mock-trans';
 
 export const Screens = () => {
-    const { auth, mealTime } = useApp();
+    const { auth, debugMode, isDev, mealTime } = useApp();
     const { currentView } = useView();
     return (
         <div>
@@ -22,7 +23,7 @@ export const Screens = () => {
                     {currentView === AppViews.SETTINGS && <SettingsScreen />}
                 </>
             )}
-            {/*{(isDev || debugModeLS === '1') && <MockTrans />}*/}
+            {(isDev || debugMode === '1') && <MockTrans />}
         </div>
     );
 };

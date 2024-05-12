@@ -3,12 +3,12 @@
     z-index: 1000;
 
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 16px;
 
     height: 64px;
     width: 100%;
-    padding: 16px;
+    padding: 16px 24px;
     background: var(--c-white);
 }
 
@@ -23,4 +23,10 @@
     font-size: 20px;
     line-height: 18px;
     color: var(--c-txt);
+}
+
+.leftBlock {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
