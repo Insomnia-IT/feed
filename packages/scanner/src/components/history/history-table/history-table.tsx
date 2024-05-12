@@ -7,6 +7,14 @@ import { Cell, HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table';
 
 import css from './history-table.module.css';
 
+const formatDate = (ts: number) => {
+    if (dayjs().startOf('day') > dayjs.unix(ts)) {
+        return dayjs.unix(ts).format('dd HH:mm').toString();
+    } else {
+        return dayjs.unix(ts).format('HH:mm').toString();
+    }
+};
+
 interface HistoryListProps {
     transactions: Array<TransactionJoined>;
 }
@@ -31,7 +39,7 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                         <Row key={index}>
                             <Cell className={css.first}>{transaction.vol ? transaction.vol.name : 'Аноним'}</Cell>
                             <Cell>{transaction.is_vegan ? '🥦' : '🥩'}</Cell>
-                            <Cell>{dayjs.unix(transaction.ts).format('mm:ss').toString()}</Cell>
+                            <Cell>{formatDate(transaction.ts)}</Cell>
                         </Row>
                     ))}
                 </TBody>
