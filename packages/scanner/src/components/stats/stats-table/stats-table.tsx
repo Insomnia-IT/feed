@@ -61,7 +61,7 @@ export const StatsTable = ({ progress, stats, tableType }: StatsTableProps) => {
     };
     return (
         <div className={css.tableWrapper}>
-            <Table className={cn('', { [css.loading]: progress })}>
+            <Table className={cn(css.table, { [css.loading]: progress })}>
                 <THead>
                     <Row>
                         <HeadCell></HeadCell>

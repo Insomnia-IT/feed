@@ -5,6 +5,10 @@
     width: 100%;
 }
 
+.table {
+    transition: opacity 0.3s ease;
+}
+
 .info {
     display: flex;
     justify-content: flex-end;
