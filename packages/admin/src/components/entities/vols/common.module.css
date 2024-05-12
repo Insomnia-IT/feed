@@ -4,7 +4,7 @@
 }
 
 .edit__nav {
-    max-width: 224px;
+    max-width: 230px;
     margin-right: 24px;
     margin-left: -24px;
     background-color: white;
@@ -25,7 +25,7 @@
 .navList__item {
     display: flex;
     align-items: center;
-    width: 224px;
+    width: 230px;
     height: 40px;
     padding: 0 24px 0 16px;
     color: rgb(0 0 0 / 0.85);

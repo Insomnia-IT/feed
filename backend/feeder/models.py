@@ -25,6 +25,7 @@ class Arrival(TimeMixin, CommentMixin, SaveHistoryDataModelMixin):
     """ Пребывание (заезды и отъезды) """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="arrivals")
+    status = models.ForeignKey('Status', null=True, blank=True, on_delete=models.PROTECT)
     arrival_date = models.DateField()
     arrival_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="arrivals")
     arrival_registered = models.DateTimeField(null=True, blank=True)
@@ -32,6 +33,11 @@ class Arrival(TimeMixin, CommentMixin, SaveHistoryDataModelMixin):
     departure_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="departures")
     departure_registered = models.DateTimeField(null=True, blank=True)
 
+class Status(TimeMixin):
+    id = models.CharField(max_length=20, verbose_name="Код", primary_key=True)
+    name = models.CharField(max_length=255, verbose_name="Наименование")
+    visible = models.CharField(max_length=255, verbose_name="В список")
+    description = models.CharField(max_length=255, verbose_name="Примечание")
 
 class Transport(TimeMixin):
     """ Транспорт (Способы въезда и выезда) """
