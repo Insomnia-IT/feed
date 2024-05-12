@@ -3,6 +3,7 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useShow } from '@pankod/refine-core';
 
 import type { VolEntity } from '~/interfaces';
+import { isActivatedStatus } from '~/shared/lib';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -14,9 +15,9 @@ export const VolShow: FC<IResourceComponentsProps> = () => {
     return (
         <Show isLoading={isLoading}>
             <Title level={5}>Активирован</Title>
-            <Checkbox value={record?.is_active} />
+            <Checkbox value={record?.arrivals.some(({ status }) => isActivatedStatus(status))} />
 
-            <Title level={5}>Блокирован</Title>
+            <Title level={5}>Заблокирован</Title>
             <Checkbox value={record?.is_blocked} />
 
             <Title level={5}>Имя</Title>

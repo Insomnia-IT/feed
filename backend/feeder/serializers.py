@@ -89,6 +89,10 @@ class TransportSerializer(serializers.ModelSerializer):
         model = models.Transport
         fields = '__all__'
 
+class StatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Status
+        fields = '__all__'
 
 class ArrivalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -98,7 +102,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Arrival
-        fields = ['arrival_date', 'departure_date', 'arrival_registered']
+        fields = ['arrival_date', 'departure_date', 'status']
 
 
 class VolunteerListSerializer(serializers.ModelSerializer):
