@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '~/model/app-provider/app-provider';
 import type { GroupBadge } from '~/db';
 import { db, dbIncFeed } from '~/db';
-import { ErrorCard } from '~/components/post-scan-cards/error-card/error-card';
+import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
 
 import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-scan.utils';
 

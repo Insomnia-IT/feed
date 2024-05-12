@@ -4,8 +4,8 @@ import cs from 'classnames';
 import cn from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { ErrorCard } from '~/components/post-scan-cards/error-card/error-card';
-import { CardContainer } from '~/components/post-scan-cards/ui/card-container/card-container';
+import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
+import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';

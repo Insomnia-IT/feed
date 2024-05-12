@@ -2,8 +2,8 @@ import type { FC } from 'react';
 import { memo } from 'react';
 
 import { useScan } from '~/model/scan-provider/scan-provider';
-import { FeedAnonCard, FeedCard, FeedWarningCard } from '~/components/post-scan-cards';
-import { FeedErrorCard } from '~/components/post-scan-cards/feed-error-card/feed-error-card';
+import { FeedAnonCard, FeedCard, FeedWarningCard } from 'src/components/post-scan/post-scan-cards';
+import { FeedErrorCard } from '~/components/post-scan/post-scan-cards/feed-error-card/feed-error-card';
 import { useFeedVol, validateVol } from '~/components/post-scan/post-scan.utils';
 import { useApp } from '~/model/app-provider';
 

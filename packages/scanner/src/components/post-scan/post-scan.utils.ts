@@ -3,8 +3,15 @@ import { useCallback } from 'react';
 
 import type { Transaction, Volunteer } from '~/db';
 import { db, dbIncFeed, FeedType, FeedWithBalance, MealTime } from '~/db';
-import { isVolExpired } from '~/components/misc/misc';
 import { getMealTimeText } from '~/shared/lib/utils';
+
+const isVolExpired = (vol: Volunteer): boolean => {
+    return vol.arrivals.every(
+        ({ arrival_date, departure_date }) =>
+            dayjs() < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
+            dayjs() > dayjs(departure_date).endOf('day').add(7, 'hours')
+    );
+};
 
 export const validateVol = (
     vol: Volunteer,

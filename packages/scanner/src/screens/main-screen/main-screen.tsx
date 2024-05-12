@@ -6,7 +6,7 @@ import { Scan } from '~/components/scan/scan';
 import { useApp } from '~/model/app-provider';
 import { useScan } from '~/model/scan-provider/scan-provider';
 import { PostScanGroupBadge } from '~/components/post-scan/post-scan-group-badge';
-import { ErrorCard } from '~/components/post-scan-cards';
+import { ErrorCard } from 'src/components/post-scan/post-scan-cards';
 
 import css from './main-screen.module.css';
 

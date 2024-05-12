@@ -1,11 +1,11 @@
 import type { FC } from 'react';
 
 import type { Volunteer } from '~/db';
-import { VolInfo } from '~/components/post-scan-cards/vol-info/vol-info';
-import { CardContainer } from '~/components/post-scan-cards/ui/card-container/card-container';
+import { VolInfo } from '~/components/post-scan/post-scan-cards/vol-info/vol-info';
+import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
-import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
+import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 
 import css from './feed-warning-card.module.css';
 
