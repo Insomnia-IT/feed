@@ -12,7 +12,7 @@ interface ModalProps extends React.ComponentProps<'div'> {
     noClose?: boolean;
 }
 
-const Modal = (props: ModalProps): React.ReactElement => {
+export const Modal = (props: ModalProps): React.ReactElement => {
     const { active, children, classModal, classTitle, onClose, title } = props;
 
     const [isOpen, setIsOpen] = useState(false);
@@ -43,5 +43,3 @@ const Modal = (props: ModalProps): React.ReactElement => {
         </div>
     );
 };
-
-export default Modal;
