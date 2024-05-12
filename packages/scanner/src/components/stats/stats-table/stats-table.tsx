@@ -5,7 +5,7 @@ import { Text } from '~/shared/ui/typography';
 import { TableType } from '~/components/stats';
 import type { FeedStats } from '~/request-local-db';
 import { MEAL_TIME } from '~/request-local-db';
-import { HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table/table';
+import { HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table';
 
 import css from './stats-table.module.css';
 

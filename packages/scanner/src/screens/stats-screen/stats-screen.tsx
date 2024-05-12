@@ -1,12 +1,11 @@
 import React from 'react';
 
 import { ScreenHeader } from '~/components/screen-header';
-import { ScreenWrapper } from '~/shared/ui/screen-wrapper/screen-wrapper';
+import { ScreenWrapper } from '~/shared/ui/screen-wrapper';
 import { AppViews, useView } from '~/model/view-provider';
-import Hint from '~/shared/ui/hint/hint';
+import { Hint } from '~/shared/ui/hint';
 import { Text } from '~/shared/ui/typography';
-
-import { Stats } from '../../components/stats';
+import { Stats } from '~/components/stats';
 
 import css from './stats-screen.module.css';
 

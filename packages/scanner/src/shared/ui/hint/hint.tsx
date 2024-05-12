@@ -1,7 +1,6 @@
 import { memo, useState } from 'react';
 import cn from 'classnames';
 
-import { Text } from '~/shared/ui/typography';
 import { CircleQuestion } from '~/shared/ui/icons/circle-question';
 
 import css from './hint.module.css';
@@ -12,7 +11,7 @@ interface HintProps {
     styleIcon?: string;
 }
 
-const Hint = memo(function Hint({ children, styleBox = '', styleIcon = '' }: HintProps) {
+export const Hint = memo(function Hint({ children, styleBox = '', styleIcon = '' }: HintProps) {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <>
@@ -31,5 +30,3 @@ const Hint = memo(function Hint({ children, styleBox = '', styleIcon = '' }: Hin
         </>
     );
 });
-
-export default Hint;

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { Text } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { useApp } from '~/model/app-provider';
-import Switcher from '~/shared/ui/switcher/switcher';
+import { Switcher } from '~/shared/ui/switcher';
 import { AppViews, useView } from '~/model/view-provider';
 
 import css from './settings.module.css';

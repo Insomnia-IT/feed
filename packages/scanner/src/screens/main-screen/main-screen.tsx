@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import { PostScan } from '~/components/post-scan';
 import { db } from '~/db';
-import { Scan } from '~/components/scan/scan';
+import { Scan } from '~/components/scan';
 import { useApp } from '~/model/app-provider';
 import { useScan } from '~/model/scan-provider/scan-provider';
 import { PostScanGroupBadge } from '~/components/post-scan/post-scan-group-badge';

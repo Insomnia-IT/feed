@@ -8,7 +8,7 @@ import css from './switcher.module.css';
 interface InputProps extends React.ComponentProps<'input'> {
     text?: string;
 }
-const Switcher = memo(function Switcher(props: InputProps) {
+export const Switcher = memo(function Switcher(props: InputProps) {
     const { checked, className = '', disabled, name, onChange, text, value, ...restProps } = props;
 
     return (
@@ -28,5 +28,3 @@ const Switcher = memo(function Switcher(props: InputProps) {
         </label>
     );
 });
-
-export default Switcher;

@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 
 import { Text } from '~/shared/ui/typography';
 import type { TransactionJoined } from '~/db';
-import { Cell, HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table/table';
+import { Cell, HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table';
 
 import css from './history-table.module.css';
 
