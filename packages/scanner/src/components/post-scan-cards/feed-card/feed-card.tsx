@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 
 import type { Volunteer } from '~/db';
+import { FeedType } from '~/db';
 import { CardContainer } from '~/components/post-scan-cards/ui/card-container/card-container';
 import { Button } from '~/shared/ui/button/button';
 import { Text, Title } from '~/shared/ui/typography';
@@ -13,17 +14,28 @@ export const FeedCard: FC<{
     doFeed: () => void;
     close: () => void;
 }> = ({ close, doFeed, vol }) => {
+    const isChild = vol.feed_type === FeedType.Child;
     return (
         <CardContainer>
             <div className={css.feedCard}>
                 <div className={css.info}>
-                    <Title>
-                        Кормить <br /> волонтера
-                    </Title>
+                    {isChild ? (
+                        <Title>
+                            👶 Кормить <br /> ребенка
+                        </Title>
+                    ) : (
+                        <Title>
+                            Кормить <br /> волонтера
+                        </Title>
+                    )}
                     <div className={css.detail}>
-                        <Text>Вы отсканировали бейдж волонтера:</Text>
+                        {isChild ? (
+                            <Text>Вы отсканировали бейдж ребенка:</Text>
+                        ) : (
+                            <Text>Вы отсканировали бейдж волонтера:</Text>
+                        )}
                         <Text className={css.volInfo}>
-                            {vol.first_name}, {vol.is_vegan ? 'веган🥦' : 'мясоед🥩'}
+                            {vol.name}, {vol.is_vegan ? 'веган🥦' : 'мясоед🥩'}
                         </Text>
                         {vol.departments.length === 1 && <Text>Служба: {vol.departments[0].name}</Text>}
                         {vol.departments.length > 1 && (

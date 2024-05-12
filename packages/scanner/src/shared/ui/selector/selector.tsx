@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cn from 'classnames';
 
 import css from './selector.module.css';
@@ -6,18 +6,15 @@ import css from './selector.module.css';
 interface SelectorProps extends React.ComponentProps<'div'> {
     selectorList: Array<{ id: string; title: string; subTitle: string }>;
     onChangeSelected: (value: string) => void;
-    initValue: string;
+    value: string;
 }
 
-export const Selector = ({
-    className = '',
-    initValue,
-    onChangeSelected,
-    selectorList,
-    ...restProps
-}: SelectorProps) => {
-    const [selectedItem, setSelectedItem] = useState<string>(initValue || selectorList[0].id);
+export const Selector = ({ className = '', onChangeSelected, selectorList, value, ...restProps }: SelectorProps) => {
+    const [selectedItem, setSelectedItem] = useState<string>(value || selectorList[0].id);
 
+    useEffect(() => {
+        setSelectedItem(value);
+    }, [value]);
     const handleClickItem = (itemId) => {
         setSelectedItem(itemId);
         onChangeSelected(itemId);

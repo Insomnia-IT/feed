@@ -21,16 +21,9 @@ export enum TableType {
 export const Stats = React.memo(function Stats() {
     const { today, tomorrow, yesterday } = getStatsDates();
     const { error, progress, stats, update } = useLocalStats();
+    const [selected, setSelected] = useState(StatsDateEnum.today);
 
     const [tableType, setTableType] = useState<TableType>(TableType.default);
-
-    useEffect(() => {
-        updateStats(StatsDateEnum.today);
-    }, []);
-
-    const handleChangeDate = useCallback((value) => {
-        updateStats(value);
-    }, []);
 
     const updateStats = (statsDate): void => {
         if (statsDate === StatsDateEnum.today) {
@@ -46,6 +39,17 @@ export const Stats = React.memo(function Stats() {
             void update(tomorrow, true);
         }
     };
+    useEffect(() => {
+        updateStats(StatsDateEnum.today);
+    }, []);
+
+    const handleChangeDate = useCallback(
+        (value) => {
+            setSelected(value);
+            updateStats(value);
+        },
+        [updateStats]
+    );
 
     return (
         <div className={css.stats}>
@@ -55,7 +59,7 @@ export const Stats = React.memo(function Stats() {
                 <>
                     <Selector
                         onChangeSelected={handleChangeDate}
-                        initValue={StatsDateEnum.today}
+                        value={selected}
                         selectorList={[
                             { id: StatsDateEnum.yesterday, title: 'Вчера', subTitle: yesterday },
                             { id: StatsDateEnum.today, title: 'Сегодня', subTitle: today },

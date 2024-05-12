@@ -17,6 +17,7 @@ interface StatsTableProps {
 
 export const StatsTable = ({ progress, stats, tableType }: StatsTableProps) => {
     const { feedCount, onField } = stats;
+
     const StatsRecords = () => {
         const Records = MEAL_TIME.map((MT) => {
             let formattedMealTime: string;
