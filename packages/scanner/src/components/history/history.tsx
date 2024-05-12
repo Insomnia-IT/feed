@@ -16,7 +16,6 @@ export const History: React.FC = () => {
 
     const tableRef = React.useRef<HTMLDivElement | null>(null);
     useEffect(() => {
-        console.log('tableRef.current', tableRef.current);
         const handleScroll = (): void => {
             if (tableRef.current) {
                 const { clientHeight, scrollHeight, scrollTop } = tableRef.current;

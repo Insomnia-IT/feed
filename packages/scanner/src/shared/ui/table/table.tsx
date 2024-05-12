@@ -5,7 +5,7 @@ import css from './table.module.css';
 export const Table = ({ className = '', ...restProps }: React.ComponentProps<'table'>): React.ReactElement => {
     return <table className={cn(css.table, { [className]: !!className })} {...restProps}></table>;
 };
-export const Thead = ({ className = '', ...restProps }: React.ComponentProps<'thead'>): React.ReactElement => {
+export const THead = ({ className = '', ...restProps }: React.ComponentProps<'thead'>): React.ReactElement => {
     return <thead className={cn(css.thead, { [className]: !!className })} {...restProps}></thead>;
 };
 export const TBody = ({ className = '', ...restProps }: React.ComponentProps<'tbody'>): React.ReactElement => {

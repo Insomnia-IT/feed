@@ -1,0 +1,36 @@
+.selector {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+.title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.subTitle {
+    font-weight: 400;
+    font-size: 16px;
+}
+
+.selectorItem {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 12px;
+    height: 60px;
+    background: var(--c-grey);
+    color: var(--c-txt);
+    border-radius: 16px;
+}
+
+.selected {
+    height: 60px;
+    background: var(--c-blue);
+    color: var(--c-white);
+}

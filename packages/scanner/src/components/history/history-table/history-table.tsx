@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 
 import { Text } from '~/shared/ui/typography';
 import type { TransactionJoined } from '~/db';
-import { Cell, HeadCell, Row, Table, TBody, Thead } from '~/shared/ui/table/table';
+import { Cell, HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table/table';
 
 import css from './history-table.module.css';
 
@@ -17,13 +17,13 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                 <span className={css.meat}>🥩 Мясоеды</span> / <span className={css.vegan}>🥦 Веганы</span>
             </Text>
             <Table className={css.table}>
-                <Thead>
+                <THead>
                     <Row>
                         <HeadCell scope='col'>Волонтер</HeadCell>
                         <HeadCell scope='col'>Тип</HeadCell>
                         <HeadCell scope='col'>Время</HeadCell>
                     </Row>
-                </Thead>
+                </THead>
                 <TBody>
                     {transactions.map((transaction, index) => (
                         <Row key={index}>

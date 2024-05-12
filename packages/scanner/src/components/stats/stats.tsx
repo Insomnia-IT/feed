@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { StatsTable } from '~/components/stats/stats-table';
 import { useLocalStats } from '~/request-local-db';
 import { getStatsDates } from '~/shared/lib/date';
-import { StatsDatePicker } from '~/components/stats/stats-date-picker';
-import { useView } from '~/model/view-provider/view-provider';
+import { Selector } from '~/shared/ui/selector/selector';
 
-import style from './stats.module.css';
+import css from './stats.module.css';
 
 export enum StatsDateEnum {
     today = 'today',
@@ -22,67 +21,50 @@ export enum TableType {
 export const Stats = React.memo(function Stats() {
     const { today, tomorrow, yesterday } = getStatsDates();
     const { error, progress, stats, update } = useLocalStats();
-    const { currentView } = useView();
 
     const [tableType, setTableType] = useState<TableType>(TableType.default);
-    const [statsDate, setStatsDate] = useState<StatsDateEnum>(StatsDateEnum.today);
-    const [formattedDate, setFormattedDate] = useState<string>(today);
 
     useEffect(() => {
-        updateStats();
+        updateStats(StatsDateEnum.today);
     }, []);
 
-    useEffect(() => {
+    const handleChangeDate = useCallback((value) => {
+        updateStats(value);
+    }, []);
+
+    const updateStats = (statsDate): void => {
         if (statsDate === StatsDateEnum.today) {
             setTableType(TableType.default);
-            setFormattedDate(today);
+            void update(today);
         }
         if (statsDate === StatsDateEnum.yesterday) {
             setTableType(TableType.default);
-            setFormattedDate(yesterday);
+            void update(yesterday);
         }
         if (statsDate === StatsDateEnum.tomorrow) {
             setTableType(TableType.predict);
-            setFormattedDate(tomorrow);
-        }
-    }, [statsDate]);
-
-    const updateStats = (): void => {
-        if (tableType === TableType.default) {
-            void update(formattedDate);
-        } else {
-            void update(formattedDate, true);
+            void update(tomorrow, true);
         }
     };
 
     return (
-        <>
-            {progress && !error && !stats && (
-                <div className={style.msg}>
-                    <span>Загрузка...</span>
-                </div>
-            )}
-            {error && (
-                <div className={style.msg}>
-                    <span>Что-то пошло не так...</span>
-                </div>
-            )}
+        <div className={css.stats}>
+            {progress && !error && !stats && <span>Загрузка...</span>}
+            {error && <span>Что-то пошло не так...</span>}
             {stats && !error && (
                 <>
+                    <Selector
+                        onChangeSelected={handleChangeDate}
+                        initValue={StatsDateEnum.today}
+                        selectorList={[
+                            { id: StatsDateEnum.yesterday, title: 'Вчера', subTitle: yesterday },
+                            { id: StatsDateEnum.today, title: 'Сегодня', subTitle: today },
+                            { id: StatsDateEnum.tomorrow, title: 'Завтра', subTitle: tomorrow }
+                        ]}
+                    />
                     <StatsTable stats={stats} tableType={tableType} progress={progress} />
-                    <div className={style.statsInfoWrapper}>
-                        <div className={style.info}>
-                            <span className={style.meat}>мясоедов</span>/<span className={style.vegan}>веганов</span>
-                        </div>
-                        <StatsDatePicker
-                            formattedDate={formattedDate}
-                            statsDate={statsDate}
-                            setStatsDate={setStatsDate}
-                            progress={progress}
-                        />
-                    </div>
                 </>
             )}
-        </>
+        </div>
     );
 });

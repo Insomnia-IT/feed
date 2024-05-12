@@ -1,20 +1,20 @@
-import cn from 'classnames';
-
 import { ScreenHeader } from '~/components/screen-header';
+import { ScreenWrapper } from '~/shared/ui/screen-wrapper/screen-wrapper';
+import { AppViews, useView } from '~/model/view-provider';
 
-import css from '../../app/app.module.css';
 import { Stats } from '../../components/stats';
 
 export const StatsScreen = () => {
+    const { setCurrentView } = useView();
     return (
-        <div className={cn(css.screen, css.stats)}>
+        <ScreenWrapper>
             <ScreenHeader
                 title='Статистика'
                 onClickBack={() => {
-                    console.log();
+                    setCurrentView(AppViews.HISTORY);
                 }}
             />
             <Stats />
-        </div>
+        </ScreenWrapper>
     );
 };
