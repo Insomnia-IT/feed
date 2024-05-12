@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { dataProvider } from '~/dataProvider';
 import type { VolCustomFieldValueEntity } from '~/interfaces';
+import { isActivatedStatus } from '~/shared/lib';
 
 const useSaveConfirm = (
     form: FormInstance,
@@ -31,8 +32,9 @@ const useSaveConfirm = (
 
     return {
         onClick: () => {
+            const arrivals = form.getFieldValue('arrivals') ?? [];
             const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
-            if (!form.getFieldValue('is_active')) {
+            if (!arrivals.some(({ status }) => isActivatedStatus(status))) {
                 setShowConfirmationModalReason('is_active');
             } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
                 setShowConfirmationModalReason('active_from');
@@ -143,7 +145,8 @@ const useSaveConfirm = (
                     {showConfirmationModalReason === 'is_active' && (
                         <>
                             <p>Пользователь не активирован. Вы уверены, что хотите продолжить сохранение?</p>
-                            <p>Новый неактивированный пользователь будет заблокирован после синхронизации с ноушен.</p>
+                            <p>Неактивированный пользователь не будет получать питание.</p>
+                            <p>Для активанции выставите статус заезда в &quot;Заехал на поле&quot;</p>
                         </>
                     )}
                     {showConfirmationModalReason === 'active_from' && (
