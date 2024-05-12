@@ -96,9 +96,9 @@ export const QrScan: FC<{
     return (
         <div className={css.qr} style={style}>
             <Video1 setRef={onVideoReady} />
-            <button className={css.flash} disabled={!hasFlash} onClick={toggleFlash}>
-                <Flash />
-            </button>
+            {/*<button className={css.flash} disabled={!hasFlash} onClick={toggleFlash}>*/}
+            {/*    <Flash />*/}
+            {/*</button>*/}
         </div>
     );
 });

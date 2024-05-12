@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Text } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { useApp } from '~/model/app-provider';
+import Switcher from '~/shared/ui/switcher/switcher';
+import { AppViews, useView } from '~/model/view-provider';
 
 import css from './settings.module.css';
 const formatDate = (value) => {
@@ -14,10 +16,9 @@ const formatDate = (value) => {
         second: 'numeric'
     });
 };
-
 export const Settings = () => {
-    const { lastSyncStart, sync } = useApp();
-
+    const { autoSync, lastSyncStart, setAuth, sync, toggleAutoSync } = useApp();
+    const { setCurrentView } = useView();
     const { fetching, send } = sync;
     const doSync = async () => {
         try {
@@ -36,12 +37,17 @@ export const Settings = () => {
                     то Волонтер не сможет покушать :(
                 </Text>
             </div>
-            <Button></Button>
+            <Switcher
+                text='Автоматическое обновление'
+                checked={autoSync}
+                onChange={() => {
+                    toggleAutoSync();
+                }}
+            />
             <div className={css.update}>
                 <Button
                     className={css.button}
                     onClick={() => {
-                        console.log('sync');
                         void doSync();
                     }}
                     disabled={fetching}
@@ -50,6 +56,15 @@ export const Settings = () => {
                 </Button>
                 {!!lastSyncStart && <Text>Последнее обновление: {formatDate(lastSyncStart)}</Text>}
             </div>
+            <button
+                className={css.leave}
+                onClick={() => {
+                    setAuth(false);
+                    setCurrentView(AppViews.MAIN);
+                }}
+            >
+                Выйти из кухни &rarr;
+            </button>
         </div>
     );
 };

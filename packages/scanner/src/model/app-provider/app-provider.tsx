@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import type { MealTime } from '~/db';
 import type { ApiHook } from '~/request';
@@ -27,6 +27,8 @@ interface IAppContext {
     debugMode: string | null;
     deoptimizedSync: string | null;
     sync: ApiHook;
+    autoSync: boolean;
+    toggleAutoSync: () => void;
 }
 const AppContext = React.createContext<IAppContext | null>(null);
 
@@ -38,6 +40,7 @@ const lastSyncStartLS = localStorage.getItem('lastSyncStart');
 const debugModeLS = localStorage.getItem('debug');
 // TODO: Remove after test
 const deoptimizedSyncLS = localStorage.getItem('katya_testiruet');
+const autoSyncLS = localStorage.getItem('autoSync');
 
 export const AppProvider = (props) => {
     const { children } = props;
@@ -49,26 +52,38 @@ export const AppProvider = (props) => {
     const [kitchenId, setKitchenId] = useState<number>(storedKitchenId);
     const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);
     const [volCount, setVolCount] = useState<number>(0);
-
+    const [autoSync, setAutoSync] = useState<boolean>(autoSyncLS ? autoSyncLS === '1' : true);
     const sync = useSync(API_DOMAIN, pin, setAuth, kitchenId);
     const { fetching, send, updated } = sync;
 
-    const doSync = async () => {
+    const toggleAutoSync = useCallback(() => {
+        setAutoSync((prev) => {
+            localStorage.setItem('autoSync', !prev ? '1' : '0');
+            return !prev;
+        });
+    }, []);
+
+    const saveLastSyncStart = useCallback((ts) => {
+        localStorage.setItem('lastSyncStart', String(ts));
+        setLastSyncStart(ts);
+    }, []);
+
+    const doSync = useCallback(async () => {
         try {
             await send({ lastSyncStart });
         } catch (e) {
             console.error(e);
         }
-    };
+    }, [lastSyncStart, send]);
 
     useEffect(() => {
         if (updated && !fetching) {
-            setLastSyncStart(updated);
+            saveLastSyncStart(updated);
             void db.volunteers.count().then((c) => {
                 setVolCount(c);
             });
         }
-    }, [fetching, setLastSyncStart, setVolCount, updated]);
+    }, [fetching, saveLastSyncStart, setLastSyncStart, setVolCount, updated]);
 
     useEffect(() => {
         // TODO detect hanged requests
@@ -79,11 +94,14 @@ export const AppProvider = (props) => {
                 void doSync();
             }
         };
+        let timer;
 
-        const timer = setInterval(sync, SYNC_INTERVAL);
+        if (autoSync) {
+            timer = setInterval(sync, SYNC_INTERVAL);
+        }
 
         return () => clearInterval(timer);
-    }, [send, lastSyncStart, doSync]);
+    }, [send, lastSyncStart, doSync, autoSync]);
 
     const contextValue: IAppContext = useMemo(
         () => ({
@@ -95,10 +113,9 @@ export const AppProvider = (props) => {
             lastSyncStart,
             volCount,
             setError: setAppError,
-            setLastSyncStart: (ts) => {
-                localStorage.setItem('lastSyncStart', String(ts));
-                setLastSyncStart(ts);
-            },
+            setLastSyncStart: saveLastSyncStart,
+            autoSync,
+            toggleAutoSync,
             setVolCount,
             mealTime,
             setMealTime,
@@ -109,7 +126,7 @@ export const AppProvider = (props) => {
             deoptimizedSync: deoptimizedSyncLS,
             sync
         }),
-        [pin, auth, appError, lastSyncStart, volCount, mealTime, kitchenId, sync]
+        [pin, auth, appError, lastSyncStart, volCount, autoSync, mealTime, kitchenId, sync]
     );
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
