@@ -5,6 +5,7 @@ import { HistoryScreen } from '~/screens/history-screen/history-screen';
 import { StatsScreen } from '~/screens/stats-screen/stats-screen';
 import { useApp } from '~/model/app-provider';
 import { AppViews, useView } from '~/model/view-provider';
+import { SettingsScreen } from '~/screens/settings-screen/settings-screen';
 
 export const Screens = () => {
     const { auth, mealTime } = useApp();
@@ -18,6 +19,7 @@ export const Screens = () => {
                     {currentView === AppViews.MAIN && <MainScreen />}
                     {currentView === AppViews.HISTORY && <HistoryScreen />}
                     {currentView === AppViews.STATS && <StatsScreen />}
+                    {currentView === AppViews.SETTINGS && <SettingsScreen />}
                 </>
             )}
             {/*{(isDev || debugModeLS === '1') && <MockTrans />}*/}

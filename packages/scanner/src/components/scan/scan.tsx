@@ -29,7 +29,7 @@ export const Scan = () => {
         setCurrentView(AppViews.HISTORY);
     };
     const handleOptionsClick = (): void => {
-        console.log('options');
+        setCurrentView(AppViews.SETTINGS);
     };
 
     return (
@@ -39,7 +39,7 @@ export const Scan = () => {
             </div>
             <QrScan onScan={handleScan} />
             <div className={css.scan}>
-                <BtnSync />
+                {/*<BtnSync />*/}
                 <div className={css.head}>
                     <IconButton onClick={handleHistoryClick}>
                         <Clock color='white' />

@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { AppColor, useApp } from '~/model/app-provider/app-provider';
+import { useApp } from '~/model/app-provider/app-provider';
 import type { GroupBadge } from '~/db';
 import { db, dbIncFeed } from '~/db';
 import { ErrorCard } from '~/components/post-scan-cards/error-card/error-card';

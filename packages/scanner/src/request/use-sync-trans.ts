@@ -6,11 +6,13 @@ import type { IndexableType } from 'dexie';
 import type { ApiHook } from '~/request/lib';
 import { db } from '~/db';
 import type { ServerTransaction, Transaction } from '~/db';
-import { useApp } from '~/model/app-provider';
 
-export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const { kitchenId } = useApp();
-
+export const useSyncTransactions = (
+    baseUrl: string,
+    pin: string | null,
+    setAuth: (auth: boolean) => void,
+    kitchenId: number
+): ApiHook => {
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);
     const [fetching, setFetching] = useState<any>(false);

@@ -11,13 +11,12 @@ import { ErrorCard } from '~/components/post-scan-cards';
 import css from './main-screen.module.css';
 
 export const MainScreen = React.memo(function MainScreen() {
-    const { setLastSyncStart, setVolCount } = useApp();
+    const { setVolCount } = useApp();
     const { errorMessage, groupBadge, handleCloseCard, view } = useScan();
 
     useEffect(() => {
         void db.volunteers.count().then((c) => setVolCount(c));
-        setLastSyncStart(Number(localStorage.getItem('lastSyncStart')));
-    }, [setLastSyncStart, setVolCount]);
+    }, [setVolCount]);
 
     return (
         <div className={css.main}>

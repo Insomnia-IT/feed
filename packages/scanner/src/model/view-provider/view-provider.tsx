@@ -10,7 +10,8 @@ const ViewContext = React.createContext<IViewContext | null>(null);
 export enum AppViews {
     MAIN = 'main',
     HISTORY = 'history',
-    STATS = 'stats'
+    STATS = 'stats',
+    SETTINGS = 'settings'
 }
 
 export const ViewProvider = (props) => {

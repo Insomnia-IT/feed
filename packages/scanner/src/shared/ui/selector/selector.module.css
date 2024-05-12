@@ -27,6 +27,7 @@
     background: var(--c-grey);
     color: var(--c-txt);
     border-radius: 16px;
+    cursor: pointer;
 }
 
 .selected {

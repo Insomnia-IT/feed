@@ -52,7 +52,7 @@ export const VolAndUpdateInfo = ({ textColor = 'black' }: { textColor?: 'black' 
                 <p>Покормлено: {volsFedAmount}</p>
                 <p>Осталось: {volsOnField > volsFedAmount ? volsOnField - volsFedAmount : 0}</p>
             </div>
-            <p>Обновилось: {formatDate(lastSyncStart)}</p>
+            {!!lastSyncStart && <p>Обновилось: {formatDate(lastSyncStart)}</p>}
         </div>
     );
 };
