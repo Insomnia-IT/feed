@@ -93,6 +93,7 @@ export class MySubClassedDexie extends Dexie {
                 groupBadges: 'id, &qr'
             })
             .upgrade((trans) => {
+                localStorage.removeItem('lastSyncStart');
                 return trans.table('volunteers').clear();
             });
     }
@@ -190,7 +191,7 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
     return db.volunteers
         .filter((vol) => {
             return (
-                vol.kitchen.toString() === kitchenId &&
+                vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
                 vol.feed_type !== FeedType.FT4 &&
                 vol.arrivals.some(
