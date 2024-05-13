@@ -523,7 +523,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                                 type='link'
                                                 icon={<DeleteOutlined />}
                                                 onClick={deleteArrival}
-                                                style={{ visibility: updatedArrivals.length === 1 ? 'hidden' : undefined }}
+                                                style={{
+                                                    visibility: updatedArrivals.length === 1 ? 'hidden' : undefined
+                                                }}
                                             >
                                                 Удалить
                                             </Button>

@@ -1,11 +1,10 @@
 import { type FormInstance, Tabs } from '@pankod/refine-antd';
+import { useEffect, useState } from 'react';
 
 import { CommonEdit } from './common-edit';
 import { CommonFoodTest } from './common-food';
-import { useEffect, useState } from 'react';
 
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
-
     const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
     useEffect(() => {
         const handleResize = () => {
