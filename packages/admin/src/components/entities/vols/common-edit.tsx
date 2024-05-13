@@ -410,12 +410,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.personalInfoWrap}>
                             <div className={styles.nickNameLastnameWrap}>
-                                <div className={styles.nameInput}>
+                                <div className={`${styles.nameInput} ${styles.padInp}`}>
                                     <Form.Item label='Имя на бейдже' name='name' rules={Rules.required}>
                                         <Input />
                                     </Form.Item>
                                 </div>
-                                <div className={styles.nameInput}>
+                                <div className={`${styles.nameInput} ${styles.padInp}`}>
                                     <Form.Item label='Имя' name='first_name'>
                                         <Input />
                                     </Form.Item>
@@ -513,113 +513,123 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         };
                         return (
                             <Fragment key={arrival.id}>
-                                <div className={styles.dateWrap}>
-                                    <div className={styles.dateLabel}>
-                                        <div>Заезд {index + 1}</div>
-                                        <Button
-                                            className={styles.deleteButton}
-                                            danger
-                                            type='link'
-                                            icon={<DeleteOutlined />}
-                                            onClick={deleteArrival}
-                                            style={{ visibility: updatedArrivals.length === 1 ? 'hidden' : undefined }}
-                                        >
-                                            Удалить
-                                        </Button>
+                                <div className={index !== 0 ? `${styles.dateWrapper}` : ''}>
+                                    <div className={styles.dateWrap}>
+                                        <div className={styles.dateLabel}>
+                                            <div>Заезд {index + 1}</div>
+                                            <Button
+                                                className={styles.deleteButton}
+                                                danger
+                                                type='link'
+                                                icon={<DeleteOutlined />}
+                                                onClick={deleteArrival}
+                                                style={{
+                                                    visibility: updatedArrivals.length === 1 ? 'hidden' : undefined
+                                                }}
+                                            >
+                                                Удалить
+                                            </Button>
+                                        </div>
+                                        <div className={styles.dateInput}>
+                                            <Form.Item
+                                                label='Статус заезда'
+                                                name={['updated_arrivals', index, 'status']}
+                                                rules={Rules.required}
+                                            >
+                                                <Select
+                                                    {...statusesSelectProps}
+                                                    style={{ width: '100%' }}
+                                                    onChange={createChange('status')}
+                                                />
+                                            </Form.Item>
+                                        </div>
                                     </div>
-                                    <div className={styles.dateInput}>
-                                        <Form.Item
-                                            label='Статус заезда'
-                                            name={['updated_arrivals', index, 'status']}
-                                            rules={Rules.required}
+                                    <div className={styles.dateWrap}>
+                                        <div
+                                            className={`${styles.dateLabel} ${styles.dateLabelEmpty}`}
+                                            style={{ visibility: 'hidden' }}
                                         >
-                                            <Select
-                                                {...statusesSelectProps}
-                                                style={{ width: '100%' }}
-                                                onChange={createChange('status')}
-                                            />
-                                        </Form.Item>
+                                            <div>Заезд {index + 1}</div>
+                                            <Button
+                                                className={styles.deleteButton}
+                                                danger
+                                                type='link'
+                                                icon={<DeleteOutlined />}
+                                                onClick={deleteArrival}
+                                            >
+                                                Удалить
+                                            </Button>
+                                        </div>
+                                        <div className={styles.dateInput}>
+                                            <Form.Item
+                                                label='Дата заезда'
+                                                name={['updated_arrivals', index, 'arrival_date']}
+                                                getValueProps={getDateValue}
+                                                rules={activeFromValidationRules(index)}
+                                            >
+                                                <DatePicker
+                                                    format={formDateFormat}
+                                                    style={{ width: '100%' }}
+                                                    onChange={createChange('arrival_date')}
+                                                />
+                                            </Form.Item>
+                                        </div>
+                                        <div className={styles.dateInput}>
+                                            <Form.Item
+                                                label='Как добрался?'
+                                                name={['updated_arrivals', index, 'arrival_transport']}
+                                                rules={Rules.required}
+                                            >
+                                                <Select
+                                                    {...transportsSelectProps}
+                                                    style={{ width: '100%' }}
+                                                    onChange={createChange('arrival_transport')}
+                                                />
+                                            </Form.Item>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className={styles.dateWrap}>
-                                    <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>
-                                        <div>Заезд {index + 1}</div>
-                                        <Button
-                                            className={styles.deleteButton}
-                                            danger
-                                            type='link'
-                                            icon={<DeleteOutlined />}
-                                            onClick={deleteArrival}
+                                    <div className={styles.dateWrap}>
+                                        <div
+                                            className={`${styles.dateLabel} ${styles.dateLabelEmpty}`}
+                                            style={{ visibility: 'hidden' }}
                                         >
-                                            Удалить
-                                        </Button>
-                                    </div>
-                                    <div className={styles.dateInput}>
-                                        <Form.Item
-                                            label='Дата заезда'
-                                            name={['updated_arrivals', index, 'arrival_date']}
-                                            getValueProps={getDateValue}
-                                            rules={activeFromValidationRules(index)}
-                                        >
-                                            <DatePicker
-                                                format={formDateFormat}
-                                                style={{ width: '100%' }}
-                                                onChange={createChange('arrival_date')}
-                                            />
-                                        </Form.Item>
-                                    </div>
-                                    <div className={styles.dateInput}>
-                                        <Form.Item
-                                            label='Как добрался?'
-                                            name={['updated_arrivals', index, 'arrival_transport']}
-                                            rules={Rules.required}
-                                        >
-                                            <Select
-                                                {...transportsSelectProps}
-                                                style={{ width: '100%' }}
-                                                onChange={createChange('arrival_transport')}
-                                            />
-                                        </Form.Item>
-                                    </div>
-                                </div>
-                                <div className={styles.dateWrap}>
-                                    <div className={styles.dateLabel} style={{ visibility: 'hidden' }}>
-                                        <div>Заезд {index + 1}</div>
-                                        <Button
-                                            className={styles.deleteButton}
-                                            danger
-                                            type='link'
-                                            icon={<DeleteOutlined />}
-                                        >
-                                            Удалить
-                                        </Button>
-                                    </div>
-                                    <div className={styles.dateInput}>
-                                        <Form.Item
-                                            label='Дата отъезда'
-                                            name={['updated_arrivals', index, 'departure_date']}
-                                            getValueProps={getDateValue}
-                                            rules={activeToValidationRules(index)}
-                                        >
-                                            <DatePicker
-                                                format={formDateFormat}
-                                                style={{ width: '100%' }}
-                                                onChange={createChange('departure_date')}
-                                            />
-                                        </Form.Item>
-                                    </div>
-                                    <div className={styles.dateInput}>
-                                        <Form.Item
-                                            label='Как уехал?'
-                                            name={['updated_arrivals', index, 'departure_transport']}
-                                            rules={Rules.required}
-                                        >
-                                            <Select
-                                                {...transportsSelectProps}
-                                                style={{ width: '100%' }}
-                                                onChange={createChange('departure_transport')}
-                                            />
-                                        </Form.Item>
+                                            <div>Заезд {index + 1}</div>
+                                            <Button
+                                                className={styles.deleteButton}
+                                                danger
+                                                type='link'
+                                                icon={<DeleteOutlined />}
+                                            >
+                                                Удалить
+                                            </Button>
+                                        </div>
+                                        <div className={styles.dateInput}>
+                                            <Form.Item
+                                                label='Дата отъезда'
+                                                name={['updated_arrivals', index, 'departure_date']}
+                                                getValueProps={getDateValue}
+                                                rules={activeToValidationRules(index)}
+                                            >
+                                                <DatePicker
+                                                    format={formDateFormat}
+                                                    style={{ width: '100%' }}
+                                                    onChange={createChange('departure_date')}
+                                                />
+                                            </Form.Item>
+                                        </div>
+                                        <div className={styles.dateInput}>
+                                            <Form.Item
+                                                label='Как уехал?'
+                                                name={['updated_arrivals', index, 'departure_transport']}
+                                                rules={Rules.required}
+                                            >
+                                                <Select
+                                                    {...transportsSelectProps}
+                                                    style={{ width: '100%' }}
+                                                    onChange={createChange('departure_transport')}
+                                                />
+                                            </Form.Item>
+                                        </div>
                                     </div>
                                 </div>
                             </Fragment>
@@ -715,6 +725,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             onOk={() => setOpen(false)}
                             onCancel={handleToggleBlocked}
                             width={420}
+                            footer={null}
                         >
                             <div className={styles.modalWindow}>
                                 <span className={styles.carefulIcon}>
@@ -728,6 +739,14 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
                                         : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
                                 </p>
+                                <div className={styles.modalButtonWrap}>
+                                    <Button className={styles.onCancelButton} onClick={() => setOpen(false)}>
+                                        {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                                    </Button>
+                                    <Button type='primary' onClick={handleToggleBlocked}>
+                                        {'Оставить'}
+                                    </Button>
+                                </div>
                             </div>
                         </Modal>
                     </div>
