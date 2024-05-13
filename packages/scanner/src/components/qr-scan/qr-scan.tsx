@@ -1,10 +1,10 @@
 import type { CSSProperties, FC } from 'react';
-import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 import sas from 'onscan.js/onscan';
 
-import { AppContext } from '~/app-context';
-import { ReactComponent as Flash } from '~/icons/flash.svg';
+import { ReactComponent as Flash } from '~/shared/icons/flash.svg';
+import { useApp } from '~/model/app-provider';
 
 import css from './qr-scan.module.css';
 
@@ -33,7 +33,7 @@ export const QrScan: FC<{
     const video = useRef<HTMLVideoElement | null>(null);
 
     const [hasFlash, setHasFlash] = useState<boolean>(false);
-    const { setError } = useContext(AppContext);
+    const { setError } = useApp();
 
     const updateFlashAvailability = useCallback(() => {
         scanner.current &&
@@ -58,7 +58,7 @@ export const QrScan: FC<{
             },
             {
                 maxScansPerSecond: 1,
-                highlightScanRegion: true,
+                // highlightScanRegion: true,
                 highlightCodeOutline: true
             }
         );
@@ -96,9 +96,9 @@ export const QrScan: FC<{
     return (
         <div className={css.qr} style={style}>
             <Video1 setRef={onVideoReady} />
-            <button className={css.flash} disabled={!hasFlash} onClick={toggleFlash}>
-                <Flash />
-            </button>
+            {/*<button className={css.flash} disabled={!hasFlash} onClick={toggleFlash}>*/}
+            {/*    <Flash />*/}
+            {/*</button>*/}
         </div>
     );
 });

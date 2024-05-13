@@ -1,0 +1,6 @@
+.scanStatus {
+    position: relative;
+    bottom: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+}

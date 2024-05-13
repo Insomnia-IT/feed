@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 
 import { FeedType, getFeedStats, getVolsOnField, MealTime } from '~/db';
 import type { LocalStatsHook } from '~/request-local-db/lib';
-import { DATE_FORMAT } from '~/lib/date';
+import { DATE_FORMAT } from '~/shared/lib/date';
 
 export const MEAL_TIME = [MealTime.breakfast, MealTime.lunch, MealTime.dinner, MealTime.night] as const;
 

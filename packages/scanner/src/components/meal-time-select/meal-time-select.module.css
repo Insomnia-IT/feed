@@ -1,17 +1,27 @@
 .mealTimeSelectBlock {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    justify-content: center;
     align-items: center;
-    margin: auto;
-    padding: 15px;
+    justify-content: start;
+    width: 100%;
+    gap: 24px;
+    padding-top: 32px;
 
-    button {
-        width: 50vw;
+    .title {
+        font-weight: 600;
+        font-size: 24px;
     }
 
-    h1 {
-        font-size: 1.5em;
+    .buttonsContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        width: 260px;
+
+        .button {
+            width: 100%;
+        }
     }
 }

@@ -1,0 +1,28 @@
+.settings {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 0 16px;
+}
+
+.update {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.button {
+    width: 100%;
+}
+
+.leave {
+    position: absolute;
+    bottom: 30px;
+    left: 16px;
+    background: none;
+    border: none;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--c-error);
+}

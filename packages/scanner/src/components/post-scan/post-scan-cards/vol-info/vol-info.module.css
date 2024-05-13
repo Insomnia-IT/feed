@@ -1,0 +1,11 @@
+.volInfo {
+    border: 2px solid var(--c-white);
+    border-radius: 16px;
+    padding: 12px;
+
+    .text {
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--c-white);
+    }
+}

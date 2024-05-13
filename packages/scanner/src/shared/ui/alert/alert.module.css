@@ -1,0 +1,47 @@
+.alert {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 8px;
+    max-width: 95vw;
+    border-radius: 16px;
+    background: var(--c-white);
+
+    .leftBlock {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .icon {
+        min-width: 24px;
+        width: 24px;
+        height: 24px;
+    }
+
+    .text {
+        line-height: 44px;
+
+        .span {
+            vertical-align: top;
+            line-height: 41px;
+        }
+
+        &.withTextWrap {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+    }
+
+
+    .action {
+        background: none;
+        border: none;
+        padding-left: 16px;
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--c-blue);
+    }
+}

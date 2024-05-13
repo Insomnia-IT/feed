@@ -1,0 +1,39 @@
+.iconButton {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.hint {
+    position: relative;
+}
+
+.hintIcon {
+    position: absolute;
+    top: 32px;
+    left: 8px;
+    height: 16px;
+    width: 16px;
+    background: transparent no-repeat center url("data:image/svg+xml,%3Csvg width='24' height='12' viewBox='0 0 24 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10.5858 1.33462C11.3668 0.553575 12.6332 0.553575 13.4142 1.33462L23.3137 11.2341H12H0.686292L10.5858 1.33462Z' fill='%231B1B1B'/%3E%3C/svg%3E");
+}
+
+.hintBox {
+    position: absolute;
+    top: 42px;
+    right: -8px;
+    border-radius: 16px;
+    padding: 12px;
+    background: var(--c-txt);
+}
+
+.text {
+    color: var(--c-white);
+}
+
+.backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}

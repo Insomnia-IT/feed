@@ -4,14 +4,15 @@ import css from './qr-scan-simulator.module.css';
 
 const options = [
     { label: 'Артем Новиков', value: 'abcfd1e5' },
-    { label: 'не существует', value: 'qwerty1234' }
+    { label: 'не существует', value: 'qwerty1234' },
+    { label: 'Артур', value: '960e4452d6e34747a95b076cc3c22770' }
 ];
 
 export const ScanSimulator: React.FC<{
     withSelection?: boolean;
     setScanResult: (scanResult: string) => void;
 }> = ({ setScanResult, withSelection }) => {
-    const [input, setInput] = useState('');
+    const [input, setInput] = useState('960e4452d6e34747a95b076cc3c22770');
 
     return (
         <div className={css.scanSimulatorBlock}>

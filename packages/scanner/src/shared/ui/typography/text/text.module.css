@@ -1,0 +1,12 @@
+.text {
+    font-weight: 400;
+    font-size: 16px;
+
+    &.black {
+        color: var(--c-txt);
+    }
+
+    &.white {
+        color: var(--c-white)
+    }
+}

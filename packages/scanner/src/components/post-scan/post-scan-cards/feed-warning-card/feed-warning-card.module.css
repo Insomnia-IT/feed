@@ -1,0 +1,34 @@
+.warningCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    height: 100%;
+    width: 100%;
+}
+
+.bottomBLock {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+}
+
+.buttonsBlock {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: auto auto;
+    width: 100%;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.errorList {
+    text-align: start;
+}

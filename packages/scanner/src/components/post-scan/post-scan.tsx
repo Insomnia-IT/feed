@@ -1,25 +1,53 @@
 import type { FC } from 'react';
 import { memo } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 
-import { db } from '~/db';
-import { ErrorMsg } from '~/components/misc/misc';
+import { useScan } from '~/model/scan-provider/scan-provider';
+import { FeedAnonCard, FeedCard, FeedWarningCard } from 'src/components/post-scan/post-scan-cards';
+import { FeedErrorCard } from '~/components/post-scan/post-scan-cards/feed-error-card/feed-error-card';
+import { useFeedVol, validateVol } from '~/components/post-scan/post-scan.utils';
+import { useApp } from '~/model/app-provider';
 
-import { PostScanVol } from './post-scan-vol';
-import { PostScanGroupBadge } from './post-scan-group-badge';
-import { PostScanAnon } from './post-scan-anon';
+export const PostScan: FC = memo(() => {
+    const { kitchenId, mealTime } = useApp();
+    const { handleCloseCard, qrcode, vol, volTransactions } = useScan();
 
-export const PostScan: FC<{
-    qrcode: string;
-    closeFeed: () => void;
-}> = memo(({ closeFeed, qrcode }) => {
-    const vol = useLiveQuery(async () => await db.volunteers.where('qr').equals(qrcode).first(), [qrcode]);
-    const groupBadge = useLiveQuery(async () => await db.groupBadges.where('qr').equals(qrcode).first(), [qrcode]);
+    const [doFeed, doNotFeed] = useFeedVol(vol, mealTime, handleCloseCard, kitchenId);
 
-    if (qrcode === 'anon') return <PostScanAnon closeFeed={closeFeed} />;
+    let postScanView;
+    let errorMessage: Array<string> = [];
 
-    if (vol) return <PostScanVol qrcode={qrcode} vol={vol} closeFeed={closeFeed} />;
-    else if (groupBadge) return <PostScanGroupBadge groupBadge={groupBadge} closeFeed={closeFeed} />;
-    else return <ErrorMsg close={closeFeed} msg={`Бейдж не найден: ${qrcode}`} />;
+    if (qrcode === 'anon') {
+        postScanView = 'anon';
+    }
+
+    if (vol && volTransactions) {
+        const { isRed, msg } = validateVol(vol, volTransactions, kitchenId, mealTime!, false);
+
+        if (msg?.length) {
+            postScanView = isRed ? 'vol-error' : 'vol-warning';
+            errorMessage = msg;
+        } else {
+            postScanView = 'vol-feed';
+        }
+    }
+
+    return (
+        <>
+            {postScanView === 'anon' && <FeedAnonCard close={handleCloseCard} doFeed={doFeed} />}
+            {postScanView === 'vol-feed' && vol && <FeedCard doFeed={doFeed} close={handleCloseCard} vol={vol} />}
+            {postScanView === 'vol-warning' && vol && (
+                <FeedWarningCard
+                    close={handleCloseCard}
+                    doFeed={doFeed}
+                    doNotFeed={doNotFeed}
+                    vol={vol}
+                    msg={errorMessage}
+                />
+            )}
+            {postScanView === 'vol-error' && vol && (
+                <FeedErrorCard close={handleCloseCard} doNotFeed={doNotFeed} msg={errorMessage} vol={vol} />
+            )}
+        </>
+    );
 });
 PostScan.displayName = 'PostScan';

@@ -1,0 +1,28 @@
+.errorCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    height: 100%;
+    width: 100%;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+
+    .text {
+        font-weight: 500;
+        font-size: 20px;
+    }
+}
+
+.buttonsBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+}

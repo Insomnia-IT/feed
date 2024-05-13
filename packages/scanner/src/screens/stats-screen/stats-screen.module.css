@@ -1,0 +1,4 @@
+.hintBox {
+    max-width: calc(100vw - 30px);
+    width: 700px;
+}

@@ -1,35 +1,49 @@
-import React from 'react';
+import React, { memo } from 'react';
 import dayjs from 'dayjs';
 
+import { Text } from '~/shared/ui/typography';
 import type { TransactionJoined } from '~/db';
+import { Cell, HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table';
 
-import style from './history-table.module.css';
+import css from './history-table.module.css';
+
+const formatDate = (ts: number) => {
+    if (dayjs().startOf('day') > dayjs.unix(ts)) {
+        return dayjs.unix(ts).format('dd HH:mm').toString();
+    } else {
+        return dayjs.unix(ts).format('HH:mm').toString();
+    }
+};
 
 interface HistoryListProps {
     transactions: Array<TransactionJoined>;
 }
-
-export const HistoryTable = React.memo(function HistoryTable({ transactions }: HistoryListProps) {
-    const txItems = transactions.map((transaction, index) => {
-        return (
-            <tr key={index}>
-                <td>{transaction.vol ? transaction.vol.name : 'Аноним'}</td>
-                <td>{transaction.is_vegan ? 'Веган' : 'Мясоед'}</td>
-                <td>{dayjs.unix(transaction.ts).format('YYYY.MM.DD HH:mm:ss').toString()}</td>
-            </tr>
-        );
-    });
-
+export const HistoryTable = memo(function HistoryTable({ transactions }: HistoryListProps) {
     return (
-        <table className={style.table}>
-            <thead>
-                <tr>
-                    <th scope='col'>Волонтер</th>
-                    <th scope='col'>Тип</th>
-                    <th scope='col'>Время</th>
-                </tr>
-            </thead>
-            <tbody>{txItems}</tbody>
-        </table>
+        <div className={css.historyTable}>
+            <Text>
+                <span className={css.meat}>🥩 Мясоеды</span> / <span className={css.vegan}>🥦 Веганы</span>
+            </Text>
+            <Table className={css.table}>
+                <THead>
+                    <Row>
+                        <HeadCell className={css.first} scope='col'>
+                            Волонтер
+                        </HeadCell>
+                        <HeadCell scope='col'>Тип</HeadCell>
+                        <HeadCell scope='col'>Время</HeadCell>
+                    </Row>
+                </THead>
+                <TBody>
+                    {transactions.map((transaction, index) => (
+                        <Row key={index}>
+                            <Cell className={css.first}>{transaction.vol ? transaction.vol.name : 'Аноним'}</Cell>
+                            <Cell>{transaction.is_vegan ? '🥦' : '🥩'}</Cell>
+                            <Cell>{formatDate(transaction.ts)}</Cell>
+                        </Row>
+                    ))}
+                </TBody>
+            </Table>
+        </div>
     );
 });
