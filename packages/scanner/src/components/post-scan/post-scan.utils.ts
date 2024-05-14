@@ -7,7 +7,8 @@ import { getMealTimeText } from '~/shared/lib/utils';
 
 const isVolExpired = (vol: Volunteer): boolean => {
     return vol.arrivals.every(
-        ({ arrival_date, departure_date }) =>
+        ({ arrival_date, departure_date, status }) =>
+            !isActivatedStatus(status) ||
             dayjs() < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
             dayjs() > dayjs(departure_date).endOf('day').add(7, 'hours')
     );
@@ -23,7 +24,7 @@ export const validateVol = (
     const msg: Array<string> = [];
     let isRed = false;
 
-    if (vol.feed_type !== FeedType.Child && vol.kitchen.toString() !== kitchenId.toString()) {
+    if (vol.feed_type !== FeedType.Child && vol.kitchen?.toString() !== kitchenId.toString()) {
         msg.push(`Кормится на кухне №${vol.kitchen}`);
     }
     if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {

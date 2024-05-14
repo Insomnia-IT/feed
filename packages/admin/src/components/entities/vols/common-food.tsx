@@ -26,6 +26,15 @@ export function CommonFoodTest() {
     const volId = matchResult ? matchResult[1] : null;
     const router = useRouter();
     const [foodCount, setFoodCount] = useState(0);
+    const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+    useEffect(() => {
+        const handleResize = () => {
+            setScreenSize({ width: window.innerWidth, height: window.innerHeight });
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleCreateClick = () => {
         void router.push('/feed-transaction/create');
@@ -163,13 +172,13 @@ export function CommonFoodTest() {
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
-    }, [createAndSaveXLSX]);
+    }, [createAndSaveXLSX, foodData]);
     return (
         <div>
             <div className={styles.buttonsWrap}>
                 <Button onClick={handleCreateClick}>
                     <PlusSquareOutlined />
-                    Добавить порцию
+                    {screenSize.width <= 576 ? 'Порцию' : 'Добавить порцию'}
                 </Button>
                 <div className={styles.createTableWrap}>
                     <span className={styles.resultDescr}>

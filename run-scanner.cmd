@@ -1,3 +1,3 @@
-cd ./packages/admin
+cd ./packages/scanner
 yarn run dev
 cd ../..
