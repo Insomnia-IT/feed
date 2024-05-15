@@ -118,7 +118,7 @@ export function CommonFoodTest() {
             }),
             {}
         );
-    }, [vols]);
+    }, [vols, foodData]);
 
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
@@ -128,7 +128,7 @@ export function CommonFoodTest() {
             }),
             {}
         );
-    }, [kitchens]);
+    }, [kitchens, foodData]);
 
     const mealTimeById = {
         breakfast: 'Завтрак',
