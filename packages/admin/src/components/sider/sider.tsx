@@ -1,4 +1,4 @@
-import { AntdLayout, Grid, Menu, useMenu } from '@pankod/refine-antd';
+import { AntdLayout, Button, Grid, Menu, useMenu } from '@pankod/refine-antd';
 import {
     CanAccess,
     useIsExistAuthentication,
@@ -8,14 +8,16 @@ import {
     useTitle,
     useTranslate
 } from '@pankod/refine-core';
-import { LogoutOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { LogoutOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
 import type { ITreeMenu } from '@pankod/refine-core';
+import { useRouter } from 'next/router';
 
 import { authProvider } from '~/authProvider';
 import type { AccessRoleEntity } from '~/interfaces';
 
 import { antLayoutSider, antLayoutSiderMobile } from './styles';
+import styles from './sider.module.css';
 
 export const CustomSider: FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -79,40 +81,83 @@ export const CustomSider: FC = () => {
             );
         });
 
+    const [screenSize, setScreenSize] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setScreenSize(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    });
+
+    const router = useRouter();
+
+    const handleRedirectToVols = () => {
+        void router.push('/volunteers');
+    };
+
+    const handleRedirectToGroups = () => {
+        void router.push('/group-badges');
+    };
+
     return (
-        <AntdLayout.Sider
-            collapsible
-            collapsedWidth={isMobile ? 0 : 80}
-            collapsed={collapsed}
-            breakpoint='lg'
-            onCollapse={(collapsed: boolean): void => setCollapsed(collapsed)}
-            style={isMobile ? antLayoutSiderMobile : antLayoutSider}
-        >
-            {Title && <Title collapsed={collapsed} />}
-            <Menu
-                theme='dark'
-                selectedKeys={[selectedKey]}
-                mode='inline'
-                onClick={() => {
-                    if (!breakpoint.lg) {
-                        setCollapsed(true);
-                    }
-                }}
-            >
-                <Menu.Item>
-                    {accessRoleName && (
-                        <>
-                            {userName} ({accessRoleName})
-                        </>
-                    )}
-                </Menu.Item>
-                {renderTreeView(menuItems, selectedKey)}
-                {isExistAuthentication && (
-                    <Menu.Item key='logout' onClick={() => logout()} icon={<LogoutOutlined />}>
-                        {translate('buttons.logout', 'Logout')}
-                    </Menu.Item>
-                )}
-            </Menu>
-        </AntdLayout.Sider>
+        <>
+            {screenSize <= 576 ? (
+                <div className={styles.mobileSider}>
+                    <Button className={styles.siderButton} type='link' onClick={handleRedirectToVols}>
+                        <UserOutlined />
+                        <span className={styles.buttonText}>Волонтеры</span>
+                    </Button>
+                    <Button className={styles.siderButton} type='link' onClick={handleRedirectToGroups}>
+                        <TeamOutlined />
+                        <span className={styles.buttonText}>Группы</span>
+                    </Button>
+                    <Button className={styles.siderButton} type='link' onClick={() => logout()}>
+                        <LogoutOutlined />
+                        <span className={styles.buttonText}>Выход</span>
+                    </Button>
+                </div>
+            ) : (
+                <AntdLayout.Sider
+                    collapsible
+                    collapsedWidth={isMobile ? 0 : 80}
+                    collapsed={collapsed}
+                    breakpoint='lg'
+                    onCollapse={(collapsed: boolean): void => setCollapsed(collapsed)}
+                    style={isMobile ? antLayoutSiderMobile : antLayoutSider}
+                >
+                    {Title && <Title collapsed={collapsed} />}
+                    <Menu
+                        theme='dark'
+                        selectedKeys={[selectedKey]}
+                        mode='inline'
+                        onClick={() => {
+                            if (!breakpoint.lg) {
+                                setCollapsed(true);
+                            }
+                        }}
+                    >
+                        <Menu.Item>
+                            {accessRoleName && (
+                                <>
+                                    {userName} ({accessRoleName})
+                                </>
+                            )}
+                        </Menu.Item>
+                        {renderTreeView(menuItems, selectedKey)}
+                        {isExistAuthentication && (
+                            <Menu.Item key='logout' onClick={() => logout()} icon={<LogoutOutlined />}>
+                                {translate('buttons.logout', 'Logout')}
+                            </Menu.Item>
+                        )}
+                    </Menu>
+                </AntdLayout.Sider>
+            )}
+        </>
     );
 };

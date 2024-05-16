@@ -1,0 +1,21 @@
+.mobileSider {
+    padding: 7px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    z-index: 20000000;
+    background-color: #FFF;
+}
+
+.siderButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.buttonText {
+    display: block;
+}
