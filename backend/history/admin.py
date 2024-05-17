@@ -6,10 +6,10 @@ from history.models import History
 
 class HistoryAdmin(admin.ModelAdmin):
     list_display = (
-        "object_id", "status", "object", "action_at", "actor_badge", "by_sync",
+        "status", "object_name", "action_at", "actor_badge", "by_sync",
     )
     search_fields = (
-        "object", "object_id", "status", "actor_badge"
+        "object_name", "status", "actor_badge"
     )
 
     def by_sync(self, obj):

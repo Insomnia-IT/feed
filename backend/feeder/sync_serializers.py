@@ -28,9 +28,9 @@ class VolunteerHistoryDataSerializer(serializers.ModelSerializer):
         return False
 
 
-class ArrivalsHistoryDataSerializer(serializers.ModelSerializer):
+class ArrivalHistoryDataSerializer(serializers.ModelSerializer):
     deleted = serializers.SerializerMethodField()
-    badge = serializers.SlugRelatedField(source="volunteer", read_only=True, slug_field="uuid")
+    badge = serializers.CharField(source="volunteer.uuid", read_only=True)
     status = serializers.SlugRelatedField(read_only=True, slug_field="name")
     arrival_transport = serializers.SlugRelatedField(read_only=True, slug_field="name")
     departure_transport = serializers.SlugRelatedField(read_only=True, slug_field="name")
@@ -46,3 +46,11 @@ class ArrivalsHistoryDataSerializer(serializers.ModelSerializer):
         if hasattr(obj, "deleted_at") and obj.deleted_at:
             return True
         return False
+
+
+def get_history_serializer(instance_name):
+    instance_serializer = {
+        "volunteer": VolunteerHistoryDataSerializer,
+        "arrival": ArrivalHistoryDataSerializer
+    }
+    return instance_serializer.get(instance_name)
