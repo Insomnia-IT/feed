@@ -71,7 +71,7 @@ class History(models.Model):
         (STATUS_UPDATE, "updated"),
         (STATUS_DELETE, "deleted")
     )
-    object_id = models.UUIDField()
+    # object_id = models.UUIDField()
     status = models.CharField(max_length=16, choices=STATUS_CHOICES)
     object = models.CharField(max_length=32)
     actor_badge = models.CharField(max_length=128, blank=True, null=True)

@@ -69,17 +69,29 @@ class SaveHistoryDataModelMixin(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+        from feeder.sync_serializers import VolunteerHistoryDataSerializer
         # todo что с user при получении данных от синхронизатора
         user_id = get_request_user_id(current_request().user)
         status = History.STATUS_UPDATE
-        if not self.id:
-            status = History.STATUS_CREATE
-        if hasattr(self, 'deleted_at') and self.deleted_at is not None:
+        old_data = {}
+        if hasattr(self, 'deleted_at') and self.deleted_at:
             status = History.STATUS_DELETE
+        if not self.pk:
+            status = History.STATUS_CREATE
+        else:
+            cls = self.__class__
+            old = cls._default_manager.get(pk=self.pk)
+            old_data = VolunteerHistoryDataSerializer(old).data
 
         super().save(*args, **kwargs)
 
-        History().entry_creation(status=status, instance=self, request_user_uuid=user_id)
+        changed_data = VolunteerHistoryDataSerializer(self).data
+        for key, value in old_data.items():
+            if changed_data.get(key) == value:
+                changed_data.pop(key)
+
+        if changed_data:
+            History().entry_creation(status=status, instance=self, request_user_uuid=user_id, old_data=old_data)
 
     def delete(self, *args, **kwargs):
         # todo что с user при получении данных от синхронизатора
