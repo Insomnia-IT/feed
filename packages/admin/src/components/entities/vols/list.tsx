@@ -126,8 +126,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         optionLabel: 'name'
     });
 
-
-
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
         resource: 'kitchens'
     });

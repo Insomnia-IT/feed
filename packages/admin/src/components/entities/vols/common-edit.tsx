@@ -481,10 +481,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.hrInput}>
                             <Form.Item label='Роль' name='main_role' rules={Rules.required}>
-                                <Select
-                                    disabled={!canFullEditing}
-                                    {...rolesSelectProps}
-                                />
+                                <Select disabled={!canFullEditing} {...rolesSelectProps} />
                             </Form.Item>
                         </div>
                     </div>

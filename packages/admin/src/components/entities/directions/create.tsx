@@ -1,7 +1,7 @@
 import { Create, Form, Input, Select, useForm, useSelect } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 
-import type {  DirectionEntity, DirectionTypeEntity } from '~/interfaces';
+import type { DirectionEntity, DirectionTypeEntity } from '~/interfaces';
 import { Rules } from '~/components/form/rules';
 
 export const DepartmentCreate: FC<IResourceComponentsProps> = () => {
@@ -11,7 +11,7 @@ export const DepartmentCreate: FC<IResourceComponentsProps> = () => {
         resource: 'direction-types',
         optionLabel: 'name'
     });
-    
+
     return (
         <Create saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>

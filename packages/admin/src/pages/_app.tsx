@@ -13,7 +13,7 @@ import '@pankod/refine-antd/dist/reset.css';
 
 import antdLocale from 'antd/lib/locale/ru_RU';
 
-import { DepartmentCreate, DirectionEdit, DepartmentList, DirectionShow } from '~/components/entities/directions';
+import { DepartmentCreate, DepartmentList, DirectionEdit, DirectionShow } from '~/components/entities/directions';
 import { GroupBadgeCreate, GroupBadgeEdit, GroupBadgeList, GroupBadgeShow } from '~/components/entities/group-badges';
 import { Sync } from '~/components/sync';
 import { Scanner } from '~/components/scanner';

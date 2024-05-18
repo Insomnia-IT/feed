@@ -1,11 +1,4 @@
-import {
-    DeleteButton,
-    EditButton,
-    ShowButton,
-    List,
-    Space,
-    Table,
-} from '@pankod/refine-antd';
+import { DeleteButton, EditButton, List, ShowButton, Space, Table } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
@@ -26,11 +19,7 @@ export const DepartmentList: FC<IResourceComponentsProps> = () => {
         <List>
             <Table pagination={false} rowKey='id' dataSource={directions?.data}>
                 <Table.Column dataIndex='name' title='Название' render={renderText} sorter />
-                <Table.Column
-                    dataIndex={['type', 'name']}
-                    title='Тип'
-                    render={renderText}
-                />
+                <Table.Column dataIndex={['type', 'name']} title='Тип' render={renderText} />
                 <Table.Column<DirectionEntity>
                     title='Действия'
                     dataIndex='actions'
