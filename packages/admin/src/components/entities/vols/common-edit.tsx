@@ -347,7 +347,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         setUpdatedArrivals([
             ...updatedArrivals,
             {
-                id: uuidv4()
+                id: uuidv4(),
+                arrival_transport: 'UNDEFINED',
+                departure_transport: 'UNDEFINED',
             }
         ]);
     };
