@@ -118,7 +118,7 @@ export function CommonFoodTest() {
             }),
             {}
         );
-    }, [vols, foodData]);
+    }, [vols]);
 
     const kitchenNameById = useMemo(() => {
         return (kitchens ? kitchens.data : []).reduce(
@@ -128,7 +128,7 @@ export function CommonFoodTest() {
             }),
             {}
         );
-    }, [kitchens, foodData]);
+    }, [kitchens]);
 
     const mealTimeById = {
         breakfast: 'Завтрак',
@@ -168,7 +168,7 @@ export function CommonFoodTest() {
             ]);
         });
         void saveXLSX(workbook, 'feed-transactions');
-    }, [kitchenNameById, volNameById]);
+    }, [kitchenNameById, volNameById, foodData]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
