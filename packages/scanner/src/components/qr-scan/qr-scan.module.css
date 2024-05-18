@@ -10,6 +10,7 @@
     width: 100vw;
     height: 100vh;
     max-height: fill-available;
+    z-index: var(--z-scan-qrscan);
 
     .flash {
         position: absolute;

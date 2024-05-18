@@ -1,39 +1,32 @@
 .header {
     top: 0;
     z-index: 1000;
-    display: grid;
-    grid-template-columns: 50px 1fr 50px;
+
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    height: var(--header-h-mobile);
-    background: rgb(255 255 255);
 
-    .button {
-        padding: 0;
-        border: none;
-        border-radius: 50%;
-        background: none;
-        line-height: 0;
-        transition: background 0.05s;
-
-        &:active {
-            background-color: rgb(231 231 231);
-        }
-    }
-
-    h1 {
-        display: block;
-        margin: auto;
-        font-weight: 500;
-        font-size: 1.75rem;
-    }
+    height: 64px;
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--c-white);
 }
 
-@media --desktop {
-    .header {
-        height: var(--header-h-desktop);
+.button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
 
-        h1 {
-            font-size: 3rem;
-        }
-    }
+.title {
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 18px;
+    color: var(--c-txt);
+}
+
+.leftBlock {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }

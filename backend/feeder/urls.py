@@ -5,7 +5,9 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 router = routers.DefaultRouter()
 router.register(r'directions', direction.DirectionViewSet)
+router.register(r'direction-types', direction.DirectionTypeViewSet)
 router.register(r'volunteers', volunteer.VolunteerViewSet)
+router.register(r'volunteer-roles', volunteer.VolunteerRoleViewSet)
 router.register(r'colors', color.ColorViewSet)
 router.register(r'feed-types', feed.FeedTypeViewSet)
 router.register(r'feed-transaction', feed.FeedTransactionViewSet)

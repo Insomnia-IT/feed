@@ -1,11 +1,7 @@
 .history {
-    position: relative;
-    overflow: auto;
-    height: calc(100vh - var(--header-h-mobile));
-}
-
-@media --desktop {
-    .history {
-        height: calc(100vh - var(--header-h-mobile));
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--c-grey);
+    overflow-y: scroll;
 }

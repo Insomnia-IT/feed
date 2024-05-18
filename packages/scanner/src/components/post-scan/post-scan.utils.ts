@@ -3,8 +3,16 @@ import { useCallback } from 'react';
 
 import type { Transaction, Volunteer } from '~/db';
 import { db, dbIncFeed, FeedType, FeedWithBalance, isActivatedStatus, MealTime } from '~/db';
-import { isVolExpired } from '~/components/misc/misc';
-import { getMealTimeText } from '~/lib/utils';
+import { getMealTimeText } from '~/shared/lib/utils';
+
+const isVolExpired = (vol: Volunteer): boolean => {
+    return vol.arrivals.every(
+        ({ arrival_date, departure_date, status }) =>
+            !isActivatedStatus(status) ||
+            dayjs() < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
+            dayjs() > dayjs(departure_date).endOf('day').add(7, 'hours')
+    );
+};
 
 export const validateVol = (
     vol: Volunteer,
@@ -16,7 +24,7 @@ export const validateVol = (
     const msg: Array<string> = [];
     let isRed = false;
 
-    if (vol.feed_type !== FeedType.Child && vol.kitchen.toString() !== kitchenId.toString()) {
+    if (vol.feed_type !== FeedType.Child && vol.kitchen?.toString() !== kitchenId.toString()) {
         msg.push(`Кормится на кухне №${vol.kitchen}`);
     }
     if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
@@ -74,7 +82,7 @@ export const validateVol = (
 export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
 
 export const useFeedVol = (
-    vol: Volunteer | undefined,
+    vol: Volunteer | undefined | null,
     mealTime: MealTime | null,
     closeFeed: () => void,
     kitchenId: number
@@ -90,7 +98,7 @@ export const useFeedVol = (
                 }
             }
         },
-        [closeFeed, mealTime, vol]
+        [closeFeed, kitchenId, mealTime, vol]
     );
 
     return [

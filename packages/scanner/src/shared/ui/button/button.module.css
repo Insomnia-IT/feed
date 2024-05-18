@@ -1,0 +1,36 @@
+.button {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 19px;
+
+    height: 52px;
+    padding: 0 24px;
+    border-radius: 16px;
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    &.main {
+        border: none;
+        color: var(--c-white);
+        background: var(--c-blue);
+    }
+
+    &.secondary {
+        border: 2px solid var(--c-blue);
+        color: var(--c-blue);
+        background: var(--c-white);
+    }
+
+    &.alternative {
+        border: none;
+        color: var(--c-txt);
+        background: var(--c-white);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}

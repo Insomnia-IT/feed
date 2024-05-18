@@ -3,6 +3,8 @@ import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
 
+import { getToday } from '~/shared/lib/date';
+
 export interface Transaction {
     ulid: string;
     vol_id: number | null;
@@ -55,7 +57,7 @@ export interface Volunteer {
     is_vegan: boolean;
     arrivals: Array<Arrival>;
     feed_type: FeedType;
-    departments: Array<{ name: string }>;
+    directions: Array<{ name: string }>;
     kitchen: number;
     group_badge: number | null;
 
@@ -77,7 +79,7 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 17;
+const DB_VERSION = 18;
 
 export class MySubClassedDexie extends Dexie {
     transactions!: Table<Transaction>;
@@ -93,6 +95,7 @@ export class MySubClassedDexie extends Dexie {
                 groupBadges: 'id, &qr'
             })
             .upgrade((trans) => {
+                localStorage.removeItem('lastSyncStart');
                 return trans.table('volunteers').clear();
             });
     }
@@ -107,7 +110,7 @@ export const addTransaction = async ({
     mealTime,
     vol
 }: {
-    vol: Volunteer | undefined;
+    vol?: Volunteer | null;
     mealTime: MealTime;
     isVegan: boolean | undefined;
     kitchenId: number;
@@ -145,9 +148,9 @@ export const dbIncFeed = async ({
     mealTime,
     vol
 }: {
-    vol: Volunteer | undefined;
+    vol?: Volunteer | null;
     mealTime: MealTime;
-    isVegan: boolean | undefined;
+    isVegan?: boolean | undefined;
     log?: {
         error: boolean;
         reason: string;
@@ -190,7 +193,7 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
     return db.volunteers
         .filter((vol) => {
             return (
-                vol.kitchen.toString() === kitchenId &&
+                vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
                 vol.feed_type !== FeedType.FT4 &&
                 vol.arrivals.some(
@@ -209,14 +212,34 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
 }
 
 export function getFeedStats(statsDate: string): Promise<Array<Transaction>> {
+    const kitchenId = localStorage.getItem('kitchenId');
     return db.transactions
         .where('ts')
         .between(dayjs(statsDate).add(7, 'h').unix(), dayjs(statsDate).add(31, 'h').unix())
-        .filter((tx) => tx.amount !== 0)
+        .filter((tx) => tx.kitchen.toString() === kitchenId && tx.amount !== 0)
         .toArray();
 }
 
 export function getLastTrans(offset: number, limit: number): Promise<Array<TransactionJoined>> {
-    const txs = db.transactions.reverse().offset(offset).limit(limit);
+    const kitchenId = localStorage.getItem('kitchenId');
+    const txs = db.transactions
+        .reverse()
+        .offset(offset)
+        .limit(limit)
+        .filter((tx) => {
+            return tx.kitchen.toString() === kitchenId;
+        });
     return joinTxs(txs);
+}
+
+export function getTodayTrans(): Promise<Array<TransactionJoined>> {
+    const kitchenId = localStorage.getItem('kitchenId');
+    const today = getToday();
+    return db.transactions
+        .where('ts')
+        .between(dayjs(today).add(7, 'h').unix(), dayjs(today).add(31, 'h').unix())
+        .filter((tx) => {
+            return tx.kitchen.toString() === kitchenId;
+        })
+        .toArray();
 }

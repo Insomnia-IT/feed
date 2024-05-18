@@ -4,7 +4,7 @@
     "private": true,
     "homepage": "/scanner",
     "scripts": {
-        "dev": "PORT=3001 BROWSER=none CLIENT_ENV=development craco start --verbose",
+        "dev": "cross-env PORT=3001 BROWSER=none CLIENT_ENV=development craco start --verbose",
         "build": "CLIENT_ENV=production craco build --verbose",
         "lint:css": "stylelint ./src/**/*.css",
         "lint-fix:css": "stylelint --fix ./src/**/*.css",
@@ -37,14 +37,19 @@
         ]
     },
     "dependencies": {
+        "@craco/craco": "^7.0.0",
         "@feed/core": "^0.0.1",
         "@feed/ui": "^0.0.1",
+        "copy-webpack-plugin": "^11.0.0",
         "dexie": "^3.2.2",
         "dexie-react-hooks": "^1.1.1",
         "onscan.js": "^1.5.2",
         "qr-scanner": "^1.4.1",
+        "react": "^18.2.0",
+        "react-app-alias-ex": "^2.1.0",
+        "react-dom": "^18.2.0",
         "react-error-boundary": "^3.1.4",
-        "react-swipeable-views": "^0.14.0",
+        "react-scripts": "^5.0.1",
         "workbox-background-sync": "^6.5.3",
         "workbox-broadcast-update": "^6.5.3",
         "workbox-cacheable-response": "^6.5.3",
@@ -56,13 +61,7 @@
         "workbox-range-requests": "^6.5.3",
         "workbox-routing": "^6.5.3",
         "workbox-strategies": "^6.5.3",
-        "workbox-streams": "^6.5.3",
-        "@craco/craco": "^7.0.0",
-        "copy-webpack-plugin": "^11.0.0",
-        "react-app-alias-ex": "^2.1.0",
-        "react-scripts": "^5.0.1",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "workbox-streams": "^6.5.3"
     },
     "peerDependencies": {
         "@craco/craco": "*",

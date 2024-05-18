@@ -1,0 +1,9 @@
+.heading {
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--c-txt);
+
+    &.white {
+        color: var(--c-white)
+    }
+}

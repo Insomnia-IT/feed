@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import type { IndexableType } from 'dexie';
@@ -6,11 +6,13 @@ import type { IndexableType } from 'dexie';
 import type { ApiHook } from '~/request/lib';
 import { db } from '~/db';
 import type { ServerTransaction, Transaction } from '~/db';
-import { AppContext } from '~/app-context';
 
-export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const { kitchenId } = useContext(AppContext);
-
+export const useSyncTransactions = (
+    baseUrl: string,
+    pin: string | null,
+    setAuth: (auth: boolean) => void,
+    kitchenId: number
+): ApiHook => {
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);
     const [fetching, setFetching] = useState<any>(false);

@@ -1,0 +1,12 @@
+.mainScreenStats {
+    position: absolute;
+
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    bottom: 81px;
+
+    font-weight: 400;
+    font-size: 16px;
+    color: var(--c-white);
+}

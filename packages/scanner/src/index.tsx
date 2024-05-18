@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import App from './app';
+import App from './app/app';
 import reportWebVitals from './reportWebVitals';
 
 /*mport 'react-hot-loader';
@@ -22,7 +22,6 @@ ReactDOM.render(<HotApp/>, document.getElementById('root'));*/
 //@ts-ignore
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 const dev = process.env.NODE_ENV !== 'production';
-
 root.render(
     <App/>
 );

@@ -1,0 +1,42 @@
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.thead {
+    background-color: var(--c-grey);
+    color: var(--c-txt);
+    height: 40px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.tbody {
+    .row:nth-child(even) {
+        background-color: var(--c-light);
+    }
+}
+
+.row {
+    height: 40px;
+
+    .cell:first-child {
+        text-align: left;
+    }
+
+    .head:first-child {
+        text-align: left;
+    }
+}
+
+.head {
+    padding: 0 12px;
+    text-align: center;
+}
+
+.cell {
+    padding: 0 12px;
+    text-align: center;
+}

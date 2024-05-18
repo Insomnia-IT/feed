@@ -1,36 +1,40 @@
 import type { FC } from 'react';
 import { useCallback } from 'react';
 import cs from 'classnames';
+import cn from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { ErrorMsg } from '~/components/misc';
+import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
+import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { Text, Title } from '~/shared/ui/typography';
+import { Button } from '~/shared/ui/button';
+import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
+import { getPlural } from '~/shared/lib/utils';
 
-import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 import { getAllVols } from '../post-scan-group-badge.utils';
+import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 
 import css from './post-scan-group-badge-misc.module.css';
 
-type TitleColor = 'red' | 'green';
-
 const VolunteerList: FC<{
-    title: string;
-    vols: Array<Volunteer>;
-    color?: TitleColor;
-}> = ({ color, title, vols }) => (
+    warningVols?: Array<Volunteer>;
+    errorVols?: Array<Volunteer>;
+}> = ({ errorVols, warningVols }) => (
     <div className={css.volunteerList}>
-        <div className={css.volonteerListItem}>
-            <span className={cs(css.title, color && css[color])}>{`${title}:`}</span>
-            <span>{vols[0].name}</span>
-        </div>
-        {vols.length > 1 &&
-            vols.slice(1).map((vol) => (
-                <div key={vol.id} className={css.volonteerListItem}>
-                    <span>{vol.name}</span>
-                </div>
-            ))}
+        {warningVols && warningVols.length > 0 && (
+            <Text>
+                <b>В долг: </b>
+                {warningVols.map((vol) => vol.name).join(', ')}
+            </Text>
+        )}
+        {errorVols && errorVols.length > 0 && (
+            <Text>
+                <b>Без порции: </b>
+                {errorVols.map((vol) => vol.name).join(', ')}
+            </Text>
+        )}
     </div>
 );
-
 const GroupBadgeInfo: FC<{
     name: string;
     vols: Array<Volunteer>;
@@ -40,56 +44,61 @@ const GroupBadgeInfo: FC<{
     const totalMeats = vols.filter((vol) => !vol.is_vegan).length;
 
     const _volsToFeed = volsToFeed ?? vols;
-
     return (
-        <div className={css.groupBadgeInfo}>
-            <div>
-                <span>({name})</span>
-            </div>
-            <div className={css.total}>
-                <span>{`Порций: ${_volsToFeed.length}`}</span>
-            </div>
-            <div className={css.feedTypeInfo}>
-                <span>{`Веган: ${_volsToFeed.filter((vol) => vol.is_vegan).length}`}</span>
-                <span>{`Мясоед: ${_volsToFeed.filter((vol) => !vol.is_vegan).length}`}</span>
-            </div>
-            {volsToFeed && (
-                <div className={css.fact}>
-                    <span>{`Номинал бейджа: ${vols.length}(М${totalMeats}/В${totalVegs})`}</span>
+        <div className={css.info}>
+            <Title>Групповой бейдж</Title>
+            <div className={css.detail}>
+                <Text>
+                    Вы отсканировали групповой бейдж “{name}” ({_volsToFeed.length}):
+                </Text>
+                <div className={cn(css.counts, { [css.oneCount]: totalVegs === 0 || totalMeats === 0 })}>
+                    {totalMeats > 0 && (
+                        <Text className={css.volInfo}>
+                            {totalMeats} {getPlural(totalMeats, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
+                        </Text>
+                    )}
+                    {totalVegs > 0 && (
+                        <Text className={css.volInfo}>
+                            {totalVegs} {getPlural(totalVegs, ['Веган', 'Вегана', 'Веганов'])} 🥦
+                        </Text>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 };
 
-export const GroupBadgeGreenCard: FC<{
+export const GroupBadgeSuccessCard: FC<{
     name: string;
     volsToFeed: Array<ValidatedVol>;
     doFeed: (vols: Array<ValidatedVol>) => void;
     close: () => void;
-}> = ({ close, doFeed, name, volsToFeed }) => (
-    <>
-        <GroupBadgeInfo name={name} vols={volsToFeed} />
-
-        <div className={css.card}>
-            <button
-                type='button'
-                onClick={() => {
-                    doFeed(volsToFeed);
-
-                    close();
-                }}
-            >
-                Кормить
-            </button>
-            <button type='button' onClick={close}>
-                Отмена
-            </button>
-        </div>
-    </>
-);
-
-export const GroupBadgeYellowCard: FC<{
+}> = ({ close, doFeed, name, volsToFeed }) => {
+    return (
+        <CardContainer>
+            <div className={css.groupBadgeCard}>
+                <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
+                <div className={css.bottomBLock}>
+                    <div className={css.buttonsBlock}>
+                        <Button variant='secondary' onClick={close}>
+                            Отмена
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                doFeed(volsToFeed);
+                                close();
+                            }}
+                        >
+                            Кормить({volsToFeed.length})
+                        </Button>
+                    </div>
+                    <VolAndUpdateInfo textColor='black' />
+                </div>
+            </div>
+        </CardContainer>
+    );
+};
+export const GroupBadgeWarningCard: FC<{
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
@@ -98,42 +107,35 @@ export const GroupBadgeYellowCard: FC<{
 }> = ({ close, doFeed, doNotFeed, name, validationGroups }) => {
     const { greens, reds, yellows } = validationGroups;
     const volsToFeed = [...greens, ...yellows];
+    const handleCancel = () => {
+        doNotFeed([...reds, ...yellows]);
+        close();
+    };
+    const handleFeed = () => {
+        doFeed(volsToFeed);
+        close();
+    };
 
     return (
-        <>
-            <GroupBadgeInfo name={name} vols={getAllVols(validationGroups)} volsToFeed={volsToFeed} />
-
-            {yellows.length > 0 && <VolunteerList title='В долг' vols={yellows} />}
-            {reds.length > 0 && <VolunteerList color='red' title='Не поест' vols={reds} />}
-
-            <div className={css.card}>
-                <button
-                    type='button'
-                    onClick={() => {
-                        doFeed(volsToFeed);
-                        doNotFeed(reds);
-
-                        close();
-                    }}
-                >
-                    Все равно кормить
-                </button>
-                <button
-                    type='button'
-                    onClick={() => {
-                        doNotFeed([...reds, ...yellows]);
-
-                        close();
-                    }}
-                >
-                    Отмена
-                </button>
+        <CardContainer>
+            <div className={css.groupBadgeCard}>
+                <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
+                {(reds.length > 0 || yellows.length > 0) && <VolunteerList errorVols={reds} warningVols={yellows} />}
+                <div className={css.bottomBLock}>
+                    <div className={css.buttonsBlock}>
+                        <Button variant='secondary' onClick={handleCancel}>
+                            Отмена
+                        </Button>
+                        <Button onClick={handleFeed}>Кормить({volsToFeed.length})</Button>
+                    </div>
+                    <VolAndUpdateInfo textColor='black' />
+                </div>
             </div>
-        </>
+        </CardContainer>
     );
 };
 
-export const GroupBadgeRedCard: FC<{
+export const GroupBadgeErrorCard: FC<{
     msg: string;
     volsNotToFeed: Array<ValidatedVol>;
     doNotFeed: (vols: Array<ValidatedVol>) => void;
@@ -141,9 +143,8 @@ export const GroupBadgeRedCard: FC<{
 }> = ({ close, doNotFeed, msg, volsNotToFeed }) => {
     const handleClose = useCallback(() => {
         doNotFeed(volsNotToFeed);
-
         close();
     }, [close, doNotFeed, volsNotToFeed]);
 
-    return <ErrorMsg msg={msg} close={handleClose} />;
+    return <ErrorCard msg={msg} close={handleClose} />;
 };
