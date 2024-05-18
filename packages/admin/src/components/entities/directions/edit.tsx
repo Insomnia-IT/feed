@@ -4,12 +4,13 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 import 'react-mde/lib/styles/css/react-mde-all.css';
 
 import { Rules } from '~/components/form/rules';
-import type { DepartmentEntity, VolEntity } from '~/interfaces';
+import type { DirectionEntity, DirectionTypeEntity, VolEntity } from '~/interfaces';
 
-export const DepartmentEdit: FC<IResourceComponentsProps> = () => {
-    const { formProps, saveButtonProps } = useForm<DepartmentEntity>();
-    const { selectProps: leadSelectProps } = useSelect<VolEntity>({
-        resource: 'volunteers',
+export const DirectionEdit: FC<IResourceComponentsProps> = () => {
+    const { formProps, saveButtonProps } = useForm<DirectionEntity>();
+
+    const { selectProps: typesSelectProps } = useSelect<DirectionTypeEntity>({
+        resource: 'direction-types',
         optionLabel: 'name'
     });
 
@@ -19,8 +20,8 @@ export const DepartmentEdit: FC<IResourceComponentsProps> = () => {
                 <Form.Item label='Название' name='name' rules={Rules.required}>
                     <Input />
                 </Form.Item>
-                <Form.Item label='Руководитель' name='lead'>
-                    <Select {...leadSelectProps} />
+                <Form.Item label='Тип' name='type' rules={Rules.required}>
+                    <Select {...typesSelectProps} />
                 </Form.Item>
             </Form>
         </Edit>

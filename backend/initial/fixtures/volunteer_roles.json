@@ -1,7 +1,7 @@
 [
   {
     "model": "feeder.volunteerrole",
-    "pk": 1,
+    "pk": "ORGANIZER",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -13,7 +13,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 2,
+    "pk": "VICE",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -25,7 +25,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 3,
+    "pk": "TEAM_LEAD",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -37,7 +37,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 4,
+    "pk": "VOLUNTEER",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -49,7 +49,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 5,
+    "pk": "MEDIC",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -61,7 +61,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 6,
+    "pk": "CAMP_LEAD",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -73,7 +73,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 7,
+    "pk": "CAMP_GUY",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -85,7 +85,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 8,
+    "pk": "ANIMATOR",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -97,7 +97,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 9,
+    "pk": "LECTOR",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -109,7 +109,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 8,
+    "pk": "MASTER",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -121,7 +121,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 9,
+    "pk": "ARTIST",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -133,7 +133,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 10,
+    "pk": "FELLOW",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -145,7 +145,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 10,
+    "pk": "ART_FELLOW",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -157,7 +157,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 11,
+    "pk": "VIP",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -169,7 +169,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 12,
+    "pk": "PRESS",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
@@ -181,7 +181,7 @@
   },
   {
     "model": "feeder.volunteerrole",
-    "pk": 13,
+    "pk": "CONTRACTOR",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",

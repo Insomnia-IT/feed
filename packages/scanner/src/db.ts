@@ -55,7 +55,7 @@ export interface Volunteer {
     is_vegan: boolean;
     arrivals: Array<Arrival>;
     feed_type: FeedType;
-    departments: Array<{ name: string }>;
+    directions: Array<{ name: string }>;
     kitchen: number;
     group_badge: number | null;
 
@@ -77,7 +77,7 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 17;
+const DB_VERSION = 18;
 
 export class MySubClassedDexie extends Dexie {
     transactions!: Table<Transaction>;
