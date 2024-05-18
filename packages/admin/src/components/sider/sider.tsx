@@ -125,19 +125,19 @@ export const CustomSider: FC = () => {
                 <div className={styles.mobileSider}>
                     <button
                         className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
-                        onClick={handleRedirectToVols}>
+                        onClick={handleRedirectToVols}
+                    >
                         <UserOutlined width={20} style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Волонтеры</span>
                     </button>
                     <button
                         className={`${styles.siderButton} ${currentPath === 'gb' ? styles.siderButtonActive : ''}`}
-                        onClick={handleRedirectToGroups}>
+                        onClick={handleRedirectToGroups}
+                    >
                         <TeamOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Группы</span>
                     </button>
-                    <button
-                        className={styles.siderButton}
-                        onClick={() => logout()}>
+                    <button className={styles.siderButton} onClick={() => logout()}>
                         <LogoutOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Выход</span>
                     </button>
