@@ -1,4 +1,4 @@
-import { AntdLayout, Button, Grid, Menu, useMenu } from '@pankod/refine-antd';
+import { AntdLayout, Grid, Menu, useMenu } from '@pankod/refine-antd';
 import {
     CanAccess,
     useIsExistAuthentication,
@@ -105,22 +105,42 @@ export const CustomSider: FC = () => {
         void router.push('/group-badges');
     };
 
+    const [currentPath, setCurrentPath] = useState('');
+
+    const myPath = router.asPath;
+
+    useEffect(() => {
+        if (myPath.startsWith('/group-badges')) {
+            setCurrentPath('gb');
+        } else if (myPath.startsWith('/volunteers')) {
+            setCurrentPath('vol');
+        } else {
+            setCurrentPath('');
+        }
+    }, [myPath]);
+
     return (
         <>
             {screenSize <= 576 ? (
                 <div className={styles.mobileSider}>
-                    <Button className={styles.siderButton} type='link' onClick={handleRedirectToVols}>
-                        <UserOutlined />
+                    <button
+                        className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
+                        onClick={handleRedirectToVols}>
+                        <UserOutlined width={20} style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Волонтеры</span>
-                    </Button>
-                    <Button className={styles.siderButton} type='link' onClick={handleRedirectToGroups}>
-                        <TeamOutlined />
+                    </button>
+                    <button
+                        className={`${styles.siderButton} ${currentPath === 'gb' ? styles.siderButtonActive : ''}`}
+                        onClick={handleRedirectToGroups}>
+                        <TeamOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Группы</span>
-                    </Button>
-                    <Button className={styles.siderButton} type='link' onClick={() => logout()}>
-                        <LogoutOutlined />
+                    </button>
+                    <button
+                        className={styles.siderButton}
+                        onClick={() => logout()}>
+                        <LogoutOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Выход</span>
-                    </Button>
+                    </button>
                 </div>
             ) : (
                 <AntdLayout.Sider
