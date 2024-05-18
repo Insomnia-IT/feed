@@ -349,7 +349,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
             {
                 id: uuidv4(),
                 arrival_transport: 'UNDEFINED',
-                departure_transport: 'UNDEFINED',
+                departure_transport: 'UNDEFINED'
             }
         ]);
     };
