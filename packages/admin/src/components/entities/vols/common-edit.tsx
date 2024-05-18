@@ -18,13 +18,14 @@ import type {
     ArrivalEntity,
     ColorTypeEntity,
     CustomFieldEntity,
-    DepartmentEntity,
+    DirectionEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
     KitchenEntity,
     StatusEntity,
     TransportEntity,
-    VolEntity
+    VolEntity,
+    VolunteerRoleEntity
 } from '~/interfaces';
 import { formDateFormat, isActivatedStatus } from '~/shared/lib';
 import { dataProvider } from '~/dataProvider';
@@ -43,8 +44,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const person = Form.useWatch('person');
 
-    const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
-        resource: 'departments',
+    const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
+        resource: 'directions',
         optionLabel: 'name'
     });
 
@@ -73,6 +74,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         optionLabel: 'name'
     });
 
+    const { selectProps: rolesSelectProps } = useSelect<VolunteerRoleEntity>({
+        resource: 'volunteer-roles',
+        optionLabel: 'name'
+    });
+
     const { selectProps: groupBadgeSelectProps } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
         optionLabel: 'name'
@@ -88,9 +94,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         optionLabel: 'name'
     });
 
-    const getDepartmentIds = (department) => {
+    const getDirectionIds = (direction) => {
         return {
-            value: department ? department.map((d) => d.id || d) : department
+            value: direction ? direction.map((d) => d.id || d) : direction
         };
     };
 
@@ -474,8 +480,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             </Form.Item>
                         </div>
                         <div className={styles.hrInput}>
-                            <Form.Item label='Роль' name='role'>
-                                <Input />
+                            <Form.Item label='Роль' name='main_role' rules={Rules.required}>
+                                <Select
+                                    disabled={!canFullEditing}
+                                    {...rolesSelectProps}
+                                />
                             </Form.Item>
                         </div>
                     </div>
@@ -483,11 +492,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         <div className={styles.hrInput}>
                             <Form.Item
                                 label='Служба / Локация'
-                                getValueProps={getDepartmentIds}
-                                name='departments'
+                                getValueProps={getDirectionIds}
+                                name='directions'
                                 rules={Rules.required}
                             >
-                                <Select disabled={!canFullEditing} mode='multiple' {...departmentSelectProps} />
+                                <Select disabled={!canFullEditing} mode='multiple' {...directionSelectProps} />
                             </Form.Item>
                         </div>
                         <div className={styles.hrInput}>

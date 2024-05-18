@@ -1,0 +1,62 @@
+[
+  {
+    "model": "feeder.directiontype",
+    "pk": "CITY",
+    "fields": {
+      "created_at": "2023-05-03T18:52:56.920Z",
+      "updated_at": "2023-05-03T18:52:56.920Z",
+      "name": "Городская служба",
+      "is_federal": true
+    }
+  },
+  {
+    "model": "feeder.directiontype",
+    "pk": "SERVICE",
+    "fields": {
+      "created_at": "2023-05-03T18:52:56.920Z",
+      "updated_at": "2023-05-03T18:52:56.920Z",
+      "name": "Полевая служба",
+      "is_federal": true
+    }
+  },
+  {
+    "model": "feeder.directiontype",
+    "pk": "UNIVERSAL",
+    "fields": {
+      "created_at": "2023-05-03T18:52:56.920Z",
+      "updated_at": "2023-05-03T18:52:56.920Z",
+      "name": "Универсальная служба",
+      "is_federal": true
+    }
+  },
+  {
+    "model": "feeder.directiontype",
+    "pk": "LOCATION",
+    "fields": {
+      "created_at": "2023-05-03T18:52:56.920Z",
+      "updated_at": "2023-05-03T18:52:56.920Z",
+      "name": "Федеральная локация",
+      "is_federal": true
+    }
+  },
+  {
+    "model": "feeder.directiontype",
+    "pk": "GRANT",
+    "fields": {
+      "created_at": "2023-05-03T18:52:56.920Z",
+      "updated_at": "2023-05-03T18:52:56.920Z",
+      "name": "Грантовая локация",
+      "is_federal": false
+    }
+  },
+  {
+    "model": "feeder.directiontype",
+    "pk": "COMMERCE",
+    "fields": {
+      "created_at": "2023-05-03T18:52:56.920Z",
+      "updated_at": "2023-05-03T18:52:56.920Z",
+      "name": "Коммерческая локация",
+      "is_federal": false
+    }
+  }
+]

@@ -16,7 +16,7 @@ export const VolInfo: FC<{
         <div className={css.volInfo}>
             <Text className={css.text}>
                 {vol.first_name} ({vol.name}), {vol.is_vegan ? 'Веган🥦' : 'Мясоед🥩'},{' '}
-                {vol.departments.map((department) => department.name).join(', ')} (
+                {vol.directions.map((direction) => direction.name).join(', ')} (
                 {vol.arrivals
                     .map(({ arrival_date, departure_date }) =>
                         [arrival_date, departure_date].map(formatDate).join(' - ')

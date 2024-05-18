@@ -63,8 +63,8 @@ export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
                     render={(value) => <TextField value={value} />}
                 />
                 <Table.Column
-                    dataIndex='departments'
-                    key='departments    '
+                    dataIndex='directions'
+                    key='directions'
                     title='Службы'
                     render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                 />

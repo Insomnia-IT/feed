@@ -1,24 +1,25 @@
 import { Create, Form, Input, Select, useForm, useSelect } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 
-import type { DepartmentEntity, VolEntity } from '~/interfaces';
+import type {  DirectionEntity, DirectionTypeEntity } from '~/interfaces';
 import { Rules } from '~/components/form/rules';
 
 export const DepartmentCreate: FC<IResourceComponentsProps> = () => {
-    const { formProps, saveButtonProps } = useForm<DepartmentEntity>();
-    const { selectProps: leadSelectProps } = useSelect<VolEntity>({
-        resource: 'volunteers',
+    const { formProps, saveButtonProps } = useForm<DirectionEntity>();
+
+    const { selectProps: typesSelectProps } = useSelect<DirectionTypeEntity>({
+        resource: 'direction-types',
         optionLabel: 'name'
     });
-
+    
     return (
         <Create saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
-                <Form.Item label='Name' name='name' rules={Rules.required}>
+                <Form.Item label='Название' name='name' rules={Rules.required}>
                     <Input />
                 </Form.Item>
-                <Form.Item label='Lead' name='lead'>
-                    <Select {...leadSelectProps} />
+                <Form.Item label='Тип' name='type' rules={Rules.required}>
+                    <Select {...typesSelectProps} />
                 </Form.Item>
             </Form>
         </Create>
