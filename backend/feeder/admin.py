@@ -12,7 +12,7 @@ class VolunteerAdmin(admin.ModelAdmin):
         "uuid", "first_name", "last_name", "name"
     )
     readonly_fields = (
-        "deleted_at", "name", "first_name", "last_name", "gender", "phone", "is_vegan",
+        "uuid", "deleted_at", "name", "first_name", "last_name", "gender", "phone", "is_vegan",
         "feed_type", "badge_number", "printing_batch", "role", "position", "photo",
         "person", "comment", "notion_id", "directions"
     )
