@@ -12,14 +12,14 @@ class VolunteerHistoryDataSerializer(serializers.ModelSerializer):
     number = serializers.CharField(source="badge_number", read_only=True)
     batch = serializers.CharField(source="printing_batch", read_only=True)
     person = serializers.PrimaryKeyRelatedField(read_only=True)
-    departments = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
+    directions = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
 
     class Meta:
         model = Volunteer
         fields = (
             "id", "deleted", "name", "first_name", "last_name", "gender", "phone",
             "vegan", "feed", "number", "batch", "role", "position", "photo",
-            "person", "comment", "notion_id", "departments",
+            "person", "comment", "notion_id", "directions",
         )
 
     def get_deleted(self, obj):
