@@ -11,6 +11,21 @@ class VolunteerAdmin(admin.ModelAdmin):
     search_fields = (
         "uuid", "first_name", "last_name", "name"
     )
+    readonly_fields = (
+        "deleted_at", "name", "first_name", "last_name", "gender", "phone", "is_vegan",
+        "feed_type", "badge_number", "printing_batch", "role", "position", "photo",
+        "person", "comment", "notion_id", "directions"
+    )
+    fieldsets = (
+        (None, {"fields": ("uuid", "name", "first_name", "last_name", "person", "gender", "photo")}),
+        ("Status", {"fields": ("is_active", "is_blocked",)}),
+        ("Contacts", {"fields": ("email", "phone",)}),
+        (" ", {"fields": ("parent", "ref_to", "comment")}),
+        (" ", {"fields": ("directions", "role", "access_role", "departments", "main_role", "position", )}),
+        (" ", {"fields": ("qr", "badge_number", "printing_batch", "group_badge", "color_type", "notion_id")}),
+        ("Dates", {"fields": ("active_from", "active_to", "arrival_date", "departure_date")}),
+        ("Kitchen", {"fields": ("kitchen", "feed_type", "daily_eats", "balance", "is_vegan", )}),
+    )
 
     def is_deleted(self, obj):
         return bool(obj.deleted_at)
