@@ -3,7 +3,7 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder import serializers, models
-from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin
+from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, SaveHistoryDataViewSetMixin
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
@@ -34,7 +34,7 @@ class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
         fields = ['custom_field', 'volunteer']
 
 
-class VolunteerViewSet(SoftDeleteViewSetMixin, MultiSerializerViewSetMixin, viewsets.ModelViewSet):
+class VolunteerViewSet(SoftDeleteViewSetMixin, MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.Volunteer.objects.all()
     serializer_class = serializers.VolunteerSerializer
