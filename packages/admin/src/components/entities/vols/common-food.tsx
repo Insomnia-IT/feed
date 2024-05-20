@@ -168,7 +168,7 @@ export function CommonFoodTest() {
             ]);
         });
         void saveXLSX(workbook, 'feed-transactions');
-    }, [kitchenNameById, volNameById]);
+    }, [kitchenNameById, volNameById, foodData]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();

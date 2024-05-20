@@ -18,7 +18,7 @@ class Direction(TimeMixin, CommentMixin):
     type = models.ForeignKey('DirectionType', on_delete=models.PROTECT)
     first_year = models.IntegerField(null=True, blank=True)
     last_year = models.IntegerField(null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True)
+    notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
 
 class Arrival(TimeMixin, CommentMixin):
@@ -46,8 +46,8 @@ class Transport(TimeMixin):
 
 
 class VolunteerRole(TimeMixin):
-    # TODO id string codes
     """ Роли волонтеров """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
     color = models.CharField(max_length=6)
     is_leader = models.BooleanField(default=False)
@@ -55,8 +55,8 @@ class VolunteerRole(TimeMixin):
 
 
 class DirectionType(TimeMixin):
-    # TODO id string codes
     """ Типы служб и локаций """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
     is_federal = models.BooleanField(default=False)
 

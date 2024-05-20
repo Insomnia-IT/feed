@@ -38,7 +38,6 @@ export const Scan = () => {
             </div>
             <QrScan onScan={handleScan} />
             <div className={css.scan}>
-                {/*<BtnSync />*/}
                 <div className={css.head}>
                     <IconButton onClick={handleHistoryClick}>
                         <Clock color='white' />

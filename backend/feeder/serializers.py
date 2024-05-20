@@ -13,14 +13,17 @@ class PhotoSerializer(serializers.ModelSerializer):
 
 
 class DirectionTypeSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
     class Meta:
         model = models.DirectionType
         fields = '__all__'
 
 
 class DirectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Direction
+        fields = '__all__'
+
+class ViewDirectionSerializer(serializers.ModelSerializer):
     type = DirectionTypeSerializer()
 
     class Meta:
@@ -107,7 +110,7 @@ class VolunteerListArrivalSerializer(serializers.ModelSerializer):
 
 class VolunteerListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    departments = DepartmentNestedSerializer(many=True)
+    directions = DirectionSerializer(many=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
     arrivals = VolunteerListArrivalSerializer(many=True)
 
@@ -133,8 +136,6 @@ class VolunteerSerializer(serializers.ModelSerializer):
         exclude = ['person']
 
 class VolunteerRoleSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
     class Meta:
         model = models.VolunteerRole
         fields = '__all__'
