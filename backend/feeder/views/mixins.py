@@ -51,6 +51,7 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "action_at": instance.created_at if hasattr(instance, "created_at") else datetime.utcnow(),
             "data": history_serializer(instance).data
         }
+        history_data['data'].update('badge', str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid))
         History.objects.create(**history_data)
 
     def perform_update(self, serializer):
@@ -74,6 +75,7 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         if changed_data:
             instance_id = new_data.get("id")
             changed_data.update({"id": instance_id})
+            changed_data.update({"badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid)})
             history_data = {
                 "status": History.STATUS_UPDATE,
                 "object_name": instance_name,
@@ -101,6 +103,7 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "action_at": instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow(),
             "data": {
                 "id": str(instance_id),
+                "badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid),
                 "deleted": True
             }
         }
