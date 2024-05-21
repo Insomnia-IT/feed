@@ -15,7 +15,7 @@ export interface VolEntity {
     daily_eats?: number;
     comment?: string;
     ref_to?: number; // chef
-    departments?: Array<{ id: number; name: string }>; //DepartmentEntity[];
+    directions?: Array<DirectionEntity>;
     kitchen?: number;
     // location?: LocationEntity[];
     color_type?: number; //BadgeType
@@ -24,7 +24,7 @@ export interface VolEntity {
     group_badge?: number | undefined;
     kitchen?: number;
     printing_batch?: number;
-    role?: string;
+    main_role?: string;
     access_role?: string;
     arrivals: Array<ArrivalEntity>;
 }
@@ -43,6 +43,14 @@ export interface ColorTypeEntity {
     id: number;
     name: string;
     description: string;
+}
+
+export interface VolunteerRoleEntity {
+    id: string;
+    name: string;
+    color: string;
+    is_leader: boolean;
+    is_team: boolean;
 }
 
 export interface AccessRoleEntity {
@@ -76,16 +84,21 @@ export interface VolunteerCustomFieldEntity {
     comment?: string;
 }
 
-export interface DepartmentEntity {
-    id: number;
+export interface DirectionEntity {
+    id: string;
     name: string;
-    lead: number | null;
+    type: {
+        id: string;
+        name: string;
+    };
+    first_year: number;
+    last_year: number;
 }
 
-export interface LocationEntity {
-    id: number;
+export interface DirectionTypeEntity {
+    id: string;
     name: string;
-    vol: VolEntity;
+    is_federal: boolean;
 }
 
 export interface CustomFieldEntity {

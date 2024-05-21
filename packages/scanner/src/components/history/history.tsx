@@ -14,8 +14,6 @@ export const History: React.FC = () => {
 
     const { error, progress, transactions, update } = useLocalLastTrans();
 
-    console.log('transactions', transactions);
-
     const tableRef = React.useRef<HTMLDivElement | null>(null);
     useEffect(() => {
         const handleScroll = (): void => {

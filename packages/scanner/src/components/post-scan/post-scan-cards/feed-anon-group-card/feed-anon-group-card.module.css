@@ -1,0 +1,97 @@
+.cardContainer {
+    padding-top: 32px;
+}
+
+.feedAnonCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    height: 100%;
+    width: 100%;
+}
+
+.head {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.content {
+    flex-grow: 1;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.bottomBLock {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+}
+
+.buttonsBlock {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 8px;
+}
+
+.button {
+    width: 100%;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .counts {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+
+        .inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .error {
+            font-weight: 400;
+            font-size: 13px;
+            color: var(--c-error);
+        }
+    }
+
+    .formItem {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+
+        &.column {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+    .formLabel {
+        font-weight: 600;
+        font-size: 20px;
+
+        &.mini {
+            font-size: 16px;
+        }
+    }
+}
+
+.numberInput {
+    width: 56px;
+    height: 48px;
+    text-align: center;
+    font-weight: 400;
+    font-size: 20px;
+}

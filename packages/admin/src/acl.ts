@@ -12,7 +12,7 @@ ac
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
-    .read(['departments', 'locations', 'feed-transaction', 'sync', 'stats', 'group-badges', 'scanner-page'])
+    .read(['directions', 'feed-transaction', 'sync', 'stats', 'group-badges', 'scanner-page'])
     // Старший смены
     .grant(AppRoles.SENIOR)
     .extend(AppRoles.CAT)
@@ -23,9 +23,9 @@ ac
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
-    .create(['departments', 'locations', 'group-badges', 'volunteer-custom-fields', 'feed-transaction'])
-    .update(['departments', 'locations', 'group-badges', 'volunteer-custom-fields'])
-    .delete(['departments', 'locations', 'group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
+    .create(['directions', 'group-badges', 'volunteer-custom-fields', 'feed-transaction'])
+    .update(['directions', 'group-badges', 'volunteer-custom-fields'])
+    .delete(['directions', 'group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
 
 export const ACL = {
     can: async ({ action, resource }) => {

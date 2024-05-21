@@ -26,10 +26,11 @@ import type {
     AccessRoleEntity,
     ColorTypeEntity,
     CustomFieldEntity,
-    DepartmentEntity,
+    DirectionEntity,
     FeedTypeEntity,
     KitchenEntity,
-    VolEntity
+    VolEntity,
+    VolunteerRoleEntity
 } from '~/interfaces';
 import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
@@ -120,8 +121,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         }
     });
 
-    const { selectProps: departmentSelectProps } = useSelect<DepartmentEntity>({
-        resource: 'departments',
+    const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
+        resource: 'directions',
         optionLabel: 'name'
     });
 
@@ -139,6 +140,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
         resource: 'access-roles'
+    });
+
+    const { data: volunteerRoles, isLoading: volunteerRolesIsLoading } = useList<VolunteerRoleEntity>({
+        resource: 'volunteer-roles',
+        config: {
+            pagination: {
+                pageSize: 10000
+            }
+        }
     });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
@@ -195,6 +205,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         );
     }, [accessRoles]);
 
+    const volunteerRoleById = useMemo(() => {
+        return (volunteerRoles ? volunteerRoles.data : []).reduce(
+            (acc, role) => ({
+                ...acc,
+                [role.id]: role.name
+            }),
+            {}
+        );
+    }, [accessRoles]);
+
     const filteredData = useMemo(() => {
         return (
             searchText
@@ -204,7 +224,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                           item.name,
                           item.first_name,
                           item.last_name,
-                          item.departments?.map(({ name }) => name).join(', '),
+                          item.directions?.map(({ name }) => name).join(', '),
                           ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
                       ].some((text) => {
                           return text?.toLowerCase().includes(searchTextInLowerCase);
@@ -242,8 +262,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         };
     };
 
-    const onDepartmentFilter = (value, data) => {
-        return data.departments.some((d) => d.id === value);
+    const onDirectionFilter = (value, data) => {
+        return data.directions.some((d) => d.id === value);
     };
 
     const onBlockedFilter = (value, data) => {
@@ -260,7 +280,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 'Позывной',
                 'Имя',
                 'Фамилия',
-                'Службы',
+                'Службы/Локации',
                 'Роль',
                 'Статус текущего завезда',
                 'Текущий заезд от',
@@ -275,6 +295,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 'Веган/мясоед',
                 'Комментарий',
                 'Цвет бейджа',
+                'Право доступа',
                 ...customFields?.map((field) => field.name)
             ];
             sheet.addRow(header);
@@ -290,8 +311,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     vol.name,
                     vol.first_name,
                     vol.last_name,
-                    vol.departments ? vol.departments.map((department) => department.name).join(', ') : '',
-                    vol.role,
+                    vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
+                    vol.main_role ? volunteerRoleById[vol.main_role] : '',
                     currentArrival?.status || '',
                     currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
                     currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
@@ -381,7 +402,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             kitchensIsLoading &&
                             feedTypesIsLoading &&
                             colorsIsLoading &&
-                            accessRolesIsLoading
+                            accessRolesIsLoading &&
+                            volunteerRolesIsLoading
                         }
                     >
                         Выгрузить
@@ -407,7 +429,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 dataSource={filteredData}
                 rowKey='id'
             >
-                <Table.Column<DepartmentEntity>
+                <Table.Column<VolEntity>
                     title=''
                     dataIndex='actions'
                     render={(_, record) => (
@@ -446,9 +468,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     sorter={getSorter('last_name')}
                 />
                 <Table.Column
-                    dataIndex='departments'
-                    key='departments'
-                    title='Службы'
+                    dataIndex='directions'
+                    key='directions'
+                    title='Службы / Локации'
                     render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                     filterDropdown={(props) => (
                         <FilterDropdown {...props}>
@@ -456,11 +478,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                 style={{ minWidth: 300 }}
                                 mode='multiple'
                                 placeholder='Служба / Локация'
-                                {...departmentSelectProps}
+                                {...directionsSelectProps}
                             />
                         </FilterDropdown>
                     )}
-                    onFilter={onDepartmentFilter}
+                    onFilter={onDirectionFilter}
                 />
                 <Table.Column
                     dataIndex='arrivals'
