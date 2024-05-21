@@ -1,10 +1,14 @@
 import logging
+from datetime import datetime
 
 import requests
 from django.conf import settings
 from rest_framework.exceptions import APIException
 
 from feeder.models import Volunteer
+from history.models import History
+from history.serializers import HistorySyncSerializer
+from synchronization.models import SynchronizationSystemActions as SyncModel
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +61,44 @@ class NotionSync:
             logger.error(e)
             raise APIException()
 
-    def sync_to_notion(self):
-        pass
+    @staticmethod
+    def sync_to_notion():
+        sync = SyncModel.objects.filter(direction=SyncModel.DIRECTION_TO_SYSTEM, success=True).order_by("date")
+        if sync:
+            dt_start = sync[-1].date
+        else:
+            dt_start = datetime(year=2013, month=6, day=13)
+        dt_end = datetime.utcnow()
+
+        sync_data = {
+            "system": SyncModel.SYSTEM_NOTION,
+            "direction": SyncModel.DIRECTION_TO_SYSTEM,
+            "date": dt_end
+        }
+
+        qs = History.objects.filter(action_at__gte=dt_start, action_at__lt=dt_end)
+        badges = qs.filter(object_name="volunteer")
+        arrivals = qs.filter(object_name="arrival")
+        serializer = HistorySyncSerializer
+        data = {
+            "badges": serializer(badges, many=True).data,
+            "arrivals": serializer(arrivals, many=True).data
+        }
+        url = settings.AGREEMOD_PEOPLE_URL
+        response = requests.post(
+            url=url,
+            json=data
+        )
+        if not response.ok:
+            error = response.text
+            sync_data.update({
+                "success": False,
+                "error": error
+            })
+            SyncModel.objects.create(**sync_data)
+            raise APIException(f"Sync to notion field with error: {error}")
+
+        SyncModel.objects.create(**sync_data)
 
     def main(self):
         self.sync_to_notion()
