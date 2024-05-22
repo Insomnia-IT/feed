@@ -27,16 +27,17 @@ class NotionSync:
             return response.json()
         raise APIException(f'GET request for url "{url}" failed with error {response.text}')
 
-    def post_request_method(self, url, data, params=None):
-        response = requests.post(
-            url=url,
-            json=data,
-            params=params,
-            headers=self.header
-        )
-        if response.ok:
-            return True
-        raise APIException(f'POST request for url "{url}" failed with error {response.text}')
+    @staticmethod
+    def get_last_sync_time(direction):
+        sync = SyncModel.objects.filter(direction=direction, success=True).order_by("date")
+        if sync:
+            return sync[-1].date
+        else:
+            return datetime(year=2013, month=6, day=13)
+
+    @staticmethod
+    def save_sync_info(data):
+        SyncModel.objects.create(**data)
 
     def saved_badges(self, badges):
         delete_badges_ids = []
@@ -61,18 +62,15 @@ class NotionSync:
             logger.error(e)
             raise APIException()
 
-    @staticmethod
-    def sync_to_notion():
-        sync = SyncModel.objects.filter(direction=SyncModel.DIRECTION_TO_SYSTEM, success=True).order_by("date")
-        if sync:
-            dt_start = sync[-1].date
-        else:
-            dt_start = datetime(year=2013, month=6, day=13)
+    def sync_to_notion(self):
+        direction = SyncModel.DIRECTION_TO_SYSTEM
+        dt_start = self.get_last_sync_time(direction)
+
         dt_end = datetime.utcnow()
 
         sync_data = {
             "system": SyncModel.SYSTEM_NOTION,
-            "direction": SyncModel.DIRECTION_TO_SYSTEM,
+            "direction": direction,
             "date": dt_end
         }
 
@@ -95,10 +93,10 @@ class NotionSync:
                 "success": False,
                 "error": error
             })
-            SyncModel.objects.create(**sync_data)
+            self.save_sync_info(sync_data)
             raise APIException(f"Sync to notion field with error: {error}")
 
-        SyncModel.objects.create(**sync_data)
+        self.save_sync_info(sync_data)
 
     def main(self):
         self.sync_to_notion()
