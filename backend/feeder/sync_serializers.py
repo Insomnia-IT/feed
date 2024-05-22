@@ -1,18 +1,18 @@
 from rest_framework import serializers
 
-from feeder.models import Volunteer, Arrival
+from feeder.models import Volunteer, Arrival, Direction
 
 
 class VolunteerHistoryDataSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(source="uuid", read_only=True)
+    id = serializers.UUIDField(source="uuid")
     deleted = serializers.SerializerMethodField()
-    gender = serializers.SlugRelatedField(read_only=True, slug_field="name")
-    vegan = serializers.BooleanField(source="is_vegan", read_only=True)
-    feed = serializers.SlugRelatedField(source="feed_type", read_only=True, slug_field="name")
-    number = serializers.CharField(source="badge_number", read_only=True)
-    batch = serializers.CharField(source="printing_batch", read_only=True)
-    person = serializers.PrimaryKeyRelatedField(read_only=True)
-    directions = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
+    gender = serializers.SlugRelatedField(slug_field="name")
+    vegan = serializers.BooleanField(source="is_vegan")
+    feed = serializers.SlugRelatedField(source="feed_type", slug_field="name")
+    number = serializers.CharField(source="badge_number")
+    batch = serializers.CharField(source="printing_batch")
+    person = serializers.PrimaryKeyRelatedField()
+    directions = serializers.SlugRelatedField(many=True, slug_field="name")
 
     class Meta:
         model = Volunteer
@@ -54,3 +54,23 @@ def get_history_serializer(instance_name):
         "arrival": ArrivalHistoryDataSerializer
     }
     return instance_serializer.get(instance_name)
+
+
+class DirectionHistoryDataSerializer(serializers.ModelSerializer):
+    type = serializers.SlugRelatedField(slug_field="name")
+
+    class Meta:
+        model = Direction
+        fields = (
+            "id", "name", "first_year", "last_year", "type", "notion_id"
+        )
+
+    def save(self, **kwargs):
+        model = self.Meta.model
+        uuid = self.validated_data.get("id")
+        instance = model.objects.filter(id=uuid).first()
+        if instance:
+            self.instance = instance
+
+        super().save(**kwargs)
+        return self.instance
