@@ -1,18 +1,18 @@
 from rest_framework import serializers
 
-from feeder.models import Volunteer, Arrival, Direction
+from feeder.models import Volunteer, Arrival, Direction, Gender, FeedType, DirectionType, Person
 
 
 class VolunteerHistoryDataSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid")
     deleted = serializers.SerializerMethodField()
-    gender = serializers.SlugRelatedField(slug_field="name")
+    gender = serializers.SlugRelatedField(slug_field="name", read_only=True) #get_queryset=Gender.objects.all())
     vegan = serializers.BooleanField(source="is_vegan")
-    feed = serializers.SlugRelatedField(source="feed_type", slug_field="name")
+    feed = serializers.SlugRelatedField(source="feed_type", slug_field="name", read_only=True) # get_queryset=FeedType.objects.all())
     number = serializers.CharField(source="badge_number")
     batch = serializers.CharField(source="printing_batch")
-    person = serializers.PrimaryKeyRelatedField()
-    directions = serializers.SlugRelatedField(many=True, slug_field="name")
+    person = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all())
+    directions = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True) # get_queryset=Direction.objects.all())
 
     class Meta:
         model = Volunteer
@@ -57,7 +57,7 @@ def get_history_serializer(instance_name):
 
 
 class DirectionHistoryDataSerializer(serializers.ModelSerializer):
-    type = serializers.SlugRelatedField(slug_field="name")
+    type = serializers.SlugRelatedField(slug_field="name", queryset=DirectionType.objects.all())
 
     class Meta:
         model = Direction
