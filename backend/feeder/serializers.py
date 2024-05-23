@@ -133,7 +133,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Volunteer
-        exclude = ['person']
+        exclude = ['person', 'departments']
 
 class VolunteerRoleSerializer(serializers.ModelSerializer):
     class Meta:
