@@ -86,13 +86,15 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             }
             History.objects.create(**history_data)
 
-
-
     def perform_destroy(self, instance):
         user_id = get_request_user_id(self.request.user)
 
-        instance_id = instance.uuid if hasattr(instance, "uuid") else instance.id
         instance_name = str(instance.__class__.__name__).lower()
+        data ={
+                "id": instance.uuid if hasattr(instance, "uuid") else instance.id,
+                "badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid),
+                "deleted": True
+            }
 
         super().perform_destroy(instance)
 
@@ -101,11 +103,7 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "object_name": instance_name,
             "actor_badge": user_id,
             "action_at": instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow(),
-            "data": {
-                "id": str(instance_id),
-                "badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid),
-                "deleted": True
-            }
+            "data": data
         }
         History.objects.create(**history_data)
 

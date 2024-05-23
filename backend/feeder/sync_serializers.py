@@ -1,18 +1,88 @@
+from datetime import datetime
+
 from rest_framework import serializers
 
 from feeder.models import Volunteer, Arrival, Direction, Gender, FeedType, DirectionType, Person
+from history.models import History
 
 
-class VolunteerHistoryDataSerializer(serializers.ModelSerializer):
+class SaveSyncSerializerMixin(object):
+    def get_instance_by_uuid(self, uuid):
+        model = self.Meta.model
+        return model.objects.filter(id=uuid).first()
+
+    def save_history(self, status, data, old_data=None):
+        if not data:
+            return
+        history = {
+                "status": status,
+                "object_name": str(self.Meta.model.__class__.__name__).lower(),
+                "action_at": self.instance.updated_at if hasattr(self.instance, "updated_at") else datetime.utcnow(),
+                "data": data
+            }
+        if old_data:
+            history.update({"old_data": old_data})
+        History.objects.create(**history)
+
+    def delete_instance(self):
+        data = {
+            "id": str(self.instance.uuid) if hasattr(self.instance, "uuid") else str(self.instance.id),
+            "deleted": True
+        }
+        if hasattr(self.instance, "volunteer"):
+            data.update({"badge": str(self.instance.volunteer.uuid)})
+        elif str(self.instance.__class__.__name__).lower() == "volunteer":
+            data.update({"badge": str(self.instance.uuid)})
+        self.instance.delete()
+        self.save_history(status=History.STATUS_DELETE, data=data)
+
+    def save(self, **kwargs):
+        uuid = self.initial_data.get("id")
+        instance = self.get_instance_by_uuid(uuid)
+        old_data = {}
+        if instance:
+            self.instance = instance
+            old_data = self.__class__(instance).data
+        elif not hasattr(self.Meta, "uuid_field") or self.Meta.uuid_field == "id":
+            self.validated_data["id"] = uuid
+
+        super().save(**kwargs)
+
+        new_data = self.initial_data
+        if old_data:
+            status = History.STATUS_UPDATE
+            changed_data = {}
+            for key, val in new_data:
+                if val == old_data.get(key):
+                    old_data.pop(key)
+                else:
+                    changed_data.update({key: val})
+        else:
+            changed_data = new_data
+
+        if hasattr(self.instance, "volunteer"):
+            changed_data.update({"badge": str(self.instance.volunteer.uuid)})
+        elif str(self.instance.__class__.__name__).lower() == "volunteer":
+            changed_data.update({"badge": str(self.instance.uuid)})
+
+        self.save_history(status=status, data=changed_data, old_data=old_data)
+
+        if self.initial_data.get("deleted", False):
+            self.delete_instance()
+
+        return self.instance
+
+
+class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid")
     deleted = serializers.SerializerMethodField()
-    gender = serializers.SlugRelatedField(slug_field="name", read_only=True) #get_queryset=Gender.objects.all())
-    vegan = serializers.BooleanField(source="is_vegan")
-    feed = serializers.SlugRelatedField(source="feed_type", slug_field="name", read_only=True) # get_queryset=FeedType.objects.all())
-    number = serializers.CharField(source="badge_number")
-    batch = serializers.CharField(source="printing_batch")
-    person = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all())
-    directions = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True) # get_queryset=Direction.objects.all())
+    gender = serializers.SlugRelatedField(slug_field="id", queryset=Gender.objects.all(), required=False)
+    vegan = serializers.BooleanField(source="is_vegan", required=False)
+    feed = serializers.SlugRelatedField(source="feed_type", slug_field="name", queryset=FeedType.objects.all(), required=False)
+    number = serializers.CharField(source="badge_number", required=False)
+    batch = serializers.CharField(source="printing_batch", required=False)
+    person = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all(), required=False)
+    directions = serializers.SlugRelatedField(many=True, slug_field="name", queryset=Direction.objects.all(), required=False)
 
     class Meta:
         model = Volunteer
@@ -21,19 +91,24 @@ class VolunteerHistoryDataSerializer(serializers.ModelSerializer):
             "vegan", "feed", "number", "batch", "role", "position", "photo",
             "person", "comment", "notion_id", "directions",
         )
+        uuid_field = "uuid"
 
     def get_deleted(self, obj):
         if hasattr(obj, "deleted_at") and obj.deleted_at:
             return True
         return False
 
+    def get_instance_by_uuid(self, uuid):
+        model = self.Meta.model
+        return model.objects.filter(uuid=uuid).first()
+
 
 class ArrivalHistoryDataSerializer(serializers.ModelSerializer):
     deleted = serializers.SerializerMethodField()
     badge = serializers.CharField(source="volunteer.uuid", read_only=True)
-    status = serializers.SlugRelatedField(read_only=True, slug_field="name")
-    arrival_transport = serializers.SlugRelatedField(read_only=True, slug_field="name")
-    departure_transport = serializers.SlugRelatedField(read_only=True, slug_field="name")
+    status = serializers.SlugRelatedField(read_only=True, slug_field="id")
+    arrival_transport = serializers.SlugRelatedField(read_only=True, slug_field="id")
+    departure_transport = serializers.SlugRelatedField(read_only=True, slug_field="id")
 
     class Meta:
         model = Arrival
@@ -56,21 +131,11 @@ def get_history_serializer(instance_name):
     return instance_serializer.get(instance_name)
 
 
-class DirectionHistoryDataSerializer(serializers.ModelSerializer):
-    type = serializers.SlugRelatedField(slug_field="name", queryset=DirectionType.objects.all())
+class DirectionHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
+    type = serializers.SlugRelatedField(slug_field="id", queryset=DirectionType.objects.all())
 
     class Meta:
         model = Direction
         fields = (
             "id", "name", "first_year", "last_year", "type", "notion_id"
         )
-
-    def save(self, **kwargs):
-        model = self.Meta.model
-        uuid = self.validated_data.get("id")
-        instance = model.objects.filter(id=uuid).first()
-        if instance:
-            self.instance = instance
-
-        super().save(**kwargs)
-        return self.instance

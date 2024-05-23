@@ -7,7 +7,6 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework.exceptions import APIException
 
-from feeder.models import Volunteer
 from feeder.sync_serializers import VolunteerHistoryDataSerializer, DirectionHistoryDataSerializer
 from history.models import History
 from history.serializers import HistorySyncSerializer
@@ -55,7 +54,7 @@ class NotionSync:
             "badges": serializer(badges, many=True).data,
             "arrivals": serializer(arrivals, many=True).data
         }
-        # url = urljoin(settings.AGREEMOD_PEOPLE_URL, "feeder/back-sync")
+        url = urljoin(settings.AGREEMOD_PEOPLE_URL, "feeder/back-sync")
         # response = requests.post(
         #     url=url,
         #     json=data
@@ -94,14 +93,14 @@ class NotionSync:
 
         url = urljoin(settings.AGREEMOD_PEOPLE_URL, "feeder/sync")
         params = {"from_date": dt.strftime("%Y-%m-%dT%H:%M:%S.%f%z")}
-        response = requests.get(url, params=params)
-        if not response.ok:
-            error = response.text
-            self.save_sync_info(sync_data, success=False, error=error)
-            raise APIException(f"Sync from notion field with error: {error}")
+        # response = requests.get(url, params=params)
+        # if not response.ok:
+        #     error = response.text
+        #     self.save_sync_info(sync_data, success=False, error=error)
+        #     raise APIException(f"Sync from notion field with error: {error}")
 
         try:
-            data = response.json()
+            # data = response.json()
             with transaction.atomic():
                 direct = [
                     {
@@ -110,7 +109,7 @@ class NotionSync:
                         "name": "maintain",
                         "first_year": 1988,
                         "last_year": 2022,
-                        "type": "Федеральная локация",
+                        "type": "SERVICE",
                         "notion_id": "695fc30d-26d6-4ebd-87b2-78de9f7ed487"
                     },
                     {
@@ -119,7 +118,7 @@ class NotionSync:
                         "name": "yeah",
                         "first_year": 2006,
                         "last_year": 2022,
-                        "type": "Грантовая локация",
+                        "type": "LOCATION",
                         "notion_id": "ac6ab00d-f7c6-4a88-b0e3-07f397b3226f"
                     },
                     {
@@ -128,7 +127,7 @@ class NotionSync:
                         "name": "strategy",
                         "first_year": 1989,
                         "last_year": 1976,
-                        "type": "Универсальная служба",
+                        "type": "COMMERCE",
                         "notion_id": "8a67c9ca-a0e2-4c72-8577-d40615ab7972"
                     },
                     {
@@ -137,7 +136,7 @@ class NotionSync:
                         "name": "lay",
                         "first_year": 2009,
                         "last_year": 1983,
-                        "type": "Полевая служба",
+                        "type": "SERVICE",
                         "notion_id": "a5bca83d-1630-46a2-86d6-bf8ece61a672"
                     },
                     {
@@ -146,10 +145,32 @@ class NotionSync:
                         "name": "standard",
                         "first_year": 1978,
                         "last_year": 1970,
-                        "type": "Федеральная локация",
+                        "type": "CITY",
                         "notion_id": "4c43b8bc-c9eb-4177-ba30-6e66b7884866"
                     }]
                 self.save_data_from_notion(direct, "directions")
+                badges = [
+                    {
+                        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "deleted": False,
+                        "name": "string",
+                        "first_name": "string",
+                        "last_name": "string",
+                        "gender": "MALE",
+                        "phone": "string",
+                        "infant": True,
+                        "vegan": True,
+                        "feed": "без питания",
+                        "number": "string",
+                        "role": "ORGANIZER",
+                        "position": "string",
+                        "photo": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Example_image.jpg",
+                        "comment": "string",
+                        "directions": ["standard", "maintain"],
+                        "notion_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    }
+                  ]
+                self.save_data_from_notion(badges, "badges")
                 # self.save_data_from_notion(data.get("directions"), "directions")
                 # self.save_data_from_notion(data.get("persons"), "persons")
                 # self.save_data_from_notion(data.get("engagements"), "engagements")
