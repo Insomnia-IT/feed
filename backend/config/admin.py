@@ -1,7 +1,4 @@
-from django.contrib import admin
-
 from django.contrib.admin import AdminSite
-from django.contrib import admin
 
 from feeder.models import *
 
@@ -32,3 +29,6 @@ admin_site.register(Engagement)
 admin_site.register(EngagementRole)
 admin_site.register(AccessRole)
 admin_site.register(Status)
+admin_site.register(GroupBadge)
+admin_site.register(VolunteerCustomField)
+admin_site.register(VolunteerCustomFieldValue)

@@ -3,7 +3,8 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder import serializers, models
-from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, SaveHistoryDataViewSetMixin
+from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \
+    SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
@@ -21,6 +22,10 @@ class VolunteerFilter(django_filters.FilterSet):
     is_active = django_filters.CharFilter(field_name="is_active", lookup_expr='iexact')
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
+    direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
+    direction_name = django_filters.CharFilter(field_name="directions__name", lookup_expr='icontains')
+    directions = django_filters.ModelMultipleChoiceFilter(queryset=models.Direction.objects.all())
+
     class Meta:
         model = models.Volunteer
         fields = ['color_type', 'feed_type', 'kitchen', 'group_badge']
@@ -34,7 +39,8 @@ class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
         fields = ['custom_field', 'volunteer']
 
 
-class VolunteerViewSet(SoftDeleteViewSetMixin, MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
+class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
+                       MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.Volunteer.objects.all()
     serializer_class = serializers.VolunteerSerializer

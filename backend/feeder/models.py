@@ -33,11 +33,13 @@ class Arrival(TimeMixin, CommentMixin):
     departure_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="departures")
     departure_registered = models.DateTimeField(null=True, blank=True)
 
+
 class Status(TimeMixin):
     id = models.CharField(max_length=20, verbose_name="Код", primary_key=True)
     name = models.CharField(max_length=255, verbose_name="Наименование")
     visible = models.CharField(max_length=255, verbose_name="В список")
     description = models.CharField(max_length=255, verbose_name="Примечание")
+
 
 class Transport(TimeMixin):
     """ Транспорт (Способы въезда и выезда) """
@@ -265,6 +267,7 @@ class Color(TimeMixin):
         verbose_name = "Цвет бэджика"
         verbose_name_plural = "Цвета бэджика"
 
+
 class AccessRole(TimeMixin):
     id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255, verbose_name="название")
@@ -276,6 +279,7 @@ class AccessRole(TimeMixin):
     class Meta:
         verbose_name = "Право доступа"
         verbose_name_plural = "Права доступа"
+
 
 class FeedType(TimeMixin):
     name = models.CharField(max_length=255, unique=True, verbose_name="Название")
@@ -296,7 +300,7 @@ meal_times = [ "breakfast", "lunch", "dinner", "night" ]
 
 
 def validate_meal_time(value):
-    if not value in meal_times:
+    if value not in meal_times:
         raise ValidationError(
             _("%(value)s is not one of the possible values: %(meal_times)s"),
             params={"value": value, "meal_times": ", ".join(meal_times)},

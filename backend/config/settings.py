@@ -235,3 +235,7 @@ if _email_backend:
     EMAIL_BACKEND = _email_backend
 
 # APPEND_SLASH = False
+
+if os.path.exists(os.path.join(BASE_DIR, 'config', 'settings_local.py')):
+    from config.settings_local import *
+
