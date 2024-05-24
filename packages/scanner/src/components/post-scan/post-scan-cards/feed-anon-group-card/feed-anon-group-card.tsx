@@ -14,8 +14,8 @@ import { useValid } from '~/components/post-scan/post-scan-cards/feed-anon-group
 import css from './feed-anon-group-card.module.css';
 
 export type Form = {
-    meat: number;
-    vegan: number;
+    meat: string;
+    vegan: string;
     comment: string;
 };
 
@@ -24,8 +24,8 @@ export const FeedAnonGroupCard: FC<{
     doFeed: (isVegan?: boolean, reason?: string) => void;
 }> = ({ close, doFeed }) => {
     const [form, setForm] = useState<Form>({
-        meat: 0,
-        vegan: 0,
+        meat: '',
+        vegan: '',
         comment: ''
     });
 
@@ -39,10 +39,10 @@ export const FeedAnonGroupCard: FC<{
         e.preventDefault();
         const { valid } = validate();
         if (valid) {
-            for (let i = 0; i < form.vegan; i++) {
+            for (let i = 0; i < +form.vegan; i++) {
                 doFeed(true, form.comment);
             }
-            for (let i = 0; i < form.meat; i++) {
+            for (let i = 0; i < +form.meat; i++) {
                 doFeed(false, form.comment);
             }
             close();
@@ -68,6 +68,7 @@ export const FeedAnonGroupCard: FC<{
                                     onChange={(e) =>
                                         changeForm({ meat: removeNonDigits(e.currentTarget.value).slice(0, 3) })
                                     }
+                                    placeholder='0'
                                     error={!!errors?.['counts']}
                                 ></Input>
                                 <label className={css.formLabel}>🥩 Мясоед</label>
@@ -80,6 +81,7 @@ export const FeedAnonGroupCard: FC<{
                                     onChange={(e) =>
                                         changeForm({ vegan: removeNonDigits(e.currentTarget.value).slice(0, 3) })
                                     }
+                                    placeholder='0'
                                     error={!!errors?.['counts']}
                                 ></Input>
                                 <label className={css.formLabel}>🥦 Веган</label>
