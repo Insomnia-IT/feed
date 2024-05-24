@@ -17,8 +17,11 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
 
     useEffect(() => {
         const antCardBody = document.querySelector('.ant-card-body') as HTMLElement;
+        const saveButton = document.querySelector('.ant-card-actions') as HTMLElement;
+        saveButton.style.margin = '0 24px';
         if (screenSize.width <= 576) {
             antCardBody.style.padding = '5px';
+            saveButton.style.margin = '0px 8px 56px 5px';
         }
     });
 

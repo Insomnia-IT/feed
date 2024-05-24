@@ -5,17 +5,20 @@ from history.models import History
 
 
 class HistorySerializer(serializers.ModelSerializer):
-    actor_id = serializers.SerializerMethodField()
+    actor = serializers.SerializerMethodField()
     by_sync = serializers.SerializerMethodField()
 
     class Meta:
         model = History
         fields = '__all__'
 
-    def get_actor_id(self, obj):
+    def get_actor(self, obj):
         try:
             volunteer = Volunteer.objects.get(uuid=obj.actor_badge)
-            return volunteer.pk
+            return {
+                "id": volunteer.pk,
+                "name": volunteer.name
+            }
         except Exception:
             return None
 

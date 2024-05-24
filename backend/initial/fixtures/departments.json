@@ -1,14 +1,1 @@
-[
-  {
-    "model": "feeder.department",
-    "pk": 999999,
-    "fields": {
-      "created_at": "2023-05-03T18:52:56.920Z",
-      "updated_at": "2023-05-03T18:52:56.920Z",
-      "name": "Тест",
-      "code": "TEST",
-      "lead": null,
-      "comment": null
-    }
-  }
-]
+[]

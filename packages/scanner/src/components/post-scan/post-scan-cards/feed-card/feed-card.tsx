@@ -37,9 +37,9 @@ export const FeedCard: FC<{
                         <Text className={css.volInfo}>
                             {vol.name}, {vol.is_vegan ? 'веган🥦' : 'мясоед🥩'}
                         </Text>
-                        {vol.departments.length === 1 && <Text>Служба: {vol.departments[0].name}</Text>}
-                        {vol.departments.length > 1 && (
-                            <Text>Службы: {vol.departments.map((dep) => dep.name).join(', ')}</Text>
+                        {vol.directions.length === 1 && <Text>Служба: {vol.directions[0].name}</Text>}
+                        {vol.directions.length > 1 && (
+                            <Text>Службы: {vol.directions.map((dep) => dep.name).join(', ')}</Text>
                         )}
                     </div>
                 </div>

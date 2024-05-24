@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import dayjs from 'dayjs';
 
 import type { Transaction } from '~/db';
-import { db, getVolsOnField } from '~/db';
+import { getTodayTrans, getVolsOnField } from '~/db';
 import { getToday } from '~/shared/lib/date';
 import { useApp } from '~/model/app-provider';
 
@@ -15,18 +14,7 @@ export const ScanScreenStats = () => {
 
     const volsOnField = useLiveQuery(async () => (await getVolsOnField(getToday())).length, [mealTime], 0);
 
-    const todayTxs = useLiveQuery(
-        async () => {
-            const today = getToday();
-            return db.transactions
-                .where('ts')
-                .between(dayjs(today).add(7, 'h').unix(), dayjs(today).add(31, 'h').unix())
-                .toArray();
-        },
-        [mealTime],
-        []
-    ) as Array<Transaction>;
-
+    const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime], []) as Array<Transaction>;
     useEffect(() => {
         setVolsFedAmount(() => {
             if (todayTxs.length > 0) {
