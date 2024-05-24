@@ -17,7 +17,7 @@ const formatDate = (value) => {
     });
 };
 export const Settings = () => {
-    const { autoSync, lastSyncStart, setAuth, sync, toggleAutoSync } = useApp();
+    const { autoSync, lastSyncStart, setAuth, setMealTime, sync, toggleAutoSync } = useApp();
     const { setCurrentView } = useView();
     const { fetching, send } = sync;
     const doSync = async () => {
@@ -60,6 +60,7 @@ export const Settings = () => {
                 className={css.leave}
                 onClick={() => {
                     setAuth(false);
+                    setMealTime(null);
                     setCurrentView(AppViews.MAIN);
                 }}
             >
