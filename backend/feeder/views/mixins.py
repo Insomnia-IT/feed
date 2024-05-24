@@ -37,15 +37,21 @@ class VolunteerExtraFilterMixin(ModelViewSet):
                 arrive_qs = arrive_qs.filter(status__id=arrival_status)
             qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
 
-        if (custom_field_name or custom_field_id) and (custom_field_value or custom_field_id_empty):
+        if ((custom_field_name or custom_field_id) and custom_field_value) or custom_field_id_empty:
             custom_fields_qs = VolunteerCustomFieldValue.objects.all()
-            if custom_field_id and custom_field_id.isnumeric():
-                custom_fields_qs = custom_fields_qs.filter(custom_field__id=custom_field_id)
-            elif custom_field_name:
-                custom_fields_qs = custom_fields_qs.filter(custom_field__name=custom_field_name)
-            if custom_field_value:
-                custom_fields_qs = custom_fields_qs.filter(value=custom_field_value)
-            qs = qs.filter(id__in=custom_fields_qs.values_list('volunteer_id', flat=True))
+            if custom_field_id_empty:
+                custom_fields_qs = custom_fields_qs.filter(custom_field__id=custom_field_id_empty)
+                qs = qs.exclude(
+                    id__in=custom_fields_qs.values_list('volunteer_id', flat=True)
+                )
+            else:
+                if custom_field_id and custom_field_id.isnumeric():
+                    custom_fields_qs = custom_fields_qs.filter(custom_field__id=custom_field_id)
+                elif custom_field_name:
+                    custom_fields_qs = custom_fields_qs.filter(custom_field__name=custom_field_name)
+                if custom_field_value:
+                    custom_fields_qs = custom_fields_qs.filter(value=custom_field_value)
+                qs = qs.filter(id__in=custom_fields_qs.values_list('volunteer_id', flat=True))
 
         return qs
 
