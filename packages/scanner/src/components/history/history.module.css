@@ -1,6 +1,7 @@
 .history {
     display: flex;
     flex-direction: column;
+    height: 100%;
     gap: 4px;
     background: var(--c-grey);
     overflow-y: scroll;

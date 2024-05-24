@@ -30,7 +30,16 @@ input[type="number"]:focus {
     -moz-appearance: textfield;
 }
 
+html {
+    height: 100%;
+}
+
+#root {
+    height: 100%;
+}
+
 body {
+    height: 100%;
     margin: 0;
     /* stylelint-disable */
     font-family: "Inter", sans-serif;

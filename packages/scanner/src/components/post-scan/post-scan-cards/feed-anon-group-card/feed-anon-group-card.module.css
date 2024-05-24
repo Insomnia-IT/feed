@@ -1,14 +1,8 @@
 .cardContainer {
     padding-top: 32px;
-}
-
-.feedAnonCard {
-    display: flex;
-    flex-direction: column;
     justify-content: space-between;
     gap: 20px;
-    height: 100%;
-    width: 100%;
+    align-items: unset;
 }
 
 .head {
@@ -19,8 +13,8 @@
 
 .content {
     flex-grow: 1;
-    overflow-y: scroll;
-    overflow-x: hidden;
+    /*overflow-y: scroll;*/
+    /*overflow-x: hidden;*/
 }
 
 .bottomBLock {

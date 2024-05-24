@@ -8,7 +8,7 @@
     position: absolute;
     display: flex;
     width: 100vw;
-    height: 100vh;
+    height: calc(var(--vh) * 100);
     max-height: fill-available;
     z-index: var(--z-scan-qrscan);
 

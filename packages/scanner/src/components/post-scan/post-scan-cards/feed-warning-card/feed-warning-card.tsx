@@ -25,48 +25,47 @@ export const FeedWarningCard: FC<{
     const handleClickFeed = (): void => {
         doFeed(undefined, msg.join(', '));
     };
+
     return (
-        <CardContainer cardColor='blue'>
-            <div className={css.warningCard}>
-                <div className={css.info}>
-                    <Title color='white'>⚠️ Вы уверены?</Title>
-                    {msg.length > 1 && (
-                        <div className={css.errorList}>
-                            {msg.map((m, index) => (
-                                <Text color='white' key={m}>
-                                    {index + 1}. {m}
-                                </Text>
-                            ))}
-                            <br />
-                            <Text color='white'>
-                                В следующий раз волонтер получит отказ в кормлении. Oтправьте волонтера в бюро за
-                                дополнительной информацией
+        <CardContainer className={css.warningCard} cardColor='blue'>
+            <div className={css.info}>
+                <Title color='white'>⚠️ Вы уверены?</Title>
+                {msg.length > 1 && (
+                    <div className={css.errorList}>
+                        {msg.map((m, index) => (
+                            <Text color='white' key={m}>
+                                {index + 1}. {m}
                             </Text>
-                        </div>
-                    )}
-                    {msg.length === 1 && (
-                        <div>
-                            <Text color='white'>{msg}</Text>
-                            <br />
-                            <Text color='white'>
-                                В следующий раз волонтер получит отказ в кормлении. Oтправьте волонтера в бюро за
-                                дополнительной информацией
-                            </Text>
-                        </div>
-                    )}
-                    <VolInfo vol={vol} />
-                </div>
-                <div className={css.bottomBLock}>
-                    <div className={css.buttonsBlock}>
-                        <Button variant='alternative' onClick={() => handleClose()}>
-                            Отмена
-                        </Button>
-                        <Button variant='alternative' onClick={handleClickFeed}>
-                            Все равно покормить
-                        </Button>
+                        ))}
+                        <br />
+                        <Text color='white'>
+                            В следующий раз волонтер получит отказ в кормлении. Oтправьте волонтера в бюро за
+                            дополнительной информацией
+                        </Text>
                     </div>
-                    <VolAndUpdateInfo textColor='white' />
+                )}
+                {msg.length === 1 && (
+                    <div>
+                        <Text color='white'>{msg}</Text>
+                        <br />
+                        <Text color='white'>
+                            В следующий раз волонтер получит отказ в кормлении. Oтправьте волонтера в бюро за
+                            дополнительной информацией
+                        </Text>
+                    </div>
+                )}
+                <VolInfo vol={vol} />
+            </div>
+            <div className={css.bottomBLock}>
+                <div className={css.buttonsBlock}>
+                    <Button variant='alternative' onClick={() => handleClose()}>
+                        Отмена
+                    </Button>
+                    <Button variant='alternative' onClick={handleClickFeed}>
+                        Все равно покормить
+                    </Button>
                 </div>
+                <VolAndUpdateInfo textColor='white' />
             </div>
         </CardContainer>
     );

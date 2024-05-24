@@ -2,10 +2,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
     padding: 76px 16px 16px 16px;
 
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
 
     &.white {
         background: var(--c-white);
