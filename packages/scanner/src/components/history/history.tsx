@@ -20,8 +20,8 @@ export const History: React.FC = () => {
         const handleScroll = (): void => {
             if (tableRef.current) {
                 const { clientHeight, scrollHeight, scrollTop } = tableRef.current;
-                if (scrollTop + clientHeight >= scrollHeight - 5 && !loading) {
-                    !end && setLimit((prevLimit) => prevLimit + 20);
+                if (scrollTop + clientHeight >= scrollHeight - 5 && !loading && !end) {
+                    setLimit((prevLimit) => prevLimit + 20);
                 }
             }
         };
@@ -39,8 +39,8 @@ export const History: React.FC = () => {
         const loadTxs = async () => {
             if (currentView === AppViews.HISTORY) {
                 setLoading(true);
-                const txs = await update(limit);
-                if (txs.length < limit) {
+                const { total, txs } = await update(limit);
+                if (txs.length >= total) {
                     setEnd(true);
                 }
                 setLoading(false);
