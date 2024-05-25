@@ -13,7 +13,7 @@ import '@pankod/refine-antd/dist/reset.css';
 
 import antdLocale from 'antd/lib/locale/ru_RU';
 
-import { DepartmentCreate, DepartmentEdit, DepartmentList, DepartmentShow } from '~/components/entities/departments';
+import { DepartmentCreate, DepartmentList, DirectionEdit, DirectionShow } from '~/components/entities/directions';
 import { GroupBadgeCreate, GroupBadgeEdit, GroupBadgeList, GroupBadgeShow } from '~/components/entities/group-badges';
 import { Sync } from '~/components/sync';
 import { Scanner } from '~/components/scanner';
@@ -99,11 +99,11 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                         }
                     },
                     {
-                        name: 'departments',
+                        name: 'directions',
                         list: DepartmentList,
                         create: DepartmentCreate,
-                        edit: DepartmentEdit,
-                        show: DepartmentShow,
+                        edit: DirectionEdit,
+                        show: DirectionShow,
                         icon: <Icons.FormatPainterOutlined />
                     },
                     {

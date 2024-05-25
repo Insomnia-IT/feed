@@ -10,7 +10,8 @@ import css from './feed-anon-card.module.css';
 export const FeedAnonCard: FC<{
     close: () => void;
     doFeed: (isVegan?: boolean) => void;
-}> = ({ close, doFeed }) => (
+    onClickFeedGroup: () => void;
+}> = ({ close, doFeed, onClickFeedGroup }) => (
     <CardContainer className={css.cardContainer}>
         <div className={css.feedAnonCard}>
             <div className={css.head}>
@@ -28,7 +29,7 @@ export const FeedAnonCard: FC<{
                     <Button className={css.feedVegan} onClick={() => doFeed(true)}>
                         🥦 Вегана
                     </Button>
-                    <Button variant='secondary' className={css.feedGroup} onClick={close} disabled>
+                    <Button variant='secondary' className={css.feedGroup} onClick={() => onClickFeedGroup()}>
                         Покормить группу
                     </Button>
                     <Button variant='secondary' className={css.cancel} onClick={close}>

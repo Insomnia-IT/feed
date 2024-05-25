@@ -416,26 +416,41 @@ def calculate_statistics(date_from, date_to):
         volunteers = (
             models.Volunteer.objects
                 .exclude(
-                    (Q(active_from__exact=None) | Q(active_to__exact=None) | Q(is_blocked=True) | Q(feed_type__code='FT4'))
+                    (Q(is_blocked=True) | Q(feed_type__code='FT4'))
                     | (
-                        Q(is_active=False)
+                        ~Q(arrivals__status='ARRIVED') & ~Q(arrivals__status='STARTED') & ~Q(arrivals__status='JOINED')
                         & (
-                            Q(active_from__lt=current_stat_date.datetime) | (~Q(feed_type__exact=None) & Q(feed_type__paid=True))
+                            Q(arrivals__arrival_date__lt=current_stat_date.datetime) | (~Q(feed_type__exact=None) & Q(feed_type__paid=True))
                         )
                     )
                 )
-                .filter(
-                    active_from__lt=current_stat_date.shift(days=+1).datetime,
-                    active_to__gte=current_stat_date.datetime
-                )
-                .values_list('active_from', 'active_to', 'kitchen__id', 'is_vegan', 'feed_type__paid', 'id')
+                .values_list('kitchen__id', 'is_vegan', 'feed_type__paid', 'id')
         )
 
+        all_arrivals = list(models.Arrival.objects.all())
+        arrivals_by_volunter = dict()
+
+        for arrival in all_arrivals:
+            current_arrivals = arrivals_by_volunter.get(arrival.volunteer.id, [])
+            current_arrivals.append(arrival)
+            arrivals_by_volunter[arrival.volunteer.id] = current_arrivals
+
         # set PLAN statistics for current date
-        for active_from, active_to, kitchen_id, is_vegan, is_paid, id in volunteers:
+        for kitchen_id, is_vegan, is_paid, id in volunteers:
+            active_arrivals = arrivals_by_volunter.get(id, [])
+            if len(active_arrivals) == 0:
+                continue
+
+            print('active_arrivals', len(active_arrivals))
+
+            active_arrival = active_arrivals[-1]
+
             # convert dates to Arrow and floor them to 'day'
-            active_from_as_arrow = arrow.get(active_from).to(TZ).floor('day')
-            active_to_as_arrow = arrow.get(active_to).to(TZ).floor('day')
+            active_from_as_arrow = arrow.get(active_arrival.arrival_date).to(TZ).floor('day')
+            active_to_as_arrow = arrow.get(active_arrival.departure_date).to(TZ).floor('day')
+
+            if active_from_as_arrow > current_stat_date or active_to_as_arrow < current_stat_date:
+                continue
 
             # skip breakfast
             if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:

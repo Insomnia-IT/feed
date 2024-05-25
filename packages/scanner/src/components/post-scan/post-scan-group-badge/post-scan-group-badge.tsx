@@ -59,7 +59,7 @@ export const PostScanGroupBadge: FC<{
                 vols.map((vol) => {
                     const log =
                         !error && vol.msg.length === 0
-                            ? undefined
+                            ? { error: false, reason: 'Групповое питание' }
                             : { error, reason: vol.msg.concat('Групповое питание').join(', ') };
 
                     return dbIncFeed({

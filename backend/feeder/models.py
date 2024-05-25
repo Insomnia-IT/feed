@@ -3,7 +3,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from feeder.mixins import TimeMixin, CommentMixin, NameMixin, SaveHistoryDataModelMixin
+from feeder.mixins import TimeMixin, CommentMixin, NameMixin
 from feeder.soft_delete import SoftDeleteModelMixin
 
 
@@ -18,10 +18,10 @@ class Direction(TimeMixin, CommentMixin):
     type = models.ForeignKey('DirectionType', on_delete=models.PROTECT)
     first_year = models.IntegerField(null=True, blank=True)
     last_year = models.IntegerField(null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True)
+    notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
 
-class Arrival(TimeMixin, CommentMixin, SaveHistoryDataModelMixin):
+class Arrival(TimeMixin, CommentMixin):
     """ Пребывание (заезды и отъезды) """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="arrivals")
@@ -46,8 +46,8 @@ class Transport(TimeMixin):
 
 
 class VolunteerRole(TimeMixin):
-    # TODO id string codes
     """ Роли волонтеров """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
     color = models.CharField(max_length=6)
     is_leader = models.BooleanField(default=False)
@@ -55,8 +55,8 @@ class VolunteerRole(TimeMixin):
 
 
 class DirectionType(TimeMixin):
-    # TODO id string codes
     """ Типы служб и локаций """
+    id = models.CharField(max_length=20, verbose_name="Идентификатор", primary_key=True)
     name = models.CharField(max_length=255)
     is_federal = models.BooleanField(default=False)
 
@@ -110,7 +110,7 @@ class Engagement(TimeMixin):
     notion_id = models.CharField(max_length=255, db_index=True)
 
 
-class Volunteer(TimeMixin, SoftDeleteModelMixin, SaveHistoryDataModelMixin):
+class Volunteer(TimeMixin, SoftDeleteModelMixin):
     """ Волонтеры """
     uuid = models.UUIDField(default=gen_uuid, unique=True, db_index=True)
     person = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True)

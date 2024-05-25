@@ -1,6 +1,7 @@
 import React, { memo, useRef, useState } from 'react';
 
 import { Input } from '~/shared/ui/input/input';
+import { removeNonDigits } from '~/shared/lib/utils';
 
 import css from './pin-input.module.css';
 
@@ -18,20 +19,16 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
     const mainInput = useRef<null | HTMLInputElement>(null);
 
     const handleChangeInput = (e) => {
-        if (e.currentTarget.value.length <= 4) {
-            setPin(e.currentTarget.value);
-            if (onChange) {
-                onChange(e.currentTarget.value);
-            }
+        const value = removeNonDigits(e.currentTarget.value).slice(0, 4);
+        setPin(value);
+        if (onChange) {
+            onChange(value);
         }
     };
 
     const handleKeyDown = (e) => {
         if ([37, 38, 39, 40].includes(e.keyCode)) {
             e.preventDefault();
-        }
-        if (e.currentTarget.value.length <= 4) {
-            setPin(e.currentTarget.value);
         }
     };
 

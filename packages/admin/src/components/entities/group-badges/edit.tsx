@@ -229,9 +229,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                     render={(value) => <TextField value={value} />}
                 />
                 <Table.Column
-                    dataIndex='departments'
-                    key='departments    '
-                    title='Службы'
+                    dataIndex='directions'
+                    key='directions'
+                    title='Службы/Локации'
                     render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                 />
                 <Table.Column<Pick<VolEntity, 'id'>>

@@ -1,0 +1,34 @@
+.container {
+    border: 2px solid var(--c-grey);
+    background: var(--c-grey);
+    border-radius: 16px;
+    padding: 12px;
+    transition: 0.3s ease;
+    width: 100%;
+
+    &.focus {
+        border: 2px solid var(--c-blue);
+    }
+
+    &.error {
+        border: 2px solid var(--c-error);
+    }
+}
+
+.textarea {
+    background: var(--c-grey);
+    cursor: auto;
+    border: none;
+
+    height: 19px;
+    width: 100%;
+    resize: none;
+
+    color: var(--c-txt);
+    font-weight: 400;
+    font-size: 16px;
+
+    ::placeholder {
+        color: var(--c-secondary-txt)
+    }
+}

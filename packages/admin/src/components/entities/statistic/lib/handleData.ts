@@ -61,7 +61,7 @@ export function handleDataForTable(
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
 ): Array<ITableStatData> {
-    if (!(date in data)) {
+    if (!(date in data) && !(date in data.all)) {
         return [];
     }
     const datum = data[kitchenId][date];
