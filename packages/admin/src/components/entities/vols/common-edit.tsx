@@ -387,6 +387,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section5' ? styles.active : ''}`}
                         data-id='section5'
+                        style={{ display: denyBadgeEdit ? 'none' : '' }}
                     >
                         Кастомные Поля
                     </li>
@@ -686,7 +687,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                     </div>
                 </div>
-                <div id='section5' className={styles.formSection}>
+                <div id='section5' className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
                     <p className={styles.formSection__title}>Кастомные Поля</p>
                     {customFields.map(({ id, name, type }) => {
                         const handleChange = (e) => {
@@ -717,12 +718,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 <div id='section6' className={styles.formSection}>
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
-                        <Form.Item label='Комментарий' name='comment'>
+                        <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
                             <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
                         </Form.Item>
                     </div>
                     <div>
-                        {canFullEditing && <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)}>
+                        {!denyBadgeEdit && <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)} disabled={!canFullEditing || !isBlocked}>
                             {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
                             {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
                         </Button>}
