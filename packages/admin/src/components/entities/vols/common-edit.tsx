@@ -41,6 +41,7 @@ type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
 export function CommonEdit({ form }: { form: FormInstance }) {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+    const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const person = Form.useWatch('person');
 
@@ -379,6 +380,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section4' ? styles.active : ''}`}
                         data-id='section4'
+                        style={{ display: denyBadgeEdit ? 'none' : '' }}
                     >
                         Бейдж
                     </li>
@@ -420,17 +422,17 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             <div className={styles.nickNameLastnameWrap}>
                                 <div className={`${styles.nameInput} ${styles.padInp}`}>
                                     <Form.Item label='Имя на бейдже' name='name' rules={Rules.required}>
-                                        <Input />
+                                        <Input readOnly={denyBadgeEdit} />
                                     </Form.Item>
                                 </div>
                                 <div className={`${styles.nameInput} ${styles.padInp}`}>
                                     <Form.Item label='Имя' name='first_name'>
-                                        <Input />
+                                        <Input readOnly={denyBadgeEdit} />
                                     </Form.Item>
                                 </div>
                                 <div className={styles.nameInput}>
                                     <Form.Item label='Фамилия' name='last_name'>
-                                        <Input />
+                                        <Input readOnly={denyBadgeEdit} />
                                     </Form.Item>
                                 </div>
                             </div>
@@ -442,7 +444,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 </div>
                                 <div className={styles.genderSelect}>
                                     <Form.Item label='Пол волонтера' name='gender'>
-                                        <Select {...genderSelectProps} />
+                                        <Select disabled={denyBadgeEdit} {...genderSelectProps} />
                                     </Form.Item>
                                 </div>
                             </div>
@@ -456,7 +458,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.typeMeal}>
                             <Form.Item label='Тип питания' name='feed_type' rules={Rules.required}>
-                                <Select {...feedTypeSelectProps} />
+                                <Select disabled={denyBadgeEdit} {...feedTypeSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
@@ -500,7 +502,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.hrInput}>
                             <Form.Item label='Должность' name='position'>
-                                <Input />
+                                <Input disabled={denyBadgeEdit} />
                             </Form.Item>
                         </div>
                     </div>
@@ -652,12 +654,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         Добавить заезд
                     </Button>
                 </div>
-                <div id='section4' className={styles.formSection}>
+                <div id='section4' className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
                     <p className={styles.formSection__title}>Бейдж</p>
                     <div className={styles.badgeInfoWrap}>
                         <div className={styles.badgeInfo}>
                             <Form.Item label='QR бейджа' name='qr' rules={Rules.required}>
-                                <Input onChange={onQRChange} />
+                                <Input disabled={denyBadgeEdit} onChange={onQRChange} />
                             </Form.Item>
                         </div>
                         <div className={styles.badgeInfo}>
@@ -674,12 +676,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <div className={styles.badgeInfoWrap}>
                         <div className={styles.badgeInfo}>
                             <Form.Item label='Номер бейджа' name='badge_number'>
-                                <Input readOnly />
+                                <Input readOnly disabled={denyBadgeEdit} />
                             </Form.Item>
                         </div>
                         <div className={styles.badgeInfo}>
                             <Form.Item label='Цвет бейджа' name='color_type'>
-                                <Select {...colorTypeSelectProps} />
+                                <Select disabled={denyBadgeEdit} {...colorTypeSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
@@ -720,10 +722,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </Form.Item>
                     </div>
                     <div>
-                        <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)}>
+                        {canFullEditing && <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)}>
                             {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
                             {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
-                        </Button>
+                        </Button>}
                         <Modal
                             closable={false}
                             centered

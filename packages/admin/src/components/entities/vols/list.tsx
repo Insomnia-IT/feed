@@ -38,6 +38,7 @@ import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
 
 import useCanAccess from './use-can-access';
+import { UserData, getUserData } from '~/auth';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -111,6 +112,21 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [feededIds, setFeededIds] = useState({});
 
     const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
+    const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
+
+    const [authorizedUserData, setAuthorizedUserData] = useState<UserData | null>(null);
+
+    const loadAuthorizedUserData = async () => {
+        const user = await getUserData(null, true);
+        setAuthorizedUserData(user);
+    };
+
+    useEffect(() => {
+        if(!canFullList && !authorizedUserData) {
+            loadAuthorizedUserData();
+        }
+    }, [canFullList, authorizedUserData]);
+
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
@@ -216,9 +232,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     }, [accessRoles]);
 
     const filteredData = useMemo(() => {
+        const data = volunteers?.data ?? [];
         return (
             searchText
-                ? volunteers?.data.filter((item) => {
+                ? data.filter((item) => {
                       const searchTextInLowerCase = searchText.toLowerCase();
                       return [
                           item.name,
@@ -230,8 +247,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                           return text?.toLowerCase().includes(searchTextInLowerCase);
                       });
                   })
-                : volunteers?.data
-        )?.filter(
+                : data
+        ).filter(
+            (v) =>
+                canFullList || authorizedUserData && v.directions?.some(({ id }) => authorizedUserData.directions?.includes(id))
+        ).filter(
             (v) =>
                 !filterUnfeededType ||
                 (!feededIds[v.id] &&
@@ -239,7 +259,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     !isVolExpired(v, filterUnfeededType === 'yesterday') &&
                     v.feed_type !== FEED_TYPE_WITHOUT_FEED)
         );
-    }, [volunteers, searchText, feededIds, filterUnfeededType]);
+    }, [volunteers, searchText, feededIds, filterUnfeededType, canFullList, authorizedUserData]);
 
     // const { selectProps } = useSelect<VolEntity>({
     //     resource: 'volunteers'
