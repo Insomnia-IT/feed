@@ -36,6 +36,8 @@ import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
+import type { UserData } from '~/auth';
+import { getUserData } from '~/auth';
 
 import useCanAccess from './use-can-access';
 
@@ -111,6 +113,20 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [feededIds, setFeededIds] = useState({});
 
     const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
+    const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
+
+    const [authorizedUserData, setAuthorizedUserData] = useState<UserData | null>(null);
+
+    const loadAuthorizedUserData = async () => {
+        const user = await getUserData(null, true);
+        setAuthorizedUserData(user);
+    };
+
+    useEffect(() => {
+        if (!canFullList && !authorizedUserData) {
+            void loadAuthorizedUserData();
+        }
+    }, [canFullList, authorizedUserData]);
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
@@ -216,9 +232,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     }, [accessRoles]);
 
     const filteredData = useMemo(() => {
+        const data = volunteers?.data ?? [];
         return (
             searchText
-                ? volunteers?.data.filter((item) => {
+                ? data.filter((item) => {
                       const searchTextInLowerCase = searchText.toLowerCase();
                       return [
                           item.name,
@@ -230,16 +247,22 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                           return text?.toLowerCase().includes(searchTextInLowerCase);
                       });
                   })
-                : volunteers?.data
-        )?.filter(
-            (v) =>
-                !filterUnfeededType ||
-                (!feededIds[v.id] &&
-                    !v.is_blocked &&
-                    !isVolExpired(v, filterUnfeededType === 'yesterday') &&
-                    v.feed_type !== FEED_TYPE_WITHOUT_FEED)
-        );
-    }, [volunteers, searchText, feededIds, filterUnfeededType]);
+                : data
+        )
+            .filter(
+                (v) =>
+                    canFullList ||
+                    (authorizedUserData && v.directions?.some(({ id }) => authorizedUserData.directions?.includes(id)))
+            )
+            .filter(
+                (v) =>
+                    !filterUnfeededType ||
+                    (!feededIds[v.id] &&
+                        !v.is_blocked &&
+                        !isVolExpired(v, filterUnfeededType === 'yesterday') &&
+                        v.feed_type !== FEED_TYPE_WITHOUT_FEED)
+            );
+    }, [volunteers, searchText, feededIds, filterUnfeededType, canFullList, authorizedUserData]);
 
     // const { selectProps } = useSelect<VolEntity>({
     //     resource: 'volunteers'

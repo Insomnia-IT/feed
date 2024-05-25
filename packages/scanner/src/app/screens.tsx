@@ -12,7 +12,7 @@ export const Screens = () => {
     const { auth, debugMode, isDev, mealTime } = useApp();
     const { currentView } = useView();
     return (
-        <div>
+        <>
             {!auth && <PinScreen />}
             {auth && !mealTime && <MealTimeSelect />}
             {auth && mealTime && (
@@ -24,6 +24,6 @@ export const Screens = () => {
                 </>
             )}
             {(isDev || debugMode === '1') && <MockTrans />}
-        </div>
+        </>
     );
 };

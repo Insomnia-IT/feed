@@ -20,7 +20,7 @@ interface IAppContext {
     lastSyncStart: number | null;
     volCount: number;
     mealTime: MealTime | null;
-    setMealTime: (mealTime: MealTime) => void;
+    setMealTime: (mealTime: MealTime | null) => void;
     kitchenId: number;
     setKitchenId: (kitchenId: number) => void;
     isDev: boolean;
