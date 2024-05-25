@@ -36,9 +36,10 @@ import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
+import type { UserData } from '~/auth';
+import { getUserData } from '~/auth';
 
 import useCanAccess from './use-can-access';
-import { UserData, getUserData } from '~/auth';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -122,11 +123,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     };
 
     useEffect(() => {
-        if(!canFullList && !authorizedUserData) {
-            loadAuthorizedUserData();
+        if (!canFullList && !authorizedUserData) {
+            void loadAuthorizedUserData();
         }
     }, [canFullList, authorizedUserData]);
-
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
@@ -248,17 +248,20 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                       });
                   })
                 : data
-        ).filter(
-            (v) =>
-                canFullList || authorizedUserData && v.directions?.some(({ id }) => authorizedUserData.directions?.includes(id))
-        ).filter(
-            (v) =>
-                !filterUnfeededType ||
-                (!feededIds[v.id] &&
-                    !v.is_blocked &&
-                    !isVolExpired(v, filterUnfeededType === 'yesterday') &&
-                    v.feed_type !== FEED_TYPE_WITHOUT_FEED)
-        );
+        )
+            .filter(
+                (v) =>
+                    canFullList ||
+                    (authorizedUserData && v.directions?.some(({ id }) => authorizedUserData.directions?.includes(id)))
+            )
+            .filter(
+                (v) =>
+                    !filterUnfeededType ||
+                    (!feededIds[v.id] &&
+                        !v.is_blocked &&
+                        !isVolExpired(v, filterUnfeededType === 'yesterday') &&
+                        v.feed_type !== FEED_TYPE_WITHOUT_FEED)
+            );
     }, [volunteers, searchText, feededIds, filterUnfeededType, canFullList, authorizedUserData]);
 
     // const { selectProps } = useSelect<VolEntity>({

@@ -54,8 +54,8 @@ export const ACL = {
                         break;
                     case 'full_list':
                     case 'badge_edit':
-                            can = role !== AppRoles.DIRECTION_HEAD;
-                            break;
+                        can = role !== AppRoles.DIRECTION_HEAD;
+                        break;
                     case 'full_edit':
                         can = role === AppRoles.ADMIN;
                         break;

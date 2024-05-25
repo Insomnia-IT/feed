@@ -723,10 +723,17 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </Form.Item>
                     </div>
                     <div>
-                        {!denyBadgeEdit && <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)} disabled={!canFullEditing || !isBlocked}>
-                            {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
-                            {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
-                        </Button>}
+                        {!denyBadgeEdit && (
+                            <Button
+                                className={styles.blockButton}
+                                type='default'
+                                onClick={() => setOpen(true)}
+                                disabled={!canFullEditing || !isBlocked}
+                            >
+                                {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
+                                {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
+                            </Button>
+                        )}
                         <Modal
                             closable={false}
                             centered
