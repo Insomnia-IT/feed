@@ -19,12 +19,6 @@ const HotApp = hot(App);
 // ...
 ReactDOM.render(<HotApp/>, document.getElementById('root'));*/
 
-// window.addEventListener('resize', () => {
-//     // We execute the same script as before
-//     let vh = window.innerHeight * 0.01;
-//     document.documentElement.style.setProperty('--vh', `${vh}px`);
-// });
-
 //@ts-ignore
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 const dev = process.env.NODE_ENV !== 'production';
