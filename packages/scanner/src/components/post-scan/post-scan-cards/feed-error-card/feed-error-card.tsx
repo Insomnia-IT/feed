@@ -6,6 +6,7 @@ import { Text, Title } from '~/shared/ui/typography';
 import { VolInfo } from '~/components/post-scan/post-scan-cards/vol-info/vol-info';
 import type { Volunteer } from '~/db';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
+import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
 
 import css from './feed-error-card.module.css';
 
@@ -24,7 +25,7 @@ export const FeedErrorCard: FC<{
 
     return (
         <CardContainer className={css.errorCard} cardColor='red'>
-            <div className={css.info}>
+            <CardContent>
                 <Title color='white'>Отказано</Title>
                 <div className={css.errorList}>
                     {msg.length > 1 && (
@@ -47,7 +48,7 @@ export const FeedErrorCard: FC<{
                     )}
                 </div>
                 <VolInfo vol={vol} />
-            </div>
+            </CardContent>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>
                     <Button variant='alternative' onClick={() => handleClose()}>

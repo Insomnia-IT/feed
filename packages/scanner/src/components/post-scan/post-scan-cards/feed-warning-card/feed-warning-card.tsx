@@ -6,6 +6,7 @@ import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-co
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
+import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
 
 import css from './feed-warning-card.module.css';
 
@@ -28,7 +29,7 @@ export const FeedWarningCard: FC<{
 
     return (
         <CardContainer className={css.warningCard} cardColor='blue'>
-            <div className={css.info}>
+            <CardContent>
                 <Title color='white'>⚠️ Вы уверены?</Title>
                 {msg.length > 1 && (
                     <div className={css.errorList}>
@@ -55,7 +56,7 @@ export const FeedWarningCard: FC<{
                     </div>
                 )}
                 <VolInfo vol={vol} />
-            </div>
+            </CardContent>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>
                     <Button variant='alternative' onClick={() => handleClose()}>

@@ -17,12 +17,6 @@
     width: 100%;
 }
 
-.info {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-}
-
 .errorList {
     text-align: start;
 }
