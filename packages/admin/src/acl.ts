@@ -11,10 +11,7 @@ ac
     .update(['volunteers'])
     // Кот
     .grant(AppRoles.CAT)
-    //.extend(AppRoles.DIRECTION_HEAD)
-    .read(['dashboard', 'volunteers', 'group-badges'])
-    .update(['volunteers'])
-    //
+    .extend(AppRoles.DIRECTION_HEAD)
     .create(['volunteers'])
     .read(['directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
     // Старший смены
@@ -22,7 +19,7 @@ ac
     .extend(AppRoles.CAT)
     .read(['volunteer-custom-fields'])
     .create(['group-badges', 'volunteer-custom-fields'])
-    .update(['group-badges', 'volunteer-custom-fields'])
+    .update(['volunteer-custom-fields'])
     .delete(['volunteers'])
     // Администратор
     .grant(AppRoles.ADMIN)
