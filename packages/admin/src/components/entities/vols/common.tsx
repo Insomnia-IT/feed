@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { CommonEdit } from './common-edit';
 import { CommonFoodTest } from './common-food';
+import { CommonHistory } from './common-history';
 
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
@@ -44,7 +45,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         {
             key: '3',
             label: 'История действий',
-            children: 'История действий'
+            children: <CommonHistory />
         }
     ];
     return <Tabs defaultActiveKey='1' items={items} />;

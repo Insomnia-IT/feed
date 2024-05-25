@@ -352,6 +352,13 @@
     margin-right: 10px;
 }
 
+/* common-history */
+.historyWrap {
+    padding: 14px 16px;
+    background-color: white;
+}
+
+/* ADAPTIVES */
 @media (max-width: 1366px) {
     .edit__nav {
         display: none;
