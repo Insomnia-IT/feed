@@ -139,7 +139,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                       item.name,
                       item.first_name,
                       item.last_name,
-                      item.departments?.map(({ name }) => name).join(', ')
+                      item.directions?.map(({ name }) => name).join(', ')
                   ].some((text) => {
                       return (
                           !currentIds.includes(item.id) &&
