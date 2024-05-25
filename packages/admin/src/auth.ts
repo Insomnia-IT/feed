@@ -15,6 +15,7 @@ export interface UserData {
     exp: number;
     iat: number;
     roles: Array<AppRoles.ADMIN | AppRoles.SENIOR | AppRoles.CAT | AppRoles.DIRECTION_HEAD>;
+    directions?: Array<string>;
     username: string;
 }
 
@@ -80,11 +81,12 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                             }
                         }
                     );
-                    const { access_role, id, name } = data.results[0];
+                    const { access_role, directions, id, name } = data.results[0];
                     const userData: UserData = {
                         username: name,
                         id: id,
                         roles: [access_role],
+                        directions: directions.map(({ id }) => id),
                         exp: 0,
                         iat: 0
                     };
