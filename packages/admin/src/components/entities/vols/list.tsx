@@ -1,18 +1,28 @@
 import type { TablePaginationConfig } from '@pankod/refine-antd';
 import {
+    Checkbox,
+    DateField,
+    DatePicker,
     DeleteButton,
+    Dropdown,
     EditButton,
     FilterDropdown,
     Form,
     List,
     NumberField,
+    Popover,
     Radio,
     Select,
     Space,
     Table,
     TextField,
-    useSelect
+    useSelect,
+    CheckboxProps,
+    Icons
 } from '@pankod/refine-antd';
+
+type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any ? A : never;
+
 import { useList } from '@pankod/refine-core';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
@@ -21,6 +31,8 @@ import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
+
+import styles from './list.module.css';
 
 import type {
     AccessRoleEntity,
@@ -105,11 +117,18 @@ const formatDate = (value) => {
 //     </div>
 // );
 
+type FilterField = { type: string, name: string, title: string, lookup?: () => { id: unknown, name: string }[] };
+
+type FilterItem = { name: string, op: 'include' | 'exclude', value: unknown };
+
+type FilterListItem = { selected: boolean, value: unknown, text: string, count: number };
+
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
     const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
     const [feededIsLoading, setFeededIsLoading] = useState(false);
     const [feededIds, setFeededIds] = useState({});
+    const [activeFilters, setActiveFilters] = useState<FilterItem[]>([]);
 
     const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
     const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
@@ -137,7 +156,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         }
     });
 
-    const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
+    const { selectProps: directionsSelectProps, queryResult: directions } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name'
     });
@@ -258,8 +277,19 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     !v.is_blocked &&
                     !isVolExpired(v, filterUnfeededType === 'yesterday') &&
                     v.feed_type !== FEED_TYPE_WITHOUT_FEED)
-        );
-    }, [volunteers, searchText, feededIds, filterUnfeededType, canFullList, authorizedUserData]);
+        ).filter(vol => {
+            return activeFilters.every((filter) => {
+                const value = vol[filter.name];
+                if(Array.isArray(filter.value)) {
+                    return filter.value.some(currentValue => currentValue == value);
+                } else if(typeof filter.value === 'string' && typeof value === 'string') {
+                    return value.includes(filter.value);
+                } else {
+                    return filter.value === value;
+                }
+            })
+        });
+    }, [volunteers, searchText, feededIds, filterUnfeededType, canFullList, authorizedUserData, activeFilters]);
 
     // const { selectProps } = useSelect<VolEntity>({
     //     resource: 'volunteers'
@@ -407,10 +437,214 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         );
     };
+    const getFilterValueText = (field: FilterField, value: unknown): string => {
+        if(value === true) {
+            return 'Да';
+        }
+        if(value === false) {
+            return 'Нет';
+        }
+        if(field.lookup) {
+            return field.lookup().find(({ id }) => id === value)?.name ?? '';
+        }
+        return String(value);
+    }
+
+    const getFilterListItems = (field: FilterField, filterItem?: FilterItem): FilterListItem[] => {
+        const lookupItems = field.lookup?.();
+
+        if(lookupItems) {
+            return lookupItems.map(item => ({
+                value: item.id,
+                text: item.name,
+                selected: filterItem ? filterItem.value.includes(item.id) : false,
+                count: 0
+            }));
+        }
+
+        if(field.type === 'boolean') {
+            return [true, false].map(value => ({
+                value,
+                text: getFilterValueText(field, value),
+                selected: filterItem ? filterItem.value.includes(value) : false,
+                count: 0
+            }));
+        } else {
+            const valueCounts = (volunteers?.data ?? []).reduce((acc: { [key: string]: number }, vol) => {
+                acc[vol[field.name]] = (acc[vol[field.name]] ?? 0) + 1;
+                return acc;
+            }, {});
+            const values = Object.keys(valueCounts).sort();
+    
+            return values.map(value => ({
+                value,
+                text: getFilterValueText(field, value),
+                selected: filterItem ? filterItem.value.includes(value) : false,
+                count: valueCounts[value] ?? 0
+            }));
+        }
+    }
+
+    const onFilterValueChange = (field: FilterField, filterListItem: FilterListItem) => {
+        const filterItem = activeFilters.find(f => f.name === field.name);
+
+        if(filterListItem.selected) {
+            if(filterItem && Array.isArray(filterItem.value)) {
+                const newValues = filterItem.value.filter( value => value !== filterListItem.value);
+                const newFilters = activeFilters.filter(f => f.name !== field.name).concat(newValues.length ? [
+                    {
+                        ...filterItem,
+                        value: newValues
+                    }
+                ] : []);
+
+                setActiveFilters(newFilters);
+            }
+        } else {
+            if(filterItem && Array.isArray(filterItem.value)) {
+                const newValues = [...filterItem.value, filterListItem.value];
+                const newFilters = activeFilters.filter(f => f.name !== field.name).concat([
+                    {
+                        ...filterItem,
+                        value: newValues
+                    }
+                ]);
+
+                setActiveFilters(newFilters);
+            } else {
+                const newFilters = activeFilters.concat([
+                    {
+                        name: field.name,
+                        op: 'include',
+                        value: [filterListItem.value]
+                    }
+                ]);
+
+                setActiveFilters(newFilters);
+            }
+        }
+        // return (e: ArgumentTypes<Required<CheckboxProps>['onChange']>[0]) => {
+            
+        // }
+    }
+
+    const onFilterTextValueChange = (field: FilterField, value: unknown) => {
+        const filterItem = activeFilters.find(f => f.name === field.name);
+
+        if(!value) {
+            const newFilters = activeFilters.filter(f => f.name !== field.name);
+            setActiveFilters(newFilters);
+        } else  if(filterItem) {
+            const newFilters = activeFilters.filter(f => f.name !== field.name).concat([
+                {
+                    ...filterItem,
+                    value,
+                }
+            ]);
+
+            setActiveFilters(newFilters);
+        } else {
+            const newFilters = activeFilters.concat([
+                {
+                    name: field.name,
+                    op: 'include',
+                    value
+                }
+            ]);
+
+            setActiveFilters(newFilters);
+        }
+    }
+
+    const createRenderFilterPopupContent = (field: FilterField) => {
+        const operations = [
+            {
+              label: 'включает',
+              key: 'include',
+            },
+            {
+              label: 'не включает',
+              key: 'exclude',
+            }
+          ];
+
+        const filterItem = activeFilters.find(f => f.name === field.name);
+        const currentOperation = filterItem?.op === 'exclude' ?  operations[1] : operations[0];
+        const filterListItems = getFilterListItems(field, filterItem);
+
+        return () => {
+            return <div>
+                <div className={styles.filterPopupHeader}>
+                    <span className={styles.filterPopupFieldName}>
+                        {field.title}
+                    </span>&nbsp;
+                    <Dropdown menu={{ items: operations }}>
+                        <a><span>{currentOperation.label}&nbsp;<Icons.DownOutlined /></span></a>
+                    </Dropdown>
+                </div>
+                {field.type === 'string' && <Input value={filterItem?.value as string} onChange={(e) => onFilterTextValueChange(field,  e.target.value)} placeholder='Введите текст' allowClear />}
+                {field.type !== 'string' && <div className={styles.filterPopupList}>
+                    {filterListItems.map(filterListItem => {
+                        return <div className={styles.filterPopupListItem}>
+                            <Checkbox value={filterListItem.selected} onChange={() => onFilterValueChange(field, filterListItem)} />
+                            {filterListItem.text}{filterListItem.count > 0 && <span className={styles.filterListItemCount}>({filterListItem.count})</span>}
+                        </div>
+                    })}
+                </div>}
+            </div>
+        }
+    }
+
+    const renderFilterItemText = (field: FilterField) => {
+        const filterItem = activeFilters.find(f => f.name == field.name);
+
+        if(filterItem) {
+            return  <span className={styles.filterItemActive}>
+                <span className={styles.filterItemNameActive}>{field.title}:</span>
+                &nbsp;
+                <span>{(Array.isArray(filterItem.value) ? filterItem.value : [filterItem.value]).map(value => getFilterValueText(field, value)).join(', ')}</span>
+            </span>;
+        }
+        return <span>{field.title}</span>;
+    }
+
+    const fields: FilterField[] = [
+        // { type: 'string', name: 'id', title: 'ID' },
+        { type: 'string', name: 'name', title: 'Имя на бейдже' },
+        { type: 'string', name: 'first_name', title: 'Имя', },
+        { type: 'string', name: 'last_name', title: 'Фамилия', },
+        { type: 'lookup', name: 'directions', title: 'Службы/Локации', lookup: () => directions.data?.data ?? [] }, // directions
+        { type: 'lookup', name: 'main_role', title: 'Роль', lookup: () => volunteerRoles?.data ?? [] },
+        // { type: 'date', name: 'active_to', title: 'На поле' },
+        // { type: 'date', name: 'active_to', title: 'Статус заезда' },
+        // { type: 'date', name: 'active_from', title: 'Дата заезда' },
+        // { type: 'date', name: 'active_to', title: 'Дата отъезда' },
+        // { type: 'date', name: 'active_to', title: 'Транспорт заезда' },
+        // { type: 'date', name: 'active_to', title: 'Транспорт отъезда' },
+        { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
+        { type: 'lookup', name: 'kitchen', title: 'Кухня', lookup: () => kitchens?.data ?? [] }, // kitchenNameById
+        { type: 'string', name: 'printing_batch', title: 'Партия бейджа' },
+        { type: 'lookup', name: 'feed_type', title: 'Тип питания', lookup: () => feedTypes?.data ?? [] }, // feedTypeNameById
+        { type: 'boolean', name: 'is_vegan', title: 'Веган' },
+        { type: 'string', name: 'comment', title: 'Комментарий' },
+        { type: 'lookup', name: 'color_type', title: 'Цвет бейджа', lookup: () => colors?.data.map(({ id, description: name }) => ({ id, name })) ?? [] }, // colorNameById
+        { type: 'lookup', name: 'access_role', title: 'Право доступа', lookup: () => accessRoles?.data ?? [] }, // accessRoleById
+    ];
 
     return (
         <List>
             <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            <div className={styles.filters}>
+                <div className={styles.filtersLabel}>Фильтры:</div>
+                <div className={styles.filterItems}>{fields.map(field => {
+                    return <Popover placement="bottomLeft" content={createRenderFilterPopupContent(field)} overlayInnerStyle={{ borderRadius: 0 }} trigger="click">
+                        <Button className={styles.filterItemButton}>
+                            {renderFilterItemText(field)}
+                            <span className={styles.filterDownIcon}><Icons.DownOutlined /></span>
+                        </Button> 
+                  </Popover>;
+                })}</div>
+            </div>
             <Form layout='inline' style={{ padding: '10px 0' }}>
                 <Form.Item>
                     <Button
