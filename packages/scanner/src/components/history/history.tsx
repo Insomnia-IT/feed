@@ -11,6 +11,7 @@ export const History: React.FC = () => {
     const { currentView } = useView();
     const [limit, setLimit] = useState<number>(20);
     const [end, setEnd] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const { error, progress, transactions, update } = useLocalLastTrans();
 
@@ -19,8 +20,8 @@ export const History: React.FC = () => {
         const handleScroll = (): void => {
             if (tableRef.current) {
                 const { clientHeight, scrollHeight, scrollTop } = tableRef.current;
-                if (scrollTop + clientHeight === scrollHeight) {
-                    !end && setLimit((prevLimit) => prevLimit + 20);
+                if (scrollTop + clientHeight >= scrollHeight - 5 && !loading && !end) {
+                    setLimit((prevLimit) => prevLimit + 20);
                 }
             }
         };
@@ -28,23 +29,29 @@ export const History: React.FC = () => {
             tableRef.current.addEventListener('scroll', handleScroll);
         }
         return () => {
-            tableRef.current?.removeEventListener('scroll', handleScroll);
+            if (tableRef.current) {
+                tableRef.current?.removeEventListener('scroll', handleScroll);
+            }
         };
-    }, []);
+    }, [end, loading]);
 
     useEffect(() => {
+        const loadTxs = async () => {
+            if (currentView === AppViews.HISTORY) {
+                setLoading(true);
+                const { total, txs } = await update(limit);
+                if (txs.length >= total) {
+                    setEnd(true);
+                }
+                setLoading(false);
+            }
+        };
         if (currentView !== AppViews.HISTORY) {
             tableRef.current?.scrollTo(0, 0);
             setEnd(false);
             setLimit(20);
         }
-        if (currentView === AppViews.HISTORY) {
-            void update(limit).then((txs) => {
-                if (txs.length < limit) {
-                    setEnd(true);
-                }
-            });
-        }
+        void loadTxs();
     }, [limit, currentView, update]);
 
     return (

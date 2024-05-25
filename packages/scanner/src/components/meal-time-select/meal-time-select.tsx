@@ -1,9 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 
 import { MealTime } from '~/db';
 import { Button } from '~/shared/ui/button/button';
 import { useApp } from '~/model/app-provider';
 import { AppViews, useView } from '~/model/view-provider';
+import { ScreenWrapper } from '~/shared/ui/screen-wrapper';
 
 import logo from './logo.png';
 import css from './meal-time-select.module.css';
@@ -18,7 +19,7 @@ export const MealTimeSelect = () => {
     };
 
     return (
-        <div className={css.mealTimeSelectBlock}>
+        <ScreenWrapper className={css.mealTimeSelectBlock}>
             <img src={logo} width={101} height={101} />
             <h1 className={css.title}>Чем кормим?</h1>
             <div className={css.buttonsContainer}>
@@ -35,6 +36,6 @@ export const MealTimeSelect = () => {
                     Дожор
                 </Button>
             </div>
-        </div>
+        </ScreenWrapper>
     );
 };
