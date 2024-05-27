@@ -42,6 +42,7 @@ type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 export function CommonEdit({ form }: { form: FormInstance }) {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
+    const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const person = Form.useWatch('person');
 
@@ -728,7 +729,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 className={styles.blockButton}
                                 type='default'
                                 onClick={() => setOpen(true)}
-                                disabled={!canFullEditing || !isBlocked}
+                                disabled={isBlocked ? !canUnban : false}
                             >
                                 {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
                                 {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
