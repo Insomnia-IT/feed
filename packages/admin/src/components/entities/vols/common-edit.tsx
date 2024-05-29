@@ -42,6 +42,7 @@ type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 export function CommonEdit({ form }: { form: FormInstance }) {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
+    const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const person = Form.useWatch('person');
 
@@ -723,10 +724,17 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </Form.Item>
                     </div>
                     <div>
-                        {!denyBadgeEdit && <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)} disabled={!canFullEditing || !isBlocked}>
-                            {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
-                            {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
-                        </Button>}
+                        {!denyBadgeEdit && (
+                            <Button
+                                className={styles.blockButton}
+                                type='default'
+                                onClick={() => setOpen(true)}
+                                disabled={isBlocked ? !canUnban : false}
+                            >
+                                {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
+                                {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
+                            </Button>
+                        )}
                         <Modal
                             closable={false}
                             centered
@@ -751,10 +759,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
                                 </p>
                                 <div className={styles.modalButtonWrap}>
-                                    <Button className={styles.onCancelButton} onClick={() => setOpen(false)}>
+                                    <Button className={styles.onCancelButton} onClick={handleToggleBlocked}>
                                         {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
                                     </Button>
-                                    <Button type='primary' onClick={handleToggleBlocked}>
+                                    <Button type='primary' onClick={() => setOpen(false)}>
                                         {'Оставить'}
                                     </Button>
                                 </div>

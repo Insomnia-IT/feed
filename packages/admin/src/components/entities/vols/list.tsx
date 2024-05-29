@@ -48,9 +48,10 @@ import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
+import type { UserData } from '~/auth';
+import { getUserData } from '~/auth';
 
 import useCanAccess from './use-can-access';
-import { UserData, getUserData } from '~/auth';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -141,11 +142,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     };
 
     useEffect(() => {
-        if(!canFullList && !authorizedUserData) {
-            loadAuthorizedUserData();
+        if (!canFullList && !authorizedUserData) {
+            void loadAuthorizedUserData();
         }
     }, [canFullList, authorizedUserData]);
-
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
@@ -451,13 +451,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     }
 
     const getFilterListItems = (field: FilterField, filterItem?: FilterItem): FilterListItem[] => {
+        const filterValues = Array.isArray(filterItem?.value) ? filterItem?.value : [];
+
         const lookupItems = field.lookup?.();
 
         if(lookupItems) {
             return lookupItems.map(item => ({
                 value: item.id,
                 text: item.name,
-                selected: filterItem ? filterItem.value.includes(item.id) : false,
+                selected: filterValues.includes(item.id),
                 count: 0
             }));
         }
@@ -466,7 +468,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             return [true, false].map(value => ({
                 value,
                 text: getFilterValueText(field, value),
-                selected: filterItem ? filterItem.value.includes(value) : false,
+                selected: filterValues.includes(value),
                 count: 0
             }));
         } else {
@@ -479,7 +481,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             return values.map(value => ({
                 value,
                 text: getFilterValueText(field, value),
-                selected: filterItem ? filterItem.value.includes(value) : false,
+                selected: filterValues.includes(value),
                 count: valueCounts[value] ?? 0
             }));
         }

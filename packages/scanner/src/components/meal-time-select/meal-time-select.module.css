@@ -3,25 +3,24 @@
     flex-direction: column;
     align-items: center;
     justify-content: start;
-    width: 100%;
     gap: 24px;
     padding-top: 32px;
+}
 
-    .title {
-        font-weight: 600;
-        font-size: 24px;
-    }
+.title {
+    font-weight: 600;
+    font-size: 24px;
+}
 
-    .buttonsContainer {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        width: 260px;
+.buttonsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 260px;
 
-        .button {
-            width: 100%;
-        }
+    .button {
+        width: 100%;
     }
 }

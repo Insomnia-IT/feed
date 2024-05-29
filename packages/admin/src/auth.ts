@@ -81,7 +81,7 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                             }
                         }
                     );
-                    const { access_role, id, name, directions } = data.results[0];
+                    const { access_role, directions, id, name } = data.results[0];
                     const userData: UserData = {
                         username: name,
                         id: id,

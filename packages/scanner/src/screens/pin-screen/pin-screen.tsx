@@ -5,6 +5,7 @@ import { Button } from '~/shared/ui/button/button';
 import { useCheckAuth } from '~/request';
 import { API_DOMAIN } from '~/config';
 import { useApp } from '~/model/app-provider';
+import { ScreenWrapper } from '~/shared/ui/screen-wrapper';
 
 import css from './pin-screen.module.css';
 
@@ -43,7 +44,7 @@ export const PinScreen = (): React.ReactElement => {
     }, [pin, checkAuth, setAuth, setPin, setKitchenId, storedPin]);
 
     return (
-        <div className={css.pinScreen}>
+        <ScreenWrapper className={css.screenWrapper}>
             <div className={css.container}>
                 <div className={css.header}>
                     <h1 className={css.title}>Пин-код от кухни</h1>
@@ -54,6 +55,6 @@ export const PinScreen = (): React.ReactElement => {
                     Войти
                 </Button>
             </div>
-        </div>
+        </ScreenWrapper>
     );
 };
