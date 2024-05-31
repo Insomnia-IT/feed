@@ -532,7 +532,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     };
 
     const getFilterListItems = (field: FilterField, filterItem?: FilterItem): Array<FilterListItem> => {
-        const filterValues = Array.isArray(filterItem?.value) ? filterItem?.value : [];
+        const filterValue = filterItem?.value;
+        const filterValues = Array.isArray(filterValue) ? filterValue : [];
 
         const lookupItems = field.lookup?.();
 
