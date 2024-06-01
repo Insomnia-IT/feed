@@ -70,10 +70,10 @@ export function CommonHistory() {
         setData(reversedResult);
     };
     useEffect(() => {
-        setNewUuid();
+        void setNewUuid();
     }, []);
     useEffect(() => {
-        historyData();
+        void historyData();
     }, [uuid]);
 
     function formatDate(isoDateString: string): string {
@@ -89,8 +89,7 @@ export function CommonHistory() {
     const handleRouteClick = async (id: number | undefined) => {
         if (!id) return;
         const stringId = id.toString();
-        await router.push(`/volunteers/edit/${stringId}`);
-        window.location.reload();
+        await router.replace(`/volunteers/edit/${stringId}`);
     };
 
     function returnCurrentStatusString(status: string): string {
@@ -197,7 +196,7 @@ export function CommonHistory() {
                         <span
                             className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
                             onClick={() => {
-                                handleRouteClick(id);
+                                void handleRouteClick(id);
                             }}
                         >
                             {`${item.actor ? item.actor.name : 'Кто-то'}, `}
