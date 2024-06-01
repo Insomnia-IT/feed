@@ -378,12 +378,29 @@
     color: rgba(0, 0, 0, 0.85);
 }
 
+.itemTitleRoute {
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color .3s ease-in-out;
+}
+
+.itemTitleRoute:hover,
+.itemTitleRoute:focus {
+    color: #1890FF;
+    transition: color .3s ease-in-out;
+}
+
 .itemAction {
     padding-left: 8px;
     font-weight: 400;
     font-size: 12px;
     line-height: 183%;
     color: #8d959e;
+}
+
+.itemActionModif {
+    padding-left: 3px;
+    text-decoration: underline;
 }
 
 .itemDescrWrap {

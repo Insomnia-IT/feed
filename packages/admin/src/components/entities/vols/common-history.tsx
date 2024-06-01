@@ -4,6 +4,7 @@ import axios from 'axios';
 import { NEW_API_URL } from '~/const';
 
 import styles from './common.module.css';
+import { useRouter } from 'next/router';
 
 interface IUuid {
     data: {
@@ -17,9 +18,14 @@ interface IHistoryData {
     };
 }
 
+interface IActor {
+    id: number,
+    name: string,
+}
+
 interface IResult {
     action_at: string,
-    actor: string | null,
+    actor: IActor | null,
     actor_badge: string,
     by_sync: boolean,
     data: IData,
@@ -38,9 +44,15 @@ interface IData {
     phone?: string,
     position?: string,
     vegan?: boolean,
+    departure_transport?: string,
+    arrival_transport?: string,
+    status?: string,
+    departure_date?: string,
+    arrival_date?: string,
 }
 
 export function CommonHistory() {
+    const router = useRouter();
     const [uuid, setUuid] = useState('');
     const [data, setData] = useState<Array<IResult>>();
     const url = document.location.pathname;
@@ -54,8 +66,8 @@ export function CommonHistory() {
     const historyData = async () => {
         const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?volunteer_uuid=${uuid}`);
         const result = response.data.results;
-        console.log(result);
-        setData(result);
+        const reversedResult = result.reverse();
+        setData(reversedResult);
     };
     useEffect(() => {
         setNewUuid();
@@ -73,6 +85,13 @@ export function CommonHistory() {
             timeZone: 'UTC'
         });
     }
+
+    const handleRouteClick = async (id: number | undefined) => {
+        if (!id) return;
+        const stringId = id.toString();
+        await router.push(`/volunteers/edit/${stringId}`);
+        window.location.reload();
+    };
 
     function returnCurrentStatusString(status: string): string {
         if (status === 'updated') {
@@ -105,6 +124,16 @@ export function CommonHistory() {
             return 'Веганство'
         } else if (fieldName === 'phone') {
             return 'Телефон'
+        } else if (fieldName === 'arrival_date') {
+            return 'Дату приезда'
+        } else if (fieldName === 'departure_date') {
+            return 'Дату отъезда'
+        } else if (fieldName === 'status') {
+            return 'Статус'
+        } else if (fieldName === 'arrival_transport') {
+            return 'Как приехал'
+        } else if (fieldName === 'departure_transport') {
+            return 'Как уехал'
         } else {
             return '';
         }
@@ -159,11 +188,20 @@ export function CommonHistory() {
             return 'ИЗМЕНЕНИЙ НЕТ'
         }
         return array.map((item) => {
+            const geiId = () => {
+                if (!item.actor) return;
+                if (item.actor.id) {
+                    return item.actor.id;
+                } else {
+                    return
+                }
+            }
+            const id = geiId();
             return (
                 <div key={array.indexOf(item)} className={styles.historyItem}>
                     <div className={styles.itemTitleWrap}>
-                        <span className={styles.itemTitle}>
-                            {`${item.actor ? item.actor : 'Кто-то'}, `}
+                        <span className={`${styles.itemTitle} ${styles.itemTitleRoute}`} onClick={() => {handleRouteClick(id)}}>
+                            {`${item.actor ? item.actor.name : 'Кто-то'}, `}
                         </span>
                         <span className={styles.itemTitle}>
                             {formatDate(item.action_at)}
@@ -171,6 +209,13 @@ export function CommonHistory() {
                         <span className={styles.itemAction}>
                             {`${returnCurrentStatusString(item.status)}`}
                         </span>
+                        {item.object_name === "arrival"
+                            ? <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
+                                {`информацию по заезду`}
+                            </span>
+                            : <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
+                                {`информацию по волонтеру`}
+                            </span>}
                         {renderHistoryLayout(item)}
                     </div>
                 </div>
@@ -183,34 +228,3 @@ export function CommonHistory() {
         </div>
     );
 }
-
-{/* <div className={styles.historyItem}>
-<div className={styles.itemTitleWrap}>
-    <span className={styles.itemTitle}>Историк, 29 июня 08:15</span>
-    <span className={styles.itemAction}>Изменил комментарий</span>
-</div>
-<div className={styles.itemDescrWrap}>
-    <span className={styles.itemDrescrNormal}>“Приехала с сыном Иваном.</span>
-    <span className={styles.itemDrescrOld}>ываыва</span>
-    <span className={styles.itemDrescrNew}>Не пришла на работу 5 раз в течении недели и не предупреждала руководителя. По запросу руководителя заблокировал.”</span>
-</div>
-</div> */}
-
-// function renderHistoryLayout(data: IData, isOldData: boolean) {
-//     if (!data) return;
-//     const keysArray = Object.keys(data);
-//     return keysArray.map((item) => {
-//         return (
-//             <div key={keysArray.indexOf(item)} className={styles.itemDescrWrap}>
-//                 <span className={styles.itemAction}>
-//                     {`${returnCurrentField(item)}`}
-//                 </span>
-//                 <br />
-//                 <span className={isOldData ? `${styles.itemDrescrOld}` : `${styles.itemDrescrNew}`}>
-//                     {data[item]}
-//                 </span>
-//                 {isOldData ? ' ' : ''}
-//             </div>
-//         )
-//     })
-// }
