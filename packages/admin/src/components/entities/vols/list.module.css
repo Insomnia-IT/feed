@@ -1,0 +1,57 @@
+.filters {
+    display: flex;
+    align-items: baseline;
+    padding: 24px 0;
+}
+
+.filtersLabel {
+    margin-right: 24px;
+    font-weight: 500;
+}
+
+.filterItems {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 8px;
+    column-gap: 8px;
+}
+
+.filterItemButton {
+    color: #D9D9D9;
+}
+
+.filterPopupFieldName {
+    color: #8D959E;
+}
+
+.filterPopupHeader {
+    padding-bottom: 12px;
+}
+
+.filterDownIcon {
+    padding-left: 6px;
+}
+
+.filterPopupList {
+    overflow: auto;
+    max-height: 300px;
+    margin-top: 8px;
+}
+
+.filterPopupListItem {
+    display: flex;
+    padding: 8px 0;
+    column-gap: 8px;
+}
+
+.filterItemActive {
+    color: #000000;
+}
+
+.filterItemNameActive {
+    font-weight: 500;
+}
+
+.filterListItemCount {
+    color: #8D959E;
+}

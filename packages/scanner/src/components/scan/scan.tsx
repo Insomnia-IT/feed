@@ -10,7 +10,6 @@ import { ScanScreenStats } from '~/components/scan-screen-stats';
 import { useApp } from '~/model/app-provider';
 import { ScanSimulator } from '~/components/qr-scan-simulator';
 import { AppViews, useView } from '~/model/view-provider';
-import { ScanStatus } from '~/components/scan-status';
 import { useScan } from '~/model/scan-provider/scan-provider';
 
 import css from './scan.module.css';
@@ -33,26 +32,23 @@ export const Scan = () => {
 
     return (
         <>
-            <div className={css.overlay}>
-                <ScanStatus />
+            <div className={css.head}>
+                <IconButton onClick={handleHistoryClick}>
+                    <Clock color='white' />
+                </IconButton>
+                <p className={css.mealTimeText}>{mealTime ? mealTimes[mealTime] : ''}</p>
+                <IconButton onClick={handleOptionsClick}>
+                    <GearAlt color='white' />
+                </IconButton>
             </div>
-            <QrScan onScan={handleScan} />
-            <div className={css.scan}>
-                <div className={css.head}>
-                    <IconButton onClick={handleHistoryClick}>
-                        <Clock color='white' />
-                    </IconButton>
-                    <p className={css.mealTimeText}>{mealTime ? mealTimes[mealTime] : ''}</p>
-                    <IconButton onClick={handleOptionsClick}>
-                        <GearAlt color='white' />
-                    </IconButton>
-                </div>
-                <Button className={css.anonButton} onClick={feedAnon}>
-                    Кормить Анонима
-                </Button>
-                {(isDev || debugMode === '1') && <ScanSimulator withSelection setScanResult={handleScan} />}
+            <div className={css.bottomBlock}>
                 <ScanScreenStats />
+                <Button onClick={feedAnon}>Кормить Анонима</Button>
             </div>
+
+            <div className={css.overlay}></div>
+            <QrScan onScan={handleScan} />
+            {(isDev || debugMode === '1') && <ScanSimulator withSelection setScanResult={handleScan} />}
         </>
     );
 };

@@ -62,7 +62,14 @@ export const validateVol = (
             isRed = true;
         }
     }
-    if (msg.length && !isRed && volTransactions.some((t) => t.amount && t.reason) && vol.feed_type !== FeedType.Child) {
+    if (
+        msg.length &&
+        !isRed &&
+        // TODO: Доработать логи по желтым экранам
+        // Проверка t.amount > 0 && t.reason означало кормление по желтому экрану, а теперь добавилась маркировка "Групповое питание"
+        volTransactions.some((t) => t.amount && t.reason && t.reason !== 'Групповое питание') &&
+        vol.feed_type !== FeedType.Child
+    ) {
         msg.push('Волонтер уже питался сегодня в долг');
         isRed = true;
     }

@@ -60,7 +60,7 @@ export const useSync = (
                         limit: '10000'
                     });
                     const groupBadgesPromise = groupBadgesSend({
-                        created_at__from: new Date(lastSyncStart).toISOString(),
+                        updated_at__from: new Date(lastSyncStart).toISOString(),
                         limit: '1000'
                     });
                     const syncTransactionsPromise = syncTransactionsSend();

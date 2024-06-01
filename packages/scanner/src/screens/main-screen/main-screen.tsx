@@ -7,8 +7,7 @@ import { useApp } from '~/model/app-provider';
 import { useScan } from '~/model/scan-provider/scan-provider';
 import { PostScanGroupBadge } from '~/components/post-scan/post-scan-group-badge';
 import { ErrorCard } from 'src/components/post-scan/post-scan-cards';
-
-import css from './main-screen.module.css';
+import { ScreenWrapper } from '~/shared/ui/screen-wrapper';
 
 export const MainScreen = React.memo(function MainScreen() {
     const { setVolCount } = useApp();
@@ -19,13 +18,13 @@ export const MainScreen = React.memo(function MainScreen() {
     }, [setVolCount]);
 
     return (
-        <div className={css.main}>
+        <ScreenWrapper>
             {['scan', 'loading'].includes(view) && <Scan />}
             {view === 'post-scan' && <PostScan />}
             {view === 'post-scan-group-badge' && (
                 <PostScanGroupBadge closeFeed={handleCloseCard} groupBadge={groupBadge!} />
             )}
             {view === 'error' && <ErrorCard close={handleCloseCard} msg={errorMessage} />}
-        </div>
+        </ScreenWrapper>
     );
 });
