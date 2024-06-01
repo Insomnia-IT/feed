@@ -106,7 +106,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
     const [feededIsLoading, setFeededIsLoading] = useState(false);
     const [feededIds, setFeededIds] = useState({});
-    const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>(() => {
+
+    const getDefaultActiveFilters = () => {
         const volFilterStr = localStorage.getItem('volFilter');
         if (volFilterStr) {
             try {
@@ -114,7 +115,29 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             } catch (e) {}
         }
         return [];
-    });
+    };
+
+    const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>(getDefaultActiveFilters);
+
+    useEffect(() => {
+        localStorage.setItem('volFilter', JSON.stringify(activeFilters));
+    }, [activeFilters]);
+
+    const getDefaultVisibleFilters = () => {
+        const volVisibleFiltersStr = localStorage.getItem('volVisibleFilters');
+        if (volVisibleFiltersStr) {
+            try {
+                return JSON.parse(volVisibleFiltersStr);
+            } catch (e) {}
+        }
+        return [];
+    };
+
+    const [visibleFilters, setVisibleFilters] = useState<Array<string>>(getDefaultVisibleFilters);
+
+    useEffect(() => {
+        localStorage.setItem('volVisibleFilters', JSON.stringify(visibleFilters));
+    }, [visibleFilters]);
 
     const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
     const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
@@ -131,10 +154,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             void loadAuthorizedUserData();
         }
     }, [canFullList, authorizedUserData]);
-
-    useEffect(() => {
-        localStorage.setItem('volFilter', JSON.stringify(activeFilters));
-    }, [activeFilters]);
 
     const pagination: TablePaginationConfig = {
         showTotal: (total) => `Кол-во волонтеров: ${total}`,
@@ -155,9 +174,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         }
     });
 
-    const { queryResult: directions, selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
-        resource: 'directions',
-        optionLabel: 'name'
+    const { data: directions } = useList<DirectionEntity>({
+        resource: 'directions'
     });
 
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
@@ -216,6 +234,13 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const transportById = useMapFromList(transports);
 
     const filterFields: Array<FilterField> = [
+        {
+            type: 'lookup',
+            name: 'directions',
+            title: 'Службы/Локации',
+            getter: (data) => (data.directions || []).map(({ id }) => id),
+            lookup: () => directions?.data ?? []
+        }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
         { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
         { type: 'lookup', name: 'arrivals.status', title: 'Статус заезда', lookup: () => statuses?.data ?? [] },
@@ -236,13 +261,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         { type: 'string', name: 'name', title: 'Имя на бейдже' },
         { type: 'string', name: 'first_name', title: 'Имя' },
         { type: 'string', name: 'last_name', title: 'Фамилия' },
-        {
-            type: 'lookup',
-            name: 'directions',
-            title: 'Службы/Локации',
-            getter: (data) => (data.directions || []).map(({ id }) => id),
-            lookup: () => directions.data?.data ?? []
-        }, // directions
         { type: 'lookup', name: 'main_role', title: 'Роль', lookup: () => volunteerRoles?.data ?? [] },
         { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
         { type: 'lookup', name: 'kitchen', title: 'Кухня', lookup: () => kitchens?.data ?? [] }, // kitchenNameById
@@ -297,7 +315,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         v.feed_type !== FEED_TYPE_WITHOUT_FEED)
             )
             .filter((vol) => {
-                const arrivalFilters = activeFilters.filter((filter) => filter.name.startsWith('arrivals.'));
+                const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
+                const arrivalFilters = activeVisibleFilters.filter((filter) => filter.name.startsWith('arrivals.'));
                 if (arrivalFilters.length) {
                     const arrivals = arrivalFilters.reduce((arrivals, filter) => {
                         const key = filter.name.split('.')[1];
@@ -305,11 +324,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             if (key === 'staying_date') {
                                 const filterValue = filter.value as string;
                                 return (
-                                    (filterValue >= arrival.arrival_date &&
-                                        filterValue <= arrival.departure_date &&
-                                        arrivalFilters.some(({ name }) => name === 'arrivals.status')) ||
-                                    arrival.status === 'ARRIVED' ||
-                                    arrival.status === 'STARTED'
+                                    filterValue >= arrival.arrival_date &&
+                                    filterValue <= arrival.departure_date &&
+                                    (activeFilters.some(({ name }) => name === 'arrivals.status') ||
+                                        isActivatedStatus(arrival.status))
                                 );
                             }
                             const filterValue = filter.value;
@@ -325,7 +343,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         return false;
                     }
                 }
-                return activeFilters
+                return activeVisibleFilters
                     .filter((filter) => !filter.name.startsWith('arrivals.'))
                     .every((filter) => {
                         const path = filter.name.split('.');
@@ -367,7 +385,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         }
                     });
             });
-    }, [volunteers, searchText, feededIds, filterUnfeededType, canFullList, authorizedUserData, activeFilters]);
+    }, [
+        volunteers,
+        searchText,
+        feededIds,
+        filterUnfeededType,
+        canFullList,
+        authorizedUserData,
+        activeFilters,
+        visibleFilters
+    ]);
 
     // const { selectProps } = useSelect<VolEntity>({
     //     resource: 'volunteers'
@@ -700,9 +727,13 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         <div className={styles.filterPopupList}>
                             {filterListItems.map((filterListItem) => {
                                 return (
-                                    <div className={styles.filterPopupListItem} key={filterListItem.text}>
+                                    <div
+                                        className={styles.filterPopupListItem}
+                                        key={filterListItem.text}
+                                        onClick={() => onFilterValueChange(field, filterListItem)}
+                                    >
                                         <Checkbox
-                                            value={filterListItem.selected}
+                                            checked={filterListItem.selected}
                                             onChange={() => onFilterValueChange(field, filterListItem)}
                                         />
                                         {filterListItem.text}
@@ -747,30 +778,74 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return <span>{field.title}</span>;
     };
 
+    const toggleVisibleFilter = (name: string) => {
+        const visible = visibleFilters.includes(name);
+        if (visible) {
+            setVisibleFilters(visibleFilters.filter((currentName) => currentName !== name));
+        } else {
+            setVisibleFilters([...visibleFilters, name]);
+        }
+    };
+
+    const renderFilterChooser = () => {
+        return (
+            <div className={styles.filterPopupList}>
+                {filterFields.map((filterField) => {
+                    return (
+                        <div
+                            className={styles.filterPopupListItem}
+                            key={filterField.title}
+                            onClick={() => toggleVisibleFilter(filterField.name)}
+                        >
+                            <Checkbox
+                                checked={visibleFilters.includes(filterField.name)}
+                                onChange={() => toggleVisibleFilter(filterField.name)}
+                            />
+                            {filterField.title}
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
+
     return (
         <List>
             <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
             <div className={styles.filters}>
                 <div className={styles.filtersLabel}>Фильтры:</div>
                 <div className={styles.filterItems}>
-                    {filterFields.map((field) => {
-                        return (
-                            <Popover
-                                key={field.name}
-                                placement='bottomLeft'
-                                content={createRenderFilterPopupContent(field)}
-                                overlayInnerStyle={{ borderRadius: 0 }}
-                                trigger='click'
-                            >
-                                <Button className={styles.filterItemButton}>
-                                    {renderFilterItemText(field)}
-                                    <span className={styles.filterDownIcon}>
-                                        <Icons.DownOutlined />
-                                    </span>
-                                </Button>
-                            </Popover>
-                        );
-                    })}
+                    {filterFields
+                        .filter((field) => visibleFilters.includes(field.name))
+                        .map((field) => {
+                            return (
+                                <Popover
+                                    key={field.name}
+                                    placement='bottomLeft'
+                                    content={createRenderFilterPopupContent(field)}
+                                    overlayInnerStyle={{ borderRadius: 0 }}
+                                    trigger='click'
+                                >
+                                    <Button className={styles.filterItemButton}>
+                                        {renderFilterItemText(field)}
+                                        <span className={styles.filterDownIcon}>
+                                            <Icons.DownOutlined />
+                                        </span>
+                                    </Button>
+                                </Popover>
+                            );
+                        })}
+                    <Popover
+                        key='add-filter'
+                        placement='bottomLeft'
+                        content={renderFilterChooser}
+                        overlayInnerStyle={{ borderRadius: 0 }}
+                        trigger='click'
+                    >
+                        <Button type='link' icon={<Icons.PlusOutlined />}>
+                            Фильтр
+                        </Button>
+                    </Popover>
                 </div>
             </div>
             <Form layout='inline' style={{ padding: '10px 0' }}>
