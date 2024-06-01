@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 
 import { NEW_API_URL } from '~/const';
 
 import styles from './common.module.css';
-import { useRouter } from 'next/router';
 
 interface IUuid {
     data: {
@@ -19,36 +19,36 @@ interface IHistoryData {
 }
 
 interface IActor {
-    id: number,
-    name: string,
+    id: number;
+    name: string;
 }
 
 interface IResult {
-    action_at: string,
-    actor: IActor | null,
-    actor_badge: string,
-    by_sync: boolean,
-    data: IData,
-    object_name: string,
-    status: string,
-    old_data: IData
+    action_at: string;
+    actor: IActor | null;
+    actor_badge: string;
+    by_sync: boolean;
+    data: IData;
+    object_name: string;
+    status: string;
+    old_data: IData;
 }
 
 interface IData {
-    comment?: string,
-    feed?: string,
-    first_name?: string,
-    gender?: string,
-    last_name?: string,
-    name?: string,
-    phone?: string,
-    position?: string,
-    vegan?: boolean,
-    departure_transport?: string,
-    arrival_transport?: string,
-    status?: string,
-    departure_date?: string,
-    arrival_date?: string,
+    comment?: string;
+    feed?: string;
+    first_name?: string;
+    gender?: string;
+    last_name?: string;
+    name?: string;
+    phone?: string;
+    position?: string;
+    vegan?: boolean;
+    departure_transport?: string;
+    arrival_transport?: string;
+    status?: string;
+    departure_date?: string;
+    arrival_date?: string;
 }
 
 export function CommonHistory() {
@@ -95,11 +95,11 @@ export function CommonHistory() {
 
     function returnCurrentStatusString(status: string): string {
         if (status === 'updated') {
-            return 'Обновил'
+            return 'Обновил';
         } else if (status === 'inserted') {
-            return 'Добавил'
+            return 'Добавил';
         } else if (status === 'deleted') {
-            return 'Удалил'
+            return 'Удалил';
         } else {
             return '';
         }
@@ -107,33 +107,33 @@ export function CommonHistory() {
 
     function returnCurrentField(fieldName: string): string {
         if (fieldName === 'comment') {
-            return 'Комментарий'
+            return 'Комментарий';
         } else if (fieldName === 'feed') {
-            return 'Тип питания'
+            return 'Тип питания';
         } else if (fieldName === 'first_name') {
-            return 'Имя'
+            return 'Имя';
         } else if (fieldName === 'gender') {
-            return 'Пол'
+            return 'Пол';
         } else if (fieldName === 'last_name') {
-            return 'Фамилию'
+            return 'Фамилию';
         } else if (fieldName === 'name') {
-            return 'Имя на бейдже'
+            return 'Имя на бейдже';
         } else if (fieldName === 'position') {
-            return 'Должность'
+            return 'Должность';
         } else if (fieldName === 'vegan') {
-            return 'Веганство'
+            return 'Веганство';
         } else if (fieldName === 'phone') {
-            return 'Телефон'
+            return 'Телефон';
         } else if (fieldName === 'arrival_date') {
-            return 'Дату приезда'
+            return 'Дату приезда';
         } else if (fieldName === 'departure_date') {
-            return 'Дату отъезда'
+            return 'Дату отъезда';
         } else if (fieldName === 'status') {
-            return 'Статус'
+            return 'Статус';
         } else if (fieldName === 'arrival_transport') {
-            return 'Как приехал'
+            return 'Как приехал';
         } else if (fieldName === 'departure_transport') {
-            return 'Как уехал'
+            return 'Как уехал';
         } else {
             return '';
         }
@@ -141,9 +141,9 @@ export function CommonHistory() {
 
     function returnVeganFieldValue(value: boolean | undefined) {
         if (value) {
-            return 'Веган'
+            return 'Веган';
         } else {
-            return 'Мясоед'
+            return 'Мясоед';
         }
     }
 
@@ -155,7 +155,7 @@ export function CommonHistory() {
         } else if (key === 'comment') {
             const result: string | undefined = obj[key];
             if (!result) return;
-            return result.replace(/<\/?[^>]+(>|$)/g, "");
+            return result.replace(/<\/?[^>]+(>|$)/g, '');
         } else {
             return obj[key];
         }
@@ -168,24 +168,18 @@ export function CommonHistory() {
         return keysArray.map((item) => {
             return (
                 <div key={keysArray.indexOf(item)} className={styles.itemDescrWrap}>
-                    <span className={styles.itemAction}>
-                        {`${returnCurrentField(item)}`}
-                    </span>
+                    <span className={styles.itemAction}>{`${returnCurrentField(item)}`}</span>
                     <br />
-                    <span className={styles.itemDrescrOld}>
-                        {returnCorrectFieldValue(data.old_data, item)}
-                    </span>
-                    <span className={styles.itemDrescrNew}>
-                        {returnCorrectFieldValue(data.data, item)}
-                    </span>
+                    <span className={styles.itemDrescrOld}>{returnCorrectFieldValue(data.old_data, item)}</span>
+                    <span className={styles.itemDrescrNew}>{returnCorrectFieldValue(data.data, item)}</span>
                 </div>
-            )
-        })
+            );
+        });
     }
 
     const renderHistory = (array: Array<IResult> | undefined) => {
         if (array === undefined) {
-            return 'ИЗМЕНЕНИЙ НЕТ'
+            return 'ИЗМЕНЕНИЙ НЕТ';
         }
         return array.map((item) => {
             const geiId = () => {
@@ -193,38 +187,37 @@ export function CommonHistory() {
                 if (item.actor.id) {
                     return item.actor.id;
                 } else {
-                    return
+                    return;
                 }
-            }
+            };
             const id = geiId();
             return (
                 <div key={array.indexOf(item)} className={styles.historyItem}>
                     <div className={styles.itemTitleWrap}>
-                        <span className={`${styles.itemTitle} ${styles.itemTitleRoute}`} onClick={() => {handleRouteClick(id)}}>
+                        <span
+                            className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
+                            onClick={() => {
+                                handleRouteClick(id);
+                            }}
+                        >
                             {`${item.actor ? item.actor.name : 'Кто-то'}, `}
                         </span>
-                        <span className={styles.itemTitle}>
-                            {formatDate(item.action_at)}
-                        </span>
-                        <span className={styles.itemAction}>
-                            {`${returnCurrentStatusString(item.status)}`}
-                        </span>
-                        {item.object_name === "arrival"
-                            ? <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
+                        <span className={styles.itemTitle}>{formatDate(item.action_at)}</span>
+                        <span className={styles.itemAction}>{`${returnCurrentStatusString(item.status)}`}</span>
+                        {item.object_name === 'arrival' ? (
+                            <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
                                 {`информацию по заезду`}
                             </span>
-                            : <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
+                        ) : (
+                            <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
                                 {`информацию по волонтеру`}
-                            </span>}
+                            </span>
+                        )}
                         {renderHistoryLayout(item)}
                     </div>
                 </div>
             );
-        })
-    }
-    return (
-        <div className={styles.historyWrap}>
-            {renderHistory(data)}
-        </div>
-    );
+        });
+    };
+    return <div className={styles.historyWrap}>{renderHistory(data)}</div>;
 }
