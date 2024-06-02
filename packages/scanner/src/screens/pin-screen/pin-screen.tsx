@@ -12,7 +12,7 @@ import css from './pin-screen.module.css';
 export const PinScreen = (): React.ReactElement => {
     const [error, setError] = useState<null | string>(null);
 
-    const { pin, setAuth, setKitchenId, setPin } = useApp();
+    const { doSync, pin, setAuth, setKitchenId, setPin } = useApp();
 
     const storedPin = localStorage.getItem('pin');
 
@@ -32,6 +32,9 @@ export const PinScreen = (): React.ReactElement => {
                 setAuth(true);
                 setPin(enteredPin);
                 setKitchenId(+user.data.id);
+            })
+            .then(() => {
+                doSync();
             })
             .catch((e) => {
                 if (!e.response && enteredPin && enteredPin === storedPin) {
