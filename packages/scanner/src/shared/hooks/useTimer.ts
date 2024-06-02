@@ -15,7 +15,7 @@ function getTimespan(deadline) {
 }
 
 export function useTimer(deadline: number, interval = SECOND) {
-    const [timespan, setTimespan] = useState(getTimespan(deadline));
+    const [timespan, setTimespan] = useState(() => getTimespan(deadline));
 
     useEffect(() => {
         const intervalId = setInterval(() => {
