@@ -352,6 +352,74 @@
     margin-right: 10px;
 }
 
+/* common-history */
+.historyWrap {
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
+
+.historyItem {
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #D9D9D9;
+}
+
+.itemTitleWrap {
+    margin-bottom: 8px;
+}
+
+.itemTitle {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.itemTitleRoute {
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color .3s ease-in-out;
+}
+
+.itemTitleRoute:hover,
+.itemTitleRoute:focus {
+    color: #1890FF;
+    transition: color .3s ease-in-out;
+}
+
+.itemAction {
+    padding-left: 8px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 183%;
+    color: #8d959e;
+}
+
+.itemActionModif {
+    padding-left: 3px;
+    text-decoration: underline;
+}
+
+.itemDescrWrap {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.itemDrescrOld {
+    text-decoration: line-through;
+    background-color: #FFA39E;
+}
+
+.itemDrescrNew {
+    background-color: #D9F7BE;
+}
+
+/* ADAPTIVES */
 @media (max-width: 1366px) {
     .edit__nav {
         display: none;
