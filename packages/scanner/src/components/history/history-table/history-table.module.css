@@ -5,6 +5,7 @@
     gap: 12px;
     padding: 16px;
     background: var(--c-white);
+    height: 100%;
     width: 100%;
 }
 
