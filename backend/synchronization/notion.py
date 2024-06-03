@@ -48,9 +48,6 @@ class NotionSync:
         }
 
         qs = History.objects.filter(action_at__gte=dt_start, action_at__lt=dt_end).exclude(actor_badge=None)
-        for q in qs:
-            if not q.actor_badge:
-                print(q.actor_badge)
         badges = qs.filter(object_name="volunteer")
         arrivals = qs.filter(object_name="arrival")
         serializer = HistorySyncSerializer

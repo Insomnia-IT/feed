@@ -22,8 +22,8 @@ class SynchronizationSystemActions(models.Model):
     error = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
-        verbose_name = "Синхронизация В"
-        verbose_name_plural = "Синхронизация В"
+        verbose_name = "Синхронизация"
+        verbose_name_plural = "Синхронизация"
 
     def __str__(self):
         return self.system
