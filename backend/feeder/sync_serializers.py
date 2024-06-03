@@ -18,14 +18,19 @@ class SaveSyncSerializerMixin(object):
     def save_history(self, status, data, old_data=None):
         if not data:
             return
+        instance_name = str(self.Meta.model.__name__).lower()
         history = {
                 "status": status,
-                "object_name": str(self.Meta.model.__name__).lower(),
+                "object_name": instance_name,
                 "action_at": self.instance.updated_at if hasattr(self.instance, "updated_at") else datetime.utcnow(),
                 "data": data
             }
         if old_data:
             history.update({"old_data": old_data})
+        if hasattr(self.instance, "volunteer"):
+            history.update({"volunteer_uuid": str(self.instance.volunteer.uuid)})
+        elif instance_name == "volunteer":
+            history.update({"volunteer_uuid": str(self.instance.uuid)})
         History.objects.create(**history)
 
     def delete_instance(self):
@@ -33,10 +38,6 @@ class SaveSyncSerializerMixin(object):
             "id": str(self.instance.uuid) if hasattr(self.instance, "uuid") else str(self.instance.id),
             "deleted": True
         }
-        if hasattr(self.instance, "volunteer"):
-            data.update({"badge": str(self.instance.volunteer.uuid)})
-        elif str(self.instance.__class__.__name__).lower() == "volunteer":
-            data.update({"badge": str(self.instance.uuid)})
         self.instance.delete()
         self.save_history(status=History.STATUS_DELETE, data=data)
 
@@ -64,11 +65,6 @@ class SaveSyncSerializerMixin(object):
         else:
             status = History.STATUS_CREATE
             changed_data = new_data
-
-        if hasattr(self.instance, "volunteer"):
-            changed_data.update({"badge": str(self.instance.volunteer.uuid)})
-        elif str(self.instance.__class__.__name__).lower() == "volunteer":
-            changed_data.update({"badge": str(self.instance.uuid)})
 
         self.save_history(status=status, data=changed_data, old_data=old_data)
 

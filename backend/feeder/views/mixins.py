@@ -45,19 +45,19 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         instance = serializer.instance
         instance_name = str(instance.__class__.__name__).lower()
         history_serializer = get_history_serializer(instance_name)
-        data = history_serializer(instance).data
-        if hasattr(instance, "volunteer"):
-            data.update({"badge": str(instance.volunteer.uuid)})
-        elif str(instance.__class__.__name__).lower() == "volunteer":
-            data.update({"badge": str(instance.uuid)})
 
         history_data = {
             "status": History.STATUS_CREATE,
             "object_name": instance_name,
             "actor_badge": user_id,
             "action_at": instance.created_at if hasattr(instance, "created_at") else datetime.utcnow(),
-            "data": data
+            "data": history_serializer(instance).data
         }
+
+        if hasattr(instance, "volunteer"):
+            history_data.update({"volunteer_uuid": str(instance.volunteer.uuid)})
+        elif instance_name == "volunteer":
+            history_data.update({"volunteer_uuid": str(instance.uuid)})
 
         History.objects.create(**history_data)
 
@@ -82,10 +82,7 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         if changed_data:
             instance_id = new_data.get("id")
             changed_data.update({"id": instance_id})
-            if hasattr(instance, "volunteer"):
-                changed_data.update({"badge": str(instance.volunteer.uuid)})
-            elif str(instance.__class__.__name__).lower() == "volunteer":
-                changed_data.update({"badge": str(instance.uuid)})
+
             history_data = {
                 "status": History.STATUS_UPDATE,
                 "object_name": instance_name,
@@ -94,6 +91,12 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
                 "data": changed_data,
                 "old_data": old_data
             }
+
+            if hasattr(instance, "volunteer"):
+                history_data.update({"volunteer_uuid": str(instance.volunteer.uuid)})
+            elif instance_name == "volunteer":
+                history_data.update({"volunteer_uuid": str(instance.uuid)})
+
             History.objects.create(**history_data)
 
     def perform_destroy(self, instance):
@@ -105,10 +108,12 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
                 "deleted": True
             }
 
+        volunteer_uuid = None
+
         if hasattr(instance, "volunteer"):
-            data.update({"badge": str(instance.volunteer.uuid)})
-        elif str(instance.__class__.__name__).lower() == "volunteer":
-            data.update({"badge": str(instance.uuid)})
+            volunteer_uuid = str(instance.volunteer.uuid)
+        elif instance_name == "volunteer":
+            volunteer_uuid = str(instance.uuid)
 
         super().perform_destroy(instance)
 
@@ -119,6 +124,10 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "action_at": instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow(),
             "data": data
         }
+
+        if volunteer_uuid:
+            history_data.update({"volunteer_uuid": volunteer_uuid})
+
         History.objects.create(**history_data)
 
 
