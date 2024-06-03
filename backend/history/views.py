@@ -17,7 +17,7 @@ class HistoryFilter(FilterSet):
 
     class Meta:
         model = History
-        fields = ['object_name', 'object_id', 'status', 'date', 'date_start', 'date_end' 'volunteer_uuid']
+        fields = ['object_name', 'object_id', 'status', 'date', 'date_start', 'date_end', 'volunteer_uuid']
 
     def filter_date(self, queryset, name, value):
         date_end = value + datetime.timedelta(days=1)
