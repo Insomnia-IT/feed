@@ -45,6 +45,7 @@ import { getUserData } from '~/auth';
 
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
+import useVisibleDirections from './use-visible-directions';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -101,6 +102,21 @@ const useMapFromList = (list: GetListResponse | undefined, nameField = 'name') =
     }, [list]);
 };
 
+export const getSorter = (field: string) => {
+    return (a, b) => {
+        const x = a[field] ?? '';
+        const y = b[field] ?? '';
+
+        if (x < y) {
+            return -1;
+        }
+        if (x > y) {
+            return 1;
+        }
+        return 0;
+    };
+};
+
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [searchText, setSearchText] = useState('');
     const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
@@ -142,18 +158,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
     const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
 
-    const [authorizedUserData, setAuthorizedUserData] = useState<UserData | null>(null);
-
-    const loadAuthorizedUserData = async () => {
-        const user = await getUserData(null, true);
-        setAuthorizedUserData(user);
-    };
-
-    useEffect(() => {
-        if (!canFullList && !authorizedUserData) {
-            void loadAuthorizedUserData();
-        }
-    }, [canFullList, authorizedUserData]);
+    const visibleDirections = useVisibleDirections();
 
     const pagination: TablePaginationConfig = {
         showTotal: (total) => `Кол-во волонтеров: ${total}`,
@@ -303,8 +308,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         )
             .filter(
                 (v) =>
-                    canFullList ||
-                    (authorizedUserData && v.directions?.some(({ id }) => authorizedUserData.directions?.includes(id)))
+                    !visibleDirections ||
+                    v.directions?.some(({ id }) => visibleDirections.includes(id))
             )
             .filter(
                 (v) =>
@@ -391,7 +396,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         feededIds,
         filterUnfeededType,
         canFullList,
-        authorizedUserData,
+        visibleDirections,
         activeFilters,
         visibleFilters
     ]);
@@ -401,21 +406,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     // });
 
     // return <Loader />;
-
-    const getSorter = (field: string) => {
-        return (a, b) => {
-            const x = a[field] ?? '';
-            const y = b[field] ?? '';
-
-            if (x < y) {
-                return -1;
-            }
-            if (x > y) {
-                return 1;
-            }
-            return 0;
-        };
-    };
 
     const createAndSaveXLSX = () => {
         if (filteredData) {

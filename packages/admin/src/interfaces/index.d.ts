@@ -74,6 +74,7 @@ export interface FeedTransactionEntity {
 export interface GroupBadgeEntity {
     id: number;
     qr: string;
+    direction?: DirectionEntity;
     name: string;
     comment?: string;
 }
