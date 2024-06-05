@@ -12,6 +12,7 @@ import {
     Radio,
     Space,
     Table,
+    Tag,
     TextField,
     useSelect
 } from '@pankod/refine-antd';
@@ -23,6 +24,7 @@ import { Button, Input } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
+import { useRouter } from 'next/router';
 
 import type {
     AccessRoleEntity,
@@ -106,6 +108,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
     const [feededIsLoading, setFeededIsLoading] = useState(false);
     const [feededIds, setFeededIds] = useState({});
+
+    const router = useRouter();
 
     const getDefaultActiveFilters = () => {
         const volFilterStr = localStorage.getItem('volFilter');
@@ -808,6 +812,44 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             </div>
         );
     };
+
+    const renderMobileList = () => (
+        <div className={styles.mobileVolList}>
+            {filteredData.map((vol) => {
+                const arrivals = vol.arrivals
+                    .map(({ arrival_date, departure_date }) =>
+                        [arrival_date, departure_date].map(formatDate).join(' - ')
+                    )
+                    .join(', ');
+                const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
+                const comment = vol?.direction_head_comment;
+                const isBlocked = vol.is_blocked;
+                const isOnField = getOnField(vol);
+
+                return (
+                    <div
+                        className={styles.volCard}
+                        key={vol.id}
+                        onClick={() => {
+                            void router.push(`volunteers/edit/${vol.id}`);
+                        }}
+                    >
+                        <div className={styles.name}>{name}</div>
+                        <div>{arrivals || 'Нет данных о датах'}</div>
+                        <div>
+                            {isBlocked && <Tag color='red'>Заблокирован</Tag>}
+                            {isOnField && <Tag>На поле</Tag>}
+                            {!isBlocked && !isOnField && 'Нет данных о статусе'}
+                        </div>
+                        <div>
+                            <span className={styles.commentary}>Комментарий: </span>
+                            {comment || '-'}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
 
     return (
         <List>
