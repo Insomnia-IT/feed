@@ -207,6 +207,7 @@ class Kitchen(TimeMixin):
 
 class GroupBadge(TimeMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, verbose_name="QR-код")
+    direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.name

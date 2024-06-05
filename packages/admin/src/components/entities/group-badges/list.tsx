@@ -13,8 +13,11 @@ import { renderText } from '@feed/ui/src/table';
 
 import type { GroupBadgeEntity } from '~/interfaces';
 
+import useVisibleDirections from '../vols/use-visible-directions';
+import { getSorter } from '../vols';
+
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
-    const { sorter, tableProps } = useTable<GroupBadgeEntity>({
+    const { tableProps } = useTable<GroupBadgeEntity>({
         initialSorter: [
             {
                 field: 'id',
@@ -23,16 +26,27 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
         ]
     });
 
+    const visibleDirections = useVisibleDirections();
+
+    const data = tableProps.dataSource?.filter((item) => {
+        return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
+    });
+
     return (
         <List>
-            <Table {...tableProps} rowKey='id'>
+            <Table dataSource={data} rowKey='id'>
                 <Table.Column
                     dataIndex='name'
                     key='name'
                     title='Название'
                     render={renderText}
-                    defaultSortOrder={getDefaultSortOrder('name', sorter)}
-                    sorter
+                    sorter={getSorter('name')}
+                />
+                <Table.Column
+                    dataIndex={['direction', 'name']}
+                    key='direction'
+                    title='Служба/Направление'
+                    render={renderText}
                 />
                 <Table.Column
                     dataIndex='comment'
