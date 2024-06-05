@@ -2,8 +2,8 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from feeder.models import Volunteer, Arrival, Direction, Gender, FeedType, DirectionType, Person, Status, Transport, \
-    Engagement, EngagementRole
+from feeder.models import (Volunteer, Arrival, Direction, Gender, FeedType, DirectionType, Person, Status, Transport,
+                           Engagement, EngagementRole, VolunteerCustomFieldValue)
 from history.models import History
 
 
@@ -93,7 +93,9 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         fields = (
             "id", "deleted", "name", "first_name", "last_name", "gender", "phone",
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
-            "person", "comment", "notion_id", "directions",
+            "person", "comment", "notion_id", "directions", "email", "qr", "is_blocked", "comment",
+            "direction_head_comment",
+            "access_role", "color_type", "group_badge", "kitchen", "main_role"
         )
         uuid_field = "uuid"
 
@@ -173,12 +175,21 @@ class PersonHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSeri
         )
 
 
+class VolunteerCustomFieldValueHistoryDataSerializer(serializers.ModelSerializer):
+    volunteer = serializers.CharField(source="volunteer.uuid")
+
+    class Meta:
+        model = VolunteerCustomFieldValue
+        fields = ("id", "volunteer", "value",)
+
+
 def get_history_serializer(instance_name):
     instance_serializer = {
         "volunteer": VolunteerHistoryDataSerializer,
         "arrival": ArrivalHistoryDataSerializer,
         "direction": DirectionHistoryDataSerializer,
         "engagement": EngagementHistoryDataSerializer,
-        "person": PersonHistoryDataSerializer
+        "person": PersonHistoryDataSerializer,
+        "volunteercustomfieldvalue": VolunteerCustomFieldValueHistoryDataSerializer,
     }
     return instance_serializer.get(instance_name)
