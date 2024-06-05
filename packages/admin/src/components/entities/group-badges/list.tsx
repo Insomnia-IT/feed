@@ -12,6 +12,7 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
 import type { GroupBadgeEntity } from '~/interfaces';
+
 import useVisibleDirections from '../vols/use-visible-directions';
 import { getSorter } from '../vols';
 
@@ -28,7 +29,7 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
     const visibleDirections = useVisibleDirections();
 
     const data = tableProps.dataSource?.filter((item) => {
-        return !visibleDirections || item.direction && visibleDirections.includes(item.direction.id);
+        return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
     });
 
     return (

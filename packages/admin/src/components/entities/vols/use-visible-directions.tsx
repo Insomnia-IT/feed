@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { UserData, getUserData } from '~/auth';
+import type { UserData } from '~/auth';
+import { getUserData } from '~/auth';
+
 import useCanAccess from './use-can-access';
 
-const useVisibleDirections = (): string[] | undefined => {
+const useVisibleDirections = (): Array<string> | undefined => {
     const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
 
     const [authorizedUserData, setAuthorizedUserData] = useState<UserData | null>(null);

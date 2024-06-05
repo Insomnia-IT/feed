@@ -24,8 +24,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
 
-import { CreateEdit } from './common';
 import useVisibleDirections from '../vols/use-visible-directions';
+
+import { CreateEdit } from './common';
 
 const { Title } = Typography;
 
@@ -136,9 +137,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                 return item.id;
             });
 
-        const filteredVols = volunteersAll?.data.filter(vol => {
-            return !visibleDirections || vol.directions?.some((({ id }) => visibleDirections.includes(id)))
-        })
+        const filteredVols = volunteersAll?.data.filter((vol) => {
+            return !visibleDirections || vol.directions?.some(({ id }) => visibleDirections.includes(id));
+        });
         return searchText
             ? filteredVols?.filter((item) => {
                   const searchTextInLowerCase = searchText.toLowerCase();

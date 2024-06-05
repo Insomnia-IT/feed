@@ -306,11 +306,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                   })
                 : data
         )
-            .filter(
-                (v) =>
-                    !visibleDirections ||
-                    v.directions?.some(({ id }) => visibleDirections.includes(id))
-            )
+            .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
             .filter(
                 (v) =>
                     !filterUnfeededType ||
