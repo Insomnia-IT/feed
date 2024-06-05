@@ -7,12 +7,13 @@ import { useApp } from '~/model/app-provider';
 import { AppViews, useView } from '~/model/view-provider';
 import { SettingsScreen } from '~/screens/settings-screen/settings-screen';
 import { MockTrans } from '~/components/mock-trans/mock-trans';
+import { AutoSync } from '~/components/auto-sync';
 
 export const Screens = () => {
-    const { auth, debugMode, isDev, mealTime } = useApp();
+    const { auth, autoSync, debugMode, isDev, mealTime } = useApp();
     const { currentView } = useView();
     return (
-        <div>
+        <>
             {!auth && <PinScreen />}
             {auth && !mealTime && <MealTimeSelect />}
             {auth && mealTime && (
@@ -23,7 +24,10 @@ export const Screens = () => {
                     {currentView === AppViews.SETTINGS && <SettingsScreen />}
                 </>
             )}
+
+            {/* Overlay components */}
             {(isDev || debugMode === '1') && <MockTrans />}
-        </div>
+            {autoSync && <AutoSync />}
+        </>
     );
 };

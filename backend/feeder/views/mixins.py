@@ -6,8 +6,55 @@ from rest_framework.viewsets import ModelViewSet
 
 from feeder.sync_serializers import get_history_serializer
 from history.models import History
+from feeder.models import Arrival, VolunteerCustomField, VolunteerCustomFieldValue
+
 
 User = get_user_model()
+
+
+
+class VolunteerExtraFilterMixin(ModelViewSet):
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        arrival_date = self.request.query_params.get('arrival_date')
+        departure_date = self.request.query_params.get('departure_date')
+        staying_date = self.request.query_params.get('staying_date')
+        arrival_status = self.request.query_params.get('arrival_status')
+        custom_field_name = self.request.query_params.get('custom_field_name')
+        custom_field_id = self.request.query_params.get('custom_field_id')
+        custom_field_value = self.request.query_params.get('custom_field_value')
+        custom_field_id_empty = self.request.query_params.get('custom_field_id_empty')
+
+        if arrival_date or departure_date or staying_date or arrival_status:
+            arrive_qs = Arrival.objects.all()
+            if arrival_date:
+                arrive_qs = arrive_qs.filter(arrival_date=arrival_date)
+            if departure_date:
+                arrive_qs = arrive_qs.filter(departure_date=departure_date)
+            if staying_date:
+                arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
+            if arrival_status and arrival_status.isnumeric():
+                arrive_qs = arrive_qs.filter(status__id=arrival_status)
+            qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
+
+        if ((custom_field_name or custom_field_id) and custom_field_value) or custom_field_id_empty:
+            custom_fields_qs = VolunteerCustomFieldValue.objects.all()
+            if custom_field_id_empty:
+                custom_fields_qs = custom_fields_qs.filter(custom_field__id=custom_field_id_empty)
+                qs = qs.exclude(
+                    id__in=custom_fields_qs.values_list('volunteer_id', flat=True)
+                )
+            else:
+                if custom_field_id and custom_field_id.isnumeric():
+                    custom_fields_qs = custom_fields_qs.filter(custom_field__id=custom_field_id)
+                elif custom_field_name:
+                    custom_fields_qs = custom_fields_qs.filter(custom_field__name=custom_field_name)
+                if custom_field_value:
+                    custom_fields_qs = custom_fields_qs.filter(value=custom_field_value)
+                qs = qs.filter(id__in=custom_fields_qs.values_list('volunteer_id', flat=True))
+
+        return qs
 
 
 class SoftDeleteViewSetMixin(ModelViewSet):

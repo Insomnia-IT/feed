@@ -14,8 +14,8 @@ import { useValid } from '~/components/post-scan/post-scan-cards/feed-anon-group
 import css from './feed-anon-group-card.module.css';
 
 export type Form = {
-    meat: number;
-    vegan: number;
+    meat: string;
+    vegan: string;
     comment: string;
 };
 
@@ -24,8 +24,8 @@ export const FeedAnonGroupCard: FC<{
     doFeed: (isVegan?: boolean, reason?: string) => void;
 }> = ({ close, doFeed }) => {
     const [form, setForm] = useState<Form>({
-        meat: 0,
-        vegan: 0,
+        meat: '',
+        vegan: '',
         comment: ''
     });
 
@@ -39,77 +39,76 @@ export const FeedAnonGroupCard: FC<{
         e.preventDefault();
         const { valid } = validate();
         if (valid) {
-            for (let i = 0; i < form.vegan; i++) {
+            for (let i = 0; i < +form.vegan; i++) {
                 doFeed(true, form.comment);
             }
-            for (let i = 0; i < form.meat; i++) {
+            for (let i = 0; i < +form.meat; i++) {
                 doFeed(false, form.comment);
             }
             close();
         }
     };
-
     return (
         <CardContainer className={css.cardContainer}>
-            <div className={css.feedAnonCard}>
-                <div className={css.head}>
-                    <Title>Покормить без бейджа?</Title>
-                    <Text>
-                        Кормить группу можно <b>только по запросу руководителя (Проверяйте бейдж!)</b>
-                    </Text>
-                </div>
-                <div className={css.content}>
-                    <form className={css.form} id='anon-group' onSubmit={handleSubmit}>
-                        <div className={css.counts}>
-                            <div className={css.inputs}>
-                                <div className={css.formItem}>
-                                    <Input
-                                        className={css.numberInput}
-                                        type='number'
-                                        value={form.meat}
-                                        onChange={(e) =>
-                                            changeForm({ meat: removeNonDigits(e.currentTarget.value).slice(0, 3) })
-                                        }
-                                        error={!!errors?.['counts']}
-                                    ></Input>
-                                    <label className={css.formLabel}>🥩 Мясоед</label>
-                                </div>
-                                <div className={css.formItem}>
-                                    <Input
-                                        className={css.numberInput}
-                                        type='number'
-                                        value={form.vegan}
-                                        onChange={(e) =>
-                                            changeForm({ vegan: removeNonDigits(e.currentTarget.value).slice(0, 3) })
-                                        }
-                                        error={!!errors?.['counts']}
-                                    ></Input>
-                                    <label className={css.formLabel}>🥦 Веган</label>
-                                </div>
+            <div className={css.head}>
+                <Title>Покормить без бейджа?</Title>
+                <Text>
+                    Кормить группу можно <b>только по запросу руководителя (Проверяйте бейдж!)</b>
+                </Text>
+            </div>
+            <div className={css.content}>
+                <form className={css.form} id='anon-group' onSubmit={handleSubmit}>
+                    <div className={css.counts}>
+                        <div className={css.inputs}>
+                            <div className={css.formItem}>
+                                <Input
+                                    className={css.numberInput}
+                                    type='number'
+                                    value={form.meat}
+                                    onChange={(e) =>
+                                        changeForm({ meat: removeNonDigits(e.currentTarget.value).slice(0, 3) })
+                                    }
+                                    placeholder='0'
+                                    error={!!errors?.['counts']}
+                                ></Input>
+                                <label className={css.formLabel}>🥩 Мясоед</label>
                             </div>
-                            {!!errors?.['counts'] && <p className={css.error}>{errors?.['counts']}</p>}
+                            <div className={css.formItem}>
+                                <Input
+                                    className={css.numberInput}
+                                    type='number'
+                                    value={form.vegan}
+                                    onChange={(e) =>
+                                        changeForm({ vegan: removeNonDigits(e.currentTarget.value).slice(0, 3) })
+                                    }
+                                    placeholder='0'
+                                    error={!!errors?.['counts']}
+                                ></Input>
+                                <label className={css.formLabel}>🥦 Веган</label>
+                            </div>
                         </div>
-                        <div className={cn(css.formItem, {}, [css.column])}>
-                            <label className={cn(css.formLabel, {}, [css.mini])}>Комментарий</label>
-                            <TextArea
-                                value={form.comment}
-                                placeholder={'Служба, руководитель'}
-                                onChange={(e) => changeForm({ comment: e.currentTarget.value })}
-                            />
-                        </div>
-                    </form>
-                </div>
-                <div className={css.bottomBLock}>
-                    <div className={css.buttonsBlock}>
-                        <Button variant='secondary' className={css.button} onClick={close}>
-                            Отмена
-                        </Button>
-                        <Button className={css.button} form='anon-group'>
-                            Покормить группу
-                        </Button>
+                        {!!errors?.['counts'] && <p className={css.error}>{errors?.['counts']}</p>}
                     </div>
-                    <VolAndUpdateInfo />
+                    <div className={cn(css.formItem, {}, [css.column])}>
+                        <label className={cn(css.formLabel, {}, [css.mini])}>Комментарий</label>
+                        <TextArea
+                            value={form.comment}
+                            placeholder={'Служба, руководитель'}
+                            onChange={(e) => changeForm({ comment: e.currentTarget.value })}
+                        />
+                    </div>
+                </form>
+            </div>
+            <div className={css.bottomBLock}>
+                <div className={css.buttonsBlock}>
+                    <Button variant='secondary' className={css.button} onClick={close}>
+                        Отмена
+                    </Button>
+                    <Button className={css.button} form='anon-group'>
+                        Покормить группу
+                    </Button>
                 </div>
+                <VolAndUpdateInfo />
             </div>
         </CardContainer>
     );

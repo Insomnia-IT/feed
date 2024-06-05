@@ -17,16 +17,16 @@ const formatDate = (value) => {
     });
 };
 export const Settings = () => {
-    const { autoSync, lastSyncStart, setAuth, sync, toggleAutoSync } = useApp();
+    const { autoSync, doSync, lastSyncStart, setAuth, setMealTime, setPin, syncFetching, toggleAutoSync } = useApp();
     const { setCurrentView } = useView();
-    const { fetching, send } = sync;
-    const doSync = async () => {
-        try {
-            await send({ lastSyncStart });
-        } catch (e) {
-            console.error(e);
-        }
+
+    const logout = () => {
+        setAuth(false);
+        setMealTime(null);
+        setCurrentView(AppViews.MAIN);
+        setPin('');
     };
+
     return (
         <div className={css.settings}>
             <div>
@@ -48,21 +48,15 @@ export const Settings = () => {
                 <Button
                     className={css.button}
                     onClick={() => {
-                        void doSync();
+                        doSync();
                     }}
-                    disabled={fetching}
+                    disabled={syncFetching}
                 >
                     Обновить базу
                 </Button>
                 {!!lastSyncStart && <Text>Последнее обновление: {formatDate(lastSyncStart)}</Text>}
             </div>
-            <button
-                className={css.leave}
-                onClick={() => {
-                    setAuth(false);
-                    setCurrentView(AppViews.MAIN);
-                }}
-            >
+            <button className={css.leave} onClick={logout}>
                 Выйти из кухни &rarr;
             </button>
         </div>

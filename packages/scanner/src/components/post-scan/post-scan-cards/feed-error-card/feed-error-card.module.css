@@ -1,11 +1,5 @@
 .errorCard {
-    display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-
-    height: 100%;
-    width: 100%;
 }
 
 .bottomBLock {
@@ -23,12 +17,10 @@
     width: 100%;
 }
 
-.info {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-}
-
 .errorList {
     text-align: start;
+}
+
+.errorMessage {
+    text-align: center;
 }

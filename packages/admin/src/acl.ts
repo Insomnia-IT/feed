@@ -6,19 +6,20 @@ export const ac = new AccessControl();
 ac
     // Руководитель локации
     .grant(AppRoles.DIRECTION_HEAD)
-    .read(['dashboard', 'volunteers'])
-    .create(['volunteers'])
+    .read(['dashboard', 'volunteers', 'group-badges'])
+    .update(['group-badges'])
     .update(['volunteers'])
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
-    .read(['directions', 'feed-transaction', 'sync', 'stats', 'group-badges', 'scanner-page'])
+    .create(['volunteers'])
+    .read(['directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
     // Старший смены
     .grant(AppRoles.SENIOR)
     .extend(AppRoles.CAT)
     .read(['volunteer-custom-fields'])
     .create(['group-badges', 'volunteer-custom-fields'])
-    .update(['group-badges', 'volunteer-custom-fields'])
+    .update(['volunteer-custom-fields'])
     .delete(['volunteers'])
     // Администратор
     .grant(AppRoles.ADMIN)
@@ -47,6 +48,13 @@ export const ACL = {
                         break;
                     case 'delete':
                         can = ac.can(role).delete(resource).granted;
+                        break;
+                    case 'full_list':
+                    case 'badge_edit':
+                        can = role !== AppRoles.DIRECTION_HEAD;
+                        break;
+                    case 'unban':
+                        can = role === AppRoles.ADMIN || role == AppRoles.SENIOR;
                         break;
                     case 'full_edit':
                         can = role === AppRoles.ADMIN;

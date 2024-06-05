@@ -13,17 +13,15 @@ export const ErrorCard: FC<{
     close: () => void;
 }> = ({ close, msg = 'Бейдж не найден', title = 'Ошибка сканирования' }) => {
     return (
-        <CardContainer>
-            <div className={css.errorCard}>
-                <div className={css.info}>
-                    <Title>{title}</Title>
-                    <Text className={css.text}>{msg}</Text>
-                </div>
-                <div className={css.buttonsBlock}>
-                    <Button variant='secondary' onClick={close}>
-                        Закрыть
-                    </Button>
-                </div>
+        <CardContainer className={css.errorCard}>
+            <div className={css.info}>
+                <Title>{title}</Title>
+                <Text className={css.text}>{msg}</Text>
+            </div>
+            <div className={css.buttonsBlock}>
+                <Button variant='secondary' onClick={close}>
+                    Закрыть
+                </Button>
             </div>
         </CardContainer>
     );

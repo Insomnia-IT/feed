@@ -105,7 +105,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Arrival
-        fields = ['arrival_date', 'departure_date', 'status']
+        fields = ['arrival_date', 'departure_date', 'status', 'arrival_transport', 'departure_transport']
 
 
 class VolunteerListSerializer(serializers.ModelSerializer):
@@ -133,7 +133,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Volunteer
-        exclude = ['person']
+        exclude = ['person', 'departments']
 
 class VolunteerRoleSerializer(serializers.ModelSerializer):
     class Meta:

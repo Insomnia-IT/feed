@@ -3,7 +3,6 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 import sas from 'onscan.js/onscan';
 
-import { ReactComponent as Flash } from '~/shared/icons/flash.svg';
 import { useApp } from '~/model/app-provider';
 
 import css from './qr-scan.module.css';
