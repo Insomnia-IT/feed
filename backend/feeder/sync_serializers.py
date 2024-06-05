@@ -180,7 +180,7 @@ class VolunteerCustomFieldValueHistoryDataSerializer(serializers.ModelSerializer
 
     class Meta:
         model = VolunteerCustomFieldValue
-        fields = ("id", "volunteer", "value",)
+        fields = ("id", "volunteer", "value", "custom_field")
 
 
 def get_history_serializer(instance_name):

@@ -129,6 +129,8 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         if changed_data:
             instance_id = new_data.get("id")
             changed_data.update({"id": instance_id})
+            if hasattr(instance, "custom_field"):
+                changed_data["custom_field"] = instance.custom_field.id
 
             history_data = {
                 "status": History.STATUS_UPDATE,
@@ -151,9 +153,12 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
 
         instance_name = str(instance.__class__.__name__).lower()
         data = {
-                "id": instance.uuid if hasattr(instance, "uuid") else instance.id,
+                "id": str(instance.uuid) if hasattr(instance, "uuid") else str(instance.id),
                 "deleted": True
             }
+
+        if hasattr(instance, "custom_field"):
+            data["custom_field"] = instance.custom_field.id
 
         volunteer_uuid = None
 
