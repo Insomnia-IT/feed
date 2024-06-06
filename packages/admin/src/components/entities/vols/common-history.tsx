@@ -134,7 +134,7 @@ export function CommonHistory() {
         } else if (fieldName === 'departure_transport') {
             return 'Как уехал';
         } else {
-            return '';
+            return fieldName;
         }
     }
 

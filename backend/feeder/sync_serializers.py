@@ -80,12 +80,12 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     gender = serializers.SlugRelatedField(slug_field="id", queryset=Gender.objects.all(), required=False)
     vegan = serializers.BooleanField(source="is_vegan", required=False)
     infant = serializers.SerializerMethodField()
-    feed = serializers.SlugRelatedField(source="feed_type", slug_field="name",
+    feed = serializers.SlugRelatedField(source="feed_type", slug_field="id",
                                         queryset=FeedType.objects.all(), required=False)
     number = serializers.CharField(source="badge_number", required=False)
     batch = serializers.IntegerField(source="printing_batch", required=False)
     person = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all(), required=False)
-    directions = serializers.SlugRelatedField(many=True, slug_field="name",
+    directions = serializers.SlugRelatedField(many=True, slug_field="id",
                                               queryset=Direction.objects.all(), required=False)
 
     class Meta:
