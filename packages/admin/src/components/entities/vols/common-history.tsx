@@ -73,7 +73,7 @@ export function CommonHistory() {
         void setNewUuid();
     }, []);
     useEffect(() => {
-        if(uuid) {
+        if (uuid) {
             void historyData();
         }
     }, [uuid]);
