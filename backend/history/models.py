@@ -18,6 +18,7 @@ class History(models.Model):
     action_at = models.DateTimeField()
     data = models.JSONField(blank=True, null=True)
     old_data = models.JSONField(blank=True, null=True)
+    volunteer_uuid = models.CharField(max_length=128, blank=True, null=True)
 
     class Meta:
         verbose_name = "История"

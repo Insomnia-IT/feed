@@ -12,6 +12,7 @@ from feeder.models import Arrival, VolunteerCustomField, VolunteerCustomFieldVal
 User = get_user_model()
 
 
+
 class VolunteerExtraFilterMixin(ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
@@ -91,6 +92,7 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         instance = serializer.instance
         instance_name = str(instance.__class__.__name__).lower()
         history_serializer = get_history_serializer(instance_name)
+
         history_data = {
             "status": History.STATUS_CREATE,
             "object_name": instance_name,
@@ -98,7 +100,12 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "action_at": instance.created_at if hasattr(instance, "created_at") else datetime.utcnow(),
             "data": history_serializer(instance).data
         }
-        history_data['data'].update({"badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid)})
+
+        if hasattr(instance, "volunteer"):
+            history_data.update({"volunteer_uuid": str(instance.volunteer.uuid)})
+        elif instance_name == "volunteer":
+            history_data.update({"volunteer_uuid": str(instance.uuid)})
+
         History.objects.create(**history_data)
 
     def perform_update(self, serializer):
@@ -122,7 +129,9 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         if changed_data:
             instance_id = new_data.get("id")
             changed_data.update({"id": instance_id})
-            changed_data.update({"badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid)})
+            if hasattr(instance, "custom_field"):
+                changed_data["custom_field"] = instance.custom_field.id
+
             history_data = {
                 "status": History.STATUS_UPDATE,
                 "object_name": instance_name,
@@ -131,15 +140,32 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
                 "data": changed_data,
                 "old_data": old_data
             }
+
+            if hasattr(instance, "volunteer"):
+                history_data.update({"volunteer_uuid": str(instance.volunteer.uuid)})
+            elif instance_name == "volunteer":
+                history_data.update({"volunteer_uuid": str(instance.uuid)})
+
             History.objects.create(**history_data)
-
-
 
     def perform_destroy(self, instance):
         user_id = get_request_user_id(self.request.user)
 
-        instance_id = instance.uuid if hasattr(instance, "uuid") else instance.id
         instance_name = str(instance.__class__.__name__).lower()
+        data = {
+                "id": str(instance.uuid) if hasattr(instance, "uuid") else str(instance.id),
+                "deleted": True
+            }
+
+        if hasattr(instance, "custom_field"):
+            data["custom_field"] = instance.custom_field.id
+
+        volunteer_uuid = None
+
+        if hasattr(instance, "volunteer"):
+            volunteer_uuid = str(instance.volunteer.uuid)
+        elif instance_name == "volunteer":
+            volunteer_uuid = str(instance.uuid)
 
         super().perform_destroy(instance)
 
@@ -148,13 +174,14 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "object_name": instance_name,
             "actor_badge": user_id,
             "action_at": instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow(),
-            "data": {
-                "id": str(instance_id),
-                "badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid),
-                "deleted": True
-            }
+            "data": data
         }
+
+        if volunteer_uuid:
+            history_data.update({"volunteer_uuid": volunteer_uuid})
+
         History.objects.create(**history_data)
+
 
 class MultiSerializerViewSetMixin(object):
     def get_serializer_class(self):

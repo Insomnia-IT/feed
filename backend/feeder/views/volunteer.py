@@ -61,7 +61,7 @@ class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
     search_fields = ['name', ]
 
 
-class VolunteerCustomFieldValueViewSet(viewsets.ModelViewSet):
+class VolunteerCustomFieldValueViewSet(SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerCustomFieldValue.objects.all()
     serializer_class = serializers.VolunteerCustomFieldValueSerializer

@@ -73,7 +73,9 @@ export function CommonHistory() {
         void setNewUuid();
     }, []);
     useEffect(() => {
-        void historyData();
+        if (uuid) {
+            void historyData();
+        }
     }, [uuid]);
 
     function formatDate(isoDateString: string): string {
@@ -134,7 +136,7 @@ export function CommonHistory() {
         } else if (fieldName === 'departure_transport') {
             return 'Как уехал';
         } else {
-            return '';
+            return fieldName;
         }
     }
 

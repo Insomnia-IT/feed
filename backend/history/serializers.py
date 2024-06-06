@@ -24,3 +24,12 @@ class HistorySerializer(serializers.ModelSerializer):
 
     def get_by_sync(self, obj):
         return not obj.actor_badge
+
+
+class HistorySyncSerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(source="action_at")
+
+    class Meta:
+        model = History
+        fields = ("actor_badge", "date", "data")
+
