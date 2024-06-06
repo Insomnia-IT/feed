@@ -73,7 +73,9 @@ export function CommonHistory() {
         void setNewUuid();
     }, []);
     useEffect(() => {
-        void historyData();
+        if(uuid) {
+            void historyData();
+        }
     }, [uuid]);
 
     function formatDate(isoDateString: string): string {
