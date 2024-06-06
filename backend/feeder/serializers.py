@@ -21,7 +21,8 @@ class DirectionTypeSerializer(serializers.ModelSerializer):
 class DirectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Direction
-        fields = '__all__'
+        fields = ['id', 'name', 'first_year', 'last_year', 'notion_id', 'type']
+
 
 class ViewDirectionSerializer(serializers.ModelSerializer):
     type = DirectionTypeSerializer()
@@ -34,7 +35,8 @@ class ViewDirectionSerializer(serializers.ModelSerializer):
 class EngagementRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.EngagementRole
-        fields = '__all__'
+        fields = ['id', 'name', 'is_team']
+
 
 class EngagementSerializer(serializers.ModelSerializer):
     role = EngagementRoleSerializer()
@@ -80,27 +82,38 @@ class DepartmentNestedSerializer(serializers.ModelSerializer):
         model = models.Department
         fields = '__all__'
 
+
 class PersonSerializer(serializers.ModelSerializer):
-    engagements = EngagementSerializer(many=True)
+    engagements = serializers.SerializerMethodField()
+
+    def get_engagements(self, obj):
+        return EngagementSerializer(
+            obj.engagements.all().order_by('-year')[:1],
+            many=True
+        ).data
 
     class Meta:
         model = models.Person
         fields = '__all__'
+
 
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transport
         fields = '__all__'
 
+
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Status
         fields = '__all__'
 
+
 class ArrivalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Arrival
         fields = '__all__'
+
 
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -117,6 +130,7 @@ class VolunteerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Volunteer
         fields = '__all__'
+
 
 class RetrieveVolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -135,6 +149,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
         model = models.Volunteer
         exclude = ['person', 'departments']
 
+
 class VolunteerRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VolunteerRole
@@ -148,10 +163,11 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
         model = models.GroupBadge
         fields = '__all__'
 
+
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     direction = DirectionSerializer(required=False)
-    
+
 
     class Meta:
         model = models.GroupBadge
@@ -164,6 +180,7 @@ class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Color
         fields = '__all__'
+
 
 class AccessRoleSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
