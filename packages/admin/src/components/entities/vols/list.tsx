@@ -20,7 +20,7 @@ import type { GetListResponse, IResourceComponentsProps } from '@pankod/refine-c
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 
@@ -40,8 +40,6 @@ import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
-import type { UserData } from '~/auth';
-import { getUserData } from '~/auth';
 
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
@@ -102,26 +100,20 @@ const useMapFromList = (list: GetListResponse | undefined, nameField = 'name') =
     }, [list]);
 };
 
-export const getSorter = (field: string) => {
-    return (a, b) => {
-        const x = a[field] ?? '';
-        const y = b[field] ?? '';
-
-        if (x < y) {
-            return -1;
-        }
-        if (x > y) {
-            return 1;
-        }
-        return 0;
-    };
-};
-
 export const VolList: FC<IResourceComponentsProps> = () => {
-    const [searchText, setSearchText] = useState('');
     const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
     const [feededIsLoading, setFeededIsLoading] = useState(false);
     const [feededIds, setFeededIds] = useState({});
+
+    const getDefaultSearchText = () => {
+        return localStorage.getItem('volSearchText') || '';
+    };
+
+    const [searchText, setSearchText] = useState(getDefaultSearchText);
+
+    useEffect(() => {
+        localStorage.setItem('volSearchText', searchText);
+    }, [searchText]);
 
     const getDefaultActiveFilters = () => {
         const volFilterStr = localStorage.getItem('volFilter');
@@ -797,7 +789,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     return (
         <List>
-            <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            <Input
+                placeholder='Поиск...'
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+            ></Input>
             <div className={styles.filters}>
                 <div className={styles.filtersLabel}>Фильтры:</div>
                 <div className={styles.filterItems}>
@@ -883,33 +880,24 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         </Space>
                     )}
                 />
-                <Table.Column
-                    dataIndex='id'
-                    key='id'
-                    title='ID'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('id')}
-                />
+                <Table.Column dataIndex='id' key='id' title='ID' render={(value) => <TextField value={value} />} />
                 <Table.Column
                     dataIndex='name'
                     key='name'
                     title='Имя на бейдже'
                     render={(value) => <TextField value={value} />}
-                    sorter={getSorter('name')}
                 />
                 <Table.Column
                     dataIndex='first_name'
                     key='first_name'
                     title='Имя'
                     render={(value) => <TextField value={value} />}
-                    sorter={getSorter('first_name')}
                 />
                 <Table.Column
                     dataIndex='last_name'
                     key='last_name'
                     title='Фамилия'
                     render={(value) => <TextField value={value} />}
-                    sorter={getSorter('last_name')}
                 />
                 <Table.Column
                     dataIndex='directions'
@@ -944,14 +932,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     key='is_blocked'
                     title='❌'
                     render={(value) => <ListBooleanNegative value={value} />}
-                    sorter={getSorter('is_blocked')}
                 />
                 <Table.Column
                     dataIndex='kitchen'
                     key='kitchen'
                     title='Кухня'
                     render={(value) => <TextField value={value} />}
-                    sorter={getSorter('kitchen')}
                 />
                 <Table.Column
                     dataIndex='printing_batch'
