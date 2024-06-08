@@ -104,38 +104,25 @@ export function CommonHistory() {
         }
     }
 
+    const localizedFieldNames = {
+        comment: 'Комментарий',
+        feed: 'Тип питания',
+        first_name: 'Имя',
+        gender: 'Пол',
+        last_name: 'Фамилию',
+        name: 'Имя на бейдже',
+        phone: 'Телефон',
+        position: 'Должность',
+        vegan: 'Веганство',
+        departure_transport: 'Как уехал',
+        arrival_transport: 'Как приехал',
+        status: 'Статус',
+        departure_date: 'Дату отъезда',
+        arrival_date: 'Дату приезда',
+    }
+
     function returnCurrentField(fieldName: string): string {
-        if (fieldName === 'comment') {
-            return 'Комментарий';
-        } else if (fieldName === 'feed') {
-            return 'Тип питания';
-        } else if (fieldName === 'first_name') {
-            return 'Имя';
-        } else if (fieldName === 'gender') {
-            return 'Пол';
-        } else if (fieldName === 'last_name') {
-            return 'Фамилию';
-        } else if (fieldName === 'name') {
-            return 'Имя на бейдже';
-        } else if (fieldName === 'position') {
-            return 'Должность';
-        } else if (fieldName === 'vegan') {
-            return 'Веганство';
-        } else if (fieldName === 'phone') {
-            return 'Телефон';
-        } else if (fieldName === 'arrival_date') {
-            return 'Дату приезда';
-        } else if (fieldName === 'departure_date') {
-            return 'Дату отъезда';
-        } else if (fieldName === 'status') {
-            return 'Статус';
-        } else if (fieldName === 'arrival_transport') {
-            return 'Как приехал';
-        } else if (fieldName === 'departure_transport') {
-            return 'Как уехал';
-        } else {
-            return '';
-        }
+        return localizedFieldNames[fieldName];
     }
 
     function returnVeganFieldValue(value: boolean | undefined) {
