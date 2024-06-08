@@ -14,7 +14,21 @@ import { renderText } from '@feed/ui/src/table';
 import type { GroupBadgeEntity } from '~/interfaces';
 
 import useVisibleDirections from '../vols/use-visible-directions';
-import { getSorter } from '../vols';
+
+const getSorter = (field: string) => {
+    return (a, b) => {
+        const x = a[field] ?? '';
+        const y = b[field] ?? '';
+
+        if (x < y) {
+            return -1;
+        }
+        if (x > y) {
+            return 1;
+        }
+        return 0;
+    };
+};
 
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
     const { tableProps } = useTable<GroupBadgeEntity>({
