@@ -108,7 +108,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 value: value ? dayjs(value) : ''
             };
         };
-    }
+    };
 
     const onGroupBadgeClear = () => {
         setTimeout(() => {
