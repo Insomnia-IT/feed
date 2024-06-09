@@ -4,6 +4,7 @@ import { useIsomorphicLayoutEffect } from '~/shared/hooks/use-isomorphic-layout-
 
 interface IMediaContext {
     isMobile: boolean;
+    isDesktop: boolean;
 }
 
 const MediaContext = React.createContext<IMediaContext | null>(null);
@@ -16,7 +17,8 @@ export const MediaProvider = (props) => {
     const { children } = props;
 
     const [matches, setMatches] = useState<IMediaContext>({
-        isMobile: false
+        isMobile: false,
+        isDesktop: true
     });
 
     const getMatches = (query: string, defaultValue: boolean): boolean => {
@@ -27,7 +29,11 @@ export const MediaProvider = (props) => {
     };
 
     function handleMobileChange(): void {
-        setMatches({ ...matches, isMobile: getMatches(MOBILE_QUERY, false) });
+        setMatches({
+            ...matches,
+            isMobile: getMatches(MOBILE_QUERY, false),
+            isDesktop: !getMatches(MOBILE_QUERY, false)
+        });
     }
 
     useIsomorphicLayoutEffect(() => {
