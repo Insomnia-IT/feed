@@ -927,134 +927,129 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 </Form.Item>
                 <Form.Item>Кол-во волонтеров: {filteredData.length}</Form.Item>
             </Form>
+            <Table
+                scroll={{ x: '100%' }}
+                pagination={pagination}
+                loading={volunteersIsLoading || feededIsLoading}
+                dataSource={filteredData}
+                rowKey='id'
+            >
+                <Table.Column<VolEntity>
+                    title=''
+                    dataIndex='actions'
+                    render={(_, record) => (
+                        <Space>
+                            <EditButton hideText size='small' recordItemId={record.id} />
+                            <DeleteButton hideText size='small' recordItemId={record.id} />
+                        </Space>
+                    )}
+                />
+                <Table.Column
+                    dataIndex='id'
+                    key='id'
+                    title='ID'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('id')}
+                />
+                <Table.Column
+                    dataIndex='name'
+                    key='name'
+                    title='Имя на бейдже'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('name')}
+                />
+                <Table.Column
+                    dataIndex='first_name'
+                    key='first_name'
+                    title='Имя'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('first_name')}
+                />
+                <Table.Column
+                    dataIndex='last_name'
+                    key='last_name'
+                    title='Фамилия'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('last_name')}
+                />
+                <Table.Column
+                    dataIndex='directions'
+                    key='directions'
+                    title='Службы / Локации'
+                    render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
+                />
+                <Table.Column
+                    dataIndex='arrivals'
+                    key='arrivals'
+                    title='Даты на поле'
+                    render={(arrivals) => (
+                        <span style={{ whiteSpace: 'nowrap' }}>
+                            {arrivals
+                                .map(({ arrival_date, departure_date }) =>
+                                    [arrival_date, departure_date].map(formatDate).join(' - ')
+                                )
+                                .join(', ')}
+                        </span>
+                    )}
+                />
+                <Table.Column
+                    key='on_field'
+                    title='На поле'
+                    render={(vol) => {
+                        const value = getOnField(vol as VolEntity);
+                        return <ListBooleanPositive value={value} />;
+                    }}
+                />
+                <Table.Column
+                    dataIndex='is_blocked'
+                    key='is_blocked'
+                    title='❌'
+                    render={(value) => <ListBooleanNegative value={value} />}
+                    sorter={getSorter('is_blocked')}
+                />
+                <Table.Column
+                    dataIndex='kitchen'
+                    key='kitchen'
+                    title='Кухня'
+                    render={(value) => <TextField value={value} />}
+                    sorter={getSorter('kitchen')}
+                />
+                <Table.Column
+                    dataIndex='printing_batch'
+                    key='printing_batch'
+                    title={
+                        <span>
+                            Партия
+                            <br />
+                            Бейджа
+                        </span>
+                    }
+                    render={(value) => value && <NumberField value={value} />}
+                />
 
-            {/* -------------------- Список волонтеров -------------------- */}
-            {isMobile && renderMobileList()}
-            {!isMobile && (
-                <Table
-                    scroll={{ x: '100%' }}
-                    pagination={pagination}
-                    loading={volunteersIsLoading || feededIsLoading}
-                    dataSource={filteredData}
-                    rowKey='id'
-                >
-                    <Table.Column<VolEntity>
-                        title=''
-                        dataIndex='actions'
-                        render={(_, record) => (
-                            <Space>
-                                <EditButton hideText size='small' recordItemId={record.id} />
-                                <DeleteButton hideText size='small' recordItemId={record.id} />
-                            </Space>
-                        )}
-                    />
-                    <Table.Column
-                        dataIndex='id'
-                        key='id'
-                        title='ID'
-                        render={(value) => <TextField value={value} />}
-                        sorter={getSorter('id')}
-                    />
-                    <Table.Column
-                        dataIndex='name'
-                        key='name'
-                        title='Имя на бейдже'
-                        render={(value) => <TextField value={value} />}
-                        sorter={getSorter('name')}
-                    />
-                    <Table.Column
-                        dataIndex='first_name'
-                        key='first_name'
-                        title='Имя'
-                        render={(value) => <TextField value={value} />}
-                        sorter={getSorter('first_name')}
-                    />
-                    <Table.Column
-                        dataIndex='last_name'
-                        key='last_name'
-                        title='Фамилия'
-                        render={(value) => <TextField value={value} />}
-                        sorter={getSorter('last_name')}
-                    />
-                    <Table.Column
-                        dataIndex='directions'
-                        key='directions'
-                        title='Службы / Локации'
-                        render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
-                    />
-                    <Table.Column
-                        dataIndex='arrivals'
-                        key='arrivals'
-                        title='Даты на поле'
-                        render={(arrivals) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
-                                {arrivals
-                                    .map(({ arrival_date, departure_date }) =>
-                                        [arrival_date, departure_date].map(formatDate).join(' - ')
-                                    )
-                                    .join(', ')}
-                            </span>
-                        )}
-                    />
-                    <Table.Column
-                        key='on_field'
-                        title='На поле'
-                        render={(vol) => {
-                            const value = getOnField(vol as VolEntity);
-                            return <ListBooleanPositive value={value} />;
-                        }}
-                    />
-                    <Table.Column
-                        dataIndex='is_blocked'
-                        key='is_blocked'
-                        title='❌'
-                        render={(value) => <ListBooleanNegative value={value} />}
-                        sorter={getSorter('is_blocked')}
-                    />
-                    <Table.Column
-                        dataIndex='kitchen'
-                        key='kitchen'
-                        title='Кухня'
-                        render={(value) => <TextField value={value} />}
-                        sorter={getSorter('kitchen')}
-                    />
-                    <Table.Column
-                        dataIndex='printing_batch'
-                        key='printing_batch'
-                        title={
-                            <span>
-                                Партия
-                                <br />
-                                Бейджа
-                            </span>
-                        }
-                        render={(value) => value && <NumberField value={value} />}
-                    />
+                <Table.Column
+                    dataIndex='comment'
+                    key='comment'
+                    title='Комментарий'
+                    render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
+                />
 
-                    <Table.Column
-                        dataIndex='comment'
-                        key='comment'
-                        title='Комментарий'
-                        render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
-                    />
-
-                    {customFields?.map((customField) => {
-                        return (
-                            <Table.Column
-                                key={customField.name}
-                                title={customField.name}
-                                render={(vol) => {
-                                    const value = getCustomValue(vol, customField);
-                                    if (customField.type === 'boolean') {
-                                        return <ListBooleanPositive value={value} />;
-                                    }
-                                    return value;
-                                }}
-                            />
-                        );
-                    })}
-                </Table>
-            )}
+                {customFields?.map((customField) => {
+                    return (
+                        <Table.Column
+                            key={customField.name}
+                            title={customField.name}
+                            render={(vol) => {
+                                const value = getCustomValue(vol, customField);
+                                if (customField.type === 'boolean') {
+                                    return <ListBooleanPositive value={value} />;
+                                }
+                                return value;
+                            }}
+                        />
+                    );
+                })}
+            </Table>
         </List>
     );
 };
