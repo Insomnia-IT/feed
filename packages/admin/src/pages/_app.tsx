@@ -38,6 +38,8 @@ import {
 } from '~/components/entities/volunteer-custom-fields';
 
 // eslint-disable-next-line no-restricted-imports
+import { MediaProvider } from '~/shared/providers';
+
 import { i18n } from '../../next-i18next.config.mjs';
 
 const CustomReadyPage: FC = () => <div> Custom Ready Page </div>;
@@ -64,81 +66,83 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
 
     return (
         <ConfigProvider locale={antdLocale}>
-            <Refine
-                routerProvider={routerProvider}
-                DashboardPage={Dashboard}
-                ReadyPage={CustomReadyPage}
-                notificationProvider={notificationProvider}
-                catchAll={<ErrorComponent />}
-                Layout={Layout}
-                dataProvider={dataProvider}
-                i18nProvider={i18nProvider}
-                authProvider={authProvider}
-                LoginPage={LoginPage}
-                Sider={CustomSider}
-                accessControlProvider={ACL}
-                options={{ syncWithLocation: true, disableTelemetry: true }}
-                resources={[
-                    {
-                        name: 'volunteers',
-                        list: VolList,
-                        create: VolCreate,
-                        edit: VolEdit,
-                        show: VolShow,
-                        icon: <Icons.UserOutlined />
-                    },
-                    {
-                        name: 'volunteer-custom-fields',
-                        list: VolunteerCustomFieldList,
-                        create: VolunteerCustomFieldCreate,
-                        edit: VolunteerCustomFieldEdit,
-                        show: VolunteerCustomFieldShow,
-                        icon: <Icons.InsertRowRightOutlined />,
-                        options: {
-                            hide: true
+            <MediaProvider>
+                <Refine
+                    routerProvider={routerProvider}
+                    DashboardPage={Dashboard}
+                    ReadyPage={CustomReadyPage}
+                    notificationProvider={notificationProvider}
+                    catchAll={<ErrorComponent />}
+                    Layout={Layout}
+                    dataProvider={dataProvider}
+                    i18nProvider={i18nProvider}
+                    authProvider={authProvider}
+                    LoginPage={LoginPage}
+                    Sider={CustomSider}
+                    accessControlProvider={ACL}
+                    options={{ syncWithLocation: true, disableTelemetry: true }}
+                    resources={[
+                        {
+                            name: 'volunteers',
+                            list: VolList,
+                            create: VolCreate,
+                            edit: VolEdit,
+                            show: VolShow,
+                            icon: <Icons.UserOutlined />
+                        },
+                        {
+                            name: 'volunteer-custom-fields',
+                            list: VolunteerCustomFieldList,
+                            create: VolunteerCustomFieldCreate,
+                            edit: VolunteerCustomFieldEdit,
+                            show: VolunteerCustomFieldShow,
+                            icon: <Icons.InsertRowRightOutlined />,
+                            options: {
+                                hide: true
+                            }
+                        },
+                        {
+                            name: 'directions',
+                            list: DepartmentList,
+                            create: DepartmentCreate,
+                            edit: DirectionEdit,
+                            show: DirectionShow,
+                            icon: <Icons.FormatPainterOutlined />
+                        },
+                        {
+                            name: 'group-badges',
+                            list: GroupBadgeList,
+                            create: GroupBadgeCreate,
+                            edit: GroupBadgeEdit,
+                            show: GroupBadgeShow,
+                            icon: <Icons.ProfileOutlined />
+                        },
+                        {
+                            name: 'feed-transaction',
+                            list: FeedTransactionList,
+                            create: FeedTransactionCreate,
+                            icon: <Icons.HistoryOutlined />
+                        },
+                        {
+                            name: 'stats',
+                            list: PublicStatistic,
+                            icon: <Icons.LineChartOutlined />
+                        },
+                        {
+                            name: 'scanner-page',
+                            list: Scanner,
+                            icon: <Icons.MobileOutlined />
+                        },
+                        {
+                            name: 'sync',
+                            list: Sync,
+                            icon: <Icons.SyncOutlined />
                         }
-                    },
-                    {
-                        name: 'directions',
-                        list: DepartmentList,
-                        create: DepartmentCreate,
-                        edit: DirectionEdit,
-                        show: DirectionShow,
-                        icon: <Icons.FormatPainterOutlined />
-                    },
-                    {
-                        name: 'group-badges',
-                        list: GroupBadgeList,
-                        create: GroupBadgeCreate,
-                        edit: GroupBadgeEdit,
-                        show: GroupBadgeShow,
-                        icon: <Icons.ProfileOutlined />
-                    },
-                    {
-                        name: 'feed-transaction',
-                        list: FeedTransactionList,
-                        create: FeedTransactionCreate,
-                        icon: <Icons.HistoryOutlined />
-                    },
-                    {
-                        name: 'stats',
-                        list: PublicStatistic,
-                        icon: <Icons.LineChartOutlined />
-                    },
-                    {
-                        name: 'scanner-page',
-                        list: Scanner,
-                        icon: <Icons.MobileOutlined />
-                    },
-                    {
-                        name: 'sync',
-                        list: Sync,
-                        icon: <Icons.SyncOutlined />
-                    }
-                ]}
-            >
-                <Component {...pageProps} />
-            </Refine>
+                    ]}
+                >
+                    <Component {...pageProps} />
+                </Refine>
+            </MediaProvider>
         </ConfigProvider>
     );
 };
