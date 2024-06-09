@@ -13,19 +13,15 @@ class HistoryFilter(FilterSet):
     date = filters.DateFilter(method='filter_date', label='history date', input_formats=['%d.%m.%y', '%d.%m.%Y'])
     date_start = filters.DateFilter(field_name='action_at', lookup_expr='gte', input_formats=['%d.%m.%y', '%d.%m.%Y'])
     date_end = filters.DateFilter(field_name='action_at', lookup_expr='lte', input_formats=['%d.%m.%y', '%d.%m.%Y'])
-    volunteer_uuid = filters.CharFilter(method='filter_volunteer')
     object_id = filters.CharFilter(method='filter_object')
 
     class Meta:
         model = History
-        fields = ['object_name', 'object_id', 'status', 'date', 'date_start', 'date_end']
+        fields = ['object_name', 'object_id', 'status', 'date', 'date_start', 'date_end', 'volunteer_uuid']
 
     def filter_date(self, queryset, name, value):
         date_end = value + datetime.timedelta(days=1)
         return queryset.filter(Q(action_at__lte=date_end) & Q(action_at__gte=value))
-
-    def filter_volunteer(self, queryset, name, value):
-        return queryset.filter(data__badge=value)
 
     def filter_object(self, queryset, name, value):
         return queryset.filter(data__id=value)
