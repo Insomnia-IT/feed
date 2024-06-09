@@ -74,11 +74,15 @@
     padding: 12px;
     background: #fff;
 
-    .name {
-        font-weight: 500;
+    min-width: 0;
+
+    .textRow {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .commentary {
+    .bold {
         font-weight: 500;
     }
 }

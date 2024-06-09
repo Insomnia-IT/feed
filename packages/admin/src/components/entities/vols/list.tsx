@@ -797,7 +797,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         );
     };
 
-    const renderMobileList = (volList, isLoading) => (
+    const renderMobileList = (volList: Array<VolEntity>, isLoading: boolean) => (
         <div className={styles.mobileVolList}>
             {isLoading && <Spin />}
             {!isLoading &&
@@ -820,15 +820,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                 void router.push(`volunteers/edit/${vol.id}`);
                             }}
                         >
-                            <div className={styles.name}>{name}</div>
-                            <div>{arrivals || 'Нет данных о датах'}</div>
+                            <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
+                            <div className={styles.textRow}>{arrivals || 'Нет данных о датах'}</div>
                             <div>
                                 {isBlocked && <Tag color='red'>Заблокирован</Tag>}
                                 {isOnField && <Tag>На поле</Tag>}
                                 {!isBlocked && !isOnField && 'Нет данных о статусе'}
                             </div>
-                            <div>
-                                <span className={styles.commentary}>Комментарий: </span>
+                            <div className={styles.textRow}>
+                                <span className={styles.bold}>Комментарий: </span>
                                 {comment || '-'}
                             </div>
                         </div>

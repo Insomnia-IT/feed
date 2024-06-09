@@ -27,6 +27,7 @@ export interface VolEntity {
     main_role?: string;
     access_role?: string;
     arrivals: Array<ArrivalEntity>;
+    direction_head_comment?: string;
 }
 
 export interface KitchenEntity {
