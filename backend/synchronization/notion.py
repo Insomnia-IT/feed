@@ -19,9 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 class NotionSync:
+    all_data = False
 
-    @staticmethod
-    def get_last_sync_time(direction):
+    def get_last_sync_time(self, direction):
+        if self.all_data:
+            return datetime(year=2013, month=6, day=13)
         sync = SyncModel.objects.filter(direction=direction, success=True).order_by("-date").first()
         if sync:
             return sync.date
@@ -105,7 +107,10 @@ class NotionSync:
         params = {"from_date": dt.strftime("%Y-%m-%dT%H:%M:%S.%f%z")}
         response = requests.get(
             url,
-            auth=self.get_auth(),
+            auth=HTTPBasicAuth(
+                settings.SYNCHRONIZATION_LOGIN,
+                settings.SYNCHRONIZATION_PASSWORD
+            ),
             params=params
         )
         if not response.ok:
@@ -128,6 +133,7 @@ class NotionSync:
 
         self.save_sync_info(sync_data)
 
-    def main(self):
+    def main(self, all_data=False):
+        self.all_data = all_data
         self.sync_to_notion()
         self.sync_from_notion()
