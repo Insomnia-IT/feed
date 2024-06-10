@@ -12,6 +12,7 @@ import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
 import type { GroupBadgeEntity } from '~/interfaces';
+import { useMedia } from '~/shared/providers';
 
 import useVisibleDirections from '../vols/use-visible-directions';
 
@@ -46,9 +47,22 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
         return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
     });
 
+    const { isDesktop } = useMedia();
+
     return (
         <List>
-            <Table dataSource={data} rowKey='id'>
+            <Table dataSource={data} rowKey='id' scroll={{ x: '100%' }}>
+                <Table.Column<GroupBadgeEntity>
+                    title=''
+                    dataIndex='actions'
+                    render={(_, record) => (
+                        <Space>
+                            {/* <ShowButton hideText size='small' recordItemId={record.id} /> */}
+                            <EditButton hideText size='small' recordItemId={record.id} />
+                            <DeleteButton hideText size='small' recordItemId={record.id} />
+                        </Space>
+                    )}
+                />
                 <Table.Column
                     dataIndex='name'
                     key='name'
@@ -62,23 +76,14 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
                     title='Служба/Направление'
                     render={renderText}
                 />
-                <Table.Column
-                    dataIndex='comment'
-                    key='comment'
-                    title='Комментарий'
-                    render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
-                />
-                <Table.Column<GroupBadgeEntity>
-                    title='Действия'
-                    dataIndex='actions'
-                    render={(_, record) => (
-                        <Space>
-                            <ShowButton hideText size='small' recordItemId={record.id} />
-                            <EditButton hideText size='small' recordItemId={record.id} />
-                            <DeleteButton hideText size='small' recordItemId={record.id} />
-                        </Space>
-                    )}
-                />
+                {isDesktop && (
+                    <Table.Column
+                        dataIndex='comment'
+                        key='comment'
+                        title='Комментарий'
+                        render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
+                    />
+                )}
             </Table>
         </List>
     );
