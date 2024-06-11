@@ -148,6 +148,15 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
         model = models.GroupBadge
         fields = '__all__'
 
+class GroupBadgeListSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    direction = DirectionSerializer(required=False)
+    
+
+    class Meta:
+        model = models.GroupBadge
+        fields = '__all__'
+
 
 class ColorSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)

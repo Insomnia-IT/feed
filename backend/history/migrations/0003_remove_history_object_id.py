@@ -2,12 +2,6 @@
 
 from django.db import migrations
 
-from history.models import History
-
-
-def del_all_history(self, schema_editor):
-    History.objects.all().delete()
-
 
 class Migration(migrations.Migration):
 
@@ -16,7 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(del_all_history),
         migrations.RemoveField(
             model_name='history',
             name='object_id',

@@ -1,31 +1,123 @@
-from feeder.models import Volunteer, Gender, Direction
+import logging
+from datetime import datetime
+from urllib.parse import urljoin
+
+import requests
+from django.conf import settings
+from django.db import transaction
+from rest_framework.exceptions import APIException
+
+from feeder.sync_serializers import VolunteerHistoryDataSerializer, DirectionHistoryDataSerializer, \
+    ArrivalHistoryDataSerializer, PersonHistoryDataSerializer, EngagementHistoryDataSerializer
+from history.models import History
+from history.serializers import HistorySyncSerializer
+from synchronization.models import SynchronizationSystemActions as SyncModel
+
+logger = logging.getLogger(__name__)
 
 
 class NotionSync:
 
-    def sync_from_notion(self):
-        data = {
-            "uuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "name": "test create vol",
-            "first_name": "test",
-            "last_name": "create",
-            "gender": Gender.objects.get(id="MALE"),
-            # "infant": True,
-            "phone": "8 900 000 00 00",
-            "is_vegan": True,
-            "role": "ORGANIZER",
-            "position": "string",
-            "photo": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Example_image.jpg",
-            # "person": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "comment": "string",
-            "notion_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            # "departments": Department.objects.filter(name__in=["Сайт", "IT"])
-        }
-        volunteer = Volunteer.objects.create(**data, from_sync=True)
+    @staticmethod
+    def get_last_sync_time(direction):
+        sync = SyncModel.objects.filter(direction=direction, success=True).order_by("-date").first()
+        if sync:
+            return sync.date
+        else:
+            return datetime(year=2013, month=6, day=13)
+
+    @staticmethod
+    def save_sync_info(data, success=True, error=None):
+        if not success:
+            data.update({
+                "success": False,
+                "error": error
+            })
+        SyncModel.objects.create(**data)
 
     def sync_to_notion(self):
-        pass
+        direction = SyncModel.DIRECTION_TO_SYSTEM
+        dt_start = self.get_last_sync_time(direction)
+
+        dt_end = datetime.utcnow()
+
+        sync_data = {
+            "system": SyncModel.SYSTEM_NOTION,
+            "direction": direction,
+            "date": dt_end
+        }
+
+        qs = History.objects.filter(action_at__gte=dt_start, action_at__lt=dt_end).exclude(actor_badge=None)
+        badges = qs.filter(object_name="volunteer")
+        arrivals = qs.filter(object_name="arrival")
+        serializer = HistorySyncSerializer
+        data = {
+            "badges": serializer(badges, many=True).data,
+            "arrivals": serializer(arrivals, many=True).data
+        }
+        url = urljoin(settings.AGREEMOD_PEOPLE_URL, "feeder/back-sync")
+        response = requests.post(
+            url=url,
+            json=data
+        )
+        if not response.ok:
+            error = response.text
+            self.save_sync_info(sync_data, success=False, error=error)
+            raise APIException(f"Sync to notion field with error: {error}")
+
+        self.save_sync_info(sync_data)
+
+    @staticmethod
+    def get_serializer(obj_name):
+        serializers = {
+            "badges": VolunteerHistoryDataSerializer,
+            "directions": DirectionHistoryDataSerializer,
+            "persons": PersonHistoryDataSerializer,
+            "arrivals": ArrivalHistoryDataSerializer,
+            "engagements": EngagementHistoryDataSerializer
+        }
+        return serializers.get(obj_name)
+
+    def save_data_from_notion(self, data_list, obj_name):
+        serializer_class = self.get_serializer(obj_name)
+        for data in data_list:
+            serializer = serializer_class(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+    def sync_from_notion(self):
+        direction = SyncModel.DIRECTION_FROM_SYSTEM
+        dt = self.get_last_sync_time(direction)
+
+        sync_data = {
+            "system": SyncModel.SYSTEM_NOTION,
+            "direction": direction,
+            "date": datetime.utcnow()
+        }
+
+        url = urljoin(settings.AGREEMOD_PEOPLE_URL, "feeder/sync")
+        params = {"from_date": dt.strftime("%Y-%m-%dT%H:%M:%S.%f%z")}
+        response = requests.get(url, params=params)
+        if not response.ok:
+            error = response.text
+            self.save_sync_info(sync_data, success=False, error=error)
+            raise APIException(f"Sync from notion field with error: {error}")
+
+        try:
+            data = response.json()
+            with transaction.atomic():
+                self.save_data_from_notion(data.get("persons", []), "persons")
+                self.save_data_from_notion(data.get("directions", []), "directions")
+                self.save_data_from_notion(data.get("engagements", []), "engagements")
+                self.save_data_from_notion(data.get("badges", []), "badges")
+                self.save_data_from_notion(data.get("arrivals", []), "arrivals")
+
+        except Exception as er:
+            self.save_sync_info(sync_data, success=False, error=er)
+            raise APIException(f"Saving data from notion failed with error: {er}")
+
+        self.save_sync_info(sync_data)
 
     def main(self):
-        self.sync_from_notion()
         self.sync_to_notion()
+        self.sync_from_notion()

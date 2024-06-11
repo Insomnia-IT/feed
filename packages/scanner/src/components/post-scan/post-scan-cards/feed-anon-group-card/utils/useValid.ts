@@ -13,9 +13,9 @@ export const useValid = (form: Form) => {
         let valid = true;
         const errors: ErrorRecord = {};
 
-        if (+form.meat + +form.vegan <= 2) {
+        if (+form.meat + +form.vegan < 2) {
             valid = false;
-            errors.counts = 'Запишите количество порций (>2)';
+            errors.counts = 'Запишите количество порций (>1)';
         }
 
         setValid(valid);

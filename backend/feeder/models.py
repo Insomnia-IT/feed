@@ -173,6 +173,11 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     def paid(self):
         return self.feed_type != 1
 
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.qr and self.notion_id:
+            self.qr = self.notion_id
+        super().save(*args, **kwargs)
+
 
 class Department(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название", db_index=True)
@@ -207,6 +212,7 @@ class Kitchen(TimeMixin):
 
 class GroupBadge(TimeMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, verbose_name="QR-код")
+    direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.name

@@ -17,16 +17,8 @@ const formatDate = (value) => {
     });
 };
 export const Settings = () => {
-    const { autoSync, lastSyncStart, setAuth, setMealTime, setPin, sync, toggleAutoSync } = useApp();
+    const { autoSync, doSync, lastSyncStart, setAuth, setMealTime, setPin, syncFetching, toggleAutoSync } = useApp();
     const { setCurrentView } = useView();
-    const { fetching, send } = sync;
-    const doSync = async () => {
-        try {
-            await send({ lastSyncStart });
-        } catch (e) {
-            console.error(e);
-        }
-    };
 
     const logout = () => {
         setAuth(false);
@@ -56,9 +48,9 @@ export const Settings = () => {
                 <Button
                     className={css.button}
                     onClick={() => {
-                        void doSync();
+                        doSync();
                     }}
-                    disabled={fetching}
+                    disabled={syncFetching}
                 >
                     Обновить базу
                 </Button>
