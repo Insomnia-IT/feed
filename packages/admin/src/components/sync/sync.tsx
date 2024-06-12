@@ -6,7 +6,9 @@ import { NEW_API_URL } from '~/const';
 const apiUrl = NEW_API_URL;
 
 import { Button, List } from '@pankod/refine-antd';
+
 import useCanAccess from '../entities/vols/use-can-access';
+
 import styles from './sync.module.css';
 
 export const Sync: FC = () => {
@@ -31,10 +33,10 @@ export const Sync: FC = () => {
         }
     };
     const onSyncClick = () => {
-       void  syncNotion(false);
+        void syncNotion(false);
     };
     const onFullSyncClick = () => {
-        if(confirm("Вы уверены?")) {
+        if (confirm('Вы уверены?')) {
             void syncNotion(true);
         }
     };
@@ -42,9 +44,8 @@ export const Sync: FC = () => {
         <List>
             <Button disabled={disabled} onClick={onSyncClick}>
                 Синхронизация с Notion
-            </Button>
-            {' '}
-            <Button disabled={disabled || !canFullEditing} onClick={onFullSyncClick} className={styles.fullSyncButton} >
+            </Button>{' '}
+            <Button disabled={disabled || !canFullEditing} onClick={onFullSyncClick} className={styles.fullSyncButton}>
                 Полная Синхронизация с Notion
             </Button>
         </List>
