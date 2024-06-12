@@ -130,7 +130,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     const prevArrivalDate = new Date(
                         form.getFieldValue(['updated_arrivals', index - 1, 'arrival_date'])
                     );
-                    if (index > 0 && prevArrivalDate > value) {
+                    if (index > 0 && prevArrivalDate >= value) {
                         return Promise.reject(
                             new Error(
                                 `Дата заезда в Заезде ${index + 1} должна быть позднее Даты заезда в Заезде ${index}`
@@ -156,7 +156,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         return Promise.resolve();
                     }
 
-                    return Promise.reject(new Error('Дата заезда не может быть меньше Даты отъезда'));
+                    return Promise.reject(new Error('Дата заезда не может быть раньше Даты отъезда'));
                 }
             }
         ],
@@ -249,7 +249,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     useEffect(() => {
         setUpdatedArrivals(
-            arrivals ?? [
+            arrivals?.map(arrival => ({...arrival})) ?? [
                 {
                     id: uuidv4(),
                     arrival_transport: 'UNDEFINED',

@@ -7,6 +7,8 @@ import { dataProvider } from '~/dataProvider';
 import type { VolCustomFieldValueEntity } from '~/interfaces';
 import { isActivatedStatus } from '~/shared/lib';
 
+import { useQueryClient } from '@tanstack/react-query'
+
 const useSaveConfirm = (
     form: FormInstance,
     saveButtonProps: ButtonProps & {
@@ -20,6 +22,8 @@ const useSaveConfirm = (
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
     );
+
+    const queryClient = useQueryClient();
 
     const handleOk = () => {
         setShowConfirmationModalReason(null);
@@ -133,6 +137,8 @@ const useSaveConfirm = (
                         });
                     }
                 }
+
+                queryClient.clear();
             }
         },
         renderModal: () => {
