@@ -5,10 +5,12 @@ from urllib.parse import urljoin
 import requests
 from django.conf import settings
 from django.db import transaction
+from requests.auth import HTTPBasicAuth
 from rest_framework.exceptions import APIException
 
-from feeder.sync_serializers import VolunteerHistoryDataSerializer, DirectionHistoryDataSerializer, \
-    ArrivalHistoryDataSerializer, PersonHistoryDataSerializer, EngagementHistoryDataSerializer
+from feeder.sync_serializers import (VolunteerHistoryDataSerializer, DirectionHistoryDataSerializer,
+                                     ArrivalHistoryDataSerializer, PersonHistoryDataSerializer,
+                                     EngagementHistoryDataSerializer)
 from history.models import History
 from history.serializers import HistorySyncSerializer
 from synchronization.models import SynchronizationSystemActions as SyncModel
@@ -17,9 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 class NotionSync:
+    all_data = False
 
-    @staticmethod
-    def get_last_sync_time(direction):
+    def get_last_sync_time(self, direction):
+        if self.all_data:
+            return datetime(year=2013, month=6, day=13)
         sync = SyncModel.objects.filter(direction=direction, success=True).order_by("-date").first()
         if sync:
             return sync.date
@@ -55,9 +59,13 @@ class NotionSync:
             "badges": serializer(badges, many=True).data,
             "arrivals": serializer(arrivals, many=True).data
         }
-        url = urljoin(settings.AGREEMOD_PEOPLE_URL, "feeder/back-sync")
+        url = urljoin(settings.SYNCHRONIZATION_URL, "back-sync")
         response = requests.post(
             url=url,
+            auth=HTTPBasicAuth(
+                settings.SYNCHRONIZATION_LOGIN,
+                settings.SYNCHRONIZATION_PASSWORD
+            ),
             json=data
         )
         if not response.ok:
@@ -95,9 +103,16 @@ class NotionSync:
             "date": datetime.utcnow()
         }
 
-        url = urljoin(settings.AGREEMOD_PEOPLE_URL, "feeder/sync")
+        url = urljoin(settings.SYNCHRONIZATION_URL, "sync")
         params = {"from_date": dt.strftime("%Y-%m-%dT%H:%M:%S.%f%z")}
-        response = requests.get(url, params=params)
+        response = requests.get(
+            url,
+            auth=HTTPBasicAuth(
+                settings.SYNCHRONIZATION_LOGIN,
+                settings.SYNCHRONIZATION_PASSWORD
+            ),
+            params=params
+        )
         if not response.ok:
             error = response.text
             self.save_sync_info(sync_data, success=False, error=error)
@@ -118,6 +133,7 @@ class NotionSync:
 
         self.save_sync_info(sync_data)
 
-    def main(self):
+    def main(self, all_data=False):
+        self.all_data = all_data
         self.sync_to_notion()
         self.sync_from_notion()
