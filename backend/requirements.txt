@@ -13,3 +13,4 @@ drf-spectacular
 python-dotenv
 dj-rest-auth
 pillow
+python-crontab
