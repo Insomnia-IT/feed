@@ -12,14 +12,13 @@ import { LogoutOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } fro
 import React, { useEffect, useState } from 'react';
 import type { ITreeMenu } from '@pankod/refine-core';
 import { useRouter } from 'next/router';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { authProvider } from '~/authProvider';
 import type { AccessRoleEntity } from '~/interfaces';
 
 import { antLayoutSider, antLayoutSiderMobile } from './styles';
 import styles from './sider.module.css';
-
-import { useQueryClient } from '@tanstack/react-query'
 
 export const CustomSider: FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -30,7 +29,6 @@ export const CustomSider: FC = () => {
     const { mutate: logout } = useLogout();
     const translate = useTranslate();
     const queryClient = useQueryClient();
-
 
     const { menuItems, selectedKey } = useMenu();
     const breakpoint = Grid.useBreakpoint();

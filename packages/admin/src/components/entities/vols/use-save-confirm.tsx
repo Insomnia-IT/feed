@@ -2,12 +2,11 @@ import type { ButtonProps, FormInstance } from '@pankod/refine-antd';
 import { Modal } from '@pankod/refine-antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { dataProvider } from '~/dataProvider';
 import type { VolCustomFieldValueEntity } from '~/interfaces';
 import { isActivatedStatus } from '~/shared/lib';
-
-import { useQueryClient } from '@tanstack/react-query'
 
 const useSaveConfirm = (
     form: FormInstance,

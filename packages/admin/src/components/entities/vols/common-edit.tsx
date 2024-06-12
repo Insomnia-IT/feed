@@ -249,7 +249,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     useEffect(() => {
         setUpdatedArrivals(
-            arrivals?.map(arrival => ({...arrival})) ?? [
+            arrivals?.map((arrival) => ({ ...arrival })) ?? [
                 {
                     id: uuidv4(),
                     arrival_transport: 'UNDEFINED',

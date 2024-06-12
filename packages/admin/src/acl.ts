@@ -62,7 +62,7 @@ export const ACL = {
                 }
             });
         } else {
-            if(!window.location.href.endsWith('/login')) {
+            if (!window.location.href.endsWith('/login')) {
                 window.location.href = `${window.location.origin}/login`;
             }
         }
