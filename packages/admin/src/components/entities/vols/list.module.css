@@ -55,3 +55,34 @@
 .filterListItemCount {
     color: #8D959E;
 }
+
+.mobileVolList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding-bottom: 60px;
+}
+
+.volCard {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    width: 100%;
+    border-radius: 2px;
+    padding: 12px;
+    background: #fff;
+
+    min-width: 0;
+
+    .textRow {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bold {
+        font-weight: 500;
+    }
+}
