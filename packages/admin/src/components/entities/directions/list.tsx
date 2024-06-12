@@ -7,17 +7,12 @@ import type { DirectionEntity } from '~/interfaces';
 
 export const DepartmentList: FC<IResourceComponentsProps> = () => {
     const { data: directions } = useList<DirectionEntity>({
-        resource: 'directions',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
-        }
+        resource: 'directions'
     });
 
     return (
         <List>
-            <Table pagination={false} rowKey='id' dataSource={directions?.data}>
+            <Table rowKey='id' dataSource={directions?.data}>
                 <Table.Column dataIndex='name' title='Название' render={renderText} sorter />
                 <Table.Column dataIndex={['type', 'name']} title='Тип' render={renderText} />
                 <Table.Column<DirectionEntity>

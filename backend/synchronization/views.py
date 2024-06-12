@@ -10,8 +10,9 @@ class SyncWithNotion(APIView):
     """
     Синхронизация Volunteer с Notion
     """
-    permission_classes = [permissions.IsAuthenticated, ]
+    permission_classes = [permissions.AllowAny, ]
 
     def post(self, request):
-        NotionSync().main()
+        all_data = True if request.query_params.get('all_data') else False
+        NotionSync().main(all_data=all_data)
         return Response(status=HTTP_204_NO_CONTENT)

@@ -103,8 +103,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     };
 
     const getDateValue = (value) => {
-        return {
-            value: value ? dayjs(value) : ''
+        return () => {
+            return {
+                value: value ? dayjs(value) : ''
+            };
         };
     };
 
@@ -130,7 +132,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     const prevArrivalDate = new Date(
                         form.getFieldValue(['updated_arrivals', index - 1, 'arrival_date'])
                     );
-                    if (index > 0 && prevArrivalDate > value) {
+                    if (index > 0 && prevArrivalDate >= value) {
                         return Promise.reject(
                             new Error(
                                 `Дата заезда в Заезде ${index + 1} должна быть позднее Даты заезда в Заезде ${index}`
@@ -156,7 +158,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         return Promise.resolve();
                     }
 
-                    return Promise.reject(new Error('Дата заезда не может быть меньше Даты отъезда'));
+                    return Promise.reject(new Error('Дата заезда не может быть раньше Даты отъезда'));
                 }
             }
         ],
@@ -251,7 +253,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         setUpdatedArrivals(
             arrivals ?? [
                 {
-                    id: uuidv4()
+                    id: uuidv4(),
+                    arrival_transport: 'UNDEFINED',
+                    departure_transport: 'UNDEFINED'
                 }
             ]
         );
@@ -546,6 +550,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Form.Item
                                                 label='Статус заезда'
                                                 name={['updated_arrivals', index, 'status']}
+                                                getValueProps={() => ({ value: arrival.status })}
                                                 rules={Rules.required}
                                             >
                                                 <Select
@@ -576,7 +581,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Form.Item
                                                 label='Дата заезда'
                                                 name={['updated_arrivals', index, 'arrival_date']}
-                                                getValueProps={getDateValue}
+                                                getValueProps={getDateValue(arrival.arrival_date)}
                                                 rules={activeFromValidationRules(index)}
                                             >
                                                 <DatePicker
@@ -590,6 +595,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Form.Item
                                                 label='Как добрался?'
                                                 name={['updated_arrivals', index, 'arrival_transport']}
+                                                getValueProps={() => ({ value: arrival.arrival_transport })}
                                                 rules={Rules.required}
                                             >
                                                 <Select
@@ -619,7 +625,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Form.Item
                                                 label='Дата отъезда'
                                                 name={['updated_arrivals', index, 'departure_date']}
-                                                getValueProps={getDateValue}
+                                                getValueProps={getDateValue(arrival.departure_date)}
                                                 rules={activeToValidationRules(index)}
                                             >
                                                 <DatePicker
@@ -633,6 +639,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Form.Item
                                                 label='Как уехал?'
                                                 name={['updated_arrivals', index, 'departure_transport']}
+                                                getValueProps={() => ({ value: arrival.departure_transport })}
                                                 rules={Rules.required}
                                             >
                                                 <Select

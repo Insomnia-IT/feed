@@ -129,4 +129,13 @@ COPY ./backend/manage.py /app/backend/
 COPY ./backend/create_user.py /app/backend/
 COPY ./backend/.env.sample /app/backend/.env
 
+ARG SYNC_URL
+ENV SYNCHRONIZATION_URL=${SYNC_URL}
+
+ARG SYNC_LOGIN
+ENV SYNCHRONIZATION_LOGIN=${SYNC_LOGIN}
+
+ARG SYNC_PASSWORD
+ENV SYNCHRONIZATION_PASSWORD=${SYNC_PASSWORD}
+
 ENTRYPOINT ["/app/entry.sh"]

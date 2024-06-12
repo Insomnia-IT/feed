@@ -141,7 +141,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     direction_head_comment = models.TextField(null=True, blank=True, verbose_name="Комментарий руководителя локации")
     badge_number = models.TextField(null=True, blank=True, verbose_name="Номер бейджа")
     printing_batch = models.IntegerField(null=True, blank=True, verbose_name="Партия бейджа")
-    role = models.TextField(null=True, blank=True, verbose_name="Роль")
+    # role = models.TextField(null=True, blank=True, verbose_name="Роль")
     access_role = models.ForeignKey(
         'AccessRole',
         null=True, blank=True, on_delete=models.PROTECT,
@@ -172,6 +172,11 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     @property
     def paid(self):
         return self.feed_type != 1
+
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.qr and self.notion_id:
+            self.qr = self.notion_id
+        super().save(*args, **kwargs)
 
 
 class Department(TimeMixin):
@@ -207,6 +212,7 @@ class Kitchen(TimeMixin):
 
 class GroupBadge(TimeMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, verbose_name="QR-код")
+    direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.name
