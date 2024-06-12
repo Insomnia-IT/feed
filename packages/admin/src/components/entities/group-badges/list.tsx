@@ -8,7 +8,7 @@ import {
     Table,
     useTable
 } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { useList, type IResourceComponentsProps } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
 import type { GroupBadgeEntity } from '~/interfaces';
@@ -32,18 +32,19 @@ const getSorter = (field: string) => {
 };
 
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
-    const { tableProps } = useTable<GroupBadgeEntity>({
-        initialSorter: [
-            {
-                field: 'id',
-                order: 'desc'
+
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges',
+        config: {
+            pagination: {
+                pageSize: 10000
             }
-        ]
+        }
     });
 
     const visibleDirections = useVisibleDirections();
 
-    const data = tableProps.dataSource?.filter((item) => {
+    const data = groupBadges?.data.filter((item) => {
         return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
     });
 
