@@ -8,7 +8,7 @@ import {
     Table,
     useTable
 } from '@pankod/refine-antd';
-import { useList, type IResourceComponentsProps } from '@pankod/refine-core';
+import { type IResourceComponentsProps, useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
 import type { GroupBadgeEntity } from '~/interfaces';
@@ -32,7 +32,6 @@ const getSorter = (field: string) => {
 };
 
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
-
     const { data: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         config: {
