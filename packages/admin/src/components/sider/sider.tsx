@@ -12,6 +12,7 @@ import { LogoutOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } fro
 import React, { useEffect, useState } from 'react';
 import type { ITreeMenu } from '@pankod/refine-core';
 import { useRouter } from 'next/router';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { authProvider } from '~/authProvider';
 import type { AccessRoleEntity } from '~/interfaces';
@@ -27,6 +28,7 @@ export const CustomSider: FC = () => {
     const isExistAuthentication = useIsExistAuthentication();
     const { mutate: logout } = useLogout();
     const translate = useTranslate();
+    const queryClient = useQueryClient();
 
     const { menuItems, selectedKey } = useMenu();
     const breakpoint = Grid.useBreakpoint();
@@ -46,6 +48,11 @@ export const CustomSider: FC = () => {
             setUserName(user.username);
             setAccessRoleName(accessRoles?.data.find((role) => role.id === user.roles[0])?.name ?? '');
         }
+    };
+
+    const handleLogout = () => {
+        queryClient.clear();
+        logout();
     };
 
     useEffect(() => {
@@ -137,7 +144,7 @@ export const CustomSider: FC = () => {
                         <TeamOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Группы</span>
                     </button>
-                    <button className={styles.siderButton} onClick={() => logout()}>
+                    <button className={styles.siderButton} onClick={handleLogout}>
                         <LogoutOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Выход</span>
                     </button>
@@ -171,7 +178,7 @@ export const CustomSider: FC = () => {
                         </Menu.Item>
                         {renderTreeView(menuItems, selectedKey)}
                         {isExistAuthentication && (
-                            <Menu.Item key='logout' onClick={() => logout()} icon={<LogoutOutlined />}>
+                            <Menu.Item key='logout' onClick={handleLogout} icon={<LogoutOutlined />}>
                                 {translate('buttons.logout', 'Logout')}
                             </Menu.Item>
                         )}
