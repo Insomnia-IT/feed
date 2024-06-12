@@ -59,6 +59,7 @@ class NotionSync:
             "badges": serializer(badges, many=True).data,
             "arrivals": serializer(arrivals, many=True).data
         }
+        print('SYNCHRONIZATION_URL=', settings.SYNCHRONIZATION_URL)
         url = urljoin(settings.SYNCHRONIZATION_URL, "back-sync")
         response = requests.post(
             url=url,
