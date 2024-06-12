@@ -127,6 +127,7 @@ COPY ./backend/initial /app/backend/initial
 COPY ./backend/.gitignore /app/backend/
 COPY ./backend/manage.py /app/backend/
 COPY ./backend/create_user.py /app/backend/
+COPY ./backend/cron_config.py /app/backend/
 COPY ./backend/.env.sample /app/backend/.env
 
 ARG SYNC_URL

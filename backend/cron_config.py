@@ -6,7 +6,7 @@ def get_crontab_tasks():
     cron = CronTab(user="root")
     command = "/usr/local/bin/python /app/cron_tasks/auto_sync.py"
     job = cron.new(command=command)
-    frequency = int(os.environ.get("", 5))
+    frequency = int(os.environ.get("NOTION_SYNC_PERIOD", 5))
     job.minute.every(frequency)
     cron.write()
 
