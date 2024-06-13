@@ -24,7 +24,7 @@ jobs:
             --progress=plain \
             -t $IMAGE_NAME_BASENAME:$GITHUB_SHA  \
             --build-arg NEW_API_URL=https://srv.rumyantsev.com/feedapi/v1 \
-            --build-arg SYNC_URL=https://insomnia-dev.ekza.xyz/api/v1/feeder/ \
+            --build-arg SYNC_URL=http://9000.agreetesting.rumyantsev.com/api/v1/feeder/ \
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }} \
             .
