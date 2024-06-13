@@ -109,7 +109,7 @@ class Engagement(TimeMixin):
     role = models.ForeignKey(EngagementRole, on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True)
+    notion_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
 
 class Volunteer(TimeMixin, SoftDeleteModelMixin):
