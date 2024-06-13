@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class NotionSync:
     all_data = False
+    error_sync = []
 
     def get_last_sync_time(self, direction):
         if self.all_data:
@@ -90,9 +91,12 @@ class NotionSync:
     def save_data_from_notion(self, data_list, obj_name):
         serializer_class = self.get_serializer(obj_name)
         for data in data_list:
-            serializer = serializer_class(data=data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            try:
+                serializer = serializer_class(data=data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            except Exception as error:
+                self.error_sync.append(f"{obj_name} - {data.get('id')}: {error}")
 
     def sync_from_notion(self):
         direction = SyncModel.DIRECTION_FROM_SYSTEM
@@ -127,6 +131,9 @@ class NotionSync:
                 self.save_data_from_notion(data.get("engagements", []), "engagements")
                 self.save_data_from_notion(data.get("badges", []), "badges")
                 self.save_data_from_notion(data.get("arrivals", []), "arrivals")
+
+                if self.error_sync:
+                    raise APIException(self.error_sync)
 
         except Exception as er:
             self.save_sync_info(sync_data, success=False, error=er)

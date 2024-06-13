@@ -62,6 +62,8 @@ class SaveSyncSerializerMixin(object):
                     old_data.pop(key)
                 else:
                     changed_data.update({key: val})
+            if changed_data:
+                changed_data.update({"id": uuid})
         else:
             status = History.STATUS_CREATE
             changed_data = new_data
@@ -77,15 +79,11 @@ class SaveSyncSerializerMixin(object):
 class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid")
     deleted = serializers.SerializerMethodField()
-    gender = serializers.SlugRelatedField(slug_field="id", queryset=Gender.objects.all(), required=False)
     vegan = serializers.BooleanField(source="is_vegan", required=False)
     infant = serializers.SerializerMethodField()
     feed = serializers.SerializerMethodField()
     number = serializers.CharField(source="badge_number", required=False)
     batch = serializers.IntegerField(source="printing_batch", required=False)
-    person = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all(), required=False)
-    directions = serializers.SlugRelatedField(many=True, slug_field="id",
-                                              queryset=Direction.objects.all(), required=False)
     role = serializers.SlugRelatedField(source="main_role", slug_field="id",
                                         queryset=VolunteerRole.objects.all(), required=False)
 
