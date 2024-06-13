@@ -50,22 +50,26 @@ interface IResult {
 }
 
 interface IData {
-    comment?: string;
-    feed?: string;
-    first_name?: string;
-    gender?: string;
-    last_name?: string;
-    name?: string;
-    phone?: string;
-    position?: string;
-    vegan?: boolean;
-    departure_transport?: string;
-    arrival_transport?: string;
-    status?: string;
-    departure_date?: string;
-    arrival_date?: string;
-    is_blocked?: boolean;
-    custom_field?: string;
+    comment: string;
+    kitchen: string;
+    feed: string;
+    main_role: string;
+    access_role: string;
+    color_type: string;
+    first_name: string;
+    gender: string;
+    last_name: string;
+    name: string;
+    phone: string;
+    position: string;
+    vegan: boolean;
+    departure_transport: string;
+    arrival_transport: string;
+    status: string;
+    departure_date: string;
+    arrival_date: string;
+    is_blocked: boolean;
+    custom_field: string;
 }
 
 export function CommonHistory() {
@@ -93,11 +97,60 @@ export function CommonHistory() {
         }, [list]);
     };
 
-    const { data: transports, isLoading: transportsIsLoading } = useList<TransportEntity>({
+    const { data: kitchens } = useList<KitchenEntity>({
+        resource: 'kitchens'
+    });
+
+    const { data: feedTypes } = useList<FeedTypeEntity>({
+        resource: 'feed-types'
+    });
+
+    const { data: colors } = useList<ColorTypeEntity>({
+        resource: 'colors'
+    });
+
+    const { data: accessRoles } = useList<AccessRoleEntity>({
+        resource: 'access-roles'
+    });
+
+    const { data: volunteerRoles } = useList<VolunteerRoleEntity>({
+        resource: 'volunteer-roles',
+    });
+
+    const { data: transports } = useList<TransportEntity>({
         resource: 'transports'
     });
 
+    const { data: statuses } = useList<StatusEntity>({
+        resource: 'statuses'
+    });
+
+    const { data: genders } = useList<AccessRoleEntity>({
+        resource: 'genders'
+    });
+
+    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+
+    const loadCustomFields = async () => {
+        const { data } = await dataProvider.getList<CustomFieldEntity>({
+            resource: 'volunteer-custom-fields'
+        });
+
+        setCustomFields(data);
+    };
+
+    useEffect(() => {
+        void loadCustomFields();
+    }, []);
+
+    const kitchenNameById = useMapFromList(kitchens);
+    const feedTypeNameById = useMapFromList(feedTypes);
+    const colorNameById = useMapFromList(colors, 'description');
+    const accessRoleById = useMapFromList(accessRoles);
+    const volunteerRoleById = useMapFromList(volunteerRoles);
+    const statusById = useMapFromList(statuses);
     const transportById = useMapFromList(transports);
+    const genderById = useMapFromList(genders);
 
     const historyData = async () => {
         const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?volunteer_uuid=${uuid}`);
@@ -105,7 +158,6 @@ export function CommonHistory() {
         const reversedResult = result.reverse();
         setData(reversedResult);
         console.log(reversedResult);
-        console.log(transportById[3]);
     };
     useEffect(() => {
         void setNewUuid();
@@ -147,6 +199,10 @@ export function CommonHistory() {
     const localizedFieldNames = {
         comment: 'Комментарий',
         feed: 'Тип питания',
+        main_role: 'Роль',
+        access_role: 'Право доступа',
+        kitchen: 'Кухня',
+        color_type: 'Цвет бейджа',
         first_name: 'Имя',
         gender: 'Пол',
         last_name: 'Фамилию',
@@ -184,6 +240,8 @@ export function CommonHistory() {
     }
 
     function returnCorrectFieldValue(obj: IData, key: string) {
+        if (!key) return;
+        if (!obj) return;
         if (key === 'vegan') {
             return returnVeganFieldValue(obj[key]);
         } else if (key === 'is_blocked') {
@@ -192,6 +250,32 @@ export function CommonHistory() {
             const result: string | undefined = obj[key];
             if (!result) return;
             return result.replace(/<\/?[^>]+(>|$)/g, '');
+        } else if (key === 'kitchen') {
+            return kitchenNameById[obj[key]];
+        } else if (key === 'main_role') {
+            return volunteerRoleById[obj[key]];
+        } else if (key === 'access_role') {
+            return accessRoleById[obj[key]];
+        } else if (key === 'color_type') {
+            return colorNameById[obj[key]];
+        } else if (key === 'feed') {
+            return feedTypeNameById[obj[key]];
+        } else if (key === 'gender') {
+            return genderById[obj[key]];
+        } else if (key === 'status') {
+            return statusById[obj[key]];
+        } else if (key === 'arrival_transport' || key === 'departure_transport') {
+            return transportById[obj[key]];
+        } else if (key === 'custom_field') {
+            return '';
+        } else if (key === 'value') {
+            if (obj[key] === 'true') {
+                return 'Да';
+            } else if (obj[key] === 'false') {
+                return 'Нет'
+            } else {
+                return obj[key];
+            }
         } else {
             return obj[key];
         }
@@ -199,36 +283,29 @@ export function CommonHistory() {
 
     function renderHistoryLayout(data: IResult) {
         if (!data) return;
-        if (data.old_data) {
-            const keysArray = Object.keys(data.old_data);
-            return keysArray.map((item) => {
-                return (
-                    <div key={keysArray.indexOf(item)} className={styles.itemDescrWrap}>
-                        <span className={styles.itemAction}>
-                            {`${returnCurrentField(item) ? returnCurrentField(item) : `Кастомное поле № ${data.data.custom_field}`}`}
-                        </span>
-                        <br />
-                        <span className={styles.itemDrescrOld}>{returnCorrectFieldValue(data.old_data, item)}</span>
-                        <span className={styles.itemDrescrNew}>{returnCorrectFieldValue(data.data, item)}</span>
-                    </div>
-                );
-            });
-        } else {
-            const keysArray = Object.keys(data.data);
-            return keysArray.map((item) => {
-                if (data.object_name !== 'arrival' && item !== 'value') return;
-                if (item === 'badge' || item === 'deleted' || item === 'id') return;
-                return (
-                    <div key={keysArray.indexOf(item)} className={styles.itemDescrWrap}>
-                        <span className={styles.itemAction}>
-                            {`${returnCurrentField(item) ? returnCurrentField(item) : `Кастомное поле № ${data.data.custom_field}`}`}
-                        </span>
-                        <br />
-                        <span className={styles.itemDrescrNew}>{returnCorrectFieldValue(data.data, item)}</span>
-                    </div>
-                );
-            });
-        }
+        const keysArray = Object.keys(data.data);
+        const keysToDelete = [
+            'id', 'volunteer', 'badge', 'deleted',
+        ];
+        const updatedKeysArray = keysArray.filter(key => !keysToDelete.includes(key));
+        return updatedKeysArray.map((item) => {
+            function getCustomFieldName() {
+                const idToFind = +data.data[item];
+                const foundObject = customFields.find(element => element.id === idToFind);
+                return foundObject?.name;
+            }
+            return (
+                <div key={updatedKeysArray.indexOf(item)} className={styles.itemDescrWrap}>
+                    <span className={styles.itemAction}>
+                        {item === 'custom_field' ? getCustomFieldName() : returnCurrentField(item)}
+                    </span>
+                    <br />
+                    <span className={styles.itemDrescrOld}>{returnCorrectFieldValue(data.old_data, item) || ''}</span>
+                    <span className={styles.itemDrescrNew}>{returnCorrectFieldValue(data.data, item)}</span>
+                </div>
+            );
+
+        })
     }
 
     function getCorrectTitleEvent(typeInfo: string) {
@@ -252,7 +329,7 @@ export function CommonHistory() {
             );
         } else {
             <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
-                {`срочно сообщите о баге, если видите это!`}
+                {`сообщите о баге, если видите это!`}
             </span>
         }
     }
@@ -283,7 +360,9 @@ export function CommonHistory() {
                             {`${item.actor ? item.actor.name : 'Админ'}, `}
                         </span>
                         <span className={styles.itemTitle}>{formatDate(item.action_at)}</span>
-                        <span className={styles.itemAction}>{`${returnCurrentStatusString(item.status)}`}</span>
+                        <span className={styles.itemAction}>
+                            {`${returnCurrentStatusString(item.status)}`}
+                        </span>
                         {getCorrectTitleEvent(item.object_name)}
                         {renderHistoryLayout(item)}
                     </div>
