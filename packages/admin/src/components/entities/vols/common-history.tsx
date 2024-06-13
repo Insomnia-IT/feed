@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import type { GetListResponse } from '@pankod/refine-core';
+import { useList } from '@pankod/refine-core';
 
 import { NEW_API_URL } from '~/const';
-
-import styles from './common.module.css';
-
 import type {
     AccessRoleEntity,
     ColorTypeEntity,
@@ -19,7 +18,8 @@ import type {
     VolunteerRoleEntity
 } from '~/interfaces';
 import { dataProvider } from '~/dataProvider';
-import { GetListResponse, useList } from '@pankod/refine-core';
+
+import styles from './common.module.css';
 
 interface IUuid {
     data: {
@@ -114,7 +114,7 @@ export function CommonHistory() {
     });
 
     const { data: volunteerRoles } = useList<VolunteerRoleEntity>({
-        resource: 'volunteer-roles',
+        resource: 'volunteer-roles'
     });
 
     const { data: transports } = useList<TransportEntity>({
@@ -174,7 +174,7 @@ export function CommonHistory() {
             month: 'long',
             hour: '2-digit',
             minute: '2-digit',
-            timeZone: 'Europe/Moscow',
+            timeZone: 'Europe/Moscow'
         });
     }
 
@@ -216,8 +216,8 @@ export function CommonHistory() {
         departure_date: 'Дату отъезда',
         arrival_date: 'Дату приезда',
         is_blocked: 'Статус блокировки',
-        custom_field: 'Кастомное поле',
-    }
+        custom_field: 'Кастомное поле'
+    };
 
     function returnCurrentField(fieldName: string): string {
         return localizedFieldNames[fieldName];
@@ -272,7 +272,7 @@ export function CommonHistory() {
             if (obj[key] === 'true') {
                 return 'Да';
             } else if (obj[key] === 'false') {
-                return 'Нет'
+                return 'Нет';
             } else {
                 return obj[key];
             }
@@ -284,14 +284,12 @@ export function CommonHistory() {
     function renderHistoryLayout(data: IResult) {
         if (!data) return;
         const keysArray = Object.keys(data.data);
-        const keysToDelete = [
-            'id', 'volunteer', 'badge', 'deleted',
-        ];
-        const updatedKeysArray = keysArray.filter(key => !keysToDelete.includes(key));
+        const keysToDelete = ['id', 'volunteer', 'badge', 'deleted'];
+        const updatedKeysArray = keysArray.filter((key) => !keysToDelete.includes(key));
         return updatedKeysArray.map((item) => {
             function getCustomFieldName() {
                 const idToFind = +data.data[item];
-                const foundObject = customFields.find(element => element.id === idToFind);
+                const foundObject = customFields.find((element) => element.id === idToFind);
                 return foundObject?.name;
             }
             return (
@@ -304,22 +302,15 @@ export function CommonHistory() {
                     <span className={styles.itemDrescrNew}>{returnCorrectFieldValue(data.data, item)}</span>
                 </div>
             );
-
-        })
+        });
     }
 
     function getCorrectTitleEvent(typeInfo: string) {
         if (typeInfo === 'arrival') {
-            return (
-                <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
-                    {`информацию по заезду`}
-                </span>
-            );
+            return <span className={`${styles.itemAction} ${styles.itemActionModif}`}>{`информацию по заезду`}</span>;
         } else if (typeInfo === 'volunteer') {
             return (
-                <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
-                    {`информацию по волонтеру`}
-                </span>
+                <span className={`${styles.itemAction} ${styles.itemActionModif}`}>{`информацию по волонтеру`}</span>
             );
         } else if (typeInfo === 'volunteercustomfieldvalue') {
             return (
@@ -330,7 +321,7 @@ export function CommonHistory() {
         } else {
             <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
                 {`сообщите о баге, если видите это!`}
-            </span>
+            </span>;
         }
     }
 
@@ -360,9 +351,7 @@ export function CommonHistory() {
                             {`${item.actor ? item.actor.name : 'Админ'}, `}
                         </span>
                         <span className={styles.itemTitle}>{formatDate(item.action_at)}</span>
-                        <span className={styles.itemAction}>
-                            {`${returnCurrentStatusString(item.status)}`}
-                        </span>
+                        <span className={styles.itemAction}>{`${returnCurrentStatusString(item.status)}`}</span>
                         {getCorrectTitleEvent(item.object_name)}
                         {renderHistoryLayout(item)}
                     </div>
