@@ -2,8 +2,8 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from feeder.models import (Volunteer, Arrival, Direction, Gender, FeedType, DirectionType, Person, Status, Transport,
-                           Engagement, EngagementRole, VolunteerCustomFieldValue)
+from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
+                           Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole)
 from history.models import History
 
 
@@ -62,6 +62,8 @@ class SaveSyncSerializerMixin(object):
                     old_data.pop(key)
                 else:
                     changed_data.update({key: val})
+            if changed_data:
+                changed_data.update({"id": uuid})
         else:
             status = History.STATUS_CREATE
             changed_data = new_data
@@ -77,16 +79,13 @@ class SaveSyncSerializerMixin(object):
 class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid")
     deleted = serializers.SerializerMethodField()
-    gender = serializers.SlugRelatedField(slug_field="id", queryset=Gender.objects.all(), required=False)
     vegan = serializers.BooleanField(source="is_vegan", required=False)
     infant = serializers.SerializerMethodField()
-    feed = serializers.SlugRelatedField(source="feed_type", slug_field="id",
-                                        queryset=FeedType.objects.all(), required=False)
+    feed = serializers.SerializerMethodField()
     number = serializers.CharField(source="badge_number", required=False)
     batch = serializers.IntegerField(source="printing_batch", required=False)
-    person = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all(), required=False)
-    directions = serializers.SlugRelatedField(many=True, slug_field="id",
-                                              queryset=Direction.objects.all(), required=False)
+    role = serializers.SlugRelatedField(source="main_role", slug_field="id",
+                                        queryset=VolunteerRole.objects.all(), required=False)
 
     class Meta:
         model = Volunteer
@@ -95,7 +94,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
             "person", "comment", "notion_id", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment",
-            "access_role", "color_type", "group_badge", "kitchen", "main_role"
+            "access_role", "color_type", "group_badge", "kitchen", "main_role", "feed_type"
         )
         uuid_field = "uuid"
 
@@ -107,9 +106,16 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     def get_infant(self, obj):
         feed = obj.feed_type
         if feed and feed.name == "ребенок":
-            obj.feed_type = FeedType.objects.get(name="фри")
             return True
         return False
+
+    def get_feed(self, obj):
+        feed = obj.feed_type
+        if not feed or feed.name == "без питания":
+            return "NO"
+        if feed.name == "ребенок" or feed.name == "фри":
+            return "FREE"
+        return "PAID"
 
     def get_instance_by_uuid(self, uuid):
         model = self.Meta.model
@@ -117,14 +123,21 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
     def validate(self, attrs):
         infant = self.initial_data.get("infant")
+        feed = self.initial_data.get("feed", "")
         if infant:
             attrs["feed_type"] = FeedType.objects.get(name="ребенок")
+        elif feed == "FREE":
+            attrs["feed_type"] = FeedType.objects.get(name="фри")
+        elif feed == "PAID":
+            attrs["feed_type"] = FeedType.objects.get(name="платно")
+        elif feed == "NO":
+            attrs["feed_type"] = FeedType.objects.get(name="без питания")
         return super().validate(attrs)
 
 
-class ArrivalHistoryDataSerializer(serializers.ModelSerializer):
+class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     deleted = serializers.SerializerMethodField()
-    badge = serializers.CharField(source="volunteer.uuid")
+    badge = serializers.SlugRelatedField(source="volunteer", slug_field="uuid", queryset=Volunteer.objects.all())
     status = serializers.SlugRelatedField(slug_field="id", queryset=Status.objects.all())
     arrival_transport = serializers.SlugRelatedField(slug_field="id", queryset=Transport.objects.all())
     departure_transport = serializers.SlugRelatedField(slug_field="id", queryset=Transport.objects.all())
@@ -173,6 +186,11 @@ class PersonHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSeri
             "id", "name", "first_name", "last_name", "nickname", "other_names", "gender", "birth_date",
             "phone", "telegram", "email", "city", "vegan", "notion_id"
         )
+
+    def to_internal_value(self, data):
+        if not data.get('name', None):
+            data["name"] = "-"
+        return super().to_internal_value(data)
 
 
 class VolunteerCustomFieldValueHistoryDataSerializer(serializers.ModelSerializer):

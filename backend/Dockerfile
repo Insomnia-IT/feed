@@ -8,6 +8,8 @@ RUN apt-get install nano net-tools inetutils-ping mc build-essential python3-dev
     libssl-dev postgresql-client -y  && \
     pip install --upgrade pip
 
+RUN apt-get install -y cron
+
 WORKDIR /app
 copy . .
 

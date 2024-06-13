@@ -2,6 +2,7 @@ import type { ButtonProps, FormInstance } from '@pankod/refine-antd';
 import { Modal } from '@pankod/refine-antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { dataProvider } from '~/dataProvider';
 import type { VolCustomFieldValueEntity } from '~/interfaces';
@@ -20,6 +21,8 @@ const useSaveConfirm = (
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
     );
+
+    const queryClient = useQueryClient();
 
     const handleOk = () => {
         setShowConfirmationModalReason(null);
@@ -133,6 +136,8 @@ const useSaveConfirm = (
                         });
                     }
                 }
+
+                queryClient.clear();
             }
         },
         renderModal: () => {

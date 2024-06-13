@@ -109,7 +109,7 @@ class Engagement(TimeMixin):
     role = models.ForeignKey(EngagementRole, on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True)
+    notion_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
 
 class Volunteer(TimeMixin, SoftDeleteModelMixin):
@@ -141,7 +141,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     direction_head_comment = models.TextField(null=True, blank=True, verbose_name="Комментарий руководителя локации")
     badge_number = models.TextField(null=True, blank=True, verbose_name="Номер бейджа")
     printing_batch = models.IntegerField(null=True, blank=True, verbose_name="Партия бейджа")
-    role = models.TextField(null=True, blank=True, verbose_name="Роль")
+    # role = models.TextField(null=True, blank=True, verbose_name="Роль")
     access_role = models.ForeignKey(
         'AccessRole',
         null=True, blank=True, on_delete=models.PROTECT,
