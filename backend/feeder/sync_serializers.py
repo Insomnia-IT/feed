@@ -2,7 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from feeder.models import (Volunteer, Arrival, Direction, Gender, FeedType, DirectionType, Person, Status, Transport,
+from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
                            Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole)
 from history.models import History
 
@@ -186,6 +186,11 @@ class PersonHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSeri
             "id", "name", "first_name", "last_name", "nickname", "other_names", "gender", "birth_date",
             "phone", "telegram", "email", "city", "vegan", "notion_id"
         )
+
+    def to_internal_value(self, data):
+        if not data.get('name', None):
+            data["name"] = "-"
+        return super().to_internal_value(data)
 
 
 class VolunteerCustomFieldValueHistoryDataSerializer(serializers.ModelSerializer):

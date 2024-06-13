@@ -56,11 +56,15 @@ class NotionSync:
         badges = qs.filter(object_name="volunteer")
         arrivals = qs.filter(object_name="arrival")
         serializer = HistorySyncSerializer
-        data = {
-            "badges": serializer(badges, many=True).data,
-            "arrivals": serializer(arrivals, many=True).data
-        }
-        print('SYNCHRONIZATION_URL=', settings.SYNCHRONIZATION_URL)
+        data = {}
+        if badges:
+            data.update({"badges": serializer(badges, many=True).data})
+        if arrivals:
+            data.update({"arrivals": serializer(arrivals, many=True).data})
+
+        if not data:
+            return
+
         url = urljoin(settings.SYNCHRONIZATION_URL, "back-sync")
         response = requests.post(
             url=url,
@@ -109,7 +113,7 @@ class NotionSync:
         }
 
         url = urljoin(settings.SYNCHRONIZATION_URL, "sync")
-        params = {"from_date": dt.strftime("%Y-%m-%dT%H:%M:%S.%f%z")}
+        params = {"from_date": dt.strftime("%Y-%m-%dT%H:%M:%S")}
         response = requests.get(
             url,
             auth=HTTPBasicAuth(
