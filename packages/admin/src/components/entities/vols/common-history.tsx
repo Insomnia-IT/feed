@@ -100,7 +100,7 @@ const localizedFieldNames = {
     directions: 'Службы/локации',
     group_badge: 'Групповой бейдж',
     number: 'Номер бейджа',
-    batch: 'Партия бейджа',
+    batch: 'Партия бейджа'
 };
 
 function returnCurrentField(fieldName: string): string {
