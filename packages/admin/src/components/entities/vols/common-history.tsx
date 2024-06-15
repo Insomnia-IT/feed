@@ -53,6 +53,7 @@ interface IData {
     comment: string;
     kitchen: string;
     feed: string;
+    feed_type: string;
     main_role: string;
     access_role: string;
     color_type: string;
@@ -70,6 +71,50 @@ interface IData {
     arrival_date: string;
     is_blocked: boolean;
     custom_field: string;
+}
+
+const localizedFieldNames = {
+    comment: 'Комментарий',
+    feed_type: 'Тип питания',
+    main_role: 'Роль',
+    access_role: 'Право доступа',
+    kitchen: 'Кухня',
+    color_type: 'Цвет бейджа',
+    first_name: 'Имя',
+    gender: 'Пол',
+    last_name: 'Фамилию',
+    name: 'Имя на бейдже',
+    phone: 'Телефон',
+    position: 'Должность',
+    vegan: 'Веганство',
+    departure_transport: 'Как уехал',
+    arrival_transport: 'Как приехал',
+    status: 'Статус',
+    departure_date: 'Дату отъезда',
+    arrival_date: 'Дату приезда',
+    is_blocked: 'Статус блокировки',
+    custom_field: 'Кастомное поле',
+    directions: 'Службы/локации'
+};
+
+function returnCurrentField(fieldName: string): string {
+    return localizedFieldNames[fieldName] ?? fieldName;
+}
+
+function returnVeganFieldValue(value: boolean | undefined) {
+    if (value) {
+        return 'Веган';
+    } else {
+        return 'Мясоед';
+    }
+}
+
+function returnisBlockedFieldValue(value: boolean | undefined) {
+    if (value) {
+        return 'Заблокирован';
+    } else {
+        return 'Разблокирован';
+    }
 }
 
 export function CommonHistory() {
@@ -129,6 +174,10 @@ export function CommonHistory() {
         resource: 'genders'
     });
 
+    const { data: directions } = useList<DirectionEntity>({
+        resource: 'directions'
+    });
+
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
     const loadCustomFields = async () => {
@@ -151,6 +200,7 @@ export function CommonHistory() {
     const statusById = useMapFromList(statuses);
     const transportById = useMapFromList(transports);
     const genderById = useMapFromList(genders);
+    const directionById = useMapFromList(directions);
 
     const historyData = async () => {
         const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?volunteer_uuid=${uuid}`);
@@ -196,49 +246,6 @@ export function CommonHistory() {
         }
     }
 
-    const localizedFieldNames = {
-        comment: 'Комментарий',
-        feed: 'Тип питания',
-        main_role: 'Роль',
-        access_role: 'Право доступа',
-        kitchen: 'Кухня',
-        color_type: 'Цвет бейджа',
-        first_name: 'Имя',
-        gender: 'Пол',
-        last_name: 'Фамилию',
-        name: 'Имя на бейдже',
-        phone: 'Телефон',
-        position: 'Должность',
-        vegan: 'Веганство',
-        departure_transport: 'Как уехал',
-        arrival_transport: 'Как приехал',
-        status: 'Статус',
-        departure_date: 'Дату отъезда',
-        arrival_date: 'Дату приезда',
-        is_blocked: 'Статус блокировки',
-        custom_field: 'Кастомное поле'
-    };
-
-    function returnCurrentField(fieldName: string): string {
-        return localizedFieldNames[fieldName];
-    }
-
-    function returnVeganFieldValue(value: boolean | undefined) {
-        if (value) {
-            return 'Веган';
-        } else {
-            return 'Мясоед';
-        }
-    }
-
-    function returnisBlockedFieldValue(value: boolean | undefined) {
-        if (value) {
-            return 'Заблокирован';
-        } else {
-            return 'Разблокирован';
-        }
-    }
-
     function returnCorrectFieldValue(obj: IData, key: string) {
         if (!key) return;
         if (!obj) return;
@@ -258,12 +265,14 @@ export function CommonHistory() {
             return accessRoleById[obj[key]];
         } else if (key === 'color_type') {
             return colorNameById[obj[key]];
-        } else if (key === 'feed') {
+        } else if (key === 'feed_type') {
             return feedTypeNameById[obj[key]];
         } else if (key === 'gender') {
             return genderById[obj[key]];
         } else if (key === 'status') {
             return statusById[obj[key]];
+        } else if (key === 'directions') {
+            return obj[key].map(id => directionById[id]).join(', ');
         } else if (key === 'arrival_transport' || key === 'departure_transport') {
             return transportById[obj[key]];
         } else if (key === 'custom_field') {
@@ -284,7 +293,7 @@ export function CommonHistory() {
     function renderHistoryLayout(data: IResult) {
         if (!data) return;
         const keysArray = Object.keys(data.data);
-        const keysToDelete = ['id', 'volunteer', 'badge', 'deleted'];
+        const keysToDelete = ['id', 'volunteer', 'badge', 'deleted', 'feed', 'role'];
         const updatedKeysArray = keysArray.filter((key) => !keysToDelete.includes(key));
         return updatedKeysArray.map((item) => {
             function getCustomFieldName() {
@@ -299,7 +308,7 @@ export function CommonHistory() {
                     </span>
                     <br />
                     <span className={styles.itemDrescrOld}>{returnCorrectFieldValue(data.old_data, item) || ''}</span>
-                    <span className={styles.itemDrescrNew}>{returnCorrectFieldValue(data.data, item)}</span>
+                    <span className={styles.itemDrescrNew}>{returnCorrectFieldValue(data.data, item) || '-'}</span>
                 </div>
             );
         });
@@ -330,7 +339,7 @@ export function CommonHistory() {
             return 'ИЗМЕНЕНИЙ НЕТ';
         }
         return array.map((item) => {
-            const geiId = () => {
+            const getId = () => {
                 if (!item.actor) return;
                 if (item.actor.id) {
                     return item.actor.id;
@@ -338,15 +347,15 @@ export function CommonHistory() {
                     return;
                 }
             };
-            const id = geiId();
+            const id = getId();
             return (
                 <div key={array.indexOf(item)} className={styles.historyItem}>
                     <div className={styles.itemTitleWrap}>
                         <span
                             className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
-                            onClick={() => {
+                            onClick={id ?  () => {
                                 void handleRouteClick(id);
-                            }}
+                            } : undefined}
                         >
                             {`${item.actor ? item.actor.name : 'Админ'}, `}
                         </span>
