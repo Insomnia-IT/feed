@@ -11,6 +11,7 @@ import type {
     CustomFieldEntity,
     DirectionEntity,
     FeedTypeEntity,
+    GroupBadgeEntity,
     KitchenEntity,
     StatusEntity,
     TransportEntity,
@@ -51,6 +52,7 @@ interface IResult {
 
 interface IData {
     comment: string;
+    direction_head_comment: string;
     kitchen: string;
     feed: string;
     feed_type: string;
@@ -75,6 +77,7 @@ interface IData {
 
 const localizedFieldNames = {
     comment: 'Комментарий',
+    direction_head_comment: 'Комментарий руководителя локации',
     feed_type: 'Тип питания',
     main_role: 'Роль',
     access_role: 'Право доступа',
@@ -94,7 +97,10 @@ const localizedFieldNames = {
     arrival_date: 'Дату приезда',
     is_blocked: 'Статус блокировки',
     custom_field: 'Кастомное поле',
-    directions: 'Службы/локации'
+    directions: 'Службы/локации',
+    group_badge: 'Групповой бейдж',
+    number: 'Номер бейджа',
+    batch: 'Партия бейджа',
 };
 
 function returnCurrentField(fieldName: string): string {
@@ -178,6 +184,10 @@ export function CommonHistory() {
         resource: 'directions'
     });
 
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges'
+    });
+
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
     const loadCustomFields = async () => {
@@ -201,6 +211,7 @@ export function CommonHistory() {
     const transportById = useMapFromList(transports);
     const genderById = useMapFromList(genders);
     const directionById = useMapFromList(directions);
+    const groupBadgeById = useMapFromList(groupBadges);
 
     const historyData = async () => {
         const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?volunteer_uuid=${uuid}`);
@@ -270,7 +281,9 @@ export function CommonHistory() {
         } else if (key === 'gender') {
             return genderById[obj[key]];
         } else if (key === 'status') {
-            return statusById[obj[key]];
+            return genderById[obj[key]];
+        } else if (key === 'group_badge') {
+            return groupBadgeById[obj[key]];
         } else if (key === 'directions') {
             return obj[key].map((id) => directionById[id]).join(', ');
         } else if (key === 'arrival_transport' || key === 'departure_transport') {
