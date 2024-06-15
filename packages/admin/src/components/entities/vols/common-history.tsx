@@ -293,18 +293,18 @@ export function CommonHistory() {
     function renderHistoryLayout(data: IResult) {
         if (!data) return;
         const keysArray = Object.keys(data.data);
-        const keysToDelete = ['id', 'volunteer', 'badge', 'deleted', 'feed', 'role'];
+        const keysToDelete = ['id', 'volunteer', 'badge', 'deleted', 'feed', 'role', 'custom_field'];
         const updatedKeysArray = keysArray.filter((key) => !keysToDelete.includes(key));
         return updatedKeysArray.map((item) => {
             function getCustomFieldName() {
-                const idToFind = +data.data[item];
+                const idToFind = +data.data.custom_field;
                 const foundObject = customFields.find((element) => element.id === idToFind);
                 return foundObject?.name;
             }
             return (
                 <div key={updatedKeysArray.indexOf(item)} className={styles.itemDescrWrap}>
                     <span className={styles.itemAction}>
-                        {item === 'custom_field' ? getCustomFieldName() : returnCurrentField(item)}
+                        {item === 'value' ? getCustomFieldName() : returnCurrentField(item)}
                     </span>
                     <br />
                     <span className={styles.itemDrescrOld}>{returnCorrectFieldValue(data.old_data, item) || ''}</span>
