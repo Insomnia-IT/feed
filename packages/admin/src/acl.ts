@@ -24,9 +24,9 @@ ac
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
-    .create(['directions', 'group-badges', 'volunteer-custom-fields', 'feed-transaction'])
-    .update(['directions', 'group-badges', 'volunteer-custom-fields'])
-    .delete(['directions', 'group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
+    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction'])
+    .update(['group-badges', 'volunteer-custom-fields'])
+    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
 
 export const ACL = {
     can: async ({ action, resource }) => {
