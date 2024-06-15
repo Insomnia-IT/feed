@@ -272,7 +272,7 @@ export function CommonHistory() {
         } else if (key === 'status') {
             return statusById[obj[key]];
         } else if (key === 'directions') {
-            return obj[key].map(id => directionById[id]).join(', ');
+            return obj[key].map((id) => directionById[id]).join(', ');
         } else if (key === 'arrival_transport' || key === 'departure_transport') {
             return transportById[obj[key]];
         } else if (key === 'custom_field') {
@@ -353,9 +353,13 @@ export function CommonHistory() {
                     <div className={styles.itemTitleWrap}>
                         <span
                             className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
-                            onClick={id ?  () => {
-                                void handleRouteClick(id);
-                            } : undefined}
+                            onClick={
+                                id
+                                    ? () => {
+                                          void handleRouteClick(id);
+                                      }
+                                    : undefined
+                            }
                         >
                             {`${item.actor ? item.actor.name : 'Админ'}, `}
                         </span>
