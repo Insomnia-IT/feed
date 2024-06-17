@@ -175,7 +175,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.qr and self.notion_id:
-            self.qr = self.notion_id
+            self.qr = str(self.notion_id).replace("-", "")
         super().save(*args, **kwargs)
 
 
