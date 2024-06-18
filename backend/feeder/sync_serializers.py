@@ -82,8 +82,8 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     vegan = serializers.BooleanField(source="is_vegan", required=False)
     infant = serializers.SerializerMethodField()
     feed = serializers.SerializerMethodField()
-    number = serializers.CharField(source="badge_number", required=False)
-    batch = serializers.IntegerField(source="printing_batch", required=False)
+    number = serializers.CharField(source="badge_number", required=False, allow_blank=True, allow_null=True)
+    batch = serializers.CharField(source="printing_batch", required=False, allow_blank=True, allow_null=True)
     role = serializers.SlugRelatedField(source="main_role", slug_field="id",
                                         queryset=VolunteerRole.objects.all(), required=False)
 
@@ -120,6 +120,11 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     def get_instance_by_uuid(self, uuid):
         model = self.Meta.model
         return model.objects.filter(uuid=uuid).first()
+
+    def to_internal_value(self, data):
+        if data.get("batch") == "None":
+            data["batch"] = None
+        return super().to_internal_value(data)
 
     def validate(self, attrs):
         infant = self.initial_data.get("infant")
