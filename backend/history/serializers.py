@@ -28,8 +28,14 @@ class HistorySerializer(serializers.ModelSerializer):
 
 class HistorySyncSerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(source="action_at")
+    actor_badge = serializers.SerializerMethodField()
 
     class Meta:
         model = History
         fields = ("actor_badge", "date", "data")
 
+    def get_actor_badge(self, obj):
+        badge = obj.actor_badge
+        if badge and len(badge) < 32:
+            return None
+        return badge
