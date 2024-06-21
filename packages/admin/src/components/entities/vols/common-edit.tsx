@@ -331,6 +331,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     function returnEngagementsLayout() {
         if (!person) return null;
         const engagementsArray = person.engagements;
+        console.log(engagementsArray);
         if (engagementsArray.length) {
             return engagementsArray.map((item) => {
                 return (
