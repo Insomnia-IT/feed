@@ -802,16 +802,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {isLoading && <Spin />}
             {!isLoading &&
                 volList.map((vol) => {
+                    let fieldStatus = '';
                     const arrivals = vol.arrivals
-                        .map(({ arrival_date, departure_date }) =>
-                            [arrival_date, departure_date].map(formatDate).join(' - ')
-                        )
+                        .map(({ arrival_date, departure_date, status }) => {
+                            fieldStatus = status;
+                            [arrival_date, departure_date].map(formatDate).join(' - ');
+                        })
                         .join(', ');
                     const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
                     const comment = vol?.direction_head_comment;
                     const isBlocked = vol.is_blocked;
                     const isOnField = getOnField(vol);
-
                     return (
                         <div
                             className={styles.volCard}
@@ -824,7 +825,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             <div className={styles.textRow}>{arrivals || 'Нет данных о датах'}</div>
                             <div>
                                 {isBlocked && <Tag color='red'>Заблокирован</Tag>}
-                                {isOnField && <Tag>На поле</Tag>}
+                                {isOnField && <Tag>{statusById[fieldStatus]}</Tag>}
                                 {!isBlocked && !isOnField && 'Нет данных о статусе'}
                             </div>
                             <div className={styles.textRow}>
