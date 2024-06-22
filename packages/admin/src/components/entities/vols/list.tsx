@@ -130,7 +130,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volFilterStr) {
             try {
                 return JSON.parse(volFilterStr);
-            } catch (e) {}
+            } catch (e) { }
         }
         return [];
     };
@@ -146,7 +146,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volVisibleFiltersStr) {
             try {
                 return JSON.parse(volVisibleFiltersStr);
-            } catch (e) {}
+            } catch (e) { }
         }
         return [];
     };
@@ -295,17 +295,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return (
             searchText
                 ? data.filter((item) => {
-                      const searchTextInLowerCase = searchText.toLowerCase();
-                      return [
-                          item.name,
-                          item.first_name,
-                          item.last_name,
-                          item.directions?.map(({ name }) => name).join(', '),
-                          ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
-                      ].some((text) => {
-                          return text?.toLowerCase().includes(searchTextInLowerCase);
-                      });
-                  })
+                    const searchTextInLowerCase = searchText.toLowerCase();
+                    return [
+                        item.name,
+                        item.first_name,
+                        item.last_name,
+                        item.directions?.map(({ name }) => name).join(', '),
+                        ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
+                    ].some((text) => {
+                        return text?.toLowerCase().includes(searchTextInLowerCase);
+                    });
+                })
                 : data
         )
             .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
@@ -600,11 +600,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     .concat(
                         newValues.length
                             ? [
-                                  {
-                                      ...filterItem,
-                                      value: newValues
-                                  }
-                              ]
+                                {
+                                    ...filterItem,
+                                    value: newValues
+                                }
+                            ]
                             : []
                     );
 
@@ -838,6 +838,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         </div>
     );
 
+    const getCellAction = (id: number) => {
+        return {
+            onClick: () => router.push(`volunteers/edit/${id}`)
+        };
+    };
+
     return (
         <List>
             {/* -------------------------- Фильтры -------------------------- */}
@@ -932,43 +938,53 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     loading={volunteersIsLoading || feededIsLoading}
                     dataSource={filteredData}
                     rowKey='id'
+                    rowClassName={styles.cursorPointer}
                 >
                     <Table.Column<VolEntity>
                         title=''
                         dataIndex='actions'
                         render={(_, record) => (
                             <Space>
-                                <EditButton hideText size='small' recordItemId={record.id} />
+                                {/* <EditButton hideText size='small' recordItemId={record.id} /> */}
                                 <DeleteButton hideText size='small' recordItemId={record.id} />
                             </Space>
                         )}
                     />
-                    <Table.Column dataIndex='id' key='id' title='ID' render={(value) => <TextField value={value} />} />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
+                        dataIndex='id' key='id'
+                        title='ID'
+                        render={(value) => <TextField value={value} />} />
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='name'
                         key='name'
                         title='Имя на бейдже'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='first_name'
                         key='first_name'
                         title='Имя'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='last_name'
                         key='last_name'
                         title='Фамилия'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='directions'
                         key='directions'
                         title='Службы / Локации'
                         render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='arrivals'
                         key='arrivals'
                         title='Даты на поле'
@@ -982,7 +998,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             </span>
                         )}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         key='on_field'
                         title='На поле'
                         render={(vol) => {
@@ -990,19 +1007,22 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             return <ListBooleanPositive value={value} />;
                         }}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='is_blocked'
                         key='is_blocked'
                         title='❌'
                         render={(value) => <ListBooleanNegative value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='kitchen'
                         key='kitchen'
                         title='Кухня'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='printing_batch'
                         key='printing_batch'
                         title={
@@ -1015,7 +1035,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         render={(value) => value && <NumberField value={value} />}
                     />
 
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        onCell={(record) => { return getCellAction(record.id) }}
                         dataIndex='comment'
                         key='comment'
                         title='Комментарий'
@@ -1024,7 +1045,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
                     {customFields?.map((customField) => {
                         return (
-                            <Table.Column
+                            <Table.Column<VolEntity>
+                                onCell={(record) => { return getCellAction(record.id) }}
                                 key={customField.name}
                                 title={customField.name}
                                 render={(vol) => {
