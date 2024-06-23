@@ -130,7 +130,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volFilterStr) {
             try {
                 return JSON.parse(volFilterStr);
-            } catch (e) { }
+            } catch (e) {}
         }
         return [];
     };
@@ -146,7 +146,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volVisibleFiltersStr) {
             try {
                 return JSON.parse(volVisibleFiltersStr);
-            } catch (e) { }
+            } catch (e) {}
         }
         return [];
     };
@@ -295,17 +295,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return (
             searchText
                 ? data.filter((item) => {
-                    const searchTextInLowerCase = searchText.toLowerCase();
-                    return [
-                        item.name,
-                        item.first_name,
-                        item.last_name,
-                        item.directions?.map(({ name }) => name).join(', '),
-                        ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
-                    ].some((text) => {
-                        return text?.toLowerCase().includes(searchTextInLowerCase);
-                    });
-                })
+                      const searchTextInLowerCase = searchText.toLowerCase();
+                      return [
+                          item.name,
+                          item.first_name,
+                          item.last_name,
+                          item.directions?.map(({ name }) => name).join(', '),
+                          ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
+                      ].some((text) => {
+                          return text?.toLowerCase().includes(searchTextInLowerCase);
+                      });
+                  })
                 : data
         )
             .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
@@ -533,28 +533,34 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const getOnFieldColors = (vol: VolEntity) => {
         const day = dayjs();
-        if (vol.arrivals.some(
-            ({ arrival_date, departure_date, status }) =>
-                isActivatedStatus(status) &&
-                day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
-                day <= dayjs(departure_date).endOf('day').add(7, 'hours')
-        )) {
-            return 'green'
+        if (
+            vol.arrivals.some(
+                ({ arrival_date, departure_date, status }) =>
+                    isActivatedStatus(status) &&
+                    day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                    day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+            )
+        ) {
+            return 'green';
         }
-        if (vol.arrivals.some(
-            ({ arrival_date, departure_date, status }) =>
-                !isActivatedStatus(status) &&
-                day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
-                day <= dayjs(departure_date).endOf('day').add(7, 'hours')
-        )) {
-            return 'red'
+        if (
+            vol.arrivals.some(
+                ({ arrival_date, departure_date, status }) =>
+                    !isActivatedStatus(status) &&
+                    day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                    day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+            )
+        ) {
+            return 'red';
         }
-        if (vol.arrivals.some(
-            ({ arrival_date, departure_date }) =>
-                day <= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
-                day >= dayjs(departure_date).endOf('day').add(7, 'hours')
-        )) {
-            return 'green'
+        if (
+            vol.arrivals.some(
+                ({ arrival_date, departure_date }) =>
+                    day <= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                    day >= dayjs(departure_date).endOf('day').add(7, 'hours')
+            )
+        ) {
+            return 'green';
         }
     };
     const getFilterValueText = (field: FilterField, value: unknown): string => {
@@ -627,11 +633,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     .concat(
                         newValues.length
                             ? [
-                                {
-                                    ...filterItem,
-                                    value: newValues
-                                }
-                            ]
+                                  {
+                                      ...filterItem,
+                                      value: newValues
+                                  }
+                              ]
                             : []
                     );
 
@@ -979,40 +985,54 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         )}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
-                        dataIndex='id' key='id'
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
+                        dataIndex='id'
+                        key='id'
                         title='ID'
-                        render={(value) => <TextField value={value} />} />
+                        render={(value) => <TextField value={value} />}
+                    />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='name'
                         key='name'
                         title='Имя на бейдже'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='first_name'
                         key='first_name'
                         title='Имя'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='last_name'
                         key='last_name'
                         title='Фамилия'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='directions'
                         key='directions'
                         title='Службы / Локации'
                         render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='arrivals'
                         key='arrivals'
                         title='Даты на поле'
@@ -1027,7 +1047,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         )}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         key='on_field'
                         title='На поле'
                         render={(vol) => {
@@ -1036,21 +1058,27 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         }}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='is_blocked'
                         key='is_blocked'
                         title='❌'
                         render={(value) => <ListBooleanNegative value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='kitchen'
                         key='kitchen'
                         title='Кухня'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='printing_batch'
                         key='printing_batch'
                         title={
@@ -1064,7 +1092,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     />
 
                     <Table.Column<VolEntity>
-                        onCell={(record) => { return getCellAction(record.id) }}
+                        onCell={(record) => {
+                            return getCellAction(record.id);
+                        }}
                         dataIndex='comment'
                         key='comment'
                         title='Комментарий'
@@ -1074,7 +1104,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     {customFields?.map((customField) => {
                         return (
                             <Table.Column<VolEntity>
-                                onCell={(record) => { return getCellAction(record.id) }}
+                                onCell={(record) => {
+                                    return getCellAction(record.id);
+                                }}
                                 key={customField.name}
                                 title={customField.name}
                                 render={(vol) => {

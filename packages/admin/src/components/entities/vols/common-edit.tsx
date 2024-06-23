@@ -46,7 +46,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const person = Form.useWatch('person');
 
-
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name'

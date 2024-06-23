@@ -10,9 +10,9 @@ import { useList } from '@pankod/refine-core';
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
 import { saveXLSX } from '~/shared/lib/saveXLSX';
 import { NEW_API_URL } from '~/const';
+import { getUserData } from '~/auth';
 
 import styles from './common.module.css';
-import { getUserData } from '~/auth';
 import useCanAccess from './use-can-access';
 
 interface IData {
@@ -28,7 +28,7 @@ export function CommonFoodTest() {
     const volId = matchResult ? matchResult[1] : null;
     const router = useRouter();
     const [foodCount, setFoodCount] = useState(0);
-    const canCreateFeedTransaction = useCanAccess({action: 'create', resource: 'feed-transaction'});
+    const canCreateFeedTransaction = useCanAccess({ action: 'create', resource: 'feed-transaction' });
     const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
     useEffect(() => {
         const handleResize = () => {

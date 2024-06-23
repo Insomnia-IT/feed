@@ -8,7 +8,7 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => (
     <>
         <Form.Item label='Название' name='name' rules={Rules.required}>
-            <Input maxLength={30}/>
+            <Input maxLength={30} />
         </Form.Item>
         <Form.Item label='Тип данных' name='type' rules={Rules.required}>
             <Select disabled={isEdit}>
