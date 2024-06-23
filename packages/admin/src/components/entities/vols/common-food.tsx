@@ -13,6 +13,7 @@ import { NEW_API_URL } from '~/const';
 
 import styles from './common.module.css';
 import { getUserData } from '~/auth';
+import useCanAccess from './use-can-access';
 
 interface IData {
     count: number;
@@ -27,6 +28,7 @@ export function CommonFoodTest() {
     const volId = matchResult ? matchResult[1] : null;
     const router = useRouter();
     const [foodCount, setFoodCount] = useState(0);
+    const canCreateFeedTransaction = useCanAccess({action: 'create', resource: 'feed-transaction'});
     const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
     useEffect(() => {
         const handleResize = () => {
@@ -35,15 +37,6 @@ export function CommonFoodTest() {
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
-    const getUserRole = async (param1: null, param2: true) => {
-        const userRole = await getUserData(param1, param2);
-        const containsAdmin = userRole?.roles.some(role => role === "ADMIN");
-        setUserRole(containsAdmin ? containsAdmin : false);
-    }
-    const [userRole, setUserRole] = useState(false);
-    useEffect(() => {
-        getUserRole(null, true);
     }, []);
 
     const handleCreateClick = () => {
@@ -186,7 +179,7 @@ export function CommonFoodTest() {
     return (
         <div>
             <div className={styles.buttonsWrap}>
-                <Button onClick={handleCreateClick} disabled={userRole ? false : true}>
+                <Button onClick={handleCreateClick} disabled={!canCreateFeedTransaction}>
                     <PlusSquareOutlined />
                     {screenSize.width <= 576 ? 'Порцию' : 'Добавить порцию'}
                 </Button>
