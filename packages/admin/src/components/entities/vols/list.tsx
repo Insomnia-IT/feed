@@ -530,6 +530,33 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         );
     };
+
+    const getOnFieldColors = (vol: VolEntity) => {
+        const day = dayjs();
+        if (vol.arrivals.some(
+            ({ arrival_date, departure_date, status }) =>
+                isActivatedStatus(status) &&
+                day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+        )) {
+            return 'green'
+        }
+        if (vol.arrivals.some(
+            ({ arrival_date, departure_date, status }) =>
+                !isActivatedStatus(status) &&
+                day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+        )) {
+            return 'red'
+        }
+        if (vol.arrivals.some(
+            ({ arrival_date, departure_date }) =>
+                day <= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                day >= dayjs(departure_date).endOf('day').add(7, 'hours')
+        )) {
+            return 'green'
+        }
+    };
     const getFilterValueText = (field: FilterField, value: unknown): string => {
         if (value === true) {
             return 'Да';
@@ -825,8 +852,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             <div className={styles.textRow}>{arrivals || 'Нет данных о датах'}</div>
                             <div>
                                 {isBlocked && <Tag color='red'>Заблокирован</Tag>}
-                                {isOnField && <Tag>{statusById[fieldStatus]}</Tag>}
-                                {!isBlocked && !isOnField && 'Нет данных о статусе'}
+                                {/* {isOnField && <Tag color='red'>{statusById[fieldStatus]}</Tag>} */}
+                                {<Tag color={getOnFieldColors(vol)}>{statusById[fieldStatus]}</Tag>}
+                                {/* {!isBlocked && !isOnField && 'Нет данных о статусе'} */}
                             </div>
                             <div className={styles.textRow}>
                                 <span className={styles.bold}>Комментарий: </span>
