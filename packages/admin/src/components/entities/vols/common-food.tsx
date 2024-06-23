@@ -12,6 +12,7 @@ import { saveXLSX } from '~/shared/lib/saveXLSX';
 import { NEW_API_URL } from '~/const';
 
 import styles from './common.module.css';
+import { getUserData } from '~/auth';
 
 interface IData {
     count: number;
@@ -34,6 +35,15 @@ export function CommonFoodTest() {
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    const getUserRole = async (param1: null, param2: true) => {
+        const userRole = await getUserData(param1, param2);
+        const containsAdmin = userRole?.roles.some(role => role === "ADMIN");
+        setUserRole(containsAdmin ? containsAdmin : false);
+    }
+    const [userRole, setUserRole] = useState(false);
+    useEffect(() => {
+        getUserRole(null, true);
     }, []);
 
     const handleCreateClick = () => {
@@ -176,7 +186,7 @@ export function CommonFoodTest() {
     return (
         <div>
             <div className={styles.buttonsWrap}>
-                <Button onClick={handleCreateClick}>
+                <Button onClick={handleCreateClick} disabled={userRole ? false : true}>
                     <PlusSquareOutlined />
                     {screenSize.width <= 576 ? 'Порцию' : 'Добавить порцию'}
                 </Button>

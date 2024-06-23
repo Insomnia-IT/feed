@@ -15,7 +15,6 @@ import type {
     KitchenEntity,
     StatusEntity,
     TransportEntity,
-    VolEntity,
     VolunteerRoleEntity
 } from '~/interfaces';
 import { dataProvider } from '~/dataProvider';
@@ -207,7 +206,6 @@ export function CommonHistory() {
     const colorNameById = useMapFromList(colors, 'description');
     const accessRoleById = useMapFromList(accessRoles);
     const volunteerRoleById = useMapFromList(volunteerRoles);
-    const statusById = useMapFromList(statuses);
     const transportById = useMapFromList(transports);
     const genderById = useMapFromList(genders);
     const directionById = useMapFromList(directions);
@@ -218,7 +216,6 @@ export function CommonHistory() {
         const result = response.data.results;
         const reversedResult = result.reverse();
         setData(reversedResult);
-        console.log(reversedResult);
     };
     useEffect(() => {
         void setNewUuid();
