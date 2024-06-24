@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from urllib.parse import urljoin
+import json
 
 import requests
 from django.conf import settings
@@ -75,6 +76,7 @@ class NotionSync:
             json=data
         )
         if not response.ok:
+            print(json.dumps(data, indent=4))
             error = response.text
             self.save_sync_info(sync_data, success=False, error=error)
             raise APIException(f"Sync to notion field with error: {error}")
