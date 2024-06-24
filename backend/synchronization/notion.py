@@ -79,7 +79,7 @@ class NotionSync:
             print(json.dumps(data, indent=4))
             error = response.text
             self.save_sync_info(sync_data, success=False, error=error)
-            raise APIException(f"Sync to notion field with error: {error}")
+            raise APIException(f"Sync to notion field with error: {error}, json: {json.dumps(data)}")
 
         self.save_sync_info(sync_data)
 
