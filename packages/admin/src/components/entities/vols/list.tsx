@@ -14,8 +14,7 @@ import {
     Spin,
     Table,
     Tag,
-    TextField,
-    useSelect
+    TextField
 } from '@pankod/refine-antd';
 import { useList } from '@pankod/refine-core';
 import type { GetListResponse, IResourceComponentsProps } from '@pankod/refine-core';
@@ -43,8 +42,6 @@ import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
-import type { UserData } from '~/auth';
-import { getUserData } from '~/auth';
 import { useMedia } from '~/shared/providers';
 
 import styles from './list.module.css';
@@ -875,8 +872,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const getCellAction = (id: number) => {
         return {
             onClick: (e) => {
-                if(!e.target.closest('button')) {
-                    router.push(`volunteers/edit/${id}`)
+                if (!e.target.closest('button')) {
+                    return router.push(`volunteers/edit/${id}`);
                 }
             }
         };
