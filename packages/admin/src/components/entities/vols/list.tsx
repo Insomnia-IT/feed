@@ -855,9 +855,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             <div className={styles.textRow}>{arrivals || 'Нет данных о датах'}</div>
                             <div>
                                 {isBlocked && <Tag color='red'>Заблокирован</Tag>}
-                                {/* {isOnField && <Tag color='red'>{statusById[fieldStatus]}</Tag>} */}
                                 {<Tag color={getOnFieldColors(vol)}>{statusById[fieldStatus]}</Tag>}
-                                {/* {!isBlocked && !isOnField && 'Нет данных о статусе'} */}
                             </div>
                             <div className={styles.textRow}>
                                 <span className={styles.bold}>Комментарий: </span>
