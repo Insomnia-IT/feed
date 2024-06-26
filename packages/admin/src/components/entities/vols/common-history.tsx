@@ -281,7 +281,7 @@ export function CommonHistory() {
         } else if (key === 'gender') {
             return genderById[obj[key]];
         } else if (key === 'status') {
-            return genderById[obj[key]];
+            return statusById[obj[key]];
         } else if (key === 'group_badge') {
             return groupBadgeById[obj[key]];
         } else if (key === 'directions') {
