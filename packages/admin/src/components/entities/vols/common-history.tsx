@@ -206,6 +206,7 @@ export function CommonHistory() {
     const colorNameById = useMapFromList(colors, 'description');
     const accessRoleById = useMapFromList(accessRoles);
     const volunteerRoleById = useMapFromList(volunteerRoles);
+    const statusById = useMapFromList(statuses);
     const transportById = useMapFromList(transports);
     const genderById = useMapFromList(genders);
     const directionById = useMapFromList(directions);
@@ -262,6 +263,10 @@ export function CommonHistory() {
         } else if (key === 'is_blocked') {
             return returnisBlockedFieldValue(obj[key]);
         } else if (key === 'comment') {
+            const result: string | undefined = obj[key];
+            if (!result) return;
+            return result.replace(/<\/?[^>]+(>|$)/g, '');
+        } else if (key === 'direction_head_comment') {
             const result: string | undefined = obj[key];
             if (!result) return;
             return result.replace(/<\/?[^>]+(>|$)/g, '');

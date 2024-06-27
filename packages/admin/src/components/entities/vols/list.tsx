@@ -29,6 +29,7 @@ import { useRouter } from 'next/router';
 
 import type {
     AccessRoleEntity,
+    ArrivalEntity,
     ColorTypeEntity,
     CustomFieldEntity,
     DirectionEntity,
@@ -531,10 +532,54 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         );
     };
 
+    function findClosestArrival(arrivals: Array<ArrivalEntity>) {
+        const now = dayjs();
+        let closestFutureArrival: ArrivalEntity | null = null;
+        let closestPastArrival: ArrivalEntity | null = null;
+        let minFutureDiff = Infinity;
+        let minPastDiff = Infinity;
+
+        for (const arrival of arrivals) {
+            const { arrival_date, departure_date } = arrival;
+            const arrivalTime = dayjs(arrival_date).startOf('day').add(7, 'hours');
+            const departureTime = dayjs(departure_date).endOf('day').add(7, 'hours');
+
+            if (now.isAfter(arrivalTime) && now.isBefore(departureTime)) {
+                return arrival;
+            }
+
+            const futureDiff = arrivalTime.diff(now);
+            const pastDiff = now.diff(departureTime);
+
+            if (futureDiff >= 0 && futureDiff < minFutureDiff) {
+                minFutureDiff = futureDiff;
+                closestFutureArrival = arrival;
+            }
+
+            if (pastDiff >= 0 && pastDiff < minPastDiff) {
+                minPastDiff = pastDiff;
+                closestPastArrival = arrival;
+            }
+        }
+
+        if (closestFutureArrival) {
+            return closestFutureArrival;
+        } else if (closestPastArrival) {
+            return closestPastArrival;
+        } else {
+            return null;
+        }
+    }
+
     const getOnFieldColors = (vol: VolEntity) => {
         const day = dayjs();
+        const currentArrival = findClosestArrival(vol.arrivals);
+        const currentArrivalArray: Array<ArrivalEntity> = [];
+        if (currentArrival !== null) {
+            currentArrivalArray.push(currentArrival);
+        }
         if (
-            vol.arrivals.some(
+            currentArrivalArray.some(
                 ({ arrival_date, departure_date, status }) =>
                     isActivatedStatus(status) &&
                     day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
@@ -544,7 +589,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             return 'green';
         }
         if (
-            vol.arrivals.some(
+            currentArrivalArray.some(
                 ({ arrival_date, departure_date, status }) =>
                     !isActivatedStatus(status) &&
                     day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
@@ -554,7 +599,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             return 'red';
         }
         if (
-            vol.arrivals.some(
+            currentArrivalArray.some(
                 ({ arrival_date, departure_date }) =>
                     day <= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
                     day >= dayjs(departure_date).endOf('day').add(7, 'hours')
@@ -835,17 +880,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {isLoading && <Spin />}
             {!isLoading &&
                 volList.map((vol) => {
-                    let fieldStatus = '';
-                    const arrivals = vol.arrivals
-                        .map(({ arrival_date, departure_date, status }) => {
-                            fieldStatus = status;
-                            [arrival_date, departure_date].map(formatDate).join(' - ');
-                        })
-                        .join(', ');
+                    const currentArrival = findClosestArrival(vol.arrivals);
+                    const visitDays = `${formatDate(currentArrival?.arrival_date)} - ${formatDate(
+                        currentArrival?.departure_date
+                    )}`;
                     const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
                     const comment = vol?.direction_head_comment;
                     const isBlocked = vol.is_blocked;
-                    const isOnField = getOnField(vol);
+                    const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
                     return (
                         <div
                             className={styles.volCard}
@@ -855,12 +897,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             }}
                         >
                             <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
-                            <div className={styles.textRow}>{arrivals || 'Нет данных о датах'}</div>
+                            <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                             <div>
                                 {isBlocked && <Tag color='red'>Заблокирован</Tag>}
-                                {/* {isOnField && <Tag color='red'>{statusById[fieldStatus]}</Tag>} */}
-                                {<Tag color={getOnFieldColors(vol)}>{statusById[fieldStatus]}</Tag>}
-                                {/* {!isBlocked && !isOnField && 'Нет данных о статусе'} */}
+                                {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
                             </div>
                             <div className={styles.textRow}>
                                 <span className={styles.bold}>Комментарий: </span>
