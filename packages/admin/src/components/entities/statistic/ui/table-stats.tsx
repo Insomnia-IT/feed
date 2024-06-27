@@ -16,14 +16,14 @@ const columns: ColumnsType<ITableStatData> = [
         key: 'mealTimeType'
     },
     {
-        title: 'Факт (количество приемов пищи)',
-        dataIndex: 'fact',
-        key: 'fact'
-    },
-    {
         title: 'План (по количеству людей на поле)',
         dataIndex: 'plan',
         key: 'plan'
+    },
+    {
+        title: 'Факт (количество приемов пищи)',
+        dataIndex: 'fact',
+        key: 'fact'
     }
 ];
 
