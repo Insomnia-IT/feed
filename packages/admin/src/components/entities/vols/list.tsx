@@ -14,8 +14,7 @@ import {
     Spin,
     Table,
     Tag,
-    TextField,
-    useSelect
+    TextField
 } from '@pankod/refine-antd';
 import { useList } from '@pankod/refine-core';
 import type { GetListResponse, IResourceComponentsProps } from '@pankod/refine-core';
@@ -44,8 +43,6 @@ import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
-import type { UserData } from '~/auth';
-import { getUserData } from '~/auth';
 import { useMedia } from '~/shared/providers';
 
 import styles from './list.module.css';
@@ -914,7 +911,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const getCellAction = (id: number) => {
         return {
-            onClick: () => router.push(`volunteers/edit/${id}`)
+            onClick: (e) => {
+                if (!e.target.closest('button')) {
+                    return router.push(`volunteers/edit/${id}`);
+                }
+            }
         };
     };
 
@@ -1007,6 +1008,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {isMobile && renderMobileList(filteredData, volunteersIsLoading || feededIsLoading)}
             {isDesktop && (
                 <Table
+                    onRow={(record) => {
+                        return getCellAction(record.id);
+                    }}
                     scroll={{ x: '100%' }}
                     pagination={pagination}
                     loading={volunteersIsLoading || feededIsLoading}
@@ -1025,54 +1029,36 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         )}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='id'
                         key='id'
                         title='ID'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='name'
                         key='name'
                         title='Имя на бейдже'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='first_name'
                         key='first_name'
                         title='Имя'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='last_name'
                         key='last_name'
                         title='Фамилия'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='directions'
                         key='directions'
                         title='Службы / Локации'
                         render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='arrivals'
                         key='arrivals'
                         title='Даты на поле'
@@ -1087,9 +1073,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         )}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         key='on_field'
                         title='На поле'
                         render={(vol) => {
@@ -1098,27 +1081,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         }}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='is_blocked'
                         key='is_blocked'
                         title='❌'
                         render={(value) => <ListBooleanNegative value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='kitchen'
                         key='kitchen'
                         title='Кухня'
                         render={(value) => <TextField value={value} />}
                     />
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='printing_batch'
                         key='printing_batch'
                         title={
@@ -1132,9 +1106,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     />
 
                     <Table.Column<VolEntity>
-                        onCell={(record) => {
-                            return getCellAction(record.id);
-                        }}
                         dataIndex='comment'
                         key='comment'
                         title='Комментарий'
@@ -1144,9 +1115,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     {customFields?.map((customField) => {
                         return (
                             <Table.Column<VolEntity>
-                                onCell={(record) => {
-                                    return getCellAction(record.id);
-                                }}
                                 key={customField.name}
                                 title={customField.name}
                                 render={(vol) => {
