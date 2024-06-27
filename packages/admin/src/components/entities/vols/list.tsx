@@ -595,15 +595,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         ) {
             return 'red';
         }
-        if (
-            currentArrivalArray.some(
-                ({ arrival_date, departure_date }) =>
-                    day <= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
-                    day >= dayjs(departure_date).endOf('day').add(7, 'hours')
-            )
-        ) {
-            return 'green';
-        }
     };
     const getFilterValueText = (field: FilterField, value: unknown): string => {
         if (value === true) {
