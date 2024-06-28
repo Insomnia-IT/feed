@@ -502,7 +502,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 name='directions'
                                 rules={Rules.required}
                             >
-                                <Select disabled={!canFullEditing && !!person} mode='multiple' {...directionSelectProps} />
+                                <Select
+                                    disabled={!canFullEditing && !!person}
+                                    mode='multiple'
+                                    {...directionSelectProps}
+                                />
                             </Form.Item>
                         </div>
                         <div className={styles.hrInput}>
