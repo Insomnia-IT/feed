@@ -490,7 +490,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.hrInput}>
                             <Form.Item label='Роль' name='main_role' rules={Rules.required}>
-                                <Select disabled={!canFullEditing} {...rolesSelectProps} />
+                                <Select disabled={!canFullEditing && !!person} {...rolesSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
@@ -502,7 +502,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 name='directions'
                                 rules={Rules.required}
                             >
-                                <Select disabled={!canFullEditing} mode='multiple' {...directionSelectProps} />
+                                <Select disabled={!canFullEditing && !!person} mode='multiple' {...directionSelectProps} />
                             </Form.Item>
                         </div>
                         <div className={styles.hrInput}>
