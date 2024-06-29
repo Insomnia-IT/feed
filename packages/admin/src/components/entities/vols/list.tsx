@@ -14,8 +14,7 @@ import {
     Spin,
     Table,
     Tag,
-    TextField,
-    useSelect
+    TextField
 } from '@pankod/refine-antd';
 import { useList } from '@pankod/refine-core';
 import type { GetListResponse, IResourceComponentsProps } from '@pankod/refine-core';
@@ -24,8 +23,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
+import { Loader } from '@feed/ui/src/loader';
 
 import type {
     AccessRoleEntity,
@@ -162,24 +162,65 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const visibleDirections = useVisibleDirections();
 
+    const [page, setPage] = useState(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
+    const [pageSize, setPageSize] = useState(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+
+    const filterMap = {
+        'arrivals.staying_date': 'staying_date',
+        'arrivals.arrival_date': 'arrival_date',
+        'arrivals.departure_date': 'departure_date',
+        'arrivals.status': 'arrival_status',
+        'arrivals.arrival_transport': 'arrival_transport',
+        'arrivals.departure_transport': 'departure_transport'
+    };
+
+    const filterQueryParams = useMemo(() => {
+        const convertValue = (value) => {
+            return value;
+        };
+        const formatFilter = (name, value) => {
+            if (name.startsWith('custom_field_values.')) {
+                const customFieldId = name.split('.')[1];
+                return `custom_field_id=${customFieldId}&custom_field_value=${convertValue(value)}`;
+            }
+            return `${name}=${convertValue(value)}`;
+        };
+        const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
+        const queryParams = activeVisibleFilters.flatMap(({ name, value }) => {
+            name = filterMap[name] || name;
+            if (Array.isArray(value)) {
+                return value.map((v) => formatFilter(name, v));
+            }
+            return formatFilter(name, value);
+        });
+        if (searchText) {
+            queryParams.push(`search=${searchText}`);
+        }
+        return queryParams.length ? `?${queryParams.join('&')}` : '';
+    }, [activeFilters, visibleFilters, searchText]);
+
+    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
+        resource: `volunteers/${filterQueryParams}`,
+        config: {
+            pagination: {
+                current: isMobile ? 1 : page,
+                pageSize: isMobile ? 10000 : pageSize
+            }
+        }
+    });
+
     const pagination: TablePaginationConfig = {
+        total: volunteers?.total ?? 1,
         showTotal: (total) => `Кол-во волонтеров: ${total}`,
-        defaultCurrent: parseFloat(localStorage.getItem('volPageIndex') || '') || 1,
-        defaultPageSize: parseFloat(localStorage.getItem('volPageSize') || '') || 10,
+        defaultCurrent: page,
+        defaultPageSize: pageSize,
         onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
             localStorage.setItem('volPageIndex', page.toString());
             localStorage.setItem('volPageSize', pageSize.toString());
         }
     };
-
-    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
-        resource: 'volunteers',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
-        }
-    });
 
     const { data: directions } = useList<DirectionEntity>({
         resource: 'directions'
@@ -292,102 +333,104 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const filteredData = useMemo(() => {
         const data = volunteers?.data ?? [];
-        return (
-            searchText
-                ? data.filter((item) => {
-                      const searchTextInLowerCase = searchText.toLowerCase();
-                      return [
-                          item.name,
-                          item.first_name,
-                          item.last_name,
-                          item.directions?.map(({ name }) => name).join(', '),
-                          ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
-                      ].some((text) => {
-                          return text?.toLowerCase().includes(searchTextInLowerCase);
-                      });
-                  })
-                : data
-        )
-            .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
-            .filter(
-                (v) =>
-                    !filterUnfeededType ||
-                    (!feededIds[v.id] &&
-                        !v.is_blocked &&
-                        !isVolExpired(v, filterUnfeededType === 'yesterday') &&
-                        v.feed_type !== FEED_TYPE_WITHOUT_FEED)
-            )
-            .filter((vol) => {
-                const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
-                const arrivalFilters = activeVisibleFilters.filter((filter) => filter.name.startsWith('arrivals.'));
-                if (arrivalFilters.length) {
-                    const arrivals = arrivalFilters.reduce((arrivals, filter) => {
-                        const key = filter.name.split('.')[1];
-                        return arrivals.filter((arrival) => {
-                            if (key === 'staying_date') {
-                                const filterValue = filter.value as string;
-                                return (
-                                    filterValue >= arrival.arrival_date &&
-                                    filterValue <= arrival.departure_date &&
-                                    (activeFilters.some(({ name }) => name === 'arrivals.status') ||
-                                        isActivatedStatus(arrival.status))
-                                );
-                            }
-                            const filterValue = filter.value;
-                            if (Array.isArray(filterValue)) {
-                                return filterValue.some((value) => value === arrival[key]);
-                            } else {
-                                return filter.value === arrival[key];
-                            }
-                        });
-                    }, vol.arrivals);
 
-                    if (arrivals.length === 0) {
-                        return false;
-                    }
-                }
-                return activeVisibleFilters
-                    .filter((filter) => !filter.name.startsWith('arrivals.'))
-                    .every((filter) => {
-                        const path = filter.name.split('.');
-                        const fieldValue = vol[path[0]];
+        return data;
+        // return (
+        //     searchText
+        //         ? data.filter((item) => {
+        //               const searchTextInLowerCase = searchText.toLowerCase();
+        //               return [
+        //                   item.name,
+        //                   item.first_name,
+        //                   item.last_name,
+        //                   item.directions?.map(({ name }) => name).join(', '),
+        //                   ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
+        //               ].some((text) => {
+        //                   return text?.toLowerCase().includes(searchTextInLowerCase);
+        //               });
+        //           })
+        //         : data
+        // )
+        //     .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
+        //     .filter(
+        //         (v) =>
+        //             !filterUnfeededType ||
+        //             (!feededIds[v.id] &&
+        //                 !v.is_blocked &&
+        //                 !isVolExpired(v, filterUnfeededType === 'yesterday') &&
+        //                 v.feed_type !== FEED_TYPE_WITHOUT_FEED)
+        //     )
+        //     .filter((vol) => {
+        //         const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
+        //         const arrivalFilters = activeVisibleFilters.filter((filter) => filter.name.startsWith('arrivals.'));
+        //         if (arrivalFilters.length) {
+        //             const arrivals = arrivalFilters.reduce((arrivals, filter) => {
+        //                 const key = filter.name.split('.')[1];
+        //                 return arrivals.filter((arrival) => {
+        //                     if (key === 'staying_date') {
+        //                         const filterValue = filter.value as string;
+        //                         return (
+        //                             filterValue >= arrival.arrival_date &&
+        //                             filterValue <= arrival.departure_date &&
+        //                             (activeFilters.some(({ name }) => name === 'arrivals.status') ||
+        //                                 isActivatedStatus(arrival.status))
+        //                         );
+        //                     }
+        //                     const filterValue = filter.value;
+        //                     if (Array.isArray(filterValue)) {
+        //                         return filterValue.some((value) => value === arrival[key]);
+        //                     } else {
+        //                         return filter.value === arrival[key];
+        //                     }
+        //                 });
+        //             }, vol.arrivals);
 
-                        let value = fieldValue;
-                        if (filter.name === 'directions') {
-                            value = fieldValue?.map(({ id }) => id);
-                        }
-                        if (path[0] === 'custom_field_values') {
-                            const type = customFields.find(({ id }) => id.toString() === path[1])?.type;
+        //             if (arrivals.length === 0) {
+        //                 return false;
+        //             }
+        //         }
+        //         return activeVisibleFilters
+        //             .filter((filter) => !filter.name.startsWith('arrivals.'))
+        //             .every((filter) => {
+        //                 const path = filter.name.split('.');
+        //                 const fieldValue = vol[path[0]];
 
-                            value =
-                                fieldValue.find(({ custom_field }) => custom_field.toString() === path[1])?.value ||
-                                undefined;
+        //                 let value = fieldValue;
+        //                 if (filter.name === 'directions') {
+        //                     value = fieldValue?.map(({ id }) => id);
+        //                 }
+        //                 if (path[0] === 'custom_field_values') {
+        //                     const type = customFields.find(({ id }) => id.toString() === path[1])?.type;
 
-                            if (type === 'boolean') {
-                                value = value === 'true';
-                            }
-                        }
+        //                     value =
+        //                         fieldValue.find(({ custom_field }) => custom_field.toString() === path[1])?.value ||
+        //                         undefined;
 
-                        if (Array.isArray(filter.value)) {
-                            if (Array.isArray(value)) {
-                                return (
-                                    filter.value.some((currentValue) => value.includes(currentValue)) ||
-                                    (filter.value.includes(null) && value.length === 0)
-                                );
-                            } else {
-                                return filter.value.some((currentValue) =>
-                                    !currentValue ? !currentValue === !value : currentValue == value
-                                );
-                            }
-                        } else if (typeof filter.value === 'string' && typeof value === 'string') {
-                            return value.includes(filter.value);
-                        } else if (!filter.value) {
-                            return !filter.value === !value;
-                        } else {
-                            return filter.value == value;
-                        }
-                    });
-            });
+        //                     if (type === 'boolean') {
+        //                         value = value === 'true';
+        //                     }
+        //                 }
+
+        //                 if (Array.isArray(filter.value)) {
+        //                     if (Array.isArray(value)) {
+        //                         return (
+        //                             filter.value.some((currentValue) => value.includes(currentValue)) ||
+        //                             (filter.value.includes(null) && value.length === 0)
+        //                         );
+        //                     } else {
+        //                         return filter.value.some((currentValue) =>
+        //                             !currentValue ? !currentValue === !value : currentValue == value
+        //                         );
+        //                     }
+        //                 } else if (typeof filter.value === 'string' && typeof value === 'string') {
+        //                     return value.includes(filter.value);
+        //                 } else if (!filter.value) {
+        //                     return !filter.value === !value;
+        //                 } else {
+        //                     return filter.value == value;
+        //                 }
+        //             });
+        //     });
     }, [
         volunteers,
         searchText,
@@ -405,83 +448,94 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     // return <Loader />;
 
-    const createAndSaveXLSX = () => {
-        if (filteredData) {
-            const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet('Volunteers');
+    const [isExporting, setIsExporting] = useState(false);
 
-            const header = [
-                'ID',
-                'Позывной',
-                'Имя',
-                'Фамилия',
-                'Службы/Локации',
-                'Роль',
-                'Статус текущего завезда',
-                'Дата текущего заезда',
-                'Транспорт текущего заезда',
-                'Дата текущего отъезда',
-                'Транспорт текущего отъезда',
-                'Статус будущего завезда',
-                'Дата будущего заезда',
-                'Транспорт будущего заезда',
-                'Дата будущего отъезда',
-                'Транспорт будущего отъезда',
-                'Заблокирован',
-                'Кухня',
-                'Партия бейджа',
-                'Тип питания',
-                'Веган/мясоед',
-                'Комментарий',
-                'Цвет бейджа',
-                'Право доступа',
-                ...customFields?.map((field) => field.name)
-            ];
-            sheet.addRow(header);
-
-            filteredData.forEach((vol, index) => {
-                const currentArrival = vol.arrivals.find(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
-                );
-                const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
-                sheet.addRow([
-                    vol.id,
-                    vol.name,
-                    vol.first_name,
-                    vol.last_name,
-                    vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
-                    vol.main_role ? volunteerRoleById[vol.main_role] : '',
-                    currentArrival ? statusById[currentArrival?.status] : '',
-                    currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
-                    currentArrival ? transportById[currentArrival?.arrival_transport] : '',
-                    currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
-                    currentArrival ? transportById[currentArrival?.departure_transport] : '',
-                    futureArrival ? statusById[futureArrival?.status] : '',
-                    futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
-                    futureArrival ? transportById[futureArrival?.arrival_transport] : '',
-                    futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
-                    futureArrival ? transportById[futureArrival?.departure_transport] : '',
-                    vol.is_blocked ? 1 : 0,
-                    vol.kitchen ? kitchenNameById[vol.kitchen] : '',
-                    vol.printing_batch,
-                    vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
-                    vol.is_vegan ? 'веган' : 'мясоед',
-                    vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
-                    vol.color_type ? colorNameById[vol.color_type] : '',
-                    vol.access_role ? accessRoleById[vol.access_role] : '',
-                    ...customFields?.map((field) => {
-                        const value =
-                            vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)?.value ||
-                            '';
-                        if (field.type === 'boolean') {
-                            return value === 'true' ? 1 : 0;
-                        }
-                        return value;
-                    })
-                ]);
+    const createAndSaveXLSX = async () => {
+        setIsExporting(true);
+        try {
+            const { data: allPagesData } = await dataProvider.getList({
+                resource: `volunteers/${filterQueryParams}`
             });
-            void saveXLSX(workbook, 'volunteers');
+
+            if (allPagesData) {
+                const workbook = new ExcelJS.Workbook();
+                const sheet = workbook.addWorksheet('Volunteers');
+
+                const header = [
+                    'ID',
+                    'Позывной',
+                    'Имя',
+                    'Фамилия',
+                    'Службы/Локации',
+                    'Роль',
+                    'Статус текущего завезда',
+                    'Дата текущего заезда',
+                    'Транспорт текущего заезда',
+                    'Дата текущего отъезда',
+                    'Транспорт текущего отъезда',
+                    'Статус будущего завезда',
+                    'Дата будущего заезда',
+                    'Транспорт будущего заезда',
+                    'Дата будущего отъезда',
+                    'Транспорт будущего отъезда',
+                    'Заблокирован',
+                    'Кухня',
+                    'Партия бейджа',
+                    'Тип питания',
+                    'Веган/мясоед',
+                    'Комментарий',
+                    'Цвет бейджа',
+                    'Право доступа',
+                    ...customFields?.map((field) => field.name)
+                ];
+                sheet.addRow(header);
+
+                allPagesData.forEach((vol, index) => {
+                    const currentArrival = vol.arrivals.find(
+                        ({ arrival_date, departure_date }) =>
+                            dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
+                    );
+                    const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
+                    sheet.addRow([
+                        vol.id,
+                        vol.name,
+                        vol.first_name,
+                        vol.last_name,
+                        vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
+                        vol.main_role ? volunteerRoleById[vol.main_role] : '',
+                        currentArrival ? statusById[currentArrival?.status] : '',
+                        currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
+                        currentArrival ? transportById[currentArrival?.arrival_transport] : '',
+                        currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
+                        currentArrival ? transportById[currentArrival?.departure_transport] : '',
+                        futureArrival ? statusById[futureArrival?.status] : '',
+                        futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
+                        futureArrival ? transportById[futureArrival?.arrival_transport] : '',
+                        futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
+                        futureArrival ? transportById[futureArrival?.departure_transport] : '',
+                        vol.is_blocked ? 1 : 0,
+                        vol.kitchen ? kitchenNameById[vol.kitchen] : '',
+                        vol.printing_batch,
+                        vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
+                        vol.is_vegan ? 'веган' : 'мясоед',
+                        vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
+                        vol.color_type ? colorNameById[vol.color_type] : '',
+                        vol.access_role ? accessRoleById[vol.access_role] : '',
+                        ...customFields?.map((field) => {
+                            const value =
+                                vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)
+                                    ?.value || '';
+                            if (field.type === 'boolean') {
+                                return value === 'true' ? 1 : 0;
+                            }
+                            return value;
+                        })
+                    ]);
+                });
+                void saveXLSX(workbook, 'volunteers');
+            }
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -543,6 +597,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (value === '') {
             return '(Пусто)';
         }
+        if (value === 'notempty') {
+            return '(Не пусто)';
+        }
         return String(value);
     };
 
@@ -569,23 +626,30 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 count: 0
             }));
         } else {
-            const valueCounts = (volunteers?.data ?? []).reduce((acc: { [key: string]: number }, vol) => {
-                const path = field.name.split('.');
-                let value = vol[path[0]] || '';
-                if (path[0] === 'custom_field_values') {
-                    value = value.find(({ custom_field }) => custom_field.toString() === path[1])?.value || '';
-                }
-                acc[value] = (acc[value] ?? 0) + 1;
-                return acc;
-            }, {});
-            const values = Object.keys(valueCounts).sort();
-
-            return values.map((value) => ({
+            return ['', 'notempty'].map((value) => ({
                 value,
                 text: getFilterValueText(field, value),
                 selected: filterValues.includes(value),
-                count: valueCounts[value] ?? 0
+                count: 0
             }));
+            // debugger
+            // const valueCounts = (volunteers?.data ?? []).reduce((acc: { [key: string]: number }, vol) => {
+            //     const path = field.name.split('.');
+            //     let value = vol[path[0]] || '';
+            //     if (path[0] === 'custom_field_values') {
+            //         value = value.find(({ custom_field }) => custom_field.toString() === path[1])?.value || '';
+            //     }
+            //     acc[value] = (acc[value] ?? 0) + 1;
+            //     return acc;
+            // }, {});
+            // const values = Object.keys(valueCounts).sort();
+
+            // return values.map((value) => ({
+            //     value,
+            //     text: getFilterValueText(field, value),
+            //     selected: filterValues.includes(value),
+            //     count: valueCounts[value] ?? 0
+            // }));
         }
     };
 
@@ -890,7 +954,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             <Button
                                 type={'primary'}
                                 onClick={handleClickDownload}
-                                icon={<DownloadOutlined />}
+                                icon={isExporting ? <LoadingOutlined spin /> : <DownloadOutlined />}
                                 disabled={
                                     !filteredData &&
                                     kitchensIsLoading &&
@@ -920,7 +984,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         </Form.Item>
                     </>
                 )}
-                <Form.Item>Кол-во волонтеров: {filteredData.length}</Form.Item>
+                <Form.Item>Кол-во волонтеров: {volunteers?.total}</Form.Item>
             </Form>
 
             {/* -------------------------- Список волонтеров -------------------------- */}
