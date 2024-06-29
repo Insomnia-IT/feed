@@ -16,7 +16,7 @@ import { useMedia } from '~/shared/providers';
 
 import useVisibleDirections from '../vols/use-visible-directions';
 
-const getSorter = (field: string) => {
+export const getSorter = (field: string) => {
     return (a, b) => {
         const x = a[field] ?? '';
         const y = b[field] ?? '';

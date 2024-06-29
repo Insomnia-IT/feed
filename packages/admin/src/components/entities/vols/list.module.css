@@ -86,3 +86,7 @@
         font-weight: 500;
     }
 }
+
+.cursorPointer {
+    cursor: pointer;
+}
