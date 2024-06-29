@@ -244,7 +244,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             name: 'directions',
             title: 'Службы/Локации',
             getter: (data) => (data.directions || []).map(({ id }) => id),
-            lookup: () => directions?.data ?? []
+            lookup: () =>
+                (directions?.data ?? []).filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
         { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
