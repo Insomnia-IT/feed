@@ -685,10 +685,18 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <div className={styles.badgeInfoWrap}>
                         <div className={styles.badgeInfo}>
                             <div className={styles.badgeInfoPart}>
-                                <Form.Item label='Партия бейджа' name='printing_batch' className={styles.badgeInfoPartItem}>
+                                <Form.Item
+                                    label='Партия бейджа'
+                                    name='printing_batch'
+                                    className={styles.badgeInfoPartItem}
+                                >
                                     <Input readOnly disabled={denyBadgeEdit} />
                                 </Form.Item>
-                                <Form.Item label='Номер бейджа' name='badge_number' className={styles.badgeInfoPartItem}>
+                                <Form.Item
+                                    label='Номер бейджа'
+                                    name='badge_number'
+                                    className={styles.badgeInfoPartItem}
+                                >
                                     <Input disabled={denyBadgeEdit} />
                                 </Form.Item>
                             </div>
