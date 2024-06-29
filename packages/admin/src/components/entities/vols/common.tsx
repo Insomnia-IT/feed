@@ -23,6 +23,8 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         if (screenSize.width <= 576) {
             antCardBody.style.padding = '5px';
             saveButton.style.margin = '0px 8px 56px 5px';
+            saveButton.style.position = 'sticky';
+            saveButton.style.bottom = '50px';
         }
     });
 
