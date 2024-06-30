@@ -9,7 +9,6 @@ import {
     List,
     NumberField,
     Popover,
-    Radio,
     Space,
     Spin,
     Table,
@@ -25,7 +24,6 @@ import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
-import { Loader } from '@feed/ui/src/loader';
 
 import type {
     AccessRoleEntity,
@@ -41,21 +39,12 @@ import type {
     VolunteerRoleEntity
 } from '~/interfaces';
 import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
-import { NEW_API_URL } from '~/const';
-import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
 import { useMedia } from '~/shared/providers';
 
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
 import useVisibleDirections from './use-visible-directions';
-
-const booleanFilters = [
-    { value: true, text: 'Да' },
-    { value: false, text: 'Нет' }
-];
-
-const FEED_TYPE_WITHOUT_FEED = 4;
 
 export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
     const day = isYesterday ? dayjs().subtract(1, 'day') : dayjs();
@@ -107,10 +96,6 @@ const useMapFromList = (list: GetListResponse | undefined, nameField = 'name') =
 };
 
 export const VolList: FC<IResourceComponentsProps> = () => {
-    const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
-    const [feededIsLoading, setFeededIsLoading] = useState(false);
-    const [feededIds, setFeededIds] = useState({});
-
     const getDefaultSearchText = () => {
         return localStorage.getItem('volSearchText') || '';
     };
@@ -165,15 +150,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const [page, setPage] = useState(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
     const [pageSize, setPageSize] = useState(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
 
-    const filterMap = {
-        'arrivals.staying_date': 'staying_date',
-        'arrivals.arrival_date': 'arrival_date',
-        'arrivals.departure_date': 'departure_date',
-        'arrivals.status': 'arrival_status',
-        'arrivals.arrival_transport': 'arrival_transport',
-        'arrivals.departure_transport': 'departure_transport'
-    };
-
     const filterQueryParams = useMemo(() => {
         const convertValue = (value) => {
             return value;
@@ -198,7 +174,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             });
         }
         const queryParams = activeVisibleFilters.flatMap(({ name, value }) => {
-            name = filterMap[name] || name;
             if (Array.isArray(value)) {
                 return value.map((v) => formatFilter(name, v));
             }
@@ -302,7 +277,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             getter: (data) => (data.directions || []).map(({ id }) => id),
             skipNull: true,
             lookup: () =>
-                (directions?.data ?? []).filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
+                (directions?.data ?? [])
+                    .slice()
+                    .sort((a, b) => {
+                        if (a.name < b.name) {
+                            return -1;
+                        }
+                        if (a.name > b.name) {
+                            return 1;
+                        }
+                        return 0;
+                    })
+                    .filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
         { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
@@ -321,6 +307,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             title: 'Транспорт отъезда',
             lookup: () => transports?.data ?? []
         },
+        { type: 'date', name: 'feeded_date', title: 'Питался' },
+        { type: 'date', name: 'non_feeded_date', title: 'Не питался' },
         { type: 'string', name: 'name', title: 'Имя на бейдже' },
         { type: 'string', name: 'first_name', title: 'Имя' },
         { type: 'string', name: 'last_name', title: 'Фамилия' },
@@ -346,122 +334,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         }))
     );
 
-    const filteredData = useMemo(() => {
-        const data = volunteers?.data ?? [];
-
-        return data;
-        // return (
-        //     searchText
-        //         ? data.filter((item) => {
-        //               const searchTextInLowerCase = searchText.toLowerCase();
-        //               return [
-        //                   item.name,
-        //                   item.first_name,
-        //                   item.last_name,
-        //                   item.directions?.map(({ name }) => name).join(', '),
-        //                   ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
-        //               ].some((text) => {
-        //                   return text?.toLowerCase().includes(searchTextInLowerCase);
-        //               });
-        //           })
-        //         : data
-        // )
-        //     .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
-        //     .filter(
-        //         (v) =>
-        //             !filterUnfeededType ||
-        //             (!feededIds[v.id] &&
-        //                 !v.is_blocked &&
-        //                 !isVolExpired(v, filterUnfeededType === 'yesterday') &&
-        //                 v.feed_type !== FEED_TYPE_WITHOUT_FEED)
-        //     )
-        //     .filter((vol) => {
-        //         const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
-        //         const arrivalFilters = activeVisibleFilters.filter((filter) => filter.name.startsWith('arrivals.'));
-        //         if (arrivalFilters.length) {
-        //             const arrivals = arrivalFilters.reduce((arrivals, filter) => {
-        //                 const key = filter.name.split('.')[1];
-        //                 return arrivals.filter((arrival) => {
-        //                     if (key === 'staying_date') {
-        //                         const filterValue = filter.value as string;
-        //                         return (
-        //                             filterValue >= arrival.arrival_date &&
-        //                             filterValue <= arrival.departure_date &&
-        //                             (activeFilters.some(({ name }) => name === 'arrivals.status') ||
-        //                                 isActivatedStatus(arrival.status))
-        //                         );
-        //                     }
-        //                     const filterValue = filter.value;
-        //                     if (Array.isArray(filterValue)) {
-        //                         return filterValue.some((value) => value === arrival[key]);
-        //                     } else {
-        //                         return filter.value === arrival[key];
-        //                     }
-        //                 });
-        //             }, vol.arrivals);
-
-        //             if (arrivals.length === 0) {
-        //                 return false;
-        //             }
-        //         }
-        //         return activeVisibleFilters
-        //             .filter((filter) => !filter.name.startsWith('arrivals.'))
-        //             .every((filter) => {
-        //                 const path = filter.name.split('.');
-        //                 const fieldValue = vol[path[0]];
-
-        //                 let value = fieldValue;
-        //                 if (filter.name === 'directions') {
-        //                     value = fieldValue?.map(({ id }) => id);
-        //                 }
-        //                 if (path[0] === 'custom_field_values') {
-        //                     const type = customFields.find(({ id }) => id.toString() === path[1])?.type;
-
-        //                     value =
-        //                         fieldValue.find(({ custom_field }) => custom_field.toString() === path[1])?.value ||
-        //                         undefined;
-
-        //                     if (type === 'boolean') {
-        //                         value = value === 'true';
-        //                     }
-        //                 }
-
-        //                 if (Array.isArray(filter.value)) {
-        //                     if (Array.isArray(value)) {
-        //                         return (
-        //                             filter.value.some((currentValue) => value.includes(currentValue)) ||
-        //                             (filter.value.includes(null) && value.length === 0)
-        //                         );
-        //                     } else {
-        //                         return filter.value.some((currentValue) =>
-        //                             !currentValue ? !currentValue === !value : currentValue == value
-        //                         );
-        //                     }
-        //                 } else if (typeof filter.value === 'string' && typeof value === 'string') {
-        //                     return value.includes(filter.value);
-        //                 } else if (!filter.value) {
-        //                     return !filter.value === !value;
-        //                 } else {
-        //                     return filter.value == value;
-        //                 }
-        //             });
-        //     });
-    }, [
-        volunteers,
-        searchText,
-        feededIds,
-        filterUnfeededType,
-        canFullList,
-        visibleDirections,
-        activeFilters,
-        visibleFilters
-    ]);
-
-    // const { selectProps } = useSelect<VolEntity>({
-    //     resource: 'volunteers'
-    // });
-
-    // return <Loader />;
+    const volunteersData = useMemo(() => {
+        return volunteers?.data ?? [];
+    }, [volunteers]);
 
     const [isExporting, setIsExporting] = useState(false);
 
@@ -561,34 +436,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const handleClickCustomFields = useCallback((): void => {
         window.location.href = `${window.location.origin}/volunteer-custom-fields`;
     }, []);
-
-    const loadTransactions = async () => {
-        const newFeededIds = {};
-        if (filterUnfeededType) {
-            const today = dayjs().startOf('day');
-            const from = filterUnfeededType === 'yesterday' ? today.subtract(1, 'day') : today;
-            const url = `${NEW_API_URL}/feed-transaction/?limit=100000&dtime_from=${from.toISOString()}&dtime_to=${from
-                .add(1, 'day')
-                .toISOString()}`;
-
-            try {
-                setFeededIsLoading(true);
-                const {
-                    data: { results }
-                } = await axios.get(url);
-                results.forEach(({ volunteer }) => {
-                    newFeededIds[volunteer] = true;
-                });
-            } finally {
-                setFeededIsLoading(false);
-            }
-        }
-        setFeededIds(newFeededIds);
-    };
-
-    useEffect(() => {
-        void loadTransactions();
-    }, [filterUnfeededType]);
 
     const getOnField = (vol: VolEntity) => {
         const day = dayjs();
@@ -1001,7 +848,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 allowClear
             ></Input>
             <div className={styles.filters}>
-                <div className={styles.filtersLabel}>Фильтры:</div>
+                {/* <div className={styles.filtersLabel}>Фильтры:</div> */}
                 <div className={styles.filterItems}>
                     {filterFields
                         .filter((field) => visibleFilters.includes(field.name))
@@ -1034,6 +881,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             Фильтр
                         </Button>
                     </Popover>
+                    {(activeFilters.length || searchText) && (
+                        <Button
+                            type='link'
+                            icon={<Icons.DeleteOutlined />}
+                            onClick={() => {
+                                setActiveFilters([]);
+                                setSearchText('');
+                            }}
+                        >
+                            Сбросить фильтрацию
+                        </Button>
+                    )}
                 </div>
             </div>
             <Form layout='inline' style={{ padding: '10px 0' }}>
@@ -1045,26 +904,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                 onClick={handleClickDownload}
                                 icon={isExporting ? <LoadingOutlined spin /> : <DownloadOutlined />}
                                 disabled={
-                                    !filteredData &&
-                                    kitchensIsLoading &&
-                                    feedTypesIsLoading &&
-                                    colorsIsLoading &&
-                                    accessRolesIsLoading &&
+                                    !volunteersData.length ||
+                                    kitchensIsLoading ||
+                                    feedTypesIsLoading ||
+                                    colorsIsLoading ||
+                                    accessRolesIsLoading ||
                                     volunteerRolesIsLoading
                                 }
                             >
                                 Выгрузить
                             </Button>
-                        </Form.Item>
-                        <Form.Item>
-                            <Radio.Group
-                                value={filterUnfeededType}
-                                onChange={(e) => setfilterUnfeededType(e.target.value)}
-                            >
-                                <Radio.Button value=''>Все</Radio.Button>
-                                <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
-                                <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
-                            </Radio.Group>
                         </Form.Item>
                         <Form.Item>
                             <Button disabled={!canListCustomFields} onClick={handleClickCustomFields}>
@@ -1077,7 +926,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             </Form>
 
             {/* -------------------------- Список волонтеров -------------------------- */}
-            {isMobile && renderMobileList(filteredData, volunteersIsLoading || feededIsLoading)}
+            {isMobile && renderMobileList(volunteersData, volunteersIsLoading)}
             {isDesktop && (
                 <Table
                     onRow={(record) => {
@@ -1085,8 +934,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     }}
                     scroll={{ x: '100%' }}
                     pagination={pagination}
-                    loading={volunteersIsLoading || feededIsLoading}
-                    dataSource={filteredData}
+                    loading={volunteersIsLoading}
+                    dataSource={volunteersData}
                     rowKey='id'
                     rowClassName={styles.cursorPointer}
                 >

@@ -1,3 +1,4 @@
+import arrow
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
@@ -7,10 +8,13 @@ from django.db.models import Q
 
 from feeder.sync_serializers import get_history_serializer
 from history.models import History
-from feeder.models import Arrival, VolunteerCustomField, VolunteerCustomFieldValue
+from feeder.models import Arrival, VolunteerCustomFieldValue, FeedTransaction
 
 
 User = get_user_model()
+
+DAY_START_HOUR = 7
+TZ = 'Europe/Moscow'
 
 
 
@@ -18,16 +22,18 @@ class VolunteerExtraFilterMixin(ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
 
-        arrival_date = self.request.query_params.get('arrival_date')
-        departure_date = self.request.query_params.get('departure_date')
-        staying_date = self.request.query_params.get('staying_date')
-        arrival_status = self.request.query_params.get('arrival_status')
-        arrival_transport = self.request.query_params.get('arrival_transport')
-        departure_transport = self.request.query_params.get('departure_transport')
+        arrival_date = self.request.query_params.get('arrivals.arrival_date')
+        departure_date = self.request.query_params.get('arrivals.departure_date')
+        staying_date = self.request.query_params.get('arrivals.staying_date')
+        arrival_status = self.request.query_params.getlist('arrivals.status')
+        arrival_transport = self.request.query_params.getlist('arrivals.arrival_transport')
+        departure_transport = self.request.query_params.getlist('arrivals.departure_transport')
         custom_field_id = self.request.query_params.getlist('custom_field_id')
         custom_field_value = self.request.query_params.getlist('custom_field_value')
+        feeded_date = self.request.query_params.get('feeded_date')
+        non_feeded_date = self.request.query_params.get('non_feeded_date')
 
-        if arrival_date or departure_date or staying_date or arrival_status:
+        if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:
             arrive_qs = Arrival.objects.all()
             if arrival_date:
                 arrive_qs = arrive_qs.filter(arrival_date=arrival_date)
@@ -35,13 +41,23 @@ class VolunteerExtraFilterMixin(ModelViewSet):
                 arrive_qs = arrive_qs.filter(departure_date=departure_date)
             if staying_date:
                 arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
-            if arrival_status and arrival_status.isnumeric():
-                arrive_qs = arrive_qs.filter(status__id=arrival_status)
-            if arrival_transport and arrival_transport.isnumeric():
-                arrive_qs = arrive_qs.filter(arrival_transport__id=arrival_transport)
-            if departure_transport and departure_transport.isnumeric():
-                arrive_qs = arrive_qs.filter(departure_transport__id=departure_transport)
+            if staying_date and len(arrival_status) == 0:
+                arrive_qs = arrive_qs.filter(status__id__in=['ARRIVED', 'STARTED'])
+            if len(arrival_status):
+                arrive_qs = arrive_qs.filter(status__id__in=arrival_status)
+            if len(arrival_transport):
+                arrive_qs = arrive_qs.filter(arrival_transport__id__in=arrival_transport)
+            if len(departure_transport):
+                arrive_qs = arrive_qs.filter(departure_transport__id__in=departure_transport)
             qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
+
+        if feeded_date or non_feeded_date:
+            feed_datetime = arrow.get(feeded_date or non_feeded_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
+            feed_transactions_qs = FeedTransaction.objects.filter(dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime))
+            if feeded_date:
+                qs = qs.filter(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
+            if non_feeded_date:
+                qs = qs.exclude(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
 
         for index, id in enumerate(custom_field_id):
             value = custom_field_value[index]
