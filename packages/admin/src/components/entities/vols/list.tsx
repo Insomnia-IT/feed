@@ -29,6 +29,7 @@ import { Loader } from '@feed/ui/src/loader';
 
 import type {
     AccessRoleEntity,
+    ArrivalEntity,
     ColorTypeEntity,
     CustomFieldEntity,
     DirectionEntity,
@@ -43,8 +44,6 @@ import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { NEW_API_URL } from '~/const';
 import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
-import type { UserData } from '~/auth';
-import { getUserData } from '~/auth';
 import { useMedia } from '~/shared/providers';
 
 import styles from './list.module.css';
@@ -302,7 +301,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             title: 'Службы/Локации',
             getter: (data) => (data.directions || []).map(({ id }) => id),
             skipNull: true,
-            lookup: () => directions?.data ?? []
+            lookup: () =>
+                (directions?.data ?? []).filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
         { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
@@ -599,6 +599,74 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         );
     };
+
+    function findClosestArrival(arrivals: Array<ArrivalEntity>) {
+        const now = dayjs();
+        let closestFutureArrival: ArrivalEntity | null = null;
+        let closestPastArrival: ArrivalEntity | null = null;
+        let minFutureDiff = Infinity;
+        let minPastDiff = Infinity;
+
+        for (const arrival of arrivals) {
+            const { arrival_date, departure_date } = arrival;
+            const arrivalTime = dayjs(arrival_date).startOf('day').add(7, 'hours');
+            const departureTime = dayjs(departure_date).endOf('day').add(7, 'hours');
+
+            if (now.isAfter(arrivalTime) && now.isBefore(departureTime)) {
+                return arrival;
+            }
+
+            const futureDiff = arrivalTime.diff(now);
+            const pastDiff = now.diff(departureTime);
+
+            if (futureDiff >= 0 && futureDiff < minFutureDiff) {
+                minFutureDiff = futureDiff;
+                closestFutureArrival = arrival;
+            }
+
+            if (pastDiff >= 0 && pastDiff < minPastDiff) {
+                minPastDiff = pastDiff;
+                closestPastArrival = arrival;
+            }
+        }
+
+        if (closestFutureArrival) {
+            return closestFutureArrival;
+        } else if (closestPastArrival) {
+            return closestPastArrival;
+        } else {
+            return null;
+        }
+    }
+
+    const getOnFieldColors = (vol: VolEntity) => {
+        const day = dayjs();
+        const currentArrival = findClosestArrival(vol.arrivals);
+        const currentArrivalArray: Array<ArrivalEntity> = [];
+        if (currentArrival !== null) {
+            currentArrivalArray.push(currentArrival);
+        }
+        if (
+            currentArrivalArray.some(
+                ({ arrival_date, departure_date, status }) =>
+                    isActivatedStatus(status) &&
+                    day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                    day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+            )
+        ) {
+            return 'green';
+        }
+        if (
+            currentArrivalArray.some(
+                ({ arrival_date, departure_date, status }) =>
+                    !isActivatedStatus(status) &&
+                    day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                    day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+            )
+        ) {
+            return 'red';
+        }
+    };
     const getFilterValueText = (field: FilterField, value: unknown): string => {
         if (value === true) {
             return 'Да';
@@ -881,17 +949,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {isLoading && <Spin />}
             {!isLoading &&
                 volList.map((vol) => {
-                    let fieldStatus = '';
-                    const arrivals = vol.arrivals
-                        .map(({ arrival_date, departure_date, status }) => {
-                            fieldStatus = status;
-                            [arrival_date, departure_date].map(formatDate).join(' - ');
-                        })
-                        .join(', ');
+                    const currentArrival = findClosestArrival(vol.arrivals);
+                    const visitDays = `${formatDate(currentArrival?.arrival_date)} - ${formatDate(
+                        currentArrival?.departure_date
+                    )}`;
                     const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
                     const comment = vol?.direction_head_comment;
                     const isBlocked = vol.is_blocked;
-                    const isOnField = getOnField(vol);
+                    const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
                     return (
                         <div
                             className={styles.volCard}
@@ -901,11 +966,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             }}
                         >
                             <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
-                            <div className={styles.textRow}>{arrivals || 'Нет данных о датах'}</div>
+                            <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                             <div>
                                 {isBlocked && <Tag color='red'>Заблокирован</Tag>}
-                                {isOnField && <Tag>{statusById[fieldStatus]}</Tag>}
-                                {!isBlocked && !isOnField && 'Нет данных о статусе'}
+                                {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
                             </div>
                             <div className={styles.textRow}>
                                 <span className={styles.bold}>Комментарий: </span>
@@ -916,6 +980,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 })}
         </div>
     );
+
+    const getCellAction = (id: number) => {
+        return {
+            onClick: (e) => {
+                if (!e.target.closest('button')) {
+                    return router.push(`volunteers/edit/${id}`);
+                }
+            }
+        };
+    };
 
     return (
         <List>
@@ -1006,11 +1080,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             {isMobile && renderMobileList(filteredData, volunteersIsLoading || feededIsLoading)}
             {isDesktop && (
                 <Table
+                    onRow={(record) => {
+                        return getCellAction(record.id);
+                    }}
                     scroll={{ x: '100%' }}
                     pagination={pagination}
                     loading={volunteersIsLoading || feededIsLoading}
                     dataSource={filteredData}
                     rowKey='id'
+                    rowClassName={styles.cursorPointer}
                 >
                     <Table.Column<VolEntity>
                         title=''
@@ -1022,32 +1100,37 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             </Space>
                         )}
                     />
-                    <Table.Column dataIndex='id' key='id' title='ID' render={(value) => <TextField value={value} />} />
-                    <Table.Column
+                    <Table.Column<VolEntity>
+                        dataIndex='id'
+                        key='id'
+                        title='ID'
+                        render={(value) => <TextField value={value} />}
+                    />
+                    <Table.Column<VolEntity>
                         dataIndex='name'
                         key='name'
                         title='Имя на бейдже'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='first_name'
                         key='first_name'
                         title='Имя'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='last_name'
                         key='last_name'
                         title='Фамилия'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='directions'
                         key='directions'
                         title='Службы / Локации'
                         render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='arrivals'
                         key='arrivals'
                         title='Даты на поле'
@@ -1061,7 +1144,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             </span>
                         )}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         key='on_field'
                         title='На поле'
                         render={(vol) => {
@@ -1069,19 +1152,19 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             return <ListBooleanPositive value={value} />;
                         }}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='is_blocked'
                         key='is_blocked'
                         title='❌'
                         render={(value) => <ListBooleanNegative value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='kitchen'
                         key='kitchen'
                         title='Кухня'
                         render={(value) => <TextField value={value} />}
                     />
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='printing_batch'
                         key='printing_batch'
                         title={
@@ -1094,7 +1177,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         render={(value) => value && <NumberField value={value} />}
                     />
 
-                    <Table.Column
+                    <Table.Column<VolEntity>
                         dataIndex='comment'
                         key='comment'
                         title='Комментарий'
@@ -1103,7 +1186,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
                     {customFields?.map((customField) => {
                         return (
-                            <Table.Column
+                            <Table.Column<VolEntity>
                                 key={customField.name}
                                 title={customField.name}
                                 render={(vol) => {

@@ -241,6 +241,15 @@
     width: 50%;
 }
 
+.badgeInfoPart {
+    display: flex;
+    gap: 12px;
+}
+
+.badgeInfoPart > * {
+    flex: 1;
+}
+
 /* модалка блокировки */
 
 .modalWindow {

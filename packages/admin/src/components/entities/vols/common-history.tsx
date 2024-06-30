@@ -15,7 +15,6 @@ import type {
     KitchenEntity,
     StatusEntity,
     TransportEntity,
-    VolEntity,
     VolunteerRoleEntity
 } from '~/interfaces';
 import { dataProvider } from '~/dataProvider';
@@ -218,7 +217,6 @@ export function CommonHistory() {
         const result = response.data.results;
         const reversedResult = result.reverse();
         setData(reversedResult);
-        console.log(reversedResult);
     };
     useEffect(() => {
         void setNewUuid();
@@ -265,6 +263,10 @@ export function CommonHistory() {
         } else if (key === 'is_blocked') {
             return returnisBlockedFieldValue(obj[key]);
         } else if (key === 'comment') {
+            const result: string | undefined = obj[key];
+            if (!result) return;
+            return result.replace(/<\/?[^>]+(>|$)/g, '');
+        } else if (key === 'direction_head_comment') {
             const result: string | undefined = obj[key];
             if (!result) return;
             return result.replace(/<\/?[^>]+(>|$)/g, '');
