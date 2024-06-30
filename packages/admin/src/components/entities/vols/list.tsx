@@ -25,6 +25,7 @@ import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { DownloadOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
+import { useQueryClient } from '@tanstack/react-query';
 
 import type {
     AccessRoleEntity,
@@ -901,11 +902,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         </div>
     );
 
+    const queryClient = useQueryClient();
+
+    const openVolunteer = (id: number) => {
+        queryClient.clear();
+        return router.push(`volunteers/edit/${id}`);
+    };
+
     const getCellAction = (id: number) => {
         return {
             onClick: (e) => {
                 if (!e.target.closest('button')) {
-                    return router.push(`volunteers/edit/${id}`);
+                    return openVolunteer(id);
                 }
             }
         };
@@ -1015,7 +1023,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         dataIndex='actions'
                         render={(_, record) => (
                             <Space>
-                                <EditButton hideText size='small' recordItemId={record.id} />
+                                <EditButton
+                                    hideText
+                                    size='small'
+                                    recordItemId={record.id}
+                                    onClick={() => {
+                                        void openVolunteer(record.id);
+                                    }}
+                                />
                                 <DeleteButton hideText size='small' recordItemId={record.id} />
                             </Space>
                         )}
