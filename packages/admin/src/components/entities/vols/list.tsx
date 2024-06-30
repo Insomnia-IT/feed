@@ -87,6 +87,7 @@ type FilterField = {
     name: string;
     title: string;
     lookup?: () => Array<{ id: unknown; name: string }>;
+    skipNull?: boolean;
     getter?: (value: any) => any;
 };
 
@@ -186,6 +187,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             return `${name}=${convertValue(value)}`;
         };
         const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
+        if (
+            visibleDirections &&
+            visibleDirections.length &&
+            !activeVisibleFilters.some(({ name }) => name === 'directions')
+        ) {
+            activeVisibleFilters.push({
+                name: 'directions',
+                op: 'include',
+                value: visibleDirections
+            });
+        }
         const queryParams = activeVisibleFilters.flatMap(({ name, value }) => {
             name = filterMap[name] || name;
             if (Array.isArray(value)) {
@@ -193,11 +205,13 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             }
             return formatFilter(name, value);
         });
+
         if (searchText) {
             queryParams.push(`search=${searchText}`);
         }
+
         return queryParams.length ? `?${queryParams.join('&')}` : '';
-    }, [activeFilters, visibleFilters, searchText]);
+    }, [activeFilters, visibleFilters, searchText, visibleDirections]);
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: `volunteers/${filterQueryParams}`,
@@ -287,6 +301,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             name: 'directions',
             title: 'Службы/Локации',
             getter: (data) => (data.directions || []).map(({ id }) => id),
+            skipNull: true,
             lookup: () => directions?.data ?? []
         }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
@@ -610,7 +625,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         const lookupItems = field.lookup?.();
 
         if (lookupItems) {
-            return [{ id: null, name: '(Пусто)' }, ...lookupItems].map((item) => ({
+            return (field.skipNull ? lookupItems : [{ id: null, name: '(Пусто)' }, ...lookupItems]).map((item) => ({
                 value: item.id,
                 text: item.name,
                 selected: filterValues.includes(item.id),
