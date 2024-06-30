@@ -913,7 +913,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return {
             onClick: (e) => {
                 if (!e.target.closest('button')) {
-                    openVolunteer(id);
+                    return openVolunteer(id);
                 }
             }
         };
@@ -1028,7 +1028,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                     size='small'
                                     recordItemId={record.id}
                                     onClick={() => {
-                                        openVolunteer(record.id);
+                                        void openVolunteer(record.id);
                                     }}
                                 />
                                 <DeleteButton hideText size='small' recordItemId={record.id} />
