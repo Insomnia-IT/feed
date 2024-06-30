@@ -907,7 +907,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const openVolunteer = (id: number) => {
         queryClient.clear();
         return router.push(`volunteers/edit/${id}`);
-    } 
+    };
 
     const getCellAction = (id: number) => {
         return {
@@ -1023,9 +1023,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         dataIndex='actions'
                         render={(_, record) => (
                             <Space>
-                                <EditButton hideText size='small' recordItemId={record.id} onClick={() => {
-                                    openVolunteer(record.id)
-                                }} />
+                                <EditButton
+                                    hideText
+                                    size='small'
+                                    recordItemId={record.id}
+                                    onClick={() => {
+                                        openVolunteer(record.id);
+                                    }}
+                                />
                                 <DeleteButton hideText size='small' recordItemId={record.id} />
                             </Space>
                         )}
