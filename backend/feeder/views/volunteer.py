@@ -37,7 +37,7 @@ class VolunteerFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.Volunteer
-        fields = ['color_type', 'feed_type', 'kitchen', 'group_badge']
+        fields = ['color_type', 'feed_type', 'kitchen', 'group_badge', 'main_role']
 
 
 class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
