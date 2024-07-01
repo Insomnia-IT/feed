@@ -433,10 +433,6 @@
     .edit__nav {
         display: none;
     }
-
-    .formWrap {
-        height: auto;
-    }
 }
 
 @media (max-width: 768px) {
