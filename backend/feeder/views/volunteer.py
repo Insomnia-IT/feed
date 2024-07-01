@@ -25,6 +25,8 @@ class VolunteerFilter(django_filters.FilterSet):
     phone = django_filters.CharFilter(field_name="phone", lookup_expr='icontains')
     email = django_filters.CharFilter(field_name="email", lookup_expr='icontains')
     qr = django_filters.CharFilter(field_name="qr", lookup_expr='iexact')
+    printing_batch = django_filters.CharFilter(field_name="printing_batch", lookup_expr='iexact')
+    badge_number = django_filters.CharFilter(field_name="badge_number", lookup_expr='icontains')
     is_blocked = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
     is_vegan = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')

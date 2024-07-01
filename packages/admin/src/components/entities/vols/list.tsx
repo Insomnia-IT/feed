@@ -316,7 +316,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         { type: 'lookup', name: 'main_role', title: 'Роль', lookup: () => volunteerRoles?.data ?? [] },
         { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
         { type: 'lookup', name: 'kitchen', title: 'Кухня', lookup: () => kitchens?.data ?? [] }, // kitchenNameById
-        { type: 'number', name: 'printing_batch', title: 'Партия бейджа' },
+        { type: 'string', name: 'printing_batch', title: 'Партия бейджа' },
+        { type: 'string', name: 'badge_number', title: 'Номер бейджа' },
         { type: 'lookup', name: 'feed_type', title: 'Тип питания', lookup: () => feedTypes?.data ?? [] }, // feedTypeNameById
         { type: 'boolean', name: 'is_vegan', title: 'Веган' },
         { type: 'string', name: 'comment', title: 'Комментарий' },
