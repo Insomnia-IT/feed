@@ -129,7 +129,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volFilterStr) {
             try {
                 return JSON.parse(volFilterStr);
-            } catch (e) {}
+            } catch (e) { }
         }
         return [];
     };
@@ -145,7 +145,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volVisibleFiltersStr) {
             try {
                 return JSON.parse(volVisibleFiltersStr);
-            } catch (e) {}
+            } catch (e) { }
         }
         return [];
     };
@@ -295,17 +295,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         return (
             searchText
                 ? data.filter((item) => {
-                      const searchTextInLowerCase = searchText.toLowerCase();
-                      return [
-                          item.name,
-                          item.first_name,
-                          item.last_name,
-                          item.directions?.map(({ name }) => name).join(', '),
-                          ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
-                      ].some((text) => {
-                          return text?.toLowerCase().includes(searchTextInLowerCase);
-                      });
-                  })
+                    const searchTextInLowerCase = searchText.toLowerCase();
+                    return [
+                        item.name,
+                        item.first_name,
+                        item.last_name,
+                        item.directions?.map(({ name }) => name).join(', '),
+                        ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
+                    ].some((text) => {
+                        return text?.toLowerCase().includes(searchTextInLowerCase);
+                    });
+                })
                 : data
         )
             .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
@@ -668,11 +668,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     .concat(
                         newValues.length
                             ? [
-                                  {
-                                      ...filterItem,
-                                      value: newValues
-                                  }
-                              ]
+                                {
+                                    ...filterItem,
+                                    value: newValues
+                                }
+                            ]
                             : []
                     );
 
@@ -1018,7 +1018,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     rowKey='id'
                     rowClassName={styles.cursorPointer}
                 >
-                    <Table.Column<VolEntity>
+                    {/* <Table.Column<VolEntity>
                         title=''
                         dataIndex='actions'
                         render={(_, record) => (
@@ -1040,7 +1040,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         key='id'
                         title='ID'
                         render={(value) => <TextField value={value} />}
-                    />
+                    /> */}
                     <Table.Column<VolEntity>
                         dataIndex='name'
                         key='name'
@@ -1081,10 +1081,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     />
                     <Table.Column<VolEntity>
                         key='on_field'
-                        title='На поле'
+                        title='Статус'
                         render={(vol) => {
-                            const value = getOnField(vol as VolEntity);
-                            return <ListBooleanPositive value={value} />;
+                            const currentArrival = findClosestArrival(vol.arrivals);
+                            const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
+                            return (
+                                <div>
+                                    {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
+                                </div>
+                            );
                         }}
                     />
                     <Table.Column<VolEntity>
