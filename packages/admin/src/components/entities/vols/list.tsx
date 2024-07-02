@@ -42,6 +42,7 @@ import type {
 import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { dataProvider } from '~/dataProvider';
 import { useMedia } from '~/shared/providers';
+import { getSorter } from '~/utils';
 
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
@@ -1002,6 +1003,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         render={(arrivals) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 {arrivals
+                                    .slice()
+                                    .sort(getSorter('arrival_date'))
                                     .map(({ arrival_date, departure_date }) =>
                                         [arrival_date, departure_date].map(formatDate).join(' - ')
                                     )
