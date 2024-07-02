@@ -16,13 +16,15 @@ export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => {
     return (
         <>
             <Form.Item label='Название' name='name' rules={Rules.required}>
-                <Input value={value}
+                <Input
+                    value={value}
                     status={value.length === maxLength ? 'warning' : ''}
                     onChange={handleChange}
                     showCount
-                    maxLength={maxLength} />
+                    maxLength={maxLength}
+                />
                 {value.length === maxLength && (
-                    <Alert message="Достигнут лимит символов в названии" type="warning" showIcon />
+                    <Alert message='Достигнут лимит символов в названии' type='warning' showIcon />
                 )}
             </Form.Item>
             <Form.Item label='Тип данных' name='type' rules={Rules.required}>
@@ -35,5 +37,5 @@ export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => {
                 <ReactQuill />
             </Form.Item>
         </>
-    )
+    );
 };

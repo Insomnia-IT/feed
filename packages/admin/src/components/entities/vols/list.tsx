@@ -117,7 +117,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volFilterStr) {
             try {
                 return JSON.parse(volFilterStr);
-            } catch (e) { }
+            } catch (e) {}
         }
         return [];
     };
@@ -133,7 +133,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (volVisibleFiltersStr) {
             try {
                 return JSON.parse(volVisibleFiltersStr);
-            } catch (e) { }
+            } catch (e) {}
         }
         return [];
     };
@@ -597,11 +597,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     .concat(
                         newValues.length
                             ? [
-                                {
-                                    ...filterItem,
-                                    value: newValues
-                                }
-                            ]
+                                  {
+                                      ...filterItem,
+                                      value: newValues
+                                  }
+                              ]
                             : []
                     );
 
@@ -1012,11 +1012,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                 {arrivals
                                     .slice()
                                     .sort(getSorter('arrival_date'))
-                                    .map(({ arrival_date, departure_date }) =>
-                                        [arrival_date, departure_date].map(formatDate).join(' - ')
-                                    )
-                                    .join(', ')}
-                            </span>
+                                    .map(({ arrival_date, departure_date }) => {
+                                        const arrival = getFormattedArrivals(arrival_date);
+                                        const departure = getFormattedArrivals(departure_date);
+                                        return (
+                                            <div
+                                                style={{ whiteSpace: 'nowrap' }}
+                                                key={`${arrival_date}${departure_date}`}
+                                            >{`${arrival} - ${departure}`}</div>
+                                        );
+                                    })}
+                            </div>
                         )}
                     />
                     <Table.Column<VolEntity>
@@ -1024,12 +1030,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         title='Статус'
                         render={(vol) => {
                             const currentArrival = findClosestArrival(vol.arrivals);
-                            const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
-                            return (
-                                <div>
-                                    {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
-                                </div>
-                            );
+                            const currentStatus = currentArrival
+                                ? statusById[currentArrival?.status]
+                                : 'Статус неизвестен';
+                            return <div>{<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}</div>;
                         }}
                     />
                     <Table.Column<VolEntity>

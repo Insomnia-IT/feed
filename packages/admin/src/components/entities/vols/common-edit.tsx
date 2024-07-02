@@ -11,6 +11,7 @@ import {
     SmileOutlined
 } from '@ant-design/icons';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
 
 import { Rules } from '~/components/form';
 import type {
@@ -36,7 +37,6 @@ import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-import { useRouter } from 'next/router';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
@@ -804,10 +804,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 icon={false}
                                 size='middle'
                                 recordItemId={qrDuplicateVolunteer?.id}
-                                confirmTitle="Вы действительно хотите удалить волонтера?"
-                                confirmOkText="Да"
-                                confirmCancelText="Нет"
-                                onSuccess={handleBack} >
+                                confirmTitle='Вы действительно хотите удалить волонтера?'
+                                confirmOkText='Да'
+                                confirmCancelText='Нет'
+                                onSuccess={handleBack}
+                            >
                                 Удалить волонтера
                             </DeleteButton>
                         )}
