@@ -48,6 +48,7 @@ import { useMedia } from '~/shared/providers';
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
 import useVisibleDirections from './use-visible-directions';
+import { getSorter } from '~/utils';
 
 const booleanFilters = [
     { value: true, text: 'Да' },
@@ -439,11 +440,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             sheet.addRow(header);
 
             filteredData.forEach((vol, index) => {
-                const currentArrival = vol.arrivals.find(
+                const arrivals =  vol.arrivals.slice().sort(getSorter('arrival_date'));
+                const currentArrival = arrivals.find(
                     ({ arrival_date, departure_date }) =>
                         dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
                 );
-                const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
+                const futureArrival = arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
                 sheet.addRow([
                     vol.id,
                     vol.name,
@@ -1056,7 +1058,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         title='Даты на поле'
                         render={(arrivals) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
-                                {arrivals
+                                {arrivals.slice().sort(getSorter('arrival_date'))
                                     .map(({ arrival_date, departure_date }) =>
                                         [arrival_date, departure_date].map(formatDate).join(' - ')
                                     )

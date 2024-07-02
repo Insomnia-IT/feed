@@ -12,7 +12,7 @@ export const Scanner: FC = () => {
             {origin && (
                 <iframe
                     src={`${origin}/scanner/`}
-                    style={{ height: '80vh', width: '40vh', border: '15px solid black', borderRadius: '15px' }}
+                    style={{ height: 'min(95vh,1024px)', width: 'min(50vh, 512px)', border: '15px solid black', borderRadius: '15px' }}
                 />
             )}
         </center>

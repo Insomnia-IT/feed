@@ -4,8 +4,7 @@ import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
 import type { DirectionEntity } from '~/interfaces';
-
-import { getSorter } from '../group-badges';
+import { getSorter } from '~/utils';
 
 export const DepartmentList: FC<IResourceComponentsProps> = () => {
     const { data: directions } = useList<DirectionEntity>({
