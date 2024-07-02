@@ -9,7 +9,6 @@ import {
     List,
     NumberField,
     Popover,
-    Radio,
     Space,
     Spin,
     Table,
@@ -23,7 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -41,21 +40,12 @@ import type {
     VolunteerRoleEntity
 } from '~/interfaces';
 import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
-import { NEW_API_URL } from '~/const';
-import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
 import { useMedia } from '~/shared/providers';
 
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
 import useVisibleDirections from './use-visible-directions';
-
-const booleanFilters = [
-    { value: true, text: 'Да' },
-    { value: false, text: 'Нет' }
-];
-
-const FEED_TYPE_WITHOUT_FEED = 4;
 
 export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
     const day = isYesterday ? dayjs().subtract(1, 'day') : dayjs();
@@ -86,6 +76,7 @@ type FilterField = {
     name: string;
     title: string;
     lookup?: () => Array<{ id: unknown; name: string }>;
+    skipNull?: boolean;
     getter?: (value: any) => any;
 };
 
@@ -106,10 +97,6 @@ const useMapFromList = (list: GetListResponse | undefined, nameField = 'name') =
 };
 
 export const VolList: FC<IResourceComponentsProps> = () => {
-    const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
-    const [feededIsLoading, setFeededIsLoading] = useState(false);
-    const [feededIds, setFeededIds] = useState({});
-
     const getDefaultSearchText = () => {
         return localStorage.getItem('volSearchText') || '';
     };
@@ -161,24 +148,68 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const visibleDirections = useVisibleDirections();
 
+    const [page, setPage] = useState(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
+    const [pageSize, setPageSize] = useState(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+
+    const filterQueryParams = useMemo(() => {
+        const convertValue = (value) => {
+            return value;
+        };
+        const formatFilter = (name, value) => {
+            if (name.startsWith('custom_field_values.')) {
+                const customFieldId = name.split('.')[1];
+                return `custom_field_id=${customFieldId}&custom_field_value=${convertValue(value)}`;
+            }
+            return `${name}=${convertValue(value)}`;
+        };
+        const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
+        if (
+            visibleDirections &&
+            visibleDirections.length &&
+            !activeVisibleFilters.some(({ name }) => name === 'directions')
+        ) {
+            activeVisibleFilters.push({
+                name: 'directions',
+                op: 'include',
+                value: visibleDirections
+            });
+        }
+        const queryParams = activeVisibleFilters.flatMap(({ name, value }) => {
+            if (Array.isArray(value)) {
+                return value.map((v) => formatFilter(name, v));
+            }
+            return formatFilter(name, value);
+        });
+
+        if (searchText) {
+            queryParams.push(`search=${searchText}`);
+        }
+
+        return queryParams.length ? `?${queryParams.join('&')}` : '';
+    }, [activeFilters, visibleFilters, searchText, visibleDirections]);
+
+    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
+        resource: `volunteers/${filterQueryParams}`,
+        config: {
+            pagination: {
+                current: isMobile ? 1 : page,
+                pageSize: isMobile ? 10000 : pageSize
+            }
+        }
+    });
+
     const pagination: TablePaginationConfig = {
+        total: volunteers?.total ?? 1,
         showTotal: (total) => `Кол-во волонтеров: ${total}`,
-        defaultCurrent: parseFloat(localStorage.getItem('volPageIndex') || '') || 1,
-        defaultPageSize: parseFloat(localStorage.getItem('volPageSize') || '') || 10,
+        defaultCurrent: page,
+        defaultPageSize: pageSize,
         onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
             localStorage.setItem('volPageIndex', page.toString());
             localStorage.setItem('volPageSize', pageSize.toString());
         }
     };
-
-    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
-        resource: 'volunteers',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
-        }
-    });
 
     const { data: directions } = useList<DirectionEntity>({
         resource: 'directions'
@@ -245,8 +276,20 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             name: 'directions',
             title: 'Службы/Локации',
             getter: (data) => (data.directions || []).map(({ id }) => id),
+            skipNull: true,
             lookup: () =>
-                (directions?.data ?? []).filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
+                (directions?.data ?? [])
+                    .slice()
+                    .sort((a, b) => {
+                        if (a.name < b.name) {
+                            return -1;
+                        }
+                        if (a.name > b.name) {
+                            return 1;
+                        }
+                        return 0;
+                    })
+                    .filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
         { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
@@ -265,13 +308,16 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             title: 'Транспорт отъезда',
             lookup: () => transports?.data ?? []
         },
+        { type: 'date', name: 'feeded_date', title: 'Питался' },
+        { type: 'date', name: 'non_feeded_date', title: 'Не питался' },
         { type: 'string', name: 'name', title: 'Имя на бейдже' },
         { type: 'string', name: 'first_name', title: 'Имя' },
         { type: 'string', name: 'last_name', title: 'Фамилия' },
         { type: 'lookup', name: 'main_role', title: 'Роль', lookup: () => volunteerRoles?.data ?? [] },
         { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
         { type: 'lookup', name: 'kitchen', title: 'Кухня', lookup: () => kitchens?.data ?? [] }, // kitchenNameById
-        { type: 'number', name: 'printing_batch', title: 'Партия бейджа' },
+        { type: 'string', name: 'printing_batch', title: 'Партия бейджа' },
+        { type: 'string', name: 'badge_number', title: 'Номер бейджа' },
         { type: 'lookup', name: 'feed_type', title: 'Тип питания', lookup: () => feedTypes?.data ?? [] }, // feedTypeNameById
         { type: 'boolean', name: 'is_vegan', title: 'Веган' },
         { type: 'string', name: 'comment', title: 'Комментарий' },
@@ -290,198 +336,98 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         }))
     );
 
-    const filteredData = useMemo(() => {
-        const data = volunteers?.data ?? [];
-        return (
-            searchText
-                ? data.filter((item) => {
-                      const searchTextInLowerCase = searchText.toLowerCase();
-                      return [
-                          item.name,
-                          item.first_name,
-                          item.last_name,
-                          item.directions?.map(({ name }) => name).join(', '),
-                          ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
-                      ].some((text) => {
-                          return text?.toLowerCase().includes(searchTextInLowerCase);
-                      });
-                  })
-                : data
-        )
-            .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
-            .filter(
-                (v) =>
-                    !filterUnfeededType ||
-                    (!feededIds[v.id] &&
-                        !v.is_blocked &&
-                        !isVolExpired(v, filterUnfeededType === 'yesterday') &&
-                        v.feed_type !== FEED_TYPE_WITHOUT_FEED)
-            )
-            .filter((vol) => {
-                const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
-                const arrivalFilters = activeVisibleFilters.filter((filter) => filter.name.startsWith('arrivals.'));
-                if (arrivalFilters.length) {
-                    const arrivals = arrivalFilters.reduce((arrivals, filter) => {
-                        const key = filter.name.split('.')[1];
-                        return arrivals.filter((arrival) => {
-                            if (key === 'staying_date') {
-                                const filterValue = filter.value as string;
-                                return (
-                                    filterValue >= arrival.arrival_date &&
-                                    filterValue <= arrival.departure_date &&
-                                    (activeFilters.some(({ name }) => name === 'arrivals.status') ||
-                                        isActivatedStatus(arrival.status))
-                                );
-                            }
-                            const filterValue = filter.value;
-                            if (Array.isArray(filterValue)) {
-                                return filterValue.some((value) => value === arrival[key]);
-                            } else {
-                                return filter.value === arrival[key];
-                            }
-                        });
-                    }, vol.arrivals);
+    const volunteersData = useMemo(() => {
+        return volunteers?.data ?? [];
+    }, [volunteers]);
 
-                    if (arrivals.length === 0) {
-                        return false;
-                    }
-                }
-                return activeVisibleFilters
-                    .filter((filter) => !filter.name.startsWith('arrivals.'))
-                    .every((filter) => {
-                        const path = filter.name.split('.');
-                        const fieldValue = vol[path[0]];
+    const [isExporting, setIsExporting] = useState(false);
 
-                        let value = fieldValue;
-                        if (filter.name === 'directions') {
-                            value = fieldValue?.map(({ id }) => id);
-                        }
-                        if (path[0] === 'custom_field_values') {
-                            const type = customFields.find(({ id }) => id.toString() === path[1])?.type;
-
-                            value =
-                                fieldValue.find(({ custom_field }) => custom_field.toString() === path[1])?.value ||
-                                undefined;
-
-                            if (type === 'boolean') {
-                                value = value === 'true';
-                            }
-                        }
-
-                        if (Array.isArray(filter.value)) {
-                            if (Array.isArray(value)) {
-                                return (
-                                    filter.value.some((currentValue) => value.includes(currentValue)) ||
-                                    (filter.value.includes(null) && value.length === 0)
-                                );
-                            } else {
-                                return filter.value.some((currentValue) =>
-                                    !currentValue ? !currentValue === !value : currentValue == value
-                                );
-                            }
-                        } else if (typeof filter.value === 'string' && typeof value === 'string') {
-                            return value.includes(filter.value);
-                        } else if (!filter.value) {
-                            return !filter.value === !value;
-                        } else {
-                            return filter.value == value;
-                        }
-                    });
+    const createAndSaveXLSX = async () => {
+        setIsExporting(true);
+        try {
+            const { data: allPagesData } = await dataProvider.getList({
+                resource: `volunteers/${filterQueryParams}`
             });
-    }, [
-        volunteers,
-        searchText,
-        feededIds,
-        filterUnfeededType,
-        canFullList,
-        visibleDirections,
-        activeFilters,
-        visibleFilters
-    ]);
 
-    // const { selectProps } = useSelect<VolEntity>({
-    //     resource: 'volunteers'
-    // });
+            if (allPagesData) {
+                const workbook = new ExcelJS.Workbook();
+                const sheet = workbook.addWorksheet('Volunteers');
 
-    // return <Loader />;
+                const header = [
+                    'ID',
+                    'Позывной',
+                    'Имя',
+                    'Фамилия',
+                    'Службы/Локации',
+                    'Роль',
+                    'Статус текущего завезда',
+                    'Дата текущего заезда',
+                    'Транспорт текущего заезда',
+                    'Дата текущего отъезда',
+                    'Транспорт текущего отъезда',
+                    'Статус будущего завезда',
+                    'Дата будущего заезда',
+                    'Транспорт будущего заезда',
+                    'Дата будущего отъезда',
+                    'Транспорт будущего отъезда',
+                    'Заблокирован',
+                    'Кухня',
+                    'Партия бейджа',
+                    'Тип питания',
+                    'Веган/мясоед',
+                    'Комментарий',
+                    'Цвет бейджа',
+                    'Право доступа',
+                    ...customFields?.map((field) => field.name)
+                ];
+                sheet.addRow(header);
 
-    const createAndSaveXLSX = () => {
-        if (filteredData) {
-            const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet('Volunteers');
-
-            const header = [
-                'ID',
-                'Позывной',
-                'Имя',
-                'Фамилия',
-                'Службы/Локации',
-                'Роль',
-                'Статус текущего завезда',
-                'Дата текущего заезда',
-                'Транспорт текущего заезда',
-                'Дата текущего отъезда',
-                'Транспорт текущего отъезда',
-                'Статус будущего завезда',
-                'Дата будущего заезда',
-                'Транспорт будущего заезда',
-                'Дата будущего отъезда',
-                'Транспорт будущего отъезда',
-                'Заблокирован',
-                'Кухня',
-                'Партия бейджа',
-                'Тип питания',
-                'Веган/мясоед',
-                'Комментарий',
-                'Цвет бейджа',
-                'Право доступа',
-                ...customFields?.map((field) => field.name)
-            ];
-            sheet.addRow(header);
-
-            filteredData.forEach((vol, index) => {
-                const currentArrival = vol.arrivals.find(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
-                );
-                const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
-                sheet.addRow([
-                    vol.id,
-                    vol.name,
-                    vol.first_name,
-                    vol.last_name,
-                    vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
-                    vol.main_role ? volunteerRoleById[vol.main_role] : '',
-                    currentArrival ? statusById[currentArrival?.status] : '',
-                    currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
-                    currentArrival ? transportById[currentArrival?.arrival_transport] : '',
-                    currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
-                    currentArrival ? transportById[currentArrival?.departure_transport] : '',
-                    futureArrival ? statusById[futureArrival?.status] : '',
-                    futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
-                    futureArrival ? transportById[futureArrival?.arrival_transport] : '',
-                    futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
-                    futureArrival ? transportById[futureArrival?.departure_transport] : '',
-                    vol.is_blocked ? 1 : 0,
-                    vol.kitchen ? kitchenNameById[vol.kitchen] : '',
-                    vol.printing_batch,
-                    vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
-                    vol.is_vegan ? 'веган' : 'мясоед',
-                    vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
-                    vol.color_type ? colorNameById[vol.color_type] : '',
-                    vol.access_role ? accessRoleById[vol.access_role] : '',
-                    ...customFields?.map((field) => {
-                        const value =
-                            vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)?.value ||
-                            '';
-                        if (field.type === 'boolean') {
-                            return value === 'true' ? 1 : 0;
-                        }
-                        return value;
-                    })
-                ]);
-            });
-            void saveXLSX(workbook, 'volunteers');
+                allPagesData.forEach((vol, index) => {
+                    const currentArrival = vol.arrivals.find(
+                        ({ arrival_date, departure_date }) =>
+                            dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
+                    );
+                    const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
+                    sheet.addRow([
+                        vol.id,
+                        vol.name,
+                        vol.first_name,
+                        vol.last_name,
+                        vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
+                        vol.main_role ? volunteerRoleById[vol.main_role] : '',
+                        currentArrival ? statusById[currentArrival?.status] : '',
+                        currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
+                        currentArrival ? transportById[currentArrival?.arrival_transport] : '',
+                        currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
+                        currentArrival ? transportById[currentArrival?.departure_transport] : '',
+                        futureArrival ? statusById[futureArrival?.status] : '',
+                        futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
+                        futureArrival ? transportById[futureArrival?.arrival_transport] : '',
+                        futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
+                        futureArrival ? transportById[futureArrival?.departure_transport] : '',
+                        vol.is_blocked ? 1 : 0,
+                        vol.kitchen ? kitchenNameById[vol.kitchen] : '',
+                        vol.printing_batch,
+                        vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
+                        vol.is_vegan ? 'веган' : 'мясоед',
+                        vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
+                        vol.color_type ? colorNameById[vol.color_type] : '',
+                        vol.access_role ? accessRoleById[vol.access_role] : '',
+                        ...customFields?.map((field) => {
+                            const value =
+                                vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)
+                                    ?.value || '';
+                            if (field.type === 'boolean') {
+                                return value === 'true' ? 1 : 0;
+                            }
+                            return value;
+                        })
+                    ]);
+                });
+                void saveXLSX(workbook, 'volunteers');
+            }
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -492,34 +438,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const handleClickCustomFields = useCallback((): void => {
         window.location.href = `${window.location.origin}/volunteer-custom-fields`;
     }, []);
-
-    const loadTransactions = async () => {
-        const newFeededIds = {};
-        if (filterUnfeededType) {
-            const today = dayjs().startOf('day');
-            const from = filterUnfeededType === 'yesterday' ? today.subtract(1, 'day') : today;
-            const url = `${NEW_API_URL}/feed-transaction/?limit=100000&dtime_from=${from.toISOString()}&dtime_to=${from
-                .add(1, 'day')
-                .toISOString()}`;
-
-            try {
-                setFeededIsLoading(true);
-                const {
-                    data: { results }
-                } = await axios.get(url);
-                results.forEach(({ volunteer }) => {
-                    newFeededIds[volunteer] = true;
-                });
-            } finally {
-                setFeededIsLoading(false);
-            }
-        }
-        setFeededIds(newFeededIds);
-    };
-
-    useEffect(() => {
-        void loadTransactions();
-    }, [filterUnfeededType]);
 
     const getOnField = (vol: VolEntity) => {
         const day = dayjs();
@@ -611,6 +529,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (value === '') {
             return '(Пусто)';
         }
+        if (value === 'notempty') {
+            return '(Не пусто)';
+        }
         return String(value);
     };
 
@@ -621,7 +542,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         const lookupItems = field.lookup?.();
 
         if (lookupItems) {
-            return [{ id: null, name: '(Пусто)' }, ...lookupItems].map((item) => ({
+            return (field.skipNull ? lookupItems : [{ id: null, name: '(Пусто)' }, ...lookupItems]).map((item) => ({
                 value: item.id,
                 text: item.name,
                 selected: filterValues.includes(item.id),
@@ -637,23 +558,30 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 count: 0
             }));
         } else {
-            const valueCounts = (volunteers?.data ?? []).reduce((acc: { [key: string]: number }, vol) => {
-                const path = field.name.split('.');
-                let value = vol[path[0]] || '';
-                if (path[0] === 'custom_field_values') {
-                    value = value.find(({ custom_field }) => custom_field.toString() === path[1])?.value || '';
-                }
-                acc[value] = (acc[value] ?? 0) + 1;
-                return acc;
-            }, {});
-            const values = Object.keys(valueCounts).sort();
-
-            return values.map((value) => ({
+            return ['', 'notempty'].map((value) => ({
                 value,
                 text: getFilterValueText(field, value),
                 selected: filterValues.includes(value),
-                count: valueCounts[value] ?? 0
+                count: 0
             }));
+            // debugger
+            // const valueCounts = (volunteers?.data ?? []).reduce((acc: { [key: string]: number }, vol) => {
+            //     const path = field.name.split('.');
+            //     let value = vol[path[0]] || '';
+            //     if (path[0] === 'custom_field_values') {
+            //         value = value.find(({ custom_field }) => custom_field.toString() === path[1])?.value || '';
+            //     }
+            //     acc[value] = (acc[value] ?? 0) + 1;
+            //     return acc;
+            // }, {});
+            // const values = Object.keys(valueCounts).sort();
+
+            // return values.map((value) => ({
+            //     value,
+            //     text: getFilterValueText(field, value),
+            //     selected: filterValues.includes(value),
+            //     count: valueCounts[value] ?? 0
+            // }));
         }
     };
 
@@ -929,7 +857,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 allowClear
             ></Input>
             <div className={styles.filters}>
-                <div className={styles.filtersLabel}>Фильтры:</div>
+                {/* <div className={styles.filtersLabel}>Фильтры:</div> */}
                 <div className={styles.filterItems}>
                     {filterFields
                         .filter((field) => visibleFilters.includes(field.name))
@@ -962,6 +890,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             Фильтр
                         </Button>
                     </Popover>
+                    {(activeFilters.length || searchText) && (
+                        <Button
+                            type='link'
+                            icon={<Icons.DeleteOutlined />}
+                            onClick={() => {
+                                setActiveFilters([]);
+                                setSearchText('');
+                            }}
+                        >
+                            Сбросить фильтрацию
+                        </Button>
+                    )}
                 </div>
             </div>
             <Form layout='inline' style={{ padding: '10px 0' }}>
@@ -971,28 +911,18 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             <Button
                                 type={'primary'}
                                 onClick={handleClickDownload}
-                                icon={<DownloadOutlined />}
+                                icon={isExporting ? <LoadingOutlined spin /> : <DownloadOutlined />}
                                 disabled={
-                                    !filteredData &&
-                                    kitchensIsLoading &&
-                                    feedTypesIsLoading &&
-                                    colorsIsLoading &&
-                                    accessRolesIsLoading &&
+                                    !volunteersData.length ||
+                                    kitchensIsLoading ||
+                                    feedTypesIsLoading ||
+                                    colorsIsLoading ||
+                                    accessRolesIsLoading ||
                                     volunteerRolesIsLoading
                                 }
                             >
                                 Выгрузить
                             </Button>
-                        </Form.Item>
-                        <Form.Item>
-                            <Radio.Group
-                                value={filterUnfeededType}
-                                onChange={(e) => setfilterUnfeededType(e.target.value)}
-                            >
-                                <Radio.Button value=''>Все</Radio.Button>
-                                <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
-                                <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
-                            </Radio.Group>
                         </Form.Item>
                         <Form.Item>
                             <Button disabled={!canListCustomFields} onClick={handleClickCustomFields}>
@@ -1001,11 +931,11 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         </Form.Item>
                     </>
                 )}
-                <Form.Item>Кол-во волонтеров: {filteredData.length}</Form.Item>
+                <Form.Item>Кол-во волонтеров: {volunteers?.total}</Form.Item>
             </Form>
 
             {/* -------------------------- Список волонтеров -------------------------- */}
-            {isMobile && renderMobileList(filteredData, volunteersIsLoading || feededIsLoading)}
+            {isMobile && renderMobileList(volunteersData, volunteersIsLoading)}
             {isDesktop && (
                 <Table
                     onRow={(record) => {
@@ -1013,8 +943,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     }}
                     scroll={{ x: '100%' }}
                     pagination={pagination}
-                    loading={volunteersIsLoading || feededIsLoading}
-                    dataSource={filteredData}
+                    loading={volunteersIsLoading}
+                    dataSource={volunteersData}
                     rowKey='id'
                     rowClassName={styles.cursorPointer}
                 >

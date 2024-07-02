@@ -61,14 +61,21 @@ const useSaveConfirm = (
                     const value = updatedCustomFields[customFieldId].toString();
 
                     if (customValues.length) {
-                        await dataProvider.update({
-                            resource: 'volunteer-custom-field-values',
-                            id: customValues[0].id,
-                            variables: {
-                                value
-                            }
-                        });
-                    } else {
+                        if (value === '' || value === 'false') {
+                            await dataProvider.deleteOne({
+                                resource: 'volunteer-custom-field-values',
+                                id: customValues[0].id
+                            });
+                        } else {
+                            await dataProvider.update({
+                                resource: 'volunteer-custom-field-values',
+                                id: customValues[0].id,
+                                variables: {
+                                    value
+                                }
+                            });
+                        }
+                    } else if (value && value !== 'false') {
                         await dataProvider.create({
                             resource: 'volunteer-custom-field-values',
                             variables: {

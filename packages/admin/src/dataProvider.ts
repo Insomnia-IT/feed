@@ -21,7 +21,7 @@ export const crudDataProvider = (
     httpClient: AxiosInstance = axios
 ): Omit<Required<DataProvider>, 'createMany' | 'updateMany' | 'deleteMany' | 'custom'> => ({
     getList: async ({ filters, metaData, pagination, /*sorters,*/ resource }) => {
-        const url = `${apiUrl}/${resource}/`;
+        const url = `${apiUrl}/${resource}${resource.includes('/') ? '' : '/'}`;
 
         const {
             current = 1,
