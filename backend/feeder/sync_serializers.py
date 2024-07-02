@@ -3,7 +3,7 @@ from datetime import datetime
 from rest_framework import serializers
 
 from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
-                           Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole)
+                           Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen)
 from history.models import History
 
 
@@ -137,6 +137,10 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             attrs["feed_type"] = FeedType.objects.get(name="платно")
         elif feed == "NO":
             attrs["feed_type"] = FeedType.objects.get(name="без питания")
+
+        kitchen = attrs.get("kitchen")
+        if not kitchen:
+            attrs["kitchen"] = Kitchen.objects.get(name="Кухня №1")
         return super().validate(attrs)
 
 
