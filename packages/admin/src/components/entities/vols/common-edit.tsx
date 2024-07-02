@@ -35,6 +35,7 @@ import styles from './common.module.css';
 
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
+import { getSorter } from '~/utils';
 import { useRouter } from 'next/router';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
@@ -129,15 +130,14 @@ export function CommonEdit({ form }: { form: FormInstance }) {
             },
             {
                 validator: async (_, value) => {
-                    const prevArrivalDate = new Date(
-                        form.getFieldValue(['updated_arrivals', index - 1, 'arrival_date'])
-                    );
-                    if (index > 0 && prevArrivalDate >= value) {
-                        return Promise.reject(
-                            new Error(
-                                `Дата заезда в Заезде ${index + 1} должна быть позднее Даты заезда в Заезде ${index}`
-                            )
-                        );
+                    const arrivalDates = form
+                        .getFieldValue('updated_arrivals')
+                        .slice()
+                        .map((a) => dayjs(a.arrival_date).format('YYYY-MM-DD'));
+                    arrivalDates.splice(index, 1);
+
+                    if (arrivalDates.includes(dayjs(value).format('YYYY-MM-DD'))) {
+                        return Promise.reject(new Error(`Дата заезда не должна повторяться`));
                     }
 
                     return Promise.resolve();
@@ -257,7 +257,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     useEffect(() => {
         setUpdatedArrivals(
-            arrivals?.map((arrival) => ({ ...arrival })) ?? [
+            arrivals
+                ?.slice()
+                .sort(getSorter('arrival_date'))
+                .map((arrival) => ({ ...arrival })) ?? [
                 {
                     id: uuidv4(),
                     arrival_transport: 'UNDEFINED',

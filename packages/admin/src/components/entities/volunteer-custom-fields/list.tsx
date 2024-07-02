@@ -11,6 +11,7 @@ import {
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 
 import type { VolunteerCustomFieldEntity } from '~/interfaces';
+import { getSorter } from '~/utils';
 
 export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
     const { sorter, tableProps } = useTable<VolunteerCustomFieldEntity>({
@@ -23,21 +24,6 @@ export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
         initialPageSize: 1000,
         hasPagination: false
     });
-
-    const getSorter = (field: string) => {
-        return (a, b) => {
-            const x = a[field] ?? '';
-            const y = b[field] ?? '';
-
-            if (x < y) {
-                return -1;
-            }
-            if (x > y) {
-                return 1;
-            }
-            return 0;
-        };
-    };
 
     return (
         <List>
