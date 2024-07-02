@@ -13,9 +13,9 @@ import { renderText } from '@feed/ui/src/table';
 
 import type { GroupBadgeEntity } from '~/interfaces';
 import { useMedia } from '~/shared/providers';
+import { getSorter } from '~/utils';
 
 import useVisibleDirections from '../vols/use-visible-directions';
-import { getSorter } from '~/utils';
 
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
     const { data: groupBadges } = useList<GroupBadgeEntity>({

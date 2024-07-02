@@ -42,11 +42,11 @@ import type {
 import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
 import { dataProvider } from '~/dataProvider';
 import { useMedia } from '~/shared/providers';
+import { getSorter } from '~/utils';
 
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
 import useVisibleDirections from './use-visible-directions';
-import { getSorter } from '~/utils';
 
 export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
     const day = isYesterday ? dayjs().subtract(1, 'day') : dayjs();
@@ -1002,7 +1002,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         title='Даты на поле'
                         render={(arrivals) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
-                                {arrivals.slice().sort(getSorter('arrival_date'))
+                                {arrivals
+                                    .slice()
+                                    .sort(getSorter('arrival_date'))
                                     .map(({ arrival_date, departure_date }) =>
                                         [arrival_date, departure_date].map(formatDate).join(' - ')
                                     )

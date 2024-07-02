@@ -128,17 +128,15 @@ export function CommonEdit({ form }: { form: FormInstance }) {
             },
             {
                 validator: async (_, value) => {
-                    const arrivalDates = form.getFieldValue('updated_arrivals').slice().map(a => dayjs(a.arrival_date).format('YYYY-MM-DD'));
+                    const arrivalDates = form
+                        .getFieldValue('updated_arrivals')
+                        .slice()
+                        .map((a) => dayjs(a.arrival_date).format('YYYY-MM-DD'));
                     arrivalDates.splice(index, 1);
 
                     if (arrivalDates.includes(dayjs(value).format('YYYY-MM-DD'))) {
-                        return Promise.reject(
-                            new Error(
-                                `Дата заезда не должна повторяться`
-                            )
-                        );
+                        return Promise.reject(new Error(`Дата заезда не должна повторяться`));
                     }
-                
 
                     return Promise.resolve();
                 }
@@ -251,7 +249,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     useEffect(() => {
         setUpdatedArrivals(
-            arrivals?.slice().sort(getSorter('arrival_date')).map((arrival) => ({ ...arrival })) ?? [
+            arrivals
+                ?.slice()
+                .sort(getSorter('arrival_date'))
+                .map((arrival) => ({ ...arrival })) ?? [
                 {
                     id: uuidv4(),
                     arrival_transport: 'UNDEFINED',
