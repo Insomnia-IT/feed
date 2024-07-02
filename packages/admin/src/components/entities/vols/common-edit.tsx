@@ -35,6 +35,7 @@ import styles from './common.module.css';
 
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
+import { getSorter } from '~/utils';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
@@ -249,7 +250,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     useEffect(() => {
         setUpdatedArrivals(
-            arrivals?.map((arrival) => ({ ...arrival })) ?? [
+            arrivals?.slice().sort(getSorter('arrival_date')).map((arrival) => ({ ...arrival })) ?? [
                 {
                     id: uuidv4(),
                     arrival_transport: 'UNDEFINED',
