@@ -20,7 +20,7 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
 
             return new Promise((res, rej) => {
                 axios
-                    .get(`${baseUrl}/volunteers`, {
+                    .get(`${baseUrl}/volunteers/`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
