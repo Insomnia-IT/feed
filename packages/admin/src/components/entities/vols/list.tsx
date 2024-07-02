@@ -919,6 +919,13 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         };
     };
 
+    function getFormattedArrivals(arrivalString: string) {
+        const date = new Date(arrivalString);
+        const options: Intl.DateTimeFormatOptions = { month: '2-digit', day: '2-digit' };
+        const formattedDate = new Intl.DateTimeFormat('ru-RU', options).format(date);
+        return formattedDate;
+    }
+
     return (
         <List>
             {/* -------------------------- Фильтры -------------------------- */}
@@ -1070,13 +1077,19 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         key='arrivals'
                         title='Даты на поле'
                         render={(arrivals) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 {arrivals
-                                    .map(({ arrival_date, departure_date }) =>
-                                        [arrival_date, departure_date].map(formatDate).join(' - ')
-                                    )
-                                    .join(', ')}
-                            </span>
+                                    .map(({ arrival_date, departure_date }) => {
+                                        const arrival = getFormattedArrivals(arrival_date);
+                                        const departure = getFormattedArrivals(departure_date);
+                                        return (
+                                            <div>
+                                                {`${arrival} - ${departure}`}
+                                            </div>
+                                        )
+                                    })
+                                }
+                            </div>
                         )}
                     />
                     <Table.Column<VolEntity>
