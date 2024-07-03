@@ -12,7 +12,7 @@ import useCanAccess from '../entities/vols/use-can-access';
 import styles from './sync.module.css';
 
 export const Sync: FC = () => {
-    const [disabled, setDisabled] = useState(true);
+    const [disabled, setDisabled] = useState(false);
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
 
     const syncNotion = async (isFull = false) => {
