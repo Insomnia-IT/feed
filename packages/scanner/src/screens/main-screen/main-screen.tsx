@@ -19,7 +19,7 @@ export const MainScreen = React.memo(function MainScreen() {
 
     return (
         <ScreenWrapper>
-            {['scan', 'loading'].includes(view) && <Scan />}
+            {view === 'scan' && <Scan />}
             {view === 'post-scan' && <PostScan />}
             {view === 'post-scan-group-badge' && (
                 <PostScanGroupBadge closeFeed={handleCloseCard} groupBadge={groupBadge!} />
