@@ -848,6 +848,13 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         };
     };
 
+    function getFormattedArrivals(arrivalString: string) {
+        const date = new Date(arrivalString);
+        const options: Intl.DateTimeFormatOptions = { month: '2-digit', day: '2-digit' };
+        const formattedDate = new Intl.DateTimeFormat('ru-RU', options).format(date);
+        return formattedDate;
+    }
+
     return (
         <List>
             {/* -------------------------- Фильтры -------------------------- */}
@@ -949,7 +956,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     rowKey='id'
                     rowClassName={styles.cursorPointer}
                 >
-                    <Table.Column<VolEntity>
+                    {/* <Table.Column<VolEntity>
                         title=''
                         dataIndex='actions'
                         render={(_, record) => (
@@ -971,7 +978,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         key='id'
                         title='ID'
                         render={(value) => <TextField value={value} />}
-                    />
+                    /> */}
                     <Table.Column<VolEntity>
                         dataIndex='name'
                         key='name'
@@ -1001,23 +1008,32 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                         key='arrivals'
                         title='Даты на поле'
                         render={(arrivals) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 {arrivals
                                     .slice()
                                     .sort(getSorter('arrival_date'))
-                                    .map(({ arrival_date, departure_date }) =>
-                                        [arrival_date, departure_date].map(formatDate).join(' - ')
-                                    )
-                                    .join(', ')}
-                            </span>
+                                    .map(({ arrival_date, departure_date }) => {
+                                        const arrival = getFormattedArrivals(arrival_date);
+                                        const departure = getFormattedArrivals(departure_date);
+                                        return (
+                                            <div
+                                                style={{ whiteSpace: 'nowrap' }}
+                                                key={`${arrival_date}${departure_date}`}
+                                            >{`${arrival} - ${departure}`}</div>
+                                        );
+                                    })}
+                            </div>
                         )}
                     />
                     <Table.Column<VolEntity>
                         key='on_field'
-                        title='На поле'
+                        title='Статус'
                         render={(vol) => {
-                            const value = getOnField(vol as VolEntity);
-                            return <ListBooleanPositive value={value} />;
+                            const currentArrival = findClosestArrival(vol.arrivals);
+                            const currentStatus = currentArrival
+                                ? statusById[currentArrival?.status]
+                                : 'Статус неизвестен';
+                            return <div>{<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}</div>;
                         }}
                     />
                     <Table.Column<VolEntity>

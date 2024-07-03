@@ -1,5 +1,5 @@
 import type { FormInstance } from '@pankod/refine-antd';
-import { Button, Checkbox, DatePicker, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
+import { Button, Checkbox, DatePicker, DeleteButton, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,7 @@ import {
     SmileOutlined
 } from '@ant-design/icons';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
 
 import { Rules } from '~/components/form';
 import type {
@@ -45,6 +46,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
+    const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
     const person = Form.useWatch('person');
 
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
@@ -244,6 +246,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const isBlocked = Form.useWatch('is_blocked', form);
     const [open, setOpen] = useState(false);
     const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const router = useRouter();
+
+    const handleBack = () => {
+        router.back();
+    };
 
     const [updatedArrivals, setUpdatedArrivals] = useState<Array<UpdatedArrival>>([]);
 
@@ -745,7 +753,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
                         </Form.Item>
                     </div>
-                    <div>
+                    <div className={styles.blockDeleteWrap}>
                         {!denyBadgeEdit && (
                             <Button
                                 className={styles.blockButton}
@@ -790,6 +798,20 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 </div>
                             </div>
                         </Modal>
+                        {canDelete && (
+                            <DeleteButton
+                                type='primary'
+                                icon={false}
+                                size='middle'
+                                recordItemId={qrDuplicateVolunteer?.id}
+                                confirmTitle='Вы действительно хотите удалить волонтера?'
+                                confirmOkText='Да'
+                                confirmCancelText='Нет'
+                                onSuccess={handleBack}
+                            >
+                                Удалить волонтера
+                            </DeleteButton>
+                        )}
                     </div>
                     <div className={styles.visuallyHidden}>
                         <Form.Item name='is_blocked' valuePropName='checked' style={{ marginBottom: '0' }}>
@@ -799,7 +821,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     </div>
                 </div>
                 <div id='section7' className={styles.formSection}>
-                    <p className={styles.formSection__title}>Участие в прошлых годах</p>
+                    <p className={styles.formSection__title}>Участие во все года</p>
                     <div className={styles.engagementsWrap}>{returnEngagementsLayout()}</div>
                 </div>
             </div>
