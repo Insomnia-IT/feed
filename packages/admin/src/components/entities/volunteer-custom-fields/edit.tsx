@@ -13,7 +13,7 @@ export const VolunteerCustomFieldEdit: FC<IResourceComponentsProps> = () => {
     return (
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
-                <CreateEdit isEdit={true} />
+                <CreateEdit isEdit={true} form={formProps.form} />
             </Form>
         </Edit>
     );
