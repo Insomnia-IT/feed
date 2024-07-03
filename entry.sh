@@ -16,6 +16,6 @@ cd /app/backend
 
 python ./cron_config.py
 
-# /usr/sbin/crond -f -l 8 &
+/usr/sbin/crond -f -l 8 &
 
 nginx
