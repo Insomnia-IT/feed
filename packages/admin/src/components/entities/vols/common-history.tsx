@@ -239,8 +239,7 @@ export function CommonHistory() {
 
     const handleRouteClick = async (id: number | undefined) => {
         if (!id) return;
-        const stringId = id.toString();
-        await router.replace(`/volunteers/edit/${stringId}`);
+        location.href = `${location.origin}/volunteers/edit/${id}`;
     };
 
     function returnCurrentStatusString(status: string): string {
