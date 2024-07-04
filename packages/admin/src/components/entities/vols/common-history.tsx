@@ -237,10 +237,9 @@ export function CommonHistory() {
         });
     }
 
-    const handleRouteClick = async (id: number | undefined) => {
+    const handleRouteClick = (id: number | undefined) => {
         if (!id) return;
-        const stringId = id.toString();
-        await router.replace(`/volunteers/edit/${stringId}`);
+        location.href = `${location.origin}/volunteers/edit/${id}`;
     };
 
     function returnCurrentStatusString(status: string): string {
@@ -362,6 +361,16 @@ export function CommonHistory() {
                     return;
                 }
             };
+            const getActorName = (item) => {
+                if (item.actor) {
+                    return item.actor.name;
+                }
+                if (item.by_sync) {
+                    return 'Синхронизация';
+                }
+                return 'Админ';
+            };
+
             const id = getId();
             return (
                 <div key={array.indexOf(item)} className={styles.historyItem}>
@@ -376,7 +385,7 @@ export function CommonHistory() {
                                     : undefined
                             }
                         >
-                            {`${item.actor ? item.actor.name : 'Админ'}, `}
+                            {`${getActorName(item)}, `}
                         </span>
                         <span className={styles.itemTitle}>{formatDate(item.action_at)}</span>
                         <span className={styles.itemAction}>{`${returnCurrentStatusString(item.status)}`}</span>
