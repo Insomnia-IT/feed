@@ -312,12 +312,33 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         { type: 'string', name: 'name', title: 'Имя на бейдже' },
         { type: 'string', name: 'first_name', title: 'Имя' },
         { type: 'string', name: 'last_name', title: 'Фамилия' },
-        { type: 'lookup', name: 'main_role', title: 'Роль', skipNull: true, single: true, lookup: () => volunteerRoles?.data ?? [] },
+        {
+            type: 'lookup',
+            name: 'main_role',
+            title: 'Роль',
+            skipNull: true,
+            single: true,
+            lookup: () => volunteerRoles?.data ?? []
+        },
         { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
-        { type: 'lookup', name: 'kitchen', title: 'Кухня', skipNull: true, single: true, lookup: () => kitchens?.data ?? [] }, // kitchenNameById
+        {
+            type: 'lookup',
+            name: 'kitchen',
+            title: 'Кухня',
+            skipNull: true,
+            single: true,
+            lookup: () => kitchens?.data ?? []
+        }, // kitchenNameById
         { type: 'string', name: 'printing_batch', title: 'Партия бейджа' },
         { type: 'string', name: 'badge_number', title: 'Номер бейджа' },
-        { type: 'lookup', name: 'feed_type', title: 'Тип питания', skipNull: true, single: true, lookup: () => feedTypes?.data ?? [] }, // feedTypeNameById
+        {
+            type: 'lookup',
+            name: 'feed_type',
+            title: 'Тип питания',
+            skipNull: true,
+            single: true,
+            lookup: () => feedTypes?.data ?? []
+        }, // feedTypeNameById
         { type: 'boolean', name: 'is_vegan', title: 'Веган' },
         { type: 'string', name: 'comment', title: 'Комментарий' },
         {
@@ -328,7 +349,14 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             single: true,
             lookup: () => colors?.data.map(({ description: name, id }) => ({ id, name })) ?? []
         }, // colorNameById
-        { type: 'lookup', name: 'access_role', title: 'Право доступа', skipNull: true, single: true, lookup: () => accessRoles?.data ?? [] } // accessRoleById
+        {
+            type: 'lookup',
+            name: 'access_role',
+            title: 'Право доступа',
+            skipNull: true,
+            single: true,
+            lookup: () => accessRoles?.data ?? []
+        } // accessRoleById
     ].concat(
         customFields.map((customField) => ({
             type: customField.type === 'boolean' ? 'boolean' : 'custom',
@@ -717,11 +745,17 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                         key={filterListItem.text}
                                         onClick={() => onFilterValueChange(field, filterListItem, field.single)}
                                     >
-                                        {field.single ? <Radio checked={filterListItem.selected} onChange={() => onFilterValueChange(field, filterListItem, true)}  /> :
-                                        <Checkbox
-                                            checked={filterListItem.selected}
-                                            onChange={() => onFilterValueChange(field, filterListItem)}
-                                        />}
+                                        {field.single ? (
+                                            <Radio
+                                                checked={filterListItem.selected}
+                                                onChange={() => onFilterValueChange(field, filterListItem, true)}
+                                            />
+                                        ) : (
+                                            <Checkbox
+                                                checked={filterListItem.selected}
+                                                onChange={() => onFilterValueChange(field, filterListItem)}
+                                            />
+                                        )}
                                         {filterListItem.text}
                                         {filterListItem.count > 0 && (
                                             <span className={styles.filterListItemCount}>({filterListItem.count})</span>
