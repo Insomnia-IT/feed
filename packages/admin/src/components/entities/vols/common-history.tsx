@@ -237,7 +237,7 @@ export function CommonHistory() {
         });
     }
 
-    const handleRouteClick = async (id: number | undefined) => {
+    const handleRouteClick = (id: number | undefined) => {
         if (!id) return;
         location.href = `${location.origin}/volunteers/edit/${id}`;
     };
