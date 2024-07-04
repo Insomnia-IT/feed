@@ -11,7 +11,7 @@ export const VolunteerCustomFieldCreate: FC<IResourceComponentsProps> = () => {
     return (
         <Create saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
-                <CreateEdit form={formProps.form} />
+                <CreateEdit />
             </Form>
         </Create>
     );
