@@ -9,6 +9,7 @@ import {
     List,
     NumberField,
     Popover,
+    Radio,
     Space,
     Spin,
     Table,
@@ -78,6 +79,7 @@ type FilterField = {
     title: string;
     lookup?: () => Array<{ id: unknown; name: string }>;
     skipNull?: boolean;
+    single?: boolean;
     getter?: (value: any) => any;
 };
 
@@ -144,6 +146,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         localStorage.setItem('volVisibleFilters', JSON.stringify(visibleFilters));
     }, [visibleFilters]);
 
+    useEffect(() => {
+        setPage(1);
+    }, [activeFilters, visibleFilters, searchText]);
+
     const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
     const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
 
@@ -202,8 +208,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const pagination: TablePaginationConfig = {
         total: volunteers?.total ?? 1,
         showTotal: (total) => `Кол-во волонтеров: ${total}`,
-        defaultCurrent: page,
-        defaultPageSize: pageSize,
+        current: page,
+        pageSize: pageSize,
         onChange: (page, pageSize) => {
             setPage(page);
             setPageSize(pageSize);
@@ -281,15 +287,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             lookup: () =>
                 (directions?.data ?? [])
                     .slice()
-                    .sort((a, b) => {
-                        if (a.name < b.name) {
-                            return -1;
-                        }
-                        if (a.name > b.name) {
-                            return 1;
-                        }
-                        return 0;
-                    })
+                    .sort(getSorter('name'))
                     .filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
@@ -314,21 +312,51 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         { type: 'string', name: 'name', title: 'Имя на бейдже' },
         { type: 'string', name: 'first_name', title: 'Имя' },
         { type: 'string', name: 'last_name', title: 'Фамилия' },
-        { type: 'lookup', name: 'main_role', title: 'Роль', lookup: () => volunteerRoles?.data ?? [] },
+        {
+            type: 'lookup',
+            name: 'main_role',
+            title: 'Роль',
+            skipNull: true,
+            single: true,
+            lookup: () => volunteerRoles?.data ?? []
+        },
         { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
-        { type: 'lookup', name: 'kitchen', title: 'Кухня', lookup: () => kitchens?.data ?? [] }, // kitchenNameById
+        {
+            type: 'lookup',
+            name: 'kitchen',
+            title: 'Кухня',
+            skipNull: true,
+            single: true,
+            lookup: () => kitchens?.data ?? []
+        }, // kitchenNameById
         { type: 'string', name: 'printing_batch', title: 'Партия бейджа' },
         { type: 'string', name: 'badge_number', title: 'Номер бейджа' },
-        { type: 'lookup', name: 'feed_type', title: 'Тип питания', lookup: () => feedTypes?.data ?? [] }, // feedTypeNameById
+        {
+            type: 'lookup',
+            name: 'feed_type',
+            title: 'Тип питания',
+            skipNull: true,
+            single: true,
+            lookup: () => feedTypes?.data ?? []
+        }, // feedTypeNameById
         { type: 'boolean', name: 'is_vegan', title: 'Веган' },
         { type: 'string', name: 'comment', title: 'Комментарий' },
         {
             type: 'lookup',
             name: 'color_type',
             title: 'Цвет бейджа',
+            skipNull: true,
+            single: true,
             lookup: () => colors?.data.map(({ description: name, id }) => ({ id, name })) ?? []
         }, // colorNameById
-        { type: 'lookup', name: 'access_role', title: 'Право доступа', lookup: () => accessRoles?.data ?? [] } // accessRoleById
+        {
+            type: 'lookup',
+            name: 'access_role',
+            title: 'Право доступа',
+            skipNull: true,
+            single: true,
+            lookup: () => accessRoles?.data ?? []
+        } // accessRoleById
     ].concat(
         customFields.map((customField) => ({
             type: customField.type === 'boolean' ? 'boolean' : 'custom',
@@ -543,7 +571,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         const lookupItems = field.lookup?.();
 
         if (lookupItems) {
-            return (field.skipNull ? lookupItems : [{ id: null, name: '(Пусто)' }, ...lookupItems]).map((item) => ({
+            return (field.skipNull ? lookupItems : [{ id: '', name: '(Пусто)' }, ...lookupItems]).map((item) => ({
                 value: item.id,
                 text: item.name,
                 selected: filterValues.includes(item.id),
@@ -586,10 +614,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         }
     };
 
-    const onFilterValueChange = (field: FilterField, filterListItem: FilterListItem) => {
+    const onFilterValueChange = (field: FilterField, filterListItem: FilterListItem, single = false) => {
         const filterItem = activeFilters.find((f) => f.name === field.name);
 
-        if (filterListItem.selected) {
+        if (filterListItem.selected && !single) {
             if (filterItem && Array.isArray(filterItem.value)) {
                 const newValues = filterItem.value.filter((value) => value !== filterListItem.value);
                 const newFilters = activeFilters
@@ -609,7 +637,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             }
         } else {
             if (filterItem && Array.isArray(filterItem.value)) {
-                const newValues = [...filterItem.value, filterListItem.value];
+                const newValues = single ? [filterListItem.value] : [...filterItem.value, filterListItem.value];
                 const newFilters = activeFilters
                     .filter((f) => f.name !== field.name)
                     .concat([
@@ -715,12 +743,19 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                     <div
                                         className={styles.filterPopupListItem}
                                         key={filterListItem.text}
-                                        onClick={() => onFilterValueChange(field, filterListItem)}
+                                        onClick={() => onFilterValueChange(field, filterListItem, field.single)}
                                     >
-                                        <Checkbox
-                                            checked={filterListItem.selected}
-                                            onChange={() => onFilterValueChange(field, filterListItem)}
-                                        />
+                                        {field.single ? (
+                                            <Radio
+                                                checked={filterListItem.selected}
+                                                onChange={() => onFilterValueChange(field, filterListItem, true)}
+                                            />
+                                        ) : (
+                                            <Checkbox
+                                                checked={filterListItem.selected}
+                                                onChange={() => onFilterValueChange(field, filterListItem)}
+                                            />
+                                        )}
                                         {filterListItem.text}
                                         {filterListItem.count > 0 && (
                                             <span className={styles.filterListItemCount}>({filterListItem.count})</span>

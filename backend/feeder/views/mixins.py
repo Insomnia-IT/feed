@@ -42,7 +42,7 @@ class VolunteerExtraFilterMixin(ModelViewSet):
             if staying_date:
                 arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
             if staying_date and len(arrival_status) == 0:
-                arrive_qs = arrive_qs.filter(status__id__in=['ARRIVED', 'STARTED'])
+                arrive_qs = arrive_qs.filter(status__id__in=['ARRIVED', 'STARTED', 'JOINED'])
             if len(arrival_status):
                 arrive_qs = arrive_qs.filter(status__id__in=arrival_status)
             if len(arrival_transport):
@@ -70,7 +70,7 @@ class VolunteerExtraFilterMixin(ModelViewSet):
                     custom_fields_qs = custom_fields_qs.filter(value=value)
 
                 if value == 'false' or value == '':
-                    qs = qs.filter(Q(id__in=custom_fields_qs.values_list('volunteer_id', flat=True)) | ~Q(id__in=custom_fields_qs_exist.values_list('volunteer_id', flat=True)))
+                    qs = qs.exclude(id__in=custom_fields_qs_exist.values_list('volunteer_id', flat=True))
                 else:
                     qs = qs.filter(id__in=custom_fields_qs.values_list('volunteer_id', flat=True))
 
