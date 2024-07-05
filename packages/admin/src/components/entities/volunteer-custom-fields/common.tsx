@@ -7,8 +7,15 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => (
     <>
-        <Form.Item label='Название' name='name' rules={Rules.required}>
-            <Input maxLength={30} />
+        <Form.Item
+            label='Название'
+            name='name'
+            rules={[
+                { required: true, message: 'Введите название' },
+                { max: 30, message: 'Максимум 30 символов' }
+            ]}
+        >
+            <Input showCount placeholder='Введите название не более 30 символов' />
         </Form.Item>
         <Form.Item label='Тип данных' name='type' rules={Rules.required}>
             <Select disabled={isEdit}>

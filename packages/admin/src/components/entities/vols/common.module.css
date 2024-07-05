@@ -250,6 +250,14 @@
     flex: 1;
 }
 
+/* Дополнительно */
+
+.blockDeleteWrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 /* модалка блокировки */
 
 .modalWindow {
@@ -519,6 +527,15 @@
 
     .badgeInfo {
         width: 100%;
+    }
+
+    .blockDeleteWrap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .blockButton {
+        margin-bottom: 20px;
     }
 
     .modalButtonWrap {
