@@ -38,7 +38,7 @@ class VolunteerFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.Volunteer
-        fields = ['color_type', 'feed_type', 'kitchen', 'group_badge', 'main_role', 'access_role']
+        fields = ['color_type', 'feed_type', 'kitchen', 'group_badge', 'main_role', 'access_role', 'uuid']
 
 
 class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
@@ -59,7 +59,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
         'retrieve': serializers.RetrieveVolunteerSerializer
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr']
+    search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid']
     filterset_class = VolunteerFilter
 
 
