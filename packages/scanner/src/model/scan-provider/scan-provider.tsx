@@ -20,6 +20,8 @@ export const postScanStatuses = ['anon', 'vol-warning', 'vol-error', 'child', 'g
 
 const ScanContext = React.createContext<IScanContext | null>(null);
 
+const DOUBLE_SCAN_TIMEOUT = 5000;
+
 export const ScanProvider = ({ children }) => {
     /** View */
     const [view, setView] = useState<MainViewTypes>('scan');
@@ -51,6 +53,15 @@ export const ScanProvider = ({ children }) => {
             setQrcode(qrcode);
             const vol = await db.volunteers.where('qr').equals(qrcode).first();
             setVol(vol);
+            const lastTransction = await db.transactions.reverse().limit(1).first();
+            if (
+                vol &&
+                lastTransction &&
+                lastTransction.vol_id === vol.id &&
+                new Date(lastTransction.ts * 1000 + DOUBLE_SCAN_TIMEOUT) > new Date()
+            ) {
+                return;
+            }
             const groupBadge = await db.groupBadges.where('qr').equals(qrcode).first();
             setGroupBadge(groupBadge);
             if (vol) {
