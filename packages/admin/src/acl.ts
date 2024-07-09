@@ -54,6 +54,7 @@ export const ACL = {
                         can = role !== AppRoles.DIRECTION_HEAD;
                         break;
                     case 'unban':
+                    case 'role_edit':
                         can = role === AppRoles.ADMIN || role == AppRoles.SENIOR;
                         break;
                     case 'full_edit':

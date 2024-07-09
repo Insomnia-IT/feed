@@ -43,6 +43,7 @@ type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
 export function CommonEdit({ form }: { form: FormInstance }) {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+    const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
@@ -500,7 +501,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.hrInput}>
                             <Form.Item label='Роль' name='main_role' rules={Rules.required}>
-                                <Select disabled={!canFullEditing && !!person} {...rolesSelectProps} />
+                                <Select disabled={!allowRoleEdit && !!person} {...rolesSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
@@ -513,7 +514,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 rules={Rules.required}
                             >
                                 <Select
-                                    disabled={!canFullEditing && !!person}
+                                    disabled={!allowRoleEdit && !!person}
                                     mode='multiple'
                                     {...directionSelectProps}
                                 />
