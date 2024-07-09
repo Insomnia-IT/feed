@@ -20,7 +20,6 @@ ac
     .read(['volunteer-custom-fields'])
     .create(['group-badges', 'volunteer-custom-fields'])
     .update(['volunteer-custom-fields'])
-    .delete(['volunteers'])
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
