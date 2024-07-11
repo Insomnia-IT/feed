@@ -1,6 +1,7 @@
 import arrow
 import requests
 import math
+import time
 
 from enum import Enum
 
@@ -364,8 +365,16 @@ def capitalize(s: str) -> str:
     if s:
         return s[0].title()+s[1:]
 
+def append_stat(stat: dict, item):
+    key = ",".join([item['date'], item['type'], item['meal_time'], str(item['is_vegan']), str(item['kitchen_id'])])
+    stat_item = stat.get(key)
+    if stat_item:
+        stat_item['amount'] += item['amount']
+    else:
+        stat[key] = item
 
 def calculate_statistics(date_from, date_to):
+    start_time = time.time()
     # convert from str to a datetime type (Arrow)
     stat_date_from = arrow.get(date_from, tzinfo=TZ)
     stat_date_to = arrow.get(date_to, tzinfo=TZ)
@@ -378,11 +387,14 @@ def calculate_statistics(date_from, date_to):
             .values_list('dtime', 'meal_time', 'kitchen', 'amount', 'is_vegan')
     )
 
+    print(f'transactions loaded: {time.time() - start_time}')
+
     # set FACT statistics
-    fact_stat = []
+    stat = dict()
+
     for dtime, meal_time, kitchen_id, amount, is_vegan in transactions:
         state_date = arrow.get(dtime)
-        fact_stat.append({
+        append_stat(stat, {
             # day starts from 7AM
             'date': (
                 (
@@ -398,9 +410,13 @@ def calculate_statistics(date_from, date_to):
             'kitchen_id': kitchen_id
         })
 
+    print(f'fact calculated: {time.time() - start_time}')
 
     # plan statistic
-    plan_stat = []
+
+    all_arrivals = list(models.Arrival.objects.all())
+
+    print(f'arrivals loaded: {time.time() - start_time}')
 
     # iterate over date range (day by day) between from and to
     for current_stat_date in arrow.Arrow.range('day', stat_date_from, stat_date_to):
@@ -413,6 +429,7 @@ def calculate_statistics(date_from, date_to):
         #     Также игнорим волонтеров, у которых стоит флаг is_blocked.
         #     Также игнорим волонтеров, у которых стоит тип питания "без питания" (FT4).
         #     Ну и остальных проверяем по тому, что текущий день входит в интервал от active_from до active_to.
+
         volunteers = (
             models.Volunteer.objects
                 .exclude(
@@ -427,13 +444,16 @@ def calculate_statistics(date_from, date_to):
                 .values_list('kitchen__id', 'is_vegan', 'feed_type__paid', 'id')
         )
 
-        all_arrivals = list(models.Arrival.objects.all())
+        print(f'volunteers loaded: {time.time() - start_time}')
+
         arrivals_by_volunter = dict()
 
         for arrival in all_arrivals:
-            current_arrivals = arrivals_by_volunter.get(arrival.volunteer.id, [])
-            current_arrivals.append(arrival)
-            arrivals_by_volunter[arrival.volunteer.id] = current_arrivals
+            status = arrival.status and arrival.status.id
+            if status == 'ARRIVED' or status == 'STARTED' or status == 'JOINED':
+                current_arrivals = arrivals_by_volunter.get(arrival.volunteer.id, [])
+                current_arrivals.append(arrival)
+                arrivals_by_volunter[arrival.volunteer.id] = current_arrivals
 
         # set PLAN statistics for current date
         for kitchen_id, is_vegan, is_paid, id in volunteers:
@@ -441,7 +461,7 @@ def calculate_statistics(date_from, date_to):
             if len(active_arrivals) == 0:
                 continue
 
-            print('active_arrivals', len(active_arrivals))
+            # print('active_arrivals', len(active_arrivals))
 
             active_arrival = active_arrivals[-1]
 
@@ -455,8 +475,7 @@ def calculate_statistics(date_from, date_to):
             # skip breakfast
             if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:
                 for meal_time in get_meal_times(is_paid)[1:]:
-                    plan_stat.append({
-                        'id': id,
+                    append_stat(stat, {
                         'date': current_stat_date.format(STAT_DATE_FORMAT),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "lunch", "dinner" (, is_paid ? "night") ]
@@ -467,8 +486,7 @@ def calculate_statistics(date_from, date_to):
             # skip dinner and night
             elif active_from_as_arrow != current_stat_date and active_to_as_arrow == current_stat_date:
                 for meal_time in get_meal_times(is_paid)[:2]:
-                    plan_stat.append({
-                        'id': id,
+                    append_stat(stat, {
                         'date': current_stat_date.format(STAT_DATE_FORMAT),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch" ]
@@ -479,8 +497,7 @@ def calculate_statistics(date_from, date_to):
             # handle each value of meal_times
             else:
                 for meal_time in get_meal_times(is_paid):
-                    plan_stat.append({
-                        'id': id,
+                    append_stat(stat, {
                         'date': current_stat_date.format(STAT_DATE_FORMAT),
                         'type': StatisticType.PLAN.value,
                         'meal_time': meal_time, # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
@@ -488,6 +505,10 @@ def calculate_statistics(date_from, date_to):
                         'amount': 1,
                         'kitchen_id': kitchen_id
                     })
+        print(f'date plan: {time.time() - start_time}')
+        
+
+    print(f'end: {time.time() - start_time}')
 
     # combine fact and plan stats into result
-    return fact_stat + plan_stat
+    return stat.values()

@@ -43,6 +43,7 @@ function sordResponceByDate(a: IStatisticApi, b: IStatisticApi): 1 | -1 | 0 {
 }
 
 function PublicStatistic() {
+    const [loading, setLoading] = useState(false);
     // Выбор отображения (таблица / графики)
     const [statisticViewType, setViewType] = useState<StatisticViewType>('date');
     const changeStatisticViewType = (e: RadioChangeEvent) => setViewType(e.target?.value);
@@ -99,10 +100,11 @@ function PublicStatistic() {
     }
 
     const loadStats = async (url) => {
-        const res = await axios.get(url);
-        const sortedResponce = res.data.sort(sordResponceByDate);
-
+        setLoading(true);
         try {
+            const res = await axios.get(url);
+            const sortedResponce = res.data.sort(sordResponceByDate);
+
             const type = 'plan' as StatisticType;
             for (const date of new Set((sortedResponce as Array<{ date: string }>).map((stat) => stat.date))) {
                 for (const meal_time of new Set(
@@ -120,11 +122,12 @@ function PublicStatistic() {
                     );
                 }
             }
+            setResponce(sortedResponce);
         } catch (error) {
             console.log('stat, plan:', `logging failed - ${error}`);
+        } finally {
+            setLoading(false);
         }
-
-        setResponce(sortedResponce);
     };
 
     useEffect(() => {
@@ -186,7 +189,7 @@ function PublicStatistic() {
             </Form>
             {statisticViewType === 'date' ? (
                 <>
-                    <TableStats data={dataForTable} />
+                    <TableStats data={dataForTable} loading={loading} />
                     <Divider />
                     <ColumnChart columnDataArr={dataForColumnChart} dataForAnnotation={dataForAnnotation} />
                 </>
