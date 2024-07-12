@@ -49,6 +49,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
     const person = Form.useWatch('person');
+    const mainRole = Form.useWatch('main_role');
+    const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
 
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
@@ -511,7 +513,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 label='Служба / Локация'
                                 getValueProps={getDirectionIds}
                                 name='directions'
-                                rules={Rules.required}
+                                rules={allowEmptyDirections ? undefined : Rules.required}
                             >
                                 <Select
                                     disabled={!allowRoleEdit && !!person}
