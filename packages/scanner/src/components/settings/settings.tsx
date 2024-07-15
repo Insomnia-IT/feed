@@ -56,6 +56,20 @@ export const Settings = () => {
                 </Button>
                 {!!lastSyncStart && <Text>Последнее обновление: {formatDate(lastSyncStart)}</Text>}
             </div>
+            <Button
+                className={css.button}
+                onClick={() => {
+                    if (confirm('Полное обновлене занимает много времени.\nВы уверены?')) {
+                        localStorage.removeItem('lastSyncStart');
+                        localStorage.removeItem('lastUpdatedServerTrans');
+                        location.reload();
+                    }
+                }}
+                disabled={syncFetching}
+                style={{ color: 'white', backgroundColor: 'red' }}
+            >
+                Полное обновление
+            </Button>
             <button className={css.leave} onClick={logout}>
                 Выйти из кухни &rarr;
             </button>
