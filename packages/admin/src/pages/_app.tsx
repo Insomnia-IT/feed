@@ -38,9 +38,14 @@ import {
 } from '~/components/entities/volunteer-custom-fields';
 
 // eslint-disable-next-line no-restricted-imports
-import { MediaProvider } from '~/shared/providers';
+import { MediaProvider, useMedia } from '~/shared/providers';
 
 import { i18n } from '../../next-i18next.config.mjs';
+
+const CustomLayout = ({ children, ...props }: { children?: any }) => {
+    const { isMobile } = useMedia();
+    return <Layout {...props}><div style={{ paddingBottom: isMobile ? 60 : undefined }}>{children}</div></Layout>;
+}
 
 const CustomReadyPage: FC = () => <div> Custom Ready Page </div>;
 
@@ -73,7 +78,7 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
                     ReadyPage={CustomReadyPage}
                     notificationProvider={notificationProvider}
                     catchAll={<ErrorComponent />}
-                    Layout={Layout}
+                    Layout={CustomLayout}
                     dataProvider={dataProvider}
                     i18nProvider={i18nProvider}
                     authProvider={authProvider}
