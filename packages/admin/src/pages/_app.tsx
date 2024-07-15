@@ -44,8 +44,12 @@ import { i18n } from '../../next-i18next.config.mjs';
 
 const CustomLayout = ({ children, ...props }: { children?: any }) => {
     const { isMobile } = useMedia();
-    return <Layout {...props}><div style={{ paddingBottom: isMobile ? 60 : undefined }}>{children}</div></Layout>;
-}
+    return (
+        <Layout {...props}>
+            <div style={{ paddingBottom: isMobile ? 60 : undefined }}>{children}</div>
+        </Layout>
+    );
+};
 
 const CustomReadyPage: FC = () => <div> Custom Ready Page </div>;
 
