@@ -34,6 +34,7 @@ import type {
     CustomFieldEntity,
     DirectionEntity,
     FeedTypeEntity,
+    GroupBadgeEntity,
     KitchenEntity,
     StatusEntity,
     TransportEntity,
@@ -255,6 +256,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         resource: 'statuses'
     });
 
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges'
+    });
+
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
     const loadCustomFields = async () => {
@@ -356,7 +361,15 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             skipNull: true,
             single: true,
             lookup: () => accessRoles?.data ?? []
-        } // accessRoleById
+        }, // accessRoleById
+        {
+            type: 'lookup',
+            name: 'group_badge',
+            title: 'Групповой бейдж',
+            skipNull: true,
+            single: true,
+            lookup: () => groupBadges?.data ?? []
+        } // groupBadges
     ].concat(
         customFields.map((customField) => ({
             type: customField.type === 'boolean' ? 'boolean' : 'custom',
