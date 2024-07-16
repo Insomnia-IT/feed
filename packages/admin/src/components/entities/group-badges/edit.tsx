@@ -70,7 +70,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         resource: 'volunteers'
     });
 
-    const { tableProps: currentVols } = useTable<VolEntity>({
+    const { setFilters, tableProps: currentVols } = useTable<VolEntity>({
         resource: 'volunteers',
         initialFilter: [
             {
@@ -124,7 +124,25 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         setSelected([]);
     };
 
-    const dataSource = useMemo(() => volunteers.filter((vol) => !vol.markedDeleted), [volunteers]);
+    const dataSource = useMemo(() => {
+        return volunteers.filter((vol) => !vol.markedDeleted);
+    }, [volunteers]);
+
+    const handleChangeInputValue = (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFilters([
+            {
+                field: 'group_badge',
+                operator: 'eq',
+                value: id
+            },
+            {
+                field: 'search',
+                operator: 'eq',
+                value: value
+            }
+        ]);
+    };
 
     /**
      * данные для попапа добавить волонтеров
@@ -174,7 +192,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                 <CreateEdit />
             </Form>
             <Title level={5}>Волонтеры</Title>
-            <Button onClick={() => setOpen(true)}>Добавить</Button>
+            <Button onClick={() => setOpen(true)} style={{ marginBottom: 20 }}>
+                Добавить
+            </Button>
             <Modal
                 title='Добавить волонтеров'
                 open={openAdd}
@@ -216,7 +236,12 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                     />
                 </Table>
             </Modal>
-
+            <Input
+                placeholder='Поиск волонтера'
+                allowClear
+                onChange={handleChangeInputValue}
+                style={{ marginBottom: 20 }}
+            />
             <Table {...currentVols} dataSource={dataSource} rowKey='id'>
                 <Table.Column
                     dataIndex='name'
