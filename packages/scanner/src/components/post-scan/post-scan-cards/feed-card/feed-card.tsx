@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { type FC, useState } from 'react';
 
 import type { Volunteer } from '~/db';
 import { FeedType } from '~/db';
@@ -15,6 +15,12 @@ export const FeedCard: FC<{
     close: () => void;
 }> = ({ close, doFeed, vol }) => {
     const isChild = vol.feed_type === FeedType.Child;
+    const [disabled, setDisabled] = useState(false);
+
+    const handleFeed = () => {
+        setDisabled(true);
+        doFeed();
+    };
     return (
         <CardContainer>
             <div className={css.feedCard}>
@@ -48,7 +54,9 @@ export const FeedCard: FC<{
                         <Button variant='secondary' onClick={close}>
                             Отмена
                         </Button>
-                        <Button onClick={doFeed}>Кормить</Button>
+                        <Button onClick={handleFeed} disabled={disabled}>
+                            Кормить
+                        </Button>
                     </div>
                     <VolAndUpdateInfo textColor='black' />
                 </div>
