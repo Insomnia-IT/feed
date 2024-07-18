@@ -9,7 +9,7 @@ import css from './auto-sync.module.css';
 const SYNC_INTERVAL = 2 * 60 * 1000;
 
 export const AutoSync = () => {
-    const { lastSyncStart, syncFetching, syncSend } = useApp();
+    const { lastSyncStart, syncError, syncFetching, syncSend } = useApp();
 
     const [nextSyncTime, setNextSyncTime] = useState<number>(Date.now() + SYNC_INTERVAL);
 
@@ -51,7 +51,8 @@ export const AutoSync = () => {
     const { minutes, seconds } = useTimer(nextSyncTime);
 
     return (
-        <Text className={css.timer}>
+        <Text className={css.timer} style={{ color: syncError ? 'red' : undefined }}>
+            {syncError ? 'Ошибка синхронизации ' : ''}
             {minutes}:{seconds}
         </Text>
     );

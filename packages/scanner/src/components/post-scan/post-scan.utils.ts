@@ -88,6 +88,8 @@ export const validateVol = (
 
 export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
 
+let isFeedInProgress = false;
+
 export const useFeedVol = (
     vol: Volunteer | undefined | null,
     mealTime: MealTime | null,
@@ -96,12 +98,15 @@ export const useFeedVol = (
 ) => {
     const feed = useCallback(
         async (isVegan: boolean | undefined, log?: { error: boolean; reason: string }) => {
-            if (mealTime) {
+            if (mealTime && !isFeedInProgress) {
                 try {
+                    isFeedInProgress = true;
                     await dbIncFeed({ vol, mealTime, isVegan, log, kitchenId });
                     closeFeed();
                 } catch (e) {
                     console.error(e);
+                } finally {
+                    isFeedInProgress = false;
                 }
             }
         },

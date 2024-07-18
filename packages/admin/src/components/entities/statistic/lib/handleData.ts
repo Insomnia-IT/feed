@@ -67,15 +67,16 @@ export function handleDataForTable(
     const datum = data[kitchenId][date];
     const plan = { breakfast: 0, lunch: 0, dinner: 0, night: 0, total: 0 };
     const fact = { breakfast: 0, lunch: 0, dinner: 0, night: 0, total: 0 };
-    for (const mealTime of mealTimeArr) {
-        const resPlan = datum.plan[mealTime];
-        const resFact = datum.fact[mealTime];
-        const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-        plan[mealTime] = values.plan;
-        fact[mealTime] = values.fact;
-        plan.total += values.plan;
-        fact.total += values.fact;
-    }
+    if (datum != undefined)
+        for (const mealTime of mealTimeArr) {
+            const resPlan = datum.plan[mealTime];
+            const resFact = datum.fact[mealTime];
+            const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+            plan[mealTime] = values.plan;
+            fact[mealTime] = values.fact;
+            plan.total += values.plan;
+            fact.total += values.fact;
+        }
     return [
         { key: '1', mealTimeType: 'Завтрак', plan: plan.breakfast, fact: fact.breakfast },
         { key: '2', mealTimeType: 'Обед', plan: plan.lunch, fact: fact.lunch },
