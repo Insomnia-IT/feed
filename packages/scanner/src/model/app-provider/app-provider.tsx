@@ -24,6 +24,7 @@ interface IAppContext {
     debugMode: string | null;
     deoptimizedSync: string | null;
     syncFetching: boolean;
+    syncError: boolean;
     autoSync: boolean;
     toggleAutoSync: () => void;
     syncSend: ({ lastSyncStart }: { lastSyncStart: number | null }) => Promise<void>;
@@ -52,7 +53,12 @@ export const AppProvider = (props) => {
     const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);
     const [volCount, setVolCount] = useState<number>(0);
     const [autoSync, setAutoSync] = useState<boolean>(autoSyncLS ? autoSyncLS === '1' : true);
-    const { fetching: syncFetching, send: syncSend, updated } = useSync(API_DOMAIN, pin, setAuth, kitchenId);
+    const {
+        error: syncError,
+        fetching: syncFetching,
+        send: syncSend,
+        updated
+    } = useSync(API_DOMAIN, pin, setAuth, kitchenId);
     const toggleAutoSync = useCallback(() => {
         setAutoSync((prev) => {
             localStorage.setItem('autoSync', !prev ? '1' : '0');
@@ -107,10 +113,24 @@ export const AppProvider = (props) => {
             debugMode: debugModeLS,
             deoptimizedSync: deoptimizedSyncLS,
             syncFetching,
+            syncError,
             syncSend,
             doSync
         }),
-        [pin, auth, appError, lastSyncStart, volCount, autoSync, mealTime, kitchenId, syncFetching, syncSend, doSync]
+        [
+            pin,
+            auth,
+            appError,
+            lastSyncStart,
+            volCount,
+            autoSync,
+            mealTime,
+            kitchenId,
+            syncFetching,
+            syncSend,
+            doSync,
+            syncError
+        ]
     );
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
