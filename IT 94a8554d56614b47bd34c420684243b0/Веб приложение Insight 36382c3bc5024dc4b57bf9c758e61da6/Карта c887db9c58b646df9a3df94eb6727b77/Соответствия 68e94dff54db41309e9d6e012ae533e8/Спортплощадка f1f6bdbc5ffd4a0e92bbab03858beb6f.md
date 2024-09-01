@@ -1,0 +1,6 @@
+# Спортплощадка
+
+OrderType (порядок): 6 Other
+DetailsGroup: art
+Icon: art
+Есть на серваке: Есть

@@ -1,0 +1,6 @@
+# Хатифнатты
+
+OrderType (порядок): 6 Other
+DetailsGroup: activity
+Icon: lecture
+Есть на серваке: Есть
