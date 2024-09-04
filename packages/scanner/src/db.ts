@@ -52,7 +52,6 @@ export interface Volunteer {
     id: number;
     first_name: string;
     name: string;
-    balance: number;
     is_blocked: boolean;
     is_vegan: boolean;
     arrivals: Array<Arrival>;
@@ -157,15 +156,6 @@ export const dbIncFeed = async ({
     };
     kitchenId: number;
 }): Promise<any> => {
-    if (vol) {
-        await db.volunteers
-            .where('id')
-            .equals(vol.id)
-            .modify({
-                balance: vol.balance - 1
-            });
-    }
-
     return await addTransaction({ vol, mealTime, isVegan, log, kitchenId });
 };
 
