@@ -17,7 +17,6 @@ import { DepartmentCreate, DepartmentList, DirectionEdit, DirectionShow } from '
 import { GroupBadgeCreate, GroupBadgeEdit, GroupBadgeList, GroupBadgeShow } from '~/components/entities/group-badges';
 import { Sync } from '~/components/sync';
 import { Scanner } from '~/components/scanner';
-// import { LocationCreate, LocationEdit, LocationList, LocationShow } from '~/components/entities/locations';
 import { VolCreate, VolEdit, VolList, VolShow } from '~/components/entities/vols';
 import { FeedTransactionCreate, FeedTransactionList } from '~/components/entities/feed-transaction';
 import { ACL } from '~/acl';

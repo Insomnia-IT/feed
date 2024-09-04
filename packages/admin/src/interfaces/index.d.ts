@@ -12,9 +12,7 @@ export interface VolEntity {
     position?: string;
     is_vegan?: boolean; // nutritionType
     is_blocked?: boolean;
-    daily_eats?: number;
     comment?: string;
-    ref_to?: number; // chef
     directions?: Array<DirectionEntity>;
     kitchen?: number;
     // location?: LocationEntity[];

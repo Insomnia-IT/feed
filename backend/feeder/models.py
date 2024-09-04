@@ -128,13 +128,6 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     photo = models.TextField(null=True, blank=True, verbose_name="Фотография")
     position = models.TextField(null=True, blank=True, verbose_name="")
     qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
-    active_from = models.DateTimeField(null=True, blank=True, verbose_name="Активен с ")
-    active_to = models.DateTimeField(null=True, blank=True, verbose_name="Активен до")
-    arrival_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата прибытия")
-    departure_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата отъезда")
-    daily_eats = models.IntegerField(default=0, verbose_name="Количество приёмов пищи в день")
-    balance = models.IntegerField(default=0, verbose_name="Баланс")
-    is_active = models.BooleanField(default=False, verbose_name="Активен?")
     is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован?")
     is_vegan = models.BooleanField(default=False, verbose_name="Вегетарианец?")
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
@@ -148,7 +141,6 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         related_name='volunteers',
         verbose_name="Право доступа",
     )
-    departments = models.ManyToManyField('Department', verbose_name="Департамент")
     color_type = models.ForeignKey(
         'Color',
         null=True, blank=True, on_delete=models.PROTECT,
@@ -158,7 +150,6 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Групповой бейдж")
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
-    ref_to = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Связан с ", related_name="refs")
     main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
     notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
@@ -177,25 +168,6 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         if not self.pk and not self.qr and self.notion_id:
             self.qr = str(self.notion_id).replace("-", "")
         super().save(*args, **kwargs)
-
-
-class Department(TimeMixin):
-    name = models.CharField(max_length=255, verbose_name="Название", db_index=True)
-    code = models.CharField(max_length=255, null=True, blank=True, verbose_name="Код")
-    comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
-    lead = models.ForeignKey(
-        'Volunteer', null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='department_leader',
-        verbose_name="Лидер",
-    )
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Департамент"
-        verbose_name_plural = "Департаменты"
-
 
 class Kitchen(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название")
@@ -248,20 +220,6 @@ class VolunteerCustomFieldValue(TimeMixin):
         constraints = [
             models.UniqueConstraint(fields=['volunteer', 'custom_field'], name='unique fields')
         ]
-
-
-class Location(TimeMixin):
-    name = models.CharField(max_length=255, verbose_name="Название", db_index=True)
-    code = models.CharField(max_length=255, null=True, blank=True, verbose_name="Код")
-    comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Локация"
-        verbose_name_plural = "Локации"
-
 
 class Color(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название")
