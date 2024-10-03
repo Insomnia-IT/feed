@@ -249,7 +249,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const isBlocked = Form.useWatch('is_blocked', form);
     const [open, setOpen] = useState(false);
     const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const router = useRouter();
 
     const handleBack = () => {
