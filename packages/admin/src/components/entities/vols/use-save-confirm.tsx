@@ -49,6 +49,9 @@ const useSaveConfirm = (
         },
         onMutationSuccess: async ({ data: { id } }) => {
             const updatedCustomFields = form.getFieldValue('updated_custom_fields');
+            const arrivals = form.getFieldValue('arrivals') ?? [];
+            const updatedArrivals = form.getFieldValue('updated_arrivals');
+
             if (updatedCustomFields) {
                 for (const customFieldId in updatedCustomFields) {
                     const { data: customValues } = await dataProvider.getList<VolCustomFieldValueEntity>({
@@ -87,8 +90,7 @@ const useSaveConfirm = (
                     }
                 }
             }
-            const arrivals = form.getFieldValue('arrivals') ?? [];
-            const updatedArrivals = form.getFieldValue('updated_arrivals');
+
             if (updatedArrivals) {
                 const serializeDate = (value) => {
                     return dayjs(value).format('YYYY-MM-DD');
