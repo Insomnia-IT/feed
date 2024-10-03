@@ -197,6 +197,7 @@ class GroupBadge(TimeMixin, CommentMixin, NameMixin):
 class VolunteerCustomField(TimeMixin, CommentMixin):
     name = models.CharField(verbose_name='Название', unique=True, max_length=100)
     type = models.CharField(verbose_name='Тип данных', max_length=20)
+    mobile = models.BooleanField(null=False, default=False, verbose_name="Показывать в мобильной админке?")
 
     def __str__(self):
         return self.name
