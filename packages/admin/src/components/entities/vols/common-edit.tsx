@@ -45,6 +45,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
+    const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' });
     const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
@@ -476,7 +477,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.typeMeal}>
                             <Form.Item label='Тип питания' name='feed_type' rules={Rules.required}>
-                                <Select disabled={denyBadgeEdit} {...feedTypeSelectProps} />
+                                <Select disabled={denyFeedTypeEdit} {...feedTypeSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
