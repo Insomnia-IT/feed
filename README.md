@@ -1,18 +1,6 @@
 # feed monorepo
 
 
-## Локальный запуск через докер
-
-Windows
-```cmd
-.\local-dev.cmd
-```
-Linux/MacOS
-```bash
-./local-dev.sh
-```
-
-
 # Установка backend
 Windows
 ```bash
@@ -98,4 +86,15 @@ cd ./backend
 python3 -m venv venv
 . ./venv/bin/activate
 python manage.py makemigrations
+```
+
+## Локальный запуск через докер
+
+Windows
+```cmd
+.\local-dev.cmd
+```
+Linux/MacOS
+```bash
+./local-dev.sh
 ```
