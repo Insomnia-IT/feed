@@ -60,7 +60,7 @@ cd ./backend
 ./manage.py runserver localhost:8000
 ```
 
-# Запуск frontend
+# Запуск frontend с локальным беком
 
 ```bash
 cd ./packages/admin
@@ -70,6 +70,13 @@ yarn run dev
 ```bash
 cd ./packages/scanner
 yarn run dev
+```
+
+# Запуск frontend со стейджовым беком
+
+```bash
+cd ./packages/admin
+yarn run dev:stage
 ```
 
 ## Passwords
