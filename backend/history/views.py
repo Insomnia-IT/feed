@@ -14,6 +14,7 @@ class HistoryFilter(FilterSet):
     date_start = filters.DateFilter(field_name='action_at', lookup_expr='gte', input_formats=['%d.%m.%y', '%d.%m.%Y'])
     date_end = filters.DateFilter(field_name='action_at', lookup_expr='lte', input_formats=['%d.%m.%y', '%d.%m.%Y'])
     object_id = filters.CharFilter(method='filter_object')
+    actor_badge = filters.CharFilter(field_name='actor_badge', lookup_expr='exact')
 
     class Meta:
         model = History
