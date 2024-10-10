@@ -6,7 +6,7 @@ import QrScanner from 'qr-scanner';
 import { Rules } from '../form/rules';
 
 import { containerStyles, imageContainer, layoutStyles, titleStyles } from './styles';
-import logo from './logo.png';
+import logo from './logo.svg';
 
 const { Title } = Typography;
 export interface ILoginForm {
@@ -27,7 +27,7 @@ export const LoginPage: FC = () => {
     const { isLoading, mutate: login } = useLogin<ILoginForm>();
 
     const CardTitle = (
-        <Title level={3} style={titleStyles}>
+        <Title level={1} style={titleStyles}>
             {/*{translate("pages.login.title", "Sign in your account")}*/}
             КУХНЯ
         </Title>
@@ -108,11 +108,11 @@ export const LoginPage: FC = () => {
                     <div style={containerStyles}>
                         <div style={imageContainer}>
                             {/* @ts-ignore */}
-                            <img src={logo.src} alt='feed' />
+                            <img src={logo.src} alt='feed' style={{ height: '56px' }}/>
                         </div>
                         <Card title={CardTitle} headStyle={{ borderBottom: 0 }}>
                             <div style={{ textAlign: 'center' }}>
-                                <video ref={onVideoReady} style={{ height: '150px' }} />
+                                <video ref={onVideoReady} style={{ width: '100%', marginBottom: '24px', borderRadius: '6px' }} />
                             </div>
                             <Form<ILoginForm>
                                 layout='vertical'
@@ -129,6 +129,7 @@ export const LoginPage: FC = () => {
                                     name='username'
                                     label={translate('pages.login.username', 'Username')}
                                     rules={Rules.required}
+                                    style={{ marginBottom: '18px' }} // добавил отступ
                                 >
                                     <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
                                 </Form.Item>
@@ -140,7 +141,7 @@ export const LoginPage: FC = () => {
                                 >
                                     <Input type='password' placeholder='●●●●●●●●' size='large' />
                                 </Form.Item>
-                                <div style={{ marginBottom: '12px' }}>
+                                <div style={{ marginBottom: '42px' }}>
                                     <Form.Item name='remember' valuePropName='checked' noStyle>
                                         <Checkbox
                                             style={{
