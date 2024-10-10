@@ -772,34 +772,26 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             closable={false}
                             centered
                             open={open}
-                            okText={'Оставить'}
                             cancelText={`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                            okText={'Оставить'}
                             onOk={() => setOpen(false)}
                             onCancel={handleToggleBlocked}
-                            width={420}
-                            footer={null}
+                        // cancelButtonProps={{
+                        //     disabled: isBlocked ? false : true 
+                        // }}
                         >
-                            <div className={styles.modalWindow}>
-                                <span className={styles.carefulIcon}>
-                                    <span className={styles.carefulDescr}>!</span>
-                                </span>
-                                <p className={styles.modalTitle}>
-                                    {isBlocked ? 'Разблокировать волонтера?' : 'Заблокировать Волонтера?'}
-                                </p>
-                                <p className={styles.modalDescr}>
-                                    {isBlocked
-                                        ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
-                                        : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
-                                </p>
-                                <div className={styles.modalButtonWrap}>
-                                    <Button className={styles.onCancelButton} onClick={handleToggleBlocked}>
-                                        {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-                                    </Button>
-                                    <Button type='primary' onClick={() => setOpen(false)}>
-                                        {'Оставить'}
-                                    </Button>
-                                </div>
-                            </div>
+
+                            <p>
+                                {isBlocked
+                                    ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
+                                    : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
+                            </p>
+                            <Form layout="vertical" >
+                                <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'} rules={Rules.required}>
+                                    <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
+                                </Form.Item>
+                            </Form>
+
                         </Modal>
                         {canDelete && (
                             <DeleteButton
