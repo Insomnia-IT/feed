@@ -37,7 +37,13 @@ import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill').then(mod => {
+    return (props) => {
+      console.log('Props:', props.value); // Логируем props
+
+      return <mod.default {...props} />; // Возвращаем сам компонент
+    };
+  }), { ssr: false });
 
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
@@ -374,19 +380,14 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     // код yambikov
 
-    //   // Состояние для содержимого редактора
-    //   const [blockReason, setBlockReason] = useState('');
 
-    //   // Обработчик изменения содержимого редактора
-    //   const blockReasonChange = (content) => {
-    //     setBlockReason(content);
-    //   };
+    const [blockReason, setBlockReason] = useState('');
+//    console.log(blockReason);
 
-    
-    const reactQuillElement = document.querySelector('.ql-editor');
-      console.log (reactQuillElement);
-    // const quillInstance = reactQuillElement.__reactFiber$.return.stateNode.getEditor();
-    // console.log (quillInstance);
+   
+      
+
+ 
 
     return (
         <div className={styles.edit}>
@@ -769,7 +770,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
                         <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
-                        <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
+                            
+                            {/* <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} /> */}
+                            
+                                <Input disabled={denyBadgeEdit} />
+                            
                         </Form.Item>
                     </div>
 
@@ -794,8 +799,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             onOk={() => setOpen(false)}
                             onCancel={handleToggleBlocked}
                             cancelButtonProps={{
-                                disabled: isBlocked ? false : true
-                            }} // здесь реализовать логику, если инпут пустой, то кнопка неактивна
+                                disabled: isBlocked ? false : !blockReason, // Делаем кнопку неактивной, если нет причины блокировки
+                            }}
                         >
                             <p>
                                 {isBlocked
@@ -804,13 +809,13 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             </p>
 
                             <Form.Item
-                                label='Причина блокировки'
+                                label='Комментарий'
                                 name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}
                                 rules={Rules.required}
                                 labelCol={{ span: 24 }} // Для вертикального отображения лейбла и инпута
                                 wrapperCol={{ span: 24 }} // Для вертикального отображения лейбла и инпута
                             >
-                                <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
+                                <Input disabled={denyBadgeEdit} onChange={(e) => setBlockReason(e.target.value)} />
                             </Form.Item>
                         </Modal>
 
@@ -870,3 +875,4 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         </div>
     );
 }
+
