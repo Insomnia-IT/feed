@@ -372,6 +372,22 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         ]);
     };
 
+    // код yambikov
+
+    //   // Состояние для содержимого редактора
+    //   const [blockReason, setBlockReason] = useState('');
+
+    //   // Обработчик изменения содержимого редактора
+    //   const blockReasonChange = (content) => {
+    //     setBlockReason(content);
+    //   };
+
+    
+    const reactQuillElement = document.querySelector('.ql-editor');
+      console.log (reactQuillElement);
+    // const quillInstance = reactQuillElement.__reactFiber$.return.stateNode.getEditor();
+    // console.log (quillInstance);
+
     return (
         <div className={styles.edit}>
             <div className={styles.edit__nav}>
@@ -753,9 +769,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
                         <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
-                            <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
+                        <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
                         </Form.Item>
                     </div>
+
                     <div className={styles.blockDeleteWrap}>
                         {!denyBadgeEdit && (
                             <Button
@@ -776,23 +793,27 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             okText={'Оставить'}
                             onOk={() => setOpen(false)}
                             onCancel={handleToggleBlocked}
-                        // cancelButtonProps={{
-                        //     disabled: isBlocked ? false : true 
-                        // }}
+                            cancelButtonProps={{
+                                disabled: isBlocked ? false : true
+                            }} // здесь реализовать логику, если инпут пустой, то кнопка неактивна
                         >
-
                             <p>
                                 {isBlocked
                                     ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
                                     : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
                             </p>
-                            <Form layout="vertical" >
-                                <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'} rules={Rules.required}>
-                                    <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
-                                </Form.Item>
-                            </Form>
 
+                            <Form.Item
+                                label='Причина блокировки'
+                                name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}
+                                rules={Rules.required}
+                                labelCol={{ span: 24 }} // Для вертикального отображения лейбла и инпута
+                                wrapperCol={{ span: 24 }} // Для вертикального отображения лейбла и инпута
+                            >
+                                <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
+                            </Form.Item>
                         </Modal>
+
                         {canDelete && (
                             <DeleteButton
                                 type='primary'
