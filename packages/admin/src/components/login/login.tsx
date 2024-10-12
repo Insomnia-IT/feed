@@ -129,7 +129,7 @@ export const LoginPage: FC = () => {
                                     name='username'
                                     label={translate('pages.login.username', 'Username')}
                                     rules={Rules.required}
-                                    style={{ marginBottom: '18px' }} // добавил отступ
+                                    style={{ marginBottom: '18px' }}
                                 >
                                     <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
                                 </Form.Item>
