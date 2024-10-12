@@ -300,17 +300,17 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
-        // const reason = form.getFieldValue('reason');  // Получаем значение из TextArea
-        // form.setFieldsValue({ is_blocked: !isBlocked });
-        // 
-        // if (!isBlocked) {
-        //     reason = `Причина блокировки: ${reason}`;
-        //   } else {
-        //     reason = `Причина разблокировки: ${reason}`;
-        //   }
+        let reason = formReason.getFieldValue('reason');  // Получаем значение из TextArea
+        form.setFieldsValue({ is_blocked: !isBlocked });
+        
+        if (!isBlocked) {
+            reason = `Причина блокировки: ${reason}`;
+          } else {
+            reason = `Причина разблокировки: ${reason}`;
+          }
 
 
-        // form.setFieldsValue({ is_blocked: !isBlocked, comment: reason });
+        form.setFieldsValue({ is_blocked: !isBlocked, comment: reason });
         form.setFieldsValue({ is_blocked: !isBlocked });
         setOpen(false);
     };
@@ -405,13 +405,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     };
 
     // код yambikov
-    // const [blockform] = Form.useForm();
-    // const blockReason = blockform.getFieldValue('reason');
-    // console.log(blockReason);
-    
 
-    // const [blockReason, setBlockReason] = useState('');
-    //    console.log(form.getFieldValue('updated_arrivals'));
+    const [formReason] = Form.useForm(); // Инициализация первой формы
+
+
     // console.log(form.getFieldValue('comment'));
     //    console.log(form.getFieldValue('custom_field_values'));
 
@@ -419,15 +416,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     // // // if (!commentFieldValue) return null;
     console.log(commentFieldValue);
 
-    const reasonFieldValue = form.getFieldValue('reason');
+    const reasonFieldValue = formReason.getFieldValue('reason');
     // // // if (!commentFieldValue) return null;
     console.log(reasonFieldValue);
 
 
     // console.log(form.getFieldValue('comment'))
-
-
-
 
     // const dirCommentFieldValue = form.getFieldValue('direction_head_comment');
     // // if (!dirCommentFieldValue) return null;
@@ -856,6 +850,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                     : 'Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
                             </p>
                             <Form
+                                form={formReason}
                                 name="block-form"
                                 onFinish={handleToggleBlocked}
                                 layout='vertical'>
