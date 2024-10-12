@@ -1,5 +1,16 @@
 import type { FormInstance } from '@pankod/refine-antd';
-import { Button, Checkbox, DatePicker, DeleteButton, Form, Input, Modal, Select, Space, useSelect } from '@pankod/refine-antd';
+import {
+    Button,
+    Checkbox,
+    DatePicker,
+    DeleteButton,
+    Form,
+    Input,
+    Modal,
+    Select,
+    Space,
+    useSelect
+} from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,13 +48,17 @@ import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-const ReactQuill = dynamic(() => import('react-quill').then(mod => {
-    return (props) => {
-        console.log('Props:', props.value); // Логируем props
+const ReactQuill = dynamic(
+    () =>
+        import('react-quill').then((mod) => {
+            return (props) => {
+                console.log('Props:', props.value); // Логируем props
 
-        return <mod.default {...props} />; // Возвращаем сам компонент
-    };
-}), { ssr: false });
+                return <mod.default {...props} />; // Возвращаем сам компонент
+            };
+        }),
+    { ssr: false }
+);
 
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
@@ -285,6 +300,17 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
+        // const reason = form.getFieldValue('reason');  // Получаем значение из TextArea
+        // form.setFieldsValue({ is_blocked: !isBlocked });
+        // 
+        // if (!isBlocked) {
+        //     reason = `Причина блокировки: ${reason}`;
+        //   } else {
+        //     reason = `Причина разблокировки: ${reason}`;
+        //   }
+
+
+        // form.setFieldsValue({ is_blocked: !isBlocked, comment: reason });
         form.setFieldsValue({ is_blocked: !isBlocked });
         setOpen(false);
     };
@@ -379,16 +405,29 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     };
 
     // код yambikov
-
+    // const [blockform] = Form.useForm();
+    // const blockReason = blockform.getFieldValue('reason');
+    // console.log(blockReason);
+    
 
     // const [blockReason, setBlockReason] = useState('');
     //    console.log(form.getFieldValue('updated_arrivals'));
     // console.log(form.getFieldValue('comment'));
     //    console.log(form.getFieldValue('custom_field_values'));
 
-    // const commentFieldValue = form.getFieldValue('comment');
-    // // if (!commentFieldValue) return null;
-    // console.log(commentFieldValue);
+    const commentFieldValue = form.getFieldValue('comment');
+    // // // if (!commentFieldValue) return null;
+    console.log(commentFieldValue);
+
+    const reasonFieldValue = form.getFieldValue('reason');
+    // // // if (!commentFieldValue) return null;
+    console.log(reasonFieldValue);
+
+
+    // console.log(form.getFieldValue('comment'))
+
+
+
 
     // const dirCommentFieldValue = form.getFieldValue('direction_head_comment');
     // // if (!dirCommentFieldValue) return null;
@@ -396,31 +435,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     // пример можно найти на строчка 761
 
-    const SubmitButton = ({ form, children }) => {
-        const [submittable, setSubmittable] = useState(false);
-
-        // Watch all values
-        const values = Form.useWatch([], form);
-        useEffect(() => {
-            form
-                .validateFields({
-                    validateOnly: true,
-                })
-                .then(() => setSubmittable(true))
-                .catch(() => setSubmittable(false));
-        }, [form, values]);
-        return (
-            <Button type="primary" htmlType="submit" disabled={!submittable}>
-                {children}
-            </Button>
-        );
-    };
-
-
-
-
-
-
+   
 
     return (
         <div className={styles.edit}>
@@ -803,12 +818,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
                         <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
-
                             {/* <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} /> */}
 
-                            <Input disabled={denyBadgeEdit} />
-
+                            <Input.TextArea disabled={denyBadgeEdit} />
                         </Form.Item>
+
                     </div>
 
                     <div className={styles.blockDeleteWrap}>
@@ -823,36 +837,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
                             </Button>
                         )}
-                        {/* <Modal
-                            closable={false}
-                            centered
-                            open={open}
-                            cancelText={`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-                            okText={'Оставить'}
-                            onOk={() => setOpen(false)}
-                            onCancel={handleToggleBlocked}
-                            cancelButtonProps={{
-                                disabled: !form.getFieldValue('comment') ? false : true ,
-                            }}
-                        >
-                            <p>
-                                {isBlocked
-                                    ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
-                                    : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
-                            </p>
 
-                            <Form.Item
-                                label='Комментарий'
-                                name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}
-                                rules={Rules.required}
-                                labelCol={{ span: 24 }} // Для вертикального отображения лейбла и инпута
-                                wrapperCol={{ span: 24 }} // Для вертикального отображения лейбла и инпута
-                            >
-                                {/* <Input disabled={denyBadgeEdit} onChange={(e) => setBlockReason(e.target.value)} /> */}
-
-                        {/* <Input disabled={denyBadgeEdit} />
-                            </Form.Item>
-                        </Modal> */}
 
                         <Modal
                             title={`${isBlocked ? 'Бейдж Волонтера активируется' : 'Бейдж Волонтера деактивируется'}`}
@@ -865,51 +850,37 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             onOk={handleToggleBlocked}
                             onCancel={() => setOpen(false)}
                         >
-                            <Space
-                                direction="vertical"
-                                size="large"
-                                style={{
-                                    display: 'flex',
-                                }}
-                            >
-                                
-                                <p>
-                                    {isBlocked
-                                        ? 'Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
-                                        : 'Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
-                                </p>
-                                <Form
-                                    onFinish={handleToggleBlocked}>
-                                    <Form.Item
-                                        label="TextArea"
-                                        name="TextArea"
-
-                                        // labelCol={{ span: 24 }}
-                                        // wrapperCol={{ span: 24 }}
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: 'Please input!',
-                                            },
-
-                                        ]}
+                            <p>
+                                {isBlocked
+                                    ? 'Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. <>Волонтера можно будет заблокировать'
+                                    : 'Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
+                            </p>
+                            <Form
+                                name="block-form"
+                                onFinish={handleToggleBlocked}
+                                layout='vertical'>
+                                <Form.Item
+                                    label='Причина блокировки'
+                                    name='reason'
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Укажите причину блокировки'
+                                        }
+                                    ]}
+                                >
+                                    <Input.TextArea />
+                                </Form.Item>
+                                <div style={{ textAlign: 'right' }}>
+                                    <Button
+                                        type={`${!isBlocked ? 'default' : 'primary'}`}
+                                        danger={!isBlocked}
+                                        htmlType='submit'
                                     >
-                                        <Input.TextArea />
-                                    </Form.Item>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <Button
-                                            type={`${!isBlocked ? 'default' : 'primary'}`}
-                                            danger={!isBlocked} htmlType="submit" >
-                                            {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-                                        </Button></div>
-                                </Form>
-                            </Space>
-
-
-
-
-
-
+                                        {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                                    </Button>
+                                </div>
+                            </Form>
                         </Modal>
 
                         {canDelete && (
@@ -968,4 +939,3 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         </div>
     );
 }
-
