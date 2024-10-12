@@ -8,7 +8,7 @@ import {
     Input,
     Modal,
     Select,
-    Space,
+    Divider,
     useSelect
 } from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useState } from 'react';
@@ -300,18 +300,19 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
-        let reason = formReason.getFieldValue('reason');  // Получаем значение из TextArea
+        const currentComment = form.getFieldValue('comment') || '';
+        let reason = formReason.getFieldValue('reason');
         form.setFieldsValue({ is_blocked: !isBlocked });
-        
+
         if (!isBlocked) {
             reason = `Причина блокировки: ${reason}`;
-          } else {
+        } else {
             reason = `Причина разблокировки: ${reason}`;
-          }
+        }
 
-
-        form.setFieldsValue({ is_blocked: !isBlocked, comment: reason });
-        form.setFieldsValue({ is_blocked: !isBlocked });
+        const updatedComment = `${currentComment}\n${reason}`.trim();
+        form.setFieldsValue({ is_blocked: !isBlocked, comment: updatedComment });
+        setOpen(false);
         setOpen(false);
     };
 
@@ -412,13 +413,13 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     // console.log(form.getFieldValue('comment'));
     //    console.log(form.getFieldValue('custom_field_values'));
 
-    const commentFieldValue = form.getFieldValue('comment');
-    // // // if (!commentFieldValue) return null;
-    console.log(commentFieldValue);
+    // const commentFieldValue = form.getFieldValue('comment');
+    // // // // if (!commentFieldValue) return null;
+    // console.log(commentFieldValue);
 
-    const reasonFieldValue = formReason.getFieldValue('reason');
-    // // // if (!commentFieldValue) return null;
-    console.log(reasonFieldValue);
+    // const reasonFieldValue = formReason.getFieldValue('reason');
+    // // // // if (!commentFieldValue) return null;
+    // console.log(reasonFieldValue);
 
 
     // console.log(form.getFieldValue('comment'))
@@ -429,7 +430,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     // пример можно найти на строчка 761
 
-   
+
 
     return (
         <div className={styles.edit}>
@@ -814,11 +815,13 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
                             {/* <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} /> */}
 
-                            <Input.TextArea disabled={denyBadgeEdit} />
+                            <Input.TextArea disabled={denyBadgeEdit} autoSize={{ minRows: 2, maxRows: 6 }} />
                         </Form.Item>
 
                     </div>
+                    <Divider />
 
+        
                     <div className={styles.blockDeleteWrap}>
                         {!denyBadgeEdit && (
                             <Button
@@ -864,7 +867,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         }
                                     ]}
                                 >
-                                    <Input.TextArea />
+                                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+
                                 </Form.Item>
                                 <div style={{ textAlign: 'right' }}>
                                     <Button
@@ -900,6 +904,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         <Form.Item name='person' hidden></Form.Item>
                     </div>
                 </div>
+
+
+
                 <div id='section7' className={styles.formSection}>
                     <p className={styles.formSection__title}>Участие во все года</p>
                     <div className={styles.engagementsWrap}>{returnEngagementsLayout()}</div>
