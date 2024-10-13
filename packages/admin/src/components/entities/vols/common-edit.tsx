@@ -305,7 +305,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         const updatedComment = `${currentComment}\n${reason}`.trim();
         form.setFieldsValue({ is_blocked: !isBlocked, comment: updatedComment });
         setOpen(false);
-        setOpen(false);
     };
 
     useEffect(() => {
