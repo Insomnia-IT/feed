@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 export const layoutStyles: CSSProperties = {
-    background: `radial-gradient(50% 50% at 50% 50%, #63386A 0%, #310438 100%)`,
+    background: '#041428',
     backgroundSize: 'cover'
 };
 
@@ -12,9 +12,9 @@ export const containerStyles: CSSProperties = {
 
 export const titleStyles: CSSProperties = {
     textAlign: 'center',
-    color: '#626262',
-    fontSize: '30px',
-    letterSpacing: '-0.04em'
+    color: '#1E1E1E',
+    paddingTop: '24px',
+    margin: 0
 };
 
 export const imageContainer: CSSProperties = {
