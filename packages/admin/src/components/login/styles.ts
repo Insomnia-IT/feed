@@ -14,7 +14,7 @@ export const titleStyles: CSSProperties = {
     textAlign: 'center',
     color: '#1E1E1E',
     paddingTop: '24px',
-    margin: 0,
+    margin: 0
 };
 
 export const imageContainer: CSSProperties = {

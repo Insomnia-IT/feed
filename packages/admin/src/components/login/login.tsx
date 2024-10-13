@@ -108,11 +108,14 @@ export const LoginPage: FC = () => {
                     <div style={containerStyles}>
                         <div style={imageContainer}>
                             {/* @ts-ignore */}
-                            <img src={logo.src} alt='feed' style={{ height: '56px' }}/>
+                            <img src={logo.src} alt='feed' style={{ height: '56px' }} />
                         </div>
                         <Card title={CardTitle} headStyle={{ borderBottom: 0 }}>
                             <div style={{ textAlign: 'center' }}>
-                                <video ref={onVideoReady} style={{ width: '100%', marginBottom: '24px', borderRadius: '6px' }} />
+                                <video
+                                    ref={onVideoReady}
+                                    style={{ width: '100%', marginBottom: '24px', borderRadius: '6px' }}
+                                />
                             </div>
                             <Form<ILoginForm>
                                 layout='vertical'
