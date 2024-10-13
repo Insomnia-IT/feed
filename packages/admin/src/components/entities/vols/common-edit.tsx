@@ -729,8 +729,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             form.setFieldValue(['updated_custom_fields', id.toString()], value);
                         };
                         const customFieldValues = form.getFieldValue('custom_field_values');
-                        if (!customFieldValues) return null;
-                        const customFieldValue = customFieldValues.find(({ custom_field }) => custom_field === id);
+                        const customFieldValue = customFieldValues?.find(({ custom_field }) => custom_field === id);
                         return (
                             <Form.Item key={name} label={name}>
                                 {type === 'boolean' && (
