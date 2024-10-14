@@ -2,28 +2,28 @@ import type { FormInstance } from '@pankod/refine-antd';
 import {
     Button,
     Checkbox,
+    Col,
     DatePicker,
     DeleteButton,
+    Divider,
     Form,
     Input,
     Modal,
-    Select,
-    Divider,
-    useSelect,
     Row,
-    Col
+    Select,
+    useSelect
 } from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import {
     DeleteOutlined,
+    ExclamationCircleOutlined,
     FrownOutlined,
     PlusSquareOutlined,
     RadarChartOutlined,
     SmileOutlined
 } from '@ant-design/icons';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 
 import { Rules } from '~/components/form';
@@ -50,7 +50,6 @@ import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-import WarningIcon from '~/assets/icons/warning-icon';
 
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
@@ -293,8 +292,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
         const currentComment = form.getFieldValue('comment') || '';
-        let reason = formReason.getFieldValue('reason');
-        form.setFieldsValue({ is_blocked: !isBlocked });
+        let reason = formBlock.getFieldValue('reason');
+        // form.setFieldsValue({ is_blocked: !isBlocked });
 
         if (!isBlocked) {
             reason = `Причина блокировки: ${reason}`;
@@ -398,7 +397,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     // код yambikov
 
-    const [formReason] = Form.useForm();
+    const [formBlock] = Form.useForm();
 
     return (
         <div className={styles.edit}>
@@ -781,8 +780,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
                         <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
-                            {/* <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} /> */}
-
                             <Input.TextArea disabled={denyBadgeEdit} autoSize={{ minRows: 2, maxRows: 6 }} />
                         </Form.Item>
                     </div>
@@ -805,7 +802,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             title={
                                 <Row align='middle' gutter={8}>
                                     <Col>
-                                        <WarningIcon />
+                                        <ExclamationCircleOutlined style={{ fontSize: 24, color: 'orange' }} />
                                     </Col>
                                     <Col>{`${isBlocked ? ' Разблокировка Волонтера' : ' Блокировка Волонтера'}`}</Col>
                                 </Row>
@@ -824,14 +821,15 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                     ? `Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать`
                                     : `Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать`}
                             </p>
-                            <Form form={formReason} name='block-form' onFinish={handleToggleBlocked} layout='vertical'>
+                            <Form form={formBlock} name='form-block' onFinish={handleToggleBlocked} layout='vertical'>
                                 <Form.Item
                                     label='Причина блокировки'
                                     name='reason'
                                     rules={[
                                         {
                                             required: true,
-                                            message: 'Укажите причину блокировки'
+                                            message: 'Укажите причину блокировки',
+                                            min: 3
                                         }
                                     ]}
                                 >
