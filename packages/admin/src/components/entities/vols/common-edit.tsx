@@ -394,8 +394,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         ]);
     };
 
-    // код yambikov
-
     const [blockForm] = Form.useForm();
 
     return (
@@ -827,7 +825,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                     rules={[
                                         {
                                             required: true,
-                                            message: isBlocked ? 'Укажите причину разблокировки' : 'Укажите причину блокировки',
+                                            message: isBlocked
+                                                ? 'Укажите причину разблокировки'
+                                                : 'Укажите причину блокировки',
                                             min: 3
                                         }
                                     ]}
