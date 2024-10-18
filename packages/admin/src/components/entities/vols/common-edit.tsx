@@ -292,8 +292,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
         const currentComment = form.getFieldValue('comment') || '';
-        let reason = formBlock.getFieldValue('reason');
-        // form.setFieldsValue({ is_blocked: !isBlocked });
+        let reason = blockForm.getFieldValue('reason');
 
         if (!isBlocked) {
             reason = `Причина блокировки: ${reason}`;
@@ -397,7 +396,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     // код yambikov
 
-    const [formBlock] = Form.useForm();
+    const [blockForm] = Form.useForm();
 
     return (
         <div className={styles.edit}>
@@ -821,14 +820,14 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                     ? `Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать`
                                     : `Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать`}
                             </p>
-                            <Form form={formBlock} name='form-block' onFinish={handleToggleBlocked} layout='vertical'>
+                            <Form form={blockForm} name='form-block' onFinish={handleToggleBlocked} layout='vertical'>
                                 <Form.Item
-                                    label='Причина блокировки'
+                                    label={`${isBlocked ? 'Причина разблокировки' : 'Причина блокировки'}`}
                                     name='reason'
                                     rules={[
                                         {
                                             required: true,
-                                            message: 'Укажите причину блокировки',
+                                            message: isBlocked ? 'Укажите причину разблокировки' : 'Укажите причину блокировки',
                                             min: 3
                                         }
                                     ]}
