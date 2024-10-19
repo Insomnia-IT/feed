@@ -11,16 +11,16 @@ import {
     useForm,
     useTable
 } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useList, useTranslate, useUpdateMany } from '@pankod/refine-core';
-import { DeleteOutlined } from '@ant-design/icons';
 import { Input, Popconfirm } from 'antd';
+import { useList, useUpdateMany } from '@pankod/refine-core';
+import { DeleteOutlined } from '@ant-design/icons';
+import type { IResourceComponentsProps } from '@pankod/refine-core';
 import type { TableRowSelection } from 'antd/es/table/interface';
 
 import 'react-mde/lib/styles/css/react-mde-all.css';
 
-import type { Key } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import type { Key } from 'react';
 
 import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
 
@@ -31,7 +31,6 @@ import { CreateEdit } from './common';
 const { Title } = Typography;
 
 export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
-    const translate = useTranslate();
     const { mutate } = useUpdateMany();
 
     const [volunteers, setVolunteers] = useState<Array<VolEntity & { markedDeleted: boolean; markedAdded: boolean }>>(
@@ -279,9 +278,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                                 recordItemId={record.id}
                             />
                             <Popconfirm
-                                title={translate('buttons.confirm', 'Are you sure?')}
-                                okText={translate('buttons.delete', 'Delete')}
-                                cancelText={translate('buttons.cancel', 'Cancel')}
+                                title={'Уверены?'}
+                                okText={'Удалить'}
+                                cancelText={'Отмена'}
                                 okType='danger'
                                 onConfirm={(): void => {
                                     setVolunteers(

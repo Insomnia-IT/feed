@@ -1,5 +1,5 @@
 import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Typography } from 'antd';
-import { useLogin, useTranslate } from '@pankod/refine-core';
+import { useLogin } from '@pankod/refine-core';
 import React, { useCallback, useEffect, useRef } from 'react';
 import QrScanner from 'qr-scanner';
 
@@ -22,13 +22,11 @@ const rowStyle = {
 
 export const LoginPage: FC = () => {
     const [form] = Form.useForm<ILoginForm>();
-    const translate = useTranslate();
 
     const { isLoading, mutate: login } = useLogin<ILoginForm>();
 
     const CardTitle = (
-        <Title level={1} style={titleStyles}>
-            {/*{translate("pages.login.title", "Sign in your account")}*/}
+        <Title level={3} style={titleStyles}>
             КУХНЯ
         </Title>
     );
@@ -108,14 +106,11 @@ export const LoginPage: FC = () => {
                     <div style={containerStyles}>
                         <div style={imageContainer}>
                             {/* @ts-ignore */}
-                            <img src={logo.src} alt='feed' style={{ height: '56px' }} />
+                            <img src={logo.src} alt='feed' />
                         </div>
                         <Card title={CardTitle} headStyle={{ borderBottom: 0 }}>
                             <div style={{ textAlign: 'center' }}>
-                                <video
-                                    ref={onVideoReady}
-                                    style={{ width: '100%', marginBottom: '24px', borderRadius: '6px' }}
-                                />
+                                <video ref={onVideoReady} style={{ height: '150px' }} />
                             </div>
                             <Form<ILoginForm>
                                 layout='vertical'
@@ -128,35 +123,30 @@ export const LoginPage: FC = () => {
                                     remember: false
                                 }}
                             >
-                                <Form.Item
-                                    name='username'
-                                    label={translate('pages.login.username', 'Username')}
-                                    rules={Rules.required}
-                                    style={{ marginBottom: '18px' }}
-                                >
-                                    <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
+                                <Form.Item name='username' label='Логин' rules={Rules.required}>
+                                    <Input size='large' placeholder='Логин' />
                                 </Form.Item>
                                 <Form.Item
                                     name='password'
-                                    label={translate('pages.login.password', 'Password')}
+                                    label='Пароль'
                                     rules={Rules.required}
                                     style={{ marginBottom: '12px' }}
                                 >
                                     <Input type='password' placeholder='●●●●●●●●' size='large' />
                                 </Form.Item>
-                                <div style={{ marginBottom: '42px' }}>
+                                <div style={{ marginBottom: '12px' }}>
                                     <Form.Item name='remember' valuePropName='checked' noStyle>
                                         <Checkbox
                                             style={{
                                                 fontSize: '12px'
                                             }}
                                         >
-                                            {translate('pages.login.remember', 'Remember me')}
+                                            Запомнить меня
                                         </Checkbox>
                                     </Form.Item>
                                 </div>
                                 <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
-                                    {translate('pages.login.signin', 'Sign in')}
+                                    Войти
                                 </Button>
                             </Form>
                         </Card>
