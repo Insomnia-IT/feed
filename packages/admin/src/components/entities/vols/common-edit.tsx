@@ -292,15 +292,21 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
         const currentComment = form.getFieldValue('comment') || '';
+        const currentDate = new Date();
+        const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}.${String(
+            currentDate.getMonth() + 1
+        ).padStart(2, '0')}.${currentDate.getFullYear()} ${String(currentDate.getHours()).padStart(2, '0')}:${String(
+            currentDate.getMinutes()
+        ).padStart(2, '0')}`;
         let reason = blockForm.getFieldValue('reason');
 
         if (!isBlocked) {
-            reason = `Причина блокировки: ${reason}`;
+            reason = `${formattedDate} Причина блокировки: "${reason}"`;
         } else {
-            reason = `Причина разблокировки: ${reason}`;
+            reason = `${formattedDate} Причина разблокировки: "${reason}"`;
         }
 
-        const updatedComment = `${currentComment}\n${reason}`.trim();
+        const updatedComment = `${reason}\n${currentComment}`.trim();
         form.setFieldsValue({ is_blocked: !isBlocked, comment: updatedComment });
         setOpen(false);
     };
