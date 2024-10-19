@@ -293,9 +293,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         const isBlocked = form.getFieldValue('is_blocked');
         const currentComment = form.getFieldValue('comment') || '';
         const currentDate = new Date();
-        const formattedDate = `${currentDate.toLocaleDateString('ru')} ${currentDate
-            .toLocaleTimeString('ru')
-            .slice(0, 5)}`;
+        const formattedDate = `${currentDate.toLocaleDateString('ru')} ${currentDate.toLocaleTimeString('ru', {
+            timeStyle: 'short'
+        })}`;
         let reason = blockForm.getFieldValue('reason');
 
         if (!isBlocked) {
@@ -805,7 +805,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                     <Col>
                                         <ExclamationCircleOutlined style={{ fontSize: 24, color: 'orange' }} />
                                     </Col>
-                                    <Col>{`${isBlocked ? ' Разблокировка Волонтера' : ' Блокировка Волонтера'}`}</Col>
+                                    <Col>{isBlocked ? 'Разблокировка Волонтера' : 'Блокировка Волонтера'}</Col>
                                 </Row>
                             }
                             closable={true}
