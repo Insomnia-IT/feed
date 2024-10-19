@@ -293,11 +293,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         const isBlocked = form.getFieldValue('is_blocked');
         const currentComment = form.getFieldValue('comment') || '';
         const currentDate = new Date();
-        const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}.${String(
-            currentDate.getMonth() + 1
-        ).padStart(2, '0')}.${currentDate.getFullYear()} ${String(currentDate.getHours()).padStart(2, '0')}:${String(
-            currentDate.getMinutes()
-        ).padStart(2, '0')}`;
+        const formattedDate = `${currentDate.toLocaleDateString('ru')} ${currentDate
+            .toLocaleTimeString('ru')
+            .slice(0, 5)}`;
         let reason = blockForm.getFieldValue('reason');
 
         if (!isBlocked) {
