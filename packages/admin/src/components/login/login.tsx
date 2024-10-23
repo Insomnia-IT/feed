@@ -1,6 +1,6 @@
-import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Typography } from 'antd';
+import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Typography, Segmented } from 'antd';
 import { useLogin, useTranslate } from '@pankod/refine-core';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 
 import { Rules } from '../form/rules';
@@ -20,9 +20,13 @@ const rowStyle = {
     height: '100vh'
 };
 
+type OptionValue = 'qr' | 'login';
+
 export const LoginPage: FC = () => {
     const [form] = Form.useForm<ILoginForm>();
     const translate = useTranslate();
+    const [selectedOption, setSelectedOption] = useState<OptionValue>('qr');
+
 
     const { isLoading, mutate: login } = useLogin<ILoginForm>();
 
@@ -57,7 +61,9 @@ export const LoginPage: FC = () => {
     }, []);
 
     useEffect(() => {
-        if (!video.current) return;
+        if (selectedOption !== 'qr' || !video.current) 
+            return;
+        
 
         const s = new QrScanner(
             video.current,
@@ -80,7 +86,7 @@ export const LoginPage: FC = () => {
         return () => {
             s.destroy();
         };
-    }, [onScan]);
+    }, [onScan, selectedOption]);
 
     const onVideoReady = (ref: HTMLVideoElement) => {
         video.current = ref;
@@ -101,6 +107,53 @@ export const LoginPage: FC = () => {
         };
     }, [onScan]);
 
+    const loginForm = (
+        <Form<ILoginForm>
+            layout='vertical'
+            form={form}
+            onFinish={(values) => login(values)}
+            requiredMark={false}
+            initialValues={{ remember: false }}
+        >
+            <Form.Item
+                name='username'
+                label={translate('pages.login.username', 'Username')}
+                rules={Rules.required}
+                style={{ marginBottom: '18px' }}
+            >
+                <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
+            </Form.Item>
+            <Form.Item
+                name='password'
+                label={translate('pages.login.password', 'Password')}
+                rules={Rules.required}
+                style={{ marginBottom: '12px' }}
+            >
+                <Input type='password' placeholder='●●●●●●●●' size='large' />
+            </Form.Item>
+            <div style={{ marginBottom: '42px' }}>
+                <Form.Item name='remember' valuePropName='checked' noStyle>
+                    <Checkbox style={{ fontSize: '12px' }}>
+                        {translate('pages.login.remember', 'Remember me')}
+                    </Checkbox>
+                </Form.Item>
+            </div>
+            <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
+                {translate('pages.login.signin', 'Sign in')}
+            </Button>
+        </Form>
+    );
+
+    const qrForm = (
+        <div style={{ textAlign: 'center' }}>
+        <video
+            ref={onVideoReady}
+            style={{ width: '100%', marginBottom: '24px', borderRadius: '6px' }}
+        />
+    </div>
+    );
+
+
     return (
         <Layout style={layoutStyles}>
             <Row justify='center' align='middle' style={rowStyle}>
@@ -111,54 +164,29 @@ export const LoginPage: FC = () => {
                             <img src={logo.src} alt='feed' style={{ height: '56px' }} />
                         </div>
                         <Card title={CardTitle} headStyle={{ borderBottom: 0 }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <video
-                                    ref={onVideoReady}
-                                    style={{ width: '100%', marginBottom: '24px', borderRadius: '6px' }}
-                                />
-                            </div>
-                            <Form<ILoginForm>
-                                layout='vertical'
-                                form={form}
-                                onFinish={(values) => {
-                                    login(values);
-                                }}
-                                requiredMark={false}
-                                initialValues={{
-                                    remember: false
-                                }}
-                            >
-                                <Form.Item
-                                    name='username'
-                                    label={translate('pages.login.username', 'Username')}
-                                    rules={Rules.required}
-                                    style={{ marginBottom: '18px' }}
-                                >
-                                    <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
-                                </Form.Item>
-                                <Form.Item
-                                    name='password'
-                                    label={translate('pages.login.password', 'Password')}
-                                    rules={Rules.required}
-                                    style={{ marginBottom: '12px' }}
-                                >
-                                    <Input type='password' placeholder='●●●●●●●●' size='large' />
-                                </Form.Item>
-                                <div style={{ marginBottom: '42px' }}>
-                                    <Form.Item name='remember' valuePropName='checked' noStyle>
-                                        <Checkbox
-                                            style={{
-                                                fontSize: '12px'
-                                            }}
-                                        >
-                                            {translate('pages.login.remember', 'Remember me')}
-                                        </Checkbox>
-                                    </Form.Item>
-                                </div>
-                                <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
-                                    {translate('pages.login.signin', 'Sign in')}
-                                </Button>
-                            </Form>
+                            {selectedOption === 'qr' ? qrForm : loginForm}
+                            <Segmented
+                                options={[
+                                    {
+                                        label: (
+                                            <div style={{ padding: 6 }}>
+                                                <div>QR-код</div>
+                                            </div>
+                                        ),
+                                        value: 'qr'
+                                    },
+                                    {
+                                        label: (
+                                            <div style={{ padding: 6 }}>
+                                                <div>Логин и пароль</div>
+                                            </div>
+                                        ),
+                                        value: 'login'
+                                    }
+                                ]}
+                                block
+                                onChange={(value) => setSelectedOption(value as OptionValue)}
+                            />
                         </Card>
                     </div>
                 </Col>
