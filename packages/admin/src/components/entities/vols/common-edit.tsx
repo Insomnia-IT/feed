@@ -46,6 +46,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' });
+    const canBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
@@ -723,30 +724,34 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 </div>
                 <div id='section5' className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
                     <p className={styles.formSection__title}>Кастомные Поля</p>
-                    {customFields.map(({ id, name, type }) => {
-                        const handleChange = (e) => {
-                            const value = e.target[type === 'boolean' ? 'checked' : 'value'];
-                            form.setFieldValue(['updated_custom_fields', id.toString()], value);
-                        };
-                        const customFieldValues = form.getFieldValue('custom_field_values');
-                        const customFieldValue = customFieldValues?.find(({ custom_field }) => custom_field === id);
-                        return (
-                            <Form.Item key={name} label={name}>
-                                {type === 'boolean' && (
-                                    <Checkbox
-                                        defaultChecked={customFieldValue ? customFieldValue.value === 'true' : false}
-                                        onChange={handleChange}
-                                    />
-                                )}
-                                {type === 'string' && (
-                                    <Input
-                                        defaultValue={customFieldValue ? customFieldValue.value : ''}
-                                        onChange={handleChange}
-                                    />
-                                )}
-                            </Form.Item>
-                        );
-                    })}
+                    {customFields
+                        .filter((item) => item.mobile || canBadgeEdit)
+                        .map(({ id, name, type }) => {
+                            const handleChange = (e) => {
+                                const value = e.target[type === 'boolean' ? 'checked' : 'value'];
+                                form.setFieldValue(['updated_custom_fields', id.toString()], value);
+                            };
+                            const customFieldValues = form.getFieldValue('custom_field_values');
+                            const customFieldValue = customFieldValues?.find(({ custom_field }) => custom_field === id);
+                            return (
+                                <Form.Item key={name} label={name}>
+                                    {type === 'boolean' && (
+                                        <Checkbox
+                                            defaultChecked={
+                                                customFieldValue ? customFieldValue.value === 'true' : false
+                                            }
+                                            onChange={handleChange}
+                                        />
+                                    )}
+                                    {type === 'string' && (
+                                        <Input
+                                            defaultValue={customFieldValue ? customFieldValue.value : ''}
+                                            onChange={handleChange}
+                                        />
+                                    )}
+                                </Form.Item>
+                            );
+                        })}
                 </div>
                 <div id='section6' className={styles.formSection}>
                     <p className={styles.formSection__title}>Дополнительно</p>
