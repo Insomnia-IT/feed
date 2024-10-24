@@ -1,7 +1,22 @@
 # feed monorepo
 
 
-# Установка backend
+# Установка frontend
+
+```bash
+yarn
+```
+
+# Запуск frontend со стейджовым беком (без локального запуска бекенда)
+
+```bash
+cd ./packages/admin
+yarn run dev:stage
+```
+
+# Если нужно локально запустить бек
+
+## Установка backend
 Windows
 ```bash
 cd backend
@@ -18,13 +33,7 @@ python3 -m venv venv
 pip install -r requirements.txt
 ```
 
-# Установка frontend
-
-```bash
-yarn
-```
-
-# Запуск backend
+## Запуск backend
 
 Скопировать файл backend/.env.sample в backend/.env
 
@@ -48,7 +57,7 @@ cd ./backend
 ./manage.py runserver localhost:8000
 ```
 
-# Запуск frontend с локальным беком
+## Запуск frontend с локальным беком
 
 ```bash
 cd ./packages/admin
@@ -60,17 +69,17 @@ cd ./packages/scanner
 yarn run dev
 ```
 
-# Запуск frontend со стейджовым беком
 
-```bash
-cd ./packages/admin
-yarn run dev:stage
-```
-
-## Passwords
+# Passwords
 
 ```bash
 admin / Kolombina25
+```
+
+# Запуск линтера с автофиксом (если линтер упал на PR-е)
+
+```bash
+yarn run lint-fix:js
 ```
 
 # Сборка
@@ -88,7 +97,7 @@ python3 -m venv venv
 python manage.py makemigrations
 ```
 
-## Локальный запуск через докер
+# Локальный запуск через докер
 
 Windows
 ```cmd
