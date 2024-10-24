@@ -1,16 +1,29 @@
 import type { FormInstance } from '@pankod/refine-antd';
-import { Button, Checkbox, DatePicker, DeleteButton, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
+import {
+    Button,
+    Checkbox,
+    Col,
+    DatePicker,
+    DeleteButton,
+    Divider,
+    Form,
+    Input,
+    Modal,
+    Row,
+    Select,
+    useSelect
+} from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import {
     DeleteOutlined,
+    ExclamationCircleOutlined,
     FrownOutlined,
     PlusSquareOutlined,
     RadarChartOutlined,
     SmileOutlined
 } from '@ant-design/icons';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 
 import { Rules } from '~/components/form';
@@ -37,7 +50,6 @@ import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
@@ -279,7 +291,21 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const handleToggleBlocked = () => {
         const isBlocked = form.getFieldValue('is_blocked');
-        form.setFieldsValue({ is_blocked: !isBlocked });
+        const currentComment = form.getFieldValue('comment') || '';
+        const currentDate = new Date();
+        const formattedDate = `${currentDate.toLocaleDateString('ru')} ${currentDate.toLocaleTimeString('ru', {
+            timeStyle: 'short'
+        })}`;
+        let reason = blockForm.getFieldValue('reason');
+
+        if (!isBlocked) {
+            reason = `${formattedDate} Причина блокировки: "${reason}"`;
+        } else {
+            reason = `${formattedDate} Причина разблокировки: "${reason}"`;
+        }
+
+        const updatedComment = `${reason}\n${currentComment}`.trim();
+        form.setFieldsValue({ is_blocked: !isBlocked, comment: updatedComment });
         setOpen(false);
     };
 
@@ -371,6 +397,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
             }
         ]);
     };
+
+    const [blockForm] = Form.useForm();
 
     return (
         <div className={styles.edit}>
@@ -729,8 +757,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             form.setFieldValue(['updated_custom_fields', id.toString()], value);
                         };
                         const customFieldValues = form.getFieldValue('custom_field_values');
-                        if (!customFieldValues) return null;
-                        const customFieldValue = customFieldValues.find(({ custom_field }) => custom_field === id);
+                        const customFieldValue = customFieldValues?.find(({ custom_field }) => custom_field === id);
                         return (
                             <Form.Item key={name} label={name}>
                                 {type === 'boolean' && (
@@ -753,9 +780,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
                         <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
-                            <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
+                            <Input.TextArea disabled={denyBadgeEdit} autoSize={{ minRows: 2, maxRows: 6 }} />
                         </Form.Item>
                     </div>
+                    <Divider />
+
                     <div className={styles.blockDeleteWrap}>
                         {!denyBadgeEdit && (
                             <Button
@@ -768,39 +797,58 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
                             </Button>
                         )}
+
                         <Modal
-                            closable={false}
+                            title={
+                                <Row align='middle' gutter={8}>
+                                    <Col>
+                                        <ExclamationCircleOutlined style={{ fontSize: 24, color: 'orange' }} />
+                                    </Col>
+                                    <Col>{isBlocked ? 'Разблокировка Волонтера' : 'Блокировка Волонтера'}</Col>
+                                </Row>
+                            }
+                            closable={true}
+                            footer={null}
                             centered
                             open={open}
-                            okText={'Оставить'}
                             cancelText={`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-                            onOk={() => setOpen(false)}
-                            onCancel={handleToggleBlocked}
-                            width={420}
-                            footer={null}
+                            okText={'Оставить'}
+                            onOk={handleToggleBlocked}
+                            onCancel={() => setOpen(false)}
                         >
-                            <div className={styles.modalWindow}>
-                                <span className={styles.carefulIcon}>
-                                    <span className={styles.carefulDescr}>!</span>
-                                </span>
-                                <p className={styles.modalTitle}>
-                                    {isBlocked ? 'Разблокировать волонтера?' : 'Заблокировать Волонтера?'}
-                                </p>
-                                <p className={styles.modalDescr}>
-                                    {isBlocked
-                                        ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
-                                        : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
-                                </p>
-                                <div className={styles.modalButtonWrap}>
-                                    <Button className={styles.onCancelButton} onClick={handleToggleBlocked}>
+                            <p>
+                                {isBlocked
+                                    ? `Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать`
+                                    : `Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать`}
+                            </p>
+                            <Form form={blockForm} name='form-block' onFinish={handleToggleBlocked} layout='vertical'>
+                                <Form.Item
+                                    label={`${isBlocked ? 'Причина разблокировки' : 'Причина блокировки'}`}
+                                    name='reason'
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: isBlocked
+                                                ? 'Укажите причину разблокировки'
+                                                : 'Укажите причину блокировки',
+                                            min: 3
+                                        }
+                                    ]}
+                                >
+                                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                                </Form.Item>
+                                <div style={{ textAlign: 'right' }}>
+                                    <Button
+                                        type={`${!isBlocked ? 'default' : 'primary'}`}
+                                        danger={!isBlocked}
+                                        htmlType='submit'
+                                    >
                                         {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
                                     </Button>
-                                    <Button type='primary' onClick={() => setOpen(false)}>
-                                        {'Оставить'}
-                                    </Button>
                                 </div>
-                            </div>
+                            </Form>
                         </Modal>
+
                         {canDelete && (
                             <DeleteButton
                                 type='primary'
@@ -823,6 +871,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         <Form.Item name='person' hidden></Form.Item>
                     </div>
                 </div>
+
                 <div id='section7' className={styles.formSection}>
                     <p className={styles.formSection__title}>Участие во все года</p>
                     <div className={styles.engagementsWrap}>{returnEngagementsLayout()}</div>
