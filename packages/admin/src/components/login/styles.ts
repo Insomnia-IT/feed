@@ -24,3 +24,15 @@ export const imageContainer: CSSProperties = {
     flexDirection: 'column',
     gap: '8px'
 };
+
+export const loginFormStyles: CSSProperties = {
+    minHeight: '390px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
+};
+
+export const qrFormStyles: CSSProperties = {
+    width: '100%',
+    minHeight: '390px'
+};

@@ -3,10 +3,9 @@ import { useLogin, useTranslate } from '@pankod/refine-core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 
-import { Rules } from '../form/rules';
 import logo from '../../../../scanner/src/assets/images/logo.svg';
 
-import { containerStyles, imageContainer, layoutStyles, titleStyles } from './styles';
+import { containerStyles, imageContainer, layoutStyles, loginFormStyles, qrFormStyles, titleStyles } from './styles';
 
 const { Title } = Typography;
 export interface ILoginForm {
@@ -97,7 +96,7 @@ export const LoginPage: FC = () => {
     }, [onScan]);
 
     const loginForm = (
-        <div style={{ minHeight: '390px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={loginFormStyles}>
             <Card>
                 <Form<ILoginForm>
                     layout='vertical'
@@ -131,7 +130,13 @@ export const LoginPage: FC = () => {
         </div>
     );
 
-    const qrForm = <video ref={onVideoReady} style={{ width: '100%', borderRadius: '6px', minHeight: '390px' }} />;
+    const qrForm = <video ref={onVideoReady} style={qrFormStyles} />;
+
+    const renderOptionLabel = (text: string) => (
+        <div style={{ padding: 6 }}>
+            <div>{text}</div>
+        </div>
+    );
 
     return (
         <Layout style={layoutStyles}>
@@ -150,19 +155,11 @@ export const LoginPage: FC = () => {
                             <Segmented
                                 options={[
                                     {
-                                        label: (
-                                            <div style={{ padding: 6 }}>
-                                                <div>Сканировать QR-код</div>
-                                            </div>
-                                        ),
+                                        label: renderOptionLabel('Сканировать QR-код'),
                                         value: 'qr'
                                     },
                                     {
-                                        label: (
-                                            <div style={{ padding: 6 }}>
-                                                <div>Логин и пароль</div>
-                                            </div>
-                                        ),
+                                        label: renderOptionLabel('Логин и пароль'),
                                         value: 'login'
                                     }
                                 ]}
