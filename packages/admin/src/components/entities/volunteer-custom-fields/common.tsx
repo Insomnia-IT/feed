@@ -1,4 +1,4 @@
-import { Form, Input, Select } from '@pankod/refine-antd';
+import { Checkbox, Form, Input, Select } from '@pankod/refine-antd';
 import dynamic from 'next/dynamic';
 
 import { Rules } from '~/components/form/rules';
@@ -25,6 +25,9 @@ export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => (
         </Form.Item>
         <Form.Item label='Комментарий' name='comment'>
             <ReactQuill />
+        </Form.Item>
+        <Form.Item name='mobile' valuePropName='checked'>
+            <Checkbox>Показывать в мобильной админке?</Checkbox>
         </Form.Item>
     </>
 );
