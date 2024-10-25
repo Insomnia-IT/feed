@@ -12,14 +12,27 @@ export const containerStyles: CSSProperties = {
 
 export const titleStyles: CSSProperties = {
     textAlign: 'center',
-    color: '#1E1E1E',
-    paddingTop: '24px',
-    margin: 0
+    margin: 0,
+    color: 'white',
+    fontWeight: 400
 };
 
 export const imageContainer: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '28px'
+    flexDirection: 'column',
+    gap: '8px'
+};
+
+export const loginFormStyles: CSSProperties = {
+    minHeight: '390px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
+};
+
+export const qrFormStyles: CSSProperties = {
+    width: '100%',
+    minHeight: '390px'
 };

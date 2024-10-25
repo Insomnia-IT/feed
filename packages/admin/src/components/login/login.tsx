@@ -1,12 +1,11 @@
-import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Typography } from 'antd';
+import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Space, Typography } from 'antd';
 import { useLogin, useTranslate } from '@pankod/refine-core';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 
-import { Rules } from '../form/rules';
+import logo from '../../../../scanner/src/assets/images/logo.svg';
 
-import { containerStyles, imageContainer, layoutStyles, titleStyles } from './styles';
-import logo from './logo.svg';
+import { containerStyles, imageContainer, layoutStyles, loginFormStyles, qrFormStyles, titleStyles } from './styles';
 
 const { Title } = Typography;
 export interface ILoginForm {
@@ -20,19 +19,14 @@ const rowStyle = {
     height: '100vh'
 };
 
+type OptionValue = 'qr' | 'login';
+
 export const LoginPage: FC = () => {
     const [form] = Form.useForm<ILoginForm>();
     const translate = useTranslate();
+    const [selectedOption, setSelectedOption] = useState<OptionValue>('qr');
 
     const { isLoading, mutate: login } = useLogin<ILoginForm>();
-
-    const CardTitle = (
-        <Title level={1} style={titleStyles}>
-            {/*{translate("pages.login.title", "Sign in your account")}*/}
-            КУХНЯ
-        </Title>
-    );
-
     const scanner = useRef<QrScanner | null>(null);
     const video = useRef<HTMLVideoElement | null>(null);
 
@@ -57,7 +51,7 @@ export const LoginPage: FC = () => {
     }, []);
 
     useEffect(() => {
-        if (!video.current) return;
+        if (selectedOption !== 'qr' || !video.current) return;
 
         const s = new QrScanner(
             video.current,
@@ -80,7 +74,7 @@ export const LoginPage: FC = () => {
         return () => {
             s.destroy();
         };
-    }, [onScan]);
+    }, [onScan, selectedOption]);
 
     const onVideoReady = (ref: HTMLVideoElement) => {
         video.current = ref;
@@ -101,6 +95,49 @@ export const LoginPage: FC = () => {
         };
     }, [onScan]);
 
+    const loginForm = (
+        <div style={loginFormStyles}>
+            <Card>
+                <Form<ILoginForm>
+                    layout='vertical'
+                    form={form}
+                    onFinish={(values) => login(values)}
+                    requiredMark={false}
+                    initialValues={{ remember: false }}
+                >
+                    <Form.Item name='username' rules={[{ required: true, message: 'Пожалуйста, введите логин' }]}>
+                        <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
+                    </Form.Item>
+                    <Form.Item name='password' rules={[{ required: true, message: 'Пожалуйста, введите пароль' }]}>
+                        <Input
+                            type='password'
+                            placeholder={translate('pages.login.password', 'Password')}
+                            size='large'
+                        />
+                    </Form.Item>
+                    <div style={{ marginBottom: '28px' }}>
+                        <Form.Item name='remember' valuePropName='checked' noStyle>
+                            <Checkbox style={{ fontSize: '14px' }}>
+                                {translate('pages.login.remember', 'Remember me')}
+                            </Checkbox>
+                        </Form.Item>
+                    </div>
+                    <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
+                        {translate('pages.login.signin', 'Sign in')}
+                    </Button>
+                </Form>
+            </Card>
+        </div>
+    );
+
+    const qrForm = <video ref={onVideoReady} style={qrFormStyles} />;
+
+    const renderOptionLabel = (text: string) => (
+        <div style={{ padding: 6 }}>
+            <div>{text}</div>
+        </div>
+    );
+
     return (
         <Layout style={layoutStyles}>
             <Row justify='center' align='middle' style={rowStyle}>
@@ -108,58 +145,28 @@ export const LoginPage: FC = () => {
                     <div style={containerStyles}>
                         <div style={imageContainer}>
                             {/* @ts-ignore */}
-                            <img src={logo.src} alt='feed' style={{ height: '56px' }} />
+                            <img src={logo.src} alt='Логотип фестиваля' style={{ height: '44px' }} />
+                            <Title level={4} style={titleStyles}>
+                                Вход в Кормитель
+                            </Title>
                         </div>
-                        <Card title={CardTitle} headStyle={{ borderBottom: 0 }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <video
-                                    ref={onVideoReady}
-                                    style={{ width: '100%', marginBottom: '24px', borderRadius: '6px' }}
-                                />
-                            </div>
-                            <Form<ILoginForm>
-                                layout='vertical'
-                                form={form}
-                                onFinish={(values) => {
-                                    login(values);
-                                }}
-                                requiredMark={false}
-                                initialValues={{
-                                    remember: false
-                                }}
-                            >
-                                <Form.Item
-                                    name='username'
-                                    label={translate('pages.login.username', 'Username')}
-                                    rules={Rules.required}
-                                    style={{ marginBottom: '18px' }}
-                                >
-                                    <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
-                                </Form.Item>
-                                <Form.Item
-                                    name='password'
-                                    label={translate('pages.login.password', 'Password')}
-                                    rules={Rules.required}
-                                    style={{ marginBottom: '12px' }}
-                                >
-                                    <Input type='password' placeholder='●●●●●●●●' size='large' />
-                                </Form.Item>
-                                <div style={{ marginBottom: '42px' }}>
-                                    <Form.Item name='remember' valuePropName='checked' noStyle>
-                                        <Checkbox
-                                            style={{
-                                                fontSize: '12px'
-                                            }}
-                                        >
-                                            {translate('pages.login.remember', 'Remember me')}
-                                        </Checkbox>
-                                    </Form.Item>
-                                </div>
-                                <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
-                                    {translate('pages.login.signin', 'Sign in')}
-                                </Button>
-                            </Form>
-                        </Card>
+                        <Space direction='vertical' size='large' style={{ display: 'flex' }}>
+                            {selectedOption === 'qr' ? qrForm : loginForm}
+                            <Segmented
+                                options={[
+                                    {
+                                        label: renderOptionLabel('Сканировать QR-код'),
+                                        value: 'qr'
+                                    },
+                                    {
+                                        label: renderOptionLabel('Логин и пароль'),
+                                        value: 'login'
+                                    }
+                                ]}
+                                block
+                                onChange={(value) => setSelectedOption(value as OptionValue)}
+                            />
+                        </Space>
                     </div>
                 </Col>
             </Row>
