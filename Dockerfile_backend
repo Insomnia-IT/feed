@@ -1,27 +1,23 @@
 FROM node:18-alpine as base
-
-#TODO review env varables
-
-ARG HOST
-ENV HOST=${HOST}
-
-ARG CI
-ENV CI_ENV=${CI}
-
 WORKDIR /app
 
-EXPOSE 8000
 
-RUN apk add --no-cache nginx python3 py3-pip tzdata curl
-RUN apk add --no-cache icu-dev
-COPY nginx.conf /etc/nginx/nginx.conf
 
-COPY --from=builder /app/entry_backend.sh /app
-
-COPY --from=builder /app/nginx.conf /etc
-COPY --from=builder /app/backend/icu/libSqliteIcu.so /app/backend/icu/
+FROM base as builder
+RUN apk add --no-cache build-base libffi-dev icu-dev sqlite-dev
+COPY ./backend/icu/icu.c /app/backend/icu/
+RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
 RUN ls -1al /app/backend/icu
 
+
+FROM base as runner
+
+RUN apk add --no-cache python3 py3-pip tzdata curl
+RUN apk add --no-cache icu-dev
+
+COPY  ./nginx.conf /etc
+COPY --from=builder /app/backend/icu/libSqliteIcu.so /app/backend/icu/
+RUN ls -1al /app/backend/icu
 
 RUN mkdir backend/logs/ backend/data/
 
@@ -46,6 +42,7 @@ COPY ./backend/create_user.py /app/backend/
 COPY ./backend/cron_tasks /app/cron_tasks
 COPY ./backend/cron_config.py /app/backend/
 COPY ./backend/.env.sample /app/backend/.env
+COPY ./entry_backend.sh /app
 
 ARG SYNC_URL
 ENV SYNCHRONIZATION_URL=${SYNC_URL}
@@ -55,5 +52,7 @@ ENV SYNCHRONIZATION_LOGIN=${SYNC_LOGIN}
 
 ARG SYNC_PASSWORD
 ENV SYNCHRONIZATION_PASSWORD=${SYNC_PASSWORD}
+
+EXPOSE 8000
 
 ENTRYPOINT ["/app/entry_backend.sh"]
