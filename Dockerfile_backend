@@ -1,0 +1,59 @@
+FROM node:18-alpine as base
+
+#TODO review env varables
+
+ARG HOST
+ENV HOST=${HOST}
+
+ARG CI
+ENV CI_ENV=${CI}
+
+WORKDIR /app
+
+EXPOSE 8000
+
+RUN apk add --no-cache nginx python3 py3-pip tzdata curl
+RUN apk add --no-cache icu-dev
+COPY nginx.conf /etc/nginx/nginx.conf
+
+COPY --from=builder /app/entry_backend.sh /app
+
+COPY --from=builder /app/nginx.conf /etc
+COPY --from=builder /app/backend/icu/libSqliteIcu.so /app/backend/icu/
+RUN ls -1al /app/backend/icu
+
+
+RUN mkdir backend/logs/ backend/data/
+
+ENV PYTHONUNBUFFERED 1
+
+ARG ENABLE_SYNC_TO_NOTION
+ENV IS_SYNC_TO_NOTION_ON=${ENABLE_SYNC_TO_NOTION}
+
+COPY ./backend/requirements.txt /app/backend
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd backend && pip install --break-system-packages -r requirements.txt
+
+COPY ./backend/config /app/backend/config
+COPY ./backend/feeder /app/backend/feeder
+COPY ./backend/history /app/backend/history
+COPY ./backend/synchronization /app/backend/synchronization
+COPY ./backend/initial /app/backend/initial
+COPY ./backend/.gitignore /app/backend/
+COPY ./backend/manage.py /app/backend/
+COPY ./backend/create_user.py /app/backend/
+COPY ./backend/cron_tasks /app/cron_tasks
+COPY ./backend/cron_config.py /app/backend/
+COPY ./backend/.env.sample /app/backend/.env
+
+ARG SYNC_URL
+ENV SYNCHRONIZATION_URL=${SYNC_URL}
+
+ARG SYNC_LOGIN
+ENV SYNCHRONIZATION_LOGIN=${SYNC_LOGIN}
+
+ARG SYNC_PASSWORD
+ENV SYNCHRONIZATION_PASSWORD=${SYNC_PASSWORD}
+
+ENTRYPOINT ["/app/entry_backend.sh"]

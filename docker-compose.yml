@@ -1,0 +1,36 @@
+version: '3.5'
+name: feed
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile_backend
+    # command: bash -c "python manage.py migrate && python manage.py shell < ./create_user.py && python manage.py loaddata colors feed_types kitchens access_roles volunteer_roles engagement_roles transports departments genders statuses direction_types && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    container_name: feed_backend
+    ports:
+      - 8000:8000
+    # env_file:
+    #   - ../backend/.env.sample
+    volumes:
+      - ../db/:/db
+  # admin:
+  #   build:
+  #     context: ../
+  #     dockerfile: ./local-dev/Dockerfile_front
+  #   command: sh -c "cd ./packages/admin && yarn dev"
+  #   container_name: feed_admin
+  #   ports:
+  #     - 3002:3002
+  #   volumes:
+  #     - ../packages/admin/:/app/packages/admin
+  # scanner:
+  #   build:
+  #     context: ../
+  #     dockerfile: ./local-dev/Dockerfile_front
+  #   command: sh -c "cd ./packages/scanner && yarn dev"
+  #   container_name: feed_scanner
+  #   ports:
+  #     - 3001:3001
+  #   volumes:
+  #     - ../packages/scanner/:/app/packages/scanner
