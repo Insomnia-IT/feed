@@ -1,5 +1,5 @@
 import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Space, Typography } from 'antd';
-import { useLogin, useTranslate } from '@pankod/refine-core';
+import { useLogin } from '@pankod/refine-core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 
@@ -23,7 +23,6 @@ type OptionValue = 'qr' | 'login';
 
 export const LoginPage: FC = () => {
     const [form] = Form.useForm<ILoginForm>();
-    const translate = useTranslate();
     const [selectedOption, setSelectedOption] = useState<OptionValue>('qr');
 
     const { isLoading, mutate: login } = useLogin<ILoginForm>();
@@ -106,24 +105,18 @@ export const LoginPage: FC = () => {
                     initialValues={{ remember: false }}
                 >
                     <Form.Item name='username' rules={[{ required: true, message: 'Пожалуйста, введите логин' }]}>
-                        <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
+                        <Input size='large' placeholder='Логин' />
                     </Form.Item>
                     <Form.Item name='password' rules={[{ required: true, message: 'Пожалуйста, введите пароль' }]}>
-                        <Input
-                            type='password'
-                            placeholder={translate('pages.login.password', 'Password')}
-                            size='large'
-                        />
+                        <Input type='password' placeholder='Пароль' size='large' />
                     </Form.Item>
                     <div style={{ marginBottom: '28px' }}>
                         <Form.Item name='remember' valuePropName='checked' noStyle>
-                            <Checkbox style={{ fontSize: '14px' }}>
-                                {translate('pages.login.remember', 'Remember me')}
-                            </Checkbox>
+                            <Checkbox style={{ fontSize: '14px' }}>Запомнить меня</Checkbox>
                         </Form.Item>
                     </div>
                     <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
-                        {translate('pages.login.signin', 'Sign in')}
+                        Войти
                     </Button>
                 </Form>
             </Card>
