@@ -791,17 +791,15 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <Divider />
 
                     <div className={styles.blockDeleteWrap}>
-                        {!denyBadgeEdit && (
-                            <Button
-                                className={styles.blockButton}
-                                type='default'
-                                onClick={() => setOpen(true)}
-                                disabled={isBlocked ? !canUnban : false}
-                            >
-                                {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
-                                {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
-                            </Button>
-                        )}
+                        <Button
+                            className={styles.blockButton}
+                            type='default'
+                            onClick={() => setOpen(true)}
+                            disabled={isBlocked ? !canUnban : false}
+                        >
+                            {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
+                            {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
+                        </Button>
 
                         <Modal
                             title={
