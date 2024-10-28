@@ -53,7 +53,6 @@ export const ACL = {
                         can = role !== AppRoles.DIRECTION_HEAD;
                         break;
                     case 'feed_type_edit':
-                    case 'ban':
                     case 'unban':
                         can = role !== AppRoles.CAT;
                         break;
