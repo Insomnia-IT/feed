@@ -59,7 +59,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' });
     const canBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
-    const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
+    const canBanUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
     const person = Form.useWatch('person');
@@ -791,13 +791,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <Divider />
 
                     <div className={styles.blockDeleteWrap}>
-                        {!denyBadgeEdit && (
-                            <Button
-                                className={styles.blockButton}
-                                type='default'
-                                onClick={() => setOpen(true)}
-                                disabled={isBlocked ? !canUnban : false}
-                            >
+                        {canBanUnban && (
+                            <Button className={styles.blockButton} type='default' onClick={() => setOpen(true)}>
                                 {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
                                 {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
                             </Button>
