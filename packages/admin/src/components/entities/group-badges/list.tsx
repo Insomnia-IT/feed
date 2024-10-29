@@ -8,6 +8,11 @@ import { getSorter } from '~/utils';
 
 import useVisibleDirections from '../vols/use-visible-directions';
 
+interface GroupBadgeEntityExtended extends GroupBadgeEntity {
+    // Количество волонтеров в бейдже
+    volunteersCount: number;
+}
+
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
     const { data: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges'
@@ -15,13 +20,14 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
 
     const visibleDirections = useVisibleDirections();
 
-    const data = groupBadges?.data.filter((item) => {
-        return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
-    });
+    const data =
+        groupBadges?.data.filter((item) => {
+            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
+        }) ?? [];
 
     const badgesIds = data?.map((badge) => badge.id) ?? [];
 
-    const volunteers = useList<VolEntity>({
+    const { data: volunteers } = useList<VolEntity>({
         resource: 'volunteers',
         config: {
             pagination: {
@@ -38,6 +44,12 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
     });
 
     const { isDesktop } = useMedia();
+
+    const mappedData = data.map<GroupBadgeEntityExtended>((item) => {
+        const volunteersCount = volunteers?.data?.filter((volunteer) => volunteer.group_badge === item.id)?.length ?? 0;
+
+        return { ...item, volunteersCount };
+    });
 
     return (
         <List>
@@ -66,16 +78,11 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
                     title='Служба/Направление'
                     render={renderText}
                 />
-                <Table.Column<GroupBadgeEntity>
-                    dataIndex='amount'
-                    key='amount'
+                <Table.Column
+                    dataIndex='volunteersCount'
+                    key='volunteersCount'
                     title='Количество волонтеров'
-                    render={(_value, record) => {
-                        return (
-                            volunteers?.data?.data?.filter((volunteer) => volunteer.group_badge === record.id)
-                                ?.length ?? '-'
-                        );
-                    }}
+                    render={renderText}
                 />
                 {isDesktop && (
                     <Table.Column
