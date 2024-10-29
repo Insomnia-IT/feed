@@ -188,7 +188,8 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
     return (
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
-                <CreateEdit volunteersCount={volunteers?.length} />
+                <CreateEdit />
+                Количестиво волонтеров: {volunteers?.length}
             </Form>
             <Title level={5}>Волонтеры</Title>
             <Button onClick={() => setOpen(true)} style={{ marginBottom: 20 }}>
