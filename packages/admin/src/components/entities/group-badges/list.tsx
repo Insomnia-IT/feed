@@ -1,17 +1,8 @@
-import {
-    DeleteButton,
-    EditButton,
-    getDefaultSortOrder,
-    List,
-    ShowButton,
-    Space,
-    Table,
-    useTable
-} from '@pankod/refine-antd';
+import { DeleteButton, EditButton, List, Space, Table } from '@pankod/refine-antd';
 import { type IResourceComponentsProps, useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
-import type { GroupBadgeEntity } from '~/interfaces';
+import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
 import { useMedia } from '~/shared/providers';
 import { getSorter } from '~/utils';
 
@@ -31,6 +22,24 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
 
     const data = groupBadges?.data.filter((item) => {
         return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
+    });
+
+    const badgesIds = data?.map((badge) => badge.id) ?? [];
+
+    const volunteers = useList<VolEntity>({
+        resource: 'volunteers',
+        config: {
+            pagination: {
+                pageSize: 10000
+            },
+            filters: [
+                {
+                    field: 'group_badge',
+                    operator: 'in',
+                    value: badgesIds
+                }
+            ]
+        }
     });
 
     const { isDesktop } = useMedia();
@@ -61,6 +70,17 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
                     key='direction'
                     title='Служба/Направление'
                     render={renderText}
+                />
+                <Table.Column<GroupBadgeEntity>
+                    dataIndex='amount'
+                    key='amount'
+                    title='Количество волонтеров'
+                    render={(_value, record) => {
+                        return (
+                            volunteers?.data?.data?.filter((volunteer) => volunteer.group_badge === record.id)
+                                ?.length ?? '-'
+                        );
+                    }}
                 />
                 {isDesktop && (
                     <Table.Column

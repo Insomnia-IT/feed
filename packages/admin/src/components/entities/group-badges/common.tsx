@@ -8,7 +8,7 @@ import useVisibleDirections from '../vols/use-visible-directions';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
-export const CreateEdit: FC = () => {
+export const CreateEdit: FC<{ volunteersCount: number }> = ({ volunteersCount }) => {
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name'
@@ -33,6 +33,7 @@ export const CreateEdit: FC = () => {
             <Form.Item label='Комментарий' name='comment'>
                 <ReactQuill />
             </Form.Item>
+            Количестиво волонтеров: {volunteersCount}
         </>
     );
 };
