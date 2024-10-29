@@ -103,7 +103,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         [currentVols.dataSource]
     );
 
-    const addVolunteers = () => {
+    const addVolunteers = (): void => {
         //если волонтер уже был в списке, но помечен на удаление, убираем флаг удаления
         const volsCache = volunteers.map((item) => ({
             ...item,
@@ -129,7 +129,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         return volunteers.filter((vol) => !vol.markedDeleted);
     }, [volunteers]);
 
-    const handleChangeInputValue = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleChangeInputValue = (e: ChangeEvent<HTMLInputElement>): void => {
         const value = e.target.value;
         setFilters([
             {
@@ -190,7 +190,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
     return (
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
-                <CreateEdit />
+                <CreateEdit volunteersCount={volunteers?.length} />
             </Form>
             <Title level={5}>Волонтеры</Title>
             <Button onClick={() => setOpen(true)} style={{ marginBottom: 20 }}>
