@@ -83,7 +83,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                 field: 'id',
                 order: 'desc'
             }
-        ]
+        ],
+        hasPagination: false,
+        initialPageSize: 10000
     });
 
     const visibleDirections = useVisibleDirections();
