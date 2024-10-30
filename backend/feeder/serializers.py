@@ -143,7 +143,10 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     direction = DirectionSerializer(required=False)
-    
+    volunteer_count = serializers.IntegerField(
+        source='volunteers.count', 
+        read_only=True
+    )
 
     class Meta:
         model = models.GroupBadge
