@@ -8,11 +8,11 @@ interface IProps {
     isBlocked: boolean;
     onCancel: () => void;
     onSuccess: (updatedData: any) => void;
-    volunteerId: string | number;
     visible: boolean;
+    volunteerId: string | number;
 }
 
-const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuccess, volunteerId, visible }) => {
+const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuccess, visible, volunteerId }) => {
     const [form] = Form.useForm();
 
     const handleFinish = async (): Promise<void> => {
