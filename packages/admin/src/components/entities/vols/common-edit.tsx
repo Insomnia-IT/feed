@@ -252,7 +252,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     }, []);
 
     const [activeAnchor, setActiveAnchor] = useState('section1');
+    const volunteerId = form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);
+    const currentComment = form.getFieldValue('comment') || '';
     const [isBanModalVisible, setBanModalVisible] = useState(false);
     const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
     const router = useRouter();
@@ -282,39 +284,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         form.setFieldValue('updated_arrivals', updatedArrivals);
     }, [updatedArrivals, form]);
 
-    const handleToggleBlocked = async (reason: string) => {
-        const currentIsBlocked = form.getFieldValue('is_blocked');
-        const currentComment = form.getFieldValue('comment') || '';
-        const currentDate = new Date();
-        const formattedDate = `${currentDate.toLocaleDateString('ru')} ${currentDate.toLocaleTimeString('ru', {
-            timeStyle: 'short'
-        })}`;
-
-        const action = currentIsBlocked ? 'разблокировки' : 'блокировки';
-        const updatedReason = `${formattedDate} Причина ${action}: "${reason}"`;
-        const updatedComment = `${updatedReason}\n${currentComment}`.trim();
-
-        const updatedData = {
-            ...form.getFieldsValue(),
-            is_blocked: !currentIsBlocked,
-            comment: updatedComment
-        };
-
-        const volunteerId = form.getFieldValue('id');
-
-        try {
-            await dataProvider.update({
-                id: volunteerId,
-                resource: 'volunteers',
-                variables: updatedData
-            });
-            form.setFieldsValue({ is_blocked: !currentIsBlocked, comment: updatedComment });
-        } catch (error) {
-            notification.error({
-                message: 'Ошибка при обновлении волонтёра'
-            });
-        }
-
+    const handleBanSuccess = (updatedData) => {
+        form.setFieldsValue(updatedData);
         setBanModalVisible(false);
     };
 
@@ -808,7 +779,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             isBlocked={isBlocked}
                             visible={isBanModalVisible}
                             onCancel={() => setBanModalVisible(false)}
-                            onSubmit={handleToggleBlocked}
+                            volunteerId={volunteerId}
+                            currentComment={currentComment}
+                            onSuccess={handleBanSuccess}
                         />
 
                         {canDelete && (

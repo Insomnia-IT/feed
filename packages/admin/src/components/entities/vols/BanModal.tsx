@@ -1,21 +1,61 @@
-import { Modal, Form, Input, Button, Row, Col } from '@pankod/refine-antd';
+import { Modal, Form, Input, Button, Row, Col, notification } from '@pankod/refine-antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { dataProvider } from '~/dataProvider';
 
-interface IProps {
+interface BanModalProps {
     isBlocked: boolean;
     visible: boolean;
     onCancel: () => void;
-    onSubmit: (reason: string) => void;
+    volunteerId: string | number;
+    currentComment: string;
+    onSuccess: (updatedData: any) => void;
 }
 
-const BanModal: React.FC<IProps> = ({ isBlocked, visible, onCancel, onSubmit }) => {
+const BanModal: React.FC<BanModalProps> = ({
+    isBlocked,
+    visible,
+    onCancel,
+    volunteerId,
+    currentComment,
+    onSuccess
+}) => {
     const [form] = Form.useForm();
 
-    const handleFinish = () => {
-        form.validateFields().then((values) => {
-            onSubmit(values.reason);
+    const handleFinish = async () => {
+        try {
+            const values = await form.validateFields();
+            const reason = values.reason;
+            const currentDate = new Date();
+            const formattedDate = `${currentDate.toLocaleDateString('ru')} ${currentDate.toLocaleTimeString('ru', {
+                timeStyle: 'short'
+            })}`;
+
+            const action = isBlocked ? 'разблокировки' : 'блокировки';
+            const updatedReason = `${formattedDate} Причина ${action}: "${reason}"`;
+            const updatedComment = `${updatedReason}\n${currentComment}`.trim();
+
+            const updatedData = {
+                is_blocked: !isBlocked,
+                comment: updatedComment
+            };
+
+            await dataProvider.update({
+                id: volunteerId,
+                resource: 'volunteers',
+                variables: updatedData
+            });
+
+            notification.success({
+                message: `Волонтёр ${!isBlocked ? 'заблокирован' : 'разблокирован'} успешно`
+            });
+
+            onSuccess(updatedData);
             form.resetFields();
-        });
+        } catch (error) {
+            notification.error({
+                message: 'Ошибка при обновлении волонтёра'
+            });
+        }
     };
 
     return (
@@ -32,9 +72,6 @@ const BanModal: React.FC<IProps> = ({ isBlocked, visible, onCancel, onSubmit }) 
             footer={null}
             centered
             open={visible}
-            cancelText={`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-            okText={'Оставить'}
-            onOk={handleFinish}
             onCancel={onCancel}
         >
             <p>
