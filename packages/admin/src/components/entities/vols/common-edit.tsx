@@ -8,7 +8,6 @@ import {
     Form,
     Input,
     Modal,
-    notification,
     Select,
     useSelect
 } from '@pankod/refine-antd';

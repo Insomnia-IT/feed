@@ -1,5 +1,6 @@
 import { Modal, Form, Input, Button, Row, Col, notification } from '@pankod/refine-antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+
 import { dataProvider } from '~/dataProvider';
 
 interface BanModalProps {
