@@ -1,6 +1,4 @@
-
 import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Typography } from 'antd';
-
 import { useLogin } from '@pankod/refine-core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
@@ -8,13 +6,13 @@ import QrScanner from 'qr-scanner';
 import logo from '../../../../scanner/src/assets/images/logo.svg';
 
 import {
+    authContainerStyles,
     containerStyles,
     imageContainer,
     layoutStyles,
     loginFormStyles,
     qrFormStyles,
-    titleStyles,
-    authContainerStyles
+    titleStyles
 } from './styles';
 
 const { Title } = Typography;
