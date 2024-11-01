@@ -40,11 +40,11 @@ import type {
 } from '~/interfaces';
 import { formDateFormat, isActivatedStatus } from '~/shared/lib';
 import { dataProvider } from '~/dataProvider';
-import useCanAccess from './use-can-access';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-import BanModal from './ban-modal';
 
+import useCanAccess from './use-can-access';
+import BanModal from './ban-modal';
 import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
 
@@ -723,7 +723,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                     </div>
                 </div>
-                <div id='section5' className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
+                <div id='section5' className={styles.formSection}>
                     <p className={styles.formSection__title}>Кастомные Поля</p>
                     {customFields
                         .filter((item) => item.mobile || canBadgeEdit)
