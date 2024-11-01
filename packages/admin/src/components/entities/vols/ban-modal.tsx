@@ -75,7 +75,14 @@ const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuc
                     ? `Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать`
                     : `Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать`}
             </p>
-            <Form form={form} name='form-block' onFinish={handleFinish} layout='vertical'>
+            <Form
+                form={form}
+                name='form-block'
+                onFinish={() => {
+                    void handleFinish();
+                }}
+                layout='vertical'
+            >
                 <Form.Item
                     label={`${isBlocked ? 'Причина разблокировки' : 'Причина блокировки'}`}
                     name='reason'
