@@ -1,21 +1,21 @@
-import { Modal, Form, Input, Button, Row, Col, notification } from '@pankod/refine-antd';
+import { Button, Col, Form, Input, Modal, notification, Row } from '@pankod/refine-antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 import { dataProvider } from '~/dataProvider';
 
 interface IProps {
-    isBlocked: boolean;
-    visible: boolean;
-    onCancel: () => void;
-    volunteerId: string | number;
     currentComment: string;
+    isBlocked: boolean;
+    onCancel: () => void;
     onSuccess: (updatedData: any) => void;
+    volunteerId: string | number;
+    visible: boolean;
 }
 
-const BanModal: React.FC<IProps> = ({ isBlocked, visible, onCancel, volunteerId, currentComment, onSuccess }) => {
+const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuccess, volunteerId, visible }) => {
     const [form] = Form.useForm();
 
-    const handleFinish = async () => {
+    const handleFinish = async (): Promise<void> => {
         try {
             const values = await form.validateFields();
             const reason = values.reason;
