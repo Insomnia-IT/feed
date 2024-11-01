@@ -43,7 +43,7 @@ import { dataProvider } from '~/dataProvider';
 import useCanAccess from './use-can-access';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-import BanModal from './BanModal';
+import BanModal from './ban-modal';
 
 import styles from './common.module.css';
 import 'react-quill/dist/quill.snow.css';
