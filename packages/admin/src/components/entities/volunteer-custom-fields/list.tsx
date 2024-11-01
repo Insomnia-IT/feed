@@ -48,6 +48,13 @@ export const VolunteerCustomFieldList: FC<IResourceComponentsProps> = () => {
                     title='Комментарий'
                     render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
                 />
+                <Table.Column
+                    dataIndex='mobile'
+                    key='mobile'
+                    sorter={getSorter('mobile')}
+                    title='Отображать в мобильной админке'
+                    render={(value) => <p> {value ? 'Да' : 'Нет'}</p>}
+                />
                 <Table.Column<VolunteerCustomFieldEntity>
                     title='Действия'
                     dataIndex='actions'
