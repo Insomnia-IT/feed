@@ -7,12 +7,15 @@ export const layoutStyles: CSSProperties = {
 
 export const containerStyles: CSSProperties = {
     maxWidth: '408px',
-    margin: 'auto'
+    margin: 'auto',
+    display: 'flex',
+    gap: '14px',
+    flexDirection: 'column'
 };
 
 export const titleStyles: CSSProperties = {
     textAlign: 'center',
-    margin: 0,
+    margin: '0',
     color: 'white',
     fontWeight: 400
 };
@@ -26,7 +29,7 @@ export const imageContainer: CSSProperties = {
 };
 
 export const loginFormStyles: CSSProperties = {
-    minHeight: '390px',
+    minHeight: '360px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center'
@@ -34,5 +37,13 @@ export const loginFormStyles: CSSProperties = {
 
 export const qrFormStyles: CSSProperties = {
     width: '100%',
-    minHeight: '390px'
+    height: '100%',
+    objectFit: 'cover',
+    borderRadius: '6px'
+};
+
+export const authContainerStyles: CSSProperties = {
+    width: '90%',
+    margin: 'auto',
+    padding: '14px'
 };

@@ -1,11 +1,19 @@
-import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Space, Typography } from 'antd';
+import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Typography } from 'antd';
 import { useLogin } from '@pankod/refine-core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 
 import logo from '../../../../scanner/src/assets/images/logo.svg';
 
-import { containerStyles, imageContainer, layoutStyles, loginFormStyles, qrFormStyles, titleStyles } from './styles';
+import {
+    authContainerStyles,
+    containerStyles,
+    imageContainer,
+    layoutStyles,
+    loginFormStyles,
+    qrFormStyles,
+    titleStyles
+} from './styles';
 
 const { Title } = Typography;
 export interface ILoginForm {
@@ -123,44 +131,49 @@ export const LoginPage: FC = () => {
         </div>
     );
 
-    const qrForm = <video ref={onVideoReady} style={qrFormStyles} />;
-
-    const renderOptionLabel = (text: string) => (
-        <div style={{ padding: 6 }}>
-            <div>{text}</div>
+    const qrForm = (
+        <div style={authContainerStyles}>
+            <video ref={onVideoReady} style={qrFormStyles} />
         </div>
     );
+
+    function renderOptionLabel(text: string) {
+        return (
+            <div style={{ padding: 6 }}>
+                <div>{text}</div>
+            </div>
+        );
+    }
 
     return (
         <Layout style={layoutStyles}>
             <Row justify='center' align='middle' style={rowStyle}>
-                <Col xs={22}>
-                    <div style={containerStyles}>
-                        <div style={imageContainer}>
-                            {/* @ts-ignore */}
-                            <img src={logo.src} alt='Логотип фестиваля' style={{ height: '44px' }} />
-                            <Title level={4} style={titleStyles}>
-                                Вход в Кормитель
-                            </Title>
-                        </div>
-                        <Space direction='vertical' size='large' style={{ display: 'flex' }}>
-                            {selectedOption === 'qr' ? qrForm : loginForm}
-                            <Segmented
-                                options={[
-                                    {
-                                        label: renderOptionLabel('Сканировать QR-код'),
-                                        value: 'qr'
-                                    },
-                                    {
-                                        label: renderOptionLabel('Логин и пароль'),
-                                        value: 'login'
-                                    }
-                                ]}
-                                block
-                                onChange={(value) => setSelectedOption(value as OptionValue)}
-                            />
-                        </Space>
+                <Col xs={22} style={containerStyles}>
+                    <div style={imageContainer}>
+                        {/* @ts-ignore */}
+                        <img src={logo.src} alt='Логотип фестиваля' style={{ height: '44px' }} />
+                        <Title level={4} style={titleStyles}>
+                            Вход в Кормитель
+                        </Title>
                     </div>
+
+                    {selectedOption === 'qr' ? qrForm : loginForm}
+
+                    <Segmented
+                        options={[
+                            {
+                                label: renderOptionLabel('Сканировать QR-код'),
+                                value: 'qr'
+                            },
+                            {
+                                label: renderOptionLabel('Логин и пароль'),
+                                value: 'login'
+                            }
+                        ]}
+                        block
+                        onChange={(value) => setSelectedOption(value as OptionValue)}
+                        style={{ marginTop: '14px' }}
+                    />
                 </Col>
             </Row>
         </Layout>
