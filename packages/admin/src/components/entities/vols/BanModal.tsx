@@ -3,7 +3,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 import { dataProvider } from '~/dataProvider';
 
-interface BanModalProps {
+interface IProps {
     isBlocked: boolean;
     visible: boolean;
     onCancel: () => void;
@@ -12,14 +12,7 @@ interface BanModalProps {
     onSuccess: (updatedData: any) => void;
 }
 
-const BanModal: React.FC<BanModalProps> = ({
-    isBlocked,
-    visible,
-    onCancel,
-    volunteerId,
-    currentComment,
-    onSuccess
-}) => {
+const BanModal: React.FC<IProps> = ({ isBlocked, visible, onCancel, volunteerId, currentComment, onSuccess }) => {
     const [form] = Form.useForm();
 
     const handleFinish = async () => {
