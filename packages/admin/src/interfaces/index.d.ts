@@ -76,6 +76,8 @@ export interface GroupBadgeEntity {
     direction?: DirectionEntity;
     name: string;
     comment?: string;
+    /* Количество волонтеров в бейдже */
+    volunteer_count: number;
 }
 
 export interface VolunteerCustomFieldEntity {
