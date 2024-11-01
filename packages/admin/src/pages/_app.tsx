@@ -17,7 +17,6 @@ import { DepartmentCreate, DepartmentList, DirectionEdit, DirectionShow } from '
 import { GroupBadgeCreate, GroupBadgeEdit, GroupBadgeList, GroupBadgeShow } from '~/components/entities/group-badges';
 import { Sync } from '~/components/sync';
 import { Scanner } from '~/components/scanner';
-// import { LocationCreate, LocationEdit, LocationList, LocationShow } from '~/components/entities/locations';
 import { VolCreate, VolEdit, VolList, VolShow } from '~/components/entities/vols';
 import { FeedTransactionCreate, FeedTransactionList } from '~/components/entities/feed-transaction';
 import { ACL } from '~/acl';
@@ -38,7 +37,18 @@ import {
 } from '~/components/entities/volunteer-custom-fields';
 
 // eslint-disable-next-line no-restricted-imports
+import { MediaProvider, useMedia } from '~/shared/providers';
+
 import { i18n } from '../../next-i18next.config.mjs';
+
+const CustomLayout = ({ children, ...props }: { children?: any }) => {
+    const { isMobile } = useMedia();
+    return (
+        <Layout {...props}>
+            <div style={{ paddingBottom: isMobile ? 60 : undefined }}>{children}</div>
+        </Layout>
+    );
+};
 
 const CustomReadyPage: FC = () => <div> Custom Ready Page </div>;
 
@@ -64,81 +74,83 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
 
     return (
         <ConfigProvider locale={antdLocale}>
-            <Refine
-                routerProvider={routerProvider}
-                DashboardPage={Dashboard}
-                ReadyPage={CustomReadyPage}
-                notificationProvider={notificationProvider}
-                catchAll={<ErrorComponent />}
-                Layout={Layout}
-                dataProvider={dataProvider}
-                i18nProvider={i18nProvider}
-                authProvider={authProvider}
-                LoginPage={LoginPage}
-                Sider={CustomSider}
-                accessControlProvider={ACL}
-                options={{ syncWithLocation: true, disableTelemetry: true }}
-                resources={[
-                    {
-                        name: 'volunteers',
-                        list: VolList,
-                        create: VolCreate,
-                        edit: VolEdit,
-                        show: VolShow,
-                        icon: <Icons.UserOutlined />
-                    },
-                    {
-                        name: 'volunteer-custom-fields',
-                        list: VolunteerCustomFieldList,
-                        create: VolunteerCustomFieldCreate,
-                        edit: VolunteerCustomFieldEdit,
-                        show: VolunteerCustomFieldShow,
-                        icon: <Icons.InsertRowRightOutlined />,
-                        options: {
-                            hide: true
+            <MediaProvider>
+                <Refine
+                    routerProvider={routerProvider}
+                    DashboardPage={Dashboard}
+                    ReadyPage={CustomReadyPage}
+                    notificationProvider={notificationProvider}
+                    catchAll={<ErrorComponent />}
+                    Layout={CustomLayout}
+                    dataProvider={dataProvider}
+                    i18nProvider={i18nProvider}
+                    authProvider={authProvider}
+                    LoginPage={LoginPage}
+                    Sider={CustomSider}
+                    accessControlProvider={ACL}
+                    options={{ syncWithLocation: true, disableTelemetry: true }}
+                    resources={[
+                        {
+                            name: 'volunteers',
+                            list: VolList,
+                            create: VolCreate,
+                            edit: VolEdit,
+                            show: VolShow,
+                            icon: <Icons.UserOutlined />
+                        },
+                        {
+                            name: 'volunteer-custom-fields',
+                            list: VolunteerCustomFieldList,
+                            create: VolunteerCustomFieldCreate,
+                            edit: VolunteerCustomFieldEdit,
+                            show: VolunteerCustomFieldShow,
+                            icon: <Icons.InsertRowRightOutlined />,
+                            options: {
+                                hide: true
+                            }
+                        },
+                        {
+                            name: 'directions',
+                            list: DepartmentList,
+                            create: DepartmentCreate,
+                            edit: DirectionEdit,
+                            show: DirectionShow,
+                            icon: <Icons.FormatPainterOutlined />
+                        },
+                        {
+                            name: 'group-badges',
+                            list: GroupBadgeList,
+                            create: GroupBadgeCreate,
+                            edit: GroupBadgeEdit,
+                            show: GroupBadgeShow,
+                            icon: <Icons.ProfileOutlined />
+                        },
+                        {
+                            name: 'feed-transaction',
+                            list: FeedTransactionList,
+                            create: FeedTransactionCreate,
+                            icon: <Icons.HistoryOutlined />
+                        },
+                        {
+                            name: 'stats',
+                            list: PublicStatistic,
+                            icon: <Icons.LineChartOutlined />
+                        },
+                        {
+                            name: 'scanner-page',
+                            list: Scanner,
+                            icon: <Icons.MobileOutlined />
+                        },
+                        {
+                            name: 'sync',
+                            list: Sync,
+                            icon: <Icons.SyncOutlined />
                         }
-                    },
-                    {
-                        name: 'directions',
-                        list: DepartmentList,
-                        create: DepartmentCreate,
-                        edit: DirectionEdit,
-                        show: DirectionShow,
-                        icon: <Icons.FormatPainterOutlined />
-                    },
-                    {
-                        name: 'group-badges',
-                        list: GroupBadgeList,
-                        create: GroupBadgeCreate,
-                        edit: GroupBadgeEdit,
-                        show: GroupBadgeShow,
-                        icon: <Icons.ProfileOutlined />
-                    },
-                    {
-                        name: 'feed-transaction',
-                        list: FeedTransactionList,
-                        create: FeedTransactionCreate,
-                        icon: <Icons.HistoryOutlined />
-                    },
-                    {
-                        name: 'stats',
-                        list: PublicStatistic,
-                        icon: <Icons.LineChartOutlined />
-                    },
-                    {
-                        name: 'scanner-page',
-                        list: Scanner,
-                        icon: <Icons.MobileOutlined />
-                    },
-                    {
-                        name: 'sync',
-                        list: Sync,
-                        icon: <Icons.SyncOutlined />
-                    }
-                ]}
-            >
-                <Component {...pageProps} />
-            </Refine>
+                    ]}
+                >
+                    <Component {...pageProps} />
+                </Refine>
+            </MediaProvider>
         </ConfigProvider>
     );
 };

@@ -20,13 +20,12 @@ ac
     .read(['volunteer-custom-fields'])
     .create(['group-badges', 'volunteer-custom-fields'])
     .update(['volunteer-custom-fields'])
-    .delete(['volunteers'])
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
-    .create(['directions', 'group-badges', 'volunteer-custom-fields', 'feed-transaction'])
-    .update(['directions', 'group-badges', 'volunteer-custom-fields'])
-    .delete(['directions', 'group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
+    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction'])
+    .update(['group-badges', 'volunteer-custom-fields'])
+    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
 
 export const ACL = {
     can: async ({ action, resource }) => {
@@ -53,7 +52,11 @@ export const ACL = {
                     case 'badge_edit':
                         can = role !== AppRoles.DIRECTION_HEAD;
                         break;
+                    case 'feed_type_edit':
                     case 'unban':
+                        can = role !== AppRoles.CAT;
+                        break;
+                    case 'role_edit':
                         can = role === AppRoles.ADMIN || role == AppRoles.SENIOR;
                         break;
                     case 'full_edit':
@@ -62,7 +65,9 @@ export const ACL = {
                 }
             });
         } else {
-            window.location.href = `${window.location.origin}/login`;
+            if (!window.location.href.endsWith('/login')) {
+                window.location.href = `${window.location.origin}/login`;
+            }
         }
         return Promise.resolve({ can });
     }

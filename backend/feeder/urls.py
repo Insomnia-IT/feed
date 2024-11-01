@@ -23,8 +23,6 @@ router.register(r'transports', transport.TransportViewSet)
 router.register(r'statuses', status.StatusViewSet)
 
 router.register(r'access-roles', volunteer.AccessRoleViewSet)
-router.register(r'departments', direction.DepartmentViewSet)
-router.register(r'locations', direction.LocationViewSet)
 
 
 urlpatterns = [

@@ -1,35 +1,10 @@
-from rest_framework import serializers, permissions, status
+from rest_framework import serializers, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from django.db import transaction
 
 from feeder import serializers, models
-from feeder.utils import sync_with_notion, calculate_statistics, STAT_DATE_FORMAT
-
-
-class SyncWithNotion(APIView):
-    """
-    Синхронизация Volunteer с Notion
-    """
-    permission_classes = [permissions.IsAuthenticated, ]
-
-    @extend_schema(
-        responses={
-            200: serializers.SyncWithSerializer,
-            202: serializers.SyncWithPartialSerializer
-        },
-        summary="Запуск синхронизации с Notion"
-    )
-    def post(self, request):
-        result = sync_with_notion()
-
-        serializer = serializers.SyncWithPartialSerializer(data=result)
-        if serializer.is_valid():
-            return Response(serializer.validated_data, status=status.HTTP_202_ACCEPTED)
-
-        return Response(serializers.SyncWithSerializer(result).data)
-
 
 class SyncWithFeeder(APIView):
     """

@@ -11,25 +11,30 @@ import {
     Popover,
     Radio,
     Space,
+    Spin,
     Table,
-    TextField,
-    useSelect
+    Tag,
+    TextField
 } from '@pankod/refine-antd';
 import { useList } from '@pankod/refine-core';
 import type { GetListResponse, IResourceComponentsProps } from '@pankod/refine-core';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Input } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
+import { useRouter } from 'next/router';
+import { useQueryClient } from '@tanstack/react-query';
 
 import type {
     AccessRoleEntity,
+    ArrivalEntity,
     ColorTypeEntity,
     CustomFieldEntity,
     DirectionEntity,
     FeedTypeEntity,
+    GroupBadgeEntity,
     KitchenEntity,
     StatusEntity,
     TransportEntity,
@@ -37,22 +42,13 @@ import type {
     VolunteerRoleEntity
 } from '~/interfaces';
 import { formDateFormat, isActivatedStatus, saveXLSX } from '~/shared/lib';
-import { NEW_API_URL } from '~/const';
-import { axios } from '~/authProvider';
 import { dataProvider } from '~/dataProvider';
-import type { UserData } from '~/auth';
-import { getUserData } from '~/auth';
+import { useMedia } from '~/shared/providers';
+import { getSorter } from '~/utils';
 
 import styles from './list.module.css';
 import useCanAccess from './use-can-access';
 import useVisibleDirections from './use-visible-directions';
-
-const booleanFilters = [
-    { value: true, text: 'Да' },
-    { value: false, text: 'Нет' }
-];
-
-const FEED_TYPE_WITHOUT_FEED = 4;
 
 export const isVolExpired = (vol: VolEntity, isYesterday: boolean): boolean => {
     const day = isYesterday ? dayjs().subtract(1, 'day') : dayjs();
@@ -83,6 +79,8 @@ type FilterField = {
     name: string;
     title: string;
     lookup?: () => Array<{ id: unknown; name: string }>;
+    skipNull?: boolean;
+    single?: boolean;
     getter?: (value: any) => any;
 };
 
@@ -102,26 +100,20 @@ const useMapFromList = (list: GetListResponse | undefined, nameField = 'name') =
     }, [list]);
 };
 
-export const getSorter = (field: string) => {
-    return (a, b) => {
-        const x = a[field] ?? '';
-        const y = b[field] ?? '';
-
-        if (x < y) {
-            return -1;
-        }
-        if (x > y) {
-            return 1;
-        }
-        return 0;
-    };
-};
-
 export const VolList: FC<IResourceComponentsProps> = () => {
-    const [searchText, setSearchText] = useState('');
-    const [filterUnfeededType, setfilterUnfeededType] = useState<'' | 'today' | 'yesterday'>('');
-    const [feededIsLoading, setFeededIsLoading] = useState(false);
-    const [feededIds, setFeededIds] = useState({});
+    const getDefaultSearchText = () => {
+        return localStorage.getItem('volSearchText') || '';
+    };
+
+    const [searchText, setSearchText] = useState(getDefaultSearchText);
+
+    useEffect(() => {
+        localStorage.setItem('volSearchText', searchText);
+    }, [searchText]);
+
+    const { isDesktop, isMobile } = useMedia();
+
+    const router = useRouter();
 
     const getDefaultActiveFilters = () => {
         const volFilterStr = localStorage.getItem('volFilter');
@@ -155,29 +147,77 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         localStorage.setItem('volVisibleFilters', JSON.stringify(visibleFilters));
     }, [visibleFilters]);
 
+    useEffect(() => {
+        setPage(1);
+    }, [activeFilters, visibleFilters, searchText]);
+
     const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
     const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
 
     const visibleDirections = useVisibleDirections();
 
+    const [page, setPage] = useState(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
+    const [pageSize, setPageSize] = useState(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+
+    const filterQueryParams = useMemo(() => {
+        const convertValue = (value) => {
+            return value;
+        };
+        const formatFilter = (name, value) => {
+            if (name.startsWith('custom_field_values.')) {
+                const customFieldId = name.split('.')[1];
+                return `custom_field_id=${customFieldId}&custom_field_value=${convertValue(value)}`;
+            }
+            return `${name}=${convertValue(value)}`;
+        };
+        const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
+        if (
+            visibleDirections &&
+            visibleDirections.length &&
+            !activeVisibleFilters.some(({ name }) => name === 'directions')
+        ) {
+            activeVisibleFilters.push({
+                name: 'directions',
+                op: 'include',
+                value: visibleDirections
+            });
+        }
+        const queryParams = activeVisibleFilters.flatMap(({ name, value }) => {
+            if (Array.isArray(value)) {
+                return value.map((v) => formatFilter(name, v));
+            }
+            return formatFilter(name, value);
+        });
+
+        if (searchText) {
+            queryParams.push(`search=${searchText}`);
+        }
+
+        return queryParams.length ? `?${queryParams.join('&')}` : '';
+    }, [activeFilters, visibleFilters, searchText, visibleDirections]);
+
+    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
+        resource: `volunteers/${filterQueryParams}`,
+        config: {
+            pagination: {
+                current: isMobile ? 1 : page,
+                pageSize: isMobile ? 10000 : pageSize
+            }
+        }
+    });
+
     const pagination: TablePaginationConfig = {
+        total: volunteers?.total ?? 1,
         showTotal: (total) => `Кол-во волонтеров: ${total}`,
-        defaultCurrent: parseFloat(localStorage.getItem('volPageIndex') || '') || 1,
-        defaultPageSize: parseFloat(localStorage.getItem('volPageSize') || '') || 10,
+        current: page,
+        pageSize: pageSize,
         onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
             localStorage.setItem('volPageIndex', page.toString());
             localStorage.setItem('volPageSize', pageSize.toString());
         }
     };
-
-    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
-        resource: 'volunteers',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
-        }
-    });
 
     const { data: directions } = useList<DirectionEntity>({
         resource: 'directions'
@@ -216,6 +256,10 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         resource: 'statuses'
     });
 
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges'
+    });
+
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
     const loadCustomFields = async () => {
@@ -244,7 +288,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             name: 'directions',
             title: 'Службы/Локации',
             getter: (data) => (data.directions || []).map(({ id }) => id),
-            lookup: () => directions?.data ?? []
+            skipNull: true,
+            lookup: () =>
+                (directions?.data ?? [])
+                    .slice()
+                    .sort(getSorter('name'))
+                    .filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         // { type: 'string', name: 'id', title: 'ID' },
         { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
@@ -263,23 +312,64 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             title: 'Транспорт отъезда',
             lookup: () => transports?.data ?? []
         },
+        { type: 'date', name: 'feeded_date', title: 'Питался' },
+        { type: 'date', name: 'non_feeded_date', title: 'Не питался' },
         { type: 'string', name: 'name', title: 'Имя на бейдже' },
         { type: 'string', name: 'first_name', title: 'Имя' },
         { type: 'string', name: 'last_name', title: 'Фамилия' },
-        { type: 'lookup', name: 'main_role', title: 'Роль', lookup: () => volunteerRoles?.data ?? [] },
+        {
+            type: 'lookup',
+            name: 'main_role',
+            title: 'Роль',
+            skipNull: true,
+            single: true,
+            lookup: () => volunteerRoles?.data ?? []
+        },
         { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
-        { type: 'lookup', name: 'kitchen', title: 'Кухня', lookup: () => kitchens?.data ?? [] }, // kitchenNameById
-        { type: 'number', name: 'printing_batch', title: 'Партия бейджа' },
-        { type: 'lookup', name: 'feed_type', title: 'Тип питания', lookup: () => feedTypes?.data ?? [] }, // feedTypeNameById
+        {
+            type: 'lookup',
+            name: 'kitchen',
+            title: 'Кухня',
+            skipNull: true,
+            single: true,
+            lookup: () => kitchens?.data ?? []
+        }, // kitchenNameById
+        { type: 'string', name: 'printing_batch', title: 'Партия бейджа' },
+        { type: 'string', name: 'badge_number', title: 'Номер бейджа' },
+        {
+            type: 'lookup',
+            name: 'feed_type',
+            title: 'Тип питания',
+            skipNull: true,
+            single: true,
+            lookup: () => feedTypes?.data ?? []
+        }, // feedTypeNameById
         { type: 'boolean', name: 'is_vegan', title: 'Веган' },
         { type: 'string', name: 'comment', title: 'Комментарий' },
         {
             type: 'lookup',
             name: 'color_type',
             title: 'Цвет бейджа',
+            skipNull: true,
+            single: true,
             lookup: () => colors?.data.map(({ description: name, id }) => ({ id, name })) ?? []
         }, // colorNameById
-        { type: 'lookup', name: 'access_role', title: 'Право доступа', lookup: () => accessRoles?.data ?? [] } // accessRoleById
+        {
+            type: 'lookup',
+            name: 'access_role',
+            title: 'Право доступа',
+            skipNull: true,
+            single: true,
+            lookup: () => accessRoles?.data ?? []
+        }, // accessRoleById
+        {
+            type: 'lookup',
+            name: 'group_badge',
+            title: 'Групповой бейдж',
+            skipNull: true,
+            single: true,
+            lookup: () => groupBadges?.data ?? []
+        } // groupBadges
     ].concat(
         customFields.map((customField) => ({
             type: customField.type === 'boolean' ? 'boolean' : 'custom',
@@ -288,198 +378,98 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         }))
     );
 
-    const filteredData = useMemo(() => {
-        const data = volunteers?.data ?? [];
-        return (
-            searchText
-                ? data.filter((item) => {
-                      const searchTextInLowerCase = searchText.toLowerCase();
-                      return [
-                          item.name,
-                          item.first_name,
-                          item.last_name,
-                          item.directions?.map(({ name }) => name).join(', '),
-                          ...item.arrivals.map(({ arrival_date }) => formatDate(arrival_date))
-                      ].some((text) => {
-                          return text?.toLowerCase().includes(searchTextInLowerCase);
-                      });
-                  })
-                : data
-        )
-            .filter((v) => !visibleDirections || v.directions?.some(({ id }) => visibleDirections.includes(id)))
-            .filter(
-                (v) =>
-                    !filterUnfeededType ||
-                    (!feededIds[v.id] &&
-                        !v.is_blocked &&
-                        !isVolExpired(v, filterUnfeededType === 'yesterday') &&
-                        v.feed_type !== FEED_TYPE_WITHOUT_FEED)
-            )
-            .filter((vol) => {
-                const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
-                const arrivalFilters = activeVisibleFilters.filter((filter) => filter.name.startsWith('arrivals.'));
-                if (arrivalFilters.length) {
-                    const arrivals = arrivalFilters.reduce((arrivals, filter) => {
-                        const key = filter.name.split('.')[1];
-                        return arrivals.filter((arrival) => {
-                            if (key === 'staying_date') {
-                                const filterValue = filter.value as string;
-                                return (
-                                    filterValue >= arrival.arrival_date &&
-                                    filterValue <= arrival.departure_date &&
-                                    (activeFilters.some(({ name }) => name === 'arrivals.status') ||
-                                        isActivatedStatus(arrival.status))
-                                );
-                            }
-                            const filterValue = filter.value;
-                            if (Array.isArray(filterValue)) {
-                                return filterValue.some((value) => value === arrival[key]);
-                            } else {
-                                return filter.value === arrival[key];
-                            }
-                        });
-                    }, vol.arrivals);
+    const volunteersData = useMemo(() => {
+        return volunteers?.data ?? [];
+    }, [volunteers]);
 
-                    if (arrivals.length === 0) {
-                        return false;
-                    }
-                }
-                return activeVisibleFilters
-                    .filter((filter) => !filter.name.startsWith('arrivals.'))
-                    .every((filter) => {
-                        const path = filter.name.split('.');
-                        const fieldValue = vol[path[0]];
+    const [isExporting, setIsExporting] = useState(false);
 
-                        let value = fieldValue;
-                        if (filter.name === 'directions') {
-                            value = fieldValue?.map(({ id }) => id);
-                        }
-                        if (path[0] === 'custom_field_values') {
-                            const type = customFields.find(({ id }) => id.toString() === path[1])?.type;
-
-                            value =
-                                fieldValue.find(({ custom_field }) => custom_field.toString() === path[1])?.value ||
-                                undefined;
-
-                            if (type === 'boolean') {
-                                value = value === 'true';
-                            }
-                        }
-
-                        if (Array.isArray(filter.value)) {
-                            if (Array.isArray(value)) {
-                                return (
-                                    filter.value.some((currentValue) => value.includes(currentValue)) ||
-                                    (filter.value.includes(null) && value.length === 0)
-                                );
-                            } else {
-                                return filter.value.some((currentValue) =>
-                                    !currentValue ? !currentValue === !value : currentValue == value
-                                );
-                            }
-                        } else if (typeof filter.value === 'string' && typeof value === 'string') {
-                            return value.includes(filter.value);
-                        } else if (!filter.value) {
-                            return !filter.value === !value;
-                        } else {
-                            return filter.value == value;
-                        }
-                    });
+    const createAndSaveXLSX = async () => {
+        setIsExporting(true);
+        try {
+            const { data: allPagesData } = await dataProvider.getList({
+                resource: `volunteers/${filterQueryParams}`
             });
-    }, [
-        volunteers,
-        searchText,
-        feededIds,
-        filterUnfeededType,
-        canFullList,
-        visibleDirections,
-        activeFilters,
-        visibleFilters
-    ]);
 
-    // const { selectProps } = useSelect<VolEntity>({
-    //     resource: 'volunteers'
-    // });
+            if (allPagesData) {
+                const workbook = new ExcelJS.Workbook();
+                const sheet = workbook.addWorksheet('Volunteers');
 
-    // return <Loader />;
+                const header = [
+                    'ID',
+                    'Позывной',
+                    'Имя',
+                    'Фамилия',
+                    'Службы/Локации',
+                    'Роль',
+                    'Статус текущего завезда',
+                    'Дата текущего заезда',
+                    'Транспорт текущего заезда',
+                    'Дата текущего отъезда',
+                    'Транспорт текущего отъезда',
+                    'Статус будущего завезда',
+                    'Дата будущего заезда',
+                    'Транспорт будущего заезда',
+                    'Дата будущего отъезда',
+                    'Транспорт будущего отъезда',
+                    'Заблокирован',
+                    'Кухня',
+                    'Партия бейджа',
+                    'Тип питания',
+                    'Веган/мясоед',
+                    'Комментарий',
+                    'Цвет бейджа',
+                    'Право доступа',
+                    ...customFields?.map((field) => field.name)
+                ];
+                sheet.addRow(header);
 
-    const createAndSaveXLSX = () => {
-        if (filteredData) {
-            const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet('Volunteers');
-
-            const header = [
-                'ID',
-                'Позывной',
-                'Имя',
-                'Фамилия',
-                'Службы/Локации',
-                'Роль',
-                'Статус текущего завезда',
-                'Дата текущего заезда',
-                'Транспорт текущего заезда',
-                'Дата текущего отъезда',
-                'Транспорт текущего отъезда',
-                'Статус будущего завезда',
-                'Дата будущего заезда',
-                'Транспорт будущего заезда',
-                'Дата будущего отъезда',
-                'Транспорт будущего отъезда',
-                'Заблокирован',
-                'Кухня',
-                'Партия бейджа',
-                'Тип питания',
-                'Веган/мясоед',
-                'Комментарий',
-                'Цвет бейджа',
-                'Право доступа',
-                ...customFields?.map((field) => field.name)
-            ];
-            sheet.addRow(header);
-
-            filteredData.forEach((vol, index) => {
-                const currentArrival = vol.arrivals.find(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
-                );
-                const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
-                sheet.addRow([
-                    vol.id,
-                    vol.name,
-                    vol.first_name,
-                    vol.last_name,
-                    vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
-                    vol.main_role ? volunteerRoleById[vol.main_role] : '',
-                    currentArrival ? statusById[currentArrival?.status] : '',
-                    currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
-                    currentArrival ? transportById[currentArrival?.arrival_transport] : '',
-                    currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
-                    currentArrival ? transportById[currentArrival?.departure_transport] : '',
-                    futureArrival ? statusById[futureArrival?.status] : '',
-                    futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
-                    futureArrival ? transportById[futureArrival?.arrival_transport] : '',
-                    futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
-                    futureArrival ? transportById[futureArrival?.departure_transport] : '',
-                    vol.is_blocked ? 1 : 0,
-                    vol.kitchen ? kitchenNameById[vol.kitchen] : '',
-                    vol.printing_batch,
-                    vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
-                    vol.is_vegan ? 'веган' : 'мясоед',
-                    vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
-                    vol.color_type ? colorNameById[vol.color_type] : '',
-                    vol.access_role ? accessRoleById[vol.access_role] : '',
-                    ...customFields?.map((field) => {
-                        const value =
-                            vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)?.value ||
-                            '';
-                        if (field.type === 'boolean') {
-                            return value === 'true' ? 1 : 0;
-                        }
-                        return value;
-                    })
-                ]);
-            });
-            void saveXLSX(workbook, 'volunteers');
+                allPagesData.forEach((vol, index) => {
+                    const currentArrival = vol.arrivals.find(
+                        ({ arrival_date, departure_date }) =>
+                            dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
+                    );
+                    const futureArrival = vol.arrivals.find(({ arrival_date }) => dayjs(arrival_date) > dayjs());
+                    sheet.addRow([
+                        vol.id,
+                        vol.name,
+                        vol.first_name,
+                        vol.last_name,
+                        vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
+                        vol.main_role ? volunteerRoleById[vol.main_role] : '',
+                        currentArrival ? statusById[currentArrival?.status] : '',
+                        currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
+                        currentArrival ? transportById[currentArrival?.arrival_transport] : '',
+                        currentArrival ? dayjs(currentArrival.departure_date).format(formDateFormat) : '',
+                        currentArrival ? transportById[currentArrival?.departure_transport] : '',
+                        futureArrival ? statusById[futureArrival?.status] : '',
+                        futureArrival ? dayjs(futureArrival.arrival_date).format(formDateFormat) : '',
+                        futureArrival ? transportById[futureArrival?.arrival_transport] : '',
+                        futureArrival ? dayjs(futureArrival.departure_date).format(formDateFormat) : '',
+                        futureArrival ? transportById[futureArrival?.departure_transport] : '',
+                        vol.is_blocked ? 1 : 0,
+                        vol.kitchen ? kitchenNameById[vol.kitchen] : '',
+                        vol.printing_batch,
+                        vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
+                        vol.is_vegan ? 'веган' : 'мясоед',
+                        vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
+                        vol.color_type ? colorNameById[vol.color_type] : '',
+                        vol.access_role ? accessRoleById[vol.access_role] : '',
+                        ...customFields?.map((field) => {
+                            const value =
+                                vol.custom_field_values.find((fieldValue) => fieldValue.custom_field === field.id)
+                                    ?.value || '';
+                            if (field.type === 'boolean') {
+                                return value === 'true' ? 1 : 0;
+                            }
+                            return value;
+                        })
+                    ]);
+                });
+                void saveXLSX(workbook, 'volunteers');
+            }
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -491,34 +481,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         window.location.href = `${window.location.origin}/volunteer-custom-fields`;
     }, []);
 
-    const loadTransactions = async () => {
-        const newFeededIds = {};
-        if (filterUnfeededType) {
-            const today = dayjs().startOf('day');
-            const from = filterUnfeededType === 'yesterday' ? today.subtract(1, 'day') : today;
-            const url = `${NEW_API_URL}/feed-transaction/?limit=100000&dtime_from=${from.toISOString()}&dtime_to=${from
-                .add(1, 'day')
-                .toISOString()}`;
-
-            try {
-                setFeededIsLoading(true);
-                const {
-                    data: { results }
-                } = await axios.get(url);
-                results.forEach(({ volunteer }) => {
-                    newFeededIds[volunteer] = true;
-                });
-            } finally {
-                setFeededIsLoading(false);
-            }
-        }
-        setFeededIds(newFeededIds);
-    };
-
-    useEffect(() => {
-        void loadTransactions();
-    }, [filterUnfeededType]);
-
     const getOnField = (vol: VolEntity) => {
         const day = dayjs();
         return vol.arrivals.some(
@@ -527,6 +489,74 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         );
+    };
+
+    function findClosestArrival(arrivals: Array<ArrivalEntity>) {
+        const now = dayjs();
+        let closestFutureArrival: ArrivalEntity | null = null;
+        let closestPastArrival: ArrivalEntity | null = null;
+        let minFutureDiff = Infinity;
+        let minPastDiff = Infinity;
+
+        for (const arrival of arrivals) {
+            const { arrival_date, departure_date } = arrival;
+            const arrivalTime = dayjs(arrival_date).startOf('day').add(7, 'hours');
+            const departureTime = dayjs(departure_date).endOf('day').add(7, 'hours');
+
+            if (now.isAfter(arrivalTime) && now.isBefore(departureTime)) {
+                return arrival;
+            }
+
+            const futureDiff = arrivalTime.diff(now);
+            const pastDiff = now.diff(departureTime);
+
+            if (futureDiff >= 0 && futureDiff < minFutureDiff) {
+                minFutureDiff = futureDiff;
+                closestFutureArrival = arrival;
+            }
+
+            if (pastDiff >= 0 && pastDiff < minPastDiff) {
+                minPastDiff = pastDiff;
+                closestPastArrival = arrival;
+            }
+        }
+
+        if (closestFutureArrival) {
+            return closestFutureArrival;
+        } else if (closestPastArrival) {
+            return closestPastArrival;
+        } else {
+            return null;
+        }
+    }
+
+    const getOnFieldColors = (vol: VolEntity) => {
+        const day = dayjs();
+        const currentArrival = findClosestArrival(vol.arrivals);
+        const currentArrivalArray: Array<ArrivalEntity> = [];
+        if (currentArrival !== null) {
+            currentArrivalArray.push(currentArrival);
+        }
+        if (
+            currentArrivalArray.some(
+                ({ arrival_date, departure_date, status }) =>
+                    isActivatedStatus(status) &&
+                    day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                    day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+            )
+        ) {
+            return 'green';
+        }
+        if (
+            currentArrivalArray.some(
+                ({ arrival_date, departure_date, status }) =>
+                    !isActivatedStatus(status) &&
+                    day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+                    day <= dayjs(departure_date).endOf('day').add(7, 'hours')
+            )
+        ) {
+            return 'red';
+        }
     };
     const getFilterValueText = (field: FilterField, value: unknown): string => {
         if (value === true) {
@@ -541,6 +571,9 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         if (value === '') {
             return '(Пусто)';
         }
+        if (value === 'notempty') {
+            return '(Не пусто)';
+        }
         return String(value);
     };
 
@@ -551,7 +584,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         const lookupItems = field.lookup?.();
 
         if (lookupItems) {
-            return [{ id: null, name: '(Пусто)' }, ...lookupItems].map((item) => ({
+            return (field.skipNull ? lookupItems : [{ id: '', name: '(Пусто)' }, ...lookupItems]).map((item) => ({
                 value: item.id,
                 text: item.name,
                 selected: filterValues.includes(item.id),
@@ -567,30 +600,37 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 count: 0
             }));
         } else {
-            const valueCounts = (volunteers?.data ?? []).reduce((acc: { [key: string]: number }, vol) => {
-                const path = field.name.split('.');
-                let value = vol[path[0]] || '';
-                if (path[0] === 'custom_field_values') {
-                    value = value.find(({ custom_field }) => custom_field.toString() === path[1])?.value || '';
-                }
-                acc[value] = (acc[value] ?? 0) + 1;
-                return acc;
-            }, {});
-            const values = Object.keys(valueCounts).sort();
-
-            return values.map((value) => ({
+            return ['', 'notempty'].map((value) => ({
                 value,
                 text: getFilterValueText(field, value),
                 selected: filterValues.includes(value),
-                count: valueCounts[value] ?? 0
+                count: 0
             }));
+            // debugger
+            // const valueCounts = (volunteers?.data ?? []).reduce((acc: { [key: string]: number }, vol) => {
+            //     const path = field.name.split('.');
+            //     let value = vol[path[0]] || '';
+            //     if (path[0] === 'custom_field_values') {
+            //         value = value.find(({ custom_field }) => custom_field.toString() === path[1])?.value || '';
+            //     }
+            //     acc[value] = (acc[value] ?? 0) + 1;
+            //     return acc;
+            // }, {});
+            // const values = Object.keys(valueCounts).sort();
+
+            // return values.map((value) => ({
+            //     value,
+            //     text: getFilterValueText(field, value),
+            //     selected: filterValues.includes(value),
+            //     count: valueCounts[value] ?? 0
+            // }));
         }
     };
 
-    const onFilterValueChange = (field: FilterField, filterListItem: FilterListItem) => {
+    const onFilterValueChange = (field: FilterField, filterListItem: FilterListItem, single = false) => {
         const filterItem = activeFilters.find((f) => f.name === field.name);
 
-        if (filterListItem.selected) {
+        if (filterListItem.selected && !single) {
             if (filterItem && Array.isArray(filterItem.value)) {
                 const newValues = filterItem.value.filter((value) => value !== filterListItem.value);
                 const newFilters = activeFilters
@@ -610,7 +650,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             }
         } else {
             if (filterItem && Array.isArray(filterItem.value)) {
-                const newValues = [...filterItem.value, filterListItem.value];
+                const newValues = single ? [filterListItem.value] : [...filterItem.value, filterListItem.value];
                 const newFilters = activeFilters
                     .filter((f) => f.name !== field.name)
                     .concat([
@@ -716,12 +756,19 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                                     <div
                                         className={styles.filterPopupListItem}
                                         key={filterListItem.text}
-                                        onClick={() => onFilterValueChange(field, filterListItem)}
+                                        onClick={() => onFilterValueChange(field, filterListItem, field.single)}
                                     >
-                                        <Checkbox
-                                            checked={filterListItem.selected}
-                                            onChange={() => onFilterValueChange(field, filterListItem)}
-                                        />
+                                        {field.single ? (
+                                            <Radio
+                                                checked={filterListItem.selected}
+                                                onChange={() => onFilterValueChange(field, filterListItem, true)}
+                                            />
+                                        ) : (
+                                            <Checkbox
+                                                checked={filterListItem.selected}
+                                                onChange={() => onFilterValueChange(field, filterListItem)}
+                                            />
+                                        )}
                                         {filterListItem.text}
                                         {filterListItem.count > 0 && (
                                             <span className={styles.filterListItemCount}>({filterListItem.count})</span>
@@ -795,11 +842,78 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         );
     };
 
+    const renderMobileList = (volList: Array<VolEntity>, isLoading: boolean) => (
+        <div className={styles.mobileVolList}>
+            {isLoading && <Spin />}
+            {!isLoading &&
+                volList.map((vol) => {
+                    const currentArrival = findClosestArrival(vol.arrivals);
+                    const visitDays = `${formatDate(currentArrival?.arrival_date)} - ${formatDate(
+                        currentArrival?.departure_date
+                    )}`;
+                    const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
+                    const comment = vol?.direction_head_comment;
+                    const isBlocked = vol.is_blocked;
+                    const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
+                    return (
+                        <div
+                            className={styles.volCard}
+                            key={vol.id}
+                            onClick={() => {
+                                void router.push(`volunteers/edit/${vol.id}`);
+                            }}
+                        >
+                            <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
+                            <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
+                            <div>
+                                {isBlocked && <Tag color='red'>Заблокирован</Tag>}
+                                {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
+                            </div>
+                            <div className={styles.textRow}>
+                                <span className={styles.bold}>Комментарий: </span>
+                                {comment || '-'}
+                            </div>
+                        </div>
+                    );
+                })}
+        </div>
+    );
+
+    const queryClient = useQueryClient();
+
+    const openVolunteer = (id: number) => {
+        queryClient.clear();
+        return router.push(`volunteers/edit/${id}`);
+    };
+
+    const getCellAction = (id: number) => {
+        return {
+            onClick: (e) => {
+                if (!e.target.closest('button')) {
+                    return openVolunteer(id);
+                }
+            }
+        };
+    };
+
+    function getFormattedArrivals(arrivalString: string) {
+        const date = new Date(arrivalString);
+        const options: Intl.DateTimeFormatOptions = { month: '2-digit', day: '2-digit' };
+        const formattedDate = new Intl.DateTimeFormat('ru-RU', options).format(date);
+        return formattedDate;
+    }
+
     return (
         <List>
-            <Input placeholder='Поиск...' value={searchText} onChange={(e) => setSearchText(e.target.value)}></Input>
+            {/* -------------------------- Фильтры -------------------------- */}
+            <Input
+                placeholder='Поиск...'
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+            ></Input>
             <div className={styles.filters}>
-                <div className={styles.filtersLabel}>Фильтры:</div>
+                {/* <div className={styles.filtersLabel}>Фильтры:</div> */}
                 <div className={styles.filterItems}>
                     {filterFields
                         .filter((field) => visibleFilters.includes(field.name))
@@ -832,163 +946,193 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                             Фильтр
                         </Button>
                     </Popover>
+                    {(activeFilters.length || searchText) && (
+                        <Button
+                            type='link'
+                            icon={<Icons.DeleteOutlined />}
+                            onClick={() => {
+                                setActiveFilters([]);
+                                setSearchText('');
+                            }}
+                        >
+                            Сбросить фильтрацию
+                        </Button>
+                    )}
                 </div>
             </div>
             <Form layout='inline' style={{ padding: '10px 0' }}>
-                <Form.Item>
-                    <Button
-                        type={'primary'}
-                        onClick={handleClickDownload}
-                        icon={<DownloadOutlined />}
-                        disabled={
-                            !filteredData &&
-                            kitchensIsLoading &&
-                            feedTypesIsLoading &&
-                            colorsIsLoading &&
-                            accessRolesIsLoading &&
-                            volunteerRolesIsLoading
-                        }
-                    >
-                        Выгрузить
-                    </Button>
-                </Form.Item>
-                <Form.Item>
-                    <Radio.Group value={filterUnfeededType} onChange={(e) => setfilterUnfeededType(e.target.value)}>
-                        <Radio.Button value=''>Все</Radio.Button>
-                        <Radio.Button value='today'>Не питавшиеся сегодня</Radio.Button>
-                        <Radio.Button value='yesterday'>Не питавшиеся вчера</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-                <Form.Item>
-                    <Button disabled={!canListCustomFields} onClick={handleClickCustomFields}>
-                        Кастомные поля
-                    </Button>
-                </Form.Item>
-                <Form.Item>Кол-во волонтеров: {filteredData.length}</Form.Item>
-            </Form>
-            <Table
-                scroll={{ x: '100%' }}
-                pagination={pagination}
-                loading={volunteersIsLoading || feededIsLoading}
-                dataSource={filteredData}
-                rowKey='id'
-            >
-                <Table.Column<VolEntity>
-                    title=''
-                    dataIndex='actions'
-                    render={(_, record) => (
-                        <Space>
-                            <EditButton hideText size='small' recordItemId={record.id} />
-                            <DeleteButton hideText size='small' recordItemId={record.id} />
-                        </Space>
-                    )}
-                />
-                <Table.Column
-                    dataIndex='id'
-                    key='id'
-                    title='ID'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('id')}
-                />
-                <Table.Column
-                    dataIndex='name'
-                    key='name'
-                    title='Имя на бейдже'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('name')}
-                />
-                <Table.Column
-                    dataIndex='first_name'
-                    key='first_name'
-                    title='Имя'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('first_name')}
-                />
-                <Table.Column
-                    dataIndex='last_name'
-                    key='last_name'
-                    title='Фамилия'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('last_name')}
-                />
-                <Table.Column
-                    dataIndex='directions'
-                    key='directions'
-                    title='Службы / Локации'
-                    render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
-                />
-                <Table.Column
-                    dataIndex='arrivals'
-                    key='arrivals'
-                    title='Даты на поле'
-                    render={(arrivals) => (
-                        <span style={{ whiteSpace: 'nowrap' }}>
-                            {arrivals
-                                .map(({ arrival_date, departure_date }) =>
-                                    [arrival_date, departure_date].map(formatDate).join(' - ')
-                                )
-                                .join(', ')}
-                        </span>
-                    )}
-                />
-                <Table.Column
-                    key='on_field'
-                    title='На поле'
-                    render={(vol) => {
-                        const value = getOnField(vol as VolEntity);
-                        return <ListBooleanPositive value={value} />;
-                    }}
-                />
-                <Table.Column
-                    dataIndex='is_blocked'
-                    key='is_blocked'
-                    title='❌'
-                    render={(value) => <ListBooleanNegative value={value} />}
-                    sorter={getSorter('is_blocked')}
-                />
-                <Table.Column
-                    dataIndex='kitchen'
-                    key='kitchen'
-                    title='Кухня'
-                    render={(value) => <TextField value={value} />}
-                    sorter={getSorter('kitchen')}
-                />
-                <Table.Column
-                    dataIndex='printing_batch'
-                    key='printing_batch'
-                    title={
-                        <span>
-                            Партия
-                            <br />
-                            Бейджа
-                        </span>
-                    }
-                    render={(value) => value && <NumberField value={value} />}
-                />
-
-                <Table.Column
-                    dataIndex='comment'
-                    key='comment'
-                    title='Комментарий'
-                    render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
-                />
-
-                {customFields?.map((customField) => {
-                    return (
-                        <Table.Column
-                            key={customField.name}
-                            title={customField.name}
-                            render={(vol) => {
-                                const value = getCustomValue(vol, customField);
-                                if (customField.type === 'boolean') {
-                                    return <ListBooleanPositive value={value} />;
+                {isDesktop && (
+                    <>
+                        <Form.Item>
+                            <Button
+                                type={'primary'}
+                                onClick={handleClickDownload}
+                                icon={isExporting ? <LoadingOutlined spin /> : <DownloadOutlined />}
+                                disabled={
+                                    !volunteersData.length ||
+                                    kitchensIsLoading ||
+                                    feedTypesIsLoading ||
+                                    colorsIsLoading ||
+                                    accessRolesIsLoading ||
+                                    volunteerRolesIsLoading
                                 }
-                                return value;
-                            }}
-                        />
-                    );
-                })}
-            </Table>
+                            >
+                                Выгрузить
+                            </Button>
+                        </Form.Item>
+                        <Form.Item>
+                            <Button disabled={!canListCustomFields} onClick={handleClickCustomFields}>
+                                Кастомные поля
+                            </Button>
+                        </Form.Item>
+                    </>
+                )}
+                <Form.Item>Кол-во волонтеров: {volunteers?.total}</Form.Item>
+            </Form>
+
+            {/* -------------------------- Список волонтеров -------------------------- */}
+            {isMobile && renderMobileList(volunteersData, volunteersIsLoading)}
+            {isDesktop && (
+                <Table
+                    onRow={(record) => {
+                        return getCellAction(record.id);
+                    }}
+                    scroll={{ x: '100%' }}
+                    pagination={pagination}
+                    loading={volunteersIsLoading}
+                    dataSource={volunteersData}
+                    rowKey='id'
+                    rowClassName={styles.cursorPointer}
+                >
+                    {/* <Table.Column<VolEntity>
+                        title=''
+                        dataIndex='actions'
+                        render={(_, record) => (
+                            <Space>
+                                <EditButton
+                                    hideText
+                                    size='small'
+                                    recordItemId={record.id}
+                                    onClick={() => {
+                                        void openVolunteer(record.id);
+                                    }}
+                                />
+                                <DeleteButton hideText size='small' recordItemId={record.id} />
+                            </Space>
+                        )}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='id'
+                        key='id'
+                        title='ID'
+                        render={(value) => <TextField value={value} />}
+                    /> */}
+                    <Table.Column<VolEntity>
+                        dataIndex='name'
+                        key='name'
+                        title='Имя на бейдже'
+                        render={(value) => <TextField value={value} />}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='first_name'
+                        key='first_name'
+                        title='Имя'
+                        render={(value) => <TextField value={value} />}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='last_name'
+                        key='last_name'
+                        title='Фамилия'
+                        render={(value) => <TextField value={value} />}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='directions'
+                        key='directions'
+                        title='Службы / Локации'
+                        render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='arrivals'
+                        key='arrivals'
+                        title='Даты на поле'
+                        render={(arrivals) => (
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                {arrivals
+                                    .slice()
+                                    .sort(getSorter('arrival_date'))
+                                    .map(({ arrival_date, departure_date }) => {
+                                        const arrival = getFormattedArrivals(arrival_date);
+                                        const departure = getFormattedArrivals(departure_date);
+                                        return (
+                                            <div
+                                                style={{ whiteSpace: 'nowrap' }}
+                                                key={`${arrival_date}${departure_date}`}
+                                            >{`${arrival} - ${departure}`}</div>
+                                        );
+                                    })}
+                            </div>
+                        )}
+                    />
+                    <Table.Column<VolEntity>
+                        key='on_field'
+                        title='Статус'
+                        render={(vol) => {
+                            const currentArrival = findClosestArrival(vol.arrivals);
+                            const currentStatus = currentArrival
+                                ? statusById[currentArrival?.status]
+                                : 'Статус неизвестен';
+                            return <div>{<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}</div>;
+                        }}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='is_blocked'
+                        key='is_blocked'
+                        title='❌'
+                        render={(value) => <ListBooleanNegative value={value} />}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='kitchen'
+                        key='kitchen'
+                        title='Кухня'
+                        render={(value) => <TextField value={value} />}
+                    />
+                    <Table.Column<VolEntity>
+                        dataIndex='printing_batch'
+                        key='printing_batch'
+                        title={
+                            <span>
+                                Партия
+                                <br />
+                                Бейджа
+                            </span>
+                        }
+                        render={(value) => value && <NumberField value={value} />}
+                    />
+
+                    <Table.Column<VolEntity>
+                        dataIndex='comment'
+                        key='comment'
+                        title='Комментарий'
+                        render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
+                    />
+
+                    {customFields?.map((customField) => {
+                        return (
+                            <Table.Column<VolEntity>
+                                key={customField.name}
+                                title={customField.name}
+                                render={(vol) => {
+                                    const value = getCustomValue(vol, customField);
+                                    if (customField.type === 'boolean') {
+                                        return <ListBooleanPositive value={value} />;
+                                    }
+                                    return value;
+                                }}
+                            />
+                        );
+                    })}
+                </Table>
+            )}
         </List>
     );
 };

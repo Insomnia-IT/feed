@@ -147,7 +147,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Volunteer
-        exclude = ['person', 'departments']
+        exclude = ['person']
 
 
 class VolunteerRoleSerializer(serializers.ModelSerializer):
@@ -167,7 +167,10 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     direction = DirectionSerializer(required=False)
-
+    volunteer_count = serializers.IntegerField(
+        source='volunteers.count', 
+        read_only=True
+    )
 
     class Meta:
         model = models.GroupBadge
@@ -224,57 +227,6 @@ class KitchenSerializer(serializers.ModelSerializer):
         model = models.Kitchen
         fields = ['id', 'name', 'comment']
 
-
-class SyncStatisticItem(serializers.Serializer):
-    created = serializers.IntegerField()
-    total = serializers.IntegerField()
-
-
-class SyncStatistic(serializers.Serializer):
-    volunteers = SyncStatisticItem()
-    departments = SyncStatisticItem()
-
-
-class SyncFromItemSerializer(serializers.Serializer):
-    created = serializers.IntegerField()
-    total = serializers.IntegerField()
-
-
-class SyncToArrivedSerializer(serializers.Serializer):
-    success = serializers.IntegerField()
-    failed = serializers.IntegerField()
-    total = serializers.IntegerField()
-
-
-class SyncToSentSerializer(serializers.Serializer):
-    arrived = SyncToArrivedSerializer()
-
-class SyncWithItemSerializer(SyncFromItemSerializer):
-    sent = SyncToSentSerializer(required=False)
-
-
-class SyncWithSerializer(serializers.Serializer):
-    volunteers = SyncWithItemSerializer()
-    departments = SyncFromItemSerializer()
-
-
-class SyncToSentPartialSerializer(serializers.Serializer):
-    arrived = SyncToArrivedSerializer(required=False)
-    error = serializers.ListField(
-        child=serializers.CharField(allow_blank=True),
-        min_length=2
-    )
-
-
-class SyncWithPartialItemSerializer(SyncFromItemSerializer):
-    sent = SyncToSentPartialSerializer()
-
-
-class SyncWithPartialSerializer(serializers.Serializer):
-    volunteers = SyncWithPartialItemSerializer()
-    departments = SyncFromItemSerializer()
-
-
 class FilterStatisticsSerializer(serializers.Serializer):
     date_from = serializers.DateField()
     date_to = serializers.DateField()
@@ -325,18 +277,4 @@ class UserDetailSerializer(serializers.Serializer):
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transport
-        fields = '__all__'
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = models.Department
-        fields = '__all__'
-
-class LocationSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = models.Location
         fields = '__all__'

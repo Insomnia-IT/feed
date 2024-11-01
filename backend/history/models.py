@@ -1,4 +1,15 @@
+import json
+from uuid import UUID
+
 from django.db import models
+
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return str(obj)
+        raise TypeError(f'Object of type {obj.__class__.__name__} '
+                        f'is not JSON serializable')
 
 
 class History(models.Model):
@@ -16,8 +27,9 @@ class History(models.Model):
     object_name = models.CharField(max_length=32)
     actor_badge = models.CharField(max_length=128, blank=True, null=True)
     action_at = models.DateTimeField()
-    data = models.JSONField(blank=True, null=True)
-    old_data = models.JSONField(blank=True, null=True)
+    data = models.JSONField(encoder=UUIDEncoder, blank=True, null=True)
+    old_data = models.JSONField(encoder=UUIDEncoder, blank=True, null=True)
+    volunteer_uuid = models.CharField(max_length=128, blank=True, null=True)
 
     class Meta:
         verbose_name = "История"

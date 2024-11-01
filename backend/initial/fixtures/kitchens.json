@@ -6,7 +6,7 @@
       "created_at": "2023-05-03T19:12:10.851Z",
       "updated_at": "2023-05-03T19:12:10.851Z",
       "name": "Кухня №1",
-      "pin_code": "111",
+      "pin_code": "1001",
       "comment": null
     }
   },
@@ -17,7 +17,7 @@
       "created_at": "2023-05-03T19:12:22.407Z",
       "updated_at": "2023-05-03T19:12:22.407Z",
       "name": "Кухня №2",
-      "pin_code": "222",
+      "pin_code": "2002",
       "comment": null
     }
   }

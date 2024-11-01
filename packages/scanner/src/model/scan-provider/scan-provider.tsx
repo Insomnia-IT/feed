@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import type { GroupBadge, Transaction, Volunteer } from '~/db';
 import { db } from '~/db';
@@ -20,6 +20,8 @@ export const postScanStatuses = ['anon', 'vol-warning', 'vol-error', 'child', 'g
 
 const ScanContext = React.createContext<IScanContext | null>(null);
 
+const DOUBLE_SCAN_TIMEOUT = 5000;
+
 export const ScanProvider = ({ children }) => {
     /** View */
     const [view, setView] = useState<MainViewTypes>('scan');
@@ -39,30 +41,49 @@ export const ScanProvider = ({ children }) => {
         setVolTransactions(null);
     };
 
+    const isScanRef = useRef(false);
     const handleScan = useCallback(async (qrcode: string) => {
-        setView('loading');
-        setQrcode(qrcode);
-        const vol = await db.volunteers.where('qr').equals(qrcode).first();
-        setVol(vol);
-        const groupBadge = await db.groupBadges.where('qr').equals(qrcode).first();
-        setGroupBadge(groupBadge);
-        if (vol) {
-            const volTransactions = await getVolTransactionsAsync(vol, getTodayStart());
-            setVolTransactions(volTransactions);
-        }
-
-        if (qrcode === 'anon' || vol) {
-            setView('post-scan');
+        if (isScanRef.current) {
             return;
         }
 
-        if (groupBadge) {
-            setView('post-scan-group-badge');
-            return;
-        }
+        isScanRef.current = true;
 
-        setView('error');
-        setErrorMessage('Бейдж не найден');
+        try {
+            setQrcode(qrcode);
+            const vol = await db.volunteers.where('qr').equals(qrcode).first();
+            setVol(vol);
+            const lastTransction = await db.transactions.reverse().limit(1).first();
+            if (
+                vol &&
+                lastTransction &&
+                lastTransction.vol_id === vol.id &&
+                new Date(lastTransction.ts * 1000 + DOUBLE_SCAN_TIMEOUT) > new Date()
+            ) {
+                return;
+            }
+            const groupBadge = await db.groupBadges.where('qr').equals(qrcode).first();
+            setGroupBadge(groupBadge);
+            if (vol) {
+                const volTransactions = await getVolTransactionsAsync(vol, getTodayStart());
+                setVolTransactions(volTransactions);
+            }
+
+            if (qrcode === 'anon' || vol) {
+                setView('post-scan');
+                return;
+            }
+
+            if (groupBadge) {
+                setView('post-scan-group-badge');
+                return;
+            }
+
+            setView('error');
+            setErrorMessage('Бейдж не найден');
+        } finally {
+            isScanRef.current = false;
+        }
     }, []);
 
     const viewContextValue: IScanContext = useMemo(

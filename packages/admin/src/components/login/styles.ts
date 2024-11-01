@@ -1,25 +1,49 @@
 import type { CSSProperties } from 'react';
 
 export const layoutStyles: CSSProperties = {
-    background: `radial-gradient(50% 50% at 50% 50%, #63386A 0%, #310438 100%)`,
+    background: '#041428',
     backgroundSize: 'cover'
 };
 
 export const containerStyles: CSSProperties = {
     maxWidth: '408px',
-    margin: 'auto'
+    margin: 'auto',
+    display: 'flex',
+    gap: '14px',
+    flexDirection: 'column'
 };
 
 export const titleStyles: CSSProperties = {
     textAlign: 'center',
-    color: '#626262',
-    fontSize: '30px',
-    letterSpacing: '-0.04em'
+    margin: '0',
+    color: 'white',
+    fontWeight: 400
 };
 
 export const imageContainer: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '28px'
+    flexDirection: 'column',
+    gap: '8px'
+};
+
+export const loginFormStyles: CSSProperties = {
+    minHeight: '360px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
+};
+
+export const qrFormStyles: CSSProperties = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    borderRadius: '6px'
+};
+
+export const authContainerStyles: CSSProperties = {
+    width: '90%',
+    margin: 'auto',
+    padding: '14px'
 };

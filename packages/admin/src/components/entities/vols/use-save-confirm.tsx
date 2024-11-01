@@ -2,6 +2,7 @@ import type { ButtonProps, FormInstance } from '@pankod/refine-antd';
 import { Modal } from '@pankod/refine-antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { dataProvider } from '~/dataProvider';
 import type { VolCustomFieldValueEntity } from '~/interfaces';
@@ -20,6 +21,8 @@ const useSaveConfirm = (
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
     );
+
+    const queryClient = useQueryClient();
 
     const handleOk = () => {
         setShowConfirmationModalReason(null);
@@ -46,6 +49,9 @@ const useSaveConfirm = (
         },
         onMutationSuccess: async ({ data: { id } }) => {
             const updatedCustomFields = form.getFieldValue('updated_custom_fields');
+            const arrivals = form.getFieldValue('arrivals') ?? [];
+            const updatedArrivals = form.getFieldValue('updated_arrivals');
+
             if (updatedCustomFields) {
                 for (const customFieldId in updatedCustomFields) {
                     const { data: customValues } = await dataProvider.getList<VolCustomFieldValueEntity>({
@@ -58,14 +64,21 @@ const useSaveConfirm = (
                     const value = updatedCustomFields[customFieldId].toString();
 
                     if (customValues.length) {
-                        await dataProvider.update({
-                            resource: 'volunteer-custom-field-values',
-                            id: customValues[0].id,
-                            variables: {
-                                value
-                            }
-                        });
-                    } else {
+                        if (value === '' || value === 'false') {
+                            await dataProvider.deleteOne({
+                                resource: 'volunteer-custom-field-values',
+                                id: customValues[0].id
+                            });
+                        } else {
+                            await dataProvider.update({
+                                resource: 'volunteer-custom-field-values',
+                                id: customValues[0].id,
+                                variables: {
+                                    value
+                                }
+                            });
+                        }
+                    } else if (value && value !== 'false') {
                         await dataProvider.create({
                             resource: 'volunteer-custom-field-values',
                             variables: {
@@ -77,8 +90,7 @@ const useSaveConfirm = (
                     }
                 }
             }
-            const arrivals = form.getFieldValue('arrivals') ?? [];
-            const updatedArrivals = form.getFieldValue('updated_arrivals');
+
             if (updatedArrivals) {
                 const serializeDate = (value) => {
                     return dayjs(value).format('YYYY-MM-DD');
@@ -133,6 +145,8 @@ const useSaveConfirm = (
                         });
                     }
                 }
+
+                queryClient.clear();
             }
         },
         renderModal: () => {

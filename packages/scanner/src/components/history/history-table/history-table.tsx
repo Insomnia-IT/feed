@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import dayjs from 'dayjs';
+import { WarningFilled } from '@ant-design/icons';
 
 import { Text } from '~/shared/ui/typography';
 import type { TransactionJoined } from '~/db';
@@ -37,7 +38,14 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                 <TBody>
                     {transactions.map((transaction, index) => (
                         <Row key={index}>
-                            <Cell className={css.first}>{transaction.vol ? transaction.vol.name : 'Аноним'}</Cell>
+                            <Cell className={css.first}>
+                                {!transaction.amount && (
+                                    <>
+                                        <WarningFilled style={{ color: 'red' }} />{' '}
+                                    </>
+                                )}
+                                {transaction.vol ? transaction.vol.name : 'Аноним'}
+                            </Cell>
                             <Cell>{transaction.is_vegan ? '🥦' : '🥩'}</Cell>
                             <Cell>{formatDate(transaction.ts)}</Cell>
                         </Row>

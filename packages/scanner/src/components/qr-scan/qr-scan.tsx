@@ -48,6 +48,8 @@ export const QrScan: FC<{
     useEffect(() => {
         if (!video.current) return;
 
+        console.log('QrScanner');
+
         const s = new QrScanner(
             video.current,
             ({ data }) => {

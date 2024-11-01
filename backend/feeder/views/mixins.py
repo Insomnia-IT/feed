@@ -1,31 +1,39 @@
+import arrow
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
+from django.db.models import Q
 
 from feeder.sync_serializers import get_history_serializer
 from history.models import History
-from feeder.models import Arrival, VolunteerCustomField, VolunteerCustomFieldValue
+from feeder.models import Arrival, VolunteerCustomFieldValue, FeedTransaction
 
 
 User = get_user_model()
+
+DAY_START_HOUR = 7
+TZ = 'Europe/Moscow'
+
 
 
 class VolunteerExtraFilterMixin(ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
 
-        arrival_date = self.request.query_params.get('arrival_date')
-        departure_date = self.request.query_params.get('departure_date')
-        staying_date = self.request.query_params.get('staying_date')
-        arrival_status = self.request.query_params.get('arrival_status')
-        custom_field_name = self.request.query_params.get('custom_field_name')
-        custom_field_id = self.request.query_params.get('custom_field_id')
-        custom_field_value = self.request.query_params.get('custom_field_value')
-        custom_field_id_empty = self.request.query_params.get('custom_field_id_empty')
+        arrival_date = self.request.query_params.get('arrivals.arrival_date')
+        departure_date = self.request.query_params.get('arrivals.departure_date')
+        staying_date = self.request.query_params.get('arrivals.staying_date')
+        arrival_status = self.request.query_params.getlist('arrivals.status')
+        arrival_transport = self.request.query_params.getlist('arrivals.arrival_transport')
+        departure_transport = self.request.query_params.getlist('arrivals.departure_transport')
+        custom_field_id = self.request.query_params.getlist('custom_field_id')
+        custom_field_value = self.request.query_params.getlist('custom_field_value')
+        feeded_date = self.request.query_params.get('feeded_date')
+        non_feeded_date = self.request.query_params.get('non_feeded_date')
 
-        if arrival_date or departure_date or staying_date or arrival_status:
+        if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:
             arrive_qs = Arrival.objects.all()
             if arrival_date:
                 arrive_qs = arrive_qs.filter(arrival_date=arrival_date)
@@ -33,25 +41,38 @@ class VolunteerExtraFilterMixin(ModelViewSet):
                 arrive_qs = arrive_qs.filter(departure_date=departure_date)
             if staying_date:
                 arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
-            if arrival_status and arrival_status.isnumeric():
-                arrive_qs = arrive_qs.filter(status__id=arrival_status)
+            if staying_date and len(arrival_status) == 0:
+                arrive_qs = arrive_qs.filter(status__id__in=['ARRIVED', 'STARTED', 'JOINED'])
+            if len(arrival_status):
+                arrive_qs = arrive_qs.filter(status__id__in=arrival_status)
+            if len(arrival_transport):
+                arrive_qs = arrive_qs.filter(arrival_transport__id__in=arrival_transport)
+            if len(departure_transport):
+                arrive_qs = arrive_qs.filter(departure_transport__id__in=departure_transport)
             qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
 
-        if ((custom_field_name or custom_field_id) and custom_field_value) or custom_field_id_empty:
-            custom_fields_qs = VolunteerCustomFieldValue.objects.all()
-            if custom_field_id_empty:
-                custom_fields_qs = custom_fields_qs.filter(custom_field__id=custom_field_id_empty)
-                qs = qs.exclude(
-                    id__in=custom_fields_qs.values_list('volunteer_id', flat=True)
-                )
-            else:
-                if custom_field_id and custom_field_id.isnumeric():
-                    custom_fields_qs = custom_fields_qs.filter(custom_field__id=custom_field_id)
-                elif custom_field_name:
-                    custom_fields_qs = custom_fields_qs.filter(custom_field__name=custom_field_name)
-                if custom_field_value:
-                    custom_fields_qs = custom_fields_qs.filter(value=custom_field_value)
-                qs = qs.filter(id__in=custom_fields_qs.values_list('volunteer_id', flat=True))
+        if feeded_date or non_feeded_date:
+            feed_datetime = arrow.get(feeded_date or non_feeded_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
+            feed_transactions_qs = FeedTransaction.objects.filter(dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime), volunteer_id__isnull=False)
+            if feeded_date:
+                qs = qs.filter(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
+            if non_feeded_date:
+                qs = qs.exclude(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
+
+        for index, id in enumerate(custom_field_id):
+            value = custom_field_value[index]
+            if id and id.isnumeric():
+                custom_fields_qs = VolunteerCustomFieldValue.objects.all()
+                custom_fields_qs = custom_fields_qs.filter(custom_field__id=id)
+                custom_fields_qs_exist = custom_fields_qs
+
+                if value and value != 'notempty':
+                    custom_fields_qs = custom_fields_qs.filter(value=value)
+
+                if value == 'false' or value == '':
+                    qs = qs.exclude(id__in=custom_fields_qs_exist.values_list('volunteer_id', flat=True))
+                else:
+                    qs = qs.filter(id__in=custom_fields_qs.values_list('volunteer_id', flat=True))
 
         return qs
 
@@ -91,6 +112,7 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         instance = serializer.instance
         instance_name = str(instance.__class__.__name__).lower()
         history_serializer = get_history_serializer(instance_name)
+
         history_data = {
             "status": History.STATUS_CREATE,
             "object_name": instance_name,
@@ -98,7 +120,12 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "action_at": instance.created_at if hasattr(instance, "created_at") else datetime.utcnow(),
             "data": history_serializer(instance).data
         }
-        history_data['data'].update({"badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid)})
+
+        if hasattr(instance, "volunteer"):
+            history_data.update({"volunteer_uuid": str(instance.volunteer.uuid)})
+        elif instance_name == "volunteer":
+            history_data.update({"volunteer_uuid": str(instance.uuid)})
+
         History.objects.create(**history_data)
 
     def perform_update(self, serializer):
@@ -122,7 +149,9 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
         if changed_data:
             instance_id = new_data.get("id")
             changed_data.update({"id": instance_id})
-            changed_data.update({"badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid)})
+            if hasattr(instance, "custom_field"):
+                changed_data["custom_field"] = instance.custom_field.id
+
             history_data = {
                 "status": History.STATUS_UPDATE,
                 "object_name": instance_name,
@@ -131,15 +160,32 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
                 "data": changed_data,
                 "old_data": old_data
             }
+
+            if hasattr(instance, "volunteer"):
+                history_data.update({"volunteer_uuid": str(instance.volunteer.uuid)})
+            elif instance_name == "volunteer":
+                history_data.update({"volunteer_uuid": str(instance.uuid)})
+
             History.objects.create(**history_data)
-
-
 
     def perform_destroy(self, instance):
         user_id = get_request_user_id(self.request.user)
 
-        instance_id = instance.uuid if hasattr(instance, "uuid") else instance.id
         instance_name = str(instance.__class__.__name__).lower()
+        data = {
+                "id": str(instance.uuid) if hasattr(instance, "uuid") else str(instance.id),
+                "deleted": True
+            }
+
+        if hasattr(instance, "custom_field"):
+            data["custom_field"] = instance.custom_field.id
+
+        volunteer_uuid = None
+
+        if hasattr(instance, "volunteer"):
+            volunteer_uuid = str(instance.volunteer.uuid)
+        elif instance_name == "volunteer":
+            volunteer_uuid = str(instance.uuid)
 
         super().perform_destroy(instance)
 
@@ -148,13 +194,14 @@ class SaveHistoryDataViewSetMixin(ModelViewSet):
             "object_name": instance_name,
             "actor_badge": user_id,
             "action_at": instance.updated_at if hasattr(instance, "updated_at") else datetime.utcnow(),
-            "data": {
-                "id": str(instance_id),
-                "badge": str(instance.volunteer.uuid) if hasattr(instance, "volunteer") else str(instance.uuid),
-                "deleted": True
-            }
+            "data": data
         }
+
+        if volunteer_uuid:
+            history_data.update({"volunteer_uuid": volunteer_uuid})
+
         History.objects.create(**history_data)
+
 
 class MultiSerializerViewSetMixin(object):
     def get_serializer_class(self):

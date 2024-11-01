@@ -12,9 +12,7 @@ export interface VolEntity {
     position?: string;
     is_vegan?: boolean; // nutritionType
     is_blocked?: boolean;
-    daily_eats?: number;
     comment?: string;
-    ref_to?: number; // chef
     directions?: Array<DirectionEntity>;
     kitchen?: number;
     // location?: LocationEntity[];
@@ -27,6 +25,7 @@ export interface VolEntity {
     main_role?: string;
     access_role?: string;
     arrivals: Array<ArrivalEntity>;
+    direction_head_comment?: string;
 }
 
 export interface KitchenEntity {
@@ -77,12 +76,15 @@ export interface GroupBadgeEntity {
     direction?: DirectionEntity;
     name: string;
     comment?: string;
+    /* Количество волонтеров в бейдже */
+    volunteer_count: number;
 }
 
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
     comment?: string;
+    mobile: boolean;
 }
 
 export interface DirectionEntity {
@@ -107,6 +109,7 @@ export interface CustomFieldEntity {
     name: string;
     type: string;
     comment: string;
+    mobile: boolean;
 }
 
 export interface VolCustomFieldValueEntity {
