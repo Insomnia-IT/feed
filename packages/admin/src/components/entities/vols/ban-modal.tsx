@@ -15,7 +15,7 @@ interface IProps {
 const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuccess, visible, volunteerId }) => {
     const [form] = Form.useForm();
 
-    const handleFinish = async (): Promise<void> => {
+    const handleFinish = async () => {
         try {
             const values = await form.validateFields();
             const reason = values.reason;
@@ -33,18 +33,20 @@ const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuc
                 comment: updatedComment
             };
 
-            await dataProvider.update({
-                id: volunteerId,
-                resource: 'volunteers',
-                variables: updatedData
-            });
+            await dataProvider
+                .update({
+                    id: volunteerId,
+                    resource: 'volunteers',
+                    variables: updatedData
+                })
+                .then(() => {
+                    notification.success({
+                        message: `Волонтёр ${!isBlocked ? 'заблокирован' : 'разблокирован'} успешно`
+                    });
 
-            notification.success({
-                message: `Волонтёр ${!isBlocked ? 'заблокирован' : 'разблокирован'} успешно`
-            });
-
-            onSuccess(updatedData);
-            form.resetFields();
+                    onSuccess(updatedData);
+                    form.resetFields();
+                });
         } catch (error) {
             notification.error({
                 message: 'Ошибка при обновлении волонтёра'
