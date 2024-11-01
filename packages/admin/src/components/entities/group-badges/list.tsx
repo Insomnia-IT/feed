@@ -22,8 +22,6 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
 
     const { isDesktop } = useMedia();
 
-    console.log(data);
-
     return (
         <List>
             <Table dataSource={data} rowKey='id' scroll={{ x: '100%' }} pagination={false}>
