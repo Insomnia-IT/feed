@@ -19,12 +19,7 @@ import useVisibleDirections from '../vols/use-visible-directions';
 
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
     const { data: groupBadges } = useList<GroupBadgeEntity>({
-        resource: 'group-badges',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
-        }
+        resource: 'group-badges'
     });
 
     const visibleDirections = useVisibleDirections();
@@ -37,7 +32,7 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
 
     return (
         <List>
-            <Table dataSource={data} rowKey='id' scroll={{ x: '100%' }}>
+            <Table dataSource={data} rowKey='id' scroll={{ x: '100%' }} pagination={false}>
                 <Table.Column<GroupBadgeEntity>
                     title=''
                     dataIndex='actions'
