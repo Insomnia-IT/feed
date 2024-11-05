@@ -406,7 +406,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section5' ? styles.active : ''}`}
                         data-id='section5'
-                        style={{ display: denyBadgeEdit ? 'none' : '' }}
                     >
                         Кастомные Поля
                     </li>
@@ -757,8 +756,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 <div id='section6' className={styles.formSection}>
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
-                        <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
-                            <Input.TextArea disabled={denyBadgeEdit} autoSize={{ minRows: 2, maxRows: 6 }} />
+                        <Form.Item label='Комментарий' name={'comment'}>
+                            <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
                         </Form.Item>
                     </div>
                     <Divider />
