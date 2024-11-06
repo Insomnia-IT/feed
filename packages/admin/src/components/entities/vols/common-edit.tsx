@@ -108,14 +108,15 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         optionLabel: 'name'
     });
 
-    const statusesSelectProps = useSelect<StatusEntity>({
-        resource: 'statuses',
-        optionLabel: 'name'
-    }).selectProps.options?.map(item =>
-        ["ARRIVED", "STARTED", "JOINED"].includes(item.value as string)
-            ? { ...item, label: `✅ ${item.label}` }
-            : item
-    ) || [];
+    const statusesSelectProps =
+        useSelect<StatusEntity>({
+            resource: 'statuses',
+            optionLabel: 'name'
+        }).selectProps.options?.map((item) =>
+            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
+                ? { ...item, label: `✅ ${item.label}` }
+                : item
+        ) || [];
 
     const getDirectionIds = (direction) => ({
         value: direction ? direction.map((d) => d.id || d) : direction
