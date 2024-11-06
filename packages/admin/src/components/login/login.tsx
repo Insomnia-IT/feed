@@ -24,7 +24,7 @@ export interface ILoginForm {
 }
 
 const rowStyle = {
-    height: '100vh'
+    height: '100dvh'
 };
 
 type OptionValue = 'qr' | 'login';
