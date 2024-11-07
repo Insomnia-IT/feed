@@ -108,10 +108,15 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         optionLabel: 'name'
     });
 
-    const { selectProps: statusesSelectProps } = useSelect<StatusEntity>({
-        resource: 'statuses',
-        optionLabel: 'name'
-    });
+    const statusesSelectProps =
+        useSelect<StatusEntity>({
+            resource: 'statuses',
+            optionLabel: 'name'
+        }).selectProps.options?.map((item) =>
+            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
+                ? { ...item, label: `✅ ${item.label}` }
+                : item
+        ) || [];
 
     const getDirectionIds = (direction) => ({
         value: direction ? direction.map((d) => d.id || d) : direction
@@ -570,7 +575,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                                 rules={Rules.required}
                                             >
                                                 <Select
-                                                    {...statusesSelectProps}
+                                                    options={statusesSelectProps}
                                                     style={{ width: '100%' }}
                                                     onChange={createChange('status')}
                                                 />
