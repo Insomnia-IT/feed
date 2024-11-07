@@ -29,6 +29,7 @@ class VolunteerFilter(django_filters.FilterSet):
     badge_number = django_filters.CharFilter(field_name="badge_number", lookup_expr='icontains')
     comment = django_filters.CharFilter(field_name="comment", lookup_expr='icontains')
     is_blocked = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
+    is_ticket_received = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
     is_vegan = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
