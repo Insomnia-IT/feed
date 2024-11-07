@@ -6,7 +6,7 @@ FROM node:18-alpine as base
 ENV husky_skip_init="1"
 ENV HUSKY_DEBUG="1"
 #ENV NODE_OPTIONS="--max_old_space_size=4000 --openssl-legacy-provider"
-ENV NODE_OPTIONS="--max_old_space_size=1500"
+ENV NODE_OPTIONS="--max_old_space_size=4000"
 
 #TODO review env varables
 
@@ -55,7 +55,7 @@ COPY . /app
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/pwa-ver.txt
 
 RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
-    yarn build
+    NODE_OPTIONS="--max_old_space_size=1000" yarn build
 
 # RUN yarn --prod --frozen-lockfile
 
