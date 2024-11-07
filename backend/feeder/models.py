@@ -129,6 +129,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     position = models.TextField(null=True, blank=True, verbose_name="")
     qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
     is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован?")
+    is_ticket_received = models.BooleanField(default=False, verbose_name="Выдан ли билет?") #Клим
     is_vegan = models.BooleanField(default=False, verbose_name="Вегетарианец?")
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     direction_head_comment = models.TextField(null=True, blank=True, verbose_name="Комментарий руководителя локации")
