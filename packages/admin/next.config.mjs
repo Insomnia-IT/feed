@@ -10,12 +10,10 @@ assert(process.env.NEW_API_URL_ENV, 'env variables must be set');
 
 // TODO check https://github.com/vercel/next.js/issues/39161
 
-/** @type { import('next').NextConfig } */
 const nextConfig = {
     basePath: process.env.ADMIN_BASE_PATH_ENV || '',
     experimental: {
-        newNextLinkBehavior: true,
-        webpackBuildWorker: true
+        newNextLinkBehavior: true
     },
     i18n: i18n.i18n,
     async headers() {
@@ -23,16 +21,17 @@ const nextConfig = {
             {
                 // Apply these headers to all routes in your application.
                 source: '/:path*',
-                headers: [
-                    {
-                        key: 'Strict-Transport-Security',
-                        value: 'max-age=0'
-                    }
-                ]
+                headers: [{
+                    key: 'Strict-Transport-Security',
+                    value: 'max-age=0'
+                }]
             }
         ];
     },
-    webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
+    webpack: (
+        config,
+        { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
+    ) => {
         config.plugins.push(env);
 
         config.resolve.plugins = [...(config.resolve.plugins || []), new TsconfigPathsPlugin()];
@@ -50,15 +49,14 @@ const nextConfig = {
             });
         }
 
-        if (config.cache) {
-            config.cache = Object.freeze({
-                type: 'memory'
-            });
-        }
-
         return config;
     },
-    transpilePackages: ['@feed/ui', '@feed/core', '@feed/api']
+    transpilePackages: [
+        '@feed/ui',
+        '@feed/core',
+        '@feed/api'
+    ]
 };
 
 export default nextConfig;
+
