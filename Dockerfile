@@ -6,7 +6,7 @@ FROM node:18-alpine as base
 ENV husky_skip_init="1"
 ENV HUSKY_DEBUG="1"
 #ENV NODE_OPTIONS="--max_old_space_size=4000 --openssl-legacy-provider"
-ENV NODE_OPTIONS="--max_old_space_size=2000"
+ENV NODE_OPTIONS="--max_old_space_size=1500"
 
 #TODO review env varables
 
