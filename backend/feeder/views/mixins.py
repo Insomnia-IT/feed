@@ -33,7 +33,7 @@ class VolunteerExtraFilterMixin(ModelViewSet):
         feeded_date = self.request.query_params.get('feeded_date')
         non_feeded_date = self.request.query_params.get('non_feeded_date')
 
-        if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:  
+        if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:
             arrive_qs = Arrival.objects.all()
             
             if arrival_date:
