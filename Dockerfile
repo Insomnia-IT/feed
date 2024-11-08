@@ -55,7 +55,7 @@ COPY . /app
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/pwa-ver.txt
 
 RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
-    NODE_OPTIONS="--max_old_space_size=1000" yarn build
+    yarn build
 
 # RUN yarn --prod --frozen-lockfile
 
