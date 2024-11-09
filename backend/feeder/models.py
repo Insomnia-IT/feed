@@ -152,6 +152,10 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
     main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
     notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
+    responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='volunteers',
+        verbose_name="Ответственный",)
+    is_child = models.BooleanField('IsChild', null=True, blank=True, verbose_name="Ребенок")
 
     class Meta:
         verbose_name = "Волонтёр"
@@ -282,6 +286,7 @@ class FeedTransaction(TimeMixin):
     dtime = models.DateTimeField()
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     meal_time = models.TextField(max_length=10, verbose_name="Время питания", validators=[validate_meal_time])
+    created_by = models.ForeignKey(Person, null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = "Приём пищи"
