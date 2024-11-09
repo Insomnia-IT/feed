@@ -35,6 +35,8 @@ class VolunteerFilter(django_filters.FilterSet):
     direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
     direction_name = django_filters.CharFilter(field_name="directions__name", lookup_expr='icontains')
     directions = django_filters.ModelMultipleChoiceFilter(queryset=models.Direction.objects.all())
+    responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
+    is_child = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
 
     class Meta:
         model = models.Volunteer
