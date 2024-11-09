@@ -1,5 +1,16 @@
 import type { FormInstance } from '@pankod/refine-antd';
-import { Button, Checkbox, DatePicker, DeleteButton, Form, Input, Modal, Select, useSelect } from '@pankod/refine-antd';
+import {
+    Button,
+    Checkbox,
+    DatePicker,
+    DeleteButton,
+    Divider,
+    Form,
+    Input,
+    Modal,
+    Select,
+    useSelect
+} from '@pankod/refine-antd';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,7 +21,6 @@ import {
     RadarChartOutlined,
     SmileOutlined
 } from '@ant-design/icons';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 
 import { Rules } from '~/components/form';
@@ -30,14 +40,13 @@ import type {
 } from '~/interfaces';
 import { formDateFormat, isActivatedStatus } from '~/shared/lib';
 import { dataProvider } from '~/dataProvider';
-
-import useCanAccess from './use-can-access';
-import styles from './common.module.css';
-
-import 'react-quill/dist/quill.snow.css';
 import HorseIcon from '~/assets/icons/horse-icon';
 import { getSorter } from '~/utils';
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+
+import useCanAccess from './use-can-access';
+import BanModal from './ban-modal';
+import styles from './common.module.css';
+import 'react-quill/dist/quill.snow.css';
 
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
@@ -45,6 +54,8 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
+    const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' });
+    const canBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
@@ -97,22 +108,23 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         optionLabel: 'name'
     });
 
-    const { selectProps: statusesSelectProps } = useSelect<StatusEntity>({
-        resource: 'statuses',
-        optionLabel: 'name'
+    const statusesSelectProps =
+        useSelect<StatusEntity>({
+            resource: 'statuses',
+            optionLabel: 'name'
+        }).selectProps.options?.map((item) =>
+            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
+                ? { ...item, label: `✅ ${item.label}` }
+                : item
+        ) || [];
+
+    const getDirectionIds = (direction) => ({
+        value: direction ? direction.map((d) => d.id || d) : direction
     });
 
-    const getDirectionIds = (direction) => {
-        return {
-            value: direction ? direction.map((d) => d.id || d) : direction
-        };
-    };
-
-    const getDateValue = (value) => {
-        return {
-            value: value ? dayjs(value) : ''
-        };
-    };
+    const getDateValue = (value) => ({
+        value: value ? dayjs(value) : ''
+    });
 
     const onGroupBadgeClear = () => {
         setTimeout(() => {
@@ -243,13 +255,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         void loadCustomFields();
     }, []);
 
-    // отсюда мой код
-
     const [activeAnchor, setActiveAnchor] = useState('section1');
+    const volunteerId = form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);
-    const [open, setOpen] = useState(false);
+    const currentComment = form.getFieldValue('comment') || '';
+    const [isBanModalVisible, setBanModalVisible] = useState(false);
     const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const router = useRouter();
 
     const handleBack = () => {
@@ -277,10 +288,9 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         form.setFieldValue('updated_arrivals', updatedArrivals);
     }, [updatedArrivals, form]);
 
-    const handleToggleBlocked = () => {
-        const isBlocked = form.getFieldValue('is_blocked');
-        form.setFieldsValue({ is_blocked: !isBlocked });
-        setOpen(false);
+    const handleBanSuccess = (updatedData) => {
+        form.setFieldsValue(updatedData);
+        setBanModalVisible(false);
     };
 
     useEffect(() => {
@@ -342,24 +352,21 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         };
     }, [setActiveAnchor]);
 
-    function returnEngagementsLayout() {
+    const returnEngagementsLayout = () => {
         if (!person) return null;
         const engagementsArray = person.engagements;
         if (engagementsArray.length) {
-            return engagementsArray.map((item) => {
-                return (
-                    <div key={item.id}>
-                        <span className={styles.engagementsDescr}>{`${item.year} год`}</span>
-                        <RadarChartOutlined style={{ marginRight: '3px' }} />
-                        <span className={styles.engagementsDescr}>{item.direction.name}</span>
-                        <span className={styles.engagementsDescr}>{`(${item.role.name})`}</span>
-                    </div>
-                );
-            });
-        } else {
-            return null;
+            return engagementsArray.map((item) => (
+                <div key={item.id}>
+                    <span className={styles.engagementsDescr}>{`${item.year} год`}</span>
+                    <RadarChartOutlined style={{ marginRight: '3px' }} />
+                    <span className={styles.engagementsDescr}>{item.direction.name}</span>
+                    <span className={styles.engagementsDescr}>{`(${item.role.name})`}</span>
+                </div>
+            ));
         }
-    }
+        return null;
+    };
 
     const addArrival = () => {
         setUpdatedArrivals([
@@ -404,7 +411,6 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section5' ? styles.active : ''}`}
                         data-id='section5'
-                        style={{ display: denyBadgeEdit ? 'none' : '' }}
                     >
                         Кастомные Поля
                     </li>
@@ -476,7 +482,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.typeMeal}>
                             <Form.Item label='Тип питания' name='feed_type' rules={Rules.required}>
-                                <Select disabled={denyBadgeEdit} {...feedTypeSelectProps} />
+                                <Select disabled={denyFeedTypeEdit} {...feedTypeSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
@@ -569,7 +575,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                                 rules={Rules.required}
                                             >
                                                 <Select
-                                                    {...statusesSelectProps}
+                                                    options={statusesSelectProps}
                                                     style={{ width: '100%' }}
                                                     onChange={createChange('status')}
                                                 />
@@ -721,86 +727,66 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                     </div>
                 </div>
-                <div id='section5' className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
+                <div id='section5' className={styles.formSection}>
                     <p className={styles.formSection__title}>Кастомные Поля</p>
-                    {customFields.map(({ id, name, type }) => {
-                        const handleChange = (e) => {
-                            const value = e.target[type === 'boolean' ? 'checked' : 'value'];
-                            form.setFieldValue(['updated_custom_fields', id.toString()], value);
-                        };
-                        const customFieldValues = form.getFieldValue('custom_field_values');
-                        if (!customFieldValues) return null;
-                        const customFieldValue = customFieldValues.find(({ custom_field }) => custom_field === id);
-                        return (
-                            <Form.Item key={name} label={name}>
-                                {type === 'boolean' && (
-                                    <Checkbox
-                                        defaultChecked={customFieldValue ? customFieldValue.value === 'true' : false}
-                                        onChange={handleChange}
-                                    />
-                                )}
-                                {type === 'string' && (
-                                    <Input
-                                        defaultValue={customFieldValue ? customFieldValue.value : ''}
-                                        onChange={handleChange}
-                                    />
-                                )}
-                            </Form.Item>
-                        );
-                    })}
+                    {customFields
+                        .filter((item) => item.mobile || canBadgeEdit)
+                        .map(({ id, name, type }) => {
+                            const handleChange = (e) => {
+                                const value = e.target[type === 'boolean' ? 'checked' : 'value'];
+                                form.setFieldValue(['updated_custom_fields', id.toString()], value);
+                            };
+                            const customFieldValues = form.getFieldValue('custom_field_values');
+                            const customFieldValue = customFieldValues?.find(({ custom_field }) => custom_field === id);
+                            return (
+                                <Form.Item key={name} label={name}>
+                                    {type === 'boolean' && (
+                                        <Checkbox
+                                            defaultChecked={
+                                                customFieldValue ? customFieldValue.value === 'true' : false
+                                            }
+                                            onChange={handleChange}
+                                        />
+                                    )}
+                                    {type === 'string' && (
+                                        <Input
+                                            defaultValue={customFieldValue ? customFieldValue.value : ''}
+                                            onChange={handleChange}
+                                        />
+                                    )}
+                                </Form.Item>
+                            );
+                        })}
                 </div>
                 <div id='section6' className={styles.formSection}>
                     <p className={styles.formSection__title}>Дополнительно</p>
                     <div className='commentArea'>
-                        <Form.Item label='Комментарий' name={denyBadgeEdit ? 'direction_head_comment' : 'comment'}>
-                            <ReactQuill className={styles.reactQuill} modules={{ toolbar: false }} />
+                        <Form.Item label='Комментарий' name={'comment'}>
+                            <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
                         </Form.Item>
                     </div>
+                    <Divider />
+
                     <div className={styles.blockDeleteWrap}>
-                        {!denyBadgeEdit && (
-                            <Button
-                                className={styles.blockButton}
-                                type='default'
-                                onClick={() => setOpen(true)}
-                                disabled={isBlocked ? !canUnban : false}
-                            >
-                                {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
-                                {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
-                            </Button>
-                        )}
-                        <Modal
-                            closable={false}
-                            centered
-                            open={open}
-                            okText={'Оставить'}
-                            cancelText={`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-                            onOk={() => setOpen(false)}
-                            onCancel={handleToggleBlocked}
-                            width={420}
-                            footer={null}
+                        <Button
+                            className={styles.blockButton}
+                            type='default'
+                            onClick={() => setBanModalVisible(true)}
+                            disabled={isBlocked ? !canUnban : false}
                         >
-                            <div className={styles.modalWindow}>
-                                <span className={styles.carefulIcon}>
-                                    <span className={styles.carefulDescr}>!</span>
-                                </span>
-                                <p className={styles.modalTitle}>
-                                    {isBlocked ? 'Разблокировать волонтера?' : 'Заблокировать Волонтера?'}
-                                </p>
-                                <p className={styles.modalDescr}>
-                                    {isBlocked
-                                        ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
-                                        : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
-                                </p>
-                                <div className={styles.modalButtonWrap}>
-                                    <Button className={styles.onCancelButton} onClick={handleToggleBlocked}>
-                                        {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-                                    </Button>
-                                    <Button type='primary' onClick={() => setOpen(false)}>
-                                        {'Оставить'}
-                                    </Button>
-                                </div>
-                            </div>
-                        </Modal>
+                            {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
+                            {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
+                        </Button>
+
+                        <BanModal
+                            isBlocked={isBlocked}
+                            visible={isBanModalVisible}
+                            onCancel={() => setBanModalVisible(false)}
+                            volunteerId={volunteerId}
+                            currentComment={currentComment}
+                            onSuccess={handleBanSuccess}
+                        />
+
                         {canDelete && (
                             <DeleteButton
                                 type='primary'
@@ -823,6 +809,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         <Form.Item name='person' hidden></Form.Item>
                     </div>
                 </div>
+
                 <div id='section7' className={styles.formSection}>
                     <p className={styles.formSection__title}>Участие во все года</p>
                     <div className={styles.engagementsWrap}>{returnEngagementsLayout()}</div>

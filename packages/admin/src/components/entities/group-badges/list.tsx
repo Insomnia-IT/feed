@@ -1,13 +1,4 @@
-import {
-    DeleteButton,
-    EditButton,
-    getDefaultSortOrder,
-    List,
-    ShowButton,
-    Space,
-    Table,
-    useTable
-} from '@pankod/refine-antd';
+import { DeleteButton, EditButton, List, Space, Table } from '@pankod/refine-antd';
 import { type IResourceComponentsProps, useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 
@@ -19,25 +10,21 @@ import useVisibleDirections from '../vols/use-visible-directions';
 
 export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
     const { data: groupBadges } = useList<GroupBadgeEntity>({
-        resource: 'group-badges',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
-        }
+        resource: 'group-badges'
     });
 
     const visibleDirections = useVisibleDirections();
 
-    const data = groupBadges?.data.filter((item) => {
-        return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
-    });
+    const data =
+        groupBadges?.data.filter((item) => {
+            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
+        }) ?? [];
 
     const { isDesktop } = useMedia();
 
     return (
         <List>
-            <Table dataSource={data} rowKey='id' scroll={{ x: '100%' }}>
+            <Table dataSource={data} rowKey='id' scroll={{ x: '100%' }} pagination={false}>
                 <Table.Column<GroupBadgeEntity>
                     title=''
                     dataIndex='actions'
@@ -60,6 +47,12 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
                     dataIndex={['direction', 'name']}
                     key='direction'
                     title='Служба/Направление'
+                    render={renderText}
+                />
+                <Table.Column
+                    dataIndex='volunteer_count'
+                    key='volunteer_count'
+                    title='Количество волонтеров'
                     render={renderText}
                 />
                 {isDesktop && (

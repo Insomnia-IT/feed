@@ -35,12 +35,25 @@ class VolunteerExtraFilterMixin(ModelViewSet):
 
         if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:
             arrive_qs = Arrival.objects.all()
+            
             if arrival_date:
-                arrive_qs = arrive_qs.filter(arrival_date=arrival_date)
+                if ':' in arrival_date:
+                    start_date, end_date = arrival_date.split(':')
+                    arrive_qs = arrive_qs.filter(arrival_date__gte=start_date, arrival_date__lte=end_date)
+                else:
+                    arrive_qs = arrive_qs.filter(arrival_date=arrival_date)
             if departure_date:
-                arrive_qs = arrive_qs.filter(departure_date=departure_date)
+                if ':' in departure_date:
+                    start_date, end_date = departure_date.split(':')
+                    arrive_qs = arrive_qs.filter(departure_date__gte=start_date, departure_date__lte=end_date)
+                else:
+                    arrive_qs = arrive_qs.filter(departure_date=departure_date)
             if staying_date:
-                arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
+                if ':' in staying_date:
+                    start_date, end_date = staying_date.split(':')
+                    arrive_qs = arrive_qs.filter(arrival_date__lte=end_date, departure_date__gte=start_date)
+                else:
+                    arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
             if staying_date and len(arrival_status) == 0:
                 arrive_qs = arrive_qs.filter(status__id__in=['ARRIVED', 'STARTED', 'JOINED'])
             if len(arrival_status):

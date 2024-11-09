@@ -11,16 +11,16 @@ import {
     useForm,
     useTable
 } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useList, useTranslate, useUpdateMany } from '@pankod/refine-core';
-import { DeleteOutlined } from '@ant-design/icons';
 import { Input, Popconfirm } from 'antd';
+import { useList, useUpdateMany } from '@pankod/refine-core';
+import { DeleteOutlined } from '@ant-design/icons';
+import type { IResourceComponentsProps } from '@pankod/refine-core';
 import type { TableRowSelection } from 'antd/es/table/interface';
 
 import 'react-mde/lib/styles/css/react-mde-all.css';
 
-import type { Key } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import type { Key } from 'react';
 
 import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
 
@@ -31,7 +31,6 @@ import { CreateEdit } from './common';
 const { Title } = Typography;
 
 export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
-    const translate = useTranslate();
     const { mutate } = useUpdateMany();
 
     const [volunteers, setVolunteers] = useState<Array<VolEntity & { markedDeleted: boolean; markedAdded: boolean }>>(
@@ -84,7 +83,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                 field: 'id',
                 order: 'desc'
             }
-        ]
+        ],
+        hasPagination: false,
+        initialPageSize: 10000
     });
 
     const visibleDirections = useVisibleDirections();
@@ -102,7 +103,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         [currentVols.dataSource]
     );
 
-    const addVolunteers = () => {
+    const addVolunteers = (): void => {
         //если волонтер уже был в списке, но помечен на удаление, убираем флаг удаления
         const volsCache = volunteers.map((item) => ({
             ...item,
@@ -128,7 +129,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         return volunteers.filter((vol) => !vol.markedDeleted);
     }, [volunteers]);
 
-    const handleChangeInputValue = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleChangeInputValue = (e: ChangeEvent<HTMLInputElement>): void => {
         const value = e.target.value;
         setFilters([
             {
@@ -190,6 +191,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
                 <CreateEdit />
+                Количестиво волонтеров: {volunteers?.length}
             </Form>
             <Title level={5}>Волонтеры</Title>
             <Button onClick={() => setOpen(true)} style={{ marginBottom: 20 }}>
@@ -279,9 +281,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                                 recordItemId={record.id}
                             />
                             <Popconfirm
-                                title={translate('buttons.confirm', 'Are you sure?')}
-                                okText={translate('buttons.delete', 'Delete')}
-                                cancelText={translate('buttons.cancel', 'Cancel')}
+                                title={'Уверены?'}
+                                okText={'Удалить'}
+                                cancelText={'Отмена'}
                                 okType='danger'
                                 onConfirm={(): void => {
                                     setVolunteers(

@@ -76,12 +76,15 @@ export interface GroupBadgeEntity {
     direction?: DirectionEntity;
     name: string;
     comment?: string;
+    /* Количество волонтеров в бейдже */
+    volunteer_count: number;
 }
 
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
     comment?: string;
+    mobile: boolean;
 }
 
 export interface DirectionEntity {
@@ -106,6 +109,7 @@ export interface CustomFieldEntity {
     name: string;
     type: string;
     comment: string;
+    mobile: boolean;
 }
 
 export interface VolCustomFieldValueEntity {
