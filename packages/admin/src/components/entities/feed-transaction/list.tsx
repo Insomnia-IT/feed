@@ -128,12 +128,11 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 tx.reason
             ]);
         });
-
-        await saveXLSX(workbook, 'feed-transactions');
+        void saveXLSX(workbook, 'feed-transactions');
     }, [filters, kitchenNameById, volNameById]);
 
     const handleClickDownload = useCallback((): void => {
-        createAndSaveXLSX();
+        void createAndSaveXLSX();
     }, [createAndSaveXLSX]);
 
     return (
