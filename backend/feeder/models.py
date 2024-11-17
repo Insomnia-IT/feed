@@ -288,7 +288,6 @@ class FeedTransaction(TimeMixin):
     dtime = models.DateTimeField()
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     meal_time = models.TextField(max_length=10, verbose_name="Время питания", validators=[validate_meal_time])
-    created_by = models.ForeignKey(Person, null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = "Приём пищи"
