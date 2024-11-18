@@ -177,32 +177,6 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
             <Button onClick={() => setOpenAdd(true)} style={{ marginBottom: 20 }}>
                 Добавить
             </Button>
-            <Modal
-                title='Добавить волонтеров'
-                open={openAdd}
-                onOk={() => {
-                    addVolunteers();
-                    setOpenAdd(false);
-                }}
-                onCancel={() => setOpenAdd(false)}
-            >
-                <Input
-                    placeholder='Поиск...'
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    style={{ marginBottom: 16 }}
-                />
-                <Table
-                    rowSelection={rowSelection}
-                    dataSource={filteredData}
-                    rowKey='id'
-                    loading={isVolunteersAllLoading}
-                >
-                    <Table.Column dataIndex='name' key='name' title='Имя на бейдже' />
-                    <Table.Column dataIndex='first_name' key='first_name' title='Имя' />
-                    <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' />
-                </Table>
-            </Modal>
             <Input
                 placeholder='Поиск волонтера'
                 allowClear
@@ -255,6 +229,32 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                     )}
                 />
             </Table>
+            <Modal
+                title='Добавить волонтеров'
+                open={openAdd}
+                onOk={() => {
+                    addVolunteers();
+                    setOpenAdd(false);
+                }}
+                onCancel={() => setOpenAdd(false)}
+            >
+                <Input
+                    placeholder='Поиск...'
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ marginBottom: 16 }}
+                />
+                <Table
+                    rowSelection={rowSelection}
+                    dataSource={filteredData}
+                    rowKey='id'
+                    loading={isVolunteersAllLoading}
+                >
+                    <Table.Column dataIndex='name' key='name' title='Имя на бейдже' />
+                    <Table.Column dataIndex='first_name' key='first_name' title='Имя' />
+                    <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' />
+                </Table>
+            </Modal>
         </Edit>
     );
 };
