@@ -14,7 +14,7 @@
 
 Пример Pull Request-а c добавлением полей в базу данных: https://github.com/Insomnia-IT/feed/pull/387/files
 
-Подробная документация по бекенду располагается по [ссылке](backand/description.md)
+Подробная документация по бекенду располагается по [ссылке](../backend/description.md)
 
 ## Фронтенд
 
