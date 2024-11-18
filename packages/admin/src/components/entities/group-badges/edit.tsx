@@ -11,7 +11,7 @@ import {
     useForm,
     useTable
 } from '@pankod/refine-antd';
-import { Input, Popconfirm } from 'antd';
+import { Input, Popconfirm, Row, Col, Divider } from 'antd';
 import { useList, useUpdateMany, IResourceComponentsProps } from '@pankod/refine-core';
 import { DeleteOutlined } from '@ant-design/icons';
 import type { TableRowSelection } from 'antd/es/table/interface';
@@ -171,18 +171,22 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
                 <CreateEdit />
-                <div>Количество волонтеров: {volunteers.length}</div>
+                <span>Количество волонтеров: {volunteers.length}</span>
             </Form>
-            <Title level={5}>Волонтеры</Title>
-            <Button onClick={() => setOpenAdd(true)} style={{ marginBottom: 20 }}>
-                Добавить
-            </Button>
-            <Input
-                placeholder='Поиск волонтера'
-                allowClear
-                onChange={handleChangeInputValue}
-                style={{ marginBottom: 20 }}
-            />
+            <Divider />
+            <Row justify='space-between' align='middle' style={{ marginBottom: 16 }}>
+                <Col>
+                    <Title level={5}>Волонтеры</Title>
+                </Col>
+                <Col>
+                    <Space>
+                        <Input placeholder='Поиск волонтера' allowClear onChange={handleChangeInputValue} />
+                        <Button type='primary' onClick={() => setOpenAdd(true)}>
+                            Добавить волонтера
+                        </Button>
+                    </Space>
+                </Col>
+            </Row>
             <Table {...currentVols} dataSource={dataSource} rowKey='id'>
                 <Table.Column dataIndex='name' key='name' title='Имя на бейдже' />
                 <Table.Column dataIndex='first_name' key='first_name' title='Имя' />
@@ -211,14 +215,10 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                                 okType='danger'
                                 onConfirm={(): void => {
                                     setVolunteers(
-                                        volunteers.find((item) => {
-                                            return item.id === record.id;
-                                        })?.markedAdded
-                                            ? volunteers.filter((item) => {
-                                                  return item.id != record.id;
-                                              })
+                                        volunteers.find((item) => item.id === record.id)?.markedAdded
+                                            ? volunteers.filter((item) => item.id !== record.id)
                                             : volunteers.map((vol) =>
-                                                  vol.id === record.id ? ((vol.markedDeleted = true), vol) : vol
+                                                  vol.id === record.id ? { ...vol, markedDeleted: true } : vol
                                               )
                                     );
                                 }}
