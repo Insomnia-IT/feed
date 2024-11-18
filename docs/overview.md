@@ -3,7 +3,9 @@
 ### Используемый стек
 
 Фронтенд: React + nextjs + refine + antd
+
 Бекенд: python + django
+
 База данных: sqlite3
 
 ## Бекенд
