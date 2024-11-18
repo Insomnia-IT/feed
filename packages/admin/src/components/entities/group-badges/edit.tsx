@@ -115,13 +115,16 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         const currentIds = volsCache.map((item) => {
             return item.id;
         });
-        const volsAdd =
+
+        const volsToAdd =
             volunteersAll?.data
                 .filter((item) => {
                     return selected.includes(item.id) && !currentIds.includes(item.id);
                 })
                 .map((item) => ({ ...item, markedDeleted: false, markedAdded: true })) ?? [];
-        setVolunteers(volsCache.concat(volsAdd));
+
+        setVolunteers(volsCache.concat(volsToAdd));
+
         setSelected([]);
     };
 
@@ -187,11 +190,13 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         type: 'checkbox'
     } as TableRowSelection<VolEntity>;
 
+    const activeVolunteers = volunteers.filter((item) => !item.markedDeleted);
+
     return (
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
                 <CreateEdit />
-                Количестиво волонтеров: {volunteers?.length}
+                Количество волонтеров: {activeVolunteers?.length}
             </Form>
             <Title level={5}>Волонтеры</Title>
             <Button onClick={() => setOpen(true)} style={{ marginBottom: 20 }}>
