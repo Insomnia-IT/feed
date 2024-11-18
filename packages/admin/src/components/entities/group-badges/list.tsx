@@ -62,7 +62,6 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
                     dataIndex='volunteer_count'
                     key='volunteer_count'
                     title='Количество волонтеров'
-                    render={(value: string): ReactNode => <TextField value={value} />}
                     ellipsis
                 />
                 {isDesktop && (
