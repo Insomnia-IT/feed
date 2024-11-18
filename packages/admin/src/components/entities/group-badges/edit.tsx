@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Key } from 'react';
 
 import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
+import { useMedia } from '~/shared/providers';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { CreateEdit } from './common';
 
@@ -26,6 +27,7 @@ const { Title } = Typography;
 
 export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
     const { mutate } = useUpdateMany();
+    const { isDesktop } = useMedia();
 
     const [volunteers, setVolunteers] = useState<Array<VolEntity & { markedDeleted: boolean; markedAdded: boolean }>>(
         []
@@ -195,7 +197,13 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                     dataIndex='directions'
                     key='directions'
                     title='Службы/Локации'
-                    render={(directions) => <TextField value={directions.map(({ name }) => name).join(', ')} />}
+                    render={(directions) => (
+                        <TextField
+                            style={{ whiteSpace: 'pre-wrap' }}
+                            value={directions.map(({ name }) => name).join(', ')}
+                        />
+                    )}
+                    ellipsis
                 />
                 <Table.Column
                     title='Действия'
@@ -249,10 +257,12 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                     dataSource={filteredData}
                     rowKey='id'
                     loading={isVolunteersAllLoading}
+                    size='small'
+                    pagination={{ pageSize: isDesktop ? 100 : 5, showSizeChanger: false, size: 'small' }}
                 >
-                    <Table.Column dataIndex='name' key='name' title='Имя на бейдже' />
-                    <Table.Column dataIndex='first_name' key='first_name' title='Имя' />
-                    <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' />
+                    <Table.Column dataIndex='name' key='name' title='Имя на бейдже' ellipsis width='40%' />
+                    <Table.Column dataIndex='first_name' key='first_name' title='Имя' ellipsis />
+                    <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' ellipsis />
                 </Table>
             </Modal>
         </Edit>
