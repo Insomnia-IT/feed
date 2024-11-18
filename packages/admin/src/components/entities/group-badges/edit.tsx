@@ -169,11 +169,13 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         type: 'checkbox'
     };
 
+    const activeVolunteers = volunteers.filter((item) => !item.markedDeleted);
+
     return (
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
                 <CreateEdit />
-                <span>Количество волонтеров: {volunteers.length}</span>
+                <span>Количество волонтеров: {activeVolunteers.length}</span>
             </Form>
             <Divider />
             <Row justify='space-between' align='middle' style={{ marginBottom: 16 }}>
