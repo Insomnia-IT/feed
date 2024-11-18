@@ -12,20 +12,14 @@ import {
     useTable
 } from '@pankod/refine-antd';
 import { Input, Popconfirm } from 'antd';
-import { useList, useUpdateMany } from '@pankod/refine-core';
+import { useList, useUpdateMany, IResourceComponentsProps } from '@pankod/refine-core';
 import { DeleteOutlined } from '@ant-design/icons';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
 import type { TableRowSelection } from 'antd/es/table/interface';
-
-import 'react-mde/lib/styles/css/react-mde-all.css';
-
 import { useEffect, useMemo, useState } from 'react';
 import type { Key } from 'react';
 
 import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
-
 import useVisibleDirections from '../vols/use-visible-directions';
-
 import { CreateEdit } from './common';
 
 const { Title } = Typography;
@@ -36,32 +30,30 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
     const [volunteers, setVolunteers] = useState<Array<VolEntity & { markedDeleted: boolean; markedAdded: boolean }>>(
         []
     );
-    const [openAdd, setOpen] = useState(false);
+    const [openAdd, setOpenAdd] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [selected, setSelected] = useState<Array<Key>>([]);
 
     const { formProps, id, saveButtonProps } = useForm<GroupBadgeEntity>({
         onMutationSuccess: () => {
-            if (
-                volunteers.some((item) => {
-                    return item.markedDeleted;
-                })
-            )
+            const volunteersToDelete = volunteers.filter((item) => item.markedDeleted);
+            const volunteersToAdd = volunteers.filter((item) => item.markedAdded);
+
+            if (volunteersToDelete.length > 0) {
                 mutate({
                     resource: 'volunteers',
-                    ids: volunteers.filter((vol) => vol.markedDeleted).map((vol) => vol.id),
+                    ids: volunteersToDelete.map((vol) => vol.id),
                     values: { group_badge: null }
                 });
-            if (
-                volunteers.some((item) => {
-                    return item.markedAdded;
-                })
-            )
+            }
+
+            if (volunteersToAdd.length > 0) {
                 mutate({
                     resource: 'volunteers',
-                    ids: volunteers.filter((vol) => vol.markedAdded).map((vol) => vol.id),
+                    ids: volunteersToAdd.map((vol) => vol.id),
                     values: { group_badge: id }
                 });
+            }
         }
     });
 
@@ -90,46 +82,39 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
 
     const visibleDirections = useVisibleDirections();
 
-    useEffect(
-        () =>
-            setVolunteers(
-                (prevState) =>
-                    currentVols.dataSource?.map((vol) => ({
-                        ...vol,
-                        markedDeleted: prevState.find((prevVol) => prevVol.id === vol.id)?.markedDeleted ?? false,
-                        markedAdded: prevState.find((prevVol) => prevVol.id === vol.id)?.markedAdded ?? false
-                    })) ?? []
-            ),
-        [currentVols.dataSource]
-    );
+    useEffect(() => {
+        const prevVolunteersMap = new Map(volunteers.map((vol) => [vol.id, vol]));
+        const updatedVolunteers =
+            currentVols.dataSource?.map((vol) => ({
+                ...vol,
+                markedDeleted: prevVolunteersMap.get(vol.id)?.markedDeleted ?? false,
+                markedAdded: prevVolunteersMap.get(vol.id)?.markedAdded ?? false
+            })) ?? [];
+        setVolunteers(updatedVolunteers);
+    }, [currentVols.dataSource]);
 
     const addVolunteers = (): void => {
         //если волонтер уже был в списке, но помечен на удаление, убираем флаг удаления
-        const volsCache = volunteers.map((item) => ({
+        const updatedVolunteers = volunteers.map((item) => ({
             ...item,
             markedDeleted: selected.includes(item.id) ? false : item.markedDeleted,
             markedAdded: false
         }));
 
         // добавляем только тех волонтеров, которых не было в списке
-        const currentIds = volsCache.map((item) => {
-            return item.id;
-        });
-        const volsAdd =
+        const currentIds = volunteers.map((item) => item.id);
+        const newVolunteers =
             volunteersAll?.data
-                .filter((item) => {
-                    return selected.includes(item.id) && !currentIds.includes(item.id);
-                })
+                .filter((item) => selected.includes(item.id) && !currentIds.includes(item.id))
                 .map((item) => ({ ...item, markedDeleted: false, markedAdded: true })) ?? [];
-        setVolunteers(volsCache.concat(volsAdd));
+
+        setVolunteers([...updatedVolunteers, ...newVolunteers]);
         setSelected([]);
     };
 
-    const dataSource = useMemo(() => {
-        return volunteers.filter((vol) => !vol.markedDeleted);
-    }, [volunteers]);
+    const dataSource = useMemo(() => volunteers.filter((vol) => !vol.markedDeleted), [volunteers]);
 
-    const handleChangeInputValue = (e: ChangeEvent<HTMLInputElement>): void => {
+    const handleChangeInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setFilters([
             {
@@ -140,7 +125,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
             {
                 field: 'search',
                 operator: 'eq',
-                value: value
+                value
             }
         ]);
     };
@@ -150,51 +135,46 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
      */
     const filteredData = useMemo(() => {
         //todo если волонтер уже есть в volunteers но с флагом markedDeleted
-        const currentIds = volunteers
-            .filter((item) => !item.markedDeleted)
-            .map((item) => {
-                return item.id;
-            });
+        const currentIds = volunteers.filter((item) => !item.markedDeleted).map((item) => item.id);
+        const filteredVols = volunteersAll?.data.filter(
+            (vol) => !visibleDirections || vol.directions?.some(({ id }) => visibleDirections.includes(id))
+        );
 
-        const filteredVols = volunteersAll?.data.filter((vol) => {
-            return !visibleDirections || vol.directions?.some(({ id }) => visibleDirections.includes(id));
+        if (!searchText) {
+            return filteredVols?.filter((item) => !currentIds.includes(item.id));
+        }
+
+        const searchTextLower = searchText.toLowerCase();
+        return filteredVols?.filter((item) => {
+            const isSelected = selected.includes(item.id);
+            const isNotCurrent = !currentIds.includes(item.id);
+            const matchesSearch = [
+                item.name,
+                item.first_name,
+                item.last_name,
+                item.directions?.map(({ name }) => name).join(', ')
+            ]
+                .filter(Boolean)
+                .some((text) => text?.toLowerCase().includes(searchTextLower));
+
+            return isNotCurrent && (matchesSearch || isSelected);
         });
-        return searchText
-            ? filteredVols?.filter((item) => {
-                  const searchTextInLowerCase = searchText.toLowerCase();
-                  return [
-                      item.name,
-                      item.first_name,
-                      item.last_name,
-                      item.directions?.map(({ name }) => name).join(', ')
-                  ].some((text) => {
-                      return (
-                          !currentIds.includes(item.id) &&
-                          (text?.toLowerCase().includes(searchTextInLowerCase) || selected.includes(item.id))
-                      );
-                  });
-              })
-            : filteredVols?.filter((item) => {
-                  return !currentIds.includes(item.id);
-              });
     }, [volunteersAll, volunteers, searchText, selected, visibleDirections]);
 
-    const rowSelection = {
+    const rowSelection: TableRowSelection<VolEntity> = {
         selectedRowKeys: selected,
-        onChange: (e) => {
-            setSelected(e);
-        },
+        onChange: setSelected,
         type: 'checkbox'
-    } as TableRowSelection<VolEntity>;
+    };
 
     return (
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout='vertical'>
                 <CreateEdit />
-                Количестиво волонтеров: {volunteers?.length}
+                <div>Количество волонтеров: {volunteers.length}</div>
             </Form>
             <Title level={5}>Волонтеры</Title>
-            <Button onClick={() => setOpen(true)} style={{ marginBottom: 20 }}>
+            <Button onClick={() => setOpenAdd(true)} style={{ marginBottom: 20 }}>
                 Добавить
             </Button>
             <Modal
@@ -202,40 +182,25 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                 open={openAdd}
                 onOk={() => {
                     addVolunteers();
-                    setOpen(false);
+                    setOpenAdd(false);
                 }}
-                onCancel={() => setOpen(false)}
+                onCancel={() => setOpenAdd(false)}
             >
                 <Input
                     placeholder='Поиск...'
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                ></Input>
-
+                    style={{ marginBottom: 16 }}
+                />
                 <Table
                     rowSelection={rowSelection}
                     dataSource={filteredData}
                     rowKey='id'
                     loading={isVolunteersAllLoading}
                 >
-                    <Table.Column
-                        dataIndex='name'
-                        key='name'
-                        title='Имя на бейдже'
-                        render={(value) => <TextField value={value} />}
-                    />
-                    <Table.Column
-                        dataIndex='first_name'
-                        key='first_name'
-                        title='Имя'
-                        render={(value) => <TextField value={value} />}
-                    />
-                    <Table.Column
-                        dataIndex='last_name'
-                        key='last_name'
-                        title='Фамилия'
-                        render={(value) => <TextField value={value} />}
-                    />
+                    <Table.Column dataIndex='name' key='name' title='Имя на бейдже' />
+                    <Table.Column dataIndex='first_name' key='first_name' title='Имя' />
+                    <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' />
                 </Table>
             </Modal>
             <Input
@@ -245,34 +210,19 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                 style={{ marginBottom: 20 }}
             />
             <Table {...currentVols} dataSource={dataSource} rowKey='id'>
-                <Table.Column
-                    dataIndex='name'
-                    key='name'
-                    title='Имя на бейдже'
-                    render={(value) => <TextField value={value} />}
-                />
-                <Table.Column
-                    dataIndex='first_name'
-                    key='first_name'
-                    title='Имя'
-                    render={(value) => <TextField value={value} />}
-                />
-                <Table.Column
-                    dataIndex='last_name'
-                    key='last_name'
-                    title='Фамилия'
-                    render={(value) => <TextField value={value} />}
-                />
+                <Table.Column dataIndex='name' key='name' title='Имя на бейдже' />
+                <Table.Column dataIndex='first_name' key='first_name' title='Имя' />
+                <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' />
                 <Table.Column
                     dataIndex='directions'
                     key='directions'
                     title='Службы/Локации'
-                    render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
+                    render={(directions) => <TextField value={directions.map(({ name }) => name).join(', ')} />}
                 />
-                <Table.Column<Pick<VolEntity, 'id'>>
+                <Table.Column
                     title='Действия'
                     dataIndex='actions'
-                    render={(_, record) => (
+                    render={(_, record: VolEntity) => (
                         <Space>
                             <EditButton
                                 hideText
@@ -281,9 +231,9 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                                 recordItemId={record.id}
                             />
                             <Popconfirm
-                                title={'Уверены?'}
-                                okText={'Удалить'}
-                                cancelText={'Отмена'}
+                                title='Уверены?'
+                                okText='Удалить'
+                                cancelText='Отмена'
                                 okType='danger'
                                 onConfirm={(): void => {
                                     setVolunteers(
