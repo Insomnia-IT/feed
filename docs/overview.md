@@ -38,4 +38,4 @@
 
 Примеры Pull Request-ов: 
 - Возможность учесть группу покормленных анонимов. https://github.com/Insomnia-IT/feed/pull/189/files
-- Фиксы сканера. https://github.com/Insomnia-IT/feed/pull/195
+- Фиксы сканера. https://github.com/Insomnia-IT/feed/pull/195/files
