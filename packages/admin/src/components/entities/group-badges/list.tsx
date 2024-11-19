@@ -1,6 +1,6 @@
-import { DeleteButton, EditButton, List, Space, Table } from '@pankod/refine-antd';
+import { DeleteButton, EditButton, List, Space, Table, TextField } from '@pankod/refine-antd';
 import { type IResourceComponentsProps, useList } from '@pankod/refine-core';
-import { renderText } from '@feed/ui/src/table';
+import { Tooltip } from 'antd';
 
 import type { GroupBadgeEntity } from '~/interfaces';
 import { useMedia } from '~/shared/providers';
@@ -24,13 +24,12 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
 
     return (
         <List>
-            <Table dataSource={data} rowKey='id' scroll={{ x: '100%' }} pagination={false}>
+            <Table dataSource={data} rowKey='id' pagination={false}>
                 <Table.Column<GroupBadgeEntity>
                     title=''
                     dataIndex='actions'
                     render={(_, record) => (
                         <Space>
-                            {/* <ShowButton hideText size='small' recordItemId={record.id} /> */}
                             <EditButton hideText size='small' recordItemId={record.id} />
                             <DeleteButton hideText size='small' recordItemId={record.id} />
                         </Space>
@@ -40,20 +39,30 @@ export const GroupBadgeList: FC<IResourceComponentsProps> = () => {
                     dataIndex='name'
                     key='name'
                     title='Название'
-                    render={renderText}
+                    render={(value: string): ReactNode => (
+                        <Tooltip title={value}>
+                            <TextField value={value} />
+                        </Tooltip>
+                    )}
                     sorter={getSorter('name')}
+                    ellipsis
                 />
                 <Table.Column
                     dataIndex={['direction', 'name']}
                     key='direction'
                     title='Служба/Направление'
-                    render={renderText}
+                    render={(value: string): ReactNode => (
+                        <Tooltip title={value}>
+                            <TextField value={value} />
+                        </Tooltip>
+                    )}
+                    ellipsis
                 />
                 <Table.Column
                     dataIndex='volunteer_count'
                     key='volunteer_count'
                     title='Количество волонтеров'
-                    render={renderText}
+                    ellipsis
                 />
                 {isDesktop && (
                     <Table.Column
