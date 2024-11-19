@@ -65,6 +65,10 @@ def get_request_user_id(user):
 
 
 class SaveHistoryDataModelMixin(models.Model):
+    """
+    don't work mixin
+    миксин для сохранения истории через модели не работает поскольку принято решение использовать viewsetmixin
+    """
 
     class Meta:
         abstract = True

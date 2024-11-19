@@ -1,5 +1,6 @@
 # feed monorepo
 
+[Техническая документация](docs/overview.md)
 
 # Установка frontend
 

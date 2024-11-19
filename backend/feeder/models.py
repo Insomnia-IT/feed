@@ -154,6 +154,10 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
     notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
     scanner_comment = models.CharField(max_length=255, null=True, blank=True, verbose_name="Комментарий при сканировании")
+    responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='volunteers',
+        verbose_name="Ответственный")
+    is_child = models.BooleanField('IsChild', null=True, blank=True, default=False)
 
     class Meta:
         verbose_name = "Волонтёр"
