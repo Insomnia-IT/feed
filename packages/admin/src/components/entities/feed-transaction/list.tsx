@@ -24,26 +24,31 @@ const mealTimeById = {
 };
 
 export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
-    const [dateRange, setDateRange] = useState<Array<string> | null>(null);
-    const [searchText, setSearchText] = useState<string>('');
     const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
+
     const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
         onSearch: (values: any) => {
             const filters: any = [];
-            filters.push({
-                field: 'search',
-                value: values.search ? values.search : null
-            });
-            filters.push(
-                {
-                    field: 'dtime_from',
-                    value: dateRange ? dateRange[0] : null
-                },
-                {
-                    field: 'dtime_to',
-                    value: dateRange ? dateRange[1] : null
-                }
-            );
+            if (values.search) {
+                filters.push({
+                    field: 'search',
+                    value: values.search
+                });
+            }
+
+            if (values.date) {
+                filters.push(
+                    {
+                        field: 'dtime_from',
+                        value: dayjsExtended(values.date[0]).startOf('day').toISOString()
+                    },
+                    {
+                        field: 'dtime_to',
+                        value: dayjsExtended(values.date[1]).endOf('day').toISOString()
+                    }
+                );
+            }
+
             setFilters(filters);
             return filters;
         }
@@ -57,6 +62,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
             }
         }
     });
+
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
         resource: 'kitchens'
     });
@@ -129,44 +135,30 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
         void createAndSaveXLSX();
     }, [createAndSaveXLSX]);
 
-    const handleDateRangeChange = useCallback((range: Array<dayjsExtended.Dayjs> | null) => {
-        if (!range) {
-            setDateRange(null);
-        } else {
-            setDateRange([
-                dayjsExtended(dayjsExtended(range[0])).startOf('day').toISOString(),
-                dayjsExtended(dayjsExtended(range[1])).startOf('day').add(1, 'd').toISOString()
-            ]);
-        }
-    }, []);
     return (
         <List>
             <Form {...searchFormProps}>
-                <Space align={'start'}>
+                <Space align='start'>
                     <Form.Item name='search'>
-                        <Input
-                            value={searchText}
-                            placeholder='Имя волонтера'
-                            allowClear
-                            onChange={(value: any) => setSearchText(value)}
-                        />
+                        <Input placeholder='Имя волонтера' allowClear />
                     </Form.Item>
                     <Form.Item name='date'>
-                        <RangePicker format={formDateFormat} onChange={(range: any) => handleDateRangeChange(range)} />
+                        <RangePicker format={formDateFormat} />
                     </Form.Item>
-
-                    <Button onClick={searchFormProps.form?.submit}>Применить</Button>
+                    <Button type='primary' htmlType='submit'>
+                        Применить
+                    </Button>
                 </Space>
             </Form>
             <Table
                 {...tableProps}
                 rowKey='ulid'
-                footer={(data) => (
+                footer={() => (
                     <Button
-                        type={'primary'}
+                        type='primary'
                         onClick={handleClickDownload}
                         icon={<DownloadOutlined />}
-                        disabled={!data && volsIsLoading && kitchensIsLoading}
+                        disabled={volsIsLoading || kitchensIsLoading}
                     >
                         Выгрузить
                     </Button>
@@ -174,21 +166,18 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
             >
                 <Table.Column
                     dataIndex='dtime'
-                    key='dtime'
                     title='Время'
-                    render={(value) => value && <DateField format='DD/MM/YY HH:mm:ss' value={value} />}
+                    render={(value) => <DateField format='DD/MM/YY HH:mm:ss' value={value} />}
                 />
                 <Table.Column
                     dataIndex='volunteer'
                     title='Волонтер'
-                    render={(value) => {
-                        return <TextField value={value ? volNameById[value] : 'Аноним'} />;
-                    }}
+                    render={(value) => <TextField value={volNameById?.[value] || 'Аноним'} />}
                 />
                 <Table.Column
                     dataIndex='volunteer'
                     title='ID волонтера'
-                    render={(value) => <TextField value={value ?? ''} />}
+                    render={(value) => <TextField value={value || ''} />}
                 />
                 <Table.Column
                     dataIndex='is_vegan'
@@ -197,24 +186,25 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 />
                 <Table.Column
                     dataIndex='meal_time'
-                    key='meal_time'
                     title='Прием пищи'
                     render={(value) => <TextField value={mealTimeById[value]} />}
                 />
                 <Table.Column
                     dataIndex='kitchen'
-                    key='kitchen'
                     title='Кухня'
                     render={(value) => <TextField value={kitchenNameById[value]} />}
                 />
-                <Table.Column dataIndex='amount' key='amount' title='Кол-во' render={renderText} />
-                <Table.Column dataIndex='reason' key='reason' title='Причина' render={renderText} />
+                <Table.Column dataIndex='amount' title='Кол-во' render={renderText} />
+                <Table.Column dataIndex='reason' title='Причина' render={renderText} />
+                <Table.Column
+                    dataIndex='portion_given'
+                    title='Порция выдана'
+                    render={(value) => <TextField value={value === 1 ? 'Да' : 'Нет'} />}
+                />
                 <Table.Column<FeedTransactionEntity>
-                    title='Actions'
-                    dataIndex='actions'
+                    title='Действия'
                     render={(_, record) => (
                         <Space>
-                            {/* <EditButton hideText size='small' recordItemId={record.id} /> */}
                             <DeleteButton hideText size='small' recordItemId={record.ulid} />
                         </Space>
                     )}

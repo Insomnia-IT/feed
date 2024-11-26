@@ -129,6 +129,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     position = models.TextField(null=True, blank=True, verbose_name="")
     qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
     is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован?")
+    is_ticket_received = models.BooleanField(default=False, verbose_name="Выдан ли билет?")
     is_vegan = models.BooleanField(default=False, verbose_name="Вегетарианец?")
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     direction_head_comment = models.TextField(null=True, blank=True, verbose_name="Комментарий руководителя локации")
@@ -147,11 +148,16 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         related_name='volunteers',
         verbose_name="Цвет бэджика",
     )
-    group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Групповой бейдж")
+    group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, related_name='volunteers', verbose_name="Групповой бейдж")
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
     main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
     notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
+    scanner_comment = models.CharField(max_length=255, null=True, blank=True, verbose_name="Комментарий при сканировании")
+    responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='volunteers',
+        verbose_name="Ответственный")
+    is_child = models.BooleanField('IsChild', null=True, blank=True, default=False)
 
     class Meta:
         verbose_name = "Волонтёр"

@@ -1,3 +1,4 @@
+'use client';
 import { AntdLayout, Grid, Menu, useMenu } from '@pankod/refine-antd';
 import {
     CanAccess,
@@ -5,8 +6,7 @@ import {
     useList,
     useLogout,
     useRouterContext,
-    useTitle,
-    useTranslate
+    useTitle
 } from '@pankod/refine-core';
 import { LogoutOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
@@ -27,7 +27,6 @@ export const CustomSider: FC = () => {
     const { SubMenu } = Menu;
     const isExistAuthentication = useIsExistAuthentication();
     const { mutate: logout } = useLogout();
-    const translate = useTranslate();
     const queryClient = useQueryClient();
 
     const { menuItems, selectedKey } = useMenu();
@@ -179,7 +178,7 @@ export const CustomSider: FC = () => {
                         {renderTreeView(menuItems, selectedKey)}
                         {isExistAuthentication && (
                             <Menu.Item key='logout' onClick={handleLogout} icon={<LogoutOutlined />}>
-                                {translate('buttons.logout', 'Logout')}
+                                Выход
                             </Menu.Item>
                         )}
                     </Menu>
