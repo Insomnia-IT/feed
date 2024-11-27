@@ -1,5 +1,5 @@
 import type { TablePaginationConfig } from '@pankod/refine-antd';
-import { NumberField, Table, Tag, TextField } from '@pankod/refine-antd';
+import { Table, Tag, TableProps } from '@pankod/refine-antd';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 
 import type { CustomFieldEntity, VolEntity } from '~/interfaces';
@@ -45,6 +45,119 @@ export const VolunteerDesktopTable: FC<{
         };
     };
 
+    const fields: TableProps<VolEntity>['columns'] = [
+        {
+            dataIndex: 'id',
+            key: 'id',
+            title: 'ID'
+        },
+        {
+            dataIndex: 'name',
+            key: 'name',
+            title: 'Имя на бейдже'
+        },
+        {
+            dataIndex: 'first_name',
+            key: 'first_name',
+            title: 'Имя'
+        },
+        {
+            dataIndex: 'last_name',
+            key: 'last_name',
+            title: 'Фамилия'
+        },
+        {
+            dataIndex: 'directions',
+            key: 'directions',
+            title: 'Службы / Локации',
+            render: (value) => {
+                return (
+                    <>
+                        {value.map(({ name }) => (
+                            <Tag key={name} color={'default'} icon={false} closable={false}>
+                                {name}
+                            </Tag>
+                        ))}
+                    </>
+                );
+            }
+        },
+        {
+            dataIndex: 'arrivals',
+            key: 'arrivals',
+            title: 'Даты на поле',
+            render: (arrivals) => (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {arrivals
+                        .slice()
+                        .sort(getSorter('arrival_date'))
+                        .map(({ arrival_date, departure_date }) => {
+                            const arrival = getFormattedArrivals(arrival_date);
+                            const departure = getFormattedArrivals(departure_date);
+                            return (
+                                <div
+                                    style={{ whiteSpace: 'nowrap' }}
+                                    key={`${arrival_date}${departure_date}`}
+                                >{`${arrival} - ${departure}`}</div>
+                            );
+                        })}
+                </div>
+            )
+        },
+        {
+            key: 'on_field',
+            title: 'Статус',
+            render: (vol) => {
+                const currentArrival = findClosestArrival(vol.arrivals);
+                const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
+                return <div>{<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}</div>;
+            }
+        },
+        {
+            dataIndex: 'is_blocked',
+            key: 'is_blocked',
+            title: '❌',
+            render: (value) => <ListBooleanNegative value={Boolean(value)} />
+        },
+        {
+            dataIndex: 'kitchen',
+            key: 'kitchen',
+            title: 'Кухня'
+        },
+        {
+            dataIndex: 'printing_batch',
+            key: 'printing_batch',
+            title: (
+                <span>
+                    Партия
+                    <br />
+                    Бейджа
+                </span>
+            )
+        },
+        {
+            dataIndex: 'comment',
+            key: 'comment',
+            title: 'Комментарий',
+            render: (value) => <div dangerouslySetInnerHTML={{ __html: value }} />
+        },
+        ...(customFields?.map((customField) => {
+            return {
+                key: customField.name,
+                title: customField.name,
+                render: (vol) => {
+                    const value = getCustomValue(vol, customField);
+
+                    if (customField.type === 'boolean') {
+                        return <ListBooleanPositive value={value as boolean} />;
+                    }
+
+                    return value;
+                }
+            };
+        }) ?? [])
+    ];
+
     return (
         <Table<VolEntity>
             onRow={(record) => {
@@ -56,144 +169,7 @@ export const VolunteerDesktopTable: FC<{
             dataSource={volunteersData}
             rowKey='id'
             rowClassName={styles.cursorPointer}
-        >
-            {/* <Table.Column<VolEntity>
-                        title=''
-                        dataIndex='actions'
-                        render={(_, record) => (
-                            <Space>
-                                <EditButton
-                                    hideText
-                                    size='small'
-                                    recordItemId={record.id}
-                                    onClick={() => {
-                                        void openVolunteer(record.id);
-                                    }}
-                                />
-                                <DeleteButton hideText size='small' recordItemId={record.id} />
-                            </Space>
-                        )}
-                    />
-                    <Table.Column<VolEntity>
-                        dataIndex='id'
-                        key='id'
-                        title='ID'
-                        render={(value) => <TextField value={value} />}
-                    /> */}
-            <Table.Column
-                dataIndex='name'
-                key='name'
-                title='Имя на бейдже'
-                render={(value) => <TextField value={value} />}
-            />
-            <Table.Column<VolEntity>
-                dataIndex='first_name'
-                key='first_name'
-                title='Имя'
-                render={(value) => <TextField value={value} />}
-            />
-            <Table.Column<VolEntity>
-                dataIndex='last_name'
-                key='last_name'
-                title='Фамилия'
-                render={(value) => <TextField value={value} />}
-            />
-            <Table.Column<VolEntity>
-                dataIndex='directions'
-                key='directions'
-                title='Службы / Локации'
-                render={(value) => {
-                    return (
-                        <>
-                            {value.map(({ name }) => (
-                                <Tag key={name} color={'default'} icon={false} closable={false}>
-                                    {name}
-                                </Tag>
-                            ))}
-                        </>
-                    );
-                }}
-            />
-            <Table.Column<VolEntity>
-                dataIndex='arrivals'
-                key='arrivals'
-                title='Даты на поле'
-                render={(arrivals) => (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        {arrivals
-                            .slice()
-                            .sort(getSorter('arrival_date'))
-                            .map(({ arrival_date, departure_date }) => {
-                                const arrival = getFormattedArrivals(arrival_date);
-                                const departure = getFormattedArrivals(departure_date);
-                                return (
-                                    <div
-                                        style={{ whiteSpace: 'nowrap' }}
-                                        key={`${arrival_date}${departure_date}`}
-                                    >{`${arrival} - ${departure}`}</div>
-                                );
-                            })}
-                    </div>
-                )}
-            />
-            <Table.Column<VolEntity>
-                key='on_field'
-                title='Статус'
-                render={(vol) => {
-                    const currentArrival = findClosestArrival(vol.arrivals);
-                    const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
-                    return <div>{<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}</div>;
-                }}
-            />
-            <Table.Column<VolEntity>
-                dataIndex='is_blocked'
-                key='is_blocked'
-                title='❌'
-                render={(value) => <ListBooleanNegative value={value} />}
-            />
-            <Table.Column<VolEntity>
-                dataIndex='kitchen'
-                key='kitchen'
-                title='Кухня'
-                render={(value) => <TextField value={value} />}
-            />
-            <Table.Column<VolEntity>
-                dataIndex='printing_batch'
-                key='printing_batch'
-                title={
-                    <span>
-                        Партия
-                        <br />
-                        Бейджа
-                    </span>
-                }
-                render={(value) => value && <NumberField value={value} />}
-            />
-
-            <Table.Column<VolEntity>
-                dataIndex='comment'
-                key='comment'
-                title='Комментарий'
-                render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
-            />
-
-            {customFields?.map((customField) => {
-                return (
-                    <Table.Column<VolEntity>
-                        key={customField.name}
-                        title={customField.name}
-                        render={(vol) => {
-                            const value = getCustomValue(vol, customField);
-
-                            if (customField.type === 'boolean') {
-                                return <ListBooleanPositive value={value as boolean} />;
-                            }
-
-                            return value;
-                        }}
-                    />
-                );
-            })}
-        </Table>
+            columns={fields}
+        />
     );
 };
