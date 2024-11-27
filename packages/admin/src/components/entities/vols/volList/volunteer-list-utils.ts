@@ -2,7 +2,8 @@ import dayjs from 'dayjs';
 
 import type { ArrivalEntity, VolEntity } from '~/interfaces';
 import { isActivatedStatus } from '~/shared/lib';
-import type { FilterField } from '~/components/entities/vols/volList/filter-types';
+
+import type { FilterField } from './filter-types';
 
 export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | undefined => {
     const day = dayjs();

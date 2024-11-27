@@ -1,5 +1,6 @@
 import type { TablePaginationConfig } from '@pankod/refine-antd';
-import { Form, List } from '@pankod/refine-antd';
+import { Form, List, Row, Col, Select } from '@pankod/refine-antd';
+import { DatabaseOutlined } from '@ant-design/icons';
 import { useList } from '@pankod/refine-core';
 import type { GetListResponse, IResourceComponentsProps } from '@pankod/refine-core';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -353,41 +354,50 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                 setSearchText={setSearchText}
                 setPage={setPage}
             />
-            <Form layout='inline' style={{ padding: '10px 0' }}>
+            <Row style={{ padding: '10px 0' }} justify='space-between'>
                 {isDesktop && (
                     <>
-                        <Form.Item>
-                            <SaveAsXlsxButton
-                                isDisabled={
-                                    !volunteersData.length ||
-                                    kitchensIsLoading ||
-                                    feedTypesIsLoading ||
-                                    colorsIsLoading ||
-                                    accessRolesIsLoading ||
-                                    volunteerRolesIsLoading
-                                }
-                                filterQueryParams={filterQueryParams}
-                                customFields={customFields}
-                                volunteerRoleById={volunteerRoleById}
-                                statusById={statusById}
-                                transportById={transportById}
-                                kitchenNameById={kitchenNameById}
-                                feedTypeNameById={feedTypeNameById}
-                                colorNameById={colorNameById}
-                                accessRoleById={accessRoleById}
-                            />
-                        </Form.Item>
-                        <Form.Item>
-                            <Button disabled={!canListCustomFields} onClick={handleClickCustomFields}>
-                                Кастомные поля
-                            </Button>
-                        </Form.Item>
+                        <Row style={{ gap: '24px' }} align='middle'>
+                            <b>Сохраненные таблицы:</b>
+
+                            <Select placeholder='Выберите' disabled></Select>
+                        </Row>
+                        <Row style={{ gap: '24px' }} align='middle'>
+                            <Col>
+                                <b>Результат:</b> {volunteers?.total} волонтеров
+                            </Col>
+                            <Row style={{ gap: '12px' }} align='middle'>
+                                <Button
+                                    disabled={!canListCustomFields}
+                                    onClick={handleClickCustomFields}
+                                    icon={<DatabaseOutlined />}
+                                >
+                                    Кастомные поля
+                                </Button>
+                                <SaveAsXlsxButton
+                                    isDisabled={
+                                        !volunteersData.length ||
+                                        kitchensIsLoading ||
+                                        feedTypesIsLoading ||
+                                        colorsIsLoading ||
+                                        accessRolesIsLoading ||
+                                        volunteerRolesIsLoading
+                                    }
+                                    filterQueryParams={filterQueryParams}
+                                    customFields={customFields}
+                                    volunteerRoleById={volunteerRoleById}
+                                    statusById={statusById}
+                                    transportById={transportById}
+                                    kitchenNameById={kitchenNameById}
+                                    feedTypeNameById={feedTypeNameById}
+                                    colorNameById={colorNameById}
+                                    accessRoleById={accessRoleById}
+                                />
+                            </Row>
+                        </Row>
                     </>
                 )}
-                <Form.Item>
-                    <b>Результат:</b> {volunteers?.total} волонтеров
-                </Form.Item>
-            </Form>
+            </Row>
 
             {/* -------------------------- Список волонтеров -------------------------- */}
             {isMobile && (
