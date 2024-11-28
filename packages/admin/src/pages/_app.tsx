@@ -73,7 +73,14 @@ const Feed = ({ Component, pageProps }: AppProps): JSX.Element | null => {
     if (!ready) return <Loader />;
 
     return (
-        <ConfigProvider locale={antdLocale}>
+        <ConfigProvider
+            locale={antdLocale}
+            theme={{
+                token: {
+                    borderRadius: 2
+                }
+            }}
+        >
             <MediaProvider>
                 <Refine
                     routerProvider={routerProvider}
