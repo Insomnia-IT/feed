@@ -65,11 +65,8 @@ class VolunteerExtraFilterMixin(ModelViewSet):
             qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
 
         if feeded_date or non_feeded_date:
-            if ':' in feeded_date or ':' in non_feeded_date:
-                if ':' in feeded_date:
-                    start_date_feed, end_date_feed = feeded_date.split(':')
-                if ':' in non_feeded_date:
-                    start_date_feed, end_date_feed = non_feeded_date.split(':')
+            if ':' in (feeded_date or non_feeded_date):
+                start_date_feed, end_date_feed = (feeded_date or non_feeded_date).split(':')
                 start_datetime_feed = arrow.get(start_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
                 end_datetime_feed = arrow.get(end_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR).shift(days=+1)
                 feed_transactions_qs = FeedTransaction.objects.filter(dtime__gte=start_datetime_feed.datetime, dtime__lt=end_datetime_feed.datetime, volunteer_id__isnull=False)
