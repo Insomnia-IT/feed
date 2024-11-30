@@ -25,13 +25,13 @@ class FeedTransactionFilter(django_filters.FilterSet):
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
 
     def filter_anonymous(self, queryset, name, value):
-        if value:  # anonymous=True
+        if value:
             return queryset.filter(volunteer__isnull=True)
         return queryset.filter(volunteer__isnull=False)
 
     class Meta:
         model = models.FeedTransaction
-        fields = ['kitchen', 'volunteer', 'meal_time', 'anonymous']
+        fields = ['kitchen', 'volunteer']
 
 
 #@extend_schema(tags=['feed', ])
