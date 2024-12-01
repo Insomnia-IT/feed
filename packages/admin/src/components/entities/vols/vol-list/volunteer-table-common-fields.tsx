@@ -4,6 +4,7 @@ export interface VolunteerField {
     fieldName: keyof VolEntity | 'on_field';
     title: string;
     isCustom?: boolean;
+    isDefault?: boolean;
 }
 
 export interface VolunteerFieldExtended {
@@ -19,19 +20,23 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
     },
     {
         fieldName: 'name',
-        title: 'Позывной'
+        title: 'Позывной',
+        isDefault: true
     },
     {
         fieldName: 'first_name',
-        title: 'Имя'
+        title: 'Имя',
+        isDefault: true
     },
     {
         fieldName: 'last_name',
-        title: 'Фамилия'
+        title: 'Фамилия',
+        isDefault: true
     },
     {
         fieldName: 'directions',
-        title: 'Службы'
+        title: 'Службы',
+        isDefault: true
     },
     {
         fieldName: 'arrivals',
@@ -43,11 +48,13 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
     },
     {
         fieldName: 'is_blocked',
-        title: '🚫 Заблокирован'
+        title: '🚫 Заблокирован',
+        isDefault: true
     },
     {
         fieldName: 'kitchen',
-        title: 'Кухня'
+        title: 'Кухня',
+        isDefault: true
     },
     {
         fieldName: 'printing_batch',
@@ -55,6 +62,7 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
     },
     {
         fieldName: 'comment',
-        title: 'Комментарий'
+        title: 'Комментарий',
+        isDefault: true
     }
 ];

@@ -21,7 +21,8 @@ const getSavedColumns = (): Array<string> => {
             return JSON.parse(volVisibleColumnsStr) as Array<string>;
         } catch (e) {}
     }
-    return [];
+
+    return volunteerTableCommonFields.filter((item) => item.isDefault).map((item) => item.fieldName);
 };
 
 export const ActiveColumnsContextProvider: FC<React.PropsWithChildren & { customFields: Array<CustomFieldEntity> }> = ({
