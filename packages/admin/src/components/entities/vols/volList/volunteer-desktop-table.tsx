@@ -1,6 +1,6 @@
-import type { TablePaginationConfig } from '@pankod/refine-antd';
-import { Table, Tag, TableProps } from '@pankod/refine-antd';
 import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
+import { Table, Tag } from '@pankod/refine-antd';
+import type { TablePaginationConfig, TableProps } from '@pankod/refine-antd';
 
 import type { CustomFieldEntity, VolEntity } from '~/interfaces';
 import { getSorter } from '~/utils';
@@ -8,6 +8,8 @@ import { getSorter } from '~/utils';
 import styles from '../list.module.css';
 
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
+import { ActiveColumnsContext } from '~/components/entities/vols/volList/active-columns-context';
+import { useContext } from 'react';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
     const value =
@@ -35,6 +37,8 @@ export const VolunteerDesktopTable: FC<{
     statusById: Record<string, string>;
     customFields?: Array<CustomFieldEntity>;
 }> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading }) => {
+    const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
+
     const getCellAction = (id: number): { onClick: (event: any) => Promise<any> | undefined } => {
         return {
             onClick: (e): Promise<boolean> | undefined => {
@@ -54,7 +58,7 @@ export const VolunteerDesktopTable: FC<{
         {
             dataIndex: 'name',
             key: 'name',
-            title: 'Имя на бейдже'
+            title: 'Позывной'
         },
         {
             dataIndex: 'first_name',
@@ -145,7 +149,7 @@ export const VolunteerDesktopTable: FC<{
             return {
                 key: customField.name,
                 title: customField.name,
-                render: (vol) => {
+                render: (vol: VolEntity) => {
                     const value = getCustomValue(vol, customField);
 
                     if (customField.type === 'boolean') {
@@ -158,6 +162,10 @@ export const VolunteerDesktopTable: FC<{
         }) ?? [])
     ];
 
+    const visibleColumns = !activeColumns.length
+        ? fields // Не отображать ничего - странно и не ясно зачем. Поэтому отображаем без фильтрации в таком случае
+        : fields.filter((column) => activeColumns.includes(String(column.key)));
+
     return (
         <Table<VolEntity>
             onRow={(record) => {
@@ -169,7 +177,7 @@ export const VolunteerDesktopTable: FC<{
             dataSource={volunteersData}
             rowKey='id'
             rowClassName={styles.cursorPointer}
-            columns={fields}
+            columns={visibleColumns}
         />
     );
 };

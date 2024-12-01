@@ -1,10 +1,9 @@
 import type { TablePaginationConfig } from '@pankod/refine-antd';
-import { Form, List, Row, Col, Select } from '@pankod/refine-antd';
-import { DatabaseOutlined } from '@ant-design/icons';
+import { Col, List, Row, Select } from '@pankod/refine-antd';
 import { useList } from '@pankod/refine-core';
 import type { GetListResponse, IResourceComponentsProps } from '@pankod/refine-core';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Input } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Input } from 'antd';
 import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -31,6 +30,11 @@ import { VolunteerMobileList } from './volList/volunteer-mobile-list';
 import useCanAccess from './use-can-access';
 import useVisibleDirections from './use-visible-directions';
 import { FilterField, FilterItem } from '~/components/entities/vols/volList/filter-types';
+import { ChooseColumnsButton } from '~/components/entities/vols/volList/choose-columns-button';
+import {
+    ActiveColumnsContext,
+    ActiveColumnsContextProvider
+} from '~/components/entities/vols/volList/active-columns-context';
 
 const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> => {
     return useMemo(() => {
@@ -324,10 +328,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     const volunteersData = volunteers?.data ?? [];
 
-    const handleClickCustomFields = useCallback((): void => {
-        window.location.href = `${window.location.origin}/volunteer-custom-fields`;
-    }, []);
-
     const queryClient = useQueryClient();
 
     const openVolunteer = (id: number): Promise<boolean> => {
@@ -337,87 +337,86 @@ export const VolList: FC<IResourceComponentsProps> = () => {
 
     return (
         <List>
-            {/* -------------------------- Фильтры -------------------------- */}
-            <Input
-                placeholder='Поиск по волонтерам, датам, службам'
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                allowClear
-            ></Input>
-            <Filters
-                activeFilters={activeFilters}
-                setActiveFilters={setActiveFilters}
-                visibleFilters={visibleFilters}
-                setVisibleFilters={setVisibleFilters}
-                filterFields={filterFields}
-                searchText={searchText}
-                setSearchText={setSearchText}
-                setPage={setPage}
-            />
-            <Row style={{ padding: '10px 0' }} justify='space-between'>
-                {isDesktop && (
-                    <>
-                        <Row style={{ gap: '24px' }} align='middle'>
-                            <b>Сохраненные таблицы:</b>
+            <ActiveColumnsContextProvider customFields={customFields}>
+                {/* -------------------------- Фильтры -------------------------- */}
+                <Input
+                    placeholder='Поиск по волонтерам, датам, службам'
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    allowClear
+                ></Input>
+                <Filters
+                    activeFilters={activeFilters}
+                    setActiveFilters={setActiveFilters}
+                    visibleFilters={visibleFilters}
+                    setVisibleFilters={setVisibleFilters}
+                    filterFields={filterFields}
+                    searchText={searchText}
+                    setSearchText={setSearchText}
+                    setPage={setPage}
+                />
+                <Row style={{ padding: '10px 0' }} justify='space-between'>
+                    {isDesktop && (
+                        <>
+                            <Row style={{ gap: '24px' }} align='middle'>
+                                <b>Сохраненные таблицы:</b>
 
-                            <Select placeholder='Выберите' disabled></Select>
-                        </Row>
-                        <Row style={{ gap: '24px' }} align='middle'>
-                            <Col>
-                                <b>Результат:</b> {volunteers?.total} волонтеров
-                            </Col>
-                            <Row style={{ gap: '12px' }} align='middle'>
-                                <Button
-                                    disabled={!canListCustomFields}
-                                    onClick={handleClickCustomFields}
-                                    icon={<DatabaseOutlined />}
-                                >
-                                    Кастомные поля
-                                </Button>
-                                <SaveAsXlsxButton
-                                    isDisabled={
-                                        !volunteersData.length ||
-                                        kitchensIsLoading ||
-                                        feedTypesIsLoading ||
-                                        colorsIsLoading ||
-                                        accessRolesIsLoading ||
-                                        volunteerRolesIsLoading
-                                    }
-                                    filterQueryParams={filterQueryParams}
-                                    customFields={customFields}
-                                    volunteerRoleById={volunteerRoleById}
-                                    statusById={statusById}
-                                    transportById={transportById}
-                                    kitchenNameById={kitchenNameById}
-                                    feedTypeNameById={feedTypeNameById}
-                                    colorNameById={colorNameById}
-                                    accessRoleById={accessRoleById}
-                                />
+                                <Select placeholder='Выберите' disabled></Select>
                             </Row>
-                        </Row>
-                    </>
-                )}
-            </Row>
+                            <Row style={{ gap: '24px' }} align='middle'>
+                                <Col>
+                                    <b>Результат:</b> {volunteers?.total} волонтеров
+                                </Col>
+                                <Row style={{ gap: '12px' }} align='middle'>
+                                    <ChooseColumnsButton
+                                        canListCustomFields={canListCustomFields}
+                                        customFields={customFields}
+                                    />
+                                    <SaveAsXlsxButton
+                                        isDisabled={
+                                            !volunteersData.length ||
+                                            kitchensIsLoading ||
+                                            feedTypesIsLoading ||
+                                            colorsIsLoading ||
+                                            accessRolesIsLoading ||
+                                            volunteerRolesIsLoading
+                                        }
+                                        filterQueryParams={filterQueryParams}
+                                        customFields={customFields}
+                                        volunteerRoleById={volunteerRoleById}
+                                        statusById={statusById}
+                                        transportById={transportById}
+                                        kitchenNameById={kitchenNameById}
+                                        feedTypeNameById={feedTypeNameById}
+                                        colorNameById={colorNameById}
+                                        accessRoleById={accessRoleById}
+                                    />
+                                </Row>
+                            </Row>
+                        </>
+                    )}
+                </Row>
 
-            {/* -------------------------- Список волонтеров -------------------------- */}
-            {isMobile && (
-                <VolunteerMobileList
-                    statusById={statusById}
-                    volList={volunteersData}
-                    openVolunteer={openVolunteer}
-                    isLoading={volunteersIsLoading}
-                />
-            )}
-            {isDesktop && (
-                <VolunteerDesktopTable
-                    openVolunteer={openVolunteer}
-                    pagination={pagination}
-                    statusById={statusById}
-                    volunteersIsLoading={volunteersIsLoading}
-                    volunteersData={volunteersData}
-                    customFields={customFields}
-                />
-            )}
+                {/* -------------------------- Список волонтеров -------------------------- */}
+                {isMobile && (
+                    <VolunteerMobileList
+                        statusById={statusById}
+                        volList={volunteersData}
+                        openVolunteer={openVolunteer}
+                        isLoading={volunteersIsLoading}
+                    />
+                )}
+                {isDesktop && (
+                    <VolunteerDesktopTable
+                        openVolunteer={openVolunteer}
+                        pagination={pagination}
+                        statusById={statusById}
+                        volunteersIsLoading={volunteersIsLoading}
+                        volunteersData={volunteersData}
+                        customFields={customFields}
+                    />
+                )}
+            </ActiveColumnsContextProvider>
         </List>
     );
 };
