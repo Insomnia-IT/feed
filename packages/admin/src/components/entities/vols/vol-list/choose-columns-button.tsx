@@ -2,7 +2,7 @@ import { Col, Row, Popover, Button, Checkbox } from '@pankod/refine-antd';
 import { DatabaseOutlined, PlusOutlined } from '@ant-design/icons';
 import { CustomFieldEntity } from '~/interfaces';
 import { useContext } from 'react';
-import { ActiveColumnsContext } from '~/components/entities/vols/volList/active-columns-context';
+import { ActiveColumnsContext } from '~/components/entities/vols/vol-list/active-columns-context';
 
 export const ChooseColumnsButton: FC<{ canListCustomFields: boolean; customFields: Array<CustomFieldEntity> }> = ({
     canListCustomFields

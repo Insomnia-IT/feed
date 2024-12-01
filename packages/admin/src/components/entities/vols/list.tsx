@@ -23,18 +23,18 @@ import { dataProvider } from '~/dataProvider';
 import { useMedia } from '~/shared/providers';
 import { getSorter } from '~/utils';
 
-import { Filters } from './volList/filters';
-import { SaveAsXlsxButton } from './volList/save-as-xlsx-button';
-import { VolunteerDesktopTable } from './volList/volunteer-desktop-table';
-import { VolunteerMobileList } from './volList/volunteer-mobile-list';
+import { Filters } from '~/components/entities/vols/vol-list/filters';
+import { SaveAsXlsxButton } from '~/components/entities/vols/vol-list/save-as-xlsx-button';
+import { VolunteerDesktopTable } from '~/components/entities/vols/vol-list/volunteer-desktop-table';
+import { VolunteerMobileList } from '~/components/entities/vols/vol-list/volunteer-mobile-list';
 import useCanAccess from './use-can-access';
 import useVisibleDirections from './use-visible-directions';
-import { FilterField, FilterItem } from '~/components/entities/vols/volList/filter-types';
-import { ChooseColumnsButton } from '~/components/entities/vols/volList/choose-columns-button';
+import { FilterField, FilterItem } from '~/components/entities/vols/vol-list/filter-types';
+import { ChooseColumnsButton } from '~/components/entities/vols/vol-list/choose-columns-button';
 import {
     ActiveColumnsContext,
     ActiveColumnsContextProvider
-} from '~/components/entities/vols/volList/active-columns-context';
+} from '~/components/entities/vols/vol-list/active-columns-context';
 
 const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> => {
     return useMemo(() => {

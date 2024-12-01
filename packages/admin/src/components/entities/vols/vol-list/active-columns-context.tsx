@@ -2,7 +2,7 @@ import { createContext, useCallback, useMemo, useState } from 'react';
 import {
     VolunteerFieldExtended,
     volunteerTableCommonFields
-} from '~/components/entities/vols/volList/volunteer-table-common-fields';
+} from '~/components/entities/vols/vol-list/volunteer-table-common-fields';
 import { CustomFieldEntity } from '~/interfaces';
 
 export const ActiveColumnsContext = createContext<{

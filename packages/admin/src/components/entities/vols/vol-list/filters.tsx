@@ -1,13 +1,13 @@
 import { Icons, Popover } from '@pankod/refine-antd';
 import { Button } from 'antd';
 
-import { FilterPopup } from '~/components/entities/vols/volList/filter-popup';
+import { FilterPopup } from '~/components/entities/vols/vol-list/filter-popup';
 
 import styles from '../list.module.css';
 
 import type { FilterField, FilterItem } from './filter-types';
 import { FilterChooser } from './filter-chooser';
-import { getFilterValueText } from '~/components/entities/vols/volList/volunteer-list-utils';
+import { getFilterValueText } from '~/components/entities/vols/vol-list/volunteer-list-utils';
 
 type FilterListItem = { selected: boolean; value: unknown; text: string; count: number };
 

@@ -8,7 +8,7 @@ import { getSorter } from '~/utils';
 import styles from '../list.module.css';
 
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
-import { ActiveColumnsContext } from '~/components/entities/vols/volList/active-columns-context';
+import { ActiveColumnsContext } from '~/components/entities/vols/vol-list/active-columns-context';
 import { useContext } from 'react';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
