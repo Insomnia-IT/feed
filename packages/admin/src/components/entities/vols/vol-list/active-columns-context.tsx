@@ -6,7 +6,6 @@ import {
 import { CustomFieldEntity } from '~/interfaces';
 
 export const ActiveColumnsContext = createContext<{
-    toggleAll: () => void;
     toggleOne: (name: string) => void;
     activeColumns: Array<string>;
     allColumns: Array<VolunteerFieldExtended>;
@@ -57,18 +56,8 @@ export const ActiveColumnsContextProvider: FC<React.PropsWithChildren & { custom
         setCheckedWithStorage([...checked, value]);
     };
 
-    const toggleAll = (): void => {
-        if (checked.length < allColumns.length) {
-            setCheckedWithStorage(allColumns.map((item) => item.fieldName));
-
-            return;
-        }
-
-        setCheckedWithStorage([]);
-    };
-
     return (
-        <ActiveColumnsContext.Provider value={{ toggleAll, toggleOne, activeColumns: checked, allColumns }}>
+        <ActiveColumnsContext.Provider value={{ toggleOne, activeColumns: checked, allColumns }}>
             {children}
         </ActiveColumnsContext.Provider>
     );

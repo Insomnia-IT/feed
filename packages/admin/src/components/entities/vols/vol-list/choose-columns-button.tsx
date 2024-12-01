@@ -7,15 +7,12 @@ import { ActiveColumnsContext } from '~/components/entities/vols/vol-list/active
 export const ChooseColumnsButton: FC<{ canListCustomFields: boolean; customFields: Array<CustomFieldEntity> }> = ({
     canListCustomFields
 }) => {
-    const { activeColumns = [], allColumns = [], toggleAll, toggleOne } = useContext(ActiveColumnsContext) ?? {};
+    const { activeColumns = [], allColumns = [], toggleOne } = useContext(ActiveColumnsContext) ?? {};
 
     // TODO: вместо страницы должна быть модалка
     const handleClickCustomFields = (): void => {
         window.location.href = `${window.location.origin}/volunteer-custom-fields`;
     };
-    const indeterminate = activeColumns.length > 0 && activeColumns.length < allColumns.length;
-
-    const isAllChecked = activeColumns.length === allColumns.length;
 
     return (
         <Popover
@@ -24,11 +21,6 @@ export const ChooseColumnsButton: FC<{ canListCustomFields: boolean; customField
             arrow={false}
             content={
                 <Col>
-                    <Row>
-                        <Checkbox indeterminate={indeterminate} onClick={toggleAll} checked={isAllChecked}>
-                            Выбрать все
-                        </Checkbox>
-                    </Row>
                     {allColumns.map((field) => (
                         <Row key={field.fieldName} style={{ padding: '5px 0' }}>
                             <Checkbox
