@@ -45,9 +45,6 @@ export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
                 <Form.Item label='Веган' name='is_vegan' valuePropName='checked'>
                     <Checkbox />
                 </Form.Item>
-                <Form.Item label='Порция выдана' name='portion_given' valuePropName='checked'>
-                    <Checkbox />
-                </Form.Item>
                 <Form.Item label='Кол-во' name='amount' rules={Rules.required}>
                     <Input type='number' />
                 </Form.Item>
