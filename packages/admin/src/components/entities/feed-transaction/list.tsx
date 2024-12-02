@@ -1,5 +1,5 @@
 import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from '@pankod/refine-antd';
-import type { CrudFilter, IResourceComponentsProps, LogicalFilter } from '@pankod/refine-core';
+import type { CrudFilter, IResourceComponentsProps } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
 import { renderText } from '@feed/ui/src/table';
 import { useCallback, useMemo, useState } from 'react';
@@ -196,11 +196,6 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 />
                 <Table.Column dataIndex='amount' title='Кол-во' render={renderText} />
                 <Table.Column dataIndex='reason' title='Причина' render={renderText} />
-                <Table.Column
-                    dataIndex='portion_given'
-                    title='Порция выдана'
-                    render={(value) => <TextField value={value === 1 ? 'Да' : 'Нет'} />}
-                />
                 <Table.Column<FeedTransactionEntity>
                     title='Действия'
                     render={(_, record) => (
