@@ -22,8 +22,8 @@ interface IData {
 }
 
 export function CommonFoodTest() {
-    const volId = useMemo(() => document.location.pathname.match(/\/(\d+)$/)?.[1], []);
     const router = useRouter();
+    const volId = router.query.id;
     const [foodCount, setFoodCount] = useState(0);
     const [foodData, setFoodData] = useState<FeedTransactionEntity[]>([]);
     const canCreateFeedTransaction = useCanAccess({ action: 'create', resource: 'feed-transaction' });
