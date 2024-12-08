@@ -1,6 +1,6 @@
 import { Checkbox } from '@pankod/refine-antd';
 
-import styles from '../list.module.css';
+import styles from '../../list.module.css';
 
 import type { FilterField } from './filter-types';
 
