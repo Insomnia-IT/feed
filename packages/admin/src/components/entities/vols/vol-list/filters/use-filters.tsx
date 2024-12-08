@@ -14,7 +14,7 @@ import {
     VolunteerRoleEntity
 } from 'interfaces';
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
-import { FilterField, FilterItem } from 'components/entities/vols/vol-list/filter-types';
+import { FilterField, FilterFieldType, FilterItem } from 'components/entities/vols/vol-list/filters/filter-types';
 import { getSorter } from 'utils';
 
 const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> => {
@@ -169,7 +169,7 @@ export const useFilters = ({
 
     const filterFields: Array<FilterField> = [
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'directions',
             title: 'Службы/Локации',
             getter: (data: { directions: any }) => (data.directions || []).map(({ id }: { id: string }) => id),
@@ -180,67 +180,63 @@ export const useFilters = ({
                     .sort(getSorter('name'))
                     .filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
-        { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
+        { type: FilterFieldType.Date, name: 'arrivals.staying_date', title: 'На поле' },
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'arrivals.status',
             title: 'Статус заезда',
             lookup: () => statuses?.data ?? []
         },
-        { type: 'date', name: 'arrivals.arrival_date', title: 'Дата заезда' },
+        { type: FilterFieldType.Date, name: 'arrivals.arrival_date', title: 'Дата заезда' },
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'arrivals.arrival_transport',
             title: 'Транспорт заезда',
             lookup: () => transports?.data ?? []
         },
+        { type: FilterFieldType.Date, name: 'arrivals.departure_date', title: 'Дата отъезда' },
         {
-            type: 'date',
-            name: 'arrivals.departure_date',
-            title: 'Дата отъезда'
-        },
-        {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'arrivals.departure_transport',
             title: 'Транспорт отъезда',
             lookup: () => transports?.data ?? []
         },
-        { type: 'date', name: 'feeded_date', title: 'Питался' },
-        { type: 'date', name: 'non_feeded_date', title: 'Не питался' },
-        { type: 'string', name: 'name', title: 'Имя на бейдже' },
-        { type: 'string', name: 'first_name', title: 'Имя' },
-        { type: 'string', name: 'last_name', title: 'Фамилия' },
+        { type: FilterFieldType.Date, name: 'feeded_date', title: 'Питался' },
+        { type: FilterFieldType.Date, name: 'non_feeded_date', title: 'Не питался' },
+        { type: FilterFieldType.String, name: 'name', title: 'Имя на бейдже' },
+        { type: FilterFieldType.String, name: 'first_name', title: 'Имя' },
+        { type: FilterFieldType.String, name: 'last_name', title: 'Фамилия' },
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'main_role',
             title: 'Роль',
             skipNull: true,
             single: true,
             lookup: () => volunteerRoles?.data ?? []
         },
-        { type: 'boolean', name: 'is_blocked', title: 'Заблокирован' },
+        { type: FilterFieldType.Boolean, name: 'is_blocked', title: 'Заблокирован' },
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'kitchen',
             title: 'Кухня',
             skipNull: true,
             single: true,
             lookup: () => kitchens?.data ?? []
         }, // kitchenNameById
-        { type: 'string', name: 'printing_batch', title: 'Партия бейджа' },
-        { type: 'string', name: 'badge_number', title: 'Номер бейджа' },
+        { type: FilterFieldType.String, name: 'printing_batch', title: 'Партия бейджа' },
+        { type: FilterFieldType.String, name: 'badge_number', title: 'Номер бейджа' },
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'feed_type',
             title: 'Тип питания',
             skipNull: true,
             single: true,
             lookup: () => feedTypes?.data ?? []
         }, // feedTypeNameById
-        { type: 'boolean', name: 'is_vegan', title: 'Веган' },
-        { type: 'string', name: 'comment', title: 'Комментарий' },
+        { type: FilterFieldType.Boolean, name: 'is_vegan', title: 'Веган' },
+        { type: FilterFieldType.String, name: 'comment', title: 'Комментарий' },
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'color_type',
             title: 'Цвет бейджа',
             skipNull: true,
@@ -252,7 +248,7 @@ export const useFilters = ({
                 })) ?? []
         }, // colorNameById
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'access_role',
             title: 'Право доступа',
             skipNull: true,
@@ -260,7 +256,7 @@ export const useFilters = ({
             lookup: () => accessRoles?.data ?? []
         }, // accessRoleById
         {
-            type: 'lookup',
+            type: FilterFieldType.Lookup,
             name: 'group_badge',
             title: 'Групповой бейдж',
             skipNull: true,
@@ -269,7 +265,7 @@ export const useFilters = ({
         } // groupBadges
     ].concat(
         customFields.map((customField) => ({
-            type: customField.type === 'boolean' ? 'boolean' : 'custom',
+            type: customField.type === 'boolean' ? FilterFieldType.Boolean : FilterFieldType.Custom,
             name: `custom_field_values.${customField.id}`,
             title: customField.name
         }))
