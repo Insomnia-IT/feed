@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { useApp } from '~/model/app-provider/app-provider';
@@ -11,7 +11,7 @@ import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-sca
 
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
-import { GroupBadgeErrorCard, GroupBadgeSuccessCard, GroupBadgeWarningCard } from './post-scan-group-badge-misc';
+import { GroupBadgeSuccessCard, GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 
 enum Views {
     'LOADING',
@@ -26,7 +26,7 @@ enum Views {
 export const PostScanGroupBadge: FC<{
     groupBadge: GroupBadge;
     closeFeed: () => void;
-}> = ({ closeFeed, groupBadge: { id, name, qr } }) => {
+}> = ({ closeFeed, groupBadge: { id, name } }) => {
     // get vols, and their transactions for today
     const vols = useLiveQuery(async () => {
         const todayStart = getTodayStart();
@@ -47,34 +47,43 @@ export const PostScanGroupBadge: FC<{
     const [view, setView] = useState<Views>(Views.LOADING);
 
     // vols validation result
-    const [validationGroups, setValidationGroups] = useState<ValidationGroups>();
+    const [validationGroups, setValidationGroups] = useState<ValidationGroups>({
+        greens: [],
+        yellows: [],
+        reds: []
+    });
 
     // get app context
     const { kitchenId, mealTime } = useApp();
 
     // set callback (not) to feed vols
-    const incFeedAsync = useCallback(
-        async (vols: Array<ValidatedVol>, error: boolean) =>
-            await Promise.all(
-                vols.map((vol) => {
-                    const log =
-                        !error && vol.msg.length === 0
-                            ? { error: false, reason: 'Групповое питание' }
-                            : { error, reason: vol.msg.concat('Групповое питание').join(', ') };
+    const incFeedAsync = async (vols: Array<ValidatedVol>) => {
+        if (!mealTime) {
+            return;
+        }
 
-                    return dbIncFeed({
-                        vol,
-                        mealTime: mealTime!,
-                        isVegan: undefined,
-                        log,
-                        kitchenId
-                    });
-                })
-            ),
-        []
-    );
-    const doFeed = useCallback((vols: Array<ValidatedVol>) => void incFeedAsync(vols, false), [incFeedAsync]);
-    const doNotFeed = useCallback((vols: Array<ValidatedVol>) => void incFeedAsync(vols, true), [incFeedAsync]);
+        // Надо, наверно, как-то сохранять ошибку. Но, мб, не так
+        await Promise.all(
+            vols.map((vol) => {
+                const log =
+                    vol.msg.length === 0
+                        ? { error: false, reason: 'Групповое питание' }
+                        : { error: false, reason: vol.msg.concat('Групповое питание').join(', ') };
+
+                return dbIncFeed({
+                    vol,
+                    mealTime: mealTime,
+                    isVegan: undefined,
+                    log,
+                    kitchenId
+                });
+            })
+        );
+    };
+
+    const doFeed = (vols: Array<ValidatedVol>): void => {
+        void incFeedAsync(vols);
+    };
 
     useEffect(() => {
         // loading
@@ -91,10 +100,10 @@ export const PostScanGroupBadge: FC<{
 
         // pass each vol through validation and combine result
         const validatedVols = vols.map((vol) => {
-            return { ...vol, ...validateVol(vol, vol.transactions!, kitchenId, mealTime!, true) };
+            return { ...vol, ...validateVol(vol, vol?.transactions ?? [], kitchenId, mealTime!, true) };
         });
 
-        setValidationGroups({
+        const validationGroupsNext = {
             // greens don't have any messages
             greens: validatedVols.filter((vol) => vol.msg.length === 0),
 
@@ -103,86 +112,78 @@ export const PostScanGroupBadge: FC<{
 
             // reds are similar to yellows but everyone has red flag being true instead
             reds: validatedVols.filter((vol) => vol.msg.length > 0 && vol.isRed)
-        });
-    }, [vols]);
+        };
 
-    useEffect(() => {
-        // loading
-        if (!validationGroups) {
-            setView(Views.LOADING);
-            return;
-        }
+        setValidationGroups(validationGroupsNext);
 
         // validation went wrong
-        if (getAllVols(validationGroups).length !== vols!.length) {
+        if (getAllVols(validationGroupsNext).length !== vols?.length) {
             setView(Views.ERROR_VALIDATION);
             return;
         }
 
         // nobody eats
-        if (vols!.length === validationGroups.reds.length) {
+        if (vols?.length === validationGroupsNext.reds.length) {
             setView(Views.RED);
             return;
         }
 
         // everyone eats w/o any messages
-        if (vols!.length === validationGroups.greens.length) {
+        if (vols?.length === validationGroupsNext.greens.length) {
             setView(Views.GREEN);
             return;
         }
 
         // all vols or some of them eat but there is messages to show
         setView(Views.YELLOW);
-    }, [validationGroups]);
-    return (
-        <>
-            {Views.LOADING === view && <ErrorCard close={closeFeed} title='Загрузка...' msg='' />}
+    }, [kitchenId, mealTime, vols]);
 
-            {Views.ERROR_EMPTY === view && <ErrorCard close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />}
-
-            {Views.ERROR_VALIDATION === view && (
-                <GroupBadgeErrorCard
-                    close={closeFeed}
-                    doNotFeed={doNotFeed}
+    switch (view) {
+        case Views.LOADING:
+            return <ErrorCard close={closeFeed} title='Загрузка...' msg='' />;
+        case Views.ERROR_EMPTY:
+            return <ErrorCard close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />;
+        case Views.ERROR_VALIDATION:
+            // <GroupBadgeErrorCard
+            //     close={closeFeed}
+            //     doNotFeed={doNotFeed}
+            //     msg={'Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!'}
+            //     volsNotToFeed={vols!.map(
+            //         (vol) =>
+            //             ({
+            //                 ...vol,
+            //                 msg: [`Ошибка в проверке волонтеров в групповом бейдже(qr: ${qr}).`],
+            //                 isRed: true
+            //             }) as ValidatedVol
+            //     )}
+            // />
+            return (
+                <ErrorCard
                     msg={'Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!'}
-                    volsNotToFeed={vols!.map(
-                        (vol) =>
-                            ({
-                                ...vol,
-                                msg: [`Ошибка в проверке волонтеров в групповом бейдже(qr: ${qr}).`],
-                                isRed: true
-                            }) as ValidatedVol
-                    )}
+                    close={closeFeed}
                 />
-            )}
-
-            {Views.GREEN === view && (
+            );
+        case Views.GREEN:
+            return (
                 <GroupBadgeSuccessCard
                     name={name}
-                    volsToFeed={validationGroups!.greens}
+                    volsToFeed={validationGroups.greens}
                     doFeed={doFeed}
                     close={closeFeed}
                 />
-            )}
-
-            {Views.YELLOW === view && (
+            );
+        case Views.YELLOW:
+            return (
                 <GroupBadgeWarningCard
                     name={name}
                     doFeed={doFeed}
-                    doNotFeed={doNotFeed}
                     close={closeFeed}
-                    validationGroups={validationGroups!}
+                    validationGroups={validationGroups}
                 />
-            )}
-
-            {Views.RED === view && (
-                <GroupBadgeErrorCard
-                    close={closeFeed}
-                    doNotFeed={doNotFeed}
-                    msg={'Никто не ест.'}
-                    volsNotToFeed={validationGroups!.reds}
-                />
-            )}
-        </>
-    );
+            );
+        case Views.RED:
+            return <ErrorCard close={closeFeed} msg={'Никто не ест.'} />;
+        default:
+            return <ErrorCard close={closeFeed} msg={'Непредвиденная ошибка'} />;
+    }
 };

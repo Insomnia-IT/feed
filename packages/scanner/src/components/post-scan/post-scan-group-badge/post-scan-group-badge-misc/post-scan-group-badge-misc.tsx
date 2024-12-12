@@ -1,17 +1,13 @@
 import type { FC } from 'react';
-import { useCallback } from 'react';
-import cs from 'classnames';
 import cn from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
 import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
 import { getPlural } from '~/shared/lib/utils';
 
-import { getAllVols } from '../post-scan-group-badge.utils';
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 
 import css from './post-scan-group-badge-misc.module.css';
@@ -102,16 +98,14 @@ export const GroupBadgeWarningCard: FC<{
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
-    doNotFeed: (vols: Array<ValidatedVol>) => void;
     close: () => void;
-}> = ({ close, doFeed, doNotFeed, name, validationGroups }) => {
+}> = ({ close, doFeed, name, validationGroups }) => {
     const { greens, reds, yellows } = validationGroups;
     const volsToFeed = [...greens, ...yellows];
-    const handleCancel = () => {
-        doNotFeed([...reds, ...yellows]);
+    const handleCancel = (): void => {
         close();
     };
-    const handleFeed = () => {
+    const handleFeed = (): void => {
         doFeed(volsToFeed);
         close();
     };
@@ -133,18 +127,4 @@ export const GroupBadgeWarningCard: FC<{
             </div>
         </CardContainer>
     );
-};
-
-export const GroupBadgeErrorCard: FC<{
-    msg: string;
-    volsNotToFeed: Array<ValidatedVol>;
-    doNotFeed: (vols: Array<ValidatedVol>) => void;
-    close: () => void;
-}> = ({ close, doNotFeed, msg, volsNotToFeed }) => {
-    const handleClose = useCallback(() => {
-        doNotFeed(volsNotToFeed);
-        close();
-    }, [close, doNotFeed, volsNotToFeed]);
-
-    return <ErrorCard msg={msg} close={handleClose} />;
 };
