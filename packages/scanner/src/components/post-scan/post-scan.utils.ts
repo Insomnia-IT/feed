@@ -57,7 +57,7 @@ export const validateVol = (
                         ...acc,
                         [mealTime]: (acc[mealTime] || 0) + 1
                     }),
-                    {} as { [mealTime: string]: number }
+                    <Record<string, number>>{}
                 )
             ).some((count) => count > 1);
 
