@@ -42,9 +42,8 @@ export const PostScan: FC = memo(() => {
     const [postScanView, setPostScanView] = useState<'anon' | 'anon-group' | 'vol-feed' | 'vol-warning' | 'vol-error'>(
         view
     );
-    const [errorMessage, _setErrorMessage] = useState(errors);
 
-    const [doFeed, doNotFeed] = useFeedVol(vol, mealTime, handleCloseCard, kitchenId);
+    const { doFeed, doNotFeed } = useFeedVol(vol, mealTime, handleCloseCard, kitchenId);
 
     return (
         <>
@@ -60,18 +59,13 @@ export const PostScan: FC = memo(() => {
             {postScanView === 'anon-group' && <FeedAnonGroupCard close={handleCloseCard} doFeed={doFeed} />}
             {postScanView === 'vol-feed' && vol && <FeedCard doFeed={doFeed} close={handleCloseCard} vol={vol} />}
             {postScanView === 'vol-warning' && vol && (
-                <FeedWarningCard
-                    close={handleCloseCard}
-                    doFeed={doFeed}
-                    doNotFeed={doNotFeed}
-                    vol={vol}
-                    msg={errorMessage}
-                />
+                <FeedWarningCard close={handleCloseCard} doFeed={doFeed} doNotFeed={doNotFeed} vol={vol} msg={errors} />
             )}
             {postScanView === 'vol-error' && vol && (
-                <FeedErrorCard close={handleCloseCard} doNotFeed={doNotFeed} msg={errorMessage} vol={vol} />
+                <FeedErrorCard close={handleCloseCard} doNotFeed={doNotFeed} msg={errors} vol={vol} />
             )}
         </>
     );
 });
+
 PostScan.displayName = 'PostScan';
