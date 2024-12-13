@@ -32,10 +32,10 @@ export interface TransactionJoined extends Transaction {
 }
 
 export enum FeedType {
-    FT1 = 1, // бесплатно
-    FT2 = 2, // платно
+    Free = 1, // бесплатно
+    Paid = 2, // платно
     Child = 3, // ребенок,
-    FT4 = 4 // без питания
+    NoFeed = 4 // без питания
 }
 
 export enum MealTime {
@@ -45,7 +45,7 @@ export enum MealTime {
     night = 'night'
 }
 
-export const FeedWithBalance = new Set([FeedType.FT1, FeedType.FT2, FeedType.Child]);
+export const FeedWithBalance = new Set([FeedType.Free, FeedType.Paid, FeedType.Child]);
 
 export interface Volunteer {
     qr: string;
@@ -185,14 +185,14 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
             return (
                 vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
-                vol.feed_type !== FeedType.FT4 &&
+                vol.feed_type !== FeedType.NoFeed &&
                 vol.arrivals.some(
                     ({ arrival_date, departure_date, status }) =>
                         dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
                         dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
                         (dayjs(arrival_date).startOf('day').unix() < dayjs(statsDate).unix()
                             ? isActivatedStatus(status)
-                            : vol.feed_type === FeedType.FT2
+                            : vol.feed_type === FeedType.Paid
                               ? isActivatedStatus(status)
                               : true)
                 )

@@ -27,24 +27,30 @@ export const validateVol = (
     if (vol.feed_type !== FeedType.Child && vol.kitchen?.toString() !== kitchenId.toString()) {
         msg.push(`Кормится на кухне №${vol.kitchen}`);
     }
+
     if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
         msg.push('Бейдж не активирован в штабе');
     }
+
     if (vol.is_blocked) {
         isRed = true;
         msg.push('Волонтер заблокирован');
     }
+
     if (isVolExpired(vol)) {
         msg.push('Даты активности не совпадают');
     }
+
     if (!FeedWithBalance.has(vol.feed_type)) {
         isRed = true;
         msg.push('НЕТ ПИТАНИЯ, СХОДИ В ИЦ');
     }
+
     if (volTransactions.some((t) => t.mealTime === mealTime) && vol.feed_type !== FeedType.Child) {
         msg.push(`Волонтер уже получил ${getMealTimeText(mealTime)}`);
 
         if (vol.group_badge && !isGroupScan) {
+            // Считаем, что волонтер имеет долг, если его кормили за один приём пищи больше, чем один раз
             const hasDebt = Object.values(
                 volTransactions.reduce(
                     (acc, { mealTime }) => ({
@@ -62,6 +68,7 @@ export const validateVol = (
             isRed = true;
         }
     }
+
     if (
         msg.length &&
         !isRed &&
@@ -74,7 +81,7 @@ export const validateVol = (
         isRed = true;
     }
 
-    if (vol.feed_type === FeedType.FT2) {
+    if (vol.feed_type === FeedType.Paid) {
         if (mealTime === MealTime.night) {
             msg.push('Платник не может питаться в дожор');
         }
@@ -86,7 +93,7 @@ export const validateVol = (
     return { msg, isRed };
 };
 
-export const getTodayStart = () => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
+export const getTodayStart = (): number => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
 
 let isFeedInProgress = false;
 
@@ -103,8 +110,8 @@ export const useFeedVol = (
                     isFeedInProgress = true;
                     await dbIncFeed({ vol, mealTime, isVegan, log, kitchenId });
                     closeFeed();
-                } catch (e) {
-                    console.error(e);
+                } catch (error) {
+                    console.error(error);
                 } finally {
                     isFeedInProgress = false;
                 }
@@ -113,22 +120,27 @@ export const useFeedVol = (
         [closeFeed, kitchenId, mealTime, vol]
     );
 
-    return [
-        useCallback(
-            (isVegan?: boolean, reason?: string) => {
-                let log;
-                if (reason) {
-                    log = { error: false, reason };
-                }
-                void feed(isVegan, log);
-            },
-            [feed]
-        ),
-        useCallback((reason: string) => void feed(undefined, { error: true, reason }), [feed])
-    ] as const;
+    const doFeed = useCallback(
+        (isVegan?: boolean, reason?: string) => {
+            let log;
+
+            if (reason) {
+                log = { error: false, reason };
+            }
+
+            void feed(isVegan, log);
+        },
+        [feed]
+    );
+    const doNotFeed = useCallback((reason: string) => void feed(undefined, { error: true, reason }), [feed]);
+
+    return {
+        doFeed,
+        doNotFeed
+    } as const;
 };
 
-export const getVolTransactionsAsync = async (vol: Volunteer, todayStart: number) =>
+export const getVolTransactionsAsync = async (vol: Volunteer, todayStart: number): Promise<Array<Transaction>> =>
     db.transactions
         .where('vol_id')
         .equals(vol.id)
