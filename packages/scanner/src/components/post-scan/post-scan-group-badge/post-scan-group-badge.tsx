@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { useApp } from '~/model/app-provider/app-provider';
-import type { GroupBadge } from '~/db';
+import type { GroupBadge, Volunteer } from '~/db';
 import { db, dbIncFeed } from '~/db';
 import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
 
@@ -12,16 +12,14 @@ import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-sca
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
 import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
-import { Button } from '~/shared/ui/button';
+
 import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
 enum Views {
     'LOADING',
-    'GREEN',
     'YELLOW',
     'RED',
-    'BLUE',
     'ERROR_EMPTY',
     'ERROR_VALIDATION',
     'OTHER_COUNT'
@@ -34,7 +32,7 @@ export const PostScanGroupBadge: FC<{
     const { id, name } = groupBadge;
 
     // get vols, and their transactions for today
-    const vols = useLiveQuery(async () => {
+    const vols = useLiveQuery(async (): Promise<Array<Volunteer>> => {
         const todayStart = getTodayStart();
 
         const vols = await db.volunteers.where('group_badge').equals(id).toArray();
@@ -63,7 +61,7 @@ export const PostScanGroupBadge: FC<{
     const { kitchenId, mealTime } = useApp();
 
     // set callback (not) to feed vols
-    const incFeedAsync = async (vols: Array<ValidatedVol>) => {
+    const incFeedAsync = async (vols: Array<ValidatedVol>): Promise<void> => {
         if (!mealTime) {
             return;
         }
@@ -137,11 +135,9 @@ export const PostScanGroupBadge: FC<{
         setView(Views.YELLOW);
     }, [kitchenId, mealTime, vols]);
 
-    console.debug(validationGroups);
-
     return (
         <CardContainer>
-            <AlreadyFedModal vols={vols} />
+            <AlreadyFedModal volsToFeedCount={validationGroups.greens.length} allVolsCount={vols?.length ?? 0} />
             <ResultScreen
                 validationGroups={validationGroups}
                 doFeed={doFeed}
