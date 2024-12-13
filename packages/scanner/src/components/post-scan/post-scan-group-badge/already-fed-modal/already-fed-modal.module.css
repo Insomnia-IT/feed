@@ -1,0 +1,8 @@
+.body{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: stretch;
+    justify-self: stretch;
+    height: 80%;
+}

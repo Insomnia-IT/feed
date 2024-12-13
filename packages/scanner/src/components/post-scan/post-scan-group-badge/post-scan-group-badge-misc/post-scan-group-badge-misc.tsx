@@ -2,7 +2,6 @@ import type { FC } from 'react';
 import cn from 'classnames';
 
 import type { Volunteer } from '~/db';
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
@@ -11,6 +10,7 @@ import { getPlural } from '~/shared/lib/utils';
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 
 import css from './post-scan-group-badge-misc.module.css';
+import { Modal } from '~/shared/ui/modal';
 
 const VolunteerList: FC<{
     warningVols?: Array<Volunteer>;
@@ -31,6 +31,7 @@ const VolunteerList: FC<{
         )}
     </div>
 );
+
 const GroupBadgeInfo: FC<{
     name: string;
     vols: Array<Volunteer>;
@@ -40,6 +41,7 @@ const GroupBadgeInfo: FC<{
     const totalMeats = vols.filter((vol) => !vol.is_vegan).length;
 
     const _volsToFeed = volsToFeed ?? vols;
+
     return (
         <div className={css.info}>
             <Title>Групповой бейдж</Title>
@@ -64,36 +66,6 @@ const GroupBadgeInfo: FC<{
     );
 };
 
-export const GroupBadgeSuccessCard: FC<{
-    name: string;
-    volsToFeed: Array<ValidatedVol>;
-    doFeed: (vols: Array<ValidatedVol>) => void;
-    close: () => void;
-}> = ({ close, doFeed, name, volsToFeed }) => {
-    return (
-        <CardContainer>
-            <div className={css.groupBadgeCard}>
-                <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
-                <div className={css.bottomBLock}>
-                    <div className={css.buttonsBlock}>
-                        <Button variant='secondary' onClick={close}>
-                            Отмена
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                doFeed(volsToFeed);
-                                close();
-                            }}
-                        >
-                            Кормить({volsToFeed.length})
-                        </Button>
-                    </div>
-                    <VolAndUpdateInfo textColor='black' />
-                </div>
-            </div>
-        </CardContainer>
-    );
-};
 export const GroupBadgeWarningCard: FC<{
     name: string;
     validationGroups: ValidationGroups;
@@ -101,30 +73,36 @@ export const GroupBadgeWarningCard: FC<{
     close: () => void;
 }> = ({ close, doFeed, name, validationGroups }) => {
     const { greens, reds, yellows } = validationGroups;
-    const volsToFeed = [...greens, ...yellows];
-    const handleCancel = (): void => {
-        close();
-    };
+    const volsToFeed = [...greens];
+
     const handleFeed = (): void => {
         doFeed(volsToFeed);
         close();
     };
 
     return (
-        <CardContainer>
-            <div className={css.groupBadgeCard}>
-                <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
-                {(reds.length > 0 || yellows.length > 0) && <VolunteerList errorVols={reds} warningVols={yellows} />}
-                <div className={css.bottomBLock}>
-                    <div className={css.buttonsBlock}>
-                        <Button variant='secondary' onClick={handleCancel}>
-                            Отмена
-                        </Button>
-                        <Button onClick={handleFeed}>Кормить({volsToFeed.length})</Button>
-                    </div>
-                    <VolAndUpdateInfo textColor='black' />
-                </div>
+        <div className={css.groupBadgeCard}>
+            <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
+            {(reds.length > 0 || yellows.length > 0) && <VolunteerList errorVols={reds} warningVols={yellows} />}
+            <BottomBlock length={volsToFeed.length} handleFeed={handleFeed} handleCancel={close} />
+        </div>
+    );
+};
+
+const BottomBlock: React.FC<{ handleCancel: () => void; handleFeed: () => void; length: number }> = ({
+    handleCancel,
+    handleFeed,
+    length
+}) => {
+    return (
+        <div className={css.bottomBLock}>
+            <div className={css.buttonsBlock}>
+                <Button variant='secondary' onClick={handleCancel}>
+                    Отмена
+                </Button>
+                <Button onClick={handleFeed}>Кормить({length})</Button>
             </div>
-        </CardContainer>
+            <VolAndUpdateInfo textColor='black' />
+        </div>
     );
 };

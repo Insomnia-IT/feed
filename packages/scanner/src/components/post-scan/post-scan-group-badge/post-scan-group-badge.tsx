@@ -11,7 +11,10 @@ import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-sca
 
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
-import { GroupBadgeSuccessCard, GroupBadgeWarningCard } from './post-scan-group-badge-misc';
+import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
+import { Button } from '~/shared/ui/button';
+import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
 enum Views {
     'LOADING',
@@ -20,13 +23,16 @@ enum Views {
     'RED',
     'BLUE',
     'ERROR_EMPTY',
-    'ERROR_VALIDATION'
+    'ERROR_VALIDATION',
+    'OTHER_COUNT'
 }
 
 export const PostScanGroupBadge: FC<{
     groupBadge: GroupBadge;
     closeFeed: () => void;
-}> = ({ closeFeed, groupBadge: { id, name } }) => {
+}> = ({ closeFeed, groupBadge }) => {
+    const { id, name } = groupBadge;
+
     // get vols, and their transactions for today
     const vols = useLiveQuery(async () => {
         const todayStart = getTodayStart();
@@ -62,7 +68,6 @@ export const PostScanGroupBadge: FC<{
             return;
         }
 
-        // Надо, наверно, как-то сохранять ошибку. Но, мб, не так
         await Promise.all(
             vols.map((vol) => {
                 const log =
@@ -128,16 +133,33 @@ export const PostScanGroupBadge: FC<{
             return;
         }
 
-        // everyone eats w/o any messages
-        if (vols?.length === validationGroupsNext.greens.length) {
-            setView(Views.GREEN);
-            return;
-        }
-
         // all vols or some of them eat but there is messages to show
         setView(Views.YELLOW);
     }, [kitchenId, mealTime, vols]);
 
+    console.debug(validationGroups);
+
+    return (
+        <CardContainer>
+            <AlreadyFedModal vols={vols} />
+            <ResultScreen
+                validationGroups={validationGroups}
+                doFeed={doFeed}
+                closeFeed={closeFeed}
+                name={name}
+                view={view}
+            />
+        </CardContainer>
+    );
+};
+
+const ResultScreen: React.FC<{
+    doFeed: (vols: Array<ValidatedVol>) => void;
+    view: Views;
+    closeFeed: () => void;
+    name: string;
+    validationGroups: ValidationGroups;
+}> = ({ closeFeed, doFeed, name, validationGroups, view }) => {
     switch (view) {
         case Views.LOADING:
             return <ErrorCard close={closeFeed} title='Загрузка...' msg='' />;
@@ -163,15 +185,6 @@ export const PostScanGroupBadge: FC<{
                     close={closeFeed}
                 />
             );
-        case Views.GREEN:
-            return (
-                <GroupBadgeSuccessCard
-                    name={name}
-                    volsToFeed={validationGroups.greens}
-                    doFeed={doFeed}
-                    close={closeFeed}
-                />
-            );
         case Views.YELLOW:
             return (
                 <GroupBadgeWarningCard
@@ -183,6 +196,7 @@ export const PostScanGroupBadge: FC<{
             );
         case Views.RED:
             return <ErrorCard close={closeFeed} msg={'Никто не ест.'} />;
+        // case Views.OTHER_COUNT
         default:
             return <ErrorCard close={closeFeed} msg={'Непредвиденная ошибка'} />;
     }
