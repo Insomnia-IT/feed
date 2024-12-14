@@ -44,7 +44,8 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
     },
     {
         fieldName: 'on_field',
-        title: 'Статус'
+        title: 'Статус',
+        isDefault: true
     },
     {
         fieldName: 'is_blocked',
