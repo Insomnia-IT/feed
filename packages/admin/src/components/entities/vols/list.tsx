@@ -10,7 +10,7 @@ import { CustomFieldEntity, VolEntity } from '~/interfaces';
 import { dataProvider } from '~/dataProvider';
 import { useMedia } from '~/shared/providers';
 
-import { Filters } from './vol-list/filters';
+import { Filters } from './vol-list/filters/filters';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
 import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
 import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
@@ -18,7 +18,7 @@ import useCanAccess from './use-can-access';
 
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
-import { useFilters } from '~/components/entities/vols/vol-list/use-filters';
+import { useFilters } from '~/components/entities/vols/vol-list/filters/use-filters';
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [page, setPage] = useState(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
