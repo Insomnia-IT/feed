@@ -1,8 +1,9 @@
+import { FC } from 'react';
 import { Show, Typography } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useShow } from '@pankod/refine-core';
 
-import type { DirectionEntity } from '~/interfaces';
+import type { DirectionEntity } from 'interfaces';
 
 const { Text, Title } = Typography;
 

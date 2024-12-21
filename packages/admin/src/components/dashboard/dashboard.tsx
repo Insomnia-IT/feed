@@ -1,22 +1,15 @@
 import { Divider } from '@pankod/refine-antd';
-import React, { memo, useCallback, useEffect, useRef } from 'react';
-// import { /*getDefaultFilter,*/ useList, useSelect, useUpdate } from '@pankod/refine-core';
-import { isBrowser } from '@feed/core/src/const';
+import { FC, memo, useCallback, useEffect, useRef } from 'react';
 import QrScanner from 'qr-scanner';
+import sas from 'onscan.js';
 
-import { axios } from '~/authProvider';
-import { NEW_API_URL } from '~/const';
-// import type { VolEntity } from 'interfaces';
+import { isBrowser } from 'utils';
+import { axios } from 'authProvider';
+import { NEW_API_URL } from 'const';
 
 import css from './qr-scan.module.css';
 
-// const { Content, Footer, Header, Sider } = Layout;
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const sas = require('onscan.js/onscan');
-
 if (isBrowser) {
-    // @ts-ignore
     sas.attachTo(document, {
         suffixKeyCodes: [13], // enter-key expected at the end of a scan
         reactToPaste: false,
@@ -84,7 +77,7 @@ export const Dashboard: FC = () => {
             console.log('volunteers by qr', data);
 
             if (!data.results.length) {
-                alert(`Волонтер не найден`);
+                alert('Волонтер не найден');
             } else {
                 window.location.href = `${window.location.href}volunteers/edit/${data.results[0].id}`;
             }
@@ -132,16 +125,15 @@ export const Dashboard: FC = () => {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         function onHardwareScan({ detail: { scanCode } }): void {
             void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 
-        // @ts-ignore
         document.addEventListener('scan', onHardwareScan);
 
         return (): void => {
-            // @ts-ignore
             document.removeEventListener('scan', onHardwareScan);
         };
     }, [onScan]);
@@ -154,7 +146,7 @@ export const Dashboard: FC = () => {
 
     return (
         <>
-            <Divider orientation='center'>ОТСКАНИРУЙ БЕЙДЖ</Divider>
+            <Divider orientation="center">ОТСКАНИРУЙ БЕЙДЖ</Divider>
             {/* {isLoading && <Spin size='large' />} */}
             {/* <Select showSearch placeholder='привязать к волонтеру' {...selectProps} /> */}
             <div style={{ textAlign: 'center' }}>

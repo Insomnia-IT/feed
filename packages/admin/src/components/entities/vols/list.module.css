@@ -1,92 +1,92 @@
 .filters {
-    display: flex;
-    align-items: baseline;
-    padding: 24px 0;
+	display: flex;
+	align-items: baseline;
+	padding: 24px 0;
 }
 
 .filtersLabel {
-    margin-right: 24px;
-    font-weight: 500;
+	margin-right: 24px;
+	font-weight: 500;
 }
 
 .filterItems {
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: 8px;
-    column-gap: 8px;
+	display: flex;
+	flex-wrap: wrap;
+	row-gap: 8px;
+	column-gap: 8px;
 }
 
 .filterItemButton {
-    color: #D9D9D9;
+	color: #d9d9d9;
 }
 
 .filterPopupFieldName {
-    color: #8D959E;
+	color: #8d959e;
 }
 
 .filterPopupHeader {
-    padding-bottom: 12px;
+	padding-bottom: 12px;
 }
 
 .filterDownIcon {
-    padding-left: 6px;
+	padding-left: 6px;
 }
 
 .filterPopupList {
-    overflow: auto;
-    max-height: 300px;
-    margin-top: 8px;
+	overflow: auto;
+	max-height: 300px;
+	margin-top: 8px;
 }
 
 .filterPopupListItem {
-    display: flex;
-    padding: 8px 0;
-    cursor: pointer;
-    column-gap: 8px;
+	display: flex;
+	padding: 8px 0;
+	cursor: pointer;
+	column-gap: 8px;
 }
 
 .filterItemActive {
-    color: #000000;
+	color: #000000;
 }
 
 .filterItemNameActive {
-    font-weight: 500;
+	font-weight: 500;
 }
 
 .filterListItemCount {
-    color: #8D959E;
+	color: #8d959e;
 }
 
 .mobileVolList {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
 }
 
 .volCard {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
 
-    width: 100%;
-    border-radius: 2px;
-    padding: 12px;
-    background: #fff;
+	width: 100%;
+	border-radius: 2px;
+	padding: 12px;
+	background: #fff;
 
-    min-width: 0;
+	min-width: 0;
 
-    .textRow {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+	.textRow {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
-    .bold {
-        font-weight: 500;
-    }
+	.bold {
+		font-weight: 500;
+	}
 }
 
 .cursorPointer {
-    cursor: pointer;
+	cursor: pointer;
 }

@@ -1,8 +1,9 @@
+import { FC, Suspense, lazy } from 'react';
 import type { ColumnConfig, Options } from '@ant-design/plots';
-import dynamic from 'next/dynamic';
 
 import type { MealTime, StatisticType } from '../types';
-const Column = dynamic(() => import('@ant-design/plots').then(({ Column }) => Column), { ssr: false });
+
+const Column = lazy(() => import('@ant-design/plots').then(({ Column }) => ({ default: Column })));
 
 /** Данные для столбчатого графика */
 interface IColumnChartData {
@@ -40,7 +41,7 @@ function createAnnotation(data: Array<IColumnChartAnnotationData>) {
     return annotations;
 }
 
-/**Настройки для столбчатого графика*/
+/** Настройки для столбчатого графика */
 const columnConfig: Omit<ColumnConfig, 'data'> = {
     xField: 'date',
     yField: 'value',
@@ -65,22 +66,6 @@ const columnConfig: Omit<ColumnConfig, 'data'> = {
         position: 'top-left'
     },
     tooltip: false,
-    // tooltip: {
-    //     // customContent: (title, data) => {
-    //     //     return `<div>${title}</div>`;
-    //     // },
-    //     // customItems: (originalItems: TooltipItem[]) => {
-    //     //     // process originalItems,
-    //     //     console.log(originalItems);
-    //     //     return originalItems;
-    //     // },
-    //     formatter: (datum) => {
-    //         return {
-    //             name: `${datum.mealTime} ${datum.type === 'plan' ? 'plan' : 'fact'}`,
-    //             value: datum.value
-    //         };
-    //     }
-    // },
     interactions: [
         {
             type: 'element-highlight-by-color'
@@ -88,12 +73,17 @@ const columnConfig: Omit<ColumnConfig, 'data'> = {
     ]
 };
 
-function ColumnChart(props: {
+const ColumnChart: FC<{
     columnDataArr: Array<IColumnChartData>;
     dataForAnnotation: Array<IColumnChartAnnotationData>;
-}) {
+}> = (props) => {
     const annotations = createAnnotation(props.dataForAnnotation);
-    return <Column data={props.columnDataArr} {...columnConfig} annotations={annotations} />;
-}
+    return (
+        <Suspense fallback={<div>Loading chart...</div>}>
+            <Column data={props.columnDataArr} {...columnConfig} annotations={annotations} />
+        </Suspense>
+    );
+};
+
 export { ColumnChart };
 export type { IColumnChartData, IColumnChartAnnotationData };

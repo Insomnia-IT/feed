@@ -1,16 +1,16 @@
 import { Show, Typography } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useShow } from '@pankod/refine-core';
-import dynamic from 'next/dynamic';
+import { FC, lazy, Suspense } from 'react';
 
-import type { VolunteerCustomFieldEntity } from '~/interfaces';
+import type { VolunteerCustomFieldEntity } from 'interfaces';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = lazy(() => import('react-quill'));
 
 const { Text, Title } = Typography;
 
 export const VolunteerCustomFieldShow: FC<IResourceComponentsProps> = () => {
-    const { queryResult, showId } = useShow<VolunteerCustomFieldEntity>();
+    const { queryResult } = useShow<VolunteerCustomFieldEntity>();
     const { data, isLoading } = queryResult;
     const record = data?.data;
 
@@ -20,7 +20,9 @@ export const VolunteerCustomFieldShow: FC<IResourceComponentsProps> = () => {
             <Text>{record?.name}</Text>
 
             <Title level={5}>Комментарий</Title>
-            <ReactQuill theme='bubble' readOnly value={record?.comment} />
+            <Suspense fallback={<div>Loading editor...</div>}>
+                <ReactQuill theme="bubble" readOnly value={record?.comment} />
+            </Suspense>
         </Show>
     );
 };

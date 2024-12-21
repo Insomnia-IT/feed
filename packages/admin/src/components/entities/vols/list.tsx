@@ -1,14 +1,13 @@
 import type { TablePaginationConfig } from '@pankod/refine-antd';
 import { Col, List, Row, Select } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useList } from '@pankod/refine-core';
-import { useEffect, useState } from 'react';
+import { useList, useNavigation } from '@pankod/refine-core';
+import { FC, useEffect, useState } from 'react';
 import { Input } from 'antd';
-import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
-import { CustomFieldEntity, VolEntity } from '~/interfaces';
-import { dataProvider } from '~/dataProvider';
-import { useMedia } from '~/shared/providers';
+import { CustomFieldEntity, VolEntity } from 'interfaces';
+import { dataProvider } from 'dataProvider';
+import { useMedia } from 'shared/providers';
 
 import { Filters } from './vol-list/filters';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
@@ -18,16 +17,17 @@ import useCanAccess from './use-can-access';
 
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
-import { useFilters } from '~/components/entities/vols/vol-list/use-filters';
+import { useFilters } from 'components/entities/vols/vol-list/use-filters';
 
 export const VolList: FC<IResourceComponentsProps> = () => {
     const [page, setPage] = useState(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
 
     const { isDesktop, isMobile } = useMedia();
 
-    const router = useRouter();
-
-    const canListCustomFields = useCanAccess({ action: 'list', resource: 'volunteer-custom-fields' });
+    const canListCustomFields = useCanAccess({
+        action: 'list',
+        resource: 'volunteer-custom-fields'
+    });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
@@ -93,10 +93,12 @@ export const VolList: FC<IResourceComponentsProps> = () => {
     const volunteersData = volunteers?.data ?? [];
 
     const queryClient = useQueryClient();
+    const { push } = useNavigation();
 
     const openVolunteer = (id: number): Promise<boolean> => {
         queryClient.clear();
-        return router.push(`volunteers/edit/${id}`);
+        push(`/volunteers/edit/${id}`);
+        return Promise.resolve(true);
     };
 
     return (
@@ -104,7 +106,7 @@ export const VolList: FC<IResourceComponentsProps> = () => {
             <ActiveColumnsContextProvider customFields={customFields}>
                 {/* -------------------------- Фильтры -------------------------- */}
                 <Input
-                    placeholder='Поиск по волонтерам, датам, службам'
+                    placeholder="Поиск по волонтерам, датам, службам"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     allowClear
@@ -119,19 +121,19 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     setSearchText={setSearchText}
                     setPage={setPage}
                 />
-                <Row style={{ padding: '10px 0' }} justify='space-between'>
+                <Row style={{ padding: '10px 0' }} justify="space-between">
                     {isDesktop && (
                         <>
-                            <Row style={{ gap: '24px' }} align='middle'>
+                            <Row style={{ gap: '24px' }} align="middle">
                                 <b>Сохраненные таблицы:</b>
 
-                                <Select placeholder='Выберите' disabled></Select>
+                                <Select placeholder="Выберите" disabled></Select>
                             </Row>
-                            <Row style={{ gap: '24px' }} align='middle'>
+                            <Row style={{ gap: '24px' }} align="middle">
                                 <Col>
                                     <b>Результат:</b> {volunteers?.total} волонтеров
                                 </Col>
-                                <Row style={{ gap: '12px' }} align='middle'>
+                                <Row style={{ gap: '12px' }} align="middle">
                                     <ChooseColumnsButton
                                         canListCustomFields={canListCustomFields}
                                         customFields={customFields}

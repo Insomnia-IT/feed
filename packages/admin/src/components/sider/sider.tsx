@@ -1,4 +1,4 @@
-'use client';
+import React, { useEffect, useState, FC } from 'react';
 import { AntdLayout, Grid, Menu, useMenu } from '@pankod/refine-antd';
 import {
     CanAccess,
@@ -6,16 +6,16 @@ import {
     useList,
     useLogout,
     useRouterContext,
-    useTitle
+    useTitle,
+    useNavigation,
+    ITreeMenu
 } from '@pankod/refine-core';
 import { LogoutOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
-import React, { useEffect, useState } from 'react';
-import type { ITreeMenu } from '@pankod/refine-core';
-import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 
-import { authProvider } from '~/authProvider';
-import type { AccessRoleEntity } from '~/interfaces';
+import { authProvider } from 'authProvider';
+import type { AccessRoleEntity } from 'interfaces';
 
 import { antLayoutSider, antLayoutSiderMobile } from './styles';
 import styles from './sider.module.css';
@@ -72,7 +72,7 @@ export const CustomSider: FC = () => {
             const isSelected = route === selectedKey;
             const isRoute = !(parentName !== undefined && children.length === 0);
             return (
-                <CanAccess key={route} resource={name.toLowerCase()} action='list' params={{ resource: item }}>
+                <CanAccess key={route} resource={name.toLowerCase()} action="list" params={{ resource: item }}>
                     <Menu.Item
                         key={route}
                         style={{
@@ -81,7 +81,7 @@ export const CustomSider: FC = () => {
                         icon={icon ?? (isRoute && <UnorderedListOutlined />)}
                     >
                         <Link to={route}>{label}</Link>
-                        {!collapsed && isSelected && <div className='ant-menu-tree-arrow' />}
+                        {!collapsed && isSelected && <div className="ant-menu-tree-arrow" />}
                     </Menu.Item>
                 </CanAccess>
             );
@@ -99,21 +99,21 @@ export const CustomSider: FC = () => {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    });
+    }, []);
 
-    const router = useRouter();
+    const { push } = useNavigation();
+    const location = useLocation();
+    const myPath = location.pathname;
 
     const handleRedirectToVols = () => {
-        void router.push('/volunteers');
+        void push('/volunteers');
     };
 
     const handleRedirectToGroups = () => {
-        void router.push('/group-badges');
+        void push('/group-badges');
     };
 
     const [currentPath, setCurrentPath] = useState('');
-
-    const myPath = router.asPath;
 
     useEffect(() => {
         if (myPath.startsWith('/group-badges')) {
@@ -133,7 +133,7 @@ export const CustomSider: FC = () => {
                         className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
                         onClick={handleRedirectToVols}
                     >
-                        <UserOutlined width={20} style={{ fontSize: '20px' }} />
+                        <UserOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Волонтеры</span>
                     </button>
                     <button
@@ -153,15 +153,15 @@ export const CustomSider: FC = () => {
                     collapsible
                     collapsedWidth={isMobile ? 0 : 80}
                     collapsed={collapsed}
-                    breakpoint='lg'
+                    breakpoint="lg"
                     onCollapse={(collapsed: boolean): void => setCollapsed(collapsed)}
                     style={isMobile ? antLayoutSiderMobile : antLayoutSider}
                 >
                     {Title && <Title collapsed={collapsed} />}
                     <Menu
-                        theme='dark'
+                        theme="dark"
                         selectedKeys={[selectedKey]}
-                        mode='inline'
+                        mode="inline"
                         onClick={() => {
                             if (!breakpoint.lg) {
                                 setCollapsed(true);
@@ -177,7 +177,7 @@ export const CustomSider: FC = () => {
                         </Menu.Item>
                         {renderTreeView(menuItems, selectedKey)}
                         {isExistAuthentication && (
-                            <Menu.Item key='logout' onClick={handleLogout} icon={<LogoutOutlined />}>
+                            <Menu.Item key="logout" onClick={handleLogout} icon={<LogoutOutlined />}>
                                 Выход
                             </Menu.Item>
                         )}

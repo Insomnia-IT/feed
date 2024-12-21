@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
-import type { ArrivalEntity, VolEntity } from '~/interfaces';
-import { isActivatedStatus } from '~/shared/lib';
+import type { ArrivalEntity, VolEntity } from 'interfaces';
+import { isActivatedStatus } from 'shared/lib';
 
 import type { FilterField } from './filter-types';
 

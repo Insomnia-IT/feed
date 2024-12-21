@@ -1,4 +1,4 @@
-import type { VolEntity } from '~/interfaces';
+import type { VolEntity } from 'interfaces';
 
 export interface VolunteerField {
     fieldName: keyof VolEntity | 'on_field';
@@ -44,8 +44,7 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
     },
     {
         fieldName: 'on_field',
-        title: 'Статус',
-        isDefault: true
+        title: 'Статус'
     },
     {
         fieldName: 'is_blocked',

@@ -1,12 +1,12 @@
 import { Input, Modal, Table } from '@pankod/refine-antd';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import { useState } from 'react';
-import type { Key } from 'react';
+import type { FC, Key } from 'react';
 import { useList } from '@pankod/refine-core';
 
-import type { VolEntity } from '~/interfaces';
-import { useMedia } from '~/shared/providers';
-import useVisibleDirections from '~/components/entities/vols/use-visible-directions';
+import type { VolEntity } from 'interfaces';
+import { useMedia } from 'shared/providers';
+import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 
 type VolEntityExtended = VolEntity & { markedDeleted: boolean; markedAdded: boolean };
 
@@ -80,7 +80,7 @@ export const AddVolunteerModal: FC<{
 
     return (
         <Modal
-            title='Добавить волонтеров'
+            title="Добавить волонтеров"
             open={isOpen}
             onOk={(): void => {
                 addVolunteers();
@@ -89,7 +89,7 @@ export const AddVolunteerModal: FC<{
             onCancel={() => setIsOpen(false)}
         >
             <Input
-                placeholder='Поиск...'
+                placeholder="Поиск..."
                 value={searchText}
                 onChange={(event): void => {
                     setSearchText(event.target.value);
@@ -99,14 +99,14 @@ export const AddVolunteerModal: FC<{
             <Table
                 rowSelection={rowSelection}
                 dataSource={filteredData}
-                rowKey='id'
+                rowKey="id"
                 loading={isVolunteersAllLoading}
-                size='small'
+                size="small"
                 pagination={{ pageSize: isDesktop ? 100 : 5, showSizeChanger: false, size: 'small' }}
             >
-                <Table.Column dataIndex='name' key='name' title='Имя на бейдже' ellipsis width='40%' />
-                <Table.Column dataIndex='first_name' key='first_name' title='Имя' ellipsis />
-                <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' ellipsis />
+                <Table.Column dataIndex="name" key="name" title="Имя на бейдже" ellipsis width="40%" />
+                <Table.Column dataIndex="first_name" key="first_name" title="Имя" ellipsis />
+                <Table.Column dataIndex="last_name" key="last_name" title="Фамилия" ellipsis />
             </Table>
         </Modal>
     );
