@@ -88,6 +88,7 @@ module.exports = {
             }
         ],
         'import/no-default-export': 1,
+        'import/no-unresolved': 0,
         'no-restricted-imports': [
             'warn',
             {
