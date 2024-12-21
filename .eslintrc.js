@@ -47,6 +47,7 @@ module.exports = {
         '@typescript-eslint/restrict-template-expressions': 0,
         '@typescript-eslint/prefer-regexp-exec': 0,
         '@typescript-eslint/no-unsafe-argument': 0,
+        '@typescript-eslint/no-misused-promises': 0,
         '@typescript-eslint/explicit-function-return-type': [
             1,
             {
@@ -123,7 +124,7 @@ module.exports = {
             }
         ],
         'sort-imports': [
-            'warn',
+            'off',
             {
                 ignoreCase: true,
                 ignoreDeclarationSort: false,

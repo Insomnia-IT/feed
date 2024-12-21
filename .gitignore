@@ -2,7 +2,8 @@
 
 # IDEs
 .devcontainer
-.vscode
+.vscode/*
+!.vscode/settings.json
 
 .idea
 /.idea

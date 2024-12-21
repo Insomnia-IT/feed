@@ -69,7 +69,6 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
     }
     userPromise =
         userPromise ||
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         new Promise(async (resolve, reject) => {
             try {
                 if (token.startsWith('V-TOKEN')) {
