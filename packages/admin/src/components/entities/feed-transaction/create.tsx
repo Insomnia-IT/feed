@@ -5,6 +5,7 @@ import { ulid } from 'ulid';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { Rules } from 'components/form/rules';
+import type { Dayjs } from 'dayjs';
 
 const mealTimeOptions = [
     { value: 'breakfast', label: 'Завтрак' },
@@ -29,7 +30,7 @@ export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
     }, []);
 
     const onTimeChange = useCallback(
-        (value: { unix: () => number | undefined }) =>
+        (value: Dayjs | null) =>
             form.setFieldValue('ulid', value ? ulid(value.unix()) : undefined),
         [form]
     );
