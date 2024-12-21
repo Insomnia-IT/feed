@@ -1,547 +1,547 @@
 .edit {
-	display: flex;
-	flex-wrap: nowrap;
+    display: flex;
+    flex-wrap: nowrap;
 }
 
 .edit__nav {
-	max-width: 230px;
-	margin-right: 24px;
-	margin-left: -24px;
-	background-color: white;
+    max-width: 230px;
+    margin-right: 24px;
+    margin-left: -24px;
+    background-color: white;
 }
 
 .navList {
-	display: flex;
-	flex-direction: column;
-	margin: 0;
-	padding: 0;
-	list-style: none;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .navList__item:not(:last-child) {
-	margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 .navList__item {
-	display: flex;
-	align-items: center;
-	width: 230px;
-	height: 40px;
-	padding: 0 24px 0 16px;
-	color: rgb(0 0 0 / 0.85);
-	font-size: 14px;
-	line-height: 157%;
-	cursor: pointer;
+    display: flex;
+    align-items: center;
+    width: 230px;
+    height: 40px;
+    padding: 0 24px 0 16px;
+    color: rgb(0 0 0 / 0.85);
+    font-size: 14px;
+    line-height: 157%;
+    cursor: pointer;
 }
 
 .active {
-	border-right: 3px solid rgb(24 144 255);
-	background: rgb(230 247 255);
+    border-right: 3px solid rgb(24 144 255);
+    background: rgb(230 247 255);
 }
 
 .formWrap {
-	display: flex;
-	flex-direction: column;
-	overflow-y: scroll;
-	width: 100%;
-	height: calc(100vh - 290px);
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    width: 100%;
+    height: calc(100vh - 290px);
 }
 
 .formWrap::-webkit-scrollbar {
-	width: 4px;
+    width: 4px;
 }
 
 .formWrap::-webkit-scrollbar-thumb {
-	border-radius: 5px;
-	background-color: rgb(24 144 255);
+    border-radius: 5px;
+    background-color: rgb(24 144 255);
 }
 
 .formWrap::-webkit-scrollbar-thumb:hover {
-	background-color: rgb(14 93 167);
+    background-color: rgb(14 93 167);
 }
 
 .formSection:not(:last-child) {
-	margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 .formSection {
-	position: relative;
-	padding: 16px;
-	background-color: white;
+    position: relative;
+    padding: 16px;
+    background-color: white;
 }
 
 .formSection__title {
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: center;
-	margin-bottom: 16px;
-	color: rgb(0 0 0 / 0.85);
-	font-weight: 500;
-	font-size: 16px;
-	line-height: 150%;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin-bottom: 16px;
+    color: rgb(0 0 0 / 0.85);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 150%;
 }
 
 /* personal */
 
 .bannedWrap {
-	padding-left: 16px;
+    padding-left: 16px;
 }
 
 .bannedDescr {
-	padding: 1px 8px;
-	border: 1px solid rgb(255 163 158);
-	border-radius: 2px;
-	background-color: rgb(255 241 240);
-	color: rgb(245 34 45);
-	font-size: 12px;
-	line-height: 20px;
+    padding: 1px 8px;
+    border: 1px solid rgb(255 163 158);
+    border-radius: 2px;
+    background-color: rgb(255 241 240);
+    color: rgb(245 34 45);
+    font-size: 12px;
+    line-height: 20px;
 }
 
 .isActiveCheckboxWrap {
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: center;
-	width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 100%;
 }
 
 .isActiveCheckbox:not(:last-child) {
-	margin-right: 16px;
+    margin-right: 16px;
 }
 
 .personalWrap {
-	display: flex;
-	flex-wrap: nowrap;
+    display: flex;
+    flex-wrap: nowrap;
 }
 
 .photoWrap {
-	width: 112px;
-	height: 112px;
-	margin-right: 16px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	border-radius: 2px;
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: cover;
-	background-color: rgb(240, 240, 240);
+    width: 112px;
+    height: 112px;
+    margin-right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 2px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-color: rgb(240, 240, 240);
 }
 
 .photo {
-	width: 100%;
-	margin-bottom: 4px;
-	background-color: rgb(245 245 245);
+    width: 100%;
+    margin-bottom: 4px;
+    background-color: rgb(245 245 245);
 }
 
 .personalInfoWrap {
-	display: flex;
-	flex-grow: 1;
-	flex-direction: column;
-	flex-wrap: nowrap;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    flex-wrap: nowrap;
 }
 
 .nickNameLastnameWrap {
-	display: flex;
-	align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .nameInput:not(:last-child) {
-	margin-right: 12px;
+    margin-right: 12px;
 }
 
 .nameInput {
-	flex-grow: 1;
+    flex-grow: 1;
 }
 
 .phoneInput {
-	flex-grow: 2;
-	margin-right: 12px;
+    flex-grow: 2;
+    margin-right: 12px;
 }
 
 .genderSelect {
-	flex-grow: 1;
+    flex-grow: 1;
 }
 
 .kitchenTypeWrap {
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: center;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .kitchenSelect {
-	flex-grow: 1;
-	margin-right: 12px;
+    flex-grow: 1;
+    margin-right: 12px;
 }
 
 .typeMeal {
-	flex-grow: 1;
+    flex-grow: 1;
 }
 
 /* HR информация */
 
 .hrInputsWrap {
-	display: flex;
-	flex-grow: 1;
-	flex-wrap: nowrap;
-	align-items: center;
+    display: flex;
+    flex-grow: 1;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .hrInput:not(:last-child) {
-	margin-right: 12px;
+    margin-right: 12px;
 }
 
 .hrInput {
-	width: 50%;
+    width: 50%;
 }
 
 /* Даты на поле */
 
 .dateWrap {
-	display: flex;
-	flex-wrap: nowrap;
-	gap: 12px;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
 }
 
 .dateLabel {
-	color: rgb(141 149 158);
-	font-weight: 500;
+    color: rgb(141 149 158);
+    font-weight: 500;
 }
 
 .dateInput {
-	flex: 1;
+    flex: 1;
 }
 
 /* Кастомные поля */
 
 .customDescr {
-	margin: 0;
-	padding: 60px 0;
-	font-size: 25px;
-	text-align: center;
+    margin: 0;
+    padding: 60px 0;
+    font-size: 25px;
+    text-align: center;
 }
 
 /* QR - info */
 
 .badgeQR {
-	flex-grow: 1;
+    flex-grow: 1;
 }
 
 .badgeInfoWrap {
-	display: flex;
-	flex-grow: 1;
-	flex-wrap: nowrap;
-	align-items: center;
+    display: flex;
+    flex-grow: 1;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .badgeInfo:not(:last-child) {
-	margin-right: 12px;
+    margin-right: 12px;
 }
 
 .badgeInfo {
-	width: 50%;
+    width: 50%;
 }
 
 .badgeInfoPart {
-	display: flex;
-	gap: 12px;
+    display: flex;
+    gap: 12px;
 }
 
-.badgeInfoPart > * {
-	flex: 1;
+.badgeInfoPart>* {
+    flex: 1;
 }
 
 /* Дополнительно */
 
 .blockDeleteWrap {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 /* модалка блокировки */
 
 .modalWindow {
-	display: flex;
-	flex-direction: column;
-	flex-wrap: nowrap;
-	padding-left: 30px;
-	background-color: white;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    padding-left: 30px;
+    background-color: white;
 }
 
 .carefulIcon {
-	position: absolute;
-	top: 24px;
-	left: 24px;
-	display: flex;
-	justify-content: space-around;
-	align-items: center;
-	width: 22px;
-	height: 22px;
-	border: 2px solid rgb(250 173 20);
-	border-radius: 50%;
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgb(250 173 20);
+    border-radius: 50%;
 }
 
 .carefulDescr {
-	display: block;
-	color: rgb(250 173 20);
-	font-weight: 500;
-	font-size: 18px;
-	line-height: 150%;
+    display: block;
+    color: rgb(250 173 20);
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 150%;
 }
 
 .modalTitle {
-	margin: 0;
-	margin-bottom: 8px;
-	padding: 0;
-	color: rgb(0 0 0 / 0.85);
-	font-weight: 500;
-	font-size: 16px;
-	line-height: 150%;
+    margin: 0;
+    margin-bottom: 8px;
+    padding: 0;
+    color: rgb(0 0 0 / 0.85);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 150%;
 }
 
 .modalDescr {
-	margin: 0;
-	margin-bottom: 24px;
-	padding: 0;
-	color: rgb(0 0 0 / 0.85);
-	font-weight: 400;
-	font-size: 14px;
-	line-height: 157%;
+    margin: 0;
+    margin-bottom: 24px;
+    padding: 0;
+    color: rgb(0 0 0 / 0.85);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 157%;
 }
 
 .visuallyHidden {
-	position: absolute;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	width: 1px;
-	height: 1px;
-	margin: -1px;
-	padding: 0;
-	border: 0;
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
 }
 
 .reactQuill * {
-	border-radius: 8px;
+    border-radius: 8px;
 }
 
 .blockButton {
-	display: flex;
-	align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .engagementsDescr:first-child {
-	margin-right: 16px;
+    margin-right: 16px;
 }
 
 .engagementsDescr {
-	font-size: 14px;
-	line-height: 157%;
-	color: black;
+    font-size: 14px;
+    line-height: 157%;
+    color: black;
 }
 
 .buttonsWrap {
-	margin-bottom: 16px;
-	display: flex;
-	align-items: center;
-	flex-wrap: nowrap;
-	justify-content: space-between;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: space-between;
 }
 
 .resultDescr {
-	margin-right: 16px;
-	font-size: 14px;
+    margin-right: 16px;
+    font-size: 14px;
 }
 
 .deleteButton {
-	margin-top: 7px;
-	padding: 0;
+    margin-top: 7px;
+    padding: 0;
 }
 
 .addArrivalButton {
-	float: right;
+    float: right;
 }
 
 .modalButtonWrap {
-	display: flex;
+    display: flex;
 }
 
 .onCancelButton {
-	margin-right: 10px;
+    margin-right: 10px;
 }
 
 /* common-history */
 .historyWrap {
-	padding: 4px 0;
-	display: flex;
-	flex-direction: column;
-	background-color: white;
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
 }
 
 .historyItem {
-	padding: 10px 16px;
-	display: flex;
-	flex-direction: column;
-	border-bottom: 1px solid #d9d9d9;
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #d9d9d9;
 }
 
 .itemTitleWrap {
-	margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 .itemTitle {
-	font-weight: 500;
-	font-size: 14px;
-	line-height: 157%;
-	color: rgba(0, 0, 0, 0.85);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgba(0, 0, 0, 0.85);
 }
 
 .itemTitleRoute {
-	cursor: pointer;
-	text-decoration: underline;
-	transition: color 0.3s ease-in-out;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.3s ease-in-out;
 }
 
 .itemTitleRoute:hover,
 .itemTitleRoute:focus {
-	color: #1890ff;
-	transition: color 0.3s ease-in-out;
+    color: #1890ff;
+    transition: color 0.3s ease-in-out;
 }
 
 .itemAction {
-	padding-left: 8px;
-	font-weight: 400;
-	font-size: 12px;
-	line-height: 183%;
-	color: #8d959e;
+    padding-left: 8px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 183%;
+    color: #8d959e;
 }
 
 .itemActionModif {
-	padding-left: 3px;
-	text-decoration: underline;
+    padding-left: 3px;
+    text-decoration: underline;
 }
 
 .itemDescrWrap {
-	font-weight: 400;
-	font-size: 14px;
-	line-height: 157%;
-	color: rgba(0, 0, 0, 0.85);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgba(0, 0, 0, 0.85);
 }
 
 .itemDrescrOld {
-	text-decoration: line-through;
-	background-color: #ffa39e;
+    text-decoration: line-through;
+    background-color: #ffa39e;
 }
 
 .itemDrescrNew {
-	background-color: #d9f7be;
+    background-color: #d9f7be;
 }
 
 /* ADAPTIVES */
 @media (max-width: 1366px) {
-	.edit__nav {
-		display: none;
-	}
+    .edit__nav {
+        display: none;
+    }
 }
 
 @media (max-width: 768px) {
-	.nickNameLastnameWrap {
-		flex-direction: column;
-	}
+    .nickNameLastnameWrap {
+        flex-direction: column;
+    }
 
-	.nameInput {
-		width: 100%;
-	}
+    .nameInput {
+        width: 100%;
+    }
 
-	.photoWrap {
-		position: absolute;
-		margin-right: 0;
-		top: 70px;
-		right: 10px;
-		z-index: 1000;
-	}
+    .photoWrap {
+        position: absolute;
+        margin-right: 0;
+        top: 70px;
+        right: 10px;
+        z-index: 1000;
+    }
 
-	.padInp {
-		padding-right: 130px;
-	}
+    .padInp {
+        padding-right: 130px;
+    }
 
-	.phoneInput {
-		width: 100%;
-	}
+    .phoneInput {
+        width: 100%;
+    }
 
-	.genderSelect {
-		width: 100%;
-	}
+    .genderSelect {
+        width: 100%;
+    }
 
-	.dateWrapper {
-		padding-top: 20px;
-		border-top: 1px solid rgb(201, 201, 201);
-	}
+    .dateWrapper {
+        padding-top: 20px;
+        border-top: 1px solid rgb(201, 201, 201);
+    }
 
-	.dateWrap {
-		margin-bottom: 22px;
-		position: relative;
-		flex-direction: column;
-	}
+    .dateWrap {
+        margin-bottom: 22px;
+        position: relative;
+        flex-direction: column;
+    }
 
-	.dateWrap * {
-		margin-bottom: 0;
-	}
+    .dateWrap * {
+        margin-bottom: 0;
+    }
 
-	.dateCheck {
-		position: absolute;
-		top: 0;
-		right: 0;
-	}
+    .dateCheck {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
 
-	.deleteButton {
-		position: absolute;
-		top: 0;
-		right: 0;
-		z-index: 1000;
-	}
+    .deleteButton {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 1000;
+    }
 
-	.dateLabelEmpty {
-		display: none;
-	}
+    .dateLabelEmpty {
+        display: none;
+    }
 }
 
 @media (max-width: 576px) {
-	.hrInputsWrap {
-		flex-direction: column;
-	}
+    .hrInputsWrap {
+        flex-direction: column;
+    }
 
-	.hrInput {
-		width: 100%;
-	}
+    .hrInput {
+        width: 100%;
+    }
 
-	.deleteButton {
-		top: 0;
-		right: 12px;
-	}
+    .deleteButton {
+        top: 0;
+        right: 12px;
+    }
 
-	.badgeInfoWrap {
-		flex-direction: column;
-	}
+    .badgeInfoWrap {
+        flex-direction: column;
+    }
 
-	.badgeInfo {
-		width: 100%;
-	}
+    .badgeInfo {
+        width: 100%;
+    }
 
-	.blockDeleteWrap {
-		flex-direction: column;
-		align-items: flex-start;
-	}
+    .blockDeleteWrap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-	.blockButton {
-		margin-bottom: 20px;
-	}
+    .blockButton {
+        margin-bottom: 20px;
+    }
 
-	.modalButtonWrap {
-		margin-left: -35px;
-	}
+    .modalButtonWrap {
+        margin-left: -35px;
+    }
 
-	.resultDescr {
-		display: block;
-		margin-bottom: 5px;
-	}
+    .resultDescr {
+        display: block;
+        margin-bottom: 5px;
+    }
 }

@@ -1,33 +1,33 @@
 .mobileSider {
-	position: fixed;
-	width: 100%;
-	bottom: 0;
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	z-index: 20000000;
-	background-color: #fff;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    z-index: 20000000;
+    background-color: #fff;
 }
 
 .siderButton {
-	padding: 7px 9px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
-	border: none;
-	outline: none;
-	background-color: transparent;
-	color: #8d959e;
-	font-weight: 400;
+    padding: 7px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    color: #8d959e;
+    font-weight: 400;
 }
 
 .buttonText {
-	display: block;
-	font-size: 14px;
-	line-height: 157%;
+    display: block;
+    font-size: 14px;
+    line-height: 157%;
 }
 
 .siderButtonActive {
-	color: #1890ff;
-	font-weight: 600;
+    color: #1890ff;
+    font-weight: 600;
 }
