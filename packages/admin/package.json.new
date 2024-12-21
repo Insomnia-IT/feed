@@ -1,0 +1,53 @@
+{
+	"name": "admin-front",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "cross-env VITE_NEW_API_URL_ENV='http://localhost:8000/feedapi/v1' vite",
+		"dev:stage": "cross-env VITE_NEW_API_URL_ENV='https://srv.rumyantsev.com/feedapi/v1' vite",
+		"build": "tsc -b && vite build",
+		"lint": "eslint .",
+		"lint:js": "eslint -c .eslintrc --ext .ts --ext .tsx src",
+		"lint-fix:js": "eslint -c .eslintrc --fix --ext .ts --ext .tsx src",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@feed/core": "^0.0.1",
+		"@ant-design/plots": "^1.2.4",
+		"@pankod/refine-antd": "^4.7.3",
+		"@pankod/refine-core": "^3.58.1",
+		"@pankod/refine-nestjsx-crud": "^3.1.0",
+		"@pankod/refine-react-router-v6": "^3.31.0",
+		"@pankod/refine-react-table": "^4.5.0",
+		"accesscontrol": "^2.2.1",
+		"dayjs": "^1.11.7",
+		"exceljs": "^4.3.0",
+		"file-saver": "^2.0.5",
+		"i18next": "^21.9.0",
+		"i18next-browser-languagedetector": "^6.1.5",
+		"i18next-http-backend": "^1.4.1",
+		"js-cookie": "^3.0.5",
+		"jwt-decode": "^3.1.2",
+		"onscan.js": "^1.5.2",
+		"prompts": "^2.4.2",
+		"qr-scanner": "^1.4.1",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"react-i18next": "^11.18.3",
+		"react-markdown": "^8.0.0",
+		"react-quill": "^2.0.0",
+		"ulid": "^2.3.0",
+		"uuid": "^11.0.2"
+	},
+	"devDependencies": {
+		"@types/file-saver": "^2.0.7",
+		"@types/js-cookie": "^3.0.6",
+		"@types/onscan.js": "^1.5.6",
+		"@types/react": "^18.3.12",
+		"@types/react-dom": "^18.3.1",
+		"@vitejs/plugin-react": "^4.3.4",
+		"globals": "^15.12.0",
+		"vite": "^6.0.1"
+	}
+}

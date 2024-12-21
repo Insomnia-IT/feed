@@ -1,8 +1,9 @@
-import styles from '~/components/entities/vols/list.module.css';
+import styles from 'components/entities/vols/list.module.css';
 import { Button, Input } from 'antd';
-import { Calendar, Checkbox, Radio } from '@pankod/refine-antd';
-import { FilterField, FilterItem, FilterListItem } from './filter-types';
 import dayjs from 'dayjs';
+import { Calendar, Checkbox, Radio } from '@pankod/refine-antd';
+
+import { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { getFilterValueText } from './volunteer-list-utils';
 
 const getFilterListItems = (field: FilterField, filterItem?: FilterItem): Array<FilterListItem> => {
@@ -52,13 +53,13 @@ export const FilterPopup: React.FC<{
                 <Input
                     value={filterItem?.value as string}
                     onChange={(e) => onFilterTextValueChange(field, e.target.value)}
-                    placeholder='Введите текст'
+                    placeholder="Введите текст"
                     allowClear
                 />
             )}
             {field.type === 'date' && (
                 <Calendar
-                    mode='month'
+                    mode="month"
                     style={{ width: 300 }}
                     value={filterItem ? dayjs(filterItem.value as string) : undefined}
                     fullscreen={false}
@@ -96,7 +97,7 @@ export const FilterPopup: React.FC<{
             )}
 
             {filterItem && (
-                <Button type='link' onClick={() => onFilterTextValueChange(field, null)} style={{ marginTop: 10 }}>
+                <Button type="link" onClick={() => onFilterTextValueChange(field, null)} style={{ marginTop: 10 }}>
                     Сбросить
                 </Button>
             )}

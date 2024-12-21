@@ -1,8 +1,6 @@
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-import type { MealTime } from '../types';
-
 interface ITableStatData {
     key: string;
     mealTimeType: string;
@@ -32,7 +30,7 @@ function TableStats(props: { data: Array<ITableStatData>; loading: boolean }) {
         <Table
             title={() => <b>Сравнительная таблица по питанию</b>}
             bordered
-            size='small'
+            size="small"
             pagination={false}
             loading={props.loading}
             columns={columns}

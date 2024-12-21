@@ -1,17 +1,20 @@
 import { Spin, Tag } from '@pankod/refine-antd';
+import { FC } from 'react';
 
-import type { VolEntity } from '~/interfaces';
+import type { VolEntity } from 'interfaces';
+import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 
 import styles from '../list.module.css';
-
-import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 
 const formatDate = (value?: string): string => {
     if (!value) {
         return '';
     }
 
-    return new Date(value).toLocaleString('ru', { day: 'numeric', month: 'long' });
+    return new Date(value).toLocaleString('ru', {
+        day: 'numeric',
+        month: 'long'
+    });
 };
 
 /* Компонент отображающий список волонтеров на телефоне */
@@ -28,9 +31,9 @@ export const VolunteerMobileList: FC<{
             ) : (
                 volList.map((vol) => {
                     const currentArrival = findClosestArrival(vol.arrivals);
-                    const visitDays = `${formatDate(currentArrival?.arrival_date)} - ${formatDate(
-                        currentArrival?.departure_date
-                    )}`;
+                    const visitDays = `${formatDate(
+                        currentArrival?.arrival_date
+                    )} - ${formatDate(currentArrival?.departure_date)}`;
                     const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
                     const comment = vol?.direction_head_comment;
                     const isBlocked = vol.is_blocked;
@@ -47,7 +50,7 @@ export const VolunteerMobileList: FC<{
                             <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
                             <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                             <div>
-                                {isBlocked && <Tag color='red'>Заблокирован</Tag>}
+                                {isBlocked && <Tag color="red">Заблокирован</Tag>}
                                 {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
                             </div>
                             <div className={styles.textRow}>

@@ -1,11 +1,11 @@
-import { EditButton, Show, Space, Table, TextField, Typography, useTable } from '@pankod/refine-antd';
+import { Show, Table, TextField, Typography, useTable } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useShow } from '@pankod/refine-core';
-import dynamic from 'next/dynamic';
+import { FC, lazy, Suspense } from 'react';
 
-import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
+import type { GroupBadgeEntity, VolEntity } from 'interfaces';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = lazy(() => import('react-quill'));
 
 const { Text, Title } = Typography;
 
@@ -40,33 +40,35 @@ export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
             <Text>{record?.qr}</Text>
 
             <Title level={5}>Комментарий</Title>
-            <ReactQuill theme='bubble' readOnly value={record?.comment} />
+            <Suspense fallback={<div>Loading editor...</div>}>
+                <ReactQuill theme="bubble" readOnly value={record?.comment} />
+            </Suspense>
 
             <Title level={5}>Волонтеры</Title>
-            <Table {...tableProps} rowKey='id'>
+            <Table {...tableProps} rowKey="id">
                 <Table.Column
-                    dataIndex='name'
-                    key='name'
-                    title='Имя на бейдже'
+                    dataIndex="name"
+                    key="name"
+                    title="Имя на бейдже"
                     render={(value) => <TextField value={value} />}
                 />
                 <Table.Column
-                    dataIndex='first_name'
-                    key='first_name'
-                    title='Имя'
+                    dataIndex="first_name"
+                    key="first_name"
+                    title="Имя"
                     render={(value) => <TextField value={value} />}
                 />
                 <Table.Column
-                    dataIndex='last_name'
-                    key='last_name'
-                    title='Фамилия'
+                    dataIndex="last_name"
+                    key="last_name"
+                    title="Фамилия"
                     render={(value) => <TextField value={value} />}
                 />
                 <Table.Column
-                    dataIndex='directions'
-                    key='directions'
-                    title='Службы'
-                    render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
+                    dataIndex="directions"
+                    key="directions"
+                    title="Службы"
+                    render={(value) => <TextField value={value.map(({ name }: { name: string }) => name).join(', ')} />}
                 />
             </Table>
         </Show>

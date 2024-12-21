@@ -1,22 +1,21 @@
 import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from '@pankod/refine-antd';
 import type { CrudFilter, IResourceComponentsProps } from '@pankod/refine-core';
 import { useList } from '@pankod/refine-core';
-import { renderText } from '@feed/ui/src/table';
-import { useCallback, useMemo, useState } from 'react';
+import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
 import { Button, DatePicker, Form, Input } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ExcelJS from 'exceljs';
 import dayjs from 'dayjs';
 
-import { dayjsExtended, formDateFormat } from '~/shared/lib';
-import { saveXLSX } from '~/shared/lib/saveXLSX';
-import type { FeedTransactionEntity, KitchenEntity, VolEntity } from '~/interfaces';
-import { NEW_API_URL } from '~/const';
+import { dayjsExtended, formDateFormat } from 'shared/lib';
+import { saveXLSX } from 'shared/lib/saveXLSX';
+import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
+import { NEW_API_URL } from 'const';
 
 const { RangePicker } = DatePicker;
 
-const mealTimeById = {
+const mealTimeById: Record<string, string> = {
     breakfast: 'Завтрак',
     lunch: 'Обед',
     dinner: 'Ужин',
@@ -73,7 +72,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 ...acc,
                 [vol.id]: vol.name
             }),
-            {}
+            {} as Record<string, string>
         );
     }, [vols]);
 
@@ -83,7 +82,7 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 ...acc,
                 [kitchen.id]: kitchen.name
             }),
-            {}
+            {} as Record<string, string>
         );
     }, [kitchens]);
 
@@ -138,24 +137,24 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
     return (
         <List>
             <Form {...searchFormProps}>
-                <Space align='start'>
-                    <Form.Item name='search'>
-                        <Input placeholder='Имя волонтера' allowClear />
+                <Space align="start">
+                    <Form.Item name="search">
+                        <Input placeholder="Имя волонтера" allowClear />
                     </Form.Item>
-                    <Form.Item name='date'>
+                    <Form.Item name="date">
                         <RangePicker format={formDateFormat} />
                     </Form.Item>
-                    <Button type='primary' htmlType='submit'>
+                    <Button type="primary" htmlType="submit">
                         Применить
                     </Button>
                 </Space>
             </Form>
             <Table
                 {...tableProps}
-                rowKey='ulid'
+                rowKey="ulid"
                 footer={() => (
                     <Button
-                        type='primary'
+                        type="primary"
                         onClick={handleClickDownload}
                         icon={<DownloadOutlined />}
                         disabled={volsIsLoading || kitchensIsLoading}
@@ -165,42 +164,50 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 )}
             >
                 <Table.Column
-                    dataIndex='dtime'
-                    title='Время'
-                    render={(value) => <DateField format='DD/MM/YY HH:mm:ss' value={value} />}
+                    dataIndex="dtime"
+                    title="Время"
+                    render={(value) => <DateField format="DD/MM/YY HH:mm:ss" value={value} />}
                 />
                 <Table.Column
-                    dataIndex='volunteer'
-                    title='Волонтер'
+                    dataIndex="volunteer"
+                    title="Волонтер"
                     render={(value) => <TextField value={volNameById?.[value] || 'Аноним'} />}
                 />
                 <Table.Column
-                    dataIndex='volunteer'
-                    title='ID волонтера'
+                    dataIndex="volunteer"
+                    title="ID волонтера"
                     render={(value) => <TextField value={value || ''} />}
                 />
                 <Table.Column
-                    dataIndex='is_vegan'
-                    title='Тип питания'
+                    dataIndex="is_vegan"
+                    title="Тип питания"
                     render={(value) => <TextField value={value !== null ? (value ? 'Веган' : 'Мясоед') : ''} />}
                 />
                 <Table.Column
-                    dataIndex='meal_time'
-                    title='Прием пищи'
+                    dataIndex="meal_time"
+                    title="Прием пищи"
                     render={(value) => <TextField value={mealTimeById[value]} />}
                 />
                 <Table.Column
-                    dataIndex='kitchen'
-                    title='Кухня'
+                    dataIndex="kitchen"
+                    title="Кухня"
                     render={(value) => <TextField value={kitchenNameById[value]} />}
                 />
-                <Table.Column dataIndex='amount' title='Кол-во' render={renderText} />
-                <Table.Column dataIndex='reason' title='Причина' render={renderText} />
+                <Table.Column
+                    dataIndex="amount"
+                    title="Кол-во"
+                    render={(value: string): ReactNode => <TextField value={value} />}
+                />
+                <Table.Column
+                    dataIndex="reason"
+                    title="Причина"
+                    render={(value: string): ReactNode => <TextField value={value} />}
+                />
                 <Table.Column<FeedTransactionEntity>
-                    title='Действия'
+                    title="Действия"
                     render={(_, record) => (
                         <Space>
-                            <DeleteButton hideText size='small' recordItemId={record.ulid} />
+                            <DeleteButton hideText size="small" recordItemId={record.ulid} />
                         </Space>
                     )}
                 />

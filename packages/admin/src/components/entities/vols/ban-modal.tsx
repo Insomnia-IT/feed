@@ -1,7 +1,7 @@
 import { Button, Col, Form, Input, Modal, notification, Row } from '@pankod/refine-antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-import { dataProvider } from '~/dataProvider';
+import { dataProvider } from 'dataProvider';
 
 interface IProps {
     currentComment: string;
@@ -47,7 +47,7 @@ const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuc
                     onSuccess(updatedData);
                     form.resetFields();
                 });
-        } catch (error) {
+        } catch {
             notification.error({
                 message: 'Ошибка при обновлении волонтёра'
             });
@@ -57,7 +57,7 @@ const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuc
     return (
         <Modal
             title={
-                <Row align='middle' gutter={8}>
+                <Row align="middle" gutter={8}>
                     <Col>
                         <ExclamationCircleOutlined style={{ fontSize: 24, color: 'orange' }} />
                     </Col>
@@ -72,20 +72,20 @@ const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuc
         >
             <p>
                 {isBlocked
-                    ? `Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать`
-                    : `Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать`}
+                    ? 'Бейдж Волонтера активируется: Волонтер сможет питаться на кухнях и получит доступ ко всем плюшкам. Волонтера можно будет заблокировать'
+                    : 'Бейдж Волонтера деактивируется: Волонтер не сможет питаться на кухнях и потеряет доступ ко всем плюшкам. Волонтера можно будет разблокировать'}
             </p>
             <Form
                 form={form}
-                name='form-block'
+                name="form-block"
                 onFinish={() => {
                     void handleFinish();
                 }}
-                layout='vertical'
+                layout="vertical"
             >
                 <Form.Item
                     label={`${isBlocked ? 'Причина разблокировки' : 'Причина блокировки'}`}
-                    name='reason'
+                    name="reason"
                     rules={[
                         {
                             required: true,
@@ -97,7 +97,7 @@ const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuc
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
                 </Form.Item>
                 <div style={{ textAlign: 'right' }}>
-                    <Button type={isBlocked ? 'primary' : 'default'} danger={!isBlocked} htmlType='submit'>
+                    <Button type={isBlocked ? 'primary' : 'default'} danger={!isBlocked} htmlType="submit">
                         {isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}
                     </Button>
                 </div>

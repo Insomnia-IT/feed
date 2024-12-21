@@ -1,15 +1,16 @@
-import { createContext, useCallback, useMemo, useState } from 'react';
+import { createContext, FC, useCallback, useMemo, useState } from 'react';
+
 import {
     VolunteerFieldExtended,
     volunteerTableCommonFields
-} from '~/components/entities/vols/vol-list/volunteer-table-common-fields';
-import { CustomFieldEntity } from '~/interfaces';
+} from 'components/entities/vols/vol-list/volunteer-table-common-fields';
+import { CustomFieldEntity } from 'interfaces';
 
 export const ActiveColumnsContext = createContext<{
     toggleOne: (name: string) => void;
     activeColumns: Array<string>;
     allColumns: Array<VolunteerFieldExtended>;
-} | null>(null);
+        } | null>(null);
 
 const columnsStorageName = 'volVisibleColumns';
 
@@ -18,7 +19,9 @@ const getSavedColumns = (): Array<string> => {
     if (volVisibleColumnsStr) {
         try {
             return JSON.parse(volVisibleColumnsStr) as Array<string>;
-        } catch (e) {}
+        } catch {
+            /* empty */
+        }
     }
 
     return volunteerTableCommonFields.filter((item) => item.isDefault).map((item) => item.fieldName);

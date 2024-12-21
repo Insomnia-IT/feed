@@ -1,12 +1,12 @@
 import { Button } from '@pankod/refine-antd';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
-import React, { useState } from 'react';
+import { FC, useState } from 'react';
 import ExcelJS from 'exceljs';
 import dayjs from 'dayjs';
 
-import type { ArrivalEntity, CustomFieldEntity } from '~/interfaces';
-import { dataProvider } from '~/dataProvider';
-import { formDateFormat, saveXLSX } from '~/shared/lib';
+import type { ArrivalEntity, CustomFieldEntity } from 'interfaces';
+import { dataProvider } from 'dataProvider';
+import { formDateFormat, saveXLSX } from 'shared/lib';
 
 export const SaveAsXlsxButton: FC<{
     isDisabled: boolean;
@@ -54,7 +54,7 @@ export const SaveAsXlsxButton: FC<{
             icon={isExporting ? <LoadingOutlined spin /> : <DownloadOutlined />}
             disabled={isDisabled}
         >
-            Выгрузить
+                Выгрузить
         </Button>
     );
 };
@@ -118,19 +118,20 @@ const createAndSaveXLSX = async ({
                 'Комментарий',
                 'Цвет бейджа',
                 'Право доступа',
+                // eslint-disable-next-line no-unsafe-optional-chaining
                 ...customFields?.map((field): string => field.name)
             ];
 
             sheet.addRow(header);
 
-            allPagesData.forEach((vol, index) => {
+            allPagesData.forEach((vol) => {
                 const currentArrival: ArrivalEntity | undefined = vol.arrivals.find(
-                    ({ arrival_date, departure_date }) =>
+                    ({ arrival_date, departure_date }: { arrival_date: string; departure_date: string }) =>
                         dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
                 );
 
                 const futureArrival: ArrivalEntity | undefined = vol.arrivals.find(
-                    ({ arrival_date }) => dayjs(arrival_date) > dayjs()
+                    ({ arrival_date }: { arrival_date: string }) => dayjs(arrival_date) > dayjs()
                 );
 
                 sheet.addRow([
@@ -138,7 +139,7 @@ const createAndSaveXLSX = async ({
                     vol.name,
                     vol.first_name,
                     vol.last_name,
-                    vol.directions ? vol.directions.map((direction) => direction.name).join(', ') : '',
+                    vol.directions ? vol.directions.map((direction: { name: any }) => direction.name).join(', ') : '',
                     vol.main_role ? volunteerRoleById[vol.main_role] : '',
                     currentArrival ? statusById[currentArrival?.status] : '',
                     currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
@@ -158,10 +159,12 @@ const createAndSaveXLSX = async ({
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
                     vol.color_type ? colorNameById[vol.color_type] : '',
                     vol.access_role ? accessRoleById[vol.access_role] : '',
+                    // eslint-disable-next-line no-unsafe-optional-chaining
                     ...customFields?.map((field) => {
                         const value =
-                            vol.custom_field_values.find((fieldValue): boolean => fieldValue.custom_field === field.id)
-                                ?.value || '';
+                            vol.custom_field_values.find(
+                                (fieldValue: { custom_field: number }): boolean => fieldValue.custom_field === field.id
+                            )?.value || '';
                         if (field.type === 'boolean') {
                             return value === 'true' ? 1 : 0;
                         }

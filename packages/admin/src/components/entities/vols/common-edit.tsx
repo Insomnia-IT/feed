@@ -21,9 +21,9 @@ import {
     RadarChartOutlined,
     SmileOutlined
 } from '@ant-design/icons';
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
 
-import { Rules } from '~/components/form';
+import { Rules } from 'components/form';
 import type {
     AccessRoleEntity,
     ArrivalEntity,
@@ -37,11 +37,11 @@ import type {
     TransportEntity,
     VolEntity,
     VolunteerRoleEntity
-} from '~/interfaces';
-import { formDateFormat, isActivatedStatus } from '~/shared/lib';
-import { dataProvider } from '~/dataProvider';
-import HorseIcon from '~/assets/icons/horse-icon';
-import { getSorter } from '~/utils';
+} from 'interfaces';
+import { formDateFormat, isActivatedStatus } from 'shared/lib';
+import { dataProvider } from 'dataProvider';
+import HorseIcon from 'assets/icons/horse-icon';
+import { getSorter } from 'utils';
 
 import useCanAccess from './use-can-access';
 import BanModal from './ban-modal';
@@ -51,14 +51,35 @@ import 'react-quill/dist/quill.snow.css';
 type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
 
 export function CommonEdit({ form }: { form: FormInstance }) {
-    const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
-    const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
-    const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
-    const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' });
-    const canBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
+    const canFullEditing = useCanAccess({
+        action: 'full_edit',
+        resource: 'volunteers'
+    });
+    const allowRoleEdit = useCanAccess({
+        action: 'role_edit',
+        resource: 'volunteers'
+    });
+    const denyBadgeEdit = !useCanAccess({
+        action: 'badge_edit',
+        resource: 'volunteers'
+    });
+    const denyFeedTypeEdit = !useCanAccess({
+        action: 'feed_type_edit',
+        resource: 'volunteers'
+    });
+    const canBadgeEdit = useCanAccess({
+        action: 'badge_edit',
+        resource: 'volunteers'
+    });
     const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
-    const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
-    const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
+    const canEditGroupBadge = useCanAccess({
+        action: 'edit',
+        resource: 'group-badges'
+    });
+    const canDelete = useCanAccess({
+        action: 'delete',
+        resource: 'volunteers'
+    });
     const person = Form.useWatch('person');
     const mainRole = Form.useWatch('main_role');
     const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
@@ -118,11 +139,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 : item
         ) || [];
 
-    const getDirectionIds = (direction) => ({
+    const getDirectionIds = (direction: any[]) => ({
         value: direction ? direction.map((d) => d.id || d) : direction
     });
 
-    const getDateValue = (value) => ({
+    const getDateValue = (value: string | number | Date | dayjs.Dayjs | null | undefined) => ({
         value: value ? dayjs(value) : ''
     });
 
@@ -144,15 +165,17 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 required: true
             },
             {
-                validator: async (_, value) => {
+                validator: async (_: any, value: string | number | Date | dayjs.Dayjs | null | undefined) => {
                     const arrivalDates = form
                         .getFieldValue('updated_arrivals')
                         .slice()
-                        .map((a) => dayjs(a.arrival_date).format('YYYY-MM-DD'));
+                        .map((a: { arrival_date: string | number | Date | dayjs.Dayjs | null | undefined }) =>
+                            dayjs(a.arrival_date).format('YYYY-MM-DD')
+                        );
                     arrivalDates.splice(index, 1);
 
                     if (arrivalDates.includes(dayjs(value).format('YYYY-MM-DD'))) {
-                        return Promise.reject(new Error(`Дата заезда не должна повторяться`));
+                        return Promise.reject(new Error('Дата заезда не должна повторяться'));
                     }
 
                     return Promise.resolve();
@@ -168,7 +191,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 required: true
             },
             {
-                validator: async (_, value) => {
+                validator: async (_: any, value: string | number | Date) => {
                     if (new Date(value) >= new Date(form.getFieldValue(['updated_arrivals', index, 'arrival_date']))) {
                         return Promise.resolve();
                     }
@@ -182,7 +205,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const [qrDuplicateVolunteer, setQrDuplicateVolunteer] = useState<VolEntity | null>(null);
 
-    const checkQRDuplication = async (qr) => {
+    const checkQRDuplication = async (qr: any) => {
         const list = await dataProvider.getList<VolEntity>({
             filters: [{ field: 'qr', value: qr, operator: 'eq' }],
             resource: 'volunteers'
@@ -192,7 +215,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         }
     };
 
-    const onQRChange = (e) => {
+    const onQRChange = (e: { target: { value: any } }) => {
         const qr = e.target.value;
         if (qr) {
             void checkQRDuplication(qr);
@@ -227,16 +250,15 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         function onHardwareScan({ detail: { scanCode } }): void {
             form.setFieldValue('qr', scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 
-        // @ts-ignore
         document.addEventListener('scan', onHardwareScan);
 
         return (): void => {
-            // @ts-ignore
             document.removeEventListener('scan', onHardwareScan);
         };
     }, [form]);
@@ -261,10 +283,11 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const currentComment = form.getFieldValue('comment') || '';
     const [isBanModalVisible, setBanModalVisible] = useState(false);
     const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals');
-    const router = useRouter();
+
+    const navigate = useNavigate();
 
     const handleBack = () => {
-        router.back();
+        navigate('..');
     };
 
     const [updatedArrivals, setUpdatedArrivals] = useState<Array<UpdatedArrival>>([]);
@@ -288,14 +311,14 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         form.setFieldValue('updated_arrivals', updatedArrivals);
     }, [updatedArrivals, form]);
 
-    const handleBanSuccess = (updatedData) => {
+    const handleBanSuccess = (updatedData: any) => {
         form.setFieldsValue(updatedData);
         setBanModalVisible(false);
     };
 
     useEffect(() => {
         const formWrap = document.querySelector(`.${styles.formWrap}`);
-        const handleAnchorClick = (id) => {
+        const handleAnchorClick = (id: string) => {
             const targetSection = document.getElementById(id);
 
             if (targetSection) {
@@ -334,7 +357,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
             }
         };
 
-        const handleNavItemClick = (e) => {
+        const handleNavItemClick = (e: any) => {
             const id = e.target.getAttribute('data-id');
             handleAnchorClick(id);
         };
@@ -356,7 +379,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
         if (!person) return null;
         const engagementsArray = person.engagements;
         if (engagementsArray.length) {
-            return engagementsArray.map((item) => (
+            return engagementsArray.map((item: any) => (
                 <div key={item.id}>
                     <span className={styles.engagementsDescr}>{`${item.year} год`}</span>
                     <RadarChartOutlined style={{ marginRight: '3px' }} />
@@ -385,51 +408,51 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                 <ul className={styles.navList}>
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section1' ? styles.active : ''}`}
-                        data-id='section1'
+                        data-id="section1"
                     >
                         Персональная информация
                     </li>
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section2' ? styles.active : ''}`}
-                        data-id='section2'
+                        data-id="section2"
                     >
                         HR информация
                     </li>
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section3' ? styles.active : ''}`}
-                        data-id='section3'
+                        data-id="section3"
                     >
                         Даты на поле
                     </li>
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section4' ? styles.active : ''}`}
-                        data-id='section4'
+                        data-id="section4"
                         style={{ display: denyBadgeEdit ? 'none' : '' }}
                     >
                         Бейдж
                     </li>
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section5' ? styles.active : ''}`}
-                        data-id='section5'
+                        data-id="section5"
                     >
                         Кастомные Поля
                     </li>
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section6' ? styles.active : ''}`}
-                        data-id='section6'
+                        data-id="section6"
                     >
                         Дополнительно
                     </li>
                     <li
                         className={`${styles.navList__item} ${activeAnchor === 'section7' ? styles.active : ''}`}
-                        data-id='section7'
+                        data-id="section7"
                     >
                         Участие в прошлых годах
                     </li>
                 </ul>
             </div>
             <div className={styles.formWrap}>
-                <div id='section1' className={styles.formSection}>
+                <div id="section1" className={styles.formSection}>
                     <div className={styles.formSection__title}>
                         Персональная информация
                         {isBlocked && (
@@ -445,29 +468,29 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         <div className={styles.personalInfoWrap}>
                             <div className={styles.nickNameLastnameWrap}>
                                 <div className={`${styles.nameInput} ${styles.padInp}`}>
-                                    <Form.Item label='Имя на бейдже' name='name' rules={Rules.required}>
+                                    <Form.Item label="Имя на бейдже" name="name" rules={Rules.required}>
                                         <Input readOnly={denyBadgeEdit} />
                                     </Form.Item>
                                 </div>
                                 <div className={`${styles.nameInput} ${styles.padInp}`}>
-                                    <Form.Item label='Имя' name='first_name'>
+                                    <Form.Item label="Имя" name="first_name">
                                         <Input readOnly={denyBadgeEdit} />
                                     </Form.Item>
                                 </div>
                                 <div className={styles.nameInput}>
-                                    <Form.Item label='Фамилия' name='last_name'>
+                                    <Form.Item label="Фамилия" name="last_name">
                                         <Input readOnly={denyBadgeEdit} />
                                     </Form.Item>
                                 </div>
                             </div>
                             <div className={styles.nickNameLastnameWrap}>
                                 <div className={styles.phoneInput}>
-                                    <Form.Item label='Телефон' name='phone'>
-                                        <Input type='phone' />
+                                    <Form.Item label="Телефон" name="phone">
+                                        <Input type="phone" />
                                     </Form.Item>
                                 </div>
                                 <div className={styles.genderSelect}>
-                                    <Form.Item label='Пол волонтера' name='gender'>
+                                    <Form.Item label="Пол волонтера" name="gender">
                                         <Select disabled={denyBadgeEdit} {...genderSelectProps} />
                                     </Form.Item>
                                 </div>
@@ -476,29 +499,29 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     </div>
                     <div className={styles.kitchenTypeWrap}>
                         <div className={styles.kitchenSelect}>
-                            <Form.Item label='Кухня' name='kitchen' rules={Rules.required}>
+                            <Form.Item label="Кухня" name="kitchen" rules={Rules.required}>
                                 <Select {...kitchenSelectProps} />
                             </Form.Item>
                         </div>
                         <div className={styles.typeMeal}>
-                            <Form.Item label='Тип питания' name='feed_type' rules={Rules.required}>
+                            <Form.Item label="Тип питания" name="feed_type" rules={Rules.required}>
                                 <Select disabled={denyFeedTypeEdit} {...feedTypeSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
                     <div className={styles.isActiveCheckboxWrap}>
                         <div className={styles.isActiveCheckbox}>
-                            <Form.Item name='is_vegan' valuePropName='checked'>
+                            <Form.Item name="is_vegan" valuePropName="checked">
                                 <Checkbox>Веган</Checkbox>
                             </Form.Item>
                         </div>
                     </div>
                 </div>
-                <div id='section2' className={styles.formSection}>
+                <div id="section2" className={styles.formSection}>
                     <p className={styles.formSection__title}>HR информация</p>
                     <div className={styles.hrInputsWrap}>
                         <div className={styles.hrInput}>
-                            <Form.Item label='Право доступа' name='access_role'>
+                            <Form.Item label="Право доступа" name="access_role">
                                 <Select
                                     allowClear
                                     disabled={!canFullEditing}
@@ -508,7 +531,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             </Form.Item>
                         </div>
                         <div className={styles.hrInput}>
-                            <Form.Item label='Роль' name='main_role' rules={Rules.required}>
+                            <Form.Item label="Роль" name="main_role" rules={Rules.required}>
                                 <Select disabled={!allowRoleEdit && !!person} {...rolesSelectProps} />
                             </Form.Item>
                         </div>
@@ -516,32 +539,35 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <div className={styles.hrInputsWrap}>
                         <div className={styles.hrInput}>
                             <Form.Item
-                                label='Служба / Локация'
+                                label="Служба / Локация"
                                 getValueProps={getDirectionIds}
-                                name='directions'
+                                name="directions"
                                 rules={allowEmptyDirections ? undefined : Rules.required}
                             >
                                 <Select
                                     disabled={!allowRoleEdit && !!person}
-                                    mode='multiple'
+                                    mode="multiple"
                                     {...directionSelectProps}
                                 />
                             </Form.Item>
                         </div>
                         <div className={styles.hrInput}>
-                            <Form.Item label='Должность' name='position'>
+                            <Form.Item label="Должность" name="position">
                                 <Input disabled={denyBadgeEdit} />
                             </Form.Item>
                         </div>
                     </div>
                 </div>
-                <div id='section3' className={styles.formSection}>
+                <div id="section3" className={styles.formSection}>
                     <p className={styles.formSection__title}>Даты на поле</p>
-                    <Form.Item name='arrivals' hidden />
+                    <Form.Item name="arrivals" hidden />
                     {updatedArrivals?.map((arrival, index) => {
-                        const createChange = (fieldName) => (value) => {
+                        const createChange = (fieldName: string) => (value: any) => {
                             const newUpdaterdArrivals = updatedArrivals.slice();
-                            newUpdaterdArrivals[index] = { ...arrival, [fieldName]: value };
+                            newUpdaterdArrivals[index] = {
+                                ...arrival,
+                                [fieldName]: value
+                            };
                             setUpdatedArrivals(newUpdaterdArrivals);
                         };
 
@@ -558,7 +584,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Button
                                                 className={styles.deleteButton}
                                                 danger
-                                                type='link'
+                                                type="link"
                                                 icon={<DeleteOutlined />}
                                                 onClick={deleteArrival}
                                                 style={{
@@ -570,7 +596,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         </div>
                                         <div className={styles.dateInput}>
                                             <Form.Item
-                                                label='Статус заезда'
+                                                label="Статус заезда"
                                                 name={['updated_arrivals', index, 'status']}
                                                 rules={Rules.required}
                                             >
@@ -591,7 +617,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Button
                                                 className={styles.deleteButton}
                                                 danger
-                                                type='link'
+                                                type="link"
                                                 icon={<DeleteOutlined />}
                                                 onClick={deleteArrival}
                                             >
@@ -600,7 +626,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         </div>
                                         <div className={styles.dateInput}>
                                             <Form.Item
-                                                label='Дата заезда'
+                                                label="Дата заезда"
                                                 name={['updated_arrivals', index, 'arrival_date']}
                                                 getValueProps={getDateValue}
                                                 rules={activeFromValidationRules(index)}
@@ -614,7 +640,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         </div>
                                         <div className={styles.dateInput}>
                                             <Form.Item
-                                                label='Как добрался?'
+                                                label="Как добрался?"
                                                 name={['updated_arrivals', index, 'arrival_transport']}
                                                 rules={Rules.required}
                                             >
@@ -635,7 +661,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                             <Button
                                                 className={styles.deleteButton}
                                                 danger
-                                                type='link'
+                                                type="link"
                                                 icon={<DeleteOutlined />}
                                             >
                                                 Удалить
@@ -643,7 +669,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         </div>
                                         <div className={styles.dateInput}>
                                             <Form.Item
-                                                label='Дата отъезда'
+                                                label="Дата отъезда"
                                                 name={['updated_arrivals', index, 'departure_date']}
                                                 getValueProps={getDateValue}
                                                 rules={activeToValidationRules(index)}
@@ -657,7 +683,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                         </div>
                                         <div className={styles.dateInput}>
                                             <Form.Item
-                                                label='Как уехал?'
+                                                label="Как уехал?"
                                                 name={['updated_arrivals', index, 'departure_transport']}
                                                 rules={Rules.required}
                                             >
@@ -675,23 +701,23 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     })}
                     <Button
                         className={styles.addArrivalButton}
-                        type='primary'
+                        type="primary"
                         icon={<PlusSquareOutlined />}
                         onClick={addArrival}
                     >
                         Добавить заезд
                     </Button>
                 </div>
-                <div id='section4' className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
+                <div id="section4" className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
                     <p className={styles.formSection__title}>Бейдж</p>
                     <div className={styles.badgeInfoWrap}>
                         <div className={styles.badgeInfo}>
-                            <Form.Item label='QR бейджа' name='qr' rules={Rules.required}>
+                            <Form.Item label="QR бейджа" name="qr" rules={Rules.required}>
                                 <Input disabled={denyBadgeEdit} onChange={onQRChange} />
                             </Form.Item>
                         </div>
                         <div className={styles.badgeInfo}>
-                            <Form.Item label='Групповой бейдж' name='group_badge'>
+                            <Form.Item label="Групповой бейдж" name="group_badge">
                                 <Select
                                     disabled={!canEditGroupBadge}
                                     allowClear
@@ -705,15 +731,15 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         <div className={styles.badgeInfo}>
                             <div className={styles.badgeInfoPart}>
                                 <Form.Item
-                                    label='Партия бейджа'
-                                    name='printing_batch'
+                                    label="Партия бейджа"
+                                    name="printing_batch"
                                     className={styles.badgeInfoPartItem}
                                 >
                                     <Input readOnly disabled={denyBadgeEdit} />
                                 </Form.Item>
                                 <Form.Item
-                                    label='Номер бейджа'
-                                    name='badge_number'
+                                    label="Номер бейджа"
+                                    name="badge_number"
                                     className={styles.badgeInfoPartItem}
                                 >
                                     <Input disabled={denyBadgeEdit} />
@@ -721,23 +747,25 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             </div>
                         </div>
                         <div className={styles.badgeInfo}>
-                            <Form.Item label='Цвет бейджа' name='color_type'>
+                            <Form.Item label="Цвет бейджа" name="color_type">
                                 <Select disabled={denyBadgeEdit} {...colorTypeSelectProps} />
                             </Form.Item>
                         </div>
                     </div>
                 </div>
-                <div id='section5' className={styles.formSection}>
+                <div id="section5" className={styles.formSection}>
                     <p className={styles.formSection__title}>Кастомные Поля</p>
                     {customFields
                         .filter((item) => item.mobile || canBadgeEdit)
                         .map(({ id, name, type }) => {
-                            const handleChange = (e) => {
+                            const handleChange = (e: { target: { [x: string]: any } }) => {
                                 const value = e.target[type === 'boolean' ? 'checked' : 'value'];
                                 form.setFieldValue(['updated_custom_fields', id.toString()], value);
                             };
                             const customFieldValues = form.getFieldValue('custom_field_values');
-                            const customFieldValue = customFieldValues?.find(({ custom_field }) => custom_field === id);
+                            const customFieldValue = customFieldValues?.find(
+                                ({ custom_field }: { custom_field: number }) => custom_field === id
+                            );
                             return (
                                 <Form.Item key={name} label={name}>
                                     {type === 'boolean' && (
@@ -758,10 +786,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                             );
                         })}
                 </div>
-                <div id='section6' className={styles.formSection}>
+                <div id="section6" className={styles.formSection}>
                     <p className={styles.formSection__title}>Дополнительно</p>
-                    <div className='commentArea'>
-                        <Form.Item label='Комментарий' name={'comment'}>
+                    <div className="commentArea">
+                        <Form.Item label="Комментарий" name={'comment'}>
                             <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
                         </Form.Item>
                     </div>
@@ -770,12 +798,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <div className={styles.blockDeleteWrap}>
                         <Button
                             className={styles.blockButton}
-                            type='default'
+                            type="default"
                             onClick={() => setBanModalVisible(true)}
                             disabled={isBlocked ? !canUnban : false}
                         >
                             {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
-                            {`${isBlocked ? `Разблокировать волонтера` : `Заблокировать Волонтера`}`}
+                            {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
                         </Button>
 
                         <BanModal
@@ -789,13 +817,13 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
                         {canDelete && (
                             <DeleteButton
-                                type='primary'
+                                type="primary"
                                 icon={false}
-                                size='middle'
+                                size="middle"
                                 recordItemId={qrDuplicateVolunteer?.id}
-                                confirmTitle='Вы действительно хотите удалить волонтера?'
-                                confirmOkText='Да'
-                                confirmCancelText='Нет'
+                                confirmTitle="Вы действительно хотите удалить волонтера?"
+                                confirmOkText="Да"
+                                confirmCancelText="Нет"
                                 onSuccess={handleBack}
                             >
                                 Удалить волонтера
@@ -803,40 +831,40 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         )}
                     </div>
                     <div className={styles.visuallyHidden}>
-                        <Form.Item name='is_blocked' valuePropName='checked' style={{ marginBottom: '0' }}>
+                        <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: '0' }}>
                             <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                         </Form.Item>
-                        <Form.Item name='person' hidden></Form.Item>
+                        <Form.Item name="person" hidden></Form.Item>
                     </div>
                 </div>
 
-                <div id='section7' className={styles.formSection}>
+                <div id="section7" className={styles.formSection}>
                     <p className={styles.formSection__title}>Участие во все года</p>
                     <div className={styles.engagementsWrap}>{returnEngagementsLayout()}</div>
                 </div>
             </div>
             <Modal
-                title='Дублирование QR'
+                title="Дублирование QR"
                 open={
                     qrDuplicateVolunteer !== null &&
                     !qrDuplicateVolunteer.arrivals.some(({ status }) => isActivatedStatus(status))
                 }
                 onOk={handleClear}
                 onCancel={handleCancel}
-                okText='Освободить'
+                okText="Освободить"
             >
                 <p>Этот QR уже привязан к другому волонтеру.</p>
                 <p>Освободить этот QR код?</p>
             </Modal>
             <Modal
-                title='Дублирование QR'
+                title="Дублирование QR"
                 open={
                     qrDuplicateVolunteer !== null &&
                     qrDuplicateVolunteer.arrivals.some(({ status }) => isActivatedStatus(status))
                 }
                 onOk={handleOpenVolunteer}
                 onCancel={handleCancel}
-                okText='Открыть'
+                okText="Открыть"
             >
                 <p>Этот QR уже привязан к активированному волонтеру.</p>
                 <p>Открыть карточку этого волонтера?</p>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { FC, useState } from 'react';
 
-import { axios } from '~/authProvider';
-import { NEW_API_URL } from '~/const';
+import { axios } from 'authProvider';
+import { NEW_API_URL } from 'const';
 
 const apiUrl = NEW_API_URL;
 
@@ -13,7 +13,10 @@ import styles from './sync.module.css';
 
 export const Sync: FC = () => {
     const [disabled, setDisabled] = useState(false);
-    const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+    const canFullEditing = useCanAccess({
+        action: 'full_edit',
+        resource: 'volunteers'
+    });
 
     const syncNotion = async (isFull = false) => {
         setDisabled(true);
