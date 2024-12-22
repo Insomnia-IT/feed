@@ -1,13 +1,17 @@
-import styles from '~/components/entities/vols/list.module.css';
-import { Button, Input } from 'antd';
+import { Button, Col, Input, Row } from 'antd';
 import { Checkbox, DatePicker, Radio } from '@pankod/refine-antd';
-import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filter-types';
 import dayjs from 'dayjs';
+import { useState } from 'react';
+
+import styles from '~/components/entities/vols/list.module.css';
+
 import { getFilterValueText } from '../volunteer-list-utils';
-const { RangePicker } = DatePicker;
+
+import type { FilterField, FilterItem, FilterListItem } from './filter-types';
+import { FilterFieldType } from './filter-types';
 
 // Ввод значений в фильтр - календарь/ввод текста/один или несколько из списка
-export const FilterItemPopup: React.FC<{
+export const FilterItemPopup: FC<{
     field: FilterField;
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
@@ -30,7 +34,7 @@ export const FilterItemPopup: React.FC<{
                 onTextValueChange={onTextValueChange}
             />
 
-            {filterItem && (
+            {filterItem && field.type !== FilterFieldType.Date && (
                 <Button type='link' onClick={clearValue} style={{ marginTop: 10 }}>
                     Сбросить
                 </Button>
@@ -57,7 +61,7 @@ const FieldValueControlByType: FC<{
                 />
             );
         case FilterFieldType.Date:
-            return <RangeField onTextValueChange={onTextValueChange} filterItem={filterItem} />;
+            return <DateField onTextValueChange={onTextValueChange} filterItem={filterItem} />;
         case FilterFieldType.Lookup:
         case FilterFieldType.Boolean:
             return <SeveralValues field={field} filterItem={filterItem} onOtherValueChange={onOtherValueChange} />;
@@ -66,27 +70,63 @@ const FieldValueControlByType: FC<{
     }
 };
 
-const RangeField: FC<{
+const DateField: FC<{
     filterItem?: FilterItem;
     onTextValueChange: (value?: string) => void;
 }> = ({ filterItem, onTextValueChange }) => {
     const SEPARATOR = ':';
 
     // Ожидаем значение в формате YYYY-MM-DD:YYYY-MM-DD
-    const [beforeString, afterString] = (filterItem?.value as string | undefined)?.split(SEPARATOR) ?? [];
+    const [beforeString, afterString] = ((filterItem?.value as string | undefined) ?? '')?.split(SEPARATOR) ?? [];
+
+    const [showPeriod, setShowPeriod] = useState(!!afterString);
+
+    const onCheckBoxClick = (): void => {
+        setShowPeriod(!showPeriod);
+
+        // Отбрасываем второе значение, когда переключаемся между вариантами
+        onTextValueChange(beforeString);
+    };
 
     return (
-        <RangePicker
-            allowEmpty={[true, true]}
-            style={{ width: 300 }}
-            value={[dayjs(beforeString), dayjs(afterString)]}
-            onChange={(value) => {
-                // Сохраняем значение в формате YYYY-MM-DD:YYYY-MM-DD
-                const periodString = (value ?? []).map((date) => date?.format('YYYY-MM-DD')).join(SEPARATOR);
+        <Col>
+            <Row>
+                <Checkbox checked={showPeriod} onChange={onCheckBoxClick}>
+                    Период
+                </Checkbox>
+            </Row>
+            <Row>
+                <DatePicker.RangePicker
+                    placeholder={['пусто', 'пусто']}
+                    allowEmpty={[true, true]}
+                    style={{ width: 300, display: showPeriod ? undefined : 'none' }}
+                    value={[
+                        beforeString ? dayjs(beforeString) : undefined,
+                        afterString ? dayjs(afterString) : undefined
+                    ]}
+                    onChange={(value) => {
+                        // Сохраняем значение в формате YYYY-MM-DD:YYYY-MM-DD
+                        const periodString = (value ?? [])
+                            .filter((e) => !!e)
+                            .map((date) => date?.format('YYYY-MM-DD'))
+                            .join(SEPARATOR);
 
-                onTextValueChange(periodString);
-            }}
-        />
+                        onTextValueChange(periodString);
+                    }}
+                />
+
+                <DatePicker
+                    value={beforeString ? dayjs(beforeString) : undefined}
+                    style={{ width: 300, display: !showPeriod ? undefined : 'none' }}
+                    onChange={(value) => {
+                        // Сохраняем значение в формате YYYY-MM-DD
+                        const periodString = value?.format('YYYY-MM-DD');
+
+                        onTextValueChange(periodString);
+                    }}
+                />
+            </Row>
+        </Col>
     );
 };
 
@@ -102,7 +142,7 @@ const SeveralValues: FC<{
         <div className={styles.filterPopupList}>
             {filterListItems.map((filterListItem) => (
                 <FilterValueListItem
-                    key={filterListItem.text}
+                    key={'SeveralValues' + filterListItem.text}
                     filterListItem={filterListItem}
                     onOtherValueChange={onOtherValueChange}
                     isSingle={field.single}
@@ -154,7 +194,7 @@ const FilterValueListItem: FC<{
     return (
         <div
             className={styles.filterPopupListItem}
-            key={filterListItem.text}
+            key={'FilterValueListItem' + filterListItem.text}
             onClick={() => onOtherValueChange(filterListItem)}
         >
             {isSingle ? (
