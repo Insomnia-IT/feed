@@ -30,15 +30,13 @@ ENV YARN_CACHE_FOLDER=/root/.yarn
 COPY nginx.conf /app/
 
 ARG NEW_API_URL
-ENV NEW_API_URL_ENV=${NEW_API_URL}
+ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
 ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 
 COPY ./package.json /app/package.json
 COPY ./yarn.lock /app/yarn.lock
 
 COPY ./packages/admin/package.json /app/packages/admin/package.json
-COPY ./packages/admin/next-i18next.config.mjs /app/packages/admin/next-i18next.config.mjs
-COPY ./packages/admin/next.config.mjs /app/packages/admin/next.config.mjs
 COPY ./packages/core/package.json /app/packages/core/package.json
 COPY ./packages/ui/package.json /app/packages/ui/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
@@ -65,7 +63,6 @@ RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
 FROM base as runner
 
 EXPOSE 3000
-EXPOSE 4301
 EXPOSE 80
 
 RUN apk add --no-cache nginx python3 py3-pip tzdata curl
@@ -80,8 +77,6 @@ ENV ADMIN_BASE_PATH_ENV=${ADMIN_BASE_PATH}
 
 COPY --from=builder /app/entry.sh /app
 
-COPY --from=builder /app/node_modules /app/node_modules
-
 COPY --from=builder /app/postcss.config.js /app/
 COPY --from=builder /app/tsconfig.json /app/
 COPY --from=builder /app/tsconfig.paths.json /app/
@@ -90,10 +85,7 @@ COPY --from=builder /app/package.json /app/
 COPY --from=builder /app/packages/core/package.json /app/packages/core/
 COPY --from=builder /app/packages/core/webpack/ /app/packages/core/webpack/
 
-COPY --from=builder /app/packages/admin/next-i18next.config.mjs /app/packages/admin/
-COPY --from=builder /app/packages/admin/next.config.mjs /app/packages/admin/
-COPY --from=builder /app/packages/admin/.next/ /app/packages/admin/.next/
-COPY --from=builder /app/packages/admin/public/ /app/packages/admin/public/
+COPY --from=builder /app/packages/admin/dist/ /app/packages/admin/dist/
 
 COPY --from=builder /app/packages/ui/package.json /app/packages/ui/
 
