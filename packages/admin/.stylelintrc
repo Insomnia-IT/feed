@@ -1,0 +1,112 @@
+{
+    "plugins": [
+        "stylelint-color-format"
+    ],
+    "extends": [
+        "stylelint-config-standard",
+        "stylelint-config-hudochenkov/order"
+    ],
+    "ignoreFiles": [
+        "./node_modules/**/*.css",
+        "./src/common/*.css"
+    ],
+    "rules": {
+        "selector-class-pattern": null,
+        "keyframes-name-pattern": null,
+        "custom-property-pattern": null,
+        "alpha-value-notation": "number",
+        "number-max-precision": 8,
+        "string-quotes": "single",
+        "declaration-block-no-redundant-longhand-properties": [
+            true,
+            {
+                "ignoreShorthands": [
+                    "flex-flow",
+                    "grid-template"
+                ]
+            }
+        ],
+        "selector-id-pattern": null,
+        "function-url-quotes": "never",
+        "color-format/format": {
+            "format": "rgba"
+        },
+        "max-nesting-depth": [
+            5,
+            {
+                "severity": "warning"
+            }
+        ],
+        "color-named": "never",
+        "color-no-hex": [
+            true,
+            {
+                "severity": "warning"
+            }
+        ],
+        "color-function-notation": "modern",
+        "function-url-scheme-allowed-list": [
+            [],
+            {
+                "severity": "warning"
+            }
+        ],
+        "no-descending-specificity": [
+            null,
+            {
+                "severity": "warning"
+            }
+        ],
+        "indentation": 4,
+        "custom-media-pattern": "(small|mobile|desktop)(-.){0,1}",
+        "no-invalid-double-slash-comments": true,
+        "at-rule-name-space-after": null,
+        "at-rule-no-unknown": [
+            true,
+            {
+                "ignoreAtRules": [
+                    "keyframes",
+                    "define-mixin",
+                    "mixin"
+                ]
+            }
+        ],
+        "selector-pseudo-class-no-unknown": [
+            true,
+            {
+                "ignorePseudoClasses": [
+                    "global"
+                ]
+            }
+        ],
+        "value-keyword-case": [
+            "lower",
+            {
+                "ignoreProperties": [
+                    "--base-font"
+                ],
+                "camelCaseSvgKeywords": true
+            }
+        ],
+        "declaration-empty-line-before": [
+            "never",
+            {}
+        ],
+        "at-rule-empty-line-before": [
+            "always",
+            {
+                "except": [
+                    "first-nested"
+                ]
+            }
+        ],
+        "rule-empty-line-before": [
+            "always",
+            {
+                "except": [
+                    "first-nested"
+                ]
+            }
+        ]
+    }
+}

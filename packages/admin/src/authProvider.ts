@@ -1,8 +1,8 @@
 import type { AuthProvider } from '@pankod/refine-core';
 import axios from 'axios';
 
-import { clearUserData, getUserData, setUserData, setUserInfo } from '~/auth';
-import { NEW_API_URL } from '~/const';
+import { clearUserData, getUserData, setUserData } from 'auth';
+import { NEW_API_URL } from 'const';
 
 export const authProvider: AuthProvider = {
     login: async ({ isQR, password, username }) => {
@@ -11,7 +11,7 @@ export const authProvider: AuthProvider = {
 
             if (isQR && username && !password) {
                 const token = `V-TOKEN ${username}`;
-                const { data, status } = await axios.get(`${NEW_API_URL}/volunteers/?limit=1&qr=${username}`, {
+                const { status } = await axios.get(`${NEW_API_URL}/volunteers/?limit=1&qr=${username}`, {
                     headers: {
                         Authorization: token
                     }
@@ -43,8 +43,8 @@ export const authProvider: AuthProvider = {
         return Promise.resolve();
     },
     checkError: () => Promise.resolve(),
-    checkAuth: async (ctx) => {
-        const user = await getUserData(ctx, true);
+    checkAuth: async () => {
+        const user = await getUserData(true);
 
         if (!user) {
             return Promise.reject();
@@ -53,8 +53,8 @@ export const authProvider: AuthProvider = {
         return Promise.resolve({ user });
     },
     getPermissions: () => Promise.resolve(),
-    getUserIdentity: async (ctx) => {
-        const user = await getUserData(ctx, true);
+    getUserIdentity: async () => {
+        const user = await getUserData(true);
         if (!user) return Promise.reject();
 
         return Promise.resolve(user);

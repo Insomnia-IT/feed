@@ -1,13 +1,9 @@
-// import crudDataProvider from '@pankod/refine-nestjsx-crud';
 import type { CrudFilter, DataProvider, LogicalFilter } from '@pankod/refine-core';
 import type { AxiosInstance } from 'axios';
 import { stringify } from 'query-string';
 
-import { NEW_API_URL } from '~/const';
-import { axios } from '~/authProvider';
-
-// import { DataProvider } from "@refinedev/core";
-// import { axiosInstance, generateSort, generateFilter } from "./utils";
+import { NEW_API_URL } from 'const';
+import { axios } from 'authProvider';
 
 type MethodTypes = 'get' | 'delete' | 'head' | 'options';
 type MethodTypesWithBody = 'post' | 'put' | 'patch';
@@ -22,12 +18,6 @@ export const crudDataProvider = (
 ): Omit<Required<DataProvider>, 'createMany' | 'updateMany' | 'deleteMany' | 'custom'> => ({
     getList: async ({ filters, metaData, pagination, /*sorters,*/ resource }) => {
         const url = `${apiUrl}/${resource}${resource.includes('/') ? '' : '/'}`;
-
-        const {
-            current = 1,
-            // mode = 'server'
-            pageSize = 10
-        } = pagination ?? {};
 
         const { headers: headersFromMeta, method } = metaData ?? {};
         const requestMethod = (method as MethodTypes) ?? 'get';
@@ -62,15 +52,17 @@ export const crudDataProvider = (
                         (acc, filter) =>
                             isLogicalFilter(filter) && filter.value
                                 ? {
-                                      ...acc,
-                                      [filter.field]: filter.value
-                                  }
+                                    ...acc,
+                                    [filter.field]: filter.value
+                                }
                                 : acc,
                         {}
                     ),
                     limit: pagination?.pageSize ? pagination.pageSize : 10000,
                     offset:
-                        pagination?.current && pagination?.pageSize ? (pagination.current - 1) * pagination.pageSize : 0
+                        pagination?.current && pagination?.pageSize
+                            ? (pagination.current - 1) * pagination.pageSize
+                            : 0
                 },
                 headers: headersFromMeta
             }
@@ -221,7 +213,6 @@ export const crudDataProvider = (
     // },
 });
 
-// // @ts-ignore
 const dataProvider = crudDataProvider(NEW_API_URL, axios);
 
 export { dataProvider };

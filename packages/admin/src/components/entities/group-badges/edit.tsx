@@ -13,11 +13,11 @@ import {
 import { Col, Divider, Input, Popconfirm, Row } from 'antd';
 import { IResourceComponentsProps, useUpdateMany } from '@pankod/refine-core';
 import { DeleteOutlined } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
-import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
+import type { GroupBadgeEntity, VolEntity } from 'interfaces';
 import { CreateEdit } from './common';
-import { AddVolunteerModal } from '~/components/entities/group-badges/add-volunteer-modal';
+import { AddVolunteerModal } from 'components/entities/group-badges/add-volunteer-modal';
 
 const { Title } = Typography;
 
@@ -109,56 +109,56 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
 
     return (
         <Edit saveButtonProps={saveButtonProps}>
-            <Form {...formProps} layout='vertical'>
+            <Form {...formProps} layout="vertical">
                 <CreateEdit />
                 <span>Количество волонтеров: {activeVolunteers?.length}</span>
             </Form>
             <Divider />
-            <Row justify='space-between' align='middle' style={{ marginBottom: 16 }}>
+            <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
                 <Col>
                     <Title level={5}>Волонтеры</Title>
                 </Col>
                 <Col>
                     <Space>
-                        <Input placeholder='Поиск волонтера' allowClear onChange={handleChangeInputValue} />
-                        <Button type='primary' onClick={() => setOpenAdd(true)}>
+                        <Input placeholder="Поиск волонтера" allowClear onChange={handleChangeInputValue} />
+                        <Button type="primary" onClick={() => setOpenAdd(true)}>
                             Добавить волонтера
                         </Button>
                     </Space>
                 </Col>
             </Row>
-            <Table {...currentVolsTableParams} dataSource={activeVolunteers} rowKey='id'>
-                <Table.Column dataIndex='name' key='name' title='Имя на бейдже' />
-                <Table.Column dataIndex='first_name' key='first_name' title='Имя' />
-                <Table.Column dataIndex='last_name' key='last_name' title='Фамилия' />
+            <Table {...currentVolsTableParams} dataSource={activeVolunteers} rowKey="id">
+                <Table.Column dataIndex="name" key="name" title="Имя на бейдже" />
+                <Table.Column dataIndex="first_name" key="first_name" title="Имя" />
+                <Table.Column dataIndex="last_name" key="last_name" title="Фамилия" />
                 <Table.Column
-                    dataIndex='directions'
-                    key='directions'
-                    title='Службы/Локации'
+                    dataIndex="directions"
+                    key="directions"
+                    title="Службы/Локации"
                     render={(directions) => (
                         <TextField
                             style={{ whiteSpace: 'pre-wrap' }}
-                            value={directions.map(({ name }) => name).join(', ')}
+                            value={directions.map(({ name }: { name: string }) => name).join(', ')}
                         />
                     )}
                     ellipsis
                 />
                 <Table.Column
-                    title='Действия'
-                    dataIndex='actions'
+                    title="Действия"
+                    dataIndex="actions"
                     render={(_, record: VolEntity) => (
                         <Space>
                             <EditButton
                                 hideText
-                                size='small'
-                                resourceNameOrRouteName='volunteers'
+                                size="small"
+                                resourceNameOrRouteName="volunteers"
                                 recordItemId={record.id}
                             />
                             <Popconfirm
-                                title='Уверены?'
-                                okText='Удалить'
-                                cancelText='Отмена'
-                                okType='danger'
+                                title="Уверены?"
+                                okText="Удалить"
+                                cancelText="Отмена"
+                                okType="danger"
                                 onConfirm={(): void => {
                                     setVolunteers((prevVolunteers) => {
                                         return prevVolunteers.find((item) => item.id === record.id)?.markedAdded
@@ -169,7 +169,7 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                                     });
                                 }}
                             >
-                                <Button icon={<DeleteOutlined />} danger size='small' />
+                                <Button icon={<DeleteOutlined />} danger size="small" />
                             </Popconfirm>
                         </Space>
                     )}

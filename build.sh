@@ -5,4 +5,4 @@ docker build \
     --build-arg NEW_API_URL=http://localhost:4000/feedapi/v1 \
     -t admin \
     .
-docker run -it --name admin -p 4301:4301 -p 4262:4262 -p 8888:80 -v ~/feeddb:/app/db admin
+docker run -it --name admin -p 8888:80 -v ~/feeddb:/app/db admin

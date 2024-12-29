@@ -3,6 +3,7 @@ name: feed
 
 services:
   backend:
+    platform: linux/amd64
     build:
       context: ../backend
       dockerfile: Dockerfile
@@ -15,6 +16,7 @@ services:
     volumes:
       - ../db/:/db
   admin:
+    platform: linux/amd64
     build:
       context: ../
       dockerfile: ./local-dev/Dockerfile_front

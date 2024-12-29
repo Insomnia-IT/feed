@@ -50,5 +50,5 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
             children: <CommonHistory />
         }
     ];
-    return <Tabs defaultActiveKey='1' items={items} />;
+    return <Tabs defaultActiveKey="1" items={items} />;
 };

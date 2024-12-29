@@ -31,7 +31,7 @@ jobs:
     - name: run admin
       run: |
         docker run -d \
-          -p 4262:4262 -p 4301:4301 -p 8888:80 \
+          -p 8888:80 \
           -v ${DB_DIR}:/app/db \
           --restart=always \
           --name $IMAGE_NAME_BASENAME \

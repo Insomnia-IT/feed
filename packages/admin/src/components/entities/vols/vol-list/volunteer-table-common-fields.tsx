@@ -1,4 +1,4 @@
-import type { VolEntity } from '~/interfaces';
+import type { VolEntity } from 'interfaces';
 
 export interface VolunteerField {
     fieldName: keyof VolEntity | 'on_field';

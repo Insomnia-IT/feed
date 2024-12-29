@@ -1,3 +1,6 @@
+import { useEffect, useMemo, useState } from 'react';
+import { GetListResponse, useList } from '@pankod/refine-core';
+
 import {
     AccessRoleEntity,
     ColorTypeEntity,
@@ -9,12 +12,10 @@ import {
     StatusEntity,
     TransportEntity,
     VolunteerRoleEntity
-} from '~/interfaces';
-import useVisibleDirections from '~/components/entities/vols/use-visible-directions';
-import { FilterField, FilterItem } from '~/components/entities/vols/vol-list/filter-types';
-import { getSorter } from '~/utils';
-import { useEffect, useMemo, useState } from 'react';
-import { GetListResponse, useList } from '@pankod/refine-core';
+} from 'interfaces';
+import useVisibleDirections from 'components/entities/vols/use-visible-directions';
+import { FilterField, FilterItem } from 'components/entities/vols/vol-list/filter-types';
+import { getSorter } from 'utils';
 
 const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> => {
     return useMemo(() => {
@@ -33,7 +34,9 @@ const getDefaultVisibleFilters = (): Array<string> => {
     if (volVisibleFiltersStr) {
         try {
             return JSON.parse(volVisibleFiltersStr) as Array<string>;
-        } catch (e) {}
+        } catch {
+            /* empty */
+        }
     }
     return [];
 };
@@ -43,7 +46,9 @@ const getDefaultActiveFilters = (): Array<FilterItem> => {
     if (volFilterStr) {
         try {
             return JSON.parse(volFilterStr) as Array<FilterItem>;
-        } catch (e) {}
+        } catch {
+            /* empty */
+        }
     }
     return [];
 };
@@ -167,7 +172,7 @@ export const useFilters = ({
             type: 'lookup',
             name: 'directions',
             title: 'Службы/Локации',
-            getter: (data) => (data.directions || []).map(({ id }) => id),
+            getter: (data: { directions: any }) => (data.directions || []).map(({ id }: { id: string }) => id),
             skipNull: true,
             lookup: () =>
                 (directions?.data ?? [])
@@ -176,7 +181,12 @@ export const useFilters = ({
                     .filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         { type: 'date', name: 'arrivals.staying_date', title: 'На поле' },
-        { type: 'lookup', name: 'arrivals.status', title: 'Статус заезда', lookup: () => statuses?.data ?? [] },
+        {
+            type: 'lookup',
+            name: 'arrivals.status',
+            title: 'Статус заезда',
+            lookup: () => statuses?.data ?? []
+        },
         { type: 'date', name: 'arrivals.arrival_date', title: 'Дата заезда' },
         {
             type: 'lookup',
@@ -184,7 +194,11 @@ export const useFilters = ({
             title: 'Транспорт заезда',
             lookup: () => transports?.data ?? []
         },
-        { type: 'date', name: 'arrivals.departure_date', title: 'Дата отъезда' },
+        {
+            type: 'date',
+            name: 'arrivals.departure_date',
+            title: 'Дата отъезда'
+        },
         {
             type: 'lookup',
             name: 'arrivals.departure_transport',
@@ -231,7 +245,11 @@ export const useFilters = ({
             title: 'Цвет бейджа',
             skipNull: true,
             single: true,
-            lookup: () => colors?.data.map(({ description: name, id }) => ({ id, name })) ?? []
+            lookup: () =>
+                colors?.data.map(({ description: name, id }) => ({
+                    id,
+                    name
+                })) ?? []
         }, // colorNameById
         {
             type: 'lookup',

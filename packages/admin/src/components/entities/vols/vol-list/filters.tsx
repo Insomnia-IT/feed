@@ -1,15 +1,20 @@
 import { Icons, Popover } from '@pankod/refine-antd';
 import { Button } from 'antd';
+import { FC } from 'react';
 
-import { FilterPopup } from '~/components/entities/vols/vol-list/filter-popup';
+import { FilterPopup } from 'components/entities/vols/vol-list/filter-popup';
+import type { FilterField, FilterItem } from './filter-types';
+import { FilterChooser } from './filter-chooser';
+import { getFilterValueText } from 'components/entities/vols/vol-list/volunteer-list-utils';
 
 import styles from '../list.module.css';
 
-import type { FilterField, FilterItem } from './filter-types';
-import { FilterChooser } from './filter-chooser';
-import { getFilterValueText } from '~/components/entities/vols/vol-list/volunteer-list-utils';
-
-type FilterListItem = { selected: boolean; value: unknown; text: string; count: number };
+type FilterListItem = {
+    selected: boolean;
+    value: unknown;
+    text: string;
+    count: number;
+};
 
 export const Filters: FC<{
     filterFields: Array<FilterField>;
@@ -79,11 +84,11 @@ export const Filters: FC<{
                     .concat(
                         newValues.length
                             ? [
-                                  {
-                                      ...filterItem,
-                                      value: newValues
-                                  }
-                              ]
+                                {
+                                    ...filterItem,
+                                    value: newValues
+                                }
+                            ]
                             : []
                     );
 
@@ -126,7 +131,7 @@ export const Filters: FC<{
         return (
             <span className={styles.filterItemActive}>
                 <span className={styles.filterItemNameActive}>{field.title}:</span>
-                &nbsp;
+                    &nbsp;
                 <span>
                     {(Array.isArray(filterItem.value) ? filterItem.value : [filterItem.value])
                         .map((value) => getFilterValueText(field, value))
@@ -145,7 +150,7 @@ export const Filters: FC<{
                         return (
                             <Popover
                                 key={field.name}
-                                placement='bottomLeft'
+                                placement="bottomLeft"
                                 content={
                                     <FilterPopup
                                         field={field}
@@ -155,7 +160,7 @@ export const Filters: FC<{
                                     />
                                 }
                                 overlayInnerStyle={{ borderRadius: 0 }}
-                                trigger='click'
+                                trigger="click"
                             >
                                 <Button className={styles.filterItemButton}>
                                     {renderFilterItemText(field)}
@@ -167,8 +172,8 @@ export const Filters: FC<{
                         );
                     })}
                 <Popover
-                    key='add-filter'
-                    placement='bottomLeft'
+                    key="add-filter"
+                    placement="bottomLeft"
                     content={
                         <FilterChooser
                             filterFields={filterFields}
@@ -177,22 +182,22 @@ export const Filters: FC<{
                         />
                     }
                     overlayInnerStyle={{ borderRadius: 0 }}
-                    trigger='click'
+                    trigger="click"
                 >
-                    <Button type='link' icon={<Icons.PlusOutlined />}>
-                        Фильтр
+                    <Button type="link" icon={<Icons.PlusOutlined />}>
+                            Фильтр
                     </Button>
                 </Popover>
                 {(activeFilters.length || searchText) && (
                     <Button
-                        type='link'
+                        type="link"
                         icon={<Icons.DeleteOutlined />}
                         onClick={() => {
                             setActiveFilters([]);
                             setSearchText('');
                         }}
                     >
-                        Сбросить фильтрацию
+                            Сбросить фильтрацию
                     </Button>
                 )}
             </div>

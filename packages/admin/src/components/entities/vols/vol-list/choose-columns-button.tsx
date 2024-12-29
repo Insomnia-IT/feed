@@ -1,12 +1,14 @@
 import { Col, Row, Popover, Button, Checkbox } from '@pankod/refine-antd';
 import { DatabaseOutlined, PlusOutlined } from '@ant-design/icons';
-import { CustomFieldEntity } from '~/interfaces';
-import { useContext } from 'react';
-import { ActiveColumnsContext } from '~/components/entities/vols/vol-list/active-columns-context';
+import { FC, useContext } from 'react';
 
-export const ChooseColumnsButton: FC<{ canListCustomFields: boolean; customFields: Array<CustomFieldEntity> }> = ({
-    canListCustomFields
-}) => {
+import { CustomFieldEntity } from 'interfaces';
+import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
+
+export const ChooseColumnsButton: FC<{
+    canListCustomFields: boolean;
+    customFields: Array<CustomFieldEntity>;
+}> = ({ canListCustomFields }) => {
     const { activeColumns = [], allColumns = [], toggleOne } = useContext(ActiveColumnsContext) ?? {};
 
     // TODO: вместо страницы должна быть модалка
@@ -16,8 +18,8 @@ export const ChooseColumnsButton: FC<{ canListCustomFields: boolean; customField
 
     return (
         <Popover
-            trigger='click'
-            placement='bottomLeft'
+            trigger="click"
+            placement="bottomLeft"
             arrow={false}
             content={
                 <Col>

@@ -1,15 +1,14 @@
-import { ListBooleanNegative, ListBooleanPositive } from '@feed/ui/src/icons'; // TODO exclude src
 import { Table, Tag } from '@pankod/refine-antd';
 import type { TablePaginationConfig, TableProps } from '@pankod/refine-antd';
+import { CheckOutlined, StopOutlined } from '@ant-design/icons';
+import { FC, useMemo, useContext } from 'react';
 
-import type { CustomFieldEntity, VolEntity } from '~/interfaces';
-import { getSorter } from '~/utils';
+import type { ArrivalEntity, CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
+import { getSorter } from 'utils';
+import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
+import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from '../list.module.css';
-
-import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
-import { ActiveColumnsContext } from '~/components/entities/vols/vol-list/active-columns-context';
-import { useContext } from 'react';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
     const value =
@@ -23,7 +22,10 @@ const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string 
 
 function getFormattedArrivals(arrivalString: string): string {
     const date = new Date(arrivalString);
-    const options: Intl.DateTimeFormatOptions = { month: '2-digit', day: '2-digit' };
+    const options: Intl.DateTimeFormatOptions = {
+        month: '2-digit',
+        day: '2-digit'
+    };
 
     return new Intl.DateTimeFormat('ru-RU', options).format(date);
 }
@@ -74,7 +76,7 @@ export const VolunteerDesktopTable: FC<{
             dataIndex: 'directions',
             key: 'directions',
             title: 'Службы / Локации',
-            render: (value) => {
+            render: (value: DirectionEntity[]) => {
                 return (
                     <>
                         {value.map(({ name }) => (
@@ -90,7 +92,7 @@ export const VolunteerDesktopTable: FC<{
             dataIndex: 'arrivals',
             key: 'arrivals',
             title: 'Даты на поле',
-            render: (arrivals) => (
+            render: (arrivals: Array<ArrivalEntity>) => (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {arrivals
                         .slice()
@@ -175,9 +177,45 @@ export const VolunteerDesktopTable: FC<{
             pagination={pagination}
             loading={volunteersIsLoading}
             dataSource={volunteersData}
-            rowKey='id'
+            rowKey="id"
             rowClassName={styles.cursorPointer}
             columns={visibleColumns}
         />
     );
+};
+
+export const CheckMark: FC<{
+    checked: boolean;
+}> = ({ checked }) => {
+    const style = useMemo(
+        () => ({
+            color: checked ? 'green' : undefined
+        }),
+        [checked]
+    );
+    return <CheckOutlined style={style} />;
+};
+
+export const StopMark: FC<{
+    checked: boolean;
+}> = ({ checked }) => {
+    const style = useMemo(
+        () => ({
+            color: checked ? 'red' : undefined
+        }),
+        [checked]
+    );
+    return <StopOutlined style={style} />;
+};
+
+export const ListBooleanPositive: FC<{
+    value: boolean;
+}> = ({ value }) => {
+    return value ? <CheckMark checked={value} /> : null;
+};
+
+export const ListBooleanNegative: FC<{
+    value: boolean;
+}> = ({ value }) => {
+    return value ? <StopMark checked={value} /> : null;
 };

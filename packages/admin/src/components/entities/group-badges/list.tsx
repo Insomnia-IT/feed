@@ -2,9 +2,9 @@ import { DeleteButton, EditButton, List, Space, Table, TextField, Tooltip } from
 import { useList, useNavigation } from '@pankod/refine-core';
 import type { FC, ReactNode } from 'react';
 
-import type { GroupBadgeEntity } from '~/interfaces';
-import { useMedia } from '~/shared/providers';
-import { getSorter } from '~/utils';
+import type { GroupBadgeEntity } from 'interfaces';
+import { useMedia } from 'shared/providers';
+import { getSorter } from 'utils';
 import useVisibleDirections from '../vols/use-visible-directions';
 
 import styles from './group-badge-list.module.css';
@@ -34,7 +34,7 @@ export const GroupBadgeList: FC = () => {
                                     <span className={styles.name}>{badge.name}</span>
                                 </Tooltip>
                                 <Space>
-                                    <DeleteButton hideText size='small' recordItemId={badge.id} />
+                                    <DeleteButton hideText size="small" recordItemId={badge.id} />
                                 </Space>
                             </div>
                             <div className={styles.row}>
@@ -57,21 +57,21 @@ export const GroupBadgeList: FC = () => {
                     ))}
                 </div>
             ) : (
-                <Table dataSource={data} rowKey='id' pagination={false}>
+                <Table dataSource={data} rowKey="id" pagination={false}>
                     <Table.Column<GroupBadgeEntity>
-                        title=''
-                        dataIndex='actions'
+                        title=""
+                        dataIndex="actions"
                         render={(_, record) => (
                             <Space>
-                                <EditButton hideText size='small' recordItemId={record.id} />
-                                <DeleteButton hideText size='small' recordItemId={record.id} />
+                                <EditButton hideText size="small" recordItemId={record.id} />
+                                <DeleteButton hideText size="small" recordItemId={record.id} />
                             </Space>
                         )}
                     />
                     <Table.Column
-                        dataIndex='name'
-                        key='name'
-                        title='Название'
+                        dataIndex="name"
+                        key="name"
+                        title="Название"
                         render={(value: string): ReactNode => (
                             <Tooltip title={value}>
                                 <TextField value={value} />
@@ -82,8 +82,8 @@ export const GroupBadgeList: FC = () => {
                     />
                     <Table.Column
                         dataIndex={['direction', 'name']}
-                        key='direction'
-                        title='Служба/Направление'
+                        key="direction"
+                        title="Служба/Направление"
                         render={(value: string): ReactNode => (
                             <Tooltip title={value}>
                                 <TextField value={value} />
@@ -92,15 +92,15 @@ export const GroupBadgeList: FC = () => {
                         ellipsis
                     />
                     <Table.Column
-                        dataIndex='volunteer_count'
-                        key='volunteer_count'
-                        title='Количество волонтеров'
+                        dataIndex="volunteer_count"
+                        key="volunteer_count"
+                        title="Количество волонтеров"
                         ellipsis
                     />
                     <Table.Column
-                        dataIndex='comment'
-                        key='comment'
-                        title='Комментарий'
+                        dataIndex="comment"
+                        key="comment"
+                        title="Комментарий"
                         render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
                         ellipsis
                     />

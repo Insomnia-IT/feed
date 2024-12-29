@@ -1,5 +1,5 @@
 export const getSorter = (field: string) => {
-    return (a, b) => {
+    return (a: { [x: string]: any }, b: { [x: string]: any }) => {
         const x = a[field] ?? '';
         const y = b[field] ?? '';
 
@@ -12,3 +12,7 @@ export const getSorter = (field: string) => {
         return 0;
     };
 };
+
+export const isServer = typeof window === 'undefined';
+
+export const isBrowser = !isServer;

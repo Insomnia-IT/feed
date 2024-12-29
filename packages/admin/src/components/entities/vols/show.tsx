@@ -1,11 +1,12 @@
 import { Checkbox, Show, Typography } from '@pankod/refine-antd';
 import type { IResourceComponentsProps } from '@pankod/refine-core';
 import { useShow } from '@pankod/refine-core';
+import { FC } from 'react';
 
-import type { VolEntity } from '~/interfaces';
-import { isActivatedStatus } from '~/shared/lib';
+import type { VolEntity } from 'interfaces';
+import { isActivatedStatus } from 'shared/lib';
 
-const { Paragraph, Text, Title } = Typography;
+const { Text, Title } = Typography;
 
 export const VolShow: FC<IResourceComponentsProps> = () => {
     const { queryResult } = useShow<VolEntity>();
