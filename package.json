@@ -5,7 +5,7 @@
     "license": "MIT",
     "scripts": {
         "bootstrap": "lerna clean -y && rimraf ./node_modules/ && yarn install",
-        "build": "lerna run build --scope @feed/admin",
+        "build": "lerna run build --scope @feed/scanner",
         "build:since": "nx affected --target=build",
         "dep": "nx dep",
         "bl": "browserslist --update-db",
