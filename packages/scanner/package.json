@@ -67,5 +67,8 @@
     "peerDependencies": {
         "@craco/craco": "*",
         "@jackwilsdon/craco-use-babelrc": "*"
+    },
+    "devDependencies": {
+        "react-dev-utils": "^12.0.1"
     }
 }
