@@ -28,16 +28,16 @@ jobs:
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }} \
             .
-    # - name: stop admin
-    #   run: docker rm -f $IMAGE_NAME_BASENAME
-    # - name: run admin
-    #   run: |
-    #     docker run -d \
-    #       -p 8888:80 \
-    #       -v ${DB_DIR}:/app/db \
-    #       --restart=always \
-    #       --name $IMAGE_NAME_BASENAME \
-    #       $IMAGE_NAME_BASENAME:$GITHUB_SHA
+    - name: stop admin
+      run: docker rm -f $IMAGE_NAME_BASENAME
+    - name: run admin
+      run: |
+        docker run -d \
+          -p 8888:80 \
+          -v ${DB_DIR}:/app/db \
+          --restart=always \
+          --name $IMAGE_NAME_BASENAME \
+          $IMAGE_NAME_BASENAME:$GITHUB_SHA
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f
