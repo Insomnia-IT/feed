@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import type { ArrivalEntity, VolEntity } from 'interfaces';
 import { isActivatedStatus } from 'shared/lib';
 
-import type { FilterField } from './filter-types';
+import type { FilterField } from './filters/filter-types';
 
 export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | undefined => {
     const day = dayjs();
@@ -75,7 +75,7 @@ export function findClosestArrival(arrivals: Array<ArrivalEntity>): ArrivalEntit
     }
 }
 
-export const getFilterValueText = (field: FilterField, value: unknown): string => {
+export const getFilterValueText = (field: FilterField, value: boolean | string): string => {
     if (value === true) {
         return 'Да';
     }
