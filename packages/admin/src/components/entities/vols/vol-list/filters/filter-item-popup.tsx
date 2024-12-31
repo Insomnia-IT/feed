@@ -1,9 +1,8 @@
-import { Button, Col, Input, Row } from 'antd';
-import { Checkbox, DatePicker, Radio } from '@pankod/refine-antd';
+import { Button, Col, Input, Row, Checkbox, DatePicker, Radio } from 'antd';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useState, FC } from 'react';
 
-import styles from '~/components/entities/vols/list.module.css';
+import styles from 'components/entities/vols/list.module.css';
 
 import { getFilterValueText } from '../volunteer-list-utils';
 
@@ -35,7 +34,7 @@ export const FilterItemPopup: FC<{
             />
 
             {filterItem && field.type !== FilterFieldType.Date && (
-                <Button type='link' onClick={clearValue} style={{ marginTop: 10 }}>
+                <Button type="link" onClick={clearValue} style={{ marginTop: 10 }}>
                     Сбросить
                 </Button>
             )}
@@ -56,7 +55,7 @@ const FieldValueControlByType: FC<{
                 <Input
                     value={filterItem?.value as string | undefined}
                     onChange={(e) => onTextValueChange(e.target.value)}
-                    placeholder='Введите текст'
+                    placeholder="Введите текст"
                     allowClear
                 />
             );

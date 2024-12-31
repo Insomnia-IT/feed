@@ -1,6 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
-import { GetListResponse, useList } from '@pankod/refine-core';
-
 import {
     AccessRoleEntity,
     ColorTypeEntity,

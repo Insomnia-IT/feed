@@ -2,6 +2,7 @@ import { Icons, Popover } from '@pankod/refine-antd';
 import { Button } from 'antd';
 
 import styles from '../../list.module.css';
+import { FC } from 'react';
 
 import type { FilterField, FilterListItem } from './filter-types';
 import { FilterItem } from './filter-types';
@@ -130,8 +131,8 @@ export const Filters: FC<{
                     />
                 ))}
                 <Popover
-                    key='add-filter'
-                    placement='bottomLeft'
+                    key="add-filter"
+                    placement="bottomLeft"
                     content={
                         <FilterChooser
                             filterFields={filterFields}
@@ -140,15 +141,15 @@ export const Filters: FC<{
                         />
                     }
                     overlayInnerStyle={{ borderRadius: 0 }}
-                    trigger='click'
+                    trigger="click"
                 >
-                    <Button type='link' icon={<Icons.PlusOutlined />}>
+                    <Button type="link" icon={<Icons.PlusOutlined />}>
                         Фильтр
                     </Button>
                 </Popover>
                 {(activeFilters.length || searchText) && (
                     <Button
-                        type='link'
+                        type="link"
                         icon={<Icons.DeleteOutlined />}
                         onClick={() => {
                             setActiveFilters([]);
