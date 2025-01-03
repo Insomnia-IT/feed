@@ -4,7 +4,7 @@
     "private": true,
     "license": "MIT",
     "scripts": {
-        "bootstrap": "lerna clean -y && rimraf ./node_modules/ && yarn install",
+        "bootstrap": "lerna clean -y && rimraf ./node_modules/ && npm install",
         "build": "lerna run build --stream --scope @feed/admin --scope @feed/scanner",
         "build:since": "nx affected --target=build",
         "dep": "nx dep",
@@ -18,23 +18,13 @@
         "lint-fix": "npm-run-all -s lint-fix:*",
         "tc": "lerna run tc",
         "todo": "leasot -x --reporter markdown 'packages/**/*.(ts|tsx)' > TODO.md",
-        "madge": "ynpx madge",
+        "madge": "npx madge",
         "stat": "tokei",
-        "husky-install": "yarn run husky install"
+        "husky-install": "npm run husky install"
     },
-    "workspaces": {
-        "packages": [
-            "packages/*"
-        ],
-        "nohoist": [
-            "@craco/craco",
-            "@craco/craco/**",
-            "**/@craco/craco/**",
-            "react-scripts",
-            "react-scripts/**",
-            "**/react-scripts/**"
-        ]
-    },
+    "workspaces": [
+        "packages/*"
+    ],
     "resolutions": {
         "axios": "^1.3.3"
     },

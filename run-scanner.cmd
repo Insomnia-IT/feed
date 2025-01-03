@@ -1,3 +1,3 @@
 cd ./packages/scanner
-yarn run dev
+npm run dev
 cd ../..

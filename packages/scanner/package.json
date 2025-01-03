@@ -14,16 +14,6 @@
         "lint-fix": "npm-run-all -s lint-fix:*",
         "tc": "tsc --noemit --emitDeclarationOnly false"
     },
-    "workspaces": {
-        "nohoist": [
-            "@craco/craco",
-            "@craco/craco/**",
-            "**/@craco/craco/**",
-            "react-scripts",
-            "react-scripts/**",
-            "**/react-scripts/**"
-        ]
-    },
     "browserslist": {
         "production": [
             ">0.2%",
@@ -37,20 +27,21 @@
         ]
     },
     "dependencies": {
-        "@craco/craco": "^7.0.0",
-        "@feed/core": "^0.0.1",
-        "@feed/ui": "^0.0.1",
-        "copy-webpack-plugin": "^11.0.0",
+        "@craco/craco": "*",
+        "autoprefixer": "^10.4.12",
+        "axios": "^1.3.3",
         "cross-env": "^7.0.3",
         "dexie": "^3.2.2",
         "dexie-react-hooks": "^1.1.1",
+        "dotenv": "^16.0.3",
         "onscan.js": "^1.5.2",
         "qr-scanner": "^1.4.1",
-        "react": "^18.2.0",
-        "react-app-alias-ex": "^2.1.0",
-        "react-dom": "^18.2.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
         "react-error-boundary": "^3.1.4",
         "react-scripts": "^5.0.1",
+        "stylelint": "^14.10.0",
+        "web-vitals": "^2.1.4",
         "workbox-background-sync": "^6.5.3",
         "workbox-broadcast-update": "^6.5.3",
         "workbox-cacheable-response": "^6.5.3",
@@ -65,10 +56,22 @@
         "workbox-streams": "^6.5.3"
     },
     "peerDependencies": {
-        "@craco/craco": "*",
-        "@jackwilsdon/craco-use-babelrc": "*"
+        "@craco/craco": "*"
     },
     "devDependencies": {
+        "@welldone-software/why-did-you-render": "^7.0.1",
+        "babel-plugin-module-resolver": "^4.1.0",
+        "copy-webpack-plugin": "^11.0.0",
+        "craco-alias": "^3.0.1",
+        "eslint-plugin-prettier": "^4.2.1",
+        "eslint-webpack-plugin": "^3.1.1",
+        "postcss-clamp": "^4.1.0",
+        "postcss-import": "^15.1.0",
+        "postcss-media-minmax": "^5.0.0",
+        "postcss-mixins": "^9.0.3",
+        "postcss-nested": "^6.0.1",
+        "postcss-scss": "^4.0.4",
+        "prettier": "^3.4.2",
         "react-dev-utils": "^12.0.1"
     }
 }
