@@ -151,7 +151,7 @@ export const PostScanGroupBadge: FC<{
                                 ...vol,
                                 msg: [`Ошибка в проверке волонтеров в групповом бейдже(qr: ${qr}).`],
                                 isRed: true
-                            } as ValidatedVol)
+                            }) as ValidatedVol
                     )}
                 />
             )}
