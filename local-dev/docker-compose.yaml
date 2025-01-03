@@ -20,7 +20,7 @@ services:
     build:
       context: ../
       dockerfile: ./local-dev/Dockerfile_front
-    command: sh -c "cd ./packages/admin && yarn dev"
+    command: sh -c "cd ./packages/admin && npm run dev"
     container_name: feed_admin
     ports:
       - 3002:3002
@@ -30,7 +30,7 @@ services:
   #   build:
   #     context: ../
   #     dockerfile: ./local-dev/Dockerfile_front
-  #   command: sh -c "cd ./packages/scanner && yarn dev"
+  #   command: sh -c "cd ./packages/scanner && npm run dev"
   #   container_name: feed_scanner
   #   ports:
   #     - 3001:3001

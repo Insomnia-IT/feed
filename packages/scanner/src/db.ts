@@ -193,8 +193,8 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
                         (dayjs(arrival_date).startOf('day').unix() < dayjs(statsDate).unix()
                             ? isActivatedStatus(status)
                             : vol.feed_type === FeedType.FT2
-                            ? isActivatedStatus(status)
-                            : true)
+                              ? isActivatedStatus(status)
+                              : true)
                 )
             );
         })

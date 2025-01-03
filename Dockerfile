@@ -22,11 +22,10 @@ FROM base as builder
 
 RUN apk add --no-cache curl python3
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
-RUN echo "yarn cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
+RUN echo "npm cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
 
 RUN apk add --no-cache build-base libffi-dev icu-dev sqlite-dev
 
-ENV YARN_CACHE_FOLDER=/root/.yarn
 COPY nginx.conf /app/
 
 ARG NEW_API_URL
@@ -34,15 +33,13 @@ ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
 ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 
 COPY ./package.json /app/package.json
-COPY ./yarn.lock /app/yarn.lock
+COPY ./package-lock.json /app/package-lock.json
 
 COPY ./packages/admin/package.json /app/packages/admin/package.json
-COPY ./packages/core/package.json /app/packages/core/package.json
-COPY ./packages/ui/package.json /app/packages/ui/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 
-RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
-    yarn --frozen-lockfile
+RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    npm ci
 
 COPY ./backend/icu/icu.c /app/backend/icu/
 RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
@@ -52,13 +49,12 @@ COPY . /app
 
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/pwa-ver.txt
 
-RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
-    yarn build
+RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    npm run build
 
-# RUN yarn --prod --frozen-lockfile
+# RUN npm prune --production
 
 # RUN /usr/local/bin/node-clean
-
 
 FROM base as runner
 
