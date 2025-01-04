@@ -46,7 +46,7 @@ export enum MealTime {
     night = 'night'
 }
 
-export const FeedWithBalance = new Set([FeedType.Free, FeedType.Paid, FeedType.Child]);
+export const FeedWithBalance = [FeedType.Free, FeedType.Paid, FeedType.Child];
 
 export interface Volunteer {
     qr: string;

@@ -20,7 +20,7 @@ const getInitialScreenState = ({ kitchenId, mealTime, qrcode, vol, volTransactio
     }
 
     if (vol && volTransactions) {
-        const { isRed, msg } = validateVol(vol, volTransactions, kitchenId, mealTime, false);
+        const { isRed, msg } = validateVol({ vol, volTransactions, kitchenId, mealTime });
 
         if (msg?.length) {
             view = isRed ? 'vol-error' : 'vol-warning';

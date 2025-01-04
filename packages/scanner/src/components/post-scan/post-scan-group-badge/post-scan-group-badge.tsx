@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { useApp } from '~/model/app-provider/app-provider';
-import type { GroupBadge, Volunteer } from '~/db';
+import type { GroupBadge, Transaction, Volunteer } from '~/db';
 import { db, dbIncFeed } from '~/db';
 import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
 import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
@@ -103,7 +103,16 @@ export const PostScanGroupBadge: FC<{
 
         // pass each vol through validation and combine result
         const validatedVols = vols.map((vol) => {
-            return { ...vol, ...validateVol(vol, vol?.transactions ?? [], kitchenId, mealTime!, true) };
+            return {
+                ...vol,
+                ...validateVol({
+                    vol,
+                    volTransactions: vol?.transactions ?? ([] as Array<Transaction>),
+                    kitchenId,
+                    mealTime,
+                    isGroupScan: true
+                })
+            };
         });
 
         const validationGroupsNext = {
@@ -116,6 +125,8 @@ export const PostScanGroupBadge: FC<{
             // reds are similar to yellows but everyone has red flag being true instead
             reds: validatedVols.filter((vol) => vol.msg.length > 0 && vol.isRed)
         };
+
+        console.info({ validationGroupsNext });
 
         setValidationGroups(validationGroupsNext);
 

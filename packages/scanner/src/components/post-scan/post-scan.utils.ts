@@ -14,13 +14,19 @@ const isVolExpired = (vol: Volunteer): boolean => {
     );
 };
 
-export const validateVol = (
-    vol: Volunteer,
-    volTransactions: Array<Transaction>,
-    kitchenId: number,
-    mealTime: MealTime,
-    isGroupScan: boolean
-): { msg: Array<string>; isRed: boolean } => {
+export const validateVol = ({
+    isGroupScan = false,
+    kitchenId,
+    mealTime,
+    vol,
+    volTransactions
+}: {
+    vol: Volunteer;
+    volTransactions: Array<Transaction>;
+    kitchenId: number;
+    mealTime?: MealTime | null;
+    isGroupScan?: boolean;
+}): { msg: Array<string>; isRed: boolean } => {
     const msg: Array<string> = [];
     let isRed = false;
 
@@ -41,12 +47,16 @@ export const validateVol = (
         msg.push('Даты активности не совпадают');
     }
 
-    if (!FeedWithBalance.has(vol.feed_type)) {
+    if (!FeedWithBalance.includes(vol.feed_type)) {
         isRed = true;
         msg.push('НЕТ ПИТАНИЯ, СХОДИ В ИЦ');
     }
 
-    if (volTransactions.some((t) => t.mealTime === mealTime) && vol.feed_type !== FeedType.Child) {
+    if (
+        volTransactions.some((t) => t.mealTime === mealTime) &&
+        // В рамках группового бейжда детей не кормим в долг
+        (isGroupScan || vol.feed_type !== FeedType.Child)
+    ) {
         msg.push(`Волонтер уже получил ${getMealTimeText(mealTime)}`);
 
         if (vol.group_badge && !isGroupScan) {
@@ -75,7 +85,8 @@ export const validateVol = (
         // TODO: Доработать логи по желтым экранам
         // Проверка t.amount > 0 && t.reason означало кормление по желтому экрану, а теперь добавилась маркировка "Групповое питание"
         volTransactions.some((t) => t.amount && t.reason && t.reason !== 'Групповое питание') &&
-        vol.feed_type !== FeedType.Child
+        // В рамках группового бейжда детей не кормим в долг
+        (isGroupScan || vol.feed_type !== FeedType.Child)
     ) {
         msg.push('Волонтер уже питался сегодня в долг');
         isRed = true;
