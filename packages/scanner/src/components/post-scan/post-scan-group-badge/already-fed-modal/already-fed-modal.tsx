@@ -15,6 +15,7 @@ const AlreadyFedModal: React.FC<{
     groupBadgeId?: number;
     mealTime?: MealTime | null;
 }> = ({ groupBadgeId, mealTime, validatedVolsCount, vols = new Array<Volunteer>() }) => {
+    // TODO: считать анонимов, когда появится возможность кормить их в ГБ
     const alreadyFedVolsCount = vols.filter((vol) =>
         vol.transactions?.some(
             (transaction) => transaction.mealTime === mealTime && transaction.group_badge === groupBadgeId
