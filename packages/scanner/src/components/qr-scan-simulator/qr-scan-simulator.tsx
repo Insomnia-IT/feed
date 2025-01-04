@@ -30,9 +30,7 @@ export const ScanSimulator: React.FC<{
                 </select>
             )}
             <input value={input} placeholder={'введи qr...'} onChange={(e) => setInput(e.target.value)} />
-            <button className={css.scan} onClick={() => setScanResult(input)}>
-                Сканировать
-            </button>
+            <button onClick={() => setScanResult(input)}>Сканировать</button>
         </div>
     );
 };
