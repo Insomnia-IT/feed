@@ -10,19 +10,11 @@ import { getPlural } from '~/shared/lib/utils';
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 
 import css from './post-scan-group-badge-misc.module.css';
-import { Modal } from '~/shared/ui/modal';
 
 const VolunteerList: FC<{
-    warningVols?: Array<Volunteer>;
     errorVols?: Array<Volunteer>;
-}> = ({ errorVols, warningVols }) => (
+}> = ({ errorVols }) => (
     <div className={css.volunteerList}>
-        {warningVols && warningVols.length > 0 && (
-            <Text>
-                <b>В долг: </b>
-                {warningVols.map((vol) => vol.name).join(', ')}
-            </Text>
-        )}
         {errorVols && errorVols.length > 0 && (
             <Text>
                 <b>Без порции: </b>
@@ -72,7 +64,7 @@ export const GroupBadgeWarningCard: FC<{
     doFeed: (vols: Array<ValidatedVol>) => void;
     close: () => void;
 }> = ({ close, doFeed, name, validationGroups }) => {
-    const { greens, reds, yellows } = validationGroups;
+    const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
     const handleFeed = (): void => {
@@ -83,7 +75,7 @@ export const GroupBadgeWarningCard: FC<{
     return (
         <div className={css.groupBadgeCard}>
             <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
-            {(reds.length > 0 || yellows.length > 0) && <VolunteerList errorVols={reds} warningVols={yellows} />}
+            {reds.length > 0 && <VolunteerList errorVols={reds} />}
             <BottomBlock length={volsToFeed.length} handleFeed={handleFeed} handleCancel={close} />
         </div>
     );

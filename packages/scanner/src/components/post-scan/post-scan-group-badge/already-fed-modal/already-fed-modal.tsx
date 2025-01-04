@@ -3,19 +3,29 @@ import { useState } from 'react';
 import { Button } from '~/shared/ui/button';
 import { Modal } from '~/shared/ui/modal';
 import { Text } from '~/shared/ui/typography';
+import type { MealTime, Volunteer } from '~/db';
 
 import style from './already-fed-modal.module.css';
 
 // Уже покормленные волонтеры
-const AlreadyFedModal: React.FC<{ volsToFeedCount: number; allVolsCount: number }> = ({
-    allVolsCount,
-    volsToFeedCount
-}) => {
+const AlreadyFedModal: React.FC<{
+    validatedVolsCount: number;
+    allVolsCount: number;
+    vols?: Array<Volunteer>;
+    groupBadgeId?: number;
+    mealTime?: MealTime | null;
+}> = ({ groupBadgeId, mealTime, validatedVolsCount, vols = new Array<Volunteer>() }) => {
+    const alreadyFedVolsCount = vols.filter((vol) =>
+        vol.transactions?.some(
+            (transaction) => transaction.mealTime === mealTime && transaction.group_badge === groupBadgeId
+        )
+    ).length;
+
+    const volsToFeedCount = validatedVolsCount - alreadyFedVolsCount;
+
     const [modalWasShown, setModalWasShown] = useState<boolean>(false);
 
-    const volsFedWithSameMealLength = allVolsCount - volsToFeedCount;
-
-    const shouldShowModal = !modalWasShown && volsFedWithSameMealLength > 0;
+    const shouldShowModal = !modalWasShown && alreadyFedVolsCount > 0;
 
     const onClose = (): void => {
         setModalWasShown(true);
@@ -25,7 +35,7 @@ const AlreadyFedModal: React.FC<{ volsToFeedCount: number; allVolsCount: number 
         <Modal active={shouldShowModal} onClose={onClose}>
             <div className={style.body}>
                 <Text>
-                    Уже выдали {volsFedWithSameMealLength}. Осталось {volsToFeedCount}
+                    Уже выдали {alreadyFedVolsCount}. Осталось {volsToFeedCount > 0 ? volsToFeedCount : 0}
                 </Text>
                 <Button onClick={onClose}>Ок</Button>
             </div>

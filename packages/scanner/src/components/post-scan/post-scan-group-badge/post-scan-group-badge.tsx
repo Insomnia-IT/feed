@@ -30,7 +30,7 @@ export const PostScanGroupBadge: FC<{
 }> = ({ closeFeed, groupBadge }) => {
     const { id, name } = groupBadge;
 
-    // get vols, and their transactions for today
+    // get vols linked tp badge, and their transactions for today
     const vols = useLiveQuery(async (): Promise<Array<Volunteer>> => {
         const todayStart = getTodayStart();
 
@@ -52,7 +52,6 @@ export const PostScanGroupBadge: FC<{
     // vols validation result
     const [validationGroups, setValidationGroups] = useState<ValidationGroups>({
         greens: [],
-        yellows: [],
         reds: []
     });
 
@@ -107,7 +106,7 @@ export const PostScanGroupBadge: FC<{
                 ...vol,
                 ...validateVol({
                     vol,
-                    volTransactions: vol?.transactions ?? ([] as Array<Transaction>),
+                    volTransactions: vol?.transactions ?? new Array<Transaction>(),
                     kitchenId,
                     mealTime,
                     isGroupScan: true
@@ -119,14 +118,9 @@ export const PostScanGroupBadge: FC<{
             // greens don't have any messages
             greens: validatedVols.filter((vol) => vol.msg.length === 0),
 
-            // yellows have one or more messages but nobody has red color
-            yellows: validatedVols.filter((vol) => vol.msg.length > 0 && !vol.isRed),
-
-            // reds are similar to yellows but everyone has red flag being true instead
-            reds: validatedVols.filter((vol) => vol.msg.length > 0 && vol.isRed)
+            // reds have one or more messages for Group Badge
+            reds: validatedVols.filter((vol) => vol.msg.length > 0)
         };
-
-        console.info({ validationGroupsNext });
 
         setValidationGroups(validationGroupsNext);
 
@@ -148,7 +142,13 @@ export const PostScanGroupBadge: FC<{
 
     return (
         <CardContainer>
-            <AlreadyFedModal volsToFeedCount={validationGroups.greens.length} allVolsCount={vols?.length ?? 0} />
+            <AlreadyFedModal
+                validatedVolsCount={validationGroups.greens.length}
+                allVolsCount={vols?.length ?? 0}
+                vols={vols}
+                groupBadgeId={groupBadge.id}
+                mealTime={mealTime}
+            />
             <ResultScreen
                 validationGroups={validationGroups}
                 doFeed={doFeed}

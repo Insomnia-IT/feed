@@ -5,4 +5,4 @@ export type ValidatedVol = Volunteer & {
     isRed: boolean;
 };
 
-export type ValidationGroups = Record<'greens' | 'yellows' | 'reds', Array<ValidatedVol>>;
+export type ValidationGroups = Record<'greens' | 'reds', Array<ValidatedVol>>;
