@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import { db, dbIncFeed, FeedType, FeedWithBalance, isActivatedStatus, MealTime } from '~/db';
 import type { Transaction, Volunteer } from '~/db';
+import { db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
 import { getMealTimeText } from '~/shared/lib/utils';
 
 const isVolExpired = (vol: Volunteer): boolean => {
@@ -47,7 +47,7 @@ export const validateVol = ({
         msg.push('Даты активности не совпадают');
     }
 
-    if (!FeedWithBalance.includes(vol.feed_type)) {
+    if (vol.feed_type === FeedType.NoFeed) {
         isRed = true;
         msg.push('НЕТ ПИТАНИЯ, СХОДИ В ИЦ');
     }
