@@ -13,7 +13,7 @@ import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-sca
 
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
-import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
+import { FeedOtherCount, GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 
 enum Views {
     'LOADING',
@@ -81,6 +81,31 @@ export const PostScanGroupBadge: FC<{
                 });
             })
         );
+    };
+
+    // Кормим анонимов, если введено "другое число"
+    const feedAnons = async ({ nonVegansCount, vegansCount }: { vegansCount: number; nonVegansCount: number }) => {
+        if (!mealTime) {
+            return;
+        }
+
+        const createTransactionDraft = (isVegan?: boolean) => {
+            return {
+                vol: null,
+                mealTime,
+                isVegan,
+                log: { error: false, reason: 'Групповое питание' },
+                kitchenId,
+                group_badge: groupBadge.id
+            };
+        };
+
+        const vegans = Array.from(new Array(vegansCount), () => createTransactionDraft(true));
+        const nonVegans = Array.from(new Array(nonVegansCount), () => createTransactionDraft());
+
+        const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
+
+        await Promise.all(promises);
     };
 
     const doFeed = (vols: Array<ValidatedVol>): void => {
@@ -155,6 +180,7 @@ export const PostScanGroupBadge: FC<{
                 closeFeed={closeFeed}
                 name={name}
                 view={view}
+                // view={Views.OTHER_COUNT}
             />
         </CardContainer>
     );
@@ -203,7 +229,6 @@ const ResultScreen: React.FC<{
             );
         case Views.RED:
             return <ErrorCard close={closeFeed} msg={'Никто не ест.'} />;
-        // case Views.OTHER_COUNT
         default:
             return <ErrorCard close={closeFeed} msg={'Непредвиденная ошибка'} />;
     }

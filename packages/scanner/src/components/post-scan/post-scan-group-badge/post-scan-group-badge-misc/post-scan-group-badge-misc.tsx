@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useState } from 'react';
 import cn from 'classnames';
 
 import type { Volunteer } from '~/db';
@@ -6,6 +7,7 @@ import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
 import { getPlural } from '~/shared/lib/utils';
+import { Input } from '~/shared/ui/input';
 
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 
@@ -24,7 +26,7 @@ const VolunteerList: FC<{
     </div>
 );
 
-const GroupBadgeInfo: FC<{
+export const GroupBadgeInfo: FC<{
     name: string;
     vols: Array<Volunteer>;
     volsToFeed?: Array<Volunteer>;
@@ -67,6 +69,8 @@ export const GroupBadgeWarningCard: FC<{
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
+    const [showOtherCount, setShowOtherCount] = useState(false);
+
     const handleFeed = (): void => {
         doFeed(volsToFeed);
         close();
@@ -75,26 +79,94 @@ export const GroupBadgeWarningCard: FC<{
     return (
         <div className={css.groupBadgeCard}>
             <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
+
             {reds.length > 0 && <VolunteerList errorVols={reds} />}
-            <BottomBlock length={volsToFeed.length} handleFeed={handleFeed} handleCancel={close} />
+
+            {showOtherCount ? <FeedOtherCount maxCount={volsToFeed.length * 1.5} /> : null}
+
+            <BottomBlock
+                length={volsToFeed.length}
+                handlePrimaryAction={handleFeed}
+                handleCancel={close}
+                handleAlternativeAction={() => setShowOtherCount(!showOtherCount)}
+                alternativeText={showOtherCount ? 'Вернуться' : 'Другое число'}
+            />
         </div>
     );
 };
 
-const BottomBlock: React.FC<{ handleCancel: () => void; handleFeed: () => void; length: number }> = ({
-    handleCancel,
-    handleFeed,
-    length
-}) => {
+const BottomBlock: React.FC<{
+    handleCancel: () => void;
+    handlePrimaryAction: () => void;
+    handleAlternativeAction?: () => void;
+    alternativeText?: string;
+    length: number;
+}> = ({ alternativeText, handleAlternativeAction, handleCancel, handlePrimaryAction, length }) => {
     return (
         <div className={css.bottomBLock}>
             <div className={css.buttonsBlock}>
                 <Button variant='secondary' onClick={handleCancel}>
                     Отмена
                 </Button>
-                <Button onClick={handleFeed}>Кормить({length})</Button>
+                <Button onClick={handlePrimaryAction}>Кормить({length})</Button>
             </div>
+            {alternativeText ? (
+                <Button onClick={handleAlternativeAction} variant='alternative'>
+                    {alternativeText}
+                </Button>
+            ) : null}
             <VolAndUpdateInfo textColor='black' />
+        </div>
+    );
+};
+
+export const FeedOtherCount: React.FC<{ maxCount: number }> = ({ maxCount }) => {
+    // TODO: Вынести хранение количества веганов и не веганов в родительскую компоненту
+    const [veganCount, setVeganCount] = useState(0);
+    const [nonVeganCount, setNonVeganCount] = useState(0);
+
+    const fixNumber = (value?: string): number => {
+        if (typeof value === 'undefined') {
+            return 0;
+        }
+
+        return Number(value?.replaceAll(/\D/g, ''));
+    };
+
+    return (
+        <div style={{ width: '100%' }}>
+            <div style={{ paddingBottom: '20px' }}>
+                <b>Максимум {maxCount} суммарно</b>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-evenly', width: '100%' }}>
+                <div>
+                    <Text>Веганы</Text>
+                    <Input
+                        value={veganCount}
+                        onChange={(event) => {
+                            const maxVeganCount = maxCount - nonVeganCount;
+                            const value = fixNumber(event?.currentTarget?.value);
+                            const isMaxCountReached = value >= maxVeganCount;
+
+                            setVeganCount(isMaxCountReached ? maxVeganCount : value);
+                        }}
+                    />
+                </div>
+                <div>
+                    <Text>Мясоеды</Text>
+
+                    <Input
+                        value={nonVeganCount}
+                        onChange={(event) => {
+                            const maxNonVeganCount = maxCount - veganCount;
+                            const value = fixNumber(event?.currentTarget?.value);
+                            const isMaxCountReached = value >= maxNonVeganCount;
+
+                            setNonVeganCount(isMaxCountReached ? maxNonVeganCount : value);
+                        }}
+                    />
+                </div>
+            </div>
         </div>
     );
 };
