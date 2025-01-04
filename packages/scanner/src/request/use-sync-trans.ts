@@ -90,7 +90,7 @@ const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
 };
 
 const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
-    return trans.map(({ amount, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+    return trans.map(({ amount, group_badge, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
         volunteer: vol_id,
         is_vegan,
         amount,
@@ -98,7 +98,8 @@ const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
         ulid,
         meal_time: mealTime,
         kitchen,
-        reason
+        reason,
+        group_badge
     }));
 };
 

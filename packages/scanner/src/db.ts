@@ -15,6 +15,7 @@ export interface Transaction {
     is_vegan?: boolean;
     reason?: string | null;
     kitchen: number;
+    group_badge?: number | null;
 }
 
 export interface ServerTransaction {
@@ -103,6 +104,7 @@ export class MySubClassedDexie extends Dexie {
 export const db = new MySubClassedDexie();
 
 export const addTransaction = async ({
+    group_badge,
     isVegan,
     kitchenId,
     log,
@@ -117,6 +119,7 @@ export const addTransaction = async ({
         error: boolean;
         reason: string;
     };
+    group_badge?: number | null;
 }): Promise<any> => {
     const ts = dayjs().unix();
     let amount = 1;
@@ -125,28 +128,33 @@ export const addTransaction = async ({
         if (log.error) {
             amount = 0;
         }
+
         reason = log.reason;
     }
+
     await db.transactions.add({
         vol_id: vol ? vol.id : null,
         is_vegan: vol ? vol.is_vegan : isVegan,
         ts,
         kitchen: kitchenId,
-        amount: amount,
+        amount,
         ulid: ulid(ts),
         mealTime: MealTime[mealTime],
         is_new: true,
-        reason: reason
+        reason,
+        group_badge
     });
 };
 
 export const dbIncFeed = async ({
+    group_badge,
     isVegan,
     kitchenId,
     log,
     mealTime,
     vol
 }: {
+    group_badge?: number | null;
     vol?: Volunteer | null;
     mealTime: MealTime;
     isVegan?: boolean | undefined;
@@ -156,7 +164,7 @@ export const dbIncFeed = async ({
     };
     kitchenId: number;
 }): Promise<any> => {
-    return await addTransaction({ vol, mealTime, isVegan, log, kitchenId });
+    return await addTransaction({ group_badge, vol, mealTime, isVegan, log, kitchenId });
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {

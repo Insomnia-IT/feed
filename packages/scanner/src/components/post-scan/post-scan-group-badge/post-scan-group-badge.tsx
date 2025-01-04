@@ -6,15 +6,14 @@ import { useApp } from '~/model/app-provider/app-provider';
 import type { GroupBadge, Volunteer } from '~/db';
 import { db, dbIncFeed } from '~/db';
 import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
+import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
 import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-scan.utils';
 
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
 import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
-
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
-import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
 enum Views {
     'LOADING',
@@ -60,7 +59,7 @@ export const PostScanGroupBadge: FC<{
     // get app context
     const { kitchenId, mealTime } = useApp();
 
-    // set callback (not) to feed vols
+    // callback to feed vols
     const incFeedAsync = async (vols: Array<ValidatedVol>): Promise<void> => {
         if (!mealTime) {
             return;
@@ -78,7 +77,8 @@ export const PostScanGroupBadge: FC<{
                     mealTime: mealTime,
                     isVegan: undefined,
                     log,
-                    kitchenId
+                    kitchenId,
+                    group_badge: groupBadge.id
                 });
             })
         );
