@@ -13,15 +13,14 @@ import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-sca
 
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
-import { FeedOtherCount, GroupBadgeWarningCard } from './post-scan-group-badge-misc';
+import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 
 enum Views {
     'LOADING',
     'YELLOW',
     'RED',
     'ERROR_EMPTY',
-    'ERROR_VALIDATION',
-    'OTHER_COUNT'
+    'ERROR_VALIDATION'
 }
 
 export const PostScanGroupBadge: FC<{
