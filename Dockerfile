@@ -78,9 +78,6 @@ COPY --from=builder /app/tsconfig.json /app/
 COPY --from=builder /app/tsconfig.paths.json /app/
 COPY --from=builder /app/package.json /app/
 
-COPY --from=builder /app/packages/core/package.json /app/packages/core/
-COPY --from=builder /app/packages/core/webpack/ /app/packages/core/webpack/
-
 COPY --from=builder /app/packages/admin/dist/ /app/packages/admin/dist/
 
 COPY --from=builder /app/packages/scanner/package.json /app/packages/scanner/
