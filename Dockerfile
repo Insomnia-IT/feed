@@ -83,8 +83,6 @@ COPY --from=builder /app/packages/core/webpack/ /app/packages/core/webpack/
 
 COPY --from=builder /app/packages/admin/dist/ /app/packages/admin/dist/
 
-COPY --from=builder /app/packages/ui/package.json /app/packages/ui/
-
 COPY --from=builder /app/packages/scanner/package.json /app/packages/scanner/
 COPY --from=builder /app/packages/scanner/build/ /app/packages/scanner/build/
 
