@@ -67,9 +67,6 @@ module.exports = {
                     }
                 ]
             });
-            // https://github.com/facebook/react/issues/20235
-            webpackConfig.resolve.alias['react/jsx-runtime'] = require.resolve('react/jsx-runtime');
-            webpackConfig.resolve.alias['react/jsx-dev-runtime'] = require.resolve('react/jsx-dev-runtime');
 
             return webpackConfig;
         }
@@ -95,8 +92,6 @@ module.exports = {
                 aliases: {
                     '~': path.resolve(__dirname, './src'),
                     'pwa-ver.txt': path.resolve(__dirname, '../../pwa-ver.txt'),
-                    'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-                    'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime')
                 }
             }
         }
