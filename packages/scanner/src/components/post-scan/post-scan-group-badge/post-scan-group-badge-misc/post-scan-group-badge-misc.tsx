@@ -2,46 +2,31 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import cn from 'classnames';
 
-import type { Volunteer } from '~/db';
+import type { TransactionJoined, Volunteer } from '~/db';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
 import { getPlural } from '~/shared/lib/utils';
-import { Input } from '~/shared/ui/input';
+import { FeedOtherCount } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
+import { WarningPartiallyFedModal } from '~/components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
 
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 
 import css from './post-scan-group-badge-misc.module.css';
 
-const VolunteerList: FC<{
-    errorVols?: Array<Volunteer>;
-}> = ({ errorVols }) => (
-    <div className={css.volunteerList}>
-        {errorVols && errorVols.length > 0 && (
-            <Text>
-                <b>Без порции: </b>
-                {errorVols.map((vol) => vol.name).join(', ')}
-            </Text>
-        )}
-    </div>
-);
-
 export const GroupBadgeInfo: FC<{
     name: string;
-    vols: Array<Volunteer>;
-    volsToFeed?: Array<Volunteer>;
-}> = ({ name, vols, volsToFeed }) => {
-    const totalVegs = vols.filter((vol) => vol.is_vegan).length;
-    const totalMeats = vols.filter((vol) => !vol.is_vegan).length;
-
-    const _volsToFeed = volsToFeed ?? vols;
+    volsToFeed: Array<Volunteer>;
+}> = ({ name, volsToFeed }) => {
+    const totalVegs = volsToFeed.filter((vol) => vol.is_vegan).length;
+    const totalMeats = volsToFeed.filter((vol) => !vol.is_vegan).length;
 
     return (
         <div className={css.info}>
             <Title>Групповой бейдж</Title>
             <div className={css.detail}>
                 <Text>
-                    Вы отсканировали групповой бейдж “{name}” ({_volsToFeed.length}):
+                    Вы отсканировали групповой бейдж “{name}” ({volsToFeed.length}):
                 </Text>
                 <div className={cn(css.counts, { [css.oneCount]: totalVegs === 0 || totalMeats === 0 })}>
                     {totalMeats > 0 && (
@@ -61,20 +46,29 @@ export const GroupBadgeInfo: FC<{
 };
 
 export const GroupBadgeWarningCard: FC<{
+    alreadyFedTransactions: Array<TransactionJoined>;
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
     doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
     close: () => void;
-}> = ({ close, doFeed, doFeedAnons, name, validationGroups }) => {
+}> = ({ alreadyFedTransactions, close, doFeed, doFeedAnons, name, validationGroups }) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
     const [showOtherCount, setShowOtherCount] = useState(false);
     const [vegansCount, setVegansCount] = useState(0);
     const [nonVegansCount, setNonVegansCount] = useState(0);
+    const [isWarningModalShown, setIsWarningModalShown] = useState(false);
+
+    const isPartiallyFed = !!alreadyFedTransactions.length;
 
     const handleFeed = (): void => {
+        if (isPartiallyFed) {
+            setIsWarningModalShown(true);
+            return;
+        }
+
         if (showOtherCount) {
             doFeedAnons({ vegansCount, nonVegansCount });
         } else {
@@ -84,17 +78,36 @@ export const GroupBadgeWarningCard: FC<{
         close();
     };
 
-    const amountToFeed = showOtherCount ? vegansCount + nonVegansCount : volsToFeed.length;
+    const amountToFeed = showOtherCount
+        ? vegansCount + nonVegansCount
+        : volsToFeed.length - alreadyFedTransactions.length;
 
     return (
         <div className={css.groupBadgeCard}>
-            <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
+            <WarningPartiallyFedModal
+                alreadyFedTransactions={alreadyFedTransactions}
+                setShowModal={setIsWarningModalShown}
+                doFeedAnons={(value: { vegansCount: number; nonVegansCount: number }) => {
+                    doFeedAnons(value);
+                    close();
+                }}
+                greenVols={validationGroups.greens}
+                showModal={isWarningModalShown}
+            />
+            <GroupBadgeInfo name={name} volsToFeed={volsToFeed} />
 
-            {reds.length > 0 && <VolunteerList errorVols={reds} />}
+            {reds.length > 0 && (
+                <div className={css.volunteerList}>
+                    <Text>
+                        <b>Без порции: </b>
+                        {reds.map((vol) => vol.name).join(', ')}
+                    </Text>
+                </div>
+            )}
 
             {showOtherCount ? (
                 <FeedOtherCount
-                    maxCount={volsToFeed.length * 1.5}
+                    maxCount={Math.round((volsToFeed.length - alreadyFedTransactions.length) * 1.5)}
                     vegansCount={vegansCount}
                     nonVegansCount={nonVegansCount}
                     setVegansCount={setVegansCount}
@@ -107,7 +120,7 @@ export const GroupBadgeWarningCard: FC<{
                 handlePrimaryAction={handleFeed}
                 handleCancel={close}
                 handleAlternativeAction={() => setShowOtherCount(!showOtherCount)}
-                alternativeText={showOtherCount ? 'Вернуться' : 'Другое число'}
+                alternativeText={showOtherCount ? 'Кормить всех' : 'Кормить часть'}
             />
         </div>
     );
@@ -129,64 +142,11 @@ const BottomBlock: React.FC<{
                 <Button onClick={handlePrimaryAction}>Кормить({amountToFeed})</Button>
             </div>
             {alternativeText ? (
-                <Button onClick={handleAlternativeAction} variant='alternative'>
+                <Button onClick={handleAlternativeAction} variant='secondary'>
                     {alternativeText}
                 </Button>
             ) : null}
             <VolAndUpdateInfo textColor='black' />
-        </div>
-    );
-};
-
-export const FeedOtherCount: React.FC<{
-    maxCount: number;
-    vegansCount: number;
-    setVegansCount: (value: number) => void;
-    nonVegansCount: number;
-    setNonVegansCount: (value: number) => void;
-}> = ({ maxCount, nonVegansCount, setNonVegansCount, setVegansCount, vegansCount }) => {
-    const fixNumber = (value?: string): number => {
-        if (typeof value === 'undefined') {
-            return 0;
-        }
-
-        return Number(value?.replaceAll(/\D/g, ''));
-    };
-
-    return (
-        <div style={{ width: '100%' }}>
-            <div style={{ paddingBottom: '20px' }}>
-                <b>Максимум {maxCount} суммарно</b>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-evenly', width: '100%' }}>
-                <div>
-                    <Text>Веганы</Text>
-                    <Input
-                        value={vegansCount}
-                        onChange={(event) => {
-                            const maxVeganCount = maxCount - nonVegansCount;
-                            const value = fixNumber(event?.currentTarget?.value);
-                            const isMaxCountReached = value >= maxVeganCount;
-
-                            setVegansCount(isMaxCountReached ? maxVeganCount : value);
-                        }}
-                    />
-                </div>
-                <div>
-                    <Text>Мясоеды</Text>
-
-                    <Input
-                        value={nonVegansCount}
-                        onChange={(event) => {
-                            const maxNonVeganCount = maxCount - vegansCount;
-                            const value = fixNumber(event?.currentTarget?.value);
-                            const isMaxCountReached = value >= maxNonVeganCount;
-
-                            setNonVegansCount(isMaxCountReached ? maxNonVeganCount : value);
-                        }}
-                    />
-                </div>
-            </div>
         </div>
     );
 };

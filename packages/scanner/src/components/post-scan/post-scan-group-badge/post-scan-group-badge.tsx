@@ -4,12 +4,17 @@ import { useLiveQuery } from 'dexie-react-hooks';
 
 import { useApp } from '~/model/app-provider/app-provider';
 import { db, dbIncFeed } from '~/db';
-import type { GroupBadge, MealTime, Transaction, Volunteer } from '~/db';
+import type { GroupBadge, MealTime, Transaction, Volunteer, TransactionJoined } from '~/db';
 import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
 import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
-import { getTodayStart, getVolTransactionsAsync, validateVol } from '../post-scan.utils';
+import {
+    getGroupBadgeCurrentMealTransactions,
+    getTodayStart,
+    getVolTransactionsAsync,
+    validateVol
+} from '../post-scan.utils';
 
 import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
@@ -23,27 +28,139 @@ enum Views {
     'ERROR_VALIDATION'
 }
 
+const todayStart = getTodayStart();
+
+const useGroupBadgeData = ({
+    badge,
+    mealTime
+}: {
+    badge: GroupBadge;
+    mealTime?: MealTime | null;
+}): { alreadyFedTransactions: Array<TransactionJoined>; vols: Array<Volunteer> } => {
+    const { id } = badge;
+
+    // get vols linked tp badge, and their transactions for today
+    const vols =
+        useLiveQuery<Array<Volunteer>>(async (): Promise<Array<Volunteer>> => {
+            const vols = await db.volunteers.where('group_badge').equals(id).toArray();
+
+            // pre-fetching transactions by each vol
+            await Promise.all(
+                vols.map(async (vol) => {
+                    vol.transactions = await getVolTransactionsAsync(vol, todayStart);
+                })
+            );
+
+            return vols;
+        }, [id]) ?? ([] as Array<Volunteer>);
+
+    // Транзакции с текущим бейджем и временем питания - уже покормленные волонтеры (чаще всего - анонимы)
+    const alreadyFedTransactions =
+        useLiveQuery<Array<TransactionJoined>>(async () => {
+            return getGroupBadgeCurrentMealTransactions(id, mealTime);
+        }, [id]) ?? ([] as Array<TransactionJoined>);
+
+    return { alreadyFedTransactions, vols };
+};
+
+// Кормим анонимов, если введено "другое число"
+const feedAnons = async ({
+    groupBadge,
+    kitchenId,
+    mealTime,
+    nonVegansCount,
+    vegansCount
+}: {
+    groupBadge: GroupBadge;
+    kitchenId: number;
+    vegansCount: number;
+    nonVegansCount: number;
+    mealTime?: MealTime | null;
+}): Promise<void> => {
+    if (!mealTime) {
+        return;
+    }
+
+    const createTransactionDraft = ({
+        isVegan
+    }: {
+        isVegan?: boolean;
+    } = {}): {
+        group_badge: number;
+        vol: null;
+        mealTime: MealTime;
+        isVegan?: boolean;
+        log: {
+            error: boolean;
+            reason: string;
+        };
+        kitchenId: number;
+    } => {
+        return {
+            vol: null,
+            mealTime,
+            isVegan,
+            log: { error: false, reason: 'Групповое питание' },
+            kitchenId,
+            group_badge: groupBadge.id
+        };
+    };
+
+    const vegans = Array.from(new Array(vegansCount), () => createTransactionDraft({ isVegan: true }));
+    const nonVegans = Array.from(new Array(nonVegansCount), () => createTransactionDraft());
+
+    const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
+
+    await Promise.all(promises);
+};
+
+// callback to feed vols
+const incFeedAsync = async ({
+    groupBadge,
+    kitchenId,
+    mealTime,
+    vols
+}: {
+    groupBadge: GroupBadge;
+    kitchenId: number;
+    mealTime?: MealTime | null;
+    vols: Array<ValidatedVol>;
+}): Promise<void> => {
+    if (!mealTime) {
+        return;
+    }
+
+    await Promise.all(
+        vols.map((vol) => {
+            const log =
+                vol.msg.length === 0
+                    ? { error: false, reason: 'Групповое питание' }
+                    : { error: false, reason: vol.msg.concat('Групповое питание').join(', ') };
+
+            return dbIncFeed({
+                vol,
+                mealTime: mealTime,
+                isVegan: vol.is_vegan,
+                log,
+                kitchenId,
+                group_badge: groupBadge.id
+            });
+        })
+    );
+};
+
 export const PostScanGroupBadge: FC<{
     groupBadge: GroupBadge;
     closeFeed: () => void;
 }> = ({ closeFeed, groupBadge }) => {
-    const { id, name } = groupBadge;
+    const { name } = groupBadge;
 
-    // get vols linked tp badge, and their transactions for today
-    const vols = useLiveQuery(async (): Promise<Array<Volunteer>> => {
-        const todayStart = getTodayStart();
+    // get app context
+    const { kitchenId, mealTime } = useApp();
 
-        const vols = await db.volunteers.where('group_badge').equals(id).toArray();
+    const { alreadyFedTransactions, vols } = useGroupBadgeData({ badge: groupBadge, mealTime });
 
-        // pre-fetching transactions by each vol
-        await Promise.all(
-            vols.map(async (vol) => {
-                vol.transactions = await getVolTransactionsAsync(vol, todayStart);
-            })
-        );
-
-        return vols;
-    }, [id]);
+    console.info({ alreadyFedTransactions });
 
     // result view
     const [view, setView] = useState<Views>(Views.LOADING);
@@ -54,86 +171,15 @@ export const PostScanGroupBadge: FC<{
         reds: []
     });
 
-    // get app context
-    const { kitchenId, mealTime } = useApp();
-
-    // callback to feed vols
-    const incFeedAsync = async (vols: Array<ValidatedVol>): Promise<void> => {
-        if (!mealTime) {
-            return;
-        }
-
-        await Promise.all(
-            vols.map((vol) => {
-                const log =
-                    vol.msg.length === 0
-                        ? { error: false, reason: 'Групповое питание' }
-                        : { error: false, reason: vol.msg.concat('Групповое питание').join(', ') };
-
-                return dbIncFeed({
-                    vol,
-                    mealTime: mealTime,
-                    isVegan: undefined,
-                    log,
-                    kitchenId,
-                    group_badge: groupBadge.id
-                });
-            })
-        );
-    };
-
-    // Кормим анонимов, если введено "другое число"
-    const feedAnons = async ({
-        nonVegansCount,
-        vegansCount
-    }: {
-        vegansCount: number;
-        nonVegansCount: number;
-    }): Promise<void> => {
-        if (!mealTime) {
-            return;
-        }
-
-        const createTransactionDraft = ({
-            isVegan
-        }: {
-            isVegan?: boolean;
-        } = {}): {
-            group_badge: number;
-            vol: null;
-            mealTime: MealTime;
-            isVegan?: boolean;
-            log: {
-                error: boolean;
-                reason: string;
-            };
-            kitchenId: number;
-        } => {
-            return {
-                vol: null,
-                mealTime,
-                isVegan,
-                log: { error: false, reason: 'Групповое питание' },
-                kitchenId,
-                group_badge: groupBadge.id
-            };
-        };
-
-        const vegans = Array.from(new Array(vegansCount), () => createTransactionDraft({ isVegan: true }));
-        const nonVegans = Array.from(new Array(nonVegansCount), () => createTransactionDraft());
-
-        const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
-
-        await Promise.all(promises);
-    };
-
     const doFeed = (vols: Array<ValidatedVol>): void => {
-        void incFeedAsync(vols);
+        void incFeedAsync({ vols, mealTime, kitchenId, groupBadge });
     };
 
     const doFeedAnons = (value: { vegansCount: number; nonVegansCount: number }): void => {
-        void feedAnons(value);
+        void feedAnons({ ...value, groupBadge, kitchenId, mealTime });
     };
+
+    const leftToFeedInBadge = validationGroups.greens.length - (alreadyFedTransactions?.length ?? 0);
 
     useEffect(() => {
         // loading
@@ -190,14 +236,9 @@ export const PostScanGroupBadge: FC<{
 
     return (
         <CardContainer>
-            <AlreadyFedModal
-                validatedVolsCount={validationGroups.greens.length}
-                allVolsCount={vols?.length ?? 0}
-                vols={vols}
-                groupBadgeId={groupBadge.id}
-                mealTime={mealTime}
-            />
+            <AlreadyFedModal alreadyFedVolsCount={alreadyFedTransactions?.length} leftToFeedCount={leftToFeedInBadge} />
             <ResultScreen
+                alreadyFedTransactions={alreadyFedTransactions}
                 doFeedAnons={doFeedAnons}
                 validationGroups={validationGroups}
                 doFeed={doFeed}
@@ -210,13 +251,14 @@ export const PostScanGroupBadge: FC<{
 };
 
 const ResultScreen: React.FC<{
-    doFeed: (vols: Array<ValidatedVol>) => void;
-    view: Views;
+    alreadyFedTransactions: Array<TransactionJoined>;
     closeFeed: () => void;
+    doFeed: (vols: Array<ValidatedVol>) => void;
+    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
     name: string;
     validationGroups: ValidationGroups;
-    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
-}> = ({ closeFeed, doFeed, doFeedAnons, name, validationGroups, view }) => {
+    view: Views;
+}> = ({ alreadyFedTransactions, closeFeed, doFeed, doFeedAnons, name, validationGroups, view }) => {
     switch (view) {
         case Views.LOADING:
             return <ErrorCard close={closeFeed} title='Загрузка...' msg='' />;
@@ -245,6 +287,7 @@ const ResultScreen: React.FC<{
         case Views.YELLOW:
             return (
                 <GroupBadgeWarningCard
+                    alreadyFedTransactions={alreadyFedTransactions}
                     doFeedAnons={doFeedAnons}
                     name={name}
                     doFeed={doFeed}

@@ -114,16 +114,19 @@ const markTransactionsAsUpdated = async (trans): Promise<IndexableType> => {
 
 const putNewServerTransactions = async (data): Promise<IndexableType> => {
     const serverTransactions = data as Array<ServerTransaction>;
-    const transactions = serverTransactions.map(({ amount, dtime, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
-        vol_id: volunteer,
-        is_vegan,
-        mealTime: meal_time,
-        ulid,
-        amount,
-        ts: Math.floor(new Date(dtime).valueOf() / 1000),
-        is_new: false,
-        kitchen
-    }));
+    const transactions = serverTransactions.map(
+        ({ amount, dtime, group_badge, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
+            vol_id: volunteer,
+            is_vegan,
+            mealTime: meal_time,
+            ulid,
+            amount,
+            ts: Math.floor(new Date(dtime).valueOf() / 1000),
+            is_new: false,
+            kitchen,
+            group_badge
+        })
+    );
 
     return db.transactions.bulkPut(transactions);
 };

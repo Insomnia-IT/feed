@@ -26,6 +26,7 @@ export interface ServerTransaction {
     meal_time: MealTime;
     is_vegan: boolean;
     kitchen: number;
+    group_badge?: number | null;
 }
 
 export interface TransactionJoined extends Transaction {
@@ -80,9 +81,9 @@ export interface GroupBadge {
 const DB_VERSION = 18;
 
 export class MySubClassedDexie extends Dexie {
+    groupBadges!: Table<GroupBadge>;
     transactions!: Table<Transaction>;
     volunteers!: Table<Volunteer>;
-    groupBadges!: Table<GroupBadge>;
 
     constructor() {
         super('yclins');
@@ -171,7 +172,7 @@ export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<A
             return transaction.vol_id ? db.volunteers.get({ id: transaction.vol_id }) : undefined;
         });
 
-        return Dexie.Promise.all(volsPromises).then((vols) => {
+        return Promise.all(volsPromises).then((vols) => {
             transactions.forEach((transaction: TransactionJoined, i) => {
                 transaction.vol = vols[i];
             });

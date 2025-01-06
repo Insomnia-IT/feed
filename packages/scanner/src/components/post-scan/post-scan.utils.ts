@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import type { Transaction, Volunteer } from '~/db';
-import { db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
+import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
+import type { Transaction, TransactionJoined, Volunteer } from '~/db';
 import { getMealTimeText } from '~/shared/lib/utils';
 
 const isVolExpired = (vol: Volunteer): boolean => {
@@ -26,15 +26,25 @@ export const validateVol = ({
     kitchenId: number;
     mealTime?: MealTime | null;
     isGroupScan?: boolean;
-}): { msg: Array<string>; isRed: boolean } => {
+}): { msg: Array<string>; isRed: boolean; isActivated: boolean } => {
     const msg: Array<string> = [];
     let isRed = false;
+    let isActivated = true;
 
-    if (vol.feed_type !== FeedType.Child && vol.kitchen?.toString() !== kitchenId.toString()) {
+    if (
+        vol.kitchen?.toString() !== kitchenId.toString() &&
+        // В рамках группового бейжда детей не кормим в долг
+        (isGroupScan || vol.feed_type !== FeedType.Child)
+    ) {
         msg.push(`Кормится на кухне №${vol.kitchen}`);
+
+        if (isGroupScan) {
+            isRed = true;
+        }
     }
 
     if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
+        isActivated = false;
         msg.push('Бейдж не активирован в штабе');
     }
 
@@ -101,7 +111,7 @@ export const validateVol = ({
         }
     }
 
-    return { msg, isRed };
+    return { msg, isRed, isActivated };
 };
 
 export const getTodayStart = (): number => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
@@ -159,3 +169,14 @@ export const getVolTransactionsAsync = async (vol: Volunteer, todayStart: number
             return transaction.ts > todayStart && transaction.amount !== 0;
         })
         .toArray();
+
+export const getGroupBadgeCurrentMealTransactions = async (
+    badgeId: number,
+    mealTime?: MealTime | null
+): Promise<Array<TransactionJoined>> => {
+    const todayTransactions = await getTodayTrans();
+
+    return todayTransactions.filter(
+        (transaction) => transaction.group_badge === badgeId && transaction.mealTime === mealTime
+    );
+};
