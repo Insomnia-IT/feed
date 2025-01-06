@@ -64,17 +64,27 @@ export const GroupBadgeWarningCard: FC<{
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
+    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
     close: () => void;
-}> = ({ close, doFeed, name, validationGroups }) => {
+}> = ({ close, doFeed, doFeedAnons, name, validationGroups }) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
     const [showOtherCount, setShowOtherCount] = useState(false);
+    const [vegansCount, setVegansCount] = useState(0);
+    const [nonVegansCount, setNonVegansCount] = useState(0);
 
     const handleFeed = (): void => {
-        doFeed(volsToFeed);
+        if (showOtherCount) {
+            doFeedAnons({ vegansCount, nonVegansCount });
+        } else {
+            doFeed(volsToFeed);
+        }
+
         close();
     };
+
+    const amountToFeed = showOtherCount ? vegansCount + nonVegansCount : volsToFeed.length;
 
     return (
         <div className={css.groupBadgeCard}>
@@ -82,10 +92,18 @@ export const GroupBadgeWarningCard: FC<{
 
             {reds.length > 0 && <VolunteerList errorVols={reds} />}
 
-            {showOtherCount ? <FeedOtherCount maxCount={volsToFeed.length * 1.5} /> : null}
+            {showOtherCount ? (
+                <FeedOtherCount
+                    maxCount={volsToFeed.length * 1.5}
+                    vegansCount={vegansCount}
+                    nonVegansCount={nonVegansCount}
+                    setVegansCount={setVegansCount}
+                    setNonVegansCount={setNonVegansCount}
+                />
+            ) : null}
 
             <BottomBlock
-                length={volsToFeed.length}
+                amountToFeed={amountToFeed}
                 handlePrimaryAction={handleFeed}
                 handleCancel={close}
                 handleAlternativeAction={() => setShowOtherCount(!showOtherCount)}
@@ -100,15 +118,15 @@ const BottomBlock: React.FC<{
     handlePrimaryAction: () => void;
     handleAlternativeAction?: () => void;
     alternativeText?: string;
-    length: number;
-}> = ({ alternativeText, handleAlternativeAction, handleCancel, handlePrimaryAction, length }) => {
+    amountToFeed: number;
+}> = ({ alternativeText, amountToFeed, handleAlternativeAction, handleCancel, handlePrimaryAction }) => {
     return (
         <div className={css.bottomBLock}>
             <div className={css.buttonsBlock}>
                 <Button variant='secondary' onClick={handleCancel}>
                     Отмена
                 </Button>
-                <Button onClick={handlePrimaryAction}>Кормить({length})</Button>
+                <Button onClick={handlePrimaryAction}>Кормить({amountToFeed})</Button>
             </div>
             {alternativeText ? (
                 <Button onClick={handleAlternativeAction} variant='alternative'>
@@ -120,11 +138,13 @@ const BottomBlock: React.FC<{
     );
 };
 
-export const FeedOtherCount: React.FC<{ maxCount: number }> = ({ maxCount }) => {
-    // TODO: Вынести хранение количества веганов и не веганов в родительскую компоненту
-    const [veganCount, setVeganCount] = useState(0);
-    const [nonVeganCount, setNonVeganCount] = useState(0);
-
+export const FeedOtherCount: React.FC<{
+    maxCount: number;
+    vegansCount: number;
+    setVegansCount: (value: number) => void;
+    nonVegansCount: number;
+    setNonVegansCount: (value: number) => void;
+}> = ({ maxCount, nonVegansCount, setNonVegansCount, setVegansCount, vegansCount }) => {
     const fixNumber = (value?: string): number => {
         if (typeof value === 'undefined') {
             return 0;
@@ -142,13 +162,13 @@ export const FeedOtherCount: React.FC<{ maxCount: number }> = ({ maxCount }) => 
                 <div>
                     <Text>Веганы</Text>
                     <Input
-                        value={veganCount}
+                        value={vegansCount}
                         onChange={(event) => {
-                            const maxVeganCount = maxCount - nonVeganCount;
+                            const maxVeganCount = maxCount - nonVegansCount;
                             const value = fixNumber(event?.currentTarget?.value);
                             const isMaxCountReached = value >= maxVeganCount;
 
-                            setVeganCount(isMaxCountReached ? maxVeganCount : value);
+                            setVegansCount(isMaxCountReached ? maxVeganCount : value);
                         }}
                     />
                 </div>
@@ -156,13 +176,13 @@ export const FeedOtherCount: React.FC<{ maxCount: number }> = ({ maxCount }) => 
                     <Text>Мясоеды</Text>
 
                     <Input
-                        value={nonVeganCount}
+                        value={nonVegansCount}
                         onChange={(event) => {
-                            const maxNonVeganCount = maxCount - veganCount;
+                            const maxNonVeganCount = maxCount - vegansCount;
                             const value = fixNumber(event?.currentTarget?.value);
                             const isMaxCountReached = value >= maxNonVeganCount;
 
-                            setNonVeganCount(isMaxCountReached ? maxNonVeganCount : value);
+                            setNonVegansCount(isMaxCountReached ? maxNonVeganCount : value);
                         }}
                     />
                 </div>

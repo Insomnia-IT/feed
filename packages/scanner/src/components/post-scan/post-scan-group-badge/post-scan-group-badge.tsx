@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { useApp } from '~/model/app-provider/app-provider';
-import type { GroupBadge, Transaction, Volunteer } from '~/db';
 import { db, dbIncFeed } from '~/db';
+import type { GroupBadge, MealTime, Transaction, Volunteer } from '~/db';
 import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
 import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
@@ -83,12 +83,32 @@ export const PostScanGroupBadge: FC<{
     };
 
     // Кормим анонимов, если введено "другое число"
-    const feedAnons = async ({ nonVegansCount, vegansCount }: { vegansCount: number; nonVegansCount: number }) => {
+    const feedAnons = async ({
+        nonVegansCount,
+        vegansCount
+    }: {
+        vegansCount: number;
+        nonVegansCount: number;
+    }): Promise<void> => {
         if (!mealTime) {
             return;
         }
 
-        const createTransactionDraft = (isVegan?: boolean) => {
+        const createTransactionDraft = ({
+            isVegan
+        }: {
+            isVegan?: boolean;
+        } = {}): {
+            group_badge: number;
+            vol: null;
+            mealTime: MealTime;
+            isVegan?: boolean;
+            log: {
+                error: boolean;
+                reason: string;
+            };
+            kitchenId: number;
+        } => {
             return {
                 vol: null,
                 mealTime,
@@ -99,7 +119,7 @@ export const PostScanGroupBadge: FC<{
             };
         };
 
-        const vegans = Array.from(new Array(vegansCount), () => createTransactionDraft(true));
+        const vegans = Array.from(new Array(vegansCount), () => createTransactionDraft({ isVegan: true }));
         const nonVegans = Array.from(new Array(nonVegansCount), () => createTransactionDraft());
 
         const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
@@ -109,6 +129,10 @@ export const PostScanGroupBadge: FC<{
 
     const doFeed = (vols: Array<ValidatedVol>): void => {
         void incFeedAsync(vols);
+    };
+
+    const doFeedAnons = (value: { vegansCount: number; nonVegansCount: number }): void => {
+        void feedAnons(value);
     };
 
     useEffect(() => {
@@ -174,12 +198,12 @@ export const PostScanGroupBadge: FC<{
                 mealTime={mealTime}
             />
             <ResultScreen
+                doFeedAnons={doFeedAnons}
                 validationGroups={validationGroups}
                 doFeed={doFeed}
                 closeFeed={closeFeed}
                 name={name}
                 view={view}
-                // view={Views.OTHER_COUNT}
             />
         </CardContainer>
     );
@@ -191,7 +215,8 @@ const ResultScreen: React.FC<{
     closeFeed: () => void;
     name: string;
     validationGroups: ValidationGroups;
-}> = ({ closeFeed, doFeed, name, validationGroups, view }) => {
+    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
+}> = ({ closeFeed, doFeed, doFeedAnons, name, validationGroups, view }) => {
     switch (view) {
         case Views.LOADING:
             return <ErrorCard close={closeFeed} title='Загрузка...' msg='' />;
@@ -220,6 +245,7 @@ const ResultScreen: React.FC<{
         case Views.YELLOW:
             return (
                 <GroupBadgeWarningCard
+                    doFeedAnons={doFeedAnons}
                     name={name}
                     doFeed={doFeed}
                     close={closeFeed}
