@@ -1,11 +1,11 @@
-import { Button, Table } from '@pankod/refine-antd';
+import { useList } from '@refinedev/core';
+import { Button, Table } from 'antd';
 import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
-import { useList } from '@pankod/refine-core';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { saveXLSX } from 'shared/lib/saveXLSX';
@@ -83,24 +83,23 @@ export function CommonFoodTest() {
         { title: 'Ошибка', dataIndex: 'reason' }
     ];
 
-    const { data: vols } = useList<VolEntity>({
-        resource: 'volunteers',
-        config: { pagination: { pageSize: 10000 } }
-    });
-    const { data: kitchens } = useList<KitchenEntity>({ resource: 'kitchens' });
+    const volsQuery = useList<VolEntity>({ resource: 'volunteers' });
+    const kitchensQuery = useList<KitchenEntity>({ resource: 'kitchens' });
 
     const volNameById = useMemo(
-        () => (vols?.data.reduce((acc, vol) => ({ ...acc, [vol.id]: vol.name }), {}) || {}) as Record<string, string>,
-        [vols]
+        () =>
+            (volsQuery?.data?.data.reduce((acc, vol) => ({ ...acc, [vol.id]: vol.name }), {}) || {}) as Record<
+                string,
+                string
+            >,
+        [volsQuery]
     );
 
     const kitchenNameById = useMemo(
         () =>
-            (kitchens?.data.reduce((acc, kitchen) => ({ ...acc, [kitchen.id]: kitchen.name }), {}) || {}) as Record<
-                string,
-                string
-            >,
-        [kitchens]
+            (kitchensQuery?.data?.data.reduce((acc, kitchen) => ({ ...acc, [kitchen.id]: kitchen.name }), {}) ||
+                {}) as Record<string, string>,
+        [kitchensQuery]
     );
 
     const createAndSaveXLSX = useCallback(() => {

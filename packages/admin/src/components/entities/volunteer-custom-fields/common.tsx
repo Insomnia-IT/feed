@@ -1,4 +1,4 @@
-import { Checkbox, Form, Input, Select } from '@pankod/refine-antd';
+import { Checkbox, Form, Input, Select } from 'antd';
 import { FC, lazy, Suspense } from 'react';
 import { Rules } from 'components/form/rules';
 

@@ -1,5 +1,4 @@
-import type { ButtonProps, FormInstance } from '@pankod/refine-antd';
-import { Modal } from '@pankod/refine-antd';
+import { Modal, ButtonProps, FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';

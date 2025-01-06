@@ -1,6 +1,7 @@
 import { FC } from 'react';
-import { Create, Form, Input, Select, useForm, useSelect } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { Create, useForm, useSelect } from '@refinedev/antd';
+import { Form, Input, Select } from 'antd';
+import type { IResourceComponentsProps } from '@refinedev/core';
 
 import type { DirectionEntity, DirectionTypeEntity } from 'interfaces';
 import { Rules } from 'components/form/rules';

@@ -1,4 +1,4 @@
-import { Button, Col, Form, Input, Modal, notification, Row } from '@pankod/refine-antd';
+import { Button, Col, Form, Input, Modal, notification, Row } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 import { dataProvider } from 'dataProvider';

@@ -1,4 +1,4 @@
-import { Spin, Tag } from '@pankod/refine-antd';
+import { Spin, Tag } from 'antd';
 import { FC } from 'react';
 
 import type { VolEntity } from 'interfaces';

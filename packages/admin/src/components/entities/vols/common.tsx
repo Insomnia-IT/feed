@@ -1,4 +1,4 @@
-import { type FormInstance, Tabs } from '@pankod/refine-antd';
+import { type FormInstance, Tabs } from 'antd';
 import { useEffect, useState } from 'react';
 
 import { CommonEdit } from './common-edit';
@@ -7,6 +7,7 @@ import { CommonHistory } from './common-history';
 
 export const CreateEdit = ({ form }: { form: FormInstance }) => {
     const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
     useEffect(() => {
         const handleResize = () => {
             setScreenSize({ width: window.innerWidth, height: window.innerHeight });
@@ -19,19 +20,22 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
     useEffect(() => {
         const antCardBody = document.querySelector('.ant-card-body') as HTMLElement;
         const saveButton = document.querySelector('.ant-card-actions') as HTMLElement;
-        saveButton.style.margin = '0 24px';
-        if (screenSize.width <= 576) {
-            antCardBody.style.padding = '5px';
-            saveButton.style.margin = '0px 8px 56px 5px';
-            saveButton.style.position = 'sticky';
-            saveButton.style.bottom = '50px';
+
+        if (antCardBody && saveButton) {
+            saveButton.style.margin = '0 24px';
+            if (screenSize.width <= 576) {
+                antCardBody.style.padding = '5px';
+                saveButton.style.margin = '0px 8px 56px 5px';
+                saveButton.style.position = 'sticky';
+                saveButton.style.bottom = '50px';
+            }
         }
-    });
+    }, [screenSize]);
 
     useEffect(() => {
-        const updateReturnButtons = document.querySelector('.ant-page-header-heading-extra ');
+        const updateReturnButtons = document.querySelector('.ant-page-header-heading-extra');
         updateReturnButtons?.remove();
-    });
+    }, []);
 
     const items = [
         {
@@ -50,5 +54,6 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
             children: <CommonHistory />
         }
     ];
+
     return <Tabs defaultActiveKey="1" items={items} />;
 };

@@ -1,4 +1,4 @@
-import { Checkbox } from '@pankod/refine-antd';
+import { Checkbox } from 'antd';
 
 import styles from '../list.module.css';
 

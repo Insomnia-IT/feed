@@ -1,19 +1,37 @@
 import { FC } from 'react';
-import { Edit, Form, useForm } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { Form, Button } from 'antd';
+import type { FormInstance } from 'antd';
+import { useForm } from '@refinedev/core';
+import type { IResourceComponentsProps } from '@refinedev/core';
 
 import type { VolunteerCustomFieldEntity } from 'interfaces';
 
 import { CreateEdit } from './common';
 
 export const VolunteerCustomFieldEdit: FC<IResourceComponentsProps> = () => {
-    const { formProps, saveButtonProps } = useForm<VolunteerCustomFieldEntity>();
+    const { query, mutation, onFinish } = useForm<VolunteerCustomFieldEntity>({
+        action: 'edit'
+    });
+
+    const [form] = Form.useForm();
+
+    const handleFinish = async (values: VolunteerCustomFieldEntity) => {
+        await onFinish(values);
+    };
 
     return (
-        <Edit saveButtonProps={saveButtonProps}>
-            <Form {...formProps} layout="vertical">
+        <div style={{ padding: '24px' }}>
+            <Form
+                form={form as FormInstance}
+                layout="vertical"
+                onFinish={handleFinish}
+                initialValues={query?.data?.data}
+            >
                 <CreateEdit isEdit={true} />
+                <Button type="primary" htmlType="submit" loading={mutation.isLoading}>
+                    Сохранить
+                </Button>
             </Form>
-        </Edit>
+        </div>
     );
 };

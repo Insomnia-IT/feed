@@ -58,7 +58,10 @@
         "clone": "Clone"
     },
     "dashboard": {
-        "title": "Dashboard"
+        "dashboard": "Dashboard",
+        "titles": {
+            "list": "Dashboard"
+        }
     },
     "posts": {
         "posts": "Posts",

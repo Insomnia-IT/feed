@@ -11,12 +11,15 @@ interface ILinearChartData {
 }
 
 /** Настройки для линейчатого графика */
-const lineConfig: Omit<LineConfig, 'data'> = {
+const lineConfig: LineConfig = {
     xField: 'date',
     yField: 'value',
     seriesField: 'type',
-    yAxis: {
-        tickInterval: 5
+    meta: {
+        value: {
+            alias: 'Значение',
+            tickInterval: 5
+        }
     }
 };
 

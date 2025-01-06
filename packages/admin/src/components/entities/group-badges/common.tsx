@@ -1,4 +1,5 @@
-import { Form, Input, Select, useSelect } from '@pankod/refine-antd';
+import { Form, Input, Select } from 'antd';
+import { useSelect } from '@refinedev/antd';
 import { FC, lazy, Suspense } from 'react';
 
 import { Rules } from 'components/form/rules';
