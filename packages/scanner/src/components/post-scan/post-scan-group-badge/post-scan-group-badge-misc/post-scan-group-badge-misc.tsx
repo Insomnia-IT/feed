@@ -64,23 +64,26 @@ export const GroupBadgeWarningCard: FC<{
     const isPartiallyFed = !!alreadyFedTransactions.length;
 
     const handleFeed = (): void => {
-        if (isPartiallyFed) {
-            setIsWarningModalShown(true);
-            return;
-        }
-
         if (showOtherCount) {
             doFeedAnons({ vegansCount, nonVegansCount });
         } else {
+            if (isPartiallyFed) {
+                setIsWarningModalShown(true);
+                return;
+            }
+
             doFeed(volsToFeed);
         }
 
         close();
     };
 
+    // Максимальное количество = количество людей, прошедших валидацию *1.5 - количество уже покормленных. Но не меньше нуля!
+    const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedTransactions.length, 0);
+
     const amountToFeed = showOtherCount
         ? vegansCount + nonVegansCount
-        : volsToFeed.length - alreadyFedTransactions.length;
+        : Math.max(volsToFeed.length - alreadyFedTransactions.length, 0);
 
     return (
         <div className={css.groupBadgeCard}>
@@ -100,14 +103,17 @@ export const GroupBadgeWarningCard: FC<{
                 <div className={css.volunteerList}>
                     <Text>
                         <b>Без порции: </b>
-                        {reds.map((vol) => vol.name).join(', ')}
+                        {reds
+                            .filter((vol) => vol.isActivated)
+                            .map((vol) => vol.name)
+                            .join(', ')}
                     </Text>
                 </div>
             )}
 
             {showOtherCount ? (
                 <FeedOtherCount
-                    maxCount={Math.round((volsToFeed.length - alreadyFedTransactions.length) * 1.5)}
+                    maxCount={maxCountOther}
                     vegansCount={vegansCount}
                     nonVegansCount={nonVegansCount}
                     setVegansCount={setVegansCount}
@@ -139,7 +145,9 @@ const BottomBlock: React.FC<{
                 <Button variant='secondary' onClick={handleCancel}>
                     Отмена
                 </Button>
-                <Button onClick={handlePrimaryAction}>Кормить({amountToFeed})</Button>
+                <Button disabled={amountToFeed <= 0} onClick={handlePrimaryAction}>
+                    Кормить ({amountToFeed})
+                </Button>
             </div>
             {alternativeText ? (
                 <Button onClick={handleAlternativeAction} variant='secondary'>

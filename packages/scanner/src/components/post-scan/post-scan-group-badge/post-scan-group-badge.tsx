@@ -106,8 +106,12 @@ const feedAnons = async ({
         };
     };
 
-    const vegans = Array.from(new Array(vegansCount), () => createTransactionDraft({ isVegan: true }));
-    const nonVegans = Array.from(new Array(nonVegansCount), () => createTransactionDraft());
+    // Количество меньше нуля маловероятно, но, так как тип number предполагает такое поведение, стоит предусмотреть такой вариант
+    const vegans =
+        vegansCount <= 0 ? [] : Array.from(new Array(vegansCount), () => createTransactionDraft({ isVegan: true }));
+
+    // Количество меньше нуля маловероятно, но, так как тип number предполагает такое поведение, стоит предусмотреть такой вариант
+    const nonVegans = nonVegansCount <= 0 ? [] : Array.from(new Array(nonVegansCount), () => createTransactionDraft());
 
     const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
 
@@ -159,8 +163,6 @@ export const PostScanGroupBadge: FC<{
     const { kitchenId, mealTime } = useApp();
 
     const { alreadyFedTransactions, vols } = useGroupBadgeData({ badge: groupBadge, mealTime });
-
-    console.info({ alreadyFedTransactions });
 
     // result view
     const [view, setView] = useState<Views>(Views.LOADING);
@@ -280,7 +282,7 @@ const ResultScreen: React.FC<{
             // />
             return (
                 <ErrorCard
-                    msg={'Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!'}
+                    msg={`Упс.. Ошибка при проверке волонтеров в бейдже “${name}”. Cделай скриншот и передай в бюро!`}
                     close={closeFeed}
                 />
             );
@@ -296,7 +298,7 @@ const ResultScreen: React.FC<{
                 />
             );
         case Views.RED:
-            return <ErrorCard close={closeFeed} msg={'Никто не ест.'} />;
+            return <ErrorCard close={closeFeed} msg={`Вы отсканировали групповой бейдж “${name}”. Никто не ест.`} />;
         default:
             return <ErrorCard close={closeFeed} msg={'Непредвиденная ошибка'} />;
     }
