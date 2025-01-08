@@ -23,11 +23,23 @@ const WarningPartiallyFedModal: React.FC<{
     const { nonVegans: nonVegansTransactions, vegans: vegansTransactions } =
         reduceVegans<TransactionJoined>(alreadyFedTransactions);
 
+    // Сколько не покормленных веганов осталось в бейдже
     const leftVegans = vegansVols.length - vegansTransactions.length;
+    // Сколько дополнительно веганов покормили по бейджу
+    const vegansOverFed = Math.min(0, leftVegans) * -1;
+
+    // Сколько не покормленных мясоедов осталось в бейдже
     const leftMeats = nonVegansVols.length - nonVegansTransactions.length;
+    // Сколько дополнительно мясоедов покормили по бейджу
+    const meatsOverFed = Math.min(0, leftMeats) * -1;
+
+    // Итого осталось покормить считается так: осталось <типа> - дополнительно покормленные <другого типа>
+    // Ситуация, когда слишком много и тех и других, по идее, не должна возникнуть, так как тогда все значения будут в нуле
+    const finalVegans = Math.max(leftVegans - meatsOverFed, 0);
+    const finalMeats = Math.max(leftMeats - vegansOverFed, 0);
 
     const primaryAction = (): void => {
-        doFeedAnons({ vegansCount: leftVegans, nonVegansCount: leftMeats });
+        doFeedAnons({ vegansCount: finalVegans, nonVegansCount: finalMeats });
         onClose();
     };
 
@@ -50,15 +62,15 @@ const WarningPartiallyFedModal: React.FC<{
                     )}
                 </div>
                 <div>
-                    <Text>Остались непокормлены {leftVegans + leftMeats}:</Text>
-                    {leftMeats > 0 && (
+                    <Text>Остались непокормлены {finalVegans + finalMeats}:</Text>
+                    {finalMeats > 0 && (
                         <Text>
-                            {leftMeats} {getPlural(leftMeats, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
+                            {finalMeats} {getPlural(finalMeats, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
                         </Text>
                     )}
-                    {leftVegans > 0 && (
+                    {finalVegans > 0 && (
                         <Text>
-                            {leftVegans} {getPlural(leftVegans, ['Веган', 'Вегана', 'Веганов'])} 🥦
+                            {finalVegans} {getPlural(finalVegans, ['Веган', 'Вегана', 'Веганов'])} 🥦
                         </Text>
                     )}
                 </div>
