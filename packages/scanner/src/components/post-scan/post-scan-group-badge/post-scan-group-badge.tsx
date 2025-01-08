@@ -56,7 +56,7 @@ const useGroupBadgeData = ({
 
     // Транзакции с текущим бейджем и временем питания - уже покормленные волонтеры (чаще всего - анонимы)
     const alreadyFedTransactions =
-        useLiveQuery<Array<TransactionJoined>>(async () => {
+        useLiveQuery<Array<TransactionJoined>>(() => {
             return getGroupBadgeCurrentMealTransactions(id, mealTime);
         }, [id]) ?? ([] as Array<TransactionJoined>);
 
@@ -267,19 +267,6 @@ const ResultScreen: React.FC<{
         case Views.ERROR_EMPTY:
             return <ErrorCard close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />;
         case Views.ERROR_VALIDATION:
-            // <GroupBadgeErrorCard
-            //     close={closeFeed}
-            //     doNotFeed={doNotFeed}
-            //     msg={'Упс.. Ошибка при проверке волонтеров. Cделай скриншот и передай в бюро!'}
-            //     volsNotToFeed={vols!.map(
-            //         (vol) =>
-            //             ({
-            //                 ...vol,
-            //                 msg: [`Ошибка в проверке волонтеров в групповом бейдже(qr: ${qr}).`],
-            //                 isRed: true
-            //             }) as ValidatedVol
-            //     )}
-            // />
             return (
                 <ErrorCard
                     msg={`Упс.. Ошибка при проверке волонтеров в бейдже “${name}”. Cделай скриншот и передай в бюро!`}
