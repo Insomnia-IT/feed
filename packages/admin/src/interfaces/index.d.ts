@@ -129,9 +129,6 @@ export interface StatusEntity {
     name: string;
     visible: boolean;
     description: string;
-    //TODO: уточнить действительно ли там приходят эти поля, а то мы их используем
-    value: string;
-    label: unknown;
 }
 
 export interface ArrivalEntity {
