@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import type { GetListResponse } from '@pankod/refine-core';
-import { useList } from '@pankod/refine-core';
+import { GetListResponse, useList } from '@refinedev/core';
 
 import { NEW_API_URL } from 'const';
 import type {
@@ -382,8 +381,8 @@ export function CommonHistory() {
                             onClick={
                                 id
                                     ? () => {
-                                        void handleRouteClick(id);
-                                    }
+                                          void handleRouteClick(id);
+                                      }
                                     : undefined
                             }
                         >

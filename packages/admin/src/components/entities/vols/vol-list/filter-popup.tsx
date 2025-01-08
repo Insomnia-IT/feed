@@ -1,7 +1,7 @@
 import styles from 'components/entities/vols/list.module.css';
 import { Button, Input } from 'antd';
 import dayjs from 'dayjs';
-import { Calendar, Checkbox, Radio } from '@pankod/refine-antd';
+import { Calendar, Checkbox, Radio } from 'antd';
 
 import { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { getFilterValueText } from './volunteer-list-utils';

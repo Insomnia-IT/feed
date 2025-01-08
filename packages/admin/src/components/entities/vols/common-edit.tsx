@@ -1,16 +1,6 @@
-import type { FormInstance } from '@pankod/refine-antd';
-import {
-    Button,
-    Checkbox,
-    DatePicker,
-    DeleteButton,
-    Divider,
-    Form,
-    Input,
-    Modal,
-    Select,
-    useSelect
-} from '@pankod/refine-antd';
+import { DatePicker, Divider, Form, Input, Modal, Select, Button, Checkbox, FormInstance } from 'antd';
+import { DeleteButton } from '@refinedev/antd';
+import { useSelect } from '@refinedev/core';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -84,56 +74,57 @@ export function CommonEdit({ form }: { form: FormInstance }) {
     const mainRole = Form.useWatch('main_role');
     const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
 
-    const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
+    const { options: directionOptions } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name'
     });
 
-    const { selectProps: kitchenSelectProps } = useSelect<KitchenEntity>({
+    const { options: kitchenOptions } = useSelect<KitchenEntity>({
         resource: 'kitchens',
         optionLabel: 'name'
     });
 
-    const { selectProps: feedTypeSelectProps } = useSelect<FeedTypeEntity>({
+    const { options: feedTypeOptions } = useSelect<FeedTypeEntity>({
         resource: 'feed-types',
         optionLabel: 'name'
     });
 
-    const { selectProps: colorTypeSelectProps } = useSelect<ColorTypeEntity>({
+    const { options: colorTypeOptions } = useSelect<ColorTypeEntity>({
         resource: 'colors',
         optionLabel: 'description'
     });
 
-    const { selectProps: accessRoleSelectProps } = useSelect<AccessRoleEntity>({
+    const { options: accessRoleOptions } = useSelect<AccessRoleEntity>({
         resource: 'access-roles',
         optionLabel: 'name'
     });
 
-    const { selectProps: genderSelectProps } = useSelect<AccessRoleEntity>({
+    const { options: genderOptions } = useSelect<AccessRoleEntity>({
         resource: 'genders',
         optionLabel: 'name'
     });
 
-    const { selectProps: rolesSelectProps } = useSelect<VolunteerRoleEntity>({
+    const { options: rolesOptions } = useSelect<VolunteerRoleEntity>({
         resource: 'volunteer-roles',
         optionLabel: 'name'
     });
 
-    const { selectProps: groupBadgeSelectProps } = useSelect<GroupBadgeEntity>({
+    const { options: groupBadgeOptions } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
         optionLabel: 'name'
     });
 
-    const { selectProps: transportsSelectProps } = useSelect<TransportEntity>({
+    const { options: transportsOptions } = useSelect<TransportEntity>({
         resource: 'transports',
         optionLabel: 'name'
     });
 
-    const statusesSelectProps =
-        useSelect<StatusEntity>({
-            resource: 'statuses',
-            optionLabel: 'name'
-        }).selectProps.options?.map((item) =>
+    const { options: statusesOptions } = useSelect<StatusEntity>({
+        resource: 'statuses',
+        optionLabel: 'name'
+    });
+    const statusesOptionsNew =
+        statusesOptions?.map((item) =>
             ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
                 ? { ...item, label: `✅ ${item.label}` }
                 : item
@@ -491,7 +482,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 </div>
                                 <div className={styles.genderSelect}>
                                     <Form.Item label="Пол волонтера" name="gender">
-                                        <Select disabled={denyBadgeEdit} {...genderSelectProps} />
+                                        <Select disabled={denyBadgeEdit} options={genderOptions} />
                                     </Form.Item>
                                 </div>
                             </div>
@@ -500,12 +491,12 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                     <div className={styles.kitchenTypeWrap}>
                         <div className={styles.kitchenSelect}>
                             <Form.Item label="Кухня" name="kitchen" rules={Rules.required}>
-                                <Select {...kitchenSelectProps} />
+                                <Select options={kitchenOptions} />
                             </Form.Item>
                         </div>
                         <div className={styles.typeMeal}>
                             <Form.Item label="Тип питания" name="feed_type" rules={Rules.required}>
-                                <Select disabled={denyFeedTypeEdit} {...feedTypeSelectProps} />
+                                <Select disabled={denyFeedTypeEdit} options={feedTypeOptions} />
                             </Form.Item>
                         </div>
                     </div>
@@ -525,14 +516,14 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 <Select
                                     allowClear
                                     disabled={!canFullEditing}
-                                    {...accessRoleSelectProps}
+                                    options={accessRoleOptions}
                                     onClear={onAccessRoleClear}
                                 />
                             </Form.Item>
                         </div>
                         <div className={styles.hrInput}>
                             <Form.Item label="Роль" name="main_role" rules={Rules.required}>
-                                <Select disabled={!allowRoleEdit && !!person} {...rolesSelectProps} />
+                                <Select disabled={!allowRoleEdit && !!person} options={rolesOptions} />
                             </Form.Item>
                         </div>
                     </div>
@@ -547,7 +538,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 <Select
                                     disabled={!allowRoleEdit && !!person}
                                     mode="multiple"
-                                    {...directionSelectProps}
+                                    options={directionOptions}
                                 />
                             </Form.Item>
                         </div>
@@ -601,7 +592,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                                 rules={Rules.required}
                                             >
                                                 <Select
-                                                    options={statusesSelectProps}
+                                                    options={statusesOptionsNew}
                                                     style={{ width: '100%' }}
                                                     onChange={createChange('status')}
                                                 />
@@ -645,7 +636,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                                 rules={Rules.required}
                                             >
                                                 <Select
-                                                    {...transportsSelectProps}
+                                                    options={transportsOptions}
                                                     style={{ width: '100%' }}
                                                     onChange={createChange('arrival_transport')}
                                                 />
@@ -688,7 +679,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                                 rules={Rules.required}
                                             >
                                                 <Select
-                                                    {...transportsSelectProps}
+                                                    options={transportsOptions}
                                                     style={{ width: '100%' }}
                                                     onChange={createChange('departure_transport')}
                                                 />
@@ -721,7 +712,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                                 <Select
                                     disabled={!canEditGroupBadge}
                                     allowClear
-                                    {...groupBadgeSelectProps}
+                                    options={groupBadgeOptions}
                                     onClear={onGroupBadgeClear}
                                 />
                             </Form.Item>
@@ -748,7 +739,7 @@ export function CommonEdit({ form }: { form: FormInstance }) {
                         </div>
                         <div className={styles.badgeInfo}>
                             <Form.Item label="Цвет бейджа" name="color_type">
-                                <Select disabled={denyBadgeEdit} {...colorTypeSelectProps} />
+                                <Select disabled={denyBadgeEdit} options={colorTypeOptions} />
                             </Form.Item>
                         </div>
                     </div>

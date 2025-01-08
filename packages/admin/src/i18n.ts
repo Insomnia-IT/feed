@@ -5,10 +5,10 @@ import Backend from 'i18next-http-backend';
 i18n.use(Backend)
     .use(initReactI18next)
     .init({
-        debug: process.env.NODE_ENV === 'development',
+        debug: true,
         lng: 'ru',
-        fallbackLng: 'ru',
-        supportedLngs: ['ru'],
+        fallbackLng: ['ru'],
+        ns: ['common'],
         defaultNS: 'common',
         backend: {
             loadPath: '/locales/{{lng}}/{{ns}}.json'
@@ -16,6 +16,7 @@ i18n.use(Backend)
         interpolation: {
             escapeValue: false
         }
-    });
+    })
+    .catch((err) => console.error('Ошибка инициализации i18n:', err));
 
 export default i18n;

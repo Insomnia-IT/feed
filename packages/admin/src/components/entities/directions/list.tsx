@@ -1,7 +1,8 @@
 import { FC, ReactNode } from 'react';
-import { List, ShowButton, Space, Table, TextField } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useList } from '@pankod/refine-core';
+import { List, ShowButton, TextField } from '@refinedev/antd';
+import { Space, Table } from 'antd';
+import type { IResourceComponentsProps } from '@refinedev/core';
+import { useList } from '@refinedev/core';
 
 import type { DirectionEntity } from 'interfaces';
 import { getSorter } from 'utils';

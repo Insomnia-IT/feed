@@ -1,6 +1,7 @@
-import { DeleteButton, EditButton, List, Space, Table, TextField, Tooltip } from '@pankod/refine-antd';
-import { useList, useNavigation } from '@pankod/refine-core';
-import type { FC, ReactNode } from 'react';
+import { DeleteButton, EditButton, List } from '@refinedev/antd';
+import { Table, Space, Tooltip } from 'antd';
+import { useList, useNavigation } from '@refinedev/core';
+import type { FC } from 'react';
 
 import type { GroupBadgeEntity } from 'interfaces';
 import { useMedia } from 'shared/providers';
@@ -28,7 +29,19 @@ export const GroupBadgeList: FC = () => {
             {isMobile ? (
                 <div className={styles.mobileList}>
                     {data.map((badge) => (
-                        <div key={badge.id} className={styles.card} onClick={() => edit('group-badges', badge.id)}>
+                        <div
+                            key={badge.id}
+                            className={styles.card}
+                            onClick={(e) => {
+                                const target = e.target as HTMLElement;
+                                //TODO: поискать решение через e.stopPropagation() на Popconfirm у DeleteButton
+                                if (target.closest('.ant-btn') || target.closest('.ant-modal')) {
+                                    return;
+                                }
+
+                                edit('group-badges', badge.id);
+                            }}
+                        >
                             <div className={styles.header}>
                                 <Tooltip title={badge.name}>
                                     <span className={styles.name}>{badge.name}</span>
@@ -68,27 +81,11 @@ export const GroupBadgeList: FC = () => {
                             </Space>
                         )}
                     />
-                    <Table.Column
-                        dataIndex="name"
-                        key="name"
-                        title="Название"
-                        render={(value: string): ReactNode => (
-                            <Tooltip title={value}>
-                                <TextField value={value} />
-                            </Tooltip>
-                        )}
-                        sorter={getSorter('name')}
-                        ellipsis
-                    />
+                    <Table.Column dataIndex="name" key="name" title="Название" sorter={getSorter('name')} ellipsis />
                     <Table.Column
                         dataIndex={['direction', 'name']}
                         key="direction"
                         title="Служба/Направление"
-                        render={(value: string): ReactNode => (
-                            <Tooltip title={value}>
-                                <TextField value={value} />
-                            </Tooltip>
-                        )}
                         ellipsis
                     />
                     <Table.Column

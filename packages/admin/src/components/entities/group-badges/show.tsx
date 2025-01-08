@@ -1,6 +1,6 @@
-import { Show, Table, TextField, Typography, useTable } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useShow } from '@pankod/refine-core';
+import { Show, TextField } from '@refinedev/antd';
+import { Table, Typography } from 'antd';
+import { useShow, useTable } from '@refinedev/core';
 import { FC, lazy, Suspense } from 'react';
 
 import type { GroupBadgeEntity, VolEntity } from 'interfaces';
@@ -9,30 +9,37 @@ const ReactQuill = lazy(() => import('react-quill'));
 
 const { Text, Title } = Typography;
 
-export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
+export const GroupBadgeShow: FC = () => {
     const { queryResult, showId } = useShow<GroupBadgeEntity>();
     const { data, isLoading } = queryResult;
     const record = data?.data;
 
-    const { tableProps } = useTable<VolEntity>({
+    const { tableQuery, current, pageSize } = useTable<VolEntity>({
         resource: 'volunteers',
-        initialFilter: [
-            {
-                field: 'group_badge',
-                operator: 'eq',
-                value: showId
-            }
-        ],
-        initialSorter: [
-            {
-                field: 'id',
-                order: 'desc'
-            }
-        ]
+        filters: {
+            initial: [
+                {
+                    field: 'group_badge',
+                    operator: 'eq',
+                    value: showId
+                }
+            ]
+        },
+        sorters: {
+            initial: [
+                {
+                    field: 'id',
+                    order: 'desc'
+                }
+            ]
+        }
     });
 
+    const tableRows = tableQuery.data?.data || [];
+    const isTableLoading = tableQuery.isFetching;
+
     return (
-        <Show isLoading={isLoading}>
+        <Show isLoading={isLoading || isTableLoading}>
             <Title level={5}>Название</Title>
             <Text>{record?.name}</Text>
 
@@ -45,7 +52,14 @@ export const GroupBadgeShow: FC<IResourceComponentsProps> = () => {
             </Suspense>
 
             <Title level={5}>Волонтеры</Title>
-            <Table {...tableProps} rowKey="id">
+            <Table
+                dataSource={tableRows}
+                rowKey="id"
+                pagination={{
+                    current,
+                    pageSize
+                }}
+            >
                 <Table.Column
                     dataIndex="name"
                     key="name"

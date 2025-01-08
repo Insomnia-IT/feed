@@ -1,5 +1,5 @@
-import { Icons, Popover } from '@pankod/refine-antd';
-import { Button } from 'antd';
+import { PlusOutlined, DeleteOutlined, DownOutlined } from '@ant-design/icons';
+import { Popover, Button } from 'antd';
 import { FC } from 'react';
 
 import { FilterPopup } from 'components/entities/vols/vol-list/filter-popup';
@@ -84,11 +84,11 @@ export const Filters: FC<{
                     .concat(
                         newValues.length
                             ? [
-                                {
-                                    ...filterItem,
-                                    value: newValues
-                                }
-                            ]
+                                  {
+                                      ...filterItem,
+                                      value: newValues
+                                  }
+                              ]
                             : []
                     );
 
@@ -131,7 +131,7 @@ export const Filters: FC<{
         return (
             <span className={styles.filterItemActive}>
                 <span className={styles.filterItemNameActive}>{field.title}:</span>
-                    &nbsp;
+                &nbsp;
                 <span>
                     {(Array.isArray(filterItem.value) ? filterItem.value : [filterItem.value])
                         .map((value) => getFilterValueText(field, value))
@@ -165,7 +165,7 @@ export const Filters: FC<{
                                 <Button className={styles.filterItemButton}>
                                     {renderFilterItemText(field)}
                                     <span className={styles.filterDownIcon}>
-                                        <Icons.DownOutlined />
+                                        <DownOutlined />
                                     </span>
                                 </Button>
                             </Popover>
@@ -184,20 +184,20 @@ export const Filters: FC<{
                     overlayInnerStyle={{ borderRadius: 0 }}
                     trigger="click"
                 >
-                    <Button type="link" icon={<Icons.PlusOutlined />}>
-                            Фильтр
+                    <Button type="link" icon={<PlusOutlined />}>
+                        Фильтр
                     </Button>
                 </Popover>
                 {(activeFilters.length || searchText) && (
                     <Button
                         type="link"
-                        icon={<Icons.DeleteOutlined />}
+                        icon={<DeleteOutlined />}
                         onClick={() => {
                             setActiveFilters([]);
                             setSearchText('');
                         }}
                     >
-                            Сбросить фильтрацию
+                        Сбросить фильтрацию
                     </Button>
                 )}
             </div>

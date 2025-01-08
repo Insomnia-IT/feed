@@ -1,7 +1,7 @@
-import { Show, Typography } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useShow } from '@pankod/refine-core';
 import { FC, lazy, Suspense } from 'react';
+import { Typography } from 'antd';
+import { Show } from '@refinedev/antd';
+import { useShow, IResourceComponentsProps } from '@refinedev/core';
 
 import type { VolunteerCustomFieldEntity } from 'interfaces';
 

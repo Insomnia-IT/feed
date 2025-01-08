@@ -1,4 +1,4 @@
-import { Divider } from '@pankod/refine-antd';
+import { Divider } from 'antd';
 import { FC, memo, useCallback, useEffect, useRef } from 'react';
 import QrScanner from 'qr-scanner';
 import sas from 'onscan.js';

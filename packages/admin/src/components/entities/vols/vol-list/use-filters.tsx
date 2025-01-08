@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { GetListResponse, useList } from '@pankod/refine-core';
+import { GetListResponse, useList } from '@refinedev/core';
 
 import {
     AccessRoleEntity,
