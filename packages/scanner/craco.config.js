@@ -58,14 +58,7 @@ module.exports = {
         configure: function (webpackConfig) {
             webpackConfig.module.rules[1].oneOf.unshift({
                 test: /\.txt$/i,
-                use: [
-                    {
-                        loader: 'raw-loader',
-                        options: {
-                            esModule: false
-                        }
-                    }
-                ]
+                type: 'asset/source'
             });
 
             return webpackConfig;
@@ -90,7 +83,7 @@ module.exports = {
             options: {
                 aliases: {
                     '~': path.resolve(__dirname, './src'),
-                    'pwa-ver.txt': path.resolve(__dirname, './src/pwa-ver.txt'),
+                    'pwa-ver.txt': path.resolve(__dirname, './src/pwa-ver.txt')
                 }
             }
         }
