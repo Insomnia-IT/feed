@@ -47,7 +47,7 @@ RUN ls -1al /app/backend/icu
 
 COPY . /app
 
-RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/pwa-ver.txt
+RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/packages/scanner/src/pwa-ver.txt
 
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm run build

@@ -49,7 +49,7 @@ module.exports = {
             new CopyWebpackPlugin({
                 patterns: [
                     {
-                        from: '../../pwa-ver.txt',
+                        from: './src/pwa-ver.txt',
                         to: 'public'
                     }
                 ]
@@ -88,10 +88,9 @@ module.exports = {
         {
             plugin: CracoAliasPlugin,
             options: {
-                source: 'options',
                 aliases: {
                     '~': path.resolve(__dirname, './src'),
-                    'pwa-ver.txt': path.resolve(__dirname, '../../pwa-ver.txt'),
+                    'pwa-ver.txt': path.resolve(__dirname, './src/pwa-ver.txt'),
                 }
             }
         }
