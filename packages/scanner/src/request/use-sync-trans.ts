@@ -90,7 +90,7 @@ const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
 };
 
 const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
-    return trans.map(({ amount, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+    return trans.map(({ amount, group_badge, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
         volunteer: vol_id,
         is_vegan,
         amount,
@@ -98,7 +98,8 @@ const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
         ulid,
         meal_time: mealTime,
         kitchen,
-        reason
+        reason,
+        group_badge
     }));
 };
 
@@ -113,16 +114,19 @@ const markTransactionsAsUpdated = async (trans): Promise<IndexableType> => {
 
 const putNewServerTransactions = async (data): Promise<IndexableType> => {
     const serverTransactions = data as Array<ServerTransaction>;
-    const transactions = serverTransactions.map(({ amount, dtime, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
-        vol_id: volunteer,
-        is_vegan,
-        mealTime: meal_time,
-        ulid,
-        amount,
-        ts: Math.floor(new Date(dtime).valueOf() / 1000),
-        is_new: false,
-        kitchen
-    }));
+    const transactions = serverTransactions.map(
+        ({ amount, dtime, group_badge, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
+            vol_id: volunteer,
+            is_vegan,
+            mealTime: meal_time,
+            ulid,
+            amount,
+            ts: Math.floor(new Date(dtime).valueOf() / 1000),
+            is_new: false,
+            kitchen,
+            group_badge
+        })
+    );
 
     return db.transactions.bulkPut(transactions);
 };

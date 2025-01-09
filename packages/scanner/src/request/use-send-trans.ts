@@ -22,7 +22,7 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
 
         const data = (trans || [])
             .filter(({ is_new }) => is_new)
-            .map(({ amount, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+            .map(({ amount, group_badge, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
                 volunteer: vol_id,
                 is_vegan,
                 amount,
@@ -30,7 +30,8 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
                 ulid,
                 meal_time: mealTime,
                 kitchen,
-                reason
+                reason,
+                group_badge
             }));
 
         setFetching(true);
