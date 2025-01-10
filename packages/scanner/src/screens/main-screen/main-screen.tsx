@@ -21,8 +21,8 @@ export const MainScreen = React.memo(function MainScreen() {
         <ScreenWrapper>
             {view === 'scan' && <Scan />}
             {view === 'post-scan' && <PostScan />}
-            {view === 'post-scan-group-badge' && (
-                <PostScanGroupBadge closeFeed={handleCloseCard} groupBadge={groupBadge!} />
+            {view === 'post-scan-group-badge' && groupBadge && (
+                <PostScanGroupBadge closeFeed={handleCloseCard} groupBadge={groupBadge} />
             )}
             {view === 'error' && <ErrorCard close={handleCloseCard} msg={errorMessage} />}
         </ScreenWrapper>

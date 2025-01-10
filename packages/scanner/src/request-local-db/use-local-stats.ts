@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import dayjs from 'dayjs';
+import { useState } from 'react';
 
 import { FeedType, getFeedStats, getVolsOnField, MealTime } from '~/db';
-import type { LocalStatsHook } from '~/request-local-db/lib';
 import { DATE_FORMAT } from '~/shared/lib/date';
+import type { LocalStatsHook } from '~/request-local-db/lib';
 
 export const MEAL_TIME = [MealTime.breakfast, MealTime.lunch, MealTime.dinner, MealTime.night] as const;
 
@@ -16,7 +16,7 @@ type StatsByNutritionType = {
 type FeedStatsRecord = Record<MealTime, StatsByNutritionType>;
 export type FeedStats = { onField: FeedStatsRecord; feedCount: FeedStatsRecord };
 
-const getStatsByDate = async (statsDate) => {
+const getStatsByDate = async (statsDate: string): Promise<{ feedCount: FeedStatsRecord; onField: FeedStatsRecord }> => {
     const onFieldPromises = MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
         let vols = await getVolsOnField(statsDate);
         if (MT === MealTime.breakfast) {
@@ -43,7 +43,7 @@ const getStatsByDate = async (statsDate) => {
                     ({ arrival_date, departure_date }) =>
                         dayjs(arrival_date).unix() < dayjs(statsDate).unix() &&
                         dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix() &&
-                        vol.feed_type !== FeedType.FT2
+                        vol.feed_type !== FeedType.Paid
                 )
             );
         }
@@ -130,7 +130,7 @@ const getStatsByDate = async (statsDate) => {
     };
 };
 
-const calcPredict = async (statsDate: string) => {
+const calcPredict = async (statsDate: string): Promise<{ feedCount: FeedStatsRecord; onField: FeedStatsRecord }> => {
     const { feedCount: prevFeedCount, onField: prevOnField } = await getStatsByDate(
         dayjs(statsDate).subtract(1, 'd').format(DATE_FORMAT)
     );
@@ -138,12 +138,14 @@ const calcPredict = async (statsDate: string) => {
         dayjs(statsDate).subtract(2, 'd').format(DATE_FORMAT)
     );
     const { feedCount, onField } = await getStatsByDate(statsDate);
+
     Object.keys(feedCount).forEach((MTKey) => {
         Object.keys(feedCount[MTKey]).forEach((NTKey) => {
             if (NTKey === 'total') return;
 
-            let basisFeedCount;
-            let basisOnField;
+            let basisFeedCount: number;
+            let basisOnField: number;
+
             if (prevFeedCount[MTKey][NTKey] !== 0) {
                 basisFeedCount = prevFeedCount[MTKey][NTKey];
                 basisOnField = prevOnField[MTKey][NTKey];
@@ -151,7 +153,9 @@ const calcPredict = async (statsDate: string) => {
                 basisFeedCount = prev2FeedCount[MTKey][NTKey];
                 basisOnField = prev2OnField[MTKey][NTKey];
             }
+
             const feedCountPredict = (basisFeedCount / basisOnField) * onField[MTKey][NTKey];
+
             feedCount[MTKey][NTKey] =
                 isNaN(feedCountPredict) || !isFinite(feedCountPredict)
                     ? onField[MTKey][NTKey]
@@ -172,9 +176,10 @@ export const useLocalStats = (): LocalStatsHook => {
     const [progress, setProgress] = useState<boolean>(true);
     const [updated, setUpdated] = useState<boolean>(false);
 
-    const update = async (statsDate: string, predict = false) => {
+    const update = async (statsDate: string, predict = false): Promise<void> => {
         setUpdated(false);
         setProgress(true);
+
         try {
             if (predict) {
                 const stats = await calcPredict(statsDate);
@@ -185,11 +190,12 @@ export const useLocalStats = (): LocalStatsHook => {
             }
             setUpdated(true);
             setProgress(false);
-        } catch (e) {
-            console.error(e);
-            setError(e);
+        } catch (error) {
+            console.error(error);
+            setError(error);
             setProgress(false);
         }
     };
+
     return { progress, update, error, updated, stats };
 };
