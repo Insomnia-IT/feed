@@ -1,5 +1,6 @@
 import { useNavigation, useList } from '@refinedev/core';
-import { Input, Row, Col, Select, List } from 'antd';
+import { List } from '@refinedev/antd';
+import { Input, Row, Col, Select } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import { FC, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
