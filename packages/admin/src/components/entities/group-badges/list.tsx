@@ -1,7 +1,7 @@
 import { DeleteButton, EditButton, List } from '@refinedev/antd';
-import { Table, Space, Tooltip } from 'antd';
+import { Space, Table, TablePaginationConfig, Tooltip } from 'antd';
 import { useList, useNavigation } from '@refinedev/core';
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 
 import type { GroupBadgeEntity } from 'interfaces';
 import { useMedia } from 'shared/providers';
@@ -11,13 +11,34 @@ import useVisibleDirections from '../vols/use-visible-directions';
 import styles from './group-badge-list.module.css';
 
 export const GroupBadgeList: FC = () => {
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
-        resource: 'group-badges'
-    });
+    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
 
     const visibleDirections = useVisibleDirections();
     const { isMobile } = useMedia();
     const { edit } = useNavigation();
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges',
+        config: {
+            pagination: {
+                current: isMobile ? 1 : page,
+                pageSize: isMobile ? 10000 : pageSize
+            }
+        }
+    });
+
+    const pagination: TablePaginationConfig = {
+        total: groupBadges?.total ?? 1,
+        showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
+        current: page,
+        pageSize: pageSize,
+        onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
+            localStorage.setItem('volPageIndex', page.toString());
+            localStorage.setItem('volPageSize', pageSize.toString());
+        }
+    };
 
     const data =
         groupBadges?.data.filter((item) => {
@@ -70,7 +91,7 @@ export const GroupBadgeList: FC = () => {
                     ))}
                 </div>
             ) : (
-                <Table dataSource={data} rowKey="id" pagination={false}>
+                <Table dataSource={data} rowKey="id" pagination={pagination}>
                     <Table.Column<GroupBadgeEntity>
                         title=""
                         dataIndex="actions"
