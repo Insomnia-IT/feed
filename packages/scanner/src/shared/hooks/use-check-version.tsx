@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import axios from 'axios';
 
 import { clearCache } from '~/shared/lib/utils';
+import ver from 'pwa-ver.txt';
 
-import ver from '!!raw-loader!pwa-ver.txt';
-console.log(`local app ver: ${ver}`);
+console.log(`pwa-ver.txt: ${ver}`);
 
 export const useCheckVersion = (): void => {
     useEffect(() => {
