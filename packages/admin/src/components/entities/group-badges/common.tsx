@@ -12,7 +12,10 @@ const ReactQuill = lazy(() => import('react-quill'));
 export const CreateEdit: FC = () => {
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        pagination: {
+            pageSize: 1000
+        }
     });
 
     const visibleDirections = useVisibleDirections();

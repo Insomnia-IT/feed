@@ -152,10 +152,8 @@ export const useFilters = ({
 
     const { data: volunteerRoles, isLoading: volunteerRolesIsLoading } = useList<VolunteerRoleEntity>({
         resource: 'volunteer-roles',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
+        pagination: {
+            pageSize: 10000
         }
     });
 

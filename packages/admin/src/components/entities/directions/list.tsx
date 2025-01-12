@@ -9,7 +9,10 @@ import { getSorter } from 'utils';
 
 export const DepartmentList: FC<IResourceComponentsProps> = () => {
     const { data: directions } = useList<DirectionEntity>({
-        resource: 'directions'
+        resource: 'directions',
+        pagination: {
+            pageSize: 1000
+        }
     });
 
     return (

@@ -80,7 +80,10 @@ export const VolList: FC = () => {
 
     const loadCustomFields = async () => {
         const { data } = await dataProvider.getList<CustomFieldEntity>({
-            resource: 'volunteer-custom-fields'
+            resource: 'volunteer-custom-fields',
+            pagination: {
+                pageSize: 1000
+            }
         });
 
         setCustomFields(data);
