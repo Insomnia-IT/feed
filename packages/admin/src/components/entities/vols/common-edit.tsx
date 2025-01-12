@@ -76,7 +76,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const { options: directionOptions } = useSelect<DirectionEntity>({
         resource: 'directions',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        pagination: {
+            pageSize: 1000
+        }
     });
 
     const { options: kitchenOptions } = useSelect<KitchenEntity>({
@@ -106,12 +109,18 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const { options: rolesOptions } = useSelect<VolunteerRoleEntity>({
         resource: 'volunteer-roles',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        pagination: {
+            pageSize: 1000
+        }
     });
 
     const { options: groupBadgeOptions } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        pagination: {
+            pageSize: 1000
+        }
     });
 
     const { options: transportsOptions } = useSelect<TransportEntity>({
@@ -258,7 +267,10 @@ export function CommonEdit({ form }: { form: FormInstance }) {
 
     const loadCustomFields = async () => {
         const { data } = await dataProvider.getList<CustomFieldEntity>({
-            resource: 'volunteer-custom-fields'
+            resource: 'volunteer-custom-fields',
+            pagination: {
+                pageSize: 1000
+            }
         });
 
         setCustomFields(data);
