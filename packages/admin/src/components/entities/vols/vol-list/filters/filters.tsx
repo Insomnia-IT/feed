@@ -1,5 +1,4 @@
-import { Icons, Popover } from '@pankod/refine-antd';
-import { Button } from 'antd';
+import { Button, Popover } from 'antd';
 
 import styles from '../../list.module.css';
 import { FC } from 'react';
@@ -8,6 +7,7 @@ import type { FilterField, FilterListItem } from './filter-types';
 import { FilterItem } from './filter-types';
 import { FilterChooser } from './filter-chooser';
 import { FilterItemControl } from './filter-item-control';
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 
 export const Filters: FC<{
     filterFields: Array<FilterField>;
@@ -143,14 +143,14 @@ export const Filters: FC<{
                     overlayInnerStyle={{ borderRadius: 0 }}
                     trigger="click"
                 >
-                    <Button type="link" icon={<Icons.PlusOutlined />}>
+                    <Button type="link" icon={<PlusOutlined />}>
                         Фильтр
                     </Button>
                 </Popover>
                 {(activeFilters.length || searchText) && (
                     <Button
                         type="link"
-                        icon={<Icons.DeleteOutlined />}
+                        icon={<DeleteOutlined />}
                         onClick={() => {
                             setActiveFilters([]);
                             setSearchText('');

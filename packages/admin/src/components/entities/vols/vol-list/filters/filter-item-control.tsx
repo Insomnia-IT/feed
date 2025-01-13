@@ -1,9 +1,11 @@
-import { Button, Icons, Popover } from '@pankod/refine-antd';
+import { Button, Popover } from 'antd';
 import { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { FilterItemPopup } from './filter-item-popup';
 import styles from 'components/entities/vols/list.module.css';
 import { getFilterValueText } from 'components/entities/vols/vol-list/volunteer-list-utils';
 import { FC } from 'react';
+
+import { DownOutlined } from '@ant-design/icons';
 
 export const FilterItemControl: FC<{
     field: FilterField;
@@ -22,13 +24,13 @@ export const FilterItemControl: FC<{
                     onFilterValueChange={onFilterValueChange}
                 />
             }
-            overlayInnerStyle={{ borderRadius: 0 }}
+            styles={{ body: { borderRadius: 0 } }}
             trigger="click"
         >
             <Button className={styles.filterItemButton}>
                 <FilterItemText field={field} filterItem={filterItem} />
                 <span className={styles.filterDownIcon}>
-                    <Icons.DownOutlined />
+                    <DownOutlined />
                 </span>
             </Button>
         </Popover>

@@ -13,6 +13,8 @@ import {
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 import { FilterField, FilterFieldType, FilterItem } from 'components/entities/vols/vol-list/filters/filter-types';
 import { getSorter } from 'utils';
+import { useEffect, useMemo, useState } from 'react';
+import { GetListResponse, useList } from '@refinedev/core';
 
 const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> => {
     return useMemo(() => {

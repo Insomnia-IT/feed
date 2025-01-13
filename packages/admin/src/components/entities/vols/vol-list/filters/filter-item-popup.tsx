@@ -33,7 +33,7 @@ export const FilterItemPopup: FC<{
                 onTextValueChange={onTextValueChange}
             />
 
-            {filterItem && field.type !== FilterFieldType.Date && (
+            {filterItem && (
                 <Button type="link" onClick={clearValue} style={{ marginTop: 10 }}>
                     Сбросить
                 </Button>
@@ -89,7 +89,7 @@ const DateField: FC<{
 
     return (
         <Col>
-            <Row>
+            <Row style={{ paddingBottom: '12px' }}>
                 <Checkbox checked={showPeriod} onChange={onCheckBoxClick}>
                     Период
                 </Checkbox>
