@@ -58,3 +58,15 @@ export const dataEmpty: IData = {
     first: {},
     second: {}
 };
+
+export interface IColumnChartData {
+    date: string;
+    breakfast_plan: number;
+    breakfast_fact: number;
+    lunch_plan: number;
+    lunch_fact: number;
+    dinner_plan: number;
+    dinner_fact: number;
+    night_plan: number;
+    night_fact: number;
+}

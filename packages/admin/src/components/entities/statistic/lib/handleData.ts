@@ -1,14 +1,13 @@
 import type {
     EaterType,
     EaterTypeExtended,
+    IColumnChartData,
     IData,
     IEaterTypeAmount,
     IStatisticResponce,
     KitchenIdExtended
 } from '../types';
 import { dataEmpty, datumInstance, mealTimeArr } from '../types';
-import type { ILinearChartData } from '../ui/linear-chart';
-import type { IColumnChartAnnotationData, IColumnChartData } from '../ui/column-chart';
 import type { ITableStatData } from '../ui/table-stats';
 
 export function convertResponceToData(res: IStatisticResponce): IData {
@@ -91,41 +90,50 @@ export function handleDataForColumnChart(
     data: IData,
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
-): { dataForColumnChart: Array<IColumnChartData>; dataForAnnotation: Array<IColumnChartAnnotationData> } {
-    const dataForColumnChart: Array<IColumnChartData> = [];
-    const dataForAnnotation: Array<IColumnChartAnnotationData> = [];
+): Array<IColumnChartData> {
+    const result: Array<IColumnChartData> = [];
 
     if (Object.keys(data).length === 0) {
-        return { dataForColumnChart, dataForAnnotation };
+        return result;
     }
 
     for (const date in data[kitchenId]) {
+        const row: IColumnChartData = {
+            date,
+            breakfast_plan: 0,
+            breakfast_fact: 0,
+            lunch_plan: 0,
+            lunch_fact: 0,
+            dinner_plan: 0,
+            dinner_fact: 0,
+            night_plan: 0,
+            night_fact: 0
+        };
+
         for (const mealTime of mealTimeArr) {
             const resPlan = data[kitchenId][date].plan[mealTime];
             const resFact = data[kitchenId][date].fact[mealTime];
-            const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-            dataForColumnChart.push(
-                { date, type: 'fact', mealTime, value: values.fact },
-                { date, type: 'plan', mealTime, value: values.plan }
-            );
+
+            const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+
+            (row as any)[`${mealTime}_plan`] = plan;
+            (row as any)[`${mealTime}_fact`] = fact;
         }
-        const resPlan = data[kitchenId][date].plan.total;
-        const resFact = data[kitchenId][date].fact.total;
-        const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-        dataForAnnotation.push({
-            date,
-            ...values
-        });
+
+        result.push(row);
     }
-    return { dataForColumnChart, dataForAnnotation };
+
+    return result;
 }
+
 /**Преобразование данных от сервера для линейного графика*/
 export function handleDataForLinearChart(
     data: IData,
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
-): Array<ILinearChartData> {
-    const result: Array<ILinearChartData> = [];
+): Array<{ date: string; plan: number; fact: number }> {
+    const result: Array<{ date: string; plan: number; fact: number }> = [];
+
     if (Object.keys(data).length === 0) {
         return result;
     }
@@ -133,8 +141,14 @@ export function handleDataForLinearChart(
     for (const date in data[kitchenId]) {
         const resPlan = data[kitchenId][date].plan.total;
         const resFact = data[kitchenId][date].fact.total;
-        const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-        result.push({ type: 'fact', date, value: values.fact }, { type: 'plan', date, value: values.plan });
+        const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+
+        result.push({
+            date,
+            plan,
+            fact
+        });
     }
+
     return result;
 }
