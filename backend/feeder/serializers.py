@@ -110,15 +110,20 @@ class VolunteerListSerializer(serializers.ModelSerializer):
         model = models.Volunteer
         fields = '__all__'
 
+
+
 class RetrieveVolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
     arrivals = ArrivalSerializer(many=True)
     person = PersonSerializer(required=False, allow_null=True)
-
+    color_type = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = models.Volunteer
         fields = '__all__'
+
+    def get_color_type(self, volunteer):
+        return models.Color.objects.get(name = getattr(volunteer, 'main_role', None).color).id
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
