@@ -1,11 +1,11 @@
-import { type FormInstance, Tabs } from 'antd';
+import { Tabs } from 'antd';
 import { useEffect, useState } from 'react';
 
-import { CommonEdit } from './common-edit';
+import { CommonEdit } from './common-edit/common-edit';
 import { CommonFoodTest } from './common-food';
 import { CommonHistory } from './common-history';
 
-export const CreateEdit = ({ form }: { form: FormInstance }) => {
+export const CreateEdit = () => {
     const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
     useEffect(() => {
@@ -41,7 +41,7 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         {
             key: '1',
             label: screenSize.width <= 576 ? 'Инфо' : 'Персональная информация',
-            children: <CommonEdit form={form} />
+            children: <CommonEdit />
         },
         {
             key: '2',
