@@ -123,7 +123,9 @@ class RetrieveVolunteerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_color_type(self, volunteer):
-        return models.Color.objects.get(name = getattr(volunteer, 'main_role', None).color).id
+        main_role = getattr(volunteer, 'main_role', None)
+        if main_role:
+            return models.Color.objects.get(name = main_role.color).id
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
