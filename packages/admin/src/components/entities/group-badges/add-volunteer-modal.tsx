@@ -23,7 +23,10 @@ export const AddVolunteerModal: FC<{
     const visibleDirections = useVisibleDirections();
 
     const { data, isLoading: isVolunteersAllLoading } = useList<VolEntity>({
-        resource: 'volunteers'
+        resource: 'volunteers',
+        pagination: {
+            pageSize: 0
+        }
     });
     const { data: volunteersAll = [] } = data ?? {};
 
@@ -45,7 +48,7 @@ export const AddVolunteerModal: FC<{
         setSelected([]);
     };
 
-    // Если волонтер уже есть в volunteers но с флагом markedDeleted, считаем, что его нет в бейдже
+    // Если волонтер уже есть в volunteers, но с флагом markedDeleted, считаем, что его нет в бейдже
     const currentIds = volunteers.filter((item) => !item.markedDeleted).map((item) => item.id);
 
     const filteredVols = volunteersAll.filter(
