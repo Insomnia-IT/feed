@@ -1,17 +1,6 @@
-import {
-    Button,
-    Edit,
-    EditButton,
-    Form,
-    Space,
-    Table,
-    TextField,
-    Typography,
-    useForm,
-    useTable
-} from '@pankod/refine-antd';
-import { Col, Divider, Input, Popconfirm, Row } from 'antd';
-import { IResourceComponentsProps, useUpdateMany } from '@pankod/refine-core';
+import { Edit, EditButton, TextField, useForm, useTable } from '@refinedev/antd';
+import { Button, Table, Form, Typography, Space, Divider, Input, Popconfirm, Row, Col } from 'antd';
+import { useUpdateMany } from '@refinedev/core';
 import { DeleteOutlined } from '@ant-design/icons';
 import { FC, useEffect, useState } from 'react';
 
@@ -21,7 +10,7 @@ import { AddVolunteerModal } from 'components/entities/group-badges/add-voluntee
 
 const { Title } = Typography;
 
-export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
+export const GroupBadgeEdit: FC = () => {
     const { mutate } = useUpdateMany();
 
     const [volunteers, setVolunteers] = useState<Array<VolEntity & { markedDeleted: boolean; markedAdded: boolean }>>(
@@ -160,13 +149,13 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
                                 cancelText="Отмена"
                                 okType="danger"
                                 onConfirm={(): void => {
-                                    setVolunteers((prevVolunteers) => {
-                                        return prevVolunteers.find((item) => item.id === record.id)?.markedAdded
+                                    setVolunteers((prevVolunteers) =>
+                                        prevVolunteers.find((item) => item.id === record.id)?.markedAdded
                                             ? prevVolunteers.filter((item) => item.id !== record.id)
                                             : prevVolunteers.map((vol) =>
                                                   vol.id === record.id ? { ...vol, markedDeleted: true } : vol
-                                              );
-                                    });
+                                              )
+                                    );
                                 }}
                             >
                                 <Button icon={<DeleteOutlined />} danger size="small" />

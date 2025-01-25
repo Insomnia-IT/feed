@@ -1,8 +1,8 @@
-import { Input, Modal, Table } from '@pankod/refine-antd';
+import { Input, Modal, Table } from 'antd';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import { useState } from 'react';
 import type { FC, Key } from 'react';
-import { useList } from '@pankod/refine-core';
+import { useList } from '@refinedev/core';
 
 import type { VolEntity } from 'interfaces';
 import { useMedia } from 'shared/providers';
@@ -23,7 +23,10 @@ export const AddVolunteerModal: FC<{
     const visibleDirections = useVisibleDirections();
 
     const { data, isLoading: isVolunteersAllLoading } = useList<VolEntity>({
-        resource: 'volunteers'
+        resource: 'volunteers',
+        pagination: {
+            pageSize: 0
+        }
     });
     const { data: volunteersAll = [] } = data ?? {};
 
@@ -45,7 +48,7 @@ export const AddVolunteerModal: FC<{
         setSelected([]);
     };
 
-    // Если волонтер уже есть в volunteers но с флагом markedDeleted, считаем, что его нет в бейдже
+    // Если волонтер уже есть в volunteers, но с флагом markedDeleted, считаем, что его нет в бейдже
     const currentIds = volunteers.filter((item) => !item.markedDeleted).map((item) => item.id);
 
     const filteredVols = volunteersAll.filter(
@@ -102,7 +105,11 @@ export const AddVolunteerModal: FC<{
                 rowKey="id"
                 loading={isVolunteersAllLoading}
                 size="small"
-                pagination={{ pageSize: isDesktop ? 100 : 5, showSizeChanger: false, size: 'small' }}
+                pagination={{
+                    pageSize: isDesktop ? 100 : 5,
+                    showSizeChanger: false,
+                    size: 'small'
+                }}
             >
                 <Table.Column dataIndex="name" key="name" title="Имя на бейдже" ellipsis width="40%" />
                 <Table.Column dataIndex="first_name" key="first_name" title="Имя" ellipsis />

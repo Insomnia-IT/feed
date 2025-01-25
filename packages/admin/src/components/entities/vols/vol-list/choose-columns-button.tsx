@@ -1,4 +1,4 @@
-import { Col, Row, Popover, Button, Checkbox } from '@pankod/refine-antd';
+import { Col, Row, Popover, Button, Checkbox } from 'antd';
 import { DatabaseOutlined, PlusOutlined } from '@ant-design/icons';
 import { FC, useContext } from 'react';
 

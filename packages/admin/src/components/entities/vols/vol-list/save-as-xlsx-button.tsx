@@ -1,4 +1,4 @@
-import { Button } from '@pankod/refine-antd';
+import { Button } from 'antd';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FC, useState } from 'react';
 import ExcelJS from 'exceljs';
@@ -54,7 +54,7 @@ export const SaveAsXlsxButton: FC<{
             icon={isExporting ? <LoadingOutlined spin /> : <DownloadOutlined />}
             disabled={isDisabled}
         >
-                Выгрузить
+            Выгрузить
         </Button>
     );
 };
