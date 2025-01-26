@@ -103,6 +103,7 @@ export class MySubClassedDexie extends Dexie {
 export const db = new MySubClassedDexie();
 
 export const addTransaction = async ({
+    amount,
     group_badge,
     isVegan,
     kitchenId,
@@ -119,13 +120,14 @@ export const addTransaction = async ({
         reason: string;
     };
     group_badge?: number | null;
+    amount?: number;
 }): Promise<any> => {
     const ts = dayjs().unix();
-    let amount = 1;
+    let amountInner = amount ?? 1;
     let reason: string | null = null;
     if (log) {
         if (log.error) {
-            amount = 0;
+            amountInner = 0;
         }
 
         reason = log.reason;
@@ -136,7 +138,7 @@ export const addTransaction = async ({
         is_vegan: vol ? vol.is_vegan : isVegan,
         ts,
         kitchen: kitchenId,
-        amount,
+        amount: amountInner,
         ulid: ulid(ts),
         mealTime: MealTime[mealTime],
         is_new: true,
@@ -146,6 +148,7 @@ export const addTransaction = async ({
 };
 
 export const dbIncFeed = async ({
+    amount,
     group_badge,
     isVegan,
     kitchenId,
@@ -153,6 +156,7 @@ export const dbIncFeed = async ({
     mealTime,
     vol
 }: {
+    amount?: number;
     group_badge?: number | null;
     vol?: Volunteer | null;
     mealTime: MealTime;
@@ -163,7 +167,7 @@ export const dbIncFeed = async ({
     };
     kitchenId: number;
 }): Promise<any> => {
-    return await addTransaction({ group_badge, vol, mealTime, isVegan, log, kitchenId });
+    return await addTransaction({ amount, group_badge, vol, mealTime, isVegan, log, kitchenId });
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {

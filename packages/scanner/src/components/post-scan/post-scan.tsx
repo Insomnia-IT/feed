@@ -8,25 +8,39 @@ import { useFeedVol, validateVol } from '~/components/post-scan/post-scan.utils'
 import { useApp } from '~/model/app-provider';
 import { FeedAnonGroupCard } from '~/components/post-scan/post-scan-cards/feed-anon-group-card/feed-anon-group-card';
 
+enum AvailViews {
+    SingleVolunteerError = 'vol-error',
+    SingleVolunteerWarning = 'vol-warning',
+    SingleVolunteerFeed = 'vol-feed',
+    SingleVolunteerAnon = 'anon',
+    VolunteerAnonGroup = 'anon-group'
+}
+
 /**
  * Функция возвращает тип экрана для отрисовки и список ошибок в случае ошибочного экрана
  * */
-const getInitialScreenState = ({ kitchenId, mealTime, qrcode, vol, volTransactions }) => {
-    let view;
+const getInitialScreenState = ({
+    kitchenId,
+    mealTime,
+    qrcode,
+    vol,
+    volTransactions
+}): { view: AvailViews; errors: Array<string> } => {
+    let view = AvailViews.SingleVolunteerAnon;
     let errors: Array<string> = [];
 
     if (qrcode === 'anon') {
-        view = 'anon';
+        view = AvailViews.SingleVolunteerAnon;
     }
 
     if (vol && volTransactions) {
         const { isRed, msg } = validateVol({ vol, volTransactions, kitchenId, mealTime });
 
         if (msg?.length) {
-            view = isRed ? 'vol-error' : 'vol-warning';
+            view = isRed ? AvailViews.SingleVolunteerError : AvailViews.SingleVolunteerWarning;
             errors = msg;
         } else {
-            view = 'vol-feed';
+            view = AvailViews.SingleVolunteerFeed;
         }
     }
 
@@ -39,29 +53,29 @@ export const PostScan: FC = memo(() => {
 
     const { errors, view } = getInitialScreenState({ kitchenId, mealTime, qrcode, vol, volTransactions });
 
-    const [postScanView, setPostScanView] = useState<'anon' | 'anon-group' | 'vol-feed' | 'vol-warning' | 'vol-error'>(
-        view
-    );
+    const [postScanView, setPostScanView] = useState<AvailViews>(view);
 
     const { doFeed, doNotFeed } = useFeedVol(vol, mealTime, handleCloseCard, kitchenId);
 
     return (
         <>
-            {postScanView === 'anon' && (
+            {postScanView === AvailViews.SingleVolunteerAnon && (
                 <FeedAnonCard
                     close={handleCloseCard}
                     doFeed={doFeed}
                     onClickFeedGroup={() => {
-                        setPostScanView('anon-group');
+                        setPostScanView(AvailViews.VolunteerAnonGroup);
                     }}
                 />
             )}
-            {postScanView === 'anon-group' && <FeedAnonGroupCard close={handleCloseCard} doFeed={doFeed} />}
-            {postScanView === 'vol-feed' && vol && <FeedCard doFeed={doFeed} close={handleCloseCard} vol={vol} />}
-            {postScanView === 'vol-warning' && vol && (
+            {postScanView === AvailViews.VolunteerAnonGroup && <FeedAnonGroupCard close={handleCloseCard} />}
+            {postScanView === AvailViews.SingleVolunteerFeed && vol && (
+                <FeedCard doFeed={doFeed} close={handleCloseCard} vol={vol} />
+            )}
+            {postScanView === AvailViews.SingleVolunteerWarning && vol && (
                 <FeedWarningCard close={handleCloseCard} doFeed={doFeed} doNotFeed={doNotFeed} vol={vol} msg={errors} />
             )}
-            {postScanView === 'vol-error' && vol && (
+            {postScanView === AvailViews.SingleVolunteerError && vol && (
                 <FeedErrorCard close={handleCloseCard} doNotFeed={doNotFeed} msg={errors} vol={vol} />
             )}
         </>
