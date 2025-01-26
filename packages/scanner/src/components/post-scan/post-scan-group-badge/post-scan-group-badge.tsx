@@ -13,6 +13,7 @@ import {
     getGroupBadgeCurrentMealTransactions,
     getTodayStart,
     getVolTransactionsAsync,
+    massFeedAnons,
     validateVol
 } from '../post-scan.utils';
 
@@ -61,61 +62,6 @@ const useGroupBadgeData = ({
         }, [id]) ?? ([] as Array<TransactionJoined>);
 
     return { alreadyFedTransactions, vols };
-};
-
-// Кормим анонимов, если введено "другое число"
-const feedAnons = async ({
-    groupBadge,
-    kitchenId,
-    mealTime,
-    nonVegansCount,
-    vegansCount
-}: {
-    groupBadge: GroupBadge;
-    kitchenId: number;
-    vegansCount: number;
-    nonVegansCount: number;
-    mealTime?: MealTime | null;
-}): Promise<void> => {
-    if (!mealTime) {
-        return;
-    }
-
-    const createTransactionDraft = ({
-        isVegan
-    }: {
-        isVegan?: boolean;
-    } = {}): {
-        group_badge: number;
-        vol: null;
-        mealTime: MealTime;
-        isVegan?: boolean;
-        log: {
-            error: boolean;
-            reason: string;
-        };
-        kitchenId: number;
-    } => {
-        return {
-            vol: null,
-            mealTime,
-            isVegan,
-            log: { error: false, reason: 'Групповое питание' },
-            kitchenId,
-            group_badge: groupBadge.id
-        };
-    };
-
-    // Количество меньше нуля маловероятно, но, так как тип number предполагает такое поведение, стоит предусмотреть такой вариант
-    const vegans =
-        vegansCount <= 0 ? [] : Array.from(new Array(vegansCount), () => createTransactionDraft({ isVegan: true }));
-
-    // Количество меньше нуля маловероятно, но, так как тип number предполагает такое поведение, стоит предусмотреть такой вариант
-    const nonVegans = nonVegansCount <= 0 ? [] : Array.from(new Array(nonVegansCount), () => createTransactionDraft());
-
-    const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
-
-    await Promise.all(promises);
 };
 
 // callback to feed vols
@@ -178,10 +124,12 @@ export const PostScanGroupBadge: FC<{
     };
 
     const doFeedAnons = (value: { vegansCount: number; nonVegansCount: number }): void => {
-        void feedAnons({ ...value, groupBadge, kitchenId, mealTime });
+        void massFeedAnons({ ...value, groupBadge, kitchenId, mealTime });
     };
 
-    const leftToFeedInBadge = validationGroups.greens.length - (alreadyFedTransactions?.length ?? 0);
+    const leftToFeedInBadge =
+        // Транзакции кормления анонимов по групповому бейджу могут содержать значение amount, отличное от 1
+        validationGroups.greens.length - (alreadyFedTransactions?.reduce((count, next) => count + next.amount, 0) ?? 0);
 
     useEffect(() => {
         // loading
