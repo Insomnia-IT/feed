@@ -92,7 +92,7 @@ export const CommonEdit = () => {
     };
 
     useEffect(() => {
-        function onHardwareScan(e: any): void {
+        function onHardwareScan(e: CustomEvent<{ scanCode: string }>): void {
             const scanCode = e?.detail?.scanCode;
             if (scanCode) {
                 form.setFieldValue('qr', scanCode.replace(/[^A-Za-z0-9]/g, ''));

@@ -7,7 +7,7 @@ export enum AppRoles {
     ADMIN = 'ADMIN',
     SENIOR = 'SENIOR',
     CAT = 'CAT',
-    DIRECTION_HEAD = 'DIRECTION_HEAD',
+    DIRECTION_HEAD = 'DIRECTION_HEAD'
 }
 
 export interface UserData {
@@ -69,47 +69,47 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
     }
     userPromise =
         userPromise ||
-        // eslint-disable-next-line no-async-promise-executor
-        new Promise(async (resolve, reject) => {
-            try {
-                if (token.startsWith('V-TOKEN')) {
-                    const { data } = await axios.get(
-                        `${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`,
-                        {
-                            headers: {
-                                Authorization: token
+        new Promise((resolve, reject) => {
+            (async () => {
+                try {
+                    if (token.startsWith('V-TOKEN')) {
+                        const { data } = await axios.get(
+                            `${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`,
+                            {
+                                headers: {
+                                    Authorization: token
+                                }
                             }
-                        }
-                    );
-                    const { access_role, directions, id, name } = data.results[0];
-                    const userData: UserData = {
-                        username: name,
-                        id: id,
-                        roles: [access_role],
-                        directions: directions.map(({ id }: { id: string }) => id),
-                        exp: 0,
-                        iat: 0
-                    };
+                        );
+                        const { access_role, directions, id, name } = data.results[0];
+                        const userData: UserData = {
+                            username: name,
+                            id: id,
+                            roles: [access_role],
+                            directions: directions.map(({ id }: { id: string }) => id),
+                            exp: 0,
+                            iat: 0
+                        };
 
-                    setUserInfo(userData);
+                        setUserInfo(userData);
 
-                    resolve(userData);
-                } else {
-                    const { data } = await axios.get(`${NEW_API_URL}/auth/user/`, {
-                        headers: {
-                            Authorization: `Token ${token}`
-                        }
-                    });
+                        resolve(userData);
+                    } else {
+                        const { data } = await axios.get(`${NEW_API_URL}/auth/user/`, {
+                            headers: {
+                                Authorization: `Token ${token}`
+                            }
+                        });
 
-                    setUserInfo(data);
+                        setUserInfo(data);
 
-                    resolve(data);
+                        resolve(data);
+                    }
+                } catch (e) {
+                    reject(e);
+                    userPromise = undefined;
                 }
-            } catch (e) {
-                reject(e);
-            } finally {
-                userPromise = undefined;
-            }
+            })();
         });
 
     return await userPromise;

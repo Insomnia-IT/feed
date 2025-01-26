@@ -171,7 +171,10 @@ export const useFilters = ({
             type: FilterFieldType.Lookup,
             name: 'directions',
             title: 'Службы/Локации',
-            getter: (data: { directions: any }) => (data.directions || []).map(({ id }: { id: string }) => id),
+            getter: (value: unknown) => {
+                const data = value as { directions: Array<{ id: string }> };
+                return (data.directions || []).map(({ id }: { id: string }) => id);
+            },
             skipNull: true,
             lookup: () =>
                 (directions?.data ?? [])

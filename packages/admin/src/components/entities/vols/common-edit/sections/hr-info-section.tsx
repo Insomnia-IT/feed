@@ -17,7 +17,7 @@ export const HrInfoSection = ({
     canFullEditing: boolean;
     allowRoleEdit: boolean;
     denyBadgeEdit: boolean;
-    person: any;
+    person: { id: number; name: string; role: string };
     mainRole: string;
     directionOptions: { label: string; value: string | number }[];
     rolesOptions: { label: string; value: string | number }[];
@@ -34,7 +34,7 @@ export const HrInfoSection = ({
         });
     };
 
-    const getDirectionIds = (direction: any[]) => ({
+    const getDirectionIds = (direction: { id?: string | number }[]) => ({
         value: direction ? direction.map((d) => d.id || d) : direction
     });
 

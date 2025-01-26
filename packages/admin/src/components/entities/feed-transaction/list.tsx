@@ -1,6 +1,6 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
 import { Table, Space, Button, DatePicker, Form, Input } from 'antd';
-import { CrudFilter, useList } from '@refinedev/core';
+import { useList } from '@refinedev/core';
 import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -22,14 +22,16 @@ const mealTimeById: Record<string, string> = {
 };
 
 export const FeedTransactionList: FC = () => {
-    const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
+    const [filters, setFilters] = useState<Array<{ field: string; value: string }> | null>(null);
 
     const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
-        onSearch: (values: any) => {
-            const filters: any[] = [];
+        onSearch: (data) => {
+            const values = data as { search?: string; date?: [string, string] };
+            const filters: Array<{ field: string; operator: 'contains' | 'gte' | 'lte'; value: string }> = [];
             if (values.search) {
                 filters.push({
                     field: 'search',
+                    operator: 'contains',
                     value: values.search
                 });
             }
@@ -38,10 +40,12 @@ export const FeedTransactionList: FC = () => {
                 filters.push(
                     {
                         field: 'dtime_from',
+                        operator: 'gte',
                         value: dayjsExtended(values.date[0]).startOf('day').toISOString()
                     },
                     {
                         field: 'dtime_to',
+                        operator: 'lte',
                         value: dayjsExtended(values.date[1]).endOf('day').toISOString()
                     }
                 );
@@ -88,7 +92,7 @@ export const FeedTransactionList: FC = () => {
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
         let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
         if (filters) {
-            filters.forEach((filter: any) => {
+            filters.forEach((filter: { field: string; value: string }) => {
                 if (filter.value) {
                     url = url.concat(`&${filter.field}=${filter.value}`);
                 }
