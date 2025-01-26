@@ -169,8 +169,6 @@ export const massFeedAnons = async ({
     // Количество меньше нуля маловероятно, но, так как тип number предполагает такое поведение, стоит предусмотреть такой вариант
     const nonVegans = nonVegansCount <= 0 ? [] : [createTransactionDraft({ isVegan: false, amount: nonVegansCount })];
 
-    console.log('someeee', [...vegans, ...nonVegans]);
-
     const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
 
     await Promise.all(promises);
