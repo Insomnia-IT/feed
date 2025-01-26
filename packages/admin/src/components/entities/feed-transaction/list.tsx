@@ -1,7 +1,7 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
-import { Table, Space, Button, DatePicker, Form, Input } from 'antd';
-import { CrudFilter, useList } from '@refinedev/core';
-import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
+import { Table, Space, Button, DatePicker, Form, Input, Tag } from 'antd';
+import { CrudFilter, HttpError, useList } from '@refinedev/core';
+import { FC, ReactNode, useCallback, useMemo } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ExcelJS from 'exceljs';
@@ -9,8 +9,9 @@ import dayjs from 'dayjs';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { saveXLSX } from 'shared/lib/saveXLSX';
-import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
+import { FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { NEW_API_URL } from 'const';
+import { ColumnsType } from 'antd/es/table';
 
 const { RangePicker } = DatePicker;
 
@@ -21,43 +22,72 @@ const mealTimeById: Record<string, string> = {
     night: 'Дожор'
 };
 
-export const FeedTransactionList: FC = () => {
-    const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
+interface TransformedTransaction {
+    ulid: string;
+    dateTime: string;
+    volunteerName: string;
+    volunteerFIO: string;
+    volunteerId: number;
+    feedType: string;
+    mealType: string;
+    kitchenName: string;
+    amount: number;
+    reason: string;
+    groupBadgeName: string;
+    directions: Array<string>;
+}
 
-    const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
+const GROUP_FEED_REASON = 'Групповое питание';
+
+export const FeedTransactionList: FC = () => {
+    const { searchFormProps, tableProps, filters, setFilters } = useTable<FeedTransactionEntity, HttpError>({
         onSearch: (values: any) => {
-            const filters: any[] = [];
-            if (values.search) {
-                filters.push({
-                    field: 'search',
-                    value: values.search
-                });
-            }
+            setFilters([]);
+            const newFilters: Array<CrudFilter> = [];
+
+            newFilters.push({
+                field: 'search',
+                value: values.search,
+                operator: 'contains'
+            });
 
             if (values.date) {
-                filters.push(
+                newFilters.push(
                     {
                         field: 'dtime_from',
-                        value: dayjsExtended(values.date[0]).startOf('day').toISOString()
+                        value: dayjsExtended(values.date[0]).startOf('day').toISOString(),
+                        operator: 'gte'
                     },
                     {
                         field: 'dtime_to',
-                        value: dayjsExtended(values.date[1]).endOf('day').toISOString()
+                        value: dayjsExtended(values.date[1]).endOf('day').toISOString(),
+                        operator: 'lte'
+                    }
+                );
+            } else {
+                // Без этого фильтры некорректно сбрасываются
+                newFilters.push(
+                    {
+                        field: 'dtime_from',
+                        value: null,
+                        operator: 'gte'
+                    },
+                    {
+                        field: 'dtime_to',
+                        value: null,
+                        operator: 'lte'
                     }
                 );
             }
 
-            setFilters(filters);
-            return filters;
+            return newFilters;
         }
     });
 
     const { data: vols, isLoading: volsIsLoading } = useList<VolEntity>({
         resource: 'volunteers',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
+        pagination: {
+            pageSize: 10000
         }
     });
 
@@ -65,13 +95,33 @@ export const FeedTransactionList: FC = () => {
         resource: 'kitchens'
     });
 
-    const volNameById = useMemo(() => {
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges',
+        pagination: {
+            pageSize: 10000
+        }
+    });
+
+    const getGroupBadgeNameById = useCallback(
+        (id?: number): string => {
+            if (typeof id !== 'number') {
+                return '';
+            }
+
+            const targetBadge = groupBadges?.data?.find((badge) => badge.id === id);
+
+            return targetBadge?.name ?? '';
+        },
+        [groupBadges]
+    );
+
+    const volById = useMemo(() => {
         return (vols ? vols.data : []).reduce(
             (acc, vol) => ({
                 ...acc,
-                [vol.id]: vol.name
+                [vol.id]: vol
             }),
-            {} as Record<string, string>
+            {} as Record<string, VolEntity>
         );
     }, [vols]);
 
@@ -84,6 +134,63 @@ export const FeedTransactionList: FC = () => {
             {} as Record<string, string>
         );
     }, [kitchens]);
+
+    const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
+        return (
+            transactions?.map<TransformedTransaction>((item: FeedTransactionEntity) => {
+                return {
+                    ulid: item.ulid,
+                    dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
+                    volunteerName: volById?.[item.volunteer]?.name || 'Аноним',
+                    volunteerFIO: '',
+                    volunteerId: item.volunteer,
+                    feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
+                    mealType: mealTimeById[item.meal_time],
+                    kitchenName: kitchenNameById[item.kitchen],
+                    amount: item.amount,
+                    reason: item.reason.replace(GROUP_FEED_REASON, ''),
+                    groupBadgeName: getGroupBadgeNameById(item.group_badge),
+                    directions: (volById?.[item.volunteer]?.directions ?? []).map((dir) => dir.name)
+                };
+            }) ?? []
+        );
+    };
+
+    const transformedResult = transformResult(tableProps?.dataSource);
+
+    const tableColumns: ColumnsType<TransformedTransaction> = [
+        {
+            dataIndex: 'dateTime',
+            title: 'Время'
+        },
+        { dataIndex: 'volunteerName', title: 'Волонтер' },
+        { dataIndex: 'volunteerId', title: 'ID волонтера' },
+        { dataIndex: 'feedType', title: 'Тип питания' },
+        { dataIndex: 'mealType', title: 'Прием пищи' },
+        { dataIndex: 'kitchenName', title: 'Кухня' },
+        { dataIndex: 'amount', title: 'Кол-во' },
+        { dataIndex: 'reason', title: 'Причина' },
+        { dataIndex: 'groupBadgeName', title: 'Групповой бейдж' },
+        {
+            dataIndex: 'directions',
+            title: 'Службы',
+            render: (value: string[]) => {
+                return value.map((name) => (
+                    <Tag key={name} color={'default'} icon={false} closable={false}>
+                        {name}
+                    </Tag>
+                ));
+            }
+        },
+        {
+            title: 'Действия',
+            render: (_: unknown, record: TransformedTransaction): ReactNode => (
+                <Space>
+                    <DeleteButton hideText size="small" recordItemId={record.ulid} />
+                </Space>
+            )
+        }
+    ];
 
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
         let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
@@ -109,25 +216,30 @@ export const FeedTransactionList: FC = () => {
             'Прием пищи',
             'Кухня',
             'Кол-во',
-            'Причина'
+            'Причина',
+            'Групповой бейдж',
+            'Службы'
         ];
         sheet.addRow(header);
 
-        transactions.forEach((tx) => {
+        transactions?.forEach((tx) => {
             sheet.addRow([
                 dayjs(tx.dtime).format('DD.MM.YYYY'),
                 dayjs(tx.dtime).format('HH:mm:ss'),
                 tx.volunteer,
-                tx.volunteer ? volNameById[tx.volunteer] : 'Аноним',
-                tx.is_vegan !== null ? (tx.is_vegan ? 'Веган' : 'Мясоед') : '',
+                tx.volunteer ? volById[tx.volunteer]?.name : 'Аноним',
+                tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
                 mealTimeById[tx.meal_time],
                 kitchenNameById[tx.kitchen],
                 tx.amount,
-                tx.reason
+                tx.reason.replace(GROUP_FEED_REASON, ''),
+                getGroupBadgeNameById(tx.group_badge),
+                (volById?.[tx.volunteer]?.directions ?? []).map((dir) => dir.name).join(',')
             ]);
         });
+
         void saveXLSX(workbook, 'feed-transactions');
-    }, [filters, kitchenNameById, volNameById]);
+    }, [filters, kitchenNameById, volById, getGroupBadgeNameById]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
@@ -146,10 +258,22 @@ export const FeedTransactionList: FC = () => {
                     <Button type="primary" htmlType="submit">
                         Применить
                     </Button>
+                    <Button
+                        type="default"
+                        htmlType="reset"
+                        onClick={() => {
+                            searchFormProps?.form?.resetFields();
+                            searchFormProps?.form?.submit();
+                        }}
+                    >
+                        Очистить
+                    </Button>
                 </Space>
             </Form>
-            <Table
-                {...tableProps}
+            <Table<TransformedTransaction>
+                loading={tableProps.loading}
+                pagination={tableProps.pagination}
+                dataSource={transformedResult}
                 rowKey="ulid"
                 footer={() => (
                     <Button
@@ -161,36 +285,8 @@ export const FeedTransactionList: FC = () => {
                         Выгрузить
                     </Button>
                 )}
-            >
-                <Table.Column
-                    dataIndex="dtime"
-                    title="Время"
-                    render={(value) => dayjs(value).format('DD/MM/YY HH:mm:ss')}
-                />
-                <Table.Column
-                    dataIndex="volunteer"
-                    title="Волонтер"
-                    render={(value) => volNameById?.[value] || 'Аноним'}
-                />
-                <Table.Column dataIndex="volunteer" title="ID волонтера" render={(value) => value || ''} />
-                <Table.Column
-                    dataIndex="is_vegan"
-                    title="Тип питания"
-                    render={(value) => (value !== null ? (value ? 'Веган' : 'Мясоед') : '')}
-                />
-                <Table.Column dataIndex="meal_time" title="Прием пищи" render={(value) => mealTimeById[value]} />
-                <Table.Column dataIndex="kitchen" title="Кухня" render={(value) => kitchenNameById[value]} />
-                <Table.Column dataIndex="amount" title="Кол-во" render={(value: string): ReactNode => value} />
-                <Table.Column dataIndex="reason" title="Причина" render={(value: string): ReactNode => value} />
-                <Table.Column<FeedTransactionEntity>
-                    title="Действия"
-                    render={(_, record) => (
-                        <Space>
-                            <DeleteButton hideText size="small" recordItemId={record.ulid} />
-                        </Space>
-                    )}
-                />
-            </Table>
+                columns={tableColumns}
+            />
         </List>
     );
 };
