@@ -1,13 +1,11 @@
 import { Form, Input, Select } from 'antd';
 import { useSelect } from '@refinedev/antd';
-import { FC, lazy, Suspense } from 'react';
+import { FC } from 'react';
 
 import { Rules } from 'components/form/rules';
+import { TextEditor } from 'components/controls/text-editor';
 import type { DirectionEntity } from 'interfaces';
-
 import useVisibleDirections from '../vols/use-visible-directions';
-
-const ReactQuill = lazy(() => import('react-quill'));
 
 export const CreateEdit: FC = () => {
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
@@ -32,9 +30,7 @@ export const CreateEdit: FC = () => {
                 <Input />
             </Form.Item>
             <Form.Item label="Комментарий" name="comment">
-                <Suspense fallback={<div>Loading editor...</div>}>
-                    <ReactQuill />
-                </Suspense>
+                <TextEditor />
             </Form.Item>
         </>
     );
