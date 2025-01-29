@@ -1,15 +1,15 @@
-import type { TablePaginationConfig } from '@pankod/refine-antd';
-import { Col, List, Row, Select } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useList, useNavigation } from '@pankod/refine-core';
+import { useNavigation, useList } from '@refinedev/core';
+import { List } from '@refinedev/antd';
+import { Input, Row, Col, Select } from 'antd';
+import type { TablePaginationConfig } from 'antd';
 import { FC, useEffect, useState } from 'react';
-import { Input } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
+
 import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 import { useMedia } from 'shared/providers';
 
-import { Filters } from './vol-list/filters';
+import { Filters } from './vol-list/filters/filters';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
 import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
 import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
@@ -17,11 +17,12 @@ import useCanAccess from './use-can-access';
 
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
-import { useFilters } from 'components/entities/vols/vol-list/use-filters';
+import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
 
-export const VolList: FC<IResourceComponentsProps> = () => {
-    const [page, setPage] = useState(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
-
+export const VolList: FC = () => {
+    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
     const { isDesktop, isMobile } = useMedia();
 
     const canListCustomFields = useCanAccess({
@@ -29,9 +30,8 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         resource: 'volunteer-custom-fields'
     });
 
-    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
-
-    const [pageSize, setPageSize] = useState(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+    const { push } = useNavigation();
+    const queryClient = useQueryClient();
 
     const {
         accessRoleById,
@@ -90,27 +90,23 @@ export const VolList: FC<IResourceComponentsProps> = () => {
         void loadCustomFields();
     }, []);
 
-    const volunteersData = volunteers?.data ?? [];
-
-    const queryClient = useQueryClient();
-    const { push } = useNavigation();
-
     const openVolunteer = (id: number): Promise<boolean> => {
         queryClient.clear();
         push(`/volunteers/edit/${id}`);
         return Promise.resolve(true);
     };
 
+    const volunteersData = volunteers?.data ?? [];
+
     return (
         <List>
             <ActiveColumnsContextProvider customFields={customFields}>
-                {/* -------------------------- Фильтры -------------------------- */}
                 <Input
                     placeholder="Поиск по волонтерам, датам, службам"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     allowClear
-                ></Input>
+                />
                 <Filters
                     activeFilters={activeFilters}
                     setActiveFilters={setActiveFilters}
@@ -156,7 +152,6 @@ export const VolList: FC<IResourceComponentsProps> = () => {
                     )}
                 </Row>
 
-                {/* -------------------------- Список волонтеров -------------------------- */}
                 {isMobile && (
                     <VolunteerMobileList
                         statusById={statusById}

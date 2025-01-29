@@ -1,8 +1,7 @@
-import { DateField, DeleteButton, List, Space, Table, TextField, useTable } from '@pankod/refine-antd';
-import type { CrudFilter, IResourceComponentsProps } from '@pankod/refine-core';
-import { useList } from '@pankod/refine-core';
+import { DeleteButton, List, useTable } from '@refinedev/antd';
+import { Table, Space, Button, DatePicker, Form, Input } from 'antd';
+import { CrudFilter, useList } from '@refinedev/core';
 import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
-import { Button, DatePicker, Form, Input } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ExcelJS from 'exceljs';
@@ -22,12 +21,12 @@ const mealTimeById: Record<string, string> = {
     night: 'Дожор'
 };
 
-export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
+export const FeedTransactionList: FC = () => {
     const [filters, setFilters] = useState<Array<CrudFilter> | null>(null);
 
     const { searchFormProps, tableProps } = useTable<FeedTransactionEntity>({
         onSearch: (values: any) => {
-            const filters: any = [];
+            const filters: any[] = [];
             if (values.search) {
                 filters.push({
                     field: 'search',
@@ -166,43 +165,23 @@ export const FeedTransactionList: FC<IResourceComponentsProps> = () => {
                 <Table.Column
                     dataIndex="dtime"
                     title="Время"
-                    render={(value) => <DateField format="DD/MM/YY HH:mm:ss" value={value} />}
+                    render={(value) => dayjs(value).format('DD/MM/YY HH:mm:ss')}
                 />
                 <Table.Column
                     dataIndex="volunteer"
                     title="Волонтер"
-                    render={(value) => <TextField value={volNameById?.[value] || 'Аноним'} />}
+                    render={(value) => volNameById?.[value] || 'Аноним'}
                 />
-                <Table.Column
-                    dataIndex="volunteer"
-                    title="ID волонтера"
-                    render={(value) => <TextField value={value || ''} />}
-                />
+                <Table.Column dataIndex="volunteer" title="ID волонтера" render={(value) => value || ''} />
                 <Table.Column
                     dataIndex="is_vegan"
                     title="Тип питания"
-                    render={(value) => <TextField value={value !== null ? (value ? 'Веган' : 'Мясоед') : ''} />}
+                    render={(value) => (value !== null ? (value ? 'Веган' : 'Мясоед') : '')}
                 />
-                <Table.Column
-                    dataIndex="meal_time"
-                    title="Прием пищи"
-                    render={(value) => <TextField value={mealTimeById[value]} />}
-                />
-                <Table.Column
-                    dataIndex="kitchen"
-                    title="Кухня"
-                    render={(value) => <TextField value={kitchenNameById[value]} />}
-                />
-                <Table.Column
-                    dataIndex="amount"
-                    title="Кол-во"
-                    render={(value: string): ReactNode => <TextField value={value} />}
-                />
-                <Table.Column
-                    dataIndex="reason"
-                    title="Причина"
-                    render={(value: string): ReactNode => <TextField value={value} />}
-                />
+                <Table.Column dataIndex="meal_time" title="Прием пищи" render={(value) => mealTimeById[value]} />
+                <Table.Column dataIndex="kitchen" title="Кухня" render={(value) => kitchenNameById[value]} />
+                <Table.Column dataIndex="amount" title="Кол-во" render={(value: string): ReactNode => value} />
+                <Table.Column dataIndex="reason" title="Причина" render={(value: string): ReactNode => value} />
                 <Table.Column<FeedTransactionEntity>
                     title="Действия"
                     render={(_, record) => (

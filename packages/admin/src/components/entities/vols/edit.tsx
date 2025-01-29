@@ -1,5 +1,6 @@
-import { Edit, Form, useForm } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { Edit, useForm } from '@refinedev/antd';
+import { Form } from 'antd';
+import type { IResourceComponentsProps } from '@refinedev/core';
 
 import type { VolEntity } from 'interfaces';
 
@@ -29,8 +30,8 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                 }
             }}
         >
-            <Form {...formProps} scrollToFirstError={true} layout="vertical">
-                <CreateEdit form={form} />
+            <Form {...formProps} scrollToFirstError layout="vertical">
+                <CreateEdit />
             </Form>
             {renderModal()}
         </Edit>

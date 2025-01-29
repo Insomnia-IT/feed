@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, DatePicker, Divider, Form, Radio, Space } from 'antd';
-import type { RadioChangeEvent } from '@pankod/refine-antd';
+import { Button, DatePicker, Divider, Form, Radio, RadioChangeEvent, Space } from 'antd';
 import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
@@ -37,6 +36,7 @@ function convertDateToStringForApi(date: dayjsExt.Dayjs | null | undefined) {
     }
     return date.format('YYYY-MM-DD');
 }
+
 function sordResponceByDate(a: IStatisticApi, b: IStatisticApi): 1 | -1 | 0 {
     if (dayjsExt(a.date).isAfter(b.date)) return 1;
     else return -1;
@@ -203,4 +203,5 @@ function PublicStatistic() {
         </>
     );
 }
+
 export { PublicStatistic };

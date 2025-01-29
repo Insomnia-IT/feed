@@ -1,6 +1,6 @@
+import { useLogin } from '@refinedev/core';
 import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Typography } from 'antd';
-import { useLogin } from '@pankod/refine-core';
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, FC } from 'react';
 import QrScanner from 'qr-scanner';
 
 import logo from '../../assets/images/logo.svg';
@@ -16,6 +16,7 @@ import {
 } from './styles';
 
 const { Title } = Typography;
+
 export interface ILoginForm {
     username: string;
     password: string;
