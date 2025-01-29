@@ -20,7 +20,6 @@ export interface VolEntity {
     feed_type?: number; //FeedTypeEntity;
     qr_code?: string;
     group_badge?: number | undefined;
-    kitchen?: number;
     printing_batch?: number;
     main_role?: string;
     access_role?: string;
