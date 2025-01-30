@@ -67,6 +67,7 @@ export interface FeedTransactionEntity {
     is_vegan: boolean | null;
     reason: string;
     kitchen: number;
+    group_badge?: number;
 }
 
 export interface GroupBadgeEntity {
