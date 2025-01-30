@@ -118,8 +118,7 @@ const createAndSaveXLSX = async ({
                 'Комментарий',
                 'Цвет бейджа',
                 'Право доступа',
-                // eslint-disable-next-line no-unsafe-optional-chaining
-                ...customFields?.map((field): string => field.name)
+                ...(customFields ?? []).map((field): string => field.name)
             ];
 
             sheet.addRow(header);
@@ -139,7 +138,9 @@ const createAndSaveXLSX = async ({
                     vol.name,
                     vol.first_name,
                     vol.last_name,
-                    vol.directions ? vol.directions.map((direction: { name: any }) => direction.name).join(', ') : '',
+                    vol.directions
+                        ? vol.directions.map((direction: { name: string }) => direction.name).join(', ')
+                        : '',
                     vol.main_role ? volunteerRoleById[vol.main_role] : '',
                     currentArrival ? statusById[currentArrival?.status] : '',
                     currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
@@ -159,8 +160,7 @@ const createAndSaveXLSX = async ({
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
                     vol.color_type ? colorNameById[vol.color_type] : '',
                     vol.access_role ? accessRoleById[vol.access_role] : '',
-                    // eslint-disable-next-line no-unsafe-optional-chaining
-                    ...customFields?.map((field) => {
+                    ...(customFields?.map((field) => {
                         const value =
                             vol.custom_field_values.find(
                                 (fieldValue: { custom_field: number }): boolean => fieldValue.custom_field === field.id
@@ -169,7 +169,7 @@ const createAndSaveXLSX = async ({
                             return value === 'true' ? 1 : 0;
                         }
                         return value;
-                    })
+                    }) ?? [])
                 ]);
             });
 

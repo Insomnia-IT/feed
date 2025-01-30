@@ -2,7 +2,22 @@ import { RadarChartOutlined } from '@ant-design/icons';
 
 import styles from '../../common.module.css';
 
-export const PreviousYearsSection = ({ person }: { person: any }) => {
+interface IEngagement {
+    id: string;
+    year: number;
+    direction: {
+        name: string;
+    };
+    role: {
+        name: string;
+    };
+}
+
+interface IPerson {
+    engagements: IEngagement[];
+}
+
+export const PreviousYearsSection = ({ person }: { person: IPerson }) => {
     const engagements = person?.engagements || [];
 
     return (
@@ -10,7 +25,7 @@ export const PreviousYearsSection = ({ person }: { person: any }) => {
             <p className={styles.formSection__title}>Участие во все года</p>
             <div className={styles.engagementsWrap}>
                 {engagements.length > 0 &&
-                    engagements.map((item: any) => (
+                    engagements.map((item: IEngagement) => (
                         <div key={item.id}>
                             <span className={styles.engagementsDescr}>{`${item.year} год`}</span>
                             <RadarChartOutlined style={{ marginRight: '3px' }} />

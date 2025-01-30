@@ -1,4 +1,5 @@
-import { Form, Input, Checkbox } from 'antd';
+import { Form, Input, Checkbox, CheckboxChangeEvent } from 'antd';
+import { ChangeEvent } from 'react';
 
 import { CustomFieldEntity } from 'interfaces';
 
@@ -27,14 +28,19 @@ export const CustomFieldsSection = ({
                     const defaultChecked = customFieldValue ? customFieldValue.value === 'true' : false;
                     const defaultValue = customFieldValue ? customFieldValue.value : '';
 
-                    const handleChange = (e: any) => {
+                    const handleChange = (e: CheckboxChangeEvent | ChangeEvent<HTMLInputElement>) => {
                         const value = type === 'boolean' ? e.target.checked : e.target.value;
                         form.setFieldValue(['updated_custom_fields', id.toString()], value);
                     };
 
                     return (
                         <Form.Item key={name} label={name}>
-                            {type === 'boolean' && <Checkbox defaultChecked={defaultChecked} onChange={handleChange} />}
+                            {type === 'boolean' && (
+                                <Checkbox
+                                    defaultChecked={defaultChecked}
+                                    onChange={handleChange as (e: CheckboxChangeEvent) => void}
+                                />
+                            )}
                             {type === 'string' && <Input defaultValue={defaultValue} onChange={handleChange} />}
                         </Form.Item>
                     );

@@ -89,9 +89,7 @@ export const LoginPage: FC = () => {
     };
 
     useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        function onHardwareScan({ detail: { scanCode } }): void {
+        function onHardwareScan({ detail: { scanCode } }: { detail: { scanCode: string } }): void {
             void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 

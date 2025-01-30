@@ -28,7 +28,7 @@ export const AdditionalSection = ({
 
     const currentComment = form.getFieldValue('comment') || '';
 
-    const handleBanSuccess = (updatedData: any) => {
+    const handleBanSuccess = (updatedData: Record<string, unknown>) => {
         form.setFieldsValue(updatedData);
         setBanModalVisible(false);
     };
