@@ -32,7 +32,7 @@ interface TransformedTransaction {
     mealType: string;
     kitchenName: string;
     amount: number;
-    reason: string;
+    reason?: string;
     groupBadgeName: string;
     directions: Array<string>;
 }
@@ -148,7 +148,7 @@ export const FeedTransactionList: FC = () => {
                     mealType: mealTimeById[item.meal_time],
                     kitchenName: kitchenNameById[item.kitchen],
                     amount: item.amount,
-                    reason: item.reason.replace(GROUP_FEED_REASON, ''),
+                    reason: item?.reason?.replace(GROUP_FEED_REASON, ''),
                     groupBadgeName: getGroupBadgeNameById(item.group_badge),
                     directions: (volById?.[item.volunteer]?.directions ?? []).map((dir) => dir.name)
                 };
@@ -232,7 +232,7 @@ export const FeedTransactionList: FC = () => {
                 mealTimeById[tx.meal_time],
                 kitchenNameById[tx.kitchen],
                 tx.amount,
-                tx.reason.replace(GROUP_FEED_REASON, ''),
+                tx?.reason?.replace(GROUP_FEED_REASON, '') ?? '',
                 getGroupBadgeNameById(tx.group_badge),
                 (volById?.[tx.volunteer]?.directions ?? []).map((dir) => dir.name).join(',')
             ]);

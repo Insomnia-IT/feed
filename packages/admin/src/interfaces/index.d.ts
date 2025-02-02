@@ -65,7 +65,7 @@ export interface FeedTransactionEntity {
     meal_time: string;
     volunteer: number;
     is_vegan: boolean | null;
-    reason: string;
+    reason: string | null;
     kitchen: number;
     group_badge?: number;
 }
