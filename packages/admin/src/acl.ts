@@ -32,6 +32,7 @@ export const ACL: AccessControlProvider = {
     can: async ({ action, resource }: { action: string; resource?: string }) => {
         let can = false;
         const user = await getUserData(true);
+        console.log(user); // здесь все правильно получается
         if (user) {
             const { roles } = user;
             roles.forEach((role: string) => {

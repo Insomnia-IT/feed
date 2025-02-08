@@ -10,84 +10,92 @@ import useCanAccess from '../../use-can-access';
 import styles from '../../common.module.css';
 
 export const AdditionalSection = ({
-    isBlocked,
-    canUnban,
-    canDelete,
-    volunteerId
+  isBlocked,
+  canUnban,
+  canDelete,
+  volunteerId
 }: {
-    isBlocked: boolean;
-    canUnban: boolean;
-    canDelete: boolean;
-    volunteerId: number;
+  isBlocked: boolean;
+  canUnban: boolean;
+  canDelete: boolean;
+  volunteerId: number;
 }) => {
-    const form = Form.useFormInstance();
-    const [isBanModalVisible, setBanModalVisible] = useState(false);
-    const navigate = useNavigate();
+  const form = Form.useFormInstance();
+  const [isBanModalVisible, setBanModalVisible] = useState(false);
+  const navigate = useNavigate();
 
-    const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+  const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
 
-    const currentComment = form.getFieldValue('comment') || '';
+  const currentComment = form.getFieldValue('comment') || '';
 
-    const handleBanSuccess = (updatedData: any) => {
-        form.setFieldsValue(updatedData);
-        setBanModalVisible(false);
-    };
+  const handleBanSuccess = (updatedData: any) => {
+    form.setFieldsValue(updatedData);
+    setBanModalVisible(false);
+  };
 
-    const handleBack = () => {
-        navigate('..');
-    };
+  const handleBack = () => {
+    navigate('..');
+  };
 
-    return (
-        <>
-            <p className={styles.formSection__title}>Дополнительно</p>
-            <div className="commentArea">
-                <Form.Item label="Комментарий" name={'comment'}>
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
-                </Form.Item>
-            </div>
-            <Divider />
+  return (
+    <>
+      <p className={styles.formSection__title}>Дополнительно</p>
+      <div className="commentArea">
+        <Form.Item label="Комментарий" name={'comment'}>
+          <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+        </Form.Item>
+        <Form.Item label="Заметка" name="direction_head_comment"
+        // disabled={isDirectionHead} 
+        >
+          <Input.TextArea
+            autoSize={{ minRows: 2, maxRows: 6 }}
+          // disabled={!isDirectionHead}
+          />
+        </Form.Item>
+      </div>
+      <Divider />
 
-            <div className={styles.blockDeleteWrap}>
-                <Button
-                    className={styles.blockButton}
-                    type="default"
-                    onClick={() => setBanModalVisible(true)}
-                    disabled={isBlocked ? !canUnban : false}
-                >
-                    {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
-                    {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
-                </Button>
+      <div className={styles.blockDeleteWrap}>
+        <Button
+          className={styles.blockButton}
+          type="default"
+          onClick={() => setBanModalVisible(true)}
+          disabled={isBlocked ? !canUnban : false}
+        >
+          {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
+          {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+        </Button>
 
-                <BanModal
-                    isBlocked={isBlocked}
-                    visible={isBanModalVisible}
-                    onCancel={() => setBanModalVisible(false)}
-                    volunteerId={volunteerId}
-                    currentComment={currentComment}
-                    onSuccess={handleBanSuccess}
-                />
+        <BanModal
+          isBlocked={isBlocked}
+          visible={isBanModalVisible}
+          onCancel={() => setBanModalVisible(false)}
+          volunteerId={volunteerId}
+          currentComment={currentComment}
+          onSuccess={handleBanSuccess}
+        />
 
-                {canDelete && (
-                    <DeleteButton
-                        type="primary"
-                        icon={false}
-                        size="middle"
-                        recordItemId={volunteerId}
-                        confirmTitle="Вы действительно хотите удалить волонтера?"
-                        confirmOkText="Да"
-                        confirmCancelText="Нет"
-                        onSuccess={handleBack}
-                    >
-                        Удалить волонтера
-                    </DeleteButton>
-                )}
-            </div>
-            <div className={styles.visuallyHidden}>
-                <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: '0' }}>
-                    <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
-                </Form.Item>
-                <Form.Item name="person" hidden />
-            </div>
-        </>
-    );
+        {canDelete && (
+          <DeleteButton
+            type="primary"
+            icon={false}
+            size="middle"
+            recordItemId={volunteerId}
+            confirmTitle="Вы действительно хотите удалить волонтера?"
+            confirmOkText="Да"
+            confirmCancelText="Нет"
+            onSuccess={handleBack}
+          >
+            Удалить волонтера
+          </DeleteButton>
+        )}
+      </div>
+      <div className={styles.visuallyHidden}>
+        <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: '0' }}>
+          <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
+        </Form.Item>
+        <Form.Item name="person" hidden />
+      </div>
+    </>
+  );
 };
