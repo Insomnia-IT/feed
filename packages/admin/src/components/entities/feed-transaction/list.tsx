@@ -40,7 +40,10 @@ interface TransformedTransaction {
 const GROUP_FEED_REASON = 'Групповое питание';
 
 export const FeedTransactionList: FC = () => {
-    const { searchFormProps, tableProps, filters, setFilters } = useTable<FeedTransactionEntity, HttpError>({
+    const { searchFormProps, tableProps, filters, setFilters, setCurrent, setPageSize } = useTable<
+        FeedTransactionEntity,
+        HttpError
+    >({
         onSearch: (values: any) => {
             setFilters([]);
             const newFilters: Array<CrudFilter> = [];
@@ -95,7 +98,7 @@ export const FeedTransactionList: FC = () => {
         resource: 'kitchens'
     });
 
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
+    const { data: groupBadges, isLoading: groupBadgesIsLoading } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         pagination: {
             pageSize: 10000
@@ -272,7 +275,16 @@ export const FeedTransactionList: FC = () => {
             </Form>
             <Table<TransformedTransaction>
                 loading={tableProps.loading}
-                pagination={tableProps.pagination}
+                pagination={{
+                    ...tableProps.pagination,
+                    onChange: (page, size) => {
+                        setCurrent(page);
+
+                        if (typeof size === 'number') {
+                            setPageSize(size);
+                        }
+                    }
+                }}
                 dataSource={transformedResult}
                 rowKey="ulid"
                 footer={() => (
@@ -280,7 +292,7 @@ export const FeedTransactionList: FC = () => {
                         type="primary"
                         onClick={handleClickDownload}
                         icon={<DownloadOutlined />}
-                        disabled={volsIsLoading || kitchensIsLoading}
+                        disabled={volsIsLoading || kitchensIsLoading || groupBadgesIsLoading}
                     >
                         Выгрузить
                     </Button>
