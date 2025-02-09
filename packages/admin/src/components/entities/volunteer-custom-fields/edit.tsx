@@ -19,7 +19,16 @@ export const VolunteerCustomFieldEdit: FC<IResourceComponentsProps> = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            <Edit saveButtonProps={saveButtonProps} canDelete={true}>
+            <Edit
+                saveButtonProps={saveButtonProps}
+                canDelete={true}
+                footerButtonProps={{
+                    style: {
+                        float: 'left',
+                        marginLeft: '24px'
+                    }
+                }}
+            >
                 <Form {...formProps} layout="vertical">
                     <CreateEdit isEdit={true} />
                 </Form>
