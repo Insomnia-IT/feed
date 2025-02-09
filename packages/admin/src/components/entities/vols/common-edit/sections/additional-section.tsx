@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Divider, Form, Input, Button, Checkbox } from 'antd';
 import { FrownOutlined, SmileOutlined } from '@ant-design/icons';
 import { DeleteButton } from '@refinedev/antd';
@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 
 import BanModal from './ban-modal';
 import useCanAccess from '../../use-can-access';
-import { getUserData, AppRoles } from '../../../../../auth';
 
 import styles from '../../common.module.css';
 
@@ -25,22 +24,11 @@ export const AdditionalSection = ({
     const [isBanModalVisible, setBanModalVisible] = useState(false);
     const navigate = useNavigate();
 
-    const [isDirectionHead, setIsDirectionHead] = useState(false);
-
-    useEffect(() => {
-        const fetchUserData = async () => {
-            const user = await getUserData(true);
-            if (user?.roles.includes(AppRoles.DIRECTION_HEAD)) {
-                setIsDirectionHead(true);
-            }
-        };
-
-        fetchUserData();
-    }, []);
-
-    console.log('isDirectionHead',isDirectionHead);
-
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
+
+    const canAccessBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
+
+    const isDirectionHead = !canAccessBadgeEdit;
 
     const currentComment = form.getFieldValue('comment') || '';
 
@@ -52,7 +40,7 @@ export const AdditionalSection = ({
     const handleBack = () => {
         navigate('..');
     };
-
+    
     return (
         <>
             <p className={styles.formSection__title}>Дополнительно</p>
