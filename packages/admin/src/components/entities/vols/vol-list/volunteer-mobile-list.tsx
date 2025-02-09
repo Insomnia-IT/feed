@@ -54,7 +54,7 @@ export const VolunteerMobileList: FC<{
                                 {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
                             </div>
                             <div className={styles.textRow}>
-                                <span className={styles.bold}>Комментарий: </span>
+                                <span className={styles.bold}>Заметка: </span>
                                 {comment || '-'}
                             </div>
                         </div>
