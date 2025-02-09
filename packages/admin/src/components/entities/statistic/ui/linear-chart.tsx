@@ -1,8 +1,7 @@
+import { FC, Suspense, lazy } from 'react';
 import type { LineConfig } from '@ant-design/plots';
-import dynamic from 'next/dynamic';
 
 import type { StatisticType } from '../types';
-const Line = dynamic(() => import('@ant-design/plots').then(({ Line }) => Line), { ssr: false });
 
 /** Данные для линейного графика */
 interface ILinearChartData {
@@ -11,16 +10,28 @@ interface ILinearChartData {
     type: StatisticType;
 }
 
-/**Настройки для линейчатого графика*/
-const lineConfig: Omit<LineConfig, 'data'> = {
+/** Настройки для линейчатого графика */
+const lineConfig: LineConfig = {
     xField: 'date',
     yField: 'value',
     seriesField: 'type',
-    yAxis: {
-        tickInterval: 5
+    meta: {
+        value: {
+            alias: 'Значение',
+            tickInterval: 5
+        }
     }
 };
-export default function LinearChart(props: { linearChartData: Array<ILinearChartData> }) {
-    return <Line data={props.linearChartData} {...lineConfig} />;
-}
+
+const Line = lazy(() => import('@ant-design/plots').then((module) => ({ default: module.Line })));
+
+const LinearChart: FC<{ linearChartData: Array<ILinearChartData> }> = (props) => {
+    return (
+        <Suspense fallback={<div>Loading chart...</div>}>
+            <Line data={props.linearChartData} {...lineConfig} />
+        </Suspense>
+    );
+};
+
+export default LinearChart;
 export type { ILinearChartData };

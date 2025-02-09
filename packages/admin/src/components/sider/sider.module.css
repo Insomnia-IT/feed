@@ -5,7 +5,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     z-index: 20000000;
-    background-color: #FFF;
+    background-color: #fff;
 }
 
 .siderButton {
@@ -17,7 +17,7 @@
     border: none;
     outline: none;
     background-color: transparent;
-    color: #8D959E;
+    color: #8d959e;
     font-weight: 400;
 }
 

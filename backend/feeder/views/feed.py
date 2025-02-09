@@ -21,6 +21,13 @@ class FeedTypeViewSet(viewsets.ModelViewSet):
 class FeedTransactionFilter(django_filters.FilterSet):
     dtime_from = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='gte')
     dtime_to = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='lte')
+    meal_time = django_filters.CharFilter(field_name="meal_time", lookup_expr="exact")
+    anonymous = django_filters.BooleanFilter(method="filter_anonymous")
+
+    def filter_anonymous(self, queryset, name, value):
+        if value:
+            return queryset.filter(volunteer__isnull=True)
+        return queryset.filter(volunteer__isnull=False)
 
     class Meta:
         model = models.FeedTransaction

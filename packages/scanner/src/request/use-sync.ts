@@ -37,7 +37,6 @@ export const useSync = (
 
             setFetching(true);
 
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             return new Promise(async (res, rej) => {
                 const success = (): void => {
                     setFetching(false);

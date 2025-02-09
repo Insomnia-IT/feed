@@ -1,13 +1,13 @@
-import nookies from 'nookies';
+import Cookies from 'js-cookie';
 import axios from 'axios';
 
-import { NEW_API_URL } from '~/const';
+import { NEW_API_URL } from 'const';
 
 export enum AppRoles {
     ADMIN = 'ADMIN',
     SENIOR = 'SENIOR',
     CAT = 'CAT',
-    DIRECTION_HEAD = 'DIRECTION_HEAD'
+    DIRECTION_HEAD = 'DIRECTION_HEAD',
 }
 
 export interface UserData {
@@ -22,29 +22,29 @@ export interface UserData {
 export const AUTH_COOKIE_NAME = 'auth';
 export const AUTH_DATA_COOKIE_NAME = 'authData';
 
-type UserDataReturn<T extends boolean> = (T extends true ? UserData : string) | null;
-export const getUserData = async <T extends true | false>(ctx, decode: T): Promise<UserDataReturn<T>> => {
-    const cookies = nookies.get(ctx);
-    const token = cookies[AUTH_COOKIE_NAME];
+type UserDataReturn<T extends boolean> = T extends true ? UserData | null : string | null;
+
+export const getUserData = async <T extends true | false>(decode: T): Promise<UserDataReturn<T>> => {
+    const token = Cookies.get(AUTH_COOKIE_NAME);
 
     if (!token) {
-        return null;
+        return null as UserDataReturn<T>;
     }
 
     axios.defaults.headers.common = {
         Authorization: token.startsWith('V-TOKEN ') ? token : `Token ${token}`
     };
 
-    return decode
-        ? Promise.resolve(
-              <UserDataReturn<T>>await getUserInfo(token)
-          ) /* <UserDataReturn<T>>jwt_decode<UserData>(token)*/
-        : Promise.resolve(<UserDataReturn<T>>token);
+    if (decode) {
+        return (await getUserInfo(token)) as UserDataReturn<T>;
+    } else {
+        return token as UserDataReturn<T>;
+    }
 };
 
 export const setUserData = (token: string): void => {
-    nookies.set(null, AUTH_COOKIE_NAME, token, {
-        maxAge: 30 * 24 * 60 * 60,
+    Cookies.set(AUTH_COOKIE_NAME, token, {
+        expires: 30,
         path: '/'
     });
     axios.defaults.headers.common = {
@@ -54,8 +54,8 @@ export const setUserData = (token: string): void => {
 };
 
 export const setUserInfo = (user: UserData): void => {
-    nookies.set(null, AUTH_DATA_COOKIE_NAME, JSON.stringify(user), {
-        maxAge: 30 * 24 * 60 * 60,
+    Cookies.set(AUTH_DATA_COOKIE_NAME, JSON.stringify(user), {
+        expires: 30,
         path: '/'
     });
 };
@@ -63,13 +63,13 @@ export const setUserInfo = (user: UserData): void => {
 let userPromise: Promise<UserData | undefined> | undefined;
 
 export const getUserInfo = async (token: string): Promise<UserData | undefined> => {
-    const authData = nookies.get({})[AUTH_DATA_COOKIE_NAME];
+    const authData = Cookies.get(AUTH_DATA_COOKIE_NAME);
     if (authData) {
         return JSON.parse(authData) as UserData;
     }
     userPromise =
         userPromise ||
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        // eslint-disable-next-line no-async-promise-executor
         new Promise(async (resolve, reject) => {
             try {
                 if (token.startsWith('V-TOKEN')) {
@@ -86,7 +86,7 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                         username: name,
                         id: id,
                         roles: [access_role],
-                        directions: directions.map(({ id }) => id),
+                        directions: directions.map(({ id }: { id: string }) => id),
                         exp: 0,
                         iat: 0
                     };
@@ -116,10 +116,10 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
 };
 
 export const clearUserData = (): void => {
-    nookies.destroy(null, AUTH_COOKIE_NAME);
+    Cookies.remove(AUTH_COOKIE_NAME);
     clearUserInfo();
 };
 
 export const clearUserInfo = (): void => {
-    nookies.destroy(null, AUTH_DATA_COOKIE_NAME);
+    Cookies.remove(AUTH_DATA_COOKIE_NAME);
 };

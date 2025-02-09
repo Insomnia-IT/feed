@@ -15,3 +15,5 @@ packages/api/__db
 _db
 .yarn/cache
 .yarn/install-state.gz
+
+packages/admin_old

@@ -2,12 +2,11 @@ import { useEffect } from 'react';
 import axios from 'axios';
 
 import { clearCache } from '~/shared/lib/utils';
+import ver from 'pwa-ver.txt';
 
-// eslint-disable-next-line import/no-unresolved
-import ver from '!!raw-loader!pwa-ver.txt';
-console.log(`local app ver: ${ver}`);
+console.log(`pwa-ver.txt: ${ver}`);
 
-export const useCheckVersion = () => {
+export const useCheckVersion = (): void => {
     useEffect(() => {
         const checkVer = (): void => {
             console.log('online, check ver..');

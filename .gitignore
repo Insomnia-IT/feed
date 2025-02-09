@@ -2,6 +2,11 @@
 
 # IDEs
 .devcontainer
+.vscode/*
+!.vscode/settings.json
+
+.idea
+/.idea
 
 # dependencies
 /node_modules
@@ -50,3 +55,5 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+admin_old

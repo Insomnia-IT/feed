@@ -25,16 +25,6 @@ declare module '*.svg?raw' {
     export default content;
 }
 
-declare module '!!raw-loader!*' {
-    const contents: string;
-    export = contents;
-}
-
-declare module '!!raw-loader!./*.svg' {
-    const content: string;
-    export default content;
-}
-
 declare module '*.png' {
     const value: any;
 

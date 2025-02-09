@@ -1,21 +1,14 @@
-const {loaderByName, addBeforeLoaders} = require('@craco/craco')
+const { loaderByName, removeLoaders } = require('@craco/craco');
 
 module.exports = {
-    overrideWebpackConfig:
-        ({webpackConfig, cracoConfig, pluginOptions, context: {env, paths}}) => {
-            const rawLoader = {
-                loader: require.resolve('raw-loader'),
-                options: {
-                    esModule: false
-                }
-            }
+    overrideWebpackConfig: ({ webpackConfig }) => {
+        removeLoaders(webpackConfig, loaderByName('raw-loader'));
 
-            const added = addBeforeLoaders(webpackConfig, loaderByName('file-loader'), rawLoader)
+        webpackConfig.module.rules.unshift({
+            test: /\.txt$/i,
+            type: 'asset/source'
+        });
 
-            console.log({added})
-
-            // process.exit(1)
-
-            return webpackConfig
-        }
-}
+        return webpackConfig;
+    }
+};

@@ -1,14 +1,22 @@
-import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Space, Typography } from 'antd';
-import { useLogin, useTranslate } from '@pankod/refine-core';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useLogin } from '@refinedev/core';
+import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Typography } from 'antd';
+import { useCallback, useEffect, useRef, useState, FC } from 'react';
 import QrScanner from 'qr-scanner';
 
-import { Rules } from '../form/rules';
-import logo from '../../../../scanner/src/assets/images/logo.svg';
+import logo from '../../assets/images/logo.svg';
 
-import { containerStyles, imageContainer, layoutStyles, titleStyles } from './styles';
+import {
+    authContainerStyles,
+    containerStyles,
+    imageContainer,
+    layoutStyles,
+    loginFormStyles,
+    qrFormStyles,
+    titleStyles
+} from './styles';
 
 const { Title } = Typography;
+
 export interface ILoginForm {
     username: string;
     password: string;
@@ -17,14 +25,13 @@ export interface ILoginForm {
 }
 
 const rowStyle = {
-    height: '100vh'
+    height: '100dvh'
 };
 
 type OptionValue = 'qr' | 'login';
 
 export const LoginPage: FC = () => {
     const [form] = Form.useForm<ILoginForm>();
-    const translate = useTranslate();
     const [selectedOption, setSelectedOption] = useState<OptionValue>('qr');
 
     const { isLoading, mutate: login } = useLogin<ILoginForm>();
@@ -82,95 +89,106 @@ export const LoginPage: FC = () => {
     };
 
     useEffect(() => {
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         function onHardwareScan({ detail: { scanCode } }): void {
             void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 
-        // @ts-ignore
         document.addEventListener('scan', onHardwareScan);
 
         return (): void => {
-            // @ts-ignore
             document.removeEventListener('scan', onHardwareScan);
         };
     }, [onScan]);
 
     const loginForm = (
-        <div style={{ minHeight: '390px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={loginFormStyles}>
             <Card>
                 <Form<ILoginForm>
-                    layout='vertical'
+                    layout="vertical"
                     form={form}
                     onFinish={(values) => login(values)}
                     requiredMark={false}
                     initialValues={{ remember: false }}
                 >
-                    <Form.Item name='username' rules={[{ required: true, message: 'Пожалуйста, введите логин' }]}>
-                        <Input size='large' placeholder={translate('pages.login.username', 'Username')} />
+                    <Form.Item
+                        name="username"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Пожалуйста, введите логин'
+                            }
+                        ]}
+                    >
+                        <Input size="large" placeholder="Логин" />
                     </Form.Item>
-                    <Form.Item name='password' rules={[{ required: true, message: 'Пожалуйста, введите пароль' }]}>
-                        <Input
-                            type='password'
-                            placeholder={translate('pages.login.password', 'Password')}
-                            size='large'
-                        />
+                    <Form.Item
+                        name="password"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Пожалуйста, введите пароль'
+                            }
+                        ]}
+                    >
+                        <Input type="password" placeholder="Пароль" size="large" />
                     </Form.Item>
                     <div style={{ marginBottom: '28px' }}>
-                        <Form.Item name='remember' valuePropName='checked' noStyle>
-                            <Checkbox style={{ fontSize: '14px' }}>
-                                {translate('pages.login.remember', 'Remember me')}
-                            </Checkbox>
+                        <Form.Item name="remember" valuePropName="checked" noStyle>
+                            <Checkbox style={{ fontSize: '14px' }}>Запомнить меня</Checkbox>
                         </Form.Item>
                     </div>
-                    <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
-                        {translate('pages.login.signin', 'Sign in')}
+                    <Button type="primary" size="large" htmlType="submit" loading={isLoading} block>
+                        Войти
                     </Button>
                 </Form>
             </Card>
         </div>
     );
 
-    const qrForm = <video ref={onVideoReady} style={{ width: '100%', borderRadius: '6px', minHeight: '390px' }} />;
+    const qrForm = (
+        <div style={authContainerStyles}>
+            <video ref={onVideoReady} style={qrFormStyles} />
+        </div>
+    );
+
+    function renderOptionLabel(text: string) {
+        return (
+            <div style={{ padding: 6 }}>
+                <div>{text}</div>
+            </div>
+        );
+    }
 
     return (
         <Layout style={layoutStyles}>
-            <Row justify='center' align='middle' style={rowStyle}>
-                <Col xs={22}>
-                    <div style={containerStyles}>
-                        <div style={imageContainer}>
-                            {/* @ts-ignore */}
-                            <img src={logo.src} alt='Логотип фестиваля' style={{ height: '44px' }} />
-                            <Title level={4} style={titleStyles}>
-                                Вход в Кормитель
-                            </Title>
-                        </div>
-                        <Space direction='vertical' size='large' style={{ display: 'flex' }}>
-                            {selectedOption === 'qr' ? qrForm : loginForm}
-                            <Segmented
-                                options={[
-                                    {
-                                        label: (
-                                            <div style={{ padding: 6 }}>
-                                                <div>Сканировать QR-код</div>
-                                            </div>
-                                        ),
-                                        value: 'qr'
-                                    },
-                                    {
-                                        label: (
-                                            <div style={{ padding: 6 }}>
-                                                <div>Логин и пароль</div>
-                                            </div>
-                                        ),
-                                        value: 'login'
-                                    }
-                                ]}
-                                block
-                                onChange={(value) => setSelectedOption(value as OptionValue)}
-                            />
-                        </Space>
+            <Row justify="center" align="middle" style={rowStyle}>
+                <Col xs={22} style={containerStyles}>
+                    <div style={imageContainer}>
+                        <img src={logo} alt="Логотип фестиваля" style={{ height: '44px' }} />
+                        <Title level={4} style={titleStyles}>
+                            Вход в Кормитель
+                        </Title>
                     </div>
+
+                    {selectedOption === 'qr' ? qrForm : loginForm}
+
+                    <Segmented
+                        options={[
+                            {
+                                label: renderOptionLabel('Сканировать QR-код'),
+                                value: 'qr'
+                            },
+                            {
+                                label: renderOptionLabel('Логин и пароль'),
+                                value: 'login'
+                            }
+                        ]}
+                        block
+                        onChange={(value) => setSelectedOption(value as OptionValue)}
+                        style={{ marginTop: '14px' }}
+                    />
                 </Col>
             </Row>
         </Layout>

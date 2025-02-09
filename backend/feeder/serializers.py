@@ -110,15 +110,22 @@ class VolunteerListSerializer(serializers.ModelSerializer):
         model = models.Volunteer
         fields = '__all__'
 
+
+
 class RetrieveVolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
     arrivals = ArrivalSerializer(many=True)
     person = PersonSerializer(required=False, allow_null=True)
-
+    color_type = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = models.Volunteer
         fields = '__all__'
+
+    def get_color_type(self, volunteer):
+        main_role = getattr(volunteer, 'main_role', None)
+        if main_role:
+            return models.Color.objects.get(name = main_role.color).id
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
@@ -143,7 +150,10 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     direction = DirectionSerializer(required=False)
-    
+    volunteer_count = serializers.IntegerField(
+        source='volunteers.count',
+        read_only=True
+    )
 
     class Meta:
         model = models.GroupBadge
@@ -183,10 +193,24 @@ class FeedTypeSerializer(serializers.ModelSerializer):
 
 class FeedTransactionSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    # volunteer_name = serializers.SerializerMethodField()
+    # kitchen_name = serializers.SerializerMethodField()
 
     class Meta:
         model = models.FeedTransaction
         fields = '__all__'
+
+    # def get_volunteer_name(self, obj):
+    #     if obj.volunteer:
+    #         return obj.volunteer.name
+    #     else:
+    #         return None
+
+    # def get_kitchen_name(self, obj):
+    #     if obj.kitchen:
+    #         return obj.kitchen.name
+    #     else:
+    #         return None
 
     def create(self, validated_data):
         return models.FeedTransaction.objects.create(**validated_data)

@@ -1,12 +1,11 @@
-import type { ButtonProps, FormInstance } from '@pankod/refine-antd';
-import { Modal } from '@pankod/refine-antd';
+import { Modal, ButtonProps, FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { dataProvider } from '~/dataProvider';
-import type { VolCustomFieldValueEntity } from '~/interfaces';
-import { isActivatedStatus } from '~/shared/lib';
+import { dataProvider } from 'dataProvider';
+import type { VolCustomFieldValueEntity } from 'interfaces';
+import { isActivatedStatus } from 'shared/lib';
 
 const useSaveConfirm = (
     form: FormInstance,
@@ -39,7 +38,7 @@ const useSaveConfirm = (
             const activeFrom =
                 form.getFieldValue(['updated_arrivals', 0, 'arrival_date']) ??
                 form.getFieldValue(['arrivals', 0, 'arrival_date']);
-            if (!arrivals.some(({ status }) => isActivatedStatus(status))) {
+            if (!arrivals.some(({ status }: { status: string }) => isActivatedStatus(status))) {
                 setShowConfirmationModalReason('is_active');
             } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
                 setShowConfirmationModalReason('active_from');
@@ -56,8 +55,16 @@ const useSaveConfirm = (
                 for (const customFieldId in updatedCustomFields) {
                     const { data: customValues } = await dataProvider.getList<VolCustomFieldValueEntity>({
                         filters: [
-                            { field: 'volunteer', operator: 'eq', value: id },
-                            { field: 'custom_field', operator: 'eq', value: customFieldId }
+                            {
+                                field: 'volunteer',
+                                operator: 'eq',
+                                value: id
+                            },
+                            {
+                                field: 'custom_field',
+                                operator: 'eq',
+                                value: customFieldId
+                            }
                         ],
                         resource: 'volunteer-custom-field-values'
                     });
@@ -92,16 +99,16 @@ const useSaveConfirm = (
             }
 
             if (updatedArrivals) {
-                const serializeDate = (value) => {
+                const serializeDate = (value: string | number | Date | dayjs.Dayjs | null | undefined) => {
                     return dayjs(value).format('YYYY-MM-DD');
                 };
                 for (let i = 0; i < updatedArrivals.length; i++) {
                     const updatedArrival = updatedArrivals[i];
 
-                    const arrival = arrivals.find((a) => a.id === updatedArrival.id);
+                    const arrival = arrivals.find((a: { id: any }) => a.id === updatedArrival.id);
                     if (arrival) {
                         if (JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
-                            const serializeField = (obj, fieldName) => {
+                            const serializeField = (obj: { [x: string]: any }, fieldName: string) => {
                                 if (fieldName === 'arrival_date' || fieldName === 'departure_date') {
                                     return serializeDate(obj[fieldName]);
                                 }
@@ -137,7 +144,7 @@ const useSaveConfirm = (
 
                 for (let i = 0; i < arrivals.length; i++) {
                     const arrivalId = arrivals[i].id;
-                    const upadatedArrival = updatedArrivals.find((a) => a.id === arrivalId);
+                    const upadatedArrival = updatedArrivals.find((a: { id: any }) => a.id === arrivalId);
                     if (!upadatedArrival) {
                         await dataProvider.deleteOne({
                             resource: 'arrivals',
@@ -152,11 +159,11 @@ const useSaveConfirm = (
         renderModal: () => {
             return (
                 <Modal
-                    title='Сохранение'
+                    title="Сохранение"
                     open={showConfirmationModalReason !== null}
                     onOk={handleOk}
                     onCancel={handleCancel}
-                    okText='Сохранить'
+                    okText="Сохранить"
                 >
                     {showConfirmationModalReason === 'is_active' && (
                         <>

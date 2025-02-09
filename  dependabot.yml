@@ -1,7 +1,7 @@
 version: 2
 updates:
-  - package-ecosystem: "yarn"
-    # Look for `package.json` and `lock` files in the `root` directory
-    directory: "/"
-    schedule:
-      interval: "daily"
+    - package-ecosystem: 'npm'
+      # Look for `package.json` and `package-lock.json` files in the `root` directory
+      directory: '/'
+      schedule:
+          interval: 'daily'
