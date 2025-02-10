@@ -1,11 +1,10 @@
 import { Form, Modal } from 'antd';
 import { useSelect } from '@refinedev/core';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import type {
     AccessRoleEntity,
     ColorTypeEntity,
-    CustomFieldEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
     KitchenEntity,
@@ -13,7 +12,6 @@ import type {
     TransportEntity
 } from 'interfaces';
 import { isActivatedStatus } from 'shared/lib';
-import { dataProvider } from 'dataProvider';
 import useCanAccess from '../use-can-access';
 import { useAnchorNavigation, useQrDuplicationCheck } from './hooks';
 import {
@@ -94,20 +92,6 @@ export const CommonEdit = () => {
         };
     }, [form]);
 
-    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
-
-    useEffect(() => {
-        const loadCustomFields = async () => {
-            const { data } = await dataProvider.getList<CustomFieldEntity>({
-                resource: 'volunteer-custom-fields'
-            });
-
-            setCustomFields(data);
-        };
-
-        void loadCustomFields();
-    }, []);
-
     return (
         <div className={styles.edit}>
             <SidebarNavigation activeAnchor={activeAnchor} denyBadgeEdit={denyBadgeEdit} />
@@ -139,7 +123,7 @@ export const CommonEdit = () => {
                     />
                 </section>
                 <section id="section5" className={styles.formSection}>
-                    <CustomFieldsSection customFields={customFields} canBadgeEdit={canBadgeEdit} />
+                    <CustomFieldsSection canBadgeEdit={canBadgeEdit} />
                 </section>
                 <section id="section6" className={styles.formSection}>
                     <AdditionalSection
