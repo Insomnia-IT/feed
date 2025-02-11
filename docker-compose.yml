@@ -16,31 +16,31 @@ services:
     #   - ../backend/.env.sample
     volumes:
       - ./db/:/app/db
-  nginx:
+  # nginx:
+  #   build:
+  #     context: ./nginx
+  #   command: sh -c "nginx"
+  #   # command: sh -c "tail -f /dev/null" 
+  #   container_name: feed_nginx
+  #   ports:
+  #     - 81:80
+  front:
+    platform: linux/amd64
     build:
-      context: ./nginx
-    command: sh -c "nginx"
-    # command: sh -c "tail -f /dev/null" 
-    container_name: feed_nginx
+      context: .
+      dockerfile: ./Dockerfile_front
+    container_name: feed_front
     ports:
       - 81:80
-  # admin:
-  #   build:
-  #     context: ../
-  #     dockerfile: ./local-dev/Dockerfile_front
-  #   command: sh -c "cd ./packages/admin && yarn dev"
-  #   container_name: feed_admin
-  #   ports:
-  #     - 3002:3002
-  #   volumes:
-  #     - ../packages/admin/:/app/packages/admin
-  # scanner:
-  #   build:
-  #     context: ../
-  #     dockerfile: ./local-dev/Dockerfile_front
-  #   command: sh -c "cd ./packages/scanner && yarn dev"
-  #   container_name: feed_scanner
-  #   ports:
-  #     - 3001:3001
-  #   volumes:
-  #     - ../packages/scanner/:/app/packages/scanner
+      # volumes:
+      # - ../packages/admin/:/app/packages/admin
+      # scanner:
+      #   build:
+      #     context: ../
+      #     dockerfile: ./local-dev/Dockerfile_front
+      #   command: sh -c "cd ./packages/scanner && yarn dev"
+      #   container_name: feed_scanner
+      #   ports:
+      #     - 3001:3001
+      #   volumes:
+      #     - ../packages/scanner/:/app/packages/scanner
