@@ -3,7 +3,6 @@ import { List } from '@refinedev/antd';
 import { Input, Row, Col, Select } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import { FC, useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
 import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
@@ -30,8 +29,7 @@ export const VolList: FC = () => {
         resource: 'volunteer-custom-fields'
     });
 
-    const { push } = useNavigation();
-    const queryClient = useQueryClient();
+    const { edit } = useNavigation();
 
     const {
         accessRoleById,
@@ -89,8 +87,8 @@ export const VolList: FC = () => {
     }, []);
 
     const openVolunteer = (id: number): Promise<boolean> => {
-        queryClient.clear();
-        push(`/volunteers/edit/${id}`);
+        edit('volunteers', id);
+
         return Promise.resolve(true);
     };
 
