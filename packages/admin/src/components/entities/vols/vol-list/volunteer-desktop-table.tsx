@@ -1,7 +1,7 @@
-import { Table, Tag } from 'antd';
+import { Checkbox, Table, Tag } from 'antd';
 import type { TablePaginationConfig, TableProps } from 'antd';
 import { CheckOutlined, StopOutlined } from '@ant-design/icons';
-import { FC, useMemo, useContext } from 'react';
+import { FC, useMemo, useContext, useState, useEffect } from 'react';
 
 import type { ArrivalEntity, CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
 import { getSorter } from 'utils';
@@ -41,11 +41,44 @@ export const VolunteerDesktopTable: FC<{
 }> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading }) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
 
-    const getCellAction = (id: number): { onClick: (event: any) => Promise<any> | undefined } => {
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    const [isAllCurrentSelected, setIsAllCurrentSelected] = useState(false);
+
+    useEffect(() => {
+        if (isAllCurrentSelected) {
+            setSelectedRows(volunteersData.map((item) => item.id));
+        }
+    }, [isAllCurrentSelected, volunteersData]);
+
+    const rowSelection: TableProps<VolEntity>['rowSelection'] = {
+        onChange: (_selectedRowKeys: React.Key[], selectedRows: VolEntity[]) => {
+            setSelectedRows(selectedRows.map((item) => item.id));
+        },
+        selectedRowKeys: selectedRows,
+        getCheckboxProps: (record: VolEntity) => ({
+            name: record.name
+        }),
+        columnTitle: (
+            <Checkbox
+                checked={isAllCurrentSelected || selectedRows.length === pagination.total}
+                onChange={(event) => {
+                    if (!event.target.checked) {
+                        setSelectedRows([]);
+                    }
+
+                    setIsAllCurrentSelected(!isAllCurrentSelected);
+                }}
+            />
+        )
+    };
+
+    const getCellAction: (id: number) => { onClick: (event: any) => void } = (
+        id: number
+    ): { onClick: (event: any) => void } => {
         return {
-            onClick: (e): Promise<boolean> | undefined => {
+            onClick: (e): void => {
                 if (!e.target.closest('button')) {
-                    return openVolunteer(id);
+                    openVolunteer(id);
                 }
             }
         };
@@ -180,6 +213,7 @@ export const VolunteerDesktopTable: FC<{
             rowKey="id"
             rowClassName={styles.cursorPointer}
             columns={visibleColumns}
+            rowSelection={rowSelection}
         />
     );
 };
