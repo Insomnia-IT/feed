@@ -6,13 +6,11 @@ import type {
     AccessRoleEntity,
     ColorTypeEntity,
     CustomFieldEntity,
-    DirectionEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
     KitchenEntity,
     StatusEntity,
-    TransportEntity,
-    VolunteerRoleEntity
+    TransportEntity
 } from 'interfaces';
 import { isActivatedStatus } from 'shared/lib';
 import { dataProvider } from 'dataProvider';
@@ -36,7 +34,6 @@ export const CommonEdit = () => {
     const form = Form.useFormInstance();
 
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
-    const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' });
     const canBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
@@ -45,26 +42,19 @@ export const CommonEdit = () => {
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
 
     const person = Form.useWatch('person', form);
-    const mainRole = Form.useWatch('main_role', form);
+
     const volunteerId = form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);
 
-    const { options: directionOptions } = useSelect<DirectionEntity>({ resource: 'directions', optionLabel: 'name' });
     const { options: kitchenOptions } = useSelect<KitchenEntity>({ resource: 'kitchens', optionLabel: 'name' });
     const { options: feedTypeOptions } = useSelect<FeedTypeEntity>({ resource: 'feed-types', optionLabel: 'name' });
     const { options: colorTypeOptions } = useSelect<ColorTypeEntity>({
         resource: 'colors',
         optionLabel: 'description'
     });
-    const { options: accessRoleOptions } = useSelect<AccessRoleEntity>({
-        resource: 'access-roles',
-        optionLabel: 'name'
-    });
+
     const { options: genderOptions } = useSelect<AccessRoleEntity>({ resource: 'genders', optionLabel: 'name' });
-    const { options: rolesOptions } = useSelect<VolunteerRoleEntity>({
-        resource: 'volunteer-roles',
-        optionLabel: 'name'
-    });
+
     const { options: groupBadgeOptions } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
         optionLabel: 'name'
@@ -134,16 +124,7 @@ export const CommonEdit = () => {
                     />
                 </section>
                 <section id="section2" className={styles.formSection}>
-                    <HrInfoSection
-                        canFullEditing={canFullEditing}
-                        allowRoleEdit={allowRoleEdit}
-                        denyBadgeEdit={denyBadgeEdit}
-                        person={person}
-                        mainRole={mainRole}
-                        directionOptions={directionOptions}
-                        rolesOptions={rolesOptions}
-                        accessRoleOptions={accessRoleOptions}
-                    />
+                    <HrInfoSection canFullEditing={canFullEditing} denyBadgeEdit={denyBadgeEdit} person={person} />
                 </section>
                 <section id="section3" className={styles.formSection}>
                     <ArrivalsSection statusesOptions={statusesOptions} transportsOptions={transportsOptions} />
