@@ -29,7 +29,7 @@ export const validateVol = ({
 }): { msg: Array<string>; isRed: boolean; isActivated: boolean } => {
     const msg: Array<string> = [];
     let isRed = false;
-    const isActivated = true;
+    let isActivated = true;
 
     if (
         vol.kitchen?.toString() !== kitchenId.toString() &&
@@ -44,8 +44,8 @@ export const validateVol = ({
     }
 
     if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
-        // isActivated = false;
-        // msg.push('Бейдж не активирован в штабе');
+        isActivated = false;
+        msg.push('Бейдж не активирован в штабе');
     }
 
     if (vol.is_blocked) {
@@ -54,7 +54,7 @@ export const validateVol = ({
     }
 
     if (isVolExpired(vol)) {
-        // msg.push('Даты активности не совпадают');
+        msg.push('Даты активности не совпадают');
     }
 
     if (vol.feed_type === FeedType.NoFeed) {
@@ -201,7 +201,7 @@ export const useFeedVol = (
         [closeFeed, kitchenId, mealTime, vol]
     );
 
-    const doFeed = (isVegan?: boolean, reason?: string) => {
+    const doFeed = (isVegan?: boolean, reason?: string): void => {
         let log;
 
         if (reason) {
@@ -239,5 +239,5 @@ export const getGroupBadgeCurrentMealTransactions = async (
     );
 };
 
-export const calculateAlreadyFedCount = (alreadyFedTransactions: Array<TransactionJoined>) =>
+export const calculateAlreadyFedCount = (alreadyFedTransactions: Array<TransactionJoined>): number =>
     alreadyFedTransactions?.reduce((count, next) => count + next.amount, 0) ?? 0;

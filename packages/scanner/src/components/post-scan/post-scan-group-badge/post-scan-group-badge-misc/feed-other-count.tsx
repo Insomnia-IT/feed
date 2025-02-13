@@ -22,9 +22,16 @@ export const FeedOtherCount: React.FC<{
                 <b>Максимум {maxCount} суммарно</b>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-evenly', width: '100%' }}>
-                <div>
+                <div
+                    style={{
+                        width: '50%'
+                    }}
+                >
                     <Text>Веганы 🥦</Text>
                     <Input
+                        style={{
+                            maxWidth: '90%'
+                        }}
                         value={vegansCount}
                         onChange={(event) => {
                             const maxVeganCount = maxCount - nonVegansCount;
@@ -35,10 +42,17 @@ export const FeedOtherCount: React.FC<{
                         }}
                     />
                 </div>
-                <div>
+                <div
+                    style={{
+                        width: '50%'
+                    }}
+                >
                     <Text>Мясоеды 🥩</Text>
 
                     <Input
+                        style={{
+                            maxWidth: '90%'
+                        }}
                         value={nonVegansCount}
                         onChange={(event) => {
                             const maxNonVeganCount = maxCount - vegansCount;
