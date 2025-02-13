@@ -183,7 +183,10 @@ export const useFeedVol = (
     mealTime: MealTime | null,
     closeFeed: () => void,
     kitchenId: number
-) => {
+): {
+    doFeed: (isVegan?: boolean, reason?: string) => void;
+    doNotFeed: (reason: string) => void;
+} => {
     const feed = useCallback(
         async (isVegan: boolean | undefined, log?: { error: boolean; reason: string }) => {
             if (mealTime && !isFeedInProgress) {
@@ -201,7 +204,7 @@ export const useFeedVol = (
         [closeFeed, kitchenId, mealTime, vol]
     );
 
-    const doFeed = (isVegan?: boolean, reason?: string) => {
+    const doFeed = (isVegan?: boolean, reason?: string): void => {
         let log;
 
         if (reason) {
@@ -211,7 +214,9 @@ export const useFeedVol = (
         void feed(isVegan, log);
     };
 
-    const doNotFeed = (reason: string) => void feed(undefined, { error: true, reason });
+    const doNotFeed = (reason: string): void => {
+        void feed(undefined, { error: true, reason });
+    };
 
     return {
         doFeed,
@@ -239,5 +244,5 @@ export const getGroupBadgeCurrentMealTransactions = async (
     );
 };
 
-export const calculateAlreadyFedCount = (alreadyFedTransactions: Array<TransactionJoined>) =>
+export const calculateAlreadyFedCount = (alreadyFedTransactions: Array<TransactionJoined>): number =>
     alreadyFedTransactions?.reduce((count, next) => count + next.amount, 0) ?? 0;
