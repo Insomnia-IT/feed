@@ -4,6 +4,7 @@ import { Text } from '~/shared/ui/typography';
 import type { ValidatedVol } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
 import type { TransactionJoined } from '~/db';
 import { getPlural } from '~/shared/lib/utils';
+import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
 
 import style from './warning-partially-fed-modal.module.css';
 
@@ -23,13 +24,16 @@ const WarningPartiallyFedModal: React.FC<{
     const { nonVegans: nonVegansTransactions, vegans: vegansTransactions } =
         reduceVegans<TransactionJoined>(alreadyFedTransactions);
 
+    const alreadyFedVegansCount = calculateAlreadyFedCount(vegansTransactions);
+    const alreadyFedNonVegansCount = calculateAlreadyFedCount(nonVegansTransactions);
+
     // Сколько не покормленных веганов осталось в бейдже
-    const leftVegans = vegansVols.length - vegansTransactions.length;
+    const leftVegans = vegansVols.length - alreadyFedVegansCount;
     // Сколько дополнительно веганов покормили по бейджу
     const vegansOverFed = Math.min(0, leftVegans) * -1;
 
     // Сколько не покормленных мясоедов осталось в бейдже
-    const leftMeats = nonVegansVols.length - nonVegansTransactions.length;
+    const leftMeats = nonVegansVols.length - alreadyFedNonVegansCount;
     // Сколько дополнительно мясоедов покормили по бейджу
     const meatsOverFed = Math.min(0, leftMeats) * -1;
 
@@ -47,17 +51,17 @@ const WarningPartiallyFedModal: React.FC<{
         <Modal title='Часть уже покормили' active={showModal} onClose={onClose} classModal={style.modal}>
             <div className={style.body}>
                 <div>
-                    <Text>Покормлены {vegansTransactions.length + nonVegansTransactions.length}:</Text>
-                    {nonVegansTransactions.length > 0 && (
+                    <Text>Покормлены {alreadyFedVegansCount + alreadyFedNonVegansCount}:</Text>
+                    {alreadyFedVegansCount > 0 && (
                         <Text>
-                            {nonVegansTransactions.length}{' '}
-                            {getPlural(nonVegansTransactions.length, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
+                            {alreadyFedVegansCount}{' '}
+                            {getPlural(alreadyFedVegansCount, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
                         </Text>
                     )}
-                    {vegansTransactions.length > 0 && (
+                    {alreadyFedNonVegansCount > 0 && (
                         <Text>
-                            {vegansTransactions.length}{' '}
-                            {getPlural(vegansTransactions.length, ['Веган', 'Вегана', 'Веганов'])} 🥦
+                            {alreadyFedNonVegansCount}{' '}
+                            {getPlural(alreadyFedNonVegansCount, ['Веган', 'Вегана', 'Веганов'])} 🥦
                         </Text>
                     )}
                 </div>
