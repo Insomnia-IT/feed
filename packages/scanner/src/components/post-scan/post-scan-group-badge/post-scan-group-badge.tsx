@@ -10,6 +10,7 @@ import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-co
 import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
 import {
+    calculateAlreadyFedCount,
     getGroupBadgeCurrentMealTransactions,
     getTodayStart,
     getVolTransactionsAsync,
@@ -82,10 +83,7 @@ const incFeedAsync = async ({
 
     await Promise.all(
         vols.map((vol) => {
-            const log =
-                vol.msg.length === 0
-                    ? { error: false, reason: 'Групповое питание' }
-                    : { error: false, reason: vol.msg.concat('Групповое питание').join(', ') };
+            const log = { error: false, reason: vol.msg.join(', ') };
 
             return dbIncFeed({
                 vol,
@@ -127,9 +125,11 @@ export const PostScanGroupBadge: FC<{
         void massFeedAnons({ ...value, groupBadge, kitchenId, mealTime });
     };
 
+    const alreadyFedVolsCount = calculateAlreadyFedCount(alreadyFedTransactions);
+
     const leftToFeedInBadge =
         // Транзакции кормления анонимов по групповому бейджу могут содержать значение amount, отличное от 1
-        validationGroups.greens.length - (alreadyFedTransactions?.reduce((count, next) => count + next.amount, 0) ?? 0);
+        validationGroups.greens.length - alreadyFedVolsCount;
 
     useEffect(() => {
         // loading
@@ -186,7 +186,7 @@ export const PostScanGroupBadge: FC<{
 
     return (
         <CardContainer>
-            <AlreadyFedModal alreadyFedVolsCount={alreadyFedTransactions?.length} leftToFeedCount={leftToFeedInBadge} />
+            <AlreadyFedModal alreadyFedVolsCount={alreadyFedVolsCount} leftToFeedCount={leftToFeedInBadge} />
             <ResultScreen
                 alreadyFedTransactions={alreadyFedTransactions}
                 doFeedAnons={doFeedAnons}
