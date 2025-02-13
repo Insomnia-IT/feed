@@ -1,37 +1,30 @@
-import { FC, Suspense, lazy } from 'react';
-import type { LineConfig } from '@ant-design/plots';
+import { FC } from 'react';
+import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
-import type { StatisticType } from '../types';
-
-/** Данные для линейного графика */
-interface ILinearChartData {
-    date: string;
-    value: number;
-    type: StatisticType;
+interface IProps {
+    data: {
+        date: string;
+        plan: number;
+        fact: number;
+    }[];
 }
 
-/** Настройки для линейчатого графика */
-const lineConfig: LineConfig = {
-    xField: 'date',
-    yField: 'value',
-    seriesField: 'type',
-    meta: {
-        value: {
-            alias: 'Значение',
-            tickInterval: 5
-        }
-    }
-};
-
-const Line = lazy(() => import('@ant-design/plots').then((module) => ({ default: module.Line })));
-
-const LinearChart: FC<{ linearChartData: Array<ILinearChartData> }> = (props) => {
+const LinearChart: FC<IProps> = ({ data }) => {
     return (
-        <Suspense fallback={<div>Loading chart...</div>}>
-            <Line data={props.linearChartData} {...lineConfig} />
-        </Suspense>
+        <div style={{ width: '100%', height: 600, marginTop: 40 }}>
+            <ResponsiveContainer>
+                <LineChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="plan" stroke="#8884d8" name="План" />
+                    <Line type="monotone" dataKey="fact" stroke="#82ca9d" name="Факт" />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
     );
 };
 
 export default LinearChart;
-export type { ILinearChartData };
