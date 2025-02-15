@@ -10,8 +10,8 @@ services:
     # command: sh -c "tail -f /dev/null" 
 
     container_name: feed_backend
-    ports:
-      - 8000:8000
+    # ports:
+    # - 8000:8000
     # env_file:
     #   - ../backend/.env.sample
     volumes:
@@ -25,11 +25,13 @@ services:
   #   ports:
   #     - 81:80
   front:
-    platform: linux/amd64
     build:
       context: .
       dockerfile: ./Dockerfile_front
+      args:
+        NEW_API_URL: http://localhost:81/feedapi/v1
     container_name: feed_front
+    # command: nginx
     ports:
       - 81:80
       # volumes:
