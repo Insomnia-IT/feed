@@ -1,4 +1,4 @@
-import { createContext, FC, useCallback, useMemo, useState } from 'react';
+import React, { createContext, FC, useCallback, useMemo, useState } from 'react';
 
 import {
     VolunteerFieldExtended,
@@ -10,7 +10,7 @@ export const ActiveColumnsContext = createContext<{
     toggleOne: (name: string) => void;
     activeColumns: Array<string>;
     allColumns: Array<VolunteerFieldExtended>;
-        } | null>(null);
+} | null>(null);
 
 const columnsStorageName = 'volVisibleColumns';
 
@@ -42,7 +42,8 @@ export const ActiveColumnsContextProvider: FC<React.PropsWithChildren & { custom
             return {
                 fieldName: customField.name,
                 title: customField.name,
-                isCustom: true
+                isCustom: true,
+                customFieldId: customField.id
             };
         });
 

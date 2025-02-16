@@ -57,11 +57,10 @@ export const VolList: FC = () => {
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: `volunteers/${filterQueryParams}`,
-        config: {
-            pagination: {
-                current: isMobile ? 1 : page,
-                pageSize: isMobile ? 10000 : pageSize
-            }
+
+        pagination: {
+            current: isMobile ? 1 : page,
+            pageSize: isMobile ? 10000 : pageSize
         }
     });
 

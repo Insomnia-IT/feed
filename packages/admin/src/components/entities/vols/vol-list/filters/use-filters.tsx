@@ -66,7 +66,10 @@ export const useFilters = ({
     const [searchText, setSearchText] = useState(getDefaultSearchText);
 
     const { data: groupBadges } = useList<GroupBadgeEntity>({
-        resource: 'group-badges'
+        resource: 'group-badges',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     useEffect(() => {
@@ -92,7 +95,10 @@ export const useFilters = ({
     }, [activeFilters, visibleFilters, searchText]);
 
     const { data: directions } = useList<DirectionEntity>({
-        resource: 'directions'
+        resource: 'directions',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     const filterQueryParams = useMemo(() => {
@@ -134,36 +140,52 @@ export const useFilters = ({
     }, [activeFilters, visibleFilters, searchText, visibleDirections]);
 
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
-        resource: 'kitchens'
+        resource: 'kitchens',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     const { data: feedTypes, isLoading: feedTypesIsLoading } = useList<FeedTypeEntity>({
-        resource: 'feed-types'
+        resource: 'feed-types',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     const { data: colors, isLoading: colorsIsLoading } = useList<ColorTypeEntity>({
-        resource: 'colors'
+        resource: 'colors',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
-        resource: 'access-roles'
+        resource: 'access-roles',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     const { data: volunteerRoles, isLoading: volunteerRolesIsLoading } = useList<VolunteerRoleEntity>({
         resource: 'volunteer-roles',
-        config: {
-            pagination: {
-                pageSize: 10000
-            }
+        pagination: {
+            pageSize: 10000
         }
     });
 
     const { data: transports } = useList<TransportEntity>({
-        resource: 'transports'
+        resource: 'transports',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     const { data: statuses } = useList<StatusEntity>({
-        resource: 'statuses'
+        resource: 'statuses',
+        pagination: {
+            pageSize: 0
+        }
     });
 
     const filterFields: Array<FilterField> = [

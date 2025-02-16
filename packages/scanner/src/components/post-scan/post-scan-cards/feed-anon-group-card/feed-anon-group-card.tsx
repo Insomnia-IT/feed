@@ -10,6 +10,8 @@ import { TextArea } from '~/shared/ui/text-area';
 import { Input } from '~/shared/ui/input';
 import { removeNonDigits } from '~/shared/lib/utils';
 import { useValid } from '~/components/post-scan/post-scan-cards/feed-anon-group-card/utils/useValid';
+import { massFeedAnons } from '~/components/post-scan/post-scan.utils';
+import { useApp } from '~/model/app-provider';
 
 import css from './feed-anon-group-card.module.css';
 
@@ -21,8 +23,8 @@ export type Form = {
 
 export const FeedAnonGroupCard: FC<{
     close: () => void;
-    doFeed: (isVegan?: boolean, reason?: string) => void;
-}> = ({ close, doFeed }) => {
+}> = ({ close }) => {
+    const { kitchenId, mealTime } = useApp();
     const [form, setForm] = useState<Form>({
         meat: '',
         vegan: '',
@@ -35,17 +37,22 @@ export const FeedAnonGroupCard: FC<{
         setForm((prev) => ({ ...prev, ...change }));
     };
 
+    const feedAnons = async () => {
+        await massFeedAnons({
+            nonVegansCount: Number(form.meat),
+            vegansCount: Number(form.vegan),
+            kitchenId,
+            mealTime,
+            comment: form.comment || undefined
+        });
+        close();
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const { valid } = validate();
         if (valid) {
-            for (let i = 0; i < +form.vegan; i++) {
-                doFeed(true, form.comment);
-            }
-            for (let i = 0; i < +form.meat; i++) {
-                doFeed(false, form.comment);
-            }
-            close();
+            void feedAnons();
         }
     };
     return (

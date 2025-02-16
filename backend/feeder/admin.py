@@ -22,7 +22,7 @@ class VolunteerAdmin(admin.ModelAdmin):
         ("Contacts", {"fields": ("email", "phone",)}),
         (" ", {"fields": ("parent", "comment")}),
         (" ", {"fields": ("directions", "access_role", "main_role", "position", )}),
-        (" ", {"fields": ("qr", "badge_number", "printing_batch", "group_badge", "color_type", "notion_id")}),
+        (" ", {"fields": ("qr", "badge_number", "printing_batch", "group_badge", "notion_id")}),
         ("Kitchen", {"fields": ("kitchen", "feed_type", "is_vegan", )}),
     )
 

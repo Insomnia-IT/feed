@@ -71,6 +71,7 @@ export const Dashboard: FC = () => {
     const onVideoReady = (ref: HTMLVideoElement) => {
         video.current = ref;
     };
+
     useEffect(() => {
         const onHardwareScan = ({ detail: { scanCode } }: { detail: { scanCode: string } }): void => {
             void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));

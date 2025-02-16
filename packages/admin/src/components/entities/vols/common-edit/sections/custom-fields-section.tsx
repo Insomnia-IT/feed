@@ -1,20 +1,43 @@
-import { Form, Input, Checkbox, CheckboxChangeEvent } from 'antd';
-import { ChangeEvent } from 'react';
+import { Form, Input, Checkbox } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useOne } from '@refinedev/core';
 
-import { CustomFieldEntity } from 'interfaces';
+import { CustomFieldEntity, VolEntity } from 'interfaces';
+import { dataProvider } from '../../../../../dataProvider.ts';
 
 import styles from '../../common.module.css';
 
-export const CustomFieldsSection = ({
-    customFields,
-    canBadgeEdit
-}: {
-    customFields: CustomFieldEntity[];
-    canBadgeEdit: boolean;
-}) => {
-    const form = Form.useFormInstance();
+export const CustomFieldsSection = ({ canBadgeEdit }: { canBadgeEdit: boolean }) => {
+    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
-    const customFieldValues = form.getFieldValue('custom_field_values');
+    useEffect(() => {
+        const loadCustomFields = async () => {
+            const { data } = await dataProvider.getList<CustomFieldEntity>({
+                resource: 'volunteer-custom-fields'
+            });
+
+            setCustomFields(data);
+        };
+
+        void loadCustomFields();
+    }, []);
+
+    const form = Form.useFormInstance();
+    const volunteerId = form.getFieldValue('id');
+
+    const { data } = useOne<VolEntity>({
+        resource: 'volunteers',
+        id: volunteerId
+    });
+
+    const customFieldValues = data?.data?.custom_field_values;
+
+    useEffect(() => {
+        // Заполняем "фиктивные" поля значениями из апи
+        customFieldValues?.forEach(({ custom_field, value }) => {
+            form.setFieldValue(['updated_custom_fields', custom_field.toString()], value);
+        });
+    }, [customFieldValues, form]);
 
     return (
         <>
@@ -22,29 +45,38 @@ export const CustomFieldsSection = ({
             {customFields
                 .filter((item) => item.mobile || canBadgeEdit)
                 .map(({ id, name, type }) => {
-                    const customFieldValue = customFieldValues?.find(
-                        ({ custom_field }: { custom_field: number }) => custom_field === id
-                    );
-                    const defaultChecked = customFieldValue ? customFieldValue.value === 'true' : false;
-                    const defaultValue = customFieldValue ? customFieldValue.value : '';
-
-                    const handleChange = (e: CheckboxChangeEvent | ChangeEvent<HTMLInputElement>) => {
-                        const value = type === 'boolean' ? e.target.checked : e.target.value;
-                        form.setFieldValue(['updated_custom_fields', id.toString()], value);
-                    };
-
+                    // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
                     return (
-                        <Form.Item key={name} label={name}>
-                            {type === 'boolean' && (
-                                <Checkbox
-                                    defaultChecked={defaultChecked}
-                                    onChange={handleChange as (e: CheckboxChangeEvent) => void}
-                                />
-                            )}
-                            {type === 'string' && <Input defaultValue={defaultValue} onChange={handleChange} />}
+                        <Form.Item key={name} label={name} name={['updated_custom_fields', id.toString()]}>
+                            <CustomFieldValueHandler type={type} />
                         </Form.Item>
                     );
                 })}
         </>
+    );
+};
+
+const CustomFieldValueHandler: React.FC<{
+    id?: string;
+    value?: string;
+    onChange?: (value: string) => void;
+    type: string;
+}> = ({ id, value, onChange = () => {}, type }) => {
+    if (type === 'boolean') {
+        const checked = value === 'true';
+
+        return (
+            <Checkbox defaultChecked={false} checked={checked} onChange={(e) => onChange(String(e.target.checked))} />
+        );
+    }
+
+    return (
+        <Input
+            id={id}
+            value={value}
+            onChange={(e): void => {
+                onChange(e.target.value);
+            }}
+        />
     );
 };
