@@ -15,10 +15,6 @@ export const HrInfoSection = ({
     canFullEditing: boolean;
     denyBadgeEdit: boolean;
     person: { id: number; name: string; role: string };
-    mainRole: string;
-    directionOptions: { label: string; value: string | number }[];
-    rolesOptions: { label: string; value: string | number }[];
-    accessRoleOptions: { label: string; value: string | number }[];
 }) => {
     const form = Form.useFormInstance();
     const mainRole = Form.useWatch('main_role', form);
