@@ -9,6 +9,7 @@ import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from '../list.module.css';
+import { MassEdit } from './mass-edit/mass-edit.tsx';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
     const value =
@@ -202,19 +203,22 @@ export const VolunteerDesktopTable: FC<{
         : fields.filter((column) => activeColumns.includes(String(column.key)));
 
     return (
-        <Table<VolEntity>
-            onRow={(record) => {
-                return getCellAction(record.id);
-            }}
-            scroll={{ x: '100%' }}
-            pagination={pagination}
-            loading={volunteersIsLoading}
-            dataSource={volunteersData}
-            rowKey="id"
-            rowClassName={styles.cursorPointer}
-            columns={visibleColumns}
-            rowSelection={rowSelection}
-        />
+        <>
+            <Table<VolEntity>
+                onRow={(record) => {
+                    return getCellAction(record.id);
+                }}
+                scroll={{ x: '100%' }}
+                pagination={pagination}
+                loading={volunteersIsLoading}
+                dataSource={volunteersData}
+                rowKey="id"
+                rowClassName={styles.cursorPointer}
+                columns={visibleColumns}
+                rowSelection={rowSelection}
+            />
+            <MassEdit isAllSelected={isAllCurrentSelected} selectedVolunteers={selectedRows} />
+        </>
     );
 };
 

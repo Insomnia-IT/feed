@@ -1,0 +1,60 @@
+.block {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    padding: 24px 0;
+
+    background: white;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+
+
+    width: 375px;
+
+    /* drop-shadow/0.15 yOffset=6 */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+
+    /* Inside auto layout */
+    flex: none;
+    flex-grow: 0;
+    z-index: 2;
+
+}
+
+.block > * {
+    padding: 0 24px;
+}
+
+.counter {
+    color: #8D959E;
+}
+
+.action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 24px;
+    gap: 16px;
+
+    margin: 0 auto;
+    width: 100%;
+    height: 266px;
+
+    background: #FFFFFF;
+    /* border & divider/divider ↑ */
+    box-shadow: inset 0 1px 0 #F0F0F0;
+
+    /* Inside auto layout */
+    flex: none;
+    order: 1;
+    align-self: stretch;
+    flex-grow: 0;
+
+}
+
+
