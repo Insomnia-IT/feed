@@ -93,8 +93,8 @@ export const validateVol = ({
         msg.length &&
         !isRed &&
         // TODO: Доработать логи по желтым экранам
-        // Проверка t.amount > 0 && t.reason означало кормление по желтому экрану, а теперь добавилась маркировка "Групповое питание"
-        volTransactions.some((t) => t.amount && t.reason && t.reason !== 'Групповое питание') &&
+        // Проверка t.amount > 0 && t.reason означает кормление по желтому экрану
+        volTransactions.some((t) => t.amount && t.reason) &&
         // В рамках группового бейжда детей не кормим в долг
         (isGroupScan || vol.feed_type !== FeedType.Child)
     ) {
@@ -157,7 +157,7 @@ export const massFeedAnons = async ({
             vol: null,
             mealTime,
             isVegan: Boolean(isVegan),
-            log: { error: false, reason: comment + (!!groupBadge ? ' Групповое питание' : '') },
+            log: { error: false, reason: comment },
             kitchenId,
             group_badge: groupBadge?.id
         };
@@ -201,7 +201,7 @@ export const useFeedVol = (
         [closeFeed, kitchenId, mealTime, vol]
     );
 
-    const doFeed = (isVegan?: boolean, reason?: string) => {
+    const doFeed = (isVegan?: boolean, reason?: string): void => {
         let log;
 
         if (reason) {
@@ -238,3 +238,6 @@ export const getGroupBadgeCurrentMealTransactions = async (
         (transaction) => transaction.group_badge === badgeId && transaction.mealTime === mealTime
     );
 };
+
+export const calculateAlreadyFedCount = (alreadyFedTransactions: Array<TransactionJoined>): number =>
+    alreadyFedTransactions?.reduce((count, next) => count + next.amount, 0) ?? 0;
