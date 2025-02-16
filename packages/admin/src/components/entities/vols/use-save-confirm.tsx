@@ -15,7 +15,7 @@ const useSaveConfirm = (
 ): {
     onClick: () => void;
     renderModal: () => JSX.Element;
-    onMutationSuccess: ({ data }: { data: any }) => Promise<void>;
+    onMutationSuccess: ({ data }: { data: { id: number } }) => Promise<void>;
 } => {
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
@@ -105,12 +105,14 @@ const useSaveConfirm = (
                 for (let i = 0; i < updatedArrivals.length; i++) {
                     const updatedArrival = updatedArrivals[i];
 
-                    const arrival = arrivals.find((a: { id: any }) => a.id === updatedArrival.id);
+                    const arrival = arrivals.find((a: { id: number }) => a.id === updatedArrival.id);
                     if (arrival) {
                         if (JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
-                            const serializeField = (obj: { [x: string]: any }, fieldName: string) => {
+                            const serializeField = (obj: Record<string, unknown>, fieldName: string) => {
                                 if (fieldName === 'arrival_date' || fieldName === 'departure_date') {
-                                    return serializeDate(obj[fieldName]);
+                                    return serializeDate(
+                                        obj[fieldName] as string | number | Date | dayjs.Dayjs | null | undefined
+                                    );
                                 }
                                 return obj[fieldName];
                             };
@@ -144,7 +146,7 @@ const useSaveConfirm = (
 
                 for (let i = 0; i < arrivals.length; i++) {
                     const arrivalId = arrivals[i].id;
-                    const upadatedArrival = updatedArrivals.find((a: { id: any }) => a.id === arrivalId);
+                    const upadatedArrival = updatedArrivals.find((a: { id: number }) => a.id === arrivalId);
                     if (!upadatedArrival) {
                         await dataProvider.deleteOne({
                             resource: 'arrivals',

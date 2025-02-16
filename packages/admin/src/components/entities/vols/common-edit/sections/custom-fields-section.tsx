@@ -1,10 +1,11 @@
 import { Form, Input, Checkbox } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useOne } from '@refinedev/core';
+
 import { CustomFieldEntity, VolEntity } from 'interfaces';
+import { dataProvider } from '../../../../../dataProvider.ts';
 
 import styles from '../../common.module.css';
-import React, { useEffect, useState } from 'react';
-import { dataProvider } from '../../../../../dataProvider.ts';
-import { useOne } from '@refinedev/core';
 
 export const CustomFieldsSection = ({ canBadgeEdit }: { canBadgeEdit: boolean }) => {
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);

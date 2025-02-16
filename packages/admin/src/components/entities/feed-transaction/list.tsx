@@ -1,6 +1,6 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
 import { Table, Space, Button, DatePicker, Form, Input, Tag } from 'antd';
-import { CrudFilter, HttpError, useList } from '@refinedev/core';
+import { CrudFilter, HttpError, LogicalFilter, useList } from '@refinedev/core';
 import { FC, ReactNode, useCallback, useMemo } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -44,7 +44,8 @@ export const FeedTransactionList: FC = () => {
         FeedTransactionEntity,
         HttpError
     >({
-        onSearch: (values: any) => {
+        onSearch: (data) => {
+            const values = data as { search?: string; date?: [string, string] };
             setFilters([]);
             const newFilters: Array<CrudFilter> = [];
 
@@ -198,9 +199,9 @@ export const FeedTransactionList: FC = () => {
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
         let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
         if (filters) {
-            filters.forEach((filter: any) => {
+            filters.forEach((filter) => {
                 if (filter.value) {
-                    url = url.concat(`&${filter.field}=${filter.value}`);
+                    url = url.concat(`&${(filter as LogicalFilter)?.field}=${filter.value}`);
                 }
             });
         }

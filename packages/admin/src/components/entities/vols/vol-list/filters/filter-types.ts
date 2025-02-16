@@ -5,7 +5,7 @@ export type FilterField = {
     lookup?: () => Array<{ id: unknown; name: string }>;
     skipNull?: boolean;
     single?: boolean;
-    getter?: (value: any) => any;
+    getter?: (value: unknown) => unknown;
 };
 
 export enum FilterFieldType {

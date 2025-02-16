@@ -32,7 +32,7 @@ function getFormattedArrivals(arrivalString: string): string {
 
 /* Компонент отображающий список волонтеров на декстопе */
 export const VolunteerDesktopTable: FC<{
-    openVolunteer: (id: number) => Promise<any>;
+    openVolunteer: (id: number) => Promise<boolean>;
     volunteersData: Array<VolEntity>;
     volunteersIsLoading: boolean;
     pagination: TablePaginationConfig;
@@ -41,10 +41,10 @@ export const VolunteerDesktopTable: FC<{
 }> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading }) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
 
-    const getCellAction = (id: number): { onClick: (event: any) => Promise<any> | undefined } => {
+    const getCellAction = (id: number) => {
         return {
-            onClick: (e): Promise<boolean> | undefined => {
-                if (!e.target.closest('button')) {
+            onClick: (e: React.MouseEvent<HTMLElement>): Promise<boolean> | undefined => {
+                if (!(e.target as HTMLElement).closest('button')) {
                     return openVolunteer(id);
                 }
             }
