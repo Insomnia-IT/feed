@@ -56,30 +56,35 @@ export const Dashboard: FC = () => {
     useEffect(() => {
         if (!video.current) return;
 
-        const s = new QrScanner(video.current, ({ data }) => void onScan(data.replace(/[^A-Za-z0-9]/g, '')), {
-            onDecodeError: () => {},
-            highlightScanRegion: true,
-            highlightCodeOutline: true
-        });
-
+        const s = new QrScanner(
+            video.current,
+            ({ data }) => {
+                void onScan(data.replace(/[^A-Za-z0-9]/g, ''));
+            },
+            {
+                onDecodeError: () => {},
+                highlightScanRegion: true,
+                highlightCodeOutline: true
+            }
+        );
         scanner.current = s;
         void s.start();
 
-        return () => s.destroy();
+        const onHardwareScan = ({ detail: { scanCode } }: { detail: { scanCode: string } }) => {
+            void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
+        };
+
+        document.addEventListener('scan', onHardwareScan);
+
+        return () => {
+            s.destroy();
+            document.removeEventListener('scan', onHardwareScan);
+        };
     }, [onScan]);
 
     const onVideoReady = (ref: HTMLVideoElement) => {
         video.current = ref;
     };
-
-    useEffect(() => {
-        const onHardwareScan = ({ detail: { scanCode } }: { detail: { scanCode: string } }): void => {
-            void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
-        };
-
-        document.addEventListener('scan', onHardwareScan);
-        return () => document.removeEventListener('scan', onHardwareScan);
-    }, [onScan]);
 
     return (
         <>
