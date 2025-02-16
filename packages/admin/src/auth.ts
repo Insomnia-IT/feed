@@ -70,21 +70,19 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
     userPromise =
         userPromise ||
         new Promise((resolve, reject) => {
-            (async () => {
-                try {
-                    if (token.startsWith('V-TOKEN')) {
-                        const { data } = await axios.get(
-                            `${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`,
-                            {
-                                headers: {
-                                    Authorization: token
-                                }
-                            }
-                        );
+            if (token.startsWith('V-TOKEN')) {
+                axios
+                    .get(`${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`, {
+                        headers: {
+                            Authorization: token
+                        }
+                    })
+                    .then((response) => {
+                        const { data } = response;
                         const { access_role, directions, id, name } = data.results[0];
                         const userData: UserData = {
                             username: name,
-                            id: id,
+                            id,
                             roles: [access_role],
                             directions: directions.map(({ id }: { id: string }) => id),
                             exp: 0,
@@ -92,24 +90,29 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                         };
 
                         setUserInfo(userData);
-
                         resolve(userData);
-                    } else {
-                        const { data } = await axios.get(`${NEW_API_URL}/auth/user/`, {
-                            headers: {
-                                Authorization: `Token ${token}`
-                            }
-                        });
-
+                    })
+                    .catch((error) => {
+                        reject(error);
+                        userPromise = undefined;
+                    });
+            } else {
+                axios
+                    .get(`${NEW_API_URL}/auth/user/`, {
+                        headers: {
+                            Authorization: `Token ${token}`
+                        }
+                    })
+                    .then((response) => {
+                        const { data } = response;
                         setUserInfo(data);
-
                         resolve(data);
-                    }
-                } catch (e) {
-                    reject(e);
-                    userPromise = undefined;
-                }
-            })();
+                    })
+                    .catch((error) => {
+                        reject(error);
+                        userPromise = undefined;
+                    });
+            }
         });
 
     return await userPromise;
