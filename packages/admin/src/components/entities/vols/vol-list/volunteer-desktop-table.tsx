@@ -51,6 +51,11 @@ export const VolunteerDesktopTable: FC<{
         }
     }, [isAllCurrentSelected, volunteersData]);
 
+    const unselectAllSelected = () => {
+        setIsAllCurrentSelected(false);
+        setSelectedRows([]);
+    };
+
     const rowSelection: TableProps<VolEntity>['rowSelection'] = {
         onChange: (_selectedRowKeys: React.Key[], selectedRows: VolEntity[]) => {
             setSelectedRows(selectedRows.map((item) => item.id));
@@ -217,7 +222,11 @@ export const VolunteerDesktopTable: FC<{
                 columns={visibleColumns}
                 rowSelection={rowSelection}
             />
-            <MassEdit isAllSelected={isAllCurrentSelected} selectedVolunteers={selectedRows} />
+            <MassEdit
+                isAllSelected={isAllCurrentSelected}
+                selectedVolunteers={selectedRows}
+                unselectAll={unselectAllSelected}
+            />
         </>
     );
 };
