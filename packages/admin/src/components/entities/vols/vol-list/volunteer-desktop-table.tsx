@@ -1,7 +1,7 @@
-import { Checkbox, Table, Tag } from 'antd';
+import { Table, Tag } from 'antd';
 import type { TablePaginationConfig, TableProps } from 'antd';
 import { CheckOutlined, StopOutlined } from '@ant-design/icons';
-import { FC, useMemo, useContext, useState, useEffect } from 'react';
+import { FC, useMemo, useContext } from 'react';
 
 import type { ArrivalEntity, CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
 import { getSorter } from 'utils';
@@ -10,6 +10,7 @@ import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-c
 
 import styles from '../list.module.css';
 import { MassEdit } from './mass-edit/mass-edit.tsx';
+import { useMassEdit } from './mass-edit/use-mass-edit.tsx';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
     const value =
@@ -42,48 +43,18 @@ export const VolunteerDesktopTable: FC<{
 }> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading }) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
 
-    const [selectedRows, setSelectedRows] = useState<number[]>([]);
-    const [isAllCurrentSelected, setIsAllCurrentSelected] = useState(false);
-
-    useEffect(() => {
-        if (isAllCurrentSelected) {
-            setSelectedRows(volunteersData.map((item) => item.id));
-        }
-    }, [isAllCurrentSelected, volunteersData]);
-
-    const unselectAllSelected = () => {
-        setIsAllCurrentSelected(false);
-        setSelectedRows([]);
-    };
-
-    const rowSelection: TableProps<VolEntity>['rowSelection'] = {
-        onChange: (_selectedRowKeys: React.Key[], selectedRows: VolEntity[]) => {
-            setSelectedRows(selectedRows.map((item) => item.id));
-        },
-        selectedRowKeys: selectedRows,
-        getCheckboxProps: (record: VolEntity) => ({
-            name: record.name
-        }),
-        columnTitle: (
-            <Checkbox
-                checked={isAllCurrentSelected || selectedRows.length === pagination.total}
-                onChange={(event) => {
-                    if (!event.target.checked) {
-                        setSelectedRows([]);
-                    }
-
-                    setIsAllCurrentSelected(!isAllCurrentSelected);
-                }}
-            />
-        )
-    };
+    // TODO: вынести в контекст
+    const { selectedRows, isAllCurrentSelected, unselectAllSelected, rowSelection } = useMassEdit(
+        volunteersData,
+        pagination?.total ?? 0
+    );
 
     const getCellAction: (id: number) => { onClick: (event: any) => void } = (
         id: number
     ): { onClick: (event: any) => void } => {
         return {
-            onClick: (e): void => {
-                if (!e.target.closest('button')) {
+            onClick: (event): void => {
+                if (!(event.target.closest('button') || event.target.querySelector('input'))) {
                     openVolunteer(id);
                 }
             }
