@@ -22,9 +22,8 @@ import {
 
 import type { ITableStatData } from './table-stats';
 import TableStats from './table-stats';
-import type { ILinearChartData } from './linear-chart';
 import LinearChart from './linear-chart';
-import { ColumnChart } from './column-chart';
+import ColumnChart from './column-chart';
 
 type StatisticViewType = 'date' | 'range';
 
@@ -142,13 +141,13 @@ function PublicStatistic() {
         () => handleDataForTable(data, dateStr, typeOfEater, kitchenId),
         [responce, typeOfEater, kitchenId]
     );
-    const { dataForAnnotation, dataForColumnChart } = useMemo(
+    const dataForColumnChart = useMemo(
         () => handleDataForColumnChart(data, typeOfEater, kitchenId),
-        [responce, typeOfEater, kitchenId]
+        [data, typeOfEater, kitchenId]
     );
-    const dataForLinearChart: Array<ILinearChartData> = useMemo(
+    const dataForLinearChart = useMemo(
         () => handleDataForLinearChart(data, typeOfEater, kitchenId),
-        [responce, typeOfEater, kitchenId]
+        [data, typeOfEater, kitchenId]
     );
 
     return (
@@ -195,10 +194,10 @@ function PublicStatistic() {
                 <>
                     <TableStats data={dataForTable} loading={loading} />
                     <Divider />
-                    <ColumnChart columnDataArr={dataForColumnChart} dataForAnnotation={dataForAnnotation} />
+                    <ColumnChart data={dataForColumnChart} />
                 </>
             ) : (
-                <LinearChart linearChartData={dataForLinearChart} />
+                <LinearChart data={dataForLinearChart} />
             )}
         </>
     );
