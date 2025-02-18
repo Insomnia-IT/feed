@@ -1,6 +1,6 @@
 import {
     AccessRoleEntity,
-    ColorTypeEntity,
+    // ColorTypeEntity,
     CustomFieldEntity,
     DirectionEntity,
     FeedTypeEntity,
@@ -153,12 +153,12 @@ export const useFilters = ({
         }
     });
 
-    const { data: colors, isLoading: colorsIsLoading } = useList<ColorTypeEntity>({
-        resource: 'colors',
-        pagination: {
-            pageSize: 0
-        }
-    });
+    // const { data: colors, isLoading: colorsIsLoading } = useList<ColorTypeEntity>({
+    //     resource: 'colors',
+    //     pagination: {
+    //         pageSize: 0
+    //     }
+    // });
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
         resource: 'access-roles',
@@ -256,18 +256,18 @@ export const useFilters = ({
         }, // feedTypeNameById
         { type: FilterFieldType.Boolean, name: 'is_vegan', title: 'Веган' },
         { type: FilterFieldType.String, name: 'comment', title: 'Комментарий' },
-        {
-            type: FilterFieldType.Lookup,
-            name: 'color_type',
-            title: 'Цвет бейджа',
-            skipNull: true,
-            single: true,
-            lookup: () =>
-                colors?.data.map(({ description: name, id }) => ({
-                    id,
-                    name
-                })) ?? []
-        }, // colorNameById
+        // {
+        //     type: FilterFieldType.Lookup,
+        //     name: 'color_type',
+        //     title: 'Цвет бейджа111',
+        //     skipNull: true,
+        //     single: true,
+        //     lookup: () =>
+        //         colors?.data.map(({ description: name, id }) => ({
+        //             id,
+        //             name
+        //         })) ?? []
+        // }, // colorNameById
         {
             type: FilterFieldType.Lookup,
             name: 'access_role',
@@ -294,7 +294,7 @@ export const useFilters = ({
 
     const kitchenNameById = useMapFromList(kitchens);
     const feedTypeNameById = useMapFromList(feedTypes);
-    const colorNameById = useMapFromList(colors);
+    // const colorNameById = useMapFromList(colors);
     const accessRoleById = useMapFromList(accessRoles);
     const volunteerRoleById = useMapFromList(volunteerRoles);
     const statusById = useMapFromList(statuses);
@@ -304,7 +304,7 @@ export const useFilters = ({
         isFiltersLoading:
             kitchensIsLoading ||
             feedTypesIsLoading ||
-            colorsIsLoading ||
+            // colorsIsLoading ||
             accessRolesIsLoading ||
             volunteerRolesIsLoading,
         filterQueryParams,
@@ -317,7 +317,7 @@ export const useFilters = ({
         visibleFilters,
         kitchenNameById,
         feedTypeNameById,
-        colorNameById,
+        // colorNameById,
         accessRoleById,
         volunteerRoleById,
         statusById,
