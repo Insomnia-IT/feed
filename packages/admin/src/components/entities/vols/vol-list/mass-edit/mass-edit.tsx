@@ -1,5 +1,5 @@
 import styles from './mass-edit.module.css';
-import { Button, Typography } from 'antd';
+import { Button, Form, Select, Typography } from 'antd';
 import {
     CoffeeOutlined,
     TeamOutlined,
@@ -9,6 +9,8 @@ import {
     ArrowLeftOutlined
 } from '@ant-design/icons';
 import React, { useState } from 'react';
+import { useList } from '@refinedev/core';
+import { GroupBadgeEntity } from '../../../../../interfaces';
 const { Title } = Typography;
 
 interface MassEditProps {
@@ -76,7 +78,7 @@ const ActionsSection: React.FC<{ unselectAll: () => void }> = ({ unselectAll }) 
             {sectionState === ActionSectionStates.GroupBadge ? <GroupBadgeFrame /> : null}
             {sectionState === ActionSectionStates.Arrivals ? <ArrivalsFrame /> : null}
 
-            <Button className={styles.cancel} type={'link'} onClick={unselectAll}>
+            <Button className={styles.bottomButton} type={'link'} onClick={unselectAll}>
                 Снять выбор
             </Button>
         </section>
@@ -133,5 +135,38 @@ const ArrivalsFrame: React.FC = () => {
 };
 
 const GroupBadgeFrame: React.FC = () => {
-    return <>GroupBadgeFrame</>;
+    const { data: groupBadges, isLoading: groupBadgesIsLoading } = useList<GroupBadgeEntity>({
+        resource: 'group-badges',
+        pagination: {
+            pageSize: 10000
+        }
+    });
+
+    const mappedBadges = (groupBadges?.data ?? []).map((item) => ({
+        value: item.name,
+        id: item.id
+    }));
+
+    const changeBadgeMany = (formValues: { groupBadge?: string }) => {
+        const { groupBadge } = formValues;
+
+        const targetBadge = mappedBadges.find((item) => item.value === groupBadge);
+        console.log(targetBadge);
+    };
+
+    return (
+        <Form onFinish={changeBadgeMany} layout={'vertical'} style={{ width: '100%' }}>
+            <Form.Item name="groupBadge" label="Групповой бейдж" rules={[{ required: true }]}>
+                <Select
+                    style={{ width: '100%' }}
+                    placeholder="Выберите бейдж"
+                    loading={groupBadgesIsLoading}
+                    options={mappedBadges}
+                />
+            </Form.Item>
+            <Button className={styles.bottomButton} htmlType="submit" type={'primary'}>
+                Подтвердить
+            </Button>
+        </Form>
+    );
 };

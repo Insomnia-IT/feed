@@ -68,7 +68,9 @@
     grid-template-rows: repeat(4, 1fr);
 }
 
-.cancel {
+.bottomButton {
     margin-top: auto;
     width: 100%;
 }
+
+
