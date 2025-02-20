@@ -60,7 +60,6 @@ export const BadgeSection = ({
                 </div>
                 <div className={styles.badgeInfo}>
                     <Form.Item label="Цвет бейджа" name="color_type">
-                        {/* <Select disabled={denyBadgeEdit} options={colorTypeOptions} /> */}
                         <Select disabled={true} options={colorTypeOptions} />
                     </Form.Item>
                 </div>
