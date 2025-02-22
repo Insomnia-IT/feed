@@ -111,7 +111,6 @@ const createAndSaveXLSX = async ({
                 'Тип питания',
                 'Веган/мясоед',
                 'Комментарий',
-                'Цвет бейджа',
                 'Право доступа',
                 // eslint-disable-next-line no-unsafe-optional-chaining
                 ...customFields?.map((field): string => field.name)

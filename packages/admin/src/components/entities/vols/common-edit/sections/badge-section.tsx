@@ -25,7 +25,6 @@ export const BadgeSection = ({
         });
     };
 
-    console.log(denyBadgeEdit);
 
     return (
         <>
