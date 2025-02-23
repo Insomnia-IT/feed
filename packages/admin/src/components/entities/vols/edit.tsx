@@ -31,7 +31,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
             }}
         >
             <Form {...formProps} scrollToFirstError layout="vertical">
-                <CreateEdit form={form} />
+                <CreateEdit />
             </Form>
             {renderModal()}
         </Edit>

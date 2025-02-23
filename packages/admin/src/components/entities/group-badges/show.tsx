@@ -1,11 +1,10 @@
 import { Show, TextField } from '@refinedev/antd';
 import { Table, Typography } from 'antd';
 import { useShow, useTable } from '@refinedev/core';
-import { FC, lazy, Suspense } from 'react';
+import { FC } from 'react';
 
 import type { GroupBadgeEntity, VolEntity } from 'interfaces';
-
-const ReactQuill = lazy(() => import('react-quill'));
+import { TextEditor } from 'components/controls/text-editor';
 
 const { Text, Title } = Typography;
 
@@ -47,9 +46,8 @@ export const GroupBadgeShow: FC = () => {
             <Text>{record?.qr}</Text>
 
             <Title level={5}>Комментарий</Title>
-            <Suspense fallback={<div>Loading editor...</div>}>
-                <ReactQuill theme="bubble" readOnly value={record?.comment} />
-            </Suspense>
+
+            <TextEditor theme="bubble" readOnly value={record?.comment} />
 
             <Title level={5}>Волонтеры</Title>
             <Table

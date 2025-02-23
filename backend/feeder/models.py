@@ -142,12 +142,6 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         related_name='volunteers',
         verbose_name="Право доступа",
     )
-    color_type = models.ForeignKey(
-        'Color',
-        null=True, blank=True, on_delete=models.PROTECT,
-        related_name='volunteers',
-        verbose_name="Цвет бэджика",
-    )
     group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, related_name='volunteers', verbose_name="Групповой бейдж")
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")

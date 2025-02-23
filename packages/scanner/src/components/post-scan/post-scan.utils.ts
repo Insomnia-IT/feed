@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
 import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
-import type { Transaction, TransactionJoined, Volunteer } from '~/db';
+import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from '~/db';
 import { getMealTimeText } from '~/shared/lib/utils';
 
 const isVolExpired = (vol: Volunteer): boolean => {
@@ -93,8 +93,8 @@ export const validateVol = ({
         msg.length &&
         !isRed &&
         // TODO: Доработать логи по желтым экранам
-        // Проверка t.amount > 0 && t.reason означало кормление по желтому экрану, а теперь добавилась маркировка "Групповое питание"
-        volTransactions.some((t) => t.amount && t.reason && t.reason !== 'Групповое питание') &&
+        // Проверка t.amount > 0 && t.reason означает кормление по желтому экрану
+        volTransactions.some((t) => t.amount && t.reason) &&
         // В рамках группового бейжда детей не кормим в долг
         (isGroupScan || vol.feed_type !== FeedType.Child)
     ) {
@@ -112,6 +112,66 @@ export const validateVol = ({
     }
 
     return { msg, isRed, isActivated };
+};
+
+// Кормим большое количество анонимов, если введено "другое число"
+export const massFeedAnons = async ({
+    comment = '',
+    groupBadge,
+    kitchenId,
+    mealTime,
+    nonVegansCount,
+    vegansCount
+}: {
+    groupBadge?: GroupBadge;
+    kitchenId: number;
+    vegansCount: number;
+    nonVegansCount: number;
+    mealTime?: MealTime | null;
+    comment?: string;
+}): Promise<void> => {
+    if (!mealTime) {
+        return;
+    }
+
+    const createTransactionDraft = ({
+        amount = 1,
+        isVegan
+    }: {
+        isVegan?: boolean;
+        amount?: number;
+    } = {}): {
+        group_badge?: number;
+        vol: null;
+        mealTime: MealTime;
+        isVegan?: boolean;
+        log: {
+            error: boolean;
+            reason: string;
+        };
+        amount: number;
+        kitchenId: number;
+    } => {
+        return {
+            amount,
+            vol: null,
+            mealTime,
+            isVegan: Boolean(isVegan),
+            log: { error: false, reason: comment },
+            kitchenId,
+            group_badge: groupBadge?.id
+        };
+    };
+
+    // Количество меньше нуля маловероятно, но, так как тип number предполагает такое поведение, стоит предусмотреть такой вариант
+    const vegans = vegansCount <= 0 ? [] : [createTransactionDraft({ isVegan: true, amount: vegansCount })];
+
+    // Количество меньше нуля маловероятно, но, так как тип number предполагает такое поведение, стоит предусмотреть такой вариант
+    const nonVegans = nonVegansCount <= 0 ? [] : [createTransactionDraft({ isVegan: false, amount: nonVegansCount })];
+
+    const promises = [...vegans, ...nonVegans].map((transactionDraft) => dbIncFeed(transactionDraft));
+
+    await Promise.all(promises);
 };
 
 export const getTodayStart = (): number => dayjs().subtract(7, 'h').startOf('day').add(7, 'h').unix();
@@ -141,19 +201,17 @@ export const useFeedVol = (
         [closeFeed, kitchenId, mealTime, vol]
     );
 
-    const doFeed = useCallback(
-        (isVegan?: boolean, reason?: string) => {
-            let log;
+    const doFeed = (isVegan?: boolean, reason?: string): void => {
+        let log;
 
-            if (reason) {
-                log = { error: false, reason };
-            }
+        if (reason) {
+            log = { error: false, reason };
+        }
 
-            void feed(isVegan, log);
-        },
-        [feed]
-    );
-    const doNotFeed = useCallback((reason: string) => void feed(undefined, { error: true, reason }), [feed]);
+        void feed(isVegan, log);
+    };
+
+    const doNotFeed = (reason: string) => void feed(undefined, { error: true, reason });
 
     return {
         doFeed,
@@ -180,3 +238,6 @@ export const getGroupBadgeCurrentMealTransactions = async (
         (transaction) => transaction.group_badge === badgeId && transaction.mealTime === mealTime
     );
 };
+
+export const calculateAlreadyFedCount = (alreadyFedTransactions: Array<TransactionJoined>): number =>
+    alreadyFedTransactions?.reduce((count, next) => count + next.amount, 0) ?? 0;

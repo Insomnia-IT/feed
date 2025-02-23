@@ -100,7 +100,7 @@ export const GroupBadgeEdit: FC = () => {
         <Edit saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout="vertical">
                 <CreateEdit />
-                <span>Количество волонтеров: {activeVolunteers?.length}</span>
+                <span data-testid="volunteer-count-caption">Количество волонтеров:</span> <span data-testid="volunteer-count-value">{activeVolunteers?.length}</span>
             </Form>
             <Divider />
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -153,8 +153,8 @@ export const GroupBadgeEdit: FC = () => {
                                         prevVolunteers.find((item) => item.id === record.id)?.markedAdded
                                             ? prevVolunteers.filter((item) => item.id !== record.id)
                                             : prevVolunteers.map((vol) =>
-                                                  vol.id === record.id ? { ...vol, markedDeleted: true } : vol
-                                              )
+                                                vol.id === record.id ? { ...vol, markedDeleted: true } : vol
+                                            )
                                     );
                                 }}
                             >

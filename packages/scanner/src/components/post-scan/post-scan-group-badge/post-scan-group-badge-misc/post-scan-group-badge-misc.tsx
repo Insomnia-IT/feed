@@ -9,6 +9,7 @@ import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
 import { getPlural } from '~/shared/lib/utils';
 import { FeedOtherCount } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
 import { WarningPartiallyFedModal } from '~/components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
+import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
 
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 
@@ -78,12 +79,14 @@ export const GroupBadgeWarningCard: FC<{
         close();
     };
 
-    // Максимальное количество = количество людей, прошедших валидацию *1.5 - количество уже покормленных. Но не меньше нуля!
-    const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedTransactions.length, 0);
+    const alreadyFedCount = calculateAlreadyFedCount(alreadyFedTransactions);
+
+    // Максимальное количество = количество людей, прошедших валидацию * 1.5 - количество уже покормленных. Но не меньше нуля!
+    const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedCount, 0);
 
     const amountToFeed = showOtherCount
         ? vegansCount + nonVegansCount
-        : Math.max(volsToFeed.length - alreadyFedTransactions.length, 0);
+        : Math.max(volsToFeed.length - alreadyFedCount, 0);
 
     return (
         <div className={css.groupBadgeCard}>

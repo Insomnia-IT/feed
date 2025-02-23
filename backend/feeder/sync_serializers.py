@@ -94,7 +94,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
             "person", "comment", "notion_id", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment",
-            "access_role", "color_type", "group_badge", "kitchen", "main_role", "feed_type"
+            "access_role", "group_badge", "kitchen", "main_role", "feed_type"
         )
         uuid_field = "uuid"
 

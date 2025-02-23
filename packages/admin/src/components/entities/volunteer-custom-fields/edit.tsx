@@ -1,37 +1,38 @@
 import { FC } from 'react';
-import { Form, Button } from 'antd';
-import type { FormInstance } from 'antd';
-import { useForm } from '@refinedev/core';
-import type { IResourceComponentsProps } from '@refinedev/core';
+import { Form } from 'antd';
+import { IResourceComponentsProps, useNavigation } from '@refinedev/core';
 
 import type { VolunteerCustomFieldEntity } from 'interfaces';
 
 import { CreateEdit } from './common';
+import { Edit, useForm } from '@refinedev/antd';
 
 export const VolunteerCustomFieldEdit: FC<IResourceComponentsProps> = () => {
-    const { query, mutation, onFinish } = useForm<VolunteerCustomFieldEntity>({
-        action: 'edit'
+    const { goBack } = useNavigation();
+
+    const { formProps, saveButtonProps } = useForm<VolunteerCustomFieldEntity>({
+        onMutationSuccess: () => {
+            goBack();
+        },
+        redirect: false
     });
-
-    const [form] = Form.useForm();
-
-    const handleFinish = async (values: VolunteerCustomFieldEntity) => {
-        await onFinish(values);
-    };
 
     return (
         <div style={{ padding: '24px' }}>
-            <Form
-                form={form as FormInstance}
-                layout="vertical"
-                onFinish={handleFinish}
-                initialValues={query?.data?.data}
+            <Edit
+                saveButtonProps={saveButtonProps}
+                canDelete={true}
+                footerButtonProps={{
+                    style: {
+                        float: 'left',
+                        marginLeft: '24px'
+                    }
+                }}
             >
-                <CreateEdit isEdit={true} />
-                <Button type="primary" htmlType="submit" loading={mutation.isLoading}>
-                    Сохранить
-                </Button>
-            </Form>
+                <Form {...formProps} layout="vertical">
+                    <CreateEdit isEdit={true} />
+                </Form>
+            </Edit>
         </div>
     );
 };

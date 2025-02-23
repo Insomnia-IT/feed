@@ -57,17 +57,16 @@ export const VolList: FC = () => {
 
     const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
         resource: `volunteers/${filterQueryParams}`,
-        config: {
-            pagination: {
-                current: isMobile ? 1 : page,
-                pageSize: isMobile ? 10000 : pageSize
-            }
+
+        pagination: {
+            current: isMobile ? 1 : page,
+            pageSize: isMobile ? 10000 : pageSize
         }
     });
 
     const pagination: TablePaginationConfig = {
         total: volunteers?.total ?? 1,
-        showTotal: (total) => `Кол-во волонтеров: ${total}`,
+        showTotal: (total) => <><span data-testid="volunteer-count-caption">Кол-во волонтеров:</span> <span data-testid="volunteer-count-value">{total}</span></>,
         current: page,
         pageSize: pageSize,
         onChange: (page, pageSize) => {
