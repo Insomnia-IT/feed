@@ -38,11 +38,16 @@ class FeedTransactionFilter(django_filters.FilterSet):
 class FeedTransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.FeedTransaction.objects.all()
-    serializer_class = serializers.FeedTransactionSerializer
+    serializer_class = serializers.FeedTransactionDisplaySerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['volunteer__name', ]
     filterset_class = FeedTransactionFilter
     ordering = ('-dtime')
+
+    def get_serializer_class(self):
+        if self.action in ['create', ]:
+            return serializers.FeedTransactionSerializer
+        return serializers.FeedTransactionDisplaySerializer
 
 
 #@extend_schema(tags=['feed', ], summary="Массовое добавление приёмов пищи")
