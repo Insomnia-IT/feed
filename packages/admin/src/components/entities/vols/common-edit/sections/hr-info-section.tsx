@@ -2,8 +2,8 @@ import { Form, Input, Select } from 'antd';
 import { useSelect } from '@refinedev/antd';
 
 import { Rules } from 'components/form';
-import type { AccessRoleEntity, DirectionEntity, VolunteerRoleEntity } from 'interfaces';
-import useCanAccess from '../../use-can-access.tsx';
+import type { AccessRoleEntity, DirectionEntity, IPerson, VolunteerRoleEntity } from 'interfaces';
+import useCanAccess from '../../use-can-access';
 
 import styles from '../../common.module.css';
 
@@ -14,7 +14,7 @@ export const HrInfoSection = ({
 }: {
     canFullEditing: boolean;
     denyBadgeEdit: boolean;
-    person: { id: number; name: string; role: string };
+    person: IPerson | null;
 }) => {
     const form = Form.useFormInstance();
     const mainRole = Form.useWatch('main_role', form);

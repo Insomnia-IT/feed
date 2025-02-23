@@ -4,7 +4,7 @@ import { IPerson } from 'interfaces';
 
 import styles from '../../common.module.css';
 
-export const PreviousYearsSection = ({ person }: { person: IPerson }) => {
+export const PreviousYearsSection = ({ person }: { person: IPerson | null }) => {
     const engagements = person?.engagements || [];
 
     return (

@@ -65,57 +65,64 @@ let userPromise: Promise<UserData | undefined> | undefined;
 export const getUserInfo = async (token: string): Promise<UserData | undefined> => {
     const authData = Cookies.get(AUTH_DATA_COOKIE_NAME);
     if (authData) {
+        userPromise = undefined;
         return JSON.parse(authData) as UserData;
     }
-    userPromise =
-        userPromise ||
-        new Promise((resolve, reject) => {
-            if (token.startsWith('V-TOKEN')) {
-                axios
-                    .get(`${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`, {
-                        headers: {
-                            Authorization: token
-                        }
-                    })
-                    .then((response) => {
-                        const { data } = response;
-                        const { access_role, directions, id, name } = data.results[0];
-                        const userData: UserData = {
-                            username: name,
-                            id,
-                            roles: [access_role],
-                            directions: directions.map(({ id }: { id: string }) => id),
-                            exp: 0,
-                            iat: 0
-                        };
 
-                        setUserInfo(userData);
-                        resolve(userData);
-                    })
-                    .catch((error) => {
-                        reject(error);
-                        userPromise = undefined;
-                    });
-            } else {
-                axios
-                    .get(`${NEW_API_URL}/auth/user/`, {
-                        headers: {
-                            Authorization: `Token ${token}`
-                        }
-                    })
-                    .then((response) => {
-                        const { data } = response;
-                        setUserInfo(data);
-                        resolve(data);
-                    })
-                    .catch((error) => {
-                        reject(error);
-                        userPromise = undefined;
-                    });
-            }
-        });
+    if (userPromise) {
+        return userPromise;
+    }
 
-    return await userPromise;
+    if (token.startsWith('V-TOKEN')) {
+        userPromise = axios
+            .get(`${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`, {
+                headers: {
+                    Authorization: token
+                }
+            })
+            .then((response) => {
+                const { data } = response;
+                const { access_role, directions, id, name } = data.results[0];
+                const userData: UserData = {
+                    username: name,
+                    id,
+                    roles: [access_role],
+                    directions: directions.map(({ id }: { id: string }) => id),
+                    exp: 0,
+                    iat: 0
+                };
+                setUserInfo(userData);
+                return userData;
+            })
+            .catch((error) => {
+                userPromise = undefined;
+                throw error;
+            })
+            .finally(() => {
+                userPromise = undefined;
+            });
+    } else {
+        userPromise = axios
+            .get(`${NEW_API_URL}/auth/user/`, {
+                headers: {
+                    Authorization: `Token ${token}`
+                }
+            })
+            .then((response) => {
+                const { data } = response;
+                setUserInfo(data);
+                return data;
+            })
+            .catch((error) => {
+                userPromise = undefined;
+                throw error;
+            })
+            .finally(() => {
+                userPromise = undefined;
+            });
+    }
+
+    return userPromise;
 };
 
 export const clearUserData = (): void => {

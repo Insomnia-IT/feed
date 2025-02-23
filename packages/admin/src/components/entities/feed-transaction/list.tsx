@@ -1,6 +1,6 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
 import { Table, Space, Button, DatePicker, Form, Input, Tag } from 'antd';
-import { CrudFilter, HttpError, LogicalFilter, useList } from '@refinedev/core';
+import { CrudFilter, HttpError, useList } from '@refinedev/core';
 import { FC, ReactNode, useCallback, useMemo } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
