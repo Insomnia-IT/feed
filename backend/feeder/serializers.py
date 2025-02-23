@@ -193,24 +193,31 @@ class FeedTypeSerializer(serializers.ModelSerializer):
 
 class FeedTransactionSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    # volunteer_name = serializers.SerializerMethodField()
-    # kitchen_name = serializers.SerializerMethodField()
+    volunteer_name = serializers.SerializerMethodField()
+    kitchen_name = serializers.SerializerMethodField()
+    group_badge_name = serializers.SerializerMethodField()
 
     class Meta:
         model = models.FeedTransaction
         fields = '__all__'
 
-    # def get_volunteer_name(self, obj):
-    #     if obj.volunteer:
-    #         return obj.volunteer.name
-    #     else:
-    #         return None
+    def get_volunteer_name(self, obj):
+        if obj.volunteer:
+            return obj.volunteer.name
+        else:
+            return None
 
-    # def get_kitchen_name(self, obj):
-    #     if obj.kitchen:
-    #         return obj.kitchen.name
-    #     else:
-    #         return None
+    def get_kitchen_name(self, obj):
+        if obj.kitchen:
+            return obj.kitchen.name
+        else:
+            return None
+        
+    def get_group_badge_name(self, obj):
+        if obj.group_badge:
+            return obj.group_badge.name
+        else:
+            return None
 
     def create(self, validated_data):
         return models.FeedTransaction.objects.create(**validated_data)
