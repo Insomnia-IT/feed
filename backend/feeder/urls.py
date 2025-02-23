@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
-from feeder.views import sync, feed, statistic, color, volunteer, kitchen, group_badge, direction, gender, person, photo, staying, transport, status,WashCreateView, VolunteerWashesView
+from feeder.views import sync, feed, statistic, color, volunteer, kitchen, group_badge, direction, gender, person, photo, staying, transport, status, wash
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 router = routers.DefaultRouter()
@@ -36,7 +36,7 @@ urlpatterns = [
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
     # path('notion-sync', sync.SyncWithNotion.as_view()),
-    path("v1/washes", WashCreateView.as_view(), name="create_wash"),
-    path("v1/volunteers/<int:id>/washes", VolunteerWashesView.as_view(), name="volunteer_washes"),
+    path("v1/washes", wash.WashCreateView.as_view(), name="create_wash"),
+    path("v1/volunteers/<int:id>/washes", wash.VolunteerWashesView.as_view(), name="volunteer_washes"),
 ]
 
