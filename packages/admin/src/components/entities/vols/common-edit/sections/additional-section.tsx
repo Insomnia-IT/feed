@@ -41,10 +41,6 @@ export const AdditionalSection = ({
         navigate('..');
     };
 
-    const person = Form.useWatch('person', form);
-
-    console.log(person);
-
     return (
         <>
             <p className={styles.formSection__title}>Дополнительно</p>
