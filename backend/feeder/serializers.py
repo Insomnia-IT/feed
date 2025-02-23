@@ -185,6 +185,16 @@ class FeedTypeSerializer(serializers.ModelSerializer):
 
 
 class FeedTransactionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.FeedTransaction
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return models.FeedTransaction.objects.create(**validated_data)
+
+
+class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     volunteer_name = serializers.SerializerMethodField()
     kitchen_name = serializers.SerializerMethodField()
@@ -204,9 +214,6 @@ class FeedTransactionSerializer(serializers.ModelSerializer):
             return obj.kitchen.name
         else:
             return None
-
-    def create(self, validated_data):
-        return models.FeedTransaction.objects.create(**validated_data)
 
 
 class KitchenSerializer(serializers.ModelSerializer):
