@@ -36,7 +36,6 @@ export const VolList: FC = () => {
     const {
         accessRoleById,
         activeFilters,
-        colorNameById,
         feedTypeNameById,
         filterFields,
         filterQueryParams,
@@ -142,7 +141,6 @@ export const VolList: FC = () => {
                                         transportById={transportById}
                                         kitchenNameById={kitchenNameById}
                                         feedTypeNameById={feedTypeNameById}
-                                        colorNameById={colorNameById}
                                         accessRoleById={accessRoleById}
                                     />
                                 </Row>
