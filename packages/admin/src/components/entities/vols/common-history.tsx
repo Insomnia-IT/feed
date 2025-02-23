@@ -38,6 +38,8 @@ interface IActor {
     name: string;
 }
 
+type IVolunteer = IActor;
+
 interface IResult {
     action_at: string;
     actor: IActor | null;
@@ -47,6 +49,7 @@ interface IResult {
     object_name: string;
     status: string;
     old_data: IData;
+    volunteer: IVolunteer;
 }
 
 interface IData {
@@ -105,6 +108,9 @@ const localizedFieldNames: Record<string, string> = {
     number: 'Номер бейджа',
     batch: 'Партия бейджа'
 };
+export interface CommonHistoryProps {
+    role: 'volunteer' | 'actor';
+  }
 
 function returnCurrentField(fieldName: string): string {
     return localizedFieldNames[fieldName] ?? fieldName;
@@ -126,7 +132,7 @@ function returnisBlockedFieldValue(value: boolean | undefined) {
     }
 }
 
-export function CommonHistory() {
+export function CommonHistory({ role }: CommonHistoryProps) {
     const { id: volId } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [uuid, setUuid] = useState('');
@@ -215,7 +221,8 @@ export function CommonHistory() {
     const groupBadgeById = useMapFromList(groupBadges);
 
     const historyData = async () => {
-        const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?volunteer_uuid=${uuid}`);
+        // const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?volunteer_uuid=${uuid}`);
+        const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`);
         const result = response.data.results;
         const reversedResult = result.reverse();
         setData(reversedResult);
@@ -240,8 +247,8 @@ export function CommonHistory() {
     }
 
     const handleRouteClick = (id: number | undefined) => {
-        if (!id) return;
         navigate(`/volunteers/edit/${id}`);
+        navigate(0);
     };
 
     function returnCurrentStatusString(status: string): string {
@@ -350,22 +357,27 @@ export function CommonHistory() {
         }
     }
 
-    const renderHistory = (array: Array<IResult> | undefined) => {
+    const renderHistory = (array: Array<IResult> | undefined,  role: 'volunteer' | 'actor') => {
         if (array === undefined) {
             return 'ИЗМЕНЕНИЙ НЕТ';
         }
         return array.map((item) => {
             const getId = () => {
-                if (!item.actor) return;
-                if (item.actor.id) {
-                    return item.actor.id;
+                if (role === 'volunteer') {
+                    return item.actor?.id;
                 } else {
-                    return;
+                    return item.volunteer?.id;
                 }
             };
             const getActorName = (item: IResult) => {
-                if (item.actor) {
-                    return item.actor.name;
+                if (role === 'volunteer') {
+                    if (item.actor) {
+                        return item.actor.name;
+                    }
+                } else {
+                    if (item.volunteer) {
+                        return item.volunteer.name;
+                    }
                 }
                 if (item.by_sync) {
                     return 'Синхронизация';
@@ -398,5 +410,5 @@ export function CommonHistory() {
             );
         });
     };
-    return <div className={styles.historyWrap}>{renderHistory(data)}</div>;
+    return <div className={styles.historyWrap}>{renderHistory(data, role)}</div>;
 }

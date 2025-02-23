@@ -47,7 +47,12 @@ export const CreateEdit = ({ form }: { form: FormInstance }) => {
         {
             key: '3',
             label: 'История действий',
-            children: <CommonHistory />
+            children: <CommonHistory role={'volunteer'} />
+        },
+        {
+            key: '4',
+            label: 'История действий волонтера',
+            children: <CommonHistory role={'actor'} />
         }
     ];
     return <Tabs defaultActiveKey="1" items={items} />;
