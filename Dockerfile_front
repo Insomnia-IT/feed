@@ -24,7 +24,7 @@ RUN apk add --no-cache curl python3 py3-setuptools
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 RUN echo "npm cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
 
-RUN apk add --no-cache build-base libffi-dev icu-dev sqlite-dev
+RUN apk add --no-cache build-base
 
 ARG NEW_API_URL
 ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
@@ -38,10 +38,6 @@ COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm ci
-
-COPY ./backend/icu/icu.c /app/backend/icu/
-RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
-RUN ls -1al /app/backend/icu
 
 COPY . /app
 
