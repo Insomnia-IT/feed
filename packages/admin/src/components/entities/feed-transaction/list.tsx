@@ -26,7 +26,6 @@ interface TransformedTransaction {
     ulid: string;
     dateTime: string;
     volunteerName: string;
-    volunteerFIO: string;
     volunteerId: number;
     feedType: string;
     mealType: string;
@@ -36,8 +35,6 @@ interface TransformedTransaction {
     groupBadgeName: string;
     directions: Array<string>;
 }
-
-const GROUP_FEED_REASON = 'Групповое питание';
 
 export const FeedTransactionList: FC = () => {
     const { searchFormProps, tableProps, filters, setFilters, setCurrent, setPageSize } = useTable<
@@ -146,13 +143,12 @@ export const FeedTransactionList: FC = () => {
                     ulid: item.ulid,
                     dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
                     volunteerName: volById?.[item.volunteer]?.name || 'Аноним',
-                    volunteerFIO: '',
                     volunteerId: item.volunteer,
                     feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
                     mealType: mealTimeById[item.meal_time],
                     kitchenName: kitchenNameById[item.kitchen],
                     amount: item.amount,
-                    reason: item?.reason?.replace(GROUP_FEED_REASON, ''),
+                    reason: item?.reason ?? undefined,
                     groupBadgeName: getGroupBadgeNameById(item.group_badge),
                     directions: (volById?.[item.volunteer]?.directions ?? []).map((dir) => dir.name)
                 };
@@ -198,10 +194,11 @@ export const FeedTransactionList: FC = () => {
 
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
         let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
+
         if (filters) {
-            filters.forEach((filter) => {
-                if (filter.value) {
-                    url = url.concat(`&${(filter as LogicalFilter)?.field}=${filter.value}`);
+            filters.forEach((filter: CrudFilter) => {
+                if (filter.value && 'field' in filter) {
+                    url = url.concat(`&${filter?.field}=${filter.value}`);
                 }
             });
         }
@@ -215,7 +212,8 @@ export const FeedTransactionList: FC = () => {
             'Дата',
             'Время',
             'ID волонтера',
-            'Волонтер',
+            'Позывной',
+            'Фамилия Имя',
             'Тип питания',
             'Прием пищи',
             'Кухня',
@@ -227,18 +225,21 @@ export const FeedTransactionList: FC = () => {
         sheet.addRow(header);
 
         transactions?.forEach((tx) => {
+            const volunteer = volById[tx.volunteer];
+
             sheet.addRow([
                 dayjs(tx.dtime).format('DD.MM.YYYY'),
                 dayjs(tx.dtime).format('HH:mm:ss'),
                 tx.volunteer,
-                tx.volunteer ? volById[tx.volunteer]?.name : 'Аноним',
+                tx.volunteer ? volunteer?.name : 'Аноним',
+                [volunteer?.last_name, volunteer?.first_name].filter((item) => !!item).join(' '),
                 tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
                 mealTimeById[tx.meal_time],
                 kitchenNameById[tx.kitchen],
                 tx.amount,
-                tx?.reason?.replace(GROUP_FEED_REASON, '') ?? '',
+                tx?.reason ?? '',
                 getGroupBadgeNameById(tx.group_badge),
-                (volById?.[tx.volunteer]?.directions ?? []).map((dir) => dir.name).join(',')
+                (volunteer?.directions ?? []).map((dir) => dir.name).join(',')
             ]);
         });
 
