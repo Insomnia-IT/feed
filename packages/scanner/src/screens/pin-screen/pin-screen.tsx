@@ -31,10 +31,11 @@ export const PinScreen = (): React.ReactElement => {
                 localStorage.setItem('kitchenId', user.data.id);
                 setAuth(true);
                 setPin(enteredPin);
-                setKitchenId(+user.data.id);
+                setKitchenId(Number(user.data.id));
+                return user;
             })
-            .then(() => {
-                doSync();
+            .then((user) => {
+                return doSync({ kitchenId: Number(user.data.id) });
             })
             .catch((e) => {
                 if (!e.response && enteredPin && enteredPin === storedPin) {
