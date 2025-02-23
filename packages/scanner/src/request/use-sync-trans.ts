@@ -7,70 +7,68 @@ import type { ApiHook } from '~/request/lib';
 import { db } from '~/db';
 import type { ServerTransaction, Transaction } from '~/db';
 
-export const useSyncTransactions = (
-    baseUrl: string,
-    pin: string | null,
-    setAuth: (auth: boolean) => void,
-    kitchenId: number
-): ApiHook => {
+export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);
     const [fetching, setFetching] = useState<any>(false);
 
-    const send = useCallback(async () => {
-        if (fetching) {
-            return Promise.resolve(false);
-        }
+    const send = useCallback(
+        async ({ kitchenId }) => {
+            if (fetching) {
+                return Promise.resolve(false);
+            }
 
-        let lastUpdatedServerTrans = localStorage.getItem('lastUpdatedServerTrans'); // Время записи последней известной Кормителю транзакции в бд Джанго
+            let lastUpdatedServerTrans = localStorage.getItem('lastUpdatedServerTrans'); // Время записи последней известной Кормителю транзакции в бд Джанго
 
-        if (!lastUpdatedServerTrans) {
-            lastUpdatedServerTrans = dayjs().startOf('day').subtract(1, 'day').add(7, 'hours').toISOString();
-        }
+            if (!lastUpdatedServerTrans) {
+                lastUpdatedServerTrans = dayjs().startOf('day').subtract(1, 'day').add(7, 'hours').toISOString();
+            }
 
-        setFetching(true);
+            setFetching(true);
 
-        try {
-            const newClientTxs = await getNewClientTransactions();
-            const formattedNewClientTxs = formatClientTransactionsToServer(newClientTxs);
+            try {
+                const newClientTxs = await getNewClientTransactions();
+                const formattedNewClientTxs = formatClientTransactionsToServer(newClientTxs);
 
-            const response = await axios.post<{ last_updated: string; transactions: Array<ServerTransaction> }>(
-                `${baseUrl}/feed-transaction/sync`,
-                {
-                    last_updated: lastUpdatedServerTrans,
-                    transactions: formattedNewClientTxs,
-                    kitchen_id: kitchenId
-                },
-                {
-                    headers: {
-                        Authorization: `K-PIN-CODE ${pin}`
+                const response = await axios.post<{ last_updated: string; transactions: Array<ServerTransaction> }>(
+                    `${baseUrl}/feed-transaction/sync`,
+                    {
+                        last_updated: lastUpdatedServerTrans,
+                        transactions: formattedNewClientTxs,
+                        kitchen_id: kitchenId
+                    },
+                    {
+                        headers: {
+                            Authorization: `K-PIN-CODE ${pin}`
+                        }
                     }
+                );
+
+                await markTransactionsAsUpdated(newClientTxs);
+                await putNewServerTransactions(response.data.transactions);
+                await deleteOutdatedTransactions();
+
+                if (response.data.last_updated) {
+                    localStorage.setItem('lastUpdatedServerTrans', response.data.last_updated);
                 }
-            );
 
-            await markTransactionsAsUpdated(newClientTxs);
-            await putNewServerTransactions(response.data.transactions);
-            await deleteOutdatedTransactions();
+                setUpdated(+new Date());
+                return;
+            } catch (e) {
+                if (e instanceof AxiosError && e?.response?.status === 401) {
+                    setAuth(false);
+                    return false;
+                }
 
-            if (response.data.last_updated) {
-                localStorage.setItem('lastUpdatedServerTrans', response.data.last_updated);
+                setError(e);
+                console.error(e);
+                return Promise.reject(e);
+            } finally {
+                setFetching(false);
             }
-
-            setUpdated(+new Date());
-            return;
-        } catch (e) {
-            if (e instanceof AxiosError && e?.response?.status === 401) {
-                setAuth(false);
-                return false;
-            }
-
-            setError(e);
-            console.error(e);
-            return Promise.reject(e);
-        } finally {
-            setFetching(false);
-        }
-    }, [baseUrl, error, fetching, kitchenId, pin, setAuth]);
+        },
+        [baseUrl, error, fetching, pin, setAuth]
+    );
 
     return <ApiHook>useMemo(
         () => ({
@@ -90,7 +88,7 @@ const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
 };
 
 const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
-    return trans.map(({ amount, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+    return trans.map(({ amount, group_badge, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
         volunteer: vol_id,
         is_vegan,
         amount,
@@ -98,7 +96,8 @@ const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
         ulid,
         meal_time: mealTime,
         kitchen,
-        reason
+        reason,
+        group_badge
     }));
 };
 
@@ -113,16 +112,19 @@ const markTransactionsAsUpdated = async (trans): Promise<IndexableType> => {
 
 const putNewServerTransactions = async (data): Promise<IndexableType> => {
     const serverTransactions = data as Array<ServerTransaction>;
-    const transactions = serverTransactions.map(({ amount, dtime, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
-        vol_id: volunteer,
-        is_vegan,
-        mealTime: meal_time,
-        ulid,
-        amount,
-        ts: Math.floor(new Date(dtime).valueOf() / 1000),
-        is_new: false,
-        kitchen
-    }));
+    const transactions = serverTransactions.map(
+        ({ amount, dtime, group_badge, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
+            vol_id: volunteer,
+            is_vegan,
+            mealTime: meal_time,
+            ulid,
+            amount,
+            ts: Math.floor(new Date(dtime).valueOf() / 1000),
+            is_new: false,
+            kitchen,
+            group_badge
+        })
+    );
 
     return db.transactions.bulkPut(transactions);
 };

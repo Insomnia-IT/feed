@@ -1,6 +1,7 @@
-import { DeleteButton, EditButton, List, Space, Table, TextField, Tooltip } from '@pankod/refine-antd';
-import { useList, useNavigation } from '@pankod/refine-core';
-import type { FC, ReactNode } from 'react';
+import { DeleteButton, EditButton, List } from '@refinedev/antd';
+import { Space, Table, TablePaginationConfig, Tooltip } from 'antd';
+import { useList, useNavigation } from '@refinedev/core';
+import { useState, type FC } from 'react';
 
 import type { GroupBadgeEntity } from 'interfaces';
 import { useMedia } from 'shared/providers';
@@ -10,13 +11,34 @@ import useVisibleDirections from '../vols/use-visible-directions';
 import styles from './group-badge-list.module.css';
 
 export const GroupBadgeList: FC = () => {
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
-        resource: 'group-badges'
-    });
+    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
 
     const visibleDirections = useVisibleDirections();
     const { isMobile } = useMedia();
     const { edit } = useNavigation();
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges',
+        config: {
+            pagination: {
+                current: isMobile ? 1 : page,
+                pageSize: isMobile ? 10000 : pageSize
+            }
+        }
+    });
+
+    const pagination: TablePaginationConfig = {
+        total: groupBadges?.total ?? 1,
+        showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
+        current: page,
+        pageSize: pageSize,
+        onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
+            localStorage.setItem('volPageIndex', page.toString());
+            localStorage.setItem('volPageSize', pageSize.toString());
+        }
+    };
 
     const data =
         groupBadges?.data.filter((item) => {
@@ -28,7 +50,19 @@ export const GroupBadgeList: FC = () => {
             {isMobile ? (
                 <div className={styles.mobileList}>
                     {data.map((badge) => (
-                        <div key={badge.id} className={styles.card} onClick={() => edit('group-badges', badge.id)}>
+                        <div
+                            key={badge.id}
+                            className={styles.card}
+                            onClick={(e) => {
+                                const target = e.target as HTMLElement;
+                                //TODO: поискать решение через e.stopPropagation() на Popconfirm у DeleteButton
+                                if (target.closest('.ant-btn') || target.closest('.ant-modal')) {
+                                    return;
+                                }
+
+                                edit('group-badges', badge.id);
+                            }}
+                        >
                             <div className={styles.header}>
                                 <Tooltip title={badge.name}>
                                     <span className={styles.name}>{badge.name}</span>
@@ -57,7 +91,7 @@ export const GroupBadgeList: FC = () => {
                     ))}
                 </div>
             ) : (
-                <Table dataSource={data} rowKey="id" pagination={false}>
+                <Table dataSource={data} rowKey="id" pagination={pagination}>
                     <Table.Column<GroupBadgeEntity>
                         title=""
                         dataIndex="actions"
@@ -68,27 +102,11 @@ export const GroupBadgeList: FC = () => {
                             </Space>
                         )}
                     />
-                    <Table.Column
-                        dataIndex="name"
-                        key="name"
-                        title="Название"
-                        render={(value: string): ReactNode => (
-                            <Tooltip title={value}>
-                                <TextField value={value} />
-                            </Tooltip>
-                        )}
-                        sorter={getSorter('name')}
-                        ellipsis
-                    />
+                    <Table.Column dataIndex="name" key="name" title="Название" sorter={getSorter('name')} ellipsis />
                     <Table.Column
                         dataIndex={['direction', 'name']}
                         key="direction"
                         title="Служба/Направление"
-                        render={(value: string): ReactNode => (
-                            <Tooltip title={value}>
-                                <TextField value={value} />
-                            </Tooltip>
-                        )}
                         ellipsis
                     />
                     <Table.Column

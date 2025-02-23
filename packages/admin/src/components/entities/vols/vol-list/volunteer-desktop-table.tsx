@@ -1,5 +1,5 @@
-import { Table, Tag } from '@pankod/refine-antd';
-import type { TablePaginationConfig, TableProps } from '@pankod/refine-antd';
+import { Table, Tag } from 'antd';
+import type { TablePaginationConfig, TableProps } from 'antd';
 import { CheckOutlined, StopOutlined } from '@ant-design/icons';
 import { FC, useMemo, useContext } from 'react';
 

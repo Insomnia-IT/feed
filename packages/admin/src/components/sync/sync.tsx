@@ -1,12 +1,8 @@
 import { FC, useState } from 'react';
+import { Button, List } from 'antd';
 
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
-
-const apiUrl = NEW_API_URL;
-
-import { Button, List } from '@pankod/refine-antd';
-
 import useCanAccess from '../entities/vols/use-can-access';
 
 import styles from './sync.module.css';
@@ -21,7 +17,7 @@ export const Sync: FC = () => {
     const syncNotion = async (isFull = false) => {
         setDisabled(true);
         try {
-            const response = await axios.post(`${apiUrl}/notion-sync${isFull ? '?all_data=true' : ''}`);
+            const response = await axios.post(`${NEW_API_URL}/notion-sync${isFull ? '?all_data=true' : ''}`);
             if (response.status === 202) {
                 alert('Данные из Notion получены успешно. Отправить список активированных не удалось.');
 

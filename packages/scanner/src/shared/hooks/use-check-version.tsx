@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import axios from 'axios';
 
 import { clearCache } from '~/shared/lib/utils';
+import ver from 'pwa-ver.txt';
 
-const LOCAL_VERSION = 'this file is updated automatically on build';
-console.log(`local app ver: ${LOCAL_VERSION}`);
+console.log(`pwa-ver.txt: ${ver}`);
 
 export const useCheckVersion = (): void => {
     useEffect(() => {
@@ -13,7 +13,7 @@ export const useCheckVersion = (): void => {
             const hash = new Date().toISOString();
             void axios.get(`public/pwa-ver.txt?h=${hash}`).then(({ data }: any): void => {
                 console.log(`remote app ver: ${data}`);
-                if (data !== LOCAL_VERSION) {
+                if (data !== ver) {
                     console.log('new version, reloading...');
                     alert('Доступно обновление, приложение перезагрузится');
                     clearCache();

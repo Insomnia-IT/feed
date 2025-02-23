@@ -1,6 +1,7 @@
 import { FC } from 'react';
-import { Create, Form, useForm } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { Create, useForm } from '@refinedev/antd';
+import { Form } from 'antd';
+import type { IResourceComponentsProps } from '@refinedev/core';
 
 import type { GroupBadgeEntity } from 'interfaces';
 

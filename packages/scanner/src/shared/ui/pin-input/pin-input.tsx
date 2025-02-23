@@ -59,6 +59,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     tabIndex={-1}
                     className={css.pinInput}
                     value={pin?.[0] || ''}
+                    readOnly
                     focus={focus}
                     onFocus={handleFocus}
                     type='number'
@@ -68,6 +69,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     tabIndex={-1}
                     className={css.pinInput}
                     value={pin?.[1] || ''}
+                    readOnly
                     focus={focus}
                     onFocus={handleFocus}
                     type='number'
@@ -77,6 +79,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     tabIndex={-1}
                     className={css.pinInput}
                     value={pin?.[2] || ''}
+                    readOnly
                     focus={focus}
                     onFocus={handleFocus}
                     type='number'
@@ -86,6 +89,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     tabIndex={-1}
                     className={css.pinInput}
                     value={pin?.[3] || ''}
+                    readOnly
                     focus={focus}
                     onFocus={handleFocus}
                     type='number'

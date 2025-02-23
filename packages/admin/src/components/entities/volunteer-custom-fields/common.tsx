@@ -1,8 +1,8 @@
-import { Checkbox, Form, Input, Select } from '@pankod/refine-antd';
-import { FC, lazy, Suspense } from 'react';
-import { Rules } from 'components/form/rules';
+import { Checkbox, Form, Input, Select } from 'antd';
+import { FC } from 'react';
 
-const ReactQuill = lazy(() => import('react-quill'));
+import { Rules } from 'components/form/rules';
+import { TextEditor } from 'components/controls/text-editor';
 
 export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => (
     <>
@@ -23,9 +23,7 @@ export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => (
             </Select>
         </Form.Item>
         <Form.Item label="Комментарий" name="comment">
-            <Suspense fallback={<div>Loading editor...</div>}>
-                <ReactQuill />
-            </Suspense>
+            <TextEditor />
         </Form.Item>
         <Form.Item name="mobile" valuePropName="checked">
             <Checkbox>Показывать в мобильной админке?</Checkbox>

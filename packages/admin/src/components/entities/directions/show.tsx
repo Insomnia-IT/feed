@@ -1,7 +1,8 @@
 import { FC } from 'react';
-import { Show, Typography } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useShow } from '@pankod/refine-core';
+import { Show } from '@refinedev/antd';
+import { Typography } from 'antd';
+import type { IResourceComponentsProps } from '@refinedev/core';
+import { useShow } from '@refinedev/core';
 
 import type { DirectionEntity } from 'interfaces';
 

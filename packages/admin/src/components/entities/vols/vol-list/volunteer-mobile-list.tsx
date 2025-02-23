@@ -1,4 +1,4 @@
-import { Spin, Tag } from '@pankod/refine-antd';
+import { Spin, Tag } from 'antd';
 import { FC } from 'react';
 
 import type { VolEntity } from 'interfaces';
@@ -54,7 +54,7 @@ export const VolunteerMobileList: FC<{
                                 {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
                             </div>
                             <div className={styles.textRow}>
-                                <span className={styles.bold}>Комментарий: </span>
+                                <span className={styles.bold}>Заметка: </span>
                                 {comment || '-'}
                             </div>
                         </div>

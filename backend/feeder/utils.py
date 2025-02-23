@@ -7,7 +7,7 @@ from enum import Enum
 
 from django.db import transaction
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 from feeder import models
 from feeder.models import meal_times
@@ -72,47 +72,84 @@ def calculate_statistics(date_from, date_to):
     stat_date_from = arrow.get(date_from, tzinfo=TZ)
     stat_date_to = arrow.get(date_to, tzinfo=TZ)
 
-    # get transactions by criteria of fact statistic
-    transactions = (
-        models.FeedTransaction.objects
-            # shift date_to to include end of period
-            .filter(dtime__range=(stat_date_from.shift(hours=+DAY_START_HOUR).datetime, stat_date_to.shift(days=+1, hours=+DAY_START_HOUR).datetime))
-            .values_list('dtime', 'meal_time', 'kitchen', 'amount', 'is_vegan')
+    fact_query = models.FeedTransaction.objects.filter(
+        dtime__range=(
+            stat_date_from.shift(hours=+DAY_START_HOUR).datetime,
+            stat_date_to.shift(days=+1, hours=+DAY_START_HOUR).datetime
+        )
     )
-
+    
+    # get transactions by criteria of fact statistic
+    transactions = fact_query.values(
+        'dtime', 'meal_time', 'kitchen_id', 'amount', 'is_vegan'
+    )
     print(f'transactions loaded: {time.time() - start_time}')
 
     # set FACT statistics
     stat = dict()
 
-    for dtime, meal_time, kitchen_id, amount, is_vegan in transactions:
-        state_date = arrow.get(dtime)
+    for txn in transactions:
+        state_date = arrow.get(txn['dtime'])
+        adjusted_date = (
+            state_date.shift(days=-1) 
+            if state_date.hour < DAY_START_HOUR and txn['meal_time'] == meal_times[3] # = "night"
+            else state_date
+        )
         append_stat(stat, {
-            # day starts from 7AM
-            'date': (
-                (
-                    state_date.shift(days=-1)
-                    if state_date.hour < DAY_START_HOUR and meal_time == meal_times[3] # = "night"
-                    else state_date
-                ).format(STAT_DATE_FORMAT)
-            ),
+            'date': adjusted_date.format(STAT_DATE_FORMAT),
             'type': StatisticType.FACT.value,
-            'meal_time': meal_time,
-            'is_vegan': is_vegan,
-            'amount': amount,
-            'kitchen_id': kitchen_id
+            'meal_time': txn['meal_time'],
+            'is_vegan': txn['is_vegan'],
+            'amount': txn['amount'],
+            'kitchen_id': txn['kitchen_id']
         })
-
+    
     print(f'fact calculated: {time.time() - start_time}')
 
     # plan statistic
+    # Сохраняем подходящие arrivals для каждого волонтера
 
-    all_arrivals = list(models.Arrival.objects.all())
+    volunteers = (
+        models.Volunteer.objects
+        .exclude(Q(is_blocked=True) | Q(feed_type__code='FT4'))
+        .prefetch_related(
+            Prefetch(
+                'arrivals',
+                queryset=models.Arrival.objects.filter(
+                    status__in=['ARRIVED', 'STARTED', 'JOINED'],
+                    arrival_date__lt=stat_date_to.shift(days=1).datetime,
+                    departure_date__gt=stat_date_from.datetime
+                ),
+                to_attr='relevant_arrivals'
+            )
+        )
+        .select_related('kitchen', 'feed_type')
+    )
 
-    print(f'arrivals loaded: {time.time() - start_time}')
+    # Предварительная обработка данных волонтеров
+    processed_volunteers = []
+    for vol in volunteers:
+        for arrival in vol.relevant_arrivals or []:
+            active_from = arrow.get(arrival.arrival_date).to(TZ).floor('day')
+            active_to = arrow.get(arrival.departure_date).to(TZ).floor('day')
+
+            # Проверка пересечения с общим диапазоном
+            if active_to < stat_date_from or active_from > stat_date_to:
+                continue
+            
+            processed_volunteers.append({
+                'active_from': active_from,
+                'active_to': active_to,
+                'is_paid': vol.feed_type.paid if vol.feed_type else False,
+                'is_vegan': vol.is_vegan,
+                'kitchen_id': vol.kitchen.id if vol.kitchen else None,
+            })
+    
+    print(f'volunteers loaded: {time.time() - start_time}')
 
     # iterate over date range (day by day) between from and to
-    for current_stat_date in arrow.Arrow.range('day', stat_date_from, stat_date_to):
+    date_range = list(arrow.Arrow.range('day', stat_date_from, stat_date_to))
+    for current_stat_date in date_range:
         # Get volunteers by criterias of plan statistic.
         #
         # The criterias:
@@ -123,85 +160,40 @@ def calculate_statistics(date_from, date_to):
         #     Также игнорим волонтеров, у которых стоит тип питания "без питания" (FT4).
         #     Ну и остальных проверяем по тому, что текущий день входит в интервал от active_from до active_to.
 
-        volunteers = (
-            models.Volunteer.objects
-                .exclude(
-                    (Q(is_blocked=True) | Q(feed_type__code='FT4'))
-                    | (
-                        ~Q(arrivals__status='ARRIVED') & ~Q(arrivals__status='STARTED') & ~Q(arrivals__status='JOINED')
-                        & (
-                            Q(arrivals__arrival_date__lt=current_stat_date.datetime) | (~Q(feed_type__exact=None) & Q(feed_type__paid=True))
-                        )
-                    )
-                )
-                .values_list('kitchen__id', 'is_vegan', 'feed_type__paid', 'id')
-        )
-
-        print(f'volunteers loaded: {time.time() - start_time}')
-
-        arrivals_by_volunter = dict()
-
-        for arrival in all_arrivals:
-            status = arrival.status and arrival.status.id
-            if status == 'ARRIVED' or status == 'STARTED' or status == 'JOINED':
-                current_arrivals = arrivals_by_volunter.get(arrival.volunteer.id, [])
-                current_arrivals.append(arrival)
-                arrivals_by_volunter[arrival.volunteer.id] = current_arrivals
-
+        current_day = current_stat_date.floor('day')
+        
         # set PLAN statistics for current date
-        for kitchen_id, is_vegan, is_paid, id in volunteers:
-            active_arrivals = arrivals_by_volunter.get(id, [])
-            if len(active_arrivals) == 0:
+        for vol_data in processed_volunteers:
+            active_from = vol_data['active_from']
+            active_to = vol_data['active_to']
+            
+            if not (active_from <= current_day <= active_to):
                 continue
 
-            # print('active_arrivals', len(active_arrivals))
-
-            active_arrival = active_arrivals[-1]
-
-            # convert dates to Arrow and floor them to 'day'
-            active_from_as_arrow = arrow.get(active_arrival.arrival_date).to(TZ).floor('day')
-            active_to_as_arrow = arrow.get(active_arrival.departure_date).to(TZ).floor('day')
-
-            if active_from_as_arrow > current_stat_date or active_to_as_arrow < current_stat_date:
-                continue
+            is_paid = vol_data['is_paid']
 
             # skip breakfast
-            if active_from_as_arrow == current_stat_date and active_to_as_arrow != current_stat_date:
-                for meal_time in get_meal_times(is_paid)[1:]:
-                    append_stat(stat, {
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
-                        'type': StatisticType.PLAN.value,
-                        'meal_time': meal_time, # in [ "lunch", "dinner" (, is_paid ? "night") ]
-                        'is_vegan': is_vegan,
-                        'amount': 1,
-                        'kitchen_id': kitchen_id
-                    })
+            if active_from == current_day and active_to != current_day:
+                meal_times_set = get_meal_times(is_paid)[1:]  # in [ "lunch", "dinner" (, is_paid ? "night") ]
             # skip dinner and night
-            elif active_from_as_arrow != current_stat_date and active_to_as_arrow == current_stat_date:
-                for meal_time in get_meal_times(is_paid)[:2]:
-                    append_stat(stat, {
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
-                        'type': StatisticType.PLAN.value,
-                        'meal_time': meal_time, # in [ "breakfast", "lunch" ]
-                        'is_vegan': is_vegan,
-                        'amount': 1,
-                        'kitchen_id': kitchen_id
-                    })
+            elif active_from != current_day and active_to == current_day:
+                meal_times_set = get_meal_times(is_paid)[:2]  # in [ "breakfast", "lunch" ]
             # handle each value of meal_times
             else:
-                for meal_time in get_meal_times(is_paid):
-                    append_stat(stat, {
-                        'date': current_stat_date.format(STAT_DATE_FORMAT),
-                        'type': StatisticType.PLAN.value,
-                        'meal_time': meal_time, # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
-                        'is_vegan': is_vegan,
-                        'amount': 1,
-                        'kitchen_id': kitchen_id
-                    })
-        print(f'date plan: {time.time() - start_time}')
-        
+                meal_times_set = get_meal_times(is_paid) # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
 
-    print(f'end: {time.time() - start_time}')
+            for meal_time in meal_times_set:
+                append_stat(stat, {
+                    'date': current_day.format(STAT_DATE_FORMAT),
+                    'type': StatisticType.PLAN.value,
+                    'meal_time': meal_time,
+                    'is_vegan': vol_data['is_vegan'],
+                    'amount': 1,
+                    'kitchen_id': vol_data['kitchen_id']
+                })
+
+
+    print(f'Total time: {time.time() - start_time}')
 
     # combine fact and plan stats into result
     return stat.values()

@@ -1,4 +1,4 @@
-import { Button } from '@pankod/refine-antd';
+import { Button } from 'antd';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FC, useState } from 'react';
 import ExcelJS from 'exceljs';
@@ -17,11 +17,9 @@ export const SaveAsXlsxButton: FC<{
     transportById: Record<string, string>;
     kitchenNameById: Record<string, string>;
     feedTypeNameById: Record<string, string>;
-    colorNameById: Record<string, string>;
     accessRoleById: Record<string, string>;
 }> = ({
     accessRoleById,
-    colorNameById,
     customFields,
     feedTypeNameById,
     filterQueryParams,
@@ -40,7 +38,6 @@ export const SaveAsXlsxButton: FC<{
             onClick={() => {
                 void createAndSaveXLSX({
                     accessRoleById,
-                    colorNameById,
                     customFields,
                     feedTypeNameById,
                     filterQueryParams,
@@ -54,14 +51,13 @@ export const SaveAsXlsxButton: FC<{
             icon={isExporting ? <LoadingOutlined spin /> : <DownloadOutlined />}
             disabled={isDisabled}
         >
-                Выгрузить
+            Выгрузить
         </Button>
     );
 };
 
 const createAndSaveXLSX = async ({
     accessRoleById,
-    colorNameById,
     customFields = [],
     feedTypeNameById,
     filterQueryParams,
@@ -79,7 +75,6 @@ const createAndSaveXLSX = async ({
     transportById: Record<string, string>;
     kitchenNameById: Record<string, string>;
     feedTypeNameById: Record<string, string>;
-    colorNameById: Record<string, string>;
     accessRoleById: Record<string, string>;
 }): Promise<void> => {
     setIsExporting(true);
@@ -116,7 +111,6 @@ const createAndSaveXLSX = async ({
                 'Тип питания',
                 'Веган/мясоед',
                 'Комментарий',
-                'Цвет бейджа',
                 'Право доступа',
                 // eslint-disable-next-line no-unsafe-optional-chaining
                 ...customFields?.map((field): string => field.name)
@@ -157,7 +151,6 @@ const createAndSaveXLSX = async ({
                     vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
-                    vol.color_type ? colorNameById[vol.color_type] : '',
                     vol.access_role ? accessRoleById[vol.access_role] : '',
                     // eslint-disable-next-line no-unsafe-optional-chaining
                     ...customFields?.map((field) => {

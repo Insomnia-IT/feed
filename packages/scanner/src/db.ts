@@ -15,6 +15,7 @@ export interface Transaction {
     is_vegan?: boolean;
     reason?: string | null;
     kitchen: number;
+    group_badge?: number | null;
 }
 
 export interface ServerTransaction {
@@ -25,6 +26,7 @@ export interface ServerTransaction {
     meal_time: MealTime;
     is_vegan: boolean;
     kitchen: number;
+    group_badge?: number | null;
 }
 
 export interface TransactionJoined extends Transaction {
@@ -32,10 +34,10 @@ export interface TransactionJoined extends Transaction {
 }
 
 export enum FeedType {
-    FT1 = 1, // бесплатно
-    FT2 = 2, // платно
+    Free = 1, // бесплатно
+    Paid = 2, // платно
     Child = 3, // ребенок,
-    FT4 = 4 // без питания
+    NoFeed = 4 // без питания
 }
 
 export enum MealTime {
@@ -44,8 +46,6 @@ export enum MealTime {
     dinner = 'dinner',
     night = 'night'
 }
-
-export const FeedWithBalance = new Set([FeedType.FT1, FeedType.FT2, FeedType.Child]);
 
 export interface Volunteer {
     qr: string;
@@ -81,9 +81,9 @@ export interface GroupBadge {
 const DB_VERSION = 18;
 
 export class MySubClassedDexie extends Dexie {
+    groupBadges!: Table<GroupBadge>;
     transactions!: Table<Transaction>;
     volunteers!: Table<Volunteer>;
-    groupBadges!: Table<GroupBadge>;
 
     constructor() {
         super('yclins');
@@ -103,6 +103,8 @@ export class MySubClassedDexie extends Dexie {
 export const db = new MySubClassedDexie();
 
 export const addTransaction = async ({
+    amount,
+    group_badge,
     isVegan,
     kitchenId,
     log,
@@ -117,36 +119,45 @@ export const addTransaction = async ({
         error: boolean;
         reason: string;
     };
+    group_badge?: number | null;
+    amount?: number;
 }): Promise<any> => {
     const ts = dayjs().unix();
-    let amount = 1;
+    let amountInner = amount ?? 1;
     let reason: string | null = null;
     if (log) {
         if (log.error) {
-            amount = 0;
+            amountInner = 0;
         }
+
         reason = log.reason;
     }
+
     await db.transactions.add({
         vol_id: vol ? vol.id : null,
         is_vegan: vol ? vol.is_vegan : isVegan,
         ts,
         kitchen: kitchenId,
-        amount: amount,
+        amount: amountInner,
         ulid: ulid(ts),
         mealTime: MealTime[mealTime],
         is_new: true,
-        reason: reason
+        reason,
+        group_badge
     });
 };
 
 export const dbIncFeed = async ({
+    amount,
+    group_badge,
     isVegan,
     kitchenId,
     log,
     mealTime,
     vol
 }: {
+    amount?: number;
+    group_badge?: number | null;
     vol?: Volunteer | null;
     mealTime: MealTime;
     isVegan?: boolean | undefined;
@@ -156,7 +167,7 @@ export const dbIncFeed = async ({
     };
     kitchenId: number;
 }): Promise<any> => {
-    return await addTransaction({ vol, mealTime, isVegan, log, kitchenId });
+    return await addTransaction({ amount, group_badge, vol, mealTime, isVegan, log, kitchenId });
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {
@@ -165,7 +176,7 @@ export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<A
             return transaction.vol_id ? db.volunteers.get({ id: transaction.vol_id }) : undefined;
         });
 
-        return Dexie.Promise.all(volsPromises).then((vols) => {
+        return Promise.all(volsPromises).then((vols) => {
             transactions.forEach((transaction: TransactionJoined, i) => {
                 transaction.vol = vols[i];
             });
@@ -185,14 +196,14 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
             return (
                 vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
-                vol.feed_type !== FeedType.FT4 &&
+                vol.feed_type !== FeedType.NoFeed &&
                 vol.arrivals.some(
                     ({ arrival_date, departure_date, status }) =>
                         dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
                         dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
                         (dayjs(arrival_date).startOf('day').unix() < dayjs(statsDate).unix()
                             ? isActivatedStatus(status)
-                            : vol.feed_type === FeedType.FT2
+                            : vol.feed_type === FeedType.Paid
                               ? isActivatedStatus(status)
                               : true)
                 )

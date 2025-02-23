@@ -110,15 +110,22 @@ class VolunteerListSerializer(serializers.ModelSerializer):
         model = models.Volunteer
         fields = '__all__'
 
+
+
 class RetrieveVolunteerSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
     arrivals = ArrivalSerializer(many=True)
     person = PersonSerializer(required=False, allow_null=True)
-
+    color_type = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = models.Volunteer
         fields = '__all__'
+
+    def get_color_type(self, volunteer):
+        main_role = getattr(volunteer, 'main_role', None)
+        if main_role:
+            return models.Color.objects.get(name = main_role.color).id
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
@@ -208,6 +215,16 @@ class FeedTransactionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return models.FeedTransaction.objects.create(**validated_data)
 
+class SyncFeedTransactionSerializer(serializers.ModelSerializer):
+    """Сериализатор для операции синхронизации, который не проверяет уникальность ulid"""
+    ulid = serializers.CharField(max_length=255)
+
+    class Meta:
+        model = models.FeedTransaction
+        fields = '__all__'
+        extra_kwargs = {
+            'ulid': {'validators': []}
+        }
 
 class KitchenSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)

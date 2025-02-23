@@ -9,35 +9,28 @@ import css from './auto-sync.module.css';
 const SYNC_INTERVAL = 2 * 60 * 1000;
 
 export const AutoSync = () => {
-    const { lastSyncStart, syncError, syncFetching, syncSend } = useApp();
+    const { doSync, syncError, syncFetching } = useApp();
 
     const [nextSyncTime, setNextSyncTime] = useState<number>(Date.now() + SYNC_INTERVAL);
 
     const isSyncFetchingRef = useRef(syncFetching);
-    const lastSyncStartRef = useRef(lastSyncStart);
-    const syncSendRef = useRef(syncSend);
+    const syncSendRef = useRef(doSync);
 
     useEffect(() => {
         isSyncFetchingRef.current = syncFetching;
-        lastSyncStartRef.current = lastSyncStart;
-        syncSendRef.current = syncSend;
+        syncSendRef.current = doSync;
     });
 
     useEffect(() => {
-        const sync = async (): Promise<void> => {
+        const sync = (): void => {
             setNextSyncTime(Date.now() + SYNC_INTERVAL);
 
             const isSyncFetching = isSyncFetchingRef.current;
-            const lastSyncStart = lastSyncStartRef.current;
             const syncSend = syncSendRef.current;
 
             if (navigator.onLine && !isSyncFetching) {
                 console.log('online, updating...');
-                try {
-                    await syncSend({ lastSyncStart });
-                } catch (e) {
-                    console.log(e);
-                }
+                void syncSend();
             }
         };
 
