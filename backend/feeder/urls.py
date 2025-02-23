@@ -36,7 +36,7 @@ urlpatterns = [
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
     # path('notion-sync', sync.SyncWithNotion.as_view()),
-    path("v1/washes", wash.WashCreateView.as_view(), name="create_wash"),
-    path("v1/volunteers/<int:id>/washes", wash.VolunteerWashesView.as_view(), name="volunteer_washes"),
+    path("washes", wash.WashCreateView.as_view(), name="create_wash"),
+    path("volunteers/<int:id>/washes", wash.VolunteerWashesView.as_view(), name="volunteer_washes"),
 ]
 
