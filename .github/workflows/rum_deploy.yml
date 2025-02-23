@@ -20,24 +20,16 @@ jobs:
 # ADMIN
     - name: build admin
       run: |
-          docker build \
-            --progress=plain \
-            -t $IMAGE_NAME_BASENAME:$GITHUB_SHA  \
+          docker compose build \
             --build-arg NEW_API_URL=https://srv.rumyantsev.com/feedapi/v1 \
             --build-arg SYNC_URL=http://9000.agreetesting.rumyantsev.com/api/v1/feeder/ \
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
-            --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }} \
-            .
-    - name: stop admin
+            --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
+    - name: stop feed_admin
       run: docker rm -f $IMAGE_NAME_BASENAME
     - name: run admin
       run: |
-        docker run -d \
-          -p 8888:80 \
-          -v ${DB_DIR}:/app/db \
-          --restart=always \
-          --name $IMAGE_NAME_BASENAME \
-          $IMAGE_NAME_BASENAME:$GITHUB_SHA
+        DB_DIR=${DB_DIR} docker compose up --force-recreate -d
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f

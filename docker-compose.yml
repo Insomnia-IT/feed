@@ -6,43 +6,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_backend
-    # command: sh -c "sh ./entry_backend.sh"
-    # command: sh -c "tail -f /dev/null" 
-
+      args:
+        SYNC_URL:
+        SYNC_LOGIN:
+        SYNC_PASSWORD:
     container_name: feed_backend
-    # ports:
-    # - 8000:8000
-    # env_file:
-    #   - ../backend/.env.sample
+    restart: always
     volumes:
-      - ./db/:/app/db
-  # nginx:
-  #   build:
-  #     context: ./nginx
-  #   command: sh -c "nginx"
-  #   # command: sh -c "tail -f /dev/null" 
-  #   container_name: feed_nginx
-  #   ports:
-  #     - 81:80
+      - ${DB_DIR:-./db}:/app/db
   front:
     build:
       context: .
       dockerfile: ./Dockerfile_front
       args:
-        NEW_API_URL: http://localhost:81/feedapi/v1
+        NEW_API_URL: http://localhost:${PORT:-80}/feedapi/v1
     container_name: feed_front
-    # command: nginx
+    restart: always
     ports:
-      - 81:80
-      # volumes:
-      # - ../packages/admin/:/app/packages/admin
-      # scanner:
-      #   build:
-      #     context: ../
-      #     dockerfile: ./local-dev/Dockerfile_front
-      #   command: sh -c "cd ./packages/scanner && yarn dev"
-      #   container_name: feed_scanner
-      #   ports:
-      #     - 3001:3001
-      #   volumes:
-      #     - ../packages/scanner/:/app/packages/scanner
+      - ${PORT:-80}:80
