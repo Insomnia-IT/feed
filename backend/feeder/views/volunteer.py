@@ -36,10 +36,13 @@ class VolunteerFilter(django_filters.FilterSet):
     direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
     direction_name = django_filters.CharFilter(field_name="directions__name", lookup_expr='icontains')
     directions = django_filters.ModelMultipleChoiceFilter(queryset=models.Direction.objects.all())
+    scanner_comment = django_filters.CharFilter(field_name="scanner_comment", lookup_expr='icontains')
+    responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
+    is_child = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
 
     class Meta:
         model = models.Volunteer
-        fields = ['color_type', 'feed_type', 'kitchen', 'group_badge', 'main_role', 'access_role', 'uuid']
+        fields = ['feed_type', 'kitchen', 'group_badge', 'main_role', 'access_role', 'uuid']
 
 
 class VolunteerCustomFieldValueFilter(django_filters.FilterSet):

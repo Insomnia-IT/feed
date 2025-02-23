@@ -20,7 +20,6 @@ export interface VolEntity {
     feed_type?: number; //FeedTypeEntity;
     qr_code?: string;
     group_badge?: number | undefined;
-    kitchen?: number;
     printing_batch?: number;
     main_role?: string;
     access_role?: string;
@@ -66,8 +65,9 @@ export interface FeedTransactionEntity {
     meal_time: string;
     volunteer: number;
     is_vegan: boolean | null;
-    reason: string;
+    reason: string | null;
     kitchen: number;
+    group_badge?: number;
 }
 
 export interface GroupBadgeEntity {

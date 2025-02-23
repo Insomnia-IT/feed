@@ -1,23 +1,34 @@
 # feed monorepo
 
+[Техническая документация](docs/overview.md)
 
 # Установка frontend
 
+Установить nodejs версии 18 или старше. Для проверки текущей версии можно выполнить команду:
+
 ```bash
-yarn
+node -v
+```
+
+Установить пакеты:
+
+```bash
+npm install
 ```
 
 # Запуск frontend со стейджовым беком (без локального запуска бекенда)
 
 ```bash
 cd ./packages/admin
-yarn run dev:stage
+npm run dev:stage
 ```
 
 # Если нужно локально запустить бек
 
 ## Установка backend
-Windows
+
+**Windows**
+
 ```bash
 cd backend
 py -m venv venv
@@ -25,7 +36,8 @@ py -m venv venv
 pip install -r requirements.txt
 ```
 
-Linux/MacOS
+**Linux/MacOS**
+
 ```bash
 cd ./backend
 python3 -m venv venv
@@ -35,9 +47,10 @@ pip install -r requirements.txt
 
 ## Запуск backend
 
-Скопировать файл backend/.env.sample в backend/.env
+Скопировать файл `backend/.env.sample` в `backend/.env`
 
-Windows
+**Windows**
+
 ```bash
 cd backend
 .\venv\Scripts\activate
@@ -47,7 +60,8 @@ python manage.py shell < create_user.py
 python manage.py runserver localhost:8000
 ```
 
-Linux/MacOS
+**Linux/MacOS**
+
 ```bash
 cd ./backend
 . ./venv/bin/activate
@@ -61,14 +75,13 @@ cd ./backend
 
 ```bash
 cd ./packages/admin
-yarn run dev
+npm run dev
 ```
 
 ```bash
 cd ./packages/scanner
-yarn run dev
+npm run dev
 ```
-
 
 # Passwords
 
@@ -79,17 +92,19 @@ admin / Kolombina25
 # Запуск линтера с автофиксом (если линтер упал на PR-е)
 
 ```bash
-yarn run lint-fix:js
+npm run lint-fix:js
 ```
 
 # Сборка
 
 ```bash
-yarn run build
+npm run build
 ```
 
 # Создание миграции БД
-Linux/MacOS
+
+**Linux/MacOS**
+
 ```bash
 cd ./backend
 python3 -m venv venv
@@ -99,11 +114,14 @@ python manage.py makemigrations
 
 # Локальный запуск через докер
 
-Windows
+**Windows**
+
 ```cmd
 .\local-dev.cmd
 ```
-Linux/MacOS
+
+**Linux/MacOS**
+
 ```bash
 ./local-dev.sh
 ```

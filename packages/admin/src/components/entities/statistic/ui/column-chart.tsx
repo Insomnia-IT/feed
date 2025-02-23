@@ -1,8 +1,9 @@
-import type { ColumnConfig, Options } from '@ant-design/plots';
-import dynamic from 'next/dynamic';
+import { FC, Suspense, lazy } from 'react';
+import type { ColumnConfig } from '@ant-design/plots';
 
 import type { MealTime, StatisticType } from '../types';
-const Column = dynamic(() => import('@ant-design/plots').then(({ Column }) => Column), { ssr: false });
+
+const Column = lazy(() => import('@ant-design/plots').then(({ Column }) => ({ default: Column })));
 
 /** Данные для столбчатого графика */
 interface IColumnChartData {
@@ -18,40 +19,40 @@ type IColumnChartAnnotationData = {
     fact: number;
 };
 
-const annotation = {
-    type: 'text',
-    style: {
-        textAlign: 'center' as const,
-        fontSize: 14,
-        fill: 'rgba(0,0,0,0.85)'
-    },
-    offsetY: -20
-};
+// const annotation = {
+//     type: 'text',
+//     style: {
+//         textAlign: 'center' as const,
+//         fontSize: 14,
+//         fill: 'rgba(0,0,0,0.85)'
+//     },
+//     offsetY: -20
+// };
 
-function createAnnotation(data: Array<IColumnChartAnnotationData>) {
-    const annotations: Options['annotations'] = [];
-    data.forEach((datum, index) => {
-        annotations.push({
-            ...annotation,
-            position: [`${(index / data.length) * 100 + 17}%`, '4%'],
-            content: `${datum.fact} / ${datum.plan}`
-        });
-    });
-    return annotations;
-}
+// function createAnnotation(data: Array<IColumnChartAnnotationData>) {
+//     const annotations: Options['annotations'] = [];
+//     data.forEach((datum, index) => {
+//         annotations.push({
+//             ...annotation,
+//             position: [`${(index / data.length) * 100 + 17}%`, '4%'],
+//             content: `${datum.fact} / ${datum.plan}`
+//         });
+//     });
+//     return annotations;
+// }
 
-/**Настройки для столбчатого графика*/
+/** Настройки для столбчатого графика */
 const columnConfig: Omit<ColumnConfig, 'data'> = {
     xField: 'date',
     yField: 'value',
-    isGroup: true,
-    isStack: true,
+    group: true,
+    stack: true,
     seriesField: 'mealTime',
-    groupField: 'type',
+    // groupField: 'type',
     padding: 50,
     label: {
-        position: 'middle',
-        content: (x) => {
+        position: 'top',
+        content: (x: { value: string }) => {
             const value = x.value || '';
             return value;
         },
@@ -64,36 +65,26 @@ const columnConfig: Omit<ColumnConfig, 'data'> = {
     legend: {
         position: 'top-left'
     },
-    tooltip: false,
-    // tooltip: {
-    //     // customContent: (title, data) => {
-    //     //     return `<div>${title}</div>`;
-    //     // },
-    //     // customItems: (originalItems: TooltipItem[]) => {
-    //     //     // process originalItems,
-    //     //     console.log(originalItems);
-    //     //     return originalItems;
-    //     // },
-    //     formatter: (datum) => {
-    //         return {
-    //             name: `${datum.mealTime} ${datum.type === 'plan' ? 'plan' : 'fact'}`,
-    //             value: datum.value
-    //         };
+    tooltip: false
+    // interactions: [
+    //     {
+    //         type: 'element-highlight-by-color'
     //     }
-    // },
-    interactions: [
-        {
-            type: 'element-highlight-by-color'
-        }
-    ]
+    // ]
 };
 
-function ColumnChart(props: {
+const ColumnChart: FC<{
     columnDataArr: Array<IColumnChartData>;
     dataForAnnotation: Array<IColumnChartAnnotationData>;
-}) {
-    const annotations = createAnnotation(props.dataForAnnotation);
-    return <Column data={props.columnDataArr} {...columnConfig} annotations={annotations} />;
-}
+}> = (props) => {
+    //TODO: Разобраться почему не работают аннотации, а лучше использовать другую библиотеку для графиков, потому что говорили, что сейчас визуально не понятно, что происходит на графике
+    // const annotations = createAnnotation(props.dataForAnnotation);
+    return (
+        <Suspense fallback={<div>Loading chart...</div>}>
+            <Column data={props.columnDataArr} {...columnConfig} />
+        </Suspense>
+    );
+};
+
 export { ColumnChart };
 export type { IColumnChartData, IColumnChartAnnotationData };

@@ -57,7 +57,10 @@
                 "severity": "warning"
             }
         ],
-        "indentation": 4,
+        "indent": [
+            4,
+            "space"
+        ],
         "custom-media-pattern": "(small|mobile|desktop)(-.){0,1}",
         "no-invalid-double-slash-comments": true,
         "at-rule-name-space-after": null,

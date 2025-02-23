@@ -1,23 +1,29 @@
-import type { AuthProvider } from '@pankod/refine-core';
+import type { AuthActionResponse, AuthProvider, HttpError } from '@refinedev/core';
 import axios from 'axios';
 
-import { clearUserData, getUserData, setUserData, setUserInfo } from '~/auth';
-import { NEW_API_URL } from '~/const';
+import { clearUserData, getUserData, setUserData } from 'auth';
+import { NEW_API_URL } from 'const';
 
 export const authProvider: AuthProvider = {
-    login: async ({ isQR, password, username }) => {
+    login: async ({ username, password, isQR }): Promise<AuthActionResponse> => {
         try {
             axios.defaults.headers.common = {};
 
             if (isQR && username && !password) {
                 const token = `V-TOKEN ${username}`;
-                const { data, status } = await axios.get(`${NEW_API_URL}/volunteers/?limit=1&qr=${username}`, {
-                    headers: {
-                        Authorization: token
-                    }
+                const { status } = await axios.get(`${NEW_API_URL}/volunteers/?limit=1&qr=${username}`, {
+                    headers: { Authorization: token }
                 });
 
-                if (status !== 200) return Promise.reject();
+                if (status !== 200) {
+                    return {
+                        success: false,
+                        error: {
+                            name: 'LoginError',
+                            message: 'Invalid QR code or status'
+                        }
+                    };
+                }
 
                 setUserData(token);
             } else {
@@ -26,38 +32,66 @@ export const authProvider: AuthProvider = {
                     password
                 });
 
-                if (status !== 200) return Promise.reject();
+                if (status !== 200) {
+                    return {
+                        success: false,
+                        error: {
+                            name: 'LoginError',
+                            message: 'Invalid username or password'
+                        }
+                    };
+                }
 
                 const { key } = data;
 
                 setUserData(key);
             }
 
-            return Promise.resolve('/volunteers');
-        } catch (e) {
-            return Promise.reject(e);
+            return {
+                success: true,
+                redirectTo: '/volunteers'
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error as HttpError | Error
+            };
         }
     },
-    logout: () => {
+
+    logout: async () => {
         clearUserData();
-        return Promise.resolve();
-    },
-    checkError: () => Promise.resolve(),
-    checkAuth: async (ctx) => {
-        const user = await getUserData(ctx, true);
 
+        return {
+            success: true,
+            redirectTo: '/login'
+        };
+    },
+
+    check: async () => {
+        const user = await getUserData(true);
         if (!user) {
-            return Promise.reject();
+            return {
+                authenticated: false,
+                redirectTo: '/login'
+            };
         }
-
-        return Promise.resolve({ user });
+        return {
+            authenticated: true
+        };
     },
-    getPermissions: () => Promise.resolve(),
-    getUserIdentity: async (ctx) => {
-        const user = await getUserData(ctx, true);
-        if (!user) return Promise.reject();
 
-        return Promise.resolve(user);
+    getPermissions: async () => null,
+
+    getIdentity: async () => {
+        const user = await getUserData(true);
+        if (!user) return null;
+        return user;
+    },
+
+    onError: async (error) => {
+        console.error(error);
+        return { error };
     }
 };
 

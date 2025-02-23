@@ -26,20 +26,20 @@ export const clearCache = (): void => {
     window.location.reload();
 };
 
-export const mealTimes = {
+export const mealTimes: Record<MealTime, string> = {
     [MealTime.breakfast]: 'Завтрак',
     [MealTime.lunch]: 'Обед',
     [MealTime.dinner]: 'Ужин',
     [MealTime.night]: 'Дожор'
 };
 
-export const getMealTimeText = (mealTime: string): string => {
-    return mealTimes[mealTime] || '';
+export const getMealTimeText = (mealTime?: MealTime | null): string => {
+    return mealTime ? mealTimes[mealTime] || '' : '';
 };
 
-export const getPlural = (number: number, titles: Array<string>) => {
+export const getPlural = (number: number, titles: Array<string>): string => {
     const cases = [2, 0, 1, 1, 1, 2];
     return titles[number % 100 > 4 && number % 100 < 20 ? 2 : cases[number % 10 < 5 ? number % 10 : 5]];
 };
 
-export const removeNonDigits = (value) => value.replace(/\D/, '');
+export const removeNonDigits = (value: string): string => value.replace(/\D/, '');

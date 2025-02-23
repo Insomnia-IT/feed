@@ -1,75 +1,48 @@
-import {
-    Button,
-    Edit,
-    EditButton,
-    Form,
-    Modal,
-    Space,
-    Table,
-    TextField,
-    Typography,
-    useForm,
-    useTable
-} from '@pankod/refine-antd';
-import { Input, Popconfirm } from 'antd';
-import { useList, useUpdateMany } from '@pankod/refine-core';
+import { Edit, EditButton, TextField, useForm, useTable } from '@refinedev/antd';
+import { Button, Table, Form, Typography, Space, Divider, Input, Popconfirm, Row, Col } from 'antd';
+import { useUpdateMany } from '@refinedev/core';
 import { DeleteOutlined } from '@ant-design/icons';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import type { TableRowSelection } from 'antd/es/table/interface';
+import { FC, useEffect, useState } from 'react';
 
-import 'react-mde/lib/styles/css/react-mde-all.css';
-
-import { useEffect, useMemo, useState } from 'react';
-import type { Key } from 'react';
-
-import type { GroupBadgeEntity, VolEntity } from '~/interfaces';
-
-import useVisibleDirections from '../vols/use-visible-directions';
-
+import type { GroupBadgeEntity, VolEntity } from 'interfaces';
 import { CreateEdit } from './common';
+import { AddVolunteerModal } from 'components/entities/group-badges/add-volunteer-modal';
 
 const { Title } = Typography;
 
-export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
+export const GroupBadgeEdit: FC = () => {
     const { mutate } = useUpdateMany();
 
     const [volunteers, setVolunteers] = useState<Array<VolEntity & { markedDeleted: boolean; markedAdded: boolean }>>(
         []
     );
-    const [openAdd, setOpen] = useState(false);
-    const [searchText, setSearchText] = useState('');
-    const [selected, setSelected] = useState<Array<Key>>([]);
+
+    const [openAdd, setOpenAdd] = useState(false);
 
     const { formProps, id, saveButtonProps } = useForm<GroupBadgeEntity>({
         onMutationSuccess: () => {
-            if (
-                volunteers.some((item) => {
-                    return item.markedDeleted;
-                })
-            )
+            const volunteersToDelete = volunteers.filter((item) => item.markedDeleted);
+            const volunteersToAdd = volunteers.filter((item) => item.markedAdded);
+
+            if (volunteersToDelete.length > 0) {
                 mutate({
                     resource: 'volunteers',
-                    ids: volunteers.filter((vol) => vol.markedDeleted).map((vol) => vol.id),
+                    ids: volunteersToDelete.map((vol) => vol.id),
                     values: { group_badge: null }
                 });
-            if (
-                volunteers.some((item) => {
-                    return item.markedAdded;
-                })
-            )
+            }
+
+            if (volunteersToAdd.length > 0) {
                 mutate({
                     resource: 'volunteers',
-                    ids: volunteers.filter((vol) => vol.markedAdded).map((vol) => vol.id),
+                    ids: volunteersToAdd.map((vol) => vol.id),
                     values: { group_badge: id }
                 });
+            }
         }
     });
 
-    const { data: volunteersAll, isLoading: isVolunteersAllLoading } = useList<VolEntity>({
-        resource: 'volunteers'
-    });
-
-    const { setFilters, tableProps: currentVols } = useTable<VolEntity>({
+    const { setFilters, tableProps: currentVolsTableParams } = useTable<VolEntity>({
         resource: 'volunteers',
         initialFilter: [
             {
@@ -88,49 +61,25 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
         initialPageSize: 10000
     });
 
-    const visibleDirections = useVisibleDirections();
+    useEffect(() => {
+        console.log('called!');
 
-    useEffect(
-        () =>
-            setVolunteers(
-                (prevState) =>
-                    currentVols.dataSource?.map((vol) => ({
-                        ...vol,
-                        markedDeleted: prevState.find((prevVol) => prevVol.id === vol.id)?.markedDeleted ?? false,
-                        markedAdded: prevState.find((prevVol) => prevVol.id === vol.id)?.markedAdded ?? false
-                    })) ?? []
-            ),
-        [currentVols.dataSource]
-    );
+        // По идее, тут дополняем данные полями 'markedDeleted' и 'markedAdded' и записываем их в volunteers
+        setVolunteers((prevVolunteers) => {
+            const prevVolunteersMap = new Map(prevVolunteers.map((vol) => [vol.id, vol]));
 
-    const addVolunteers = (): void => {
-        //если волонтер уже был в списке, но помечен на удаление, убираем флаг удаления
-        const volsCache = volunteers.map((item) => ({
-            ...item,
-            markedDeleted: selected.includes(item.id) ? false : item.markedDeleted,
-            markedAdded: false
-        }));
-
-        // добавляем только тех волонтеров, которых не было в списке
-        const currentIds = volsCache.map((item) => {
-            return item.id;
+            return (
+                currentVolsTableParams.dataSource?.map((vol) => ({
+                    ...vol,
+                    markedDeleted: prevVolunteersMap.get(vol.id)?.markedDeleted ?? false,
+                    markedAdded: prevVolunteersMap.get(vol.id)?.markedAdded ?? false
+                })) ?? []
+            );
         });
-        const volsAdd =
-            volunteersAll?.data
-                .filter((item) => {
-                    return selected.includes(item.id) && !currentIds.includes(item.id);
-                })
-                .map((item) => ({ ...item, markedDeleted: false, markedAdded: true })) ?? [];
-        setVolunteers(volsCache.concat(volsAdd));
-        setSelected([]);
-    };
+    }, [currentVolsTableParams.dataSource]);
 
-    const dataSource = useMemo(() => {
-        return volunteers.filter((vol) => !vol.markedDeleted);
-    }, [volunteers]);
-
-    const handleChangeInputValue = (e: ChangeEvent<HTMLInputElement>): void => {
-        const value = e.target.value;
+    const handleChangeInputValue = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const value = event.target.value;
         setFilters([
             {
                 field: 'group_badge',
@@ -140,171 +89,87 @@ export const GroupBadgeEdit: FC<IResourceComponentsProps> = () => {
             {
                 field: 'search',
                 operator: 'eq',
-                value: value
+                value
             }
         ]);
     };
 
-    /**
-     * данные для попапа добавить волонтеров
-     */
-    const filteredData = useMemo(() => {
-        //todo если волонтер уже есть в volunteers но с флагом markedDeleted
-        const currentIds = volunteers
-            .filter((item) => !item.markedDeleted)
-            .map((item) => {
-                return item.id;
-            });
-
-        const filteredVols = volunteersAll?.data.filter((vol) => {
-            return !visibleDirections || vol.directions?.some(({ id }) => visibleDirections.includes(id));
-        });
-        return searchText
-            ? filteredVols?.filter((item) => {
-                  const searchTextInLowerCase = searchText.toLowerCase();
-                  return [
-                      item.name,
-                      item.first_name,
-                      item.last_name,
-                      item.directions?.map(({ name }) => name).join(', ')
-                  ].some((text) => {
-                      return (
-                          !currentIds.includes(item.id) &&
-                          (text?.toLowerCase().includes(searchTextInLowerCase) || selected.includes(item.id))
-                      );
-                  });
-              })
-            : filteredVols?.filter((item) => {
-                  return !currentIds.includes(item.id);
-              });
-    }, [volunteersAll, volunteers, searchText, selected, visibleDirections]);
-
-    const rowSelection = {
-        selectedRowKeys: selected,
-        onChange: (e) => {
-            setSelected(e);
-        },
-        type: 'checkbox'
-    } as TableRowSelection<VolEntity>;
+    const activeVolunteers = volunteers.filter((item) => !item.markedDeleted);
 
     return (
         <Edit saveButtonProps={saveButtonProps}>
-            <Form {...formProps} layout='vertical'>
+            <Form {...formProps} layout="vertical">
                 <CreateEdit />
-                Количестиво волонтеров: {volunteers?.length}
+                <span data-testid="volunteer-count-caption">Количество волонтеров:</span> <span data-testid="volunteer-count-value">{activeVolunteers?.length}</span>
             </Form>
-            <Title level={5}>Волонтеры</Title>
-            <Button onClick={() => setOpen(true)} style={{ marginBottom: 20 }}>
-                Добавить
-            </Button>
-            <Modal
-                title='Добавить волонтеров'
-                open={openAdd}
-                onOk={() => {
-                    addVolunteers();
-                    setOpen(false);
-                }}
-                onCancel={() => setOpen(false)}
-            >
-                <Input
-                    placeholder='Поиск...'
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                ></Input>
-
-                <Table
-                    rowSelection={rowSelection}
-                    dataSource={filteredData}
-                    rowKey='id'
-                    loading={isVolunteersAllLoading}
-                >
-                    <Table.Column
-                        dataIndex='name'
-                        key='name'
-                        title='Имя на бейдже'
-                        render={(value) => <TextField value={value} />}
-                    />
-                    <Table.Column
-                        dataIndex='first_name'
-                        key='first_name'
-                        title='Имя'
-                        render={(value) => <TextField value={value} />}
-                    />
-                    <Table.Column
-                        dataIndex='last_name'
-                        key='last_name'
-                        title='Фамилия'
-                        render={(value) => <TextField value={value} />}
-                    />
-                </Table>
-            </Modal>
-            <Input
-                placeholder='Поиск волонтера'
-                allowClear
-                onChange={handleChangeInputValue}
-                style={{ marginBottom: 20 }}
-            />
-            <Table {...currentVols} dataSource={dataSource} rowKey='id'>
+            <Divider />
+            <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+                <Col>
+                    <Title level={5}>Волонтеры</Title>
+                </Col>
+                <Col>
+                    <Space>
+                        <Input placeholder="Поиск волонтера" allowClear onChange={handleChangeInputValue} />
+                        <Button type="primary" onClick={() => setOpenAdd(true)}>
+                            Добавить волонтера
+                        </Button>
+                    </Space>
+                </Col>
+            </Row>
+            <Table {...currentVolsTableParams} dataSource={activeVolunteers} rowKey="id">
+                <Table.Column dataIndex="name" key="name" title="Имя на бейдже" />
+                <Table.Column dataIndex="first_name" key="first_name" title="Имя" />
+                <Table.Column dataIndex="last_name" key="last_name" title="Фамилия" />
                 <Table.Column
-                    dataIndex='name'
-                    key='name'
-                    title='Имя на бейдже'
-                    render={(value) => <TextField value={value} />}
+                    dataIndex="directions"
+                    key="directions"
+                    title="Службы/Локации"
+                    render={(directions) => (
+                        <TextField
+                            style={{ whiteSpace: 'pre-wrap' }}
+                            value={directions.map(({ name }: { name: string }) => name).join(', ')}
+                        />
+                    )}
+                    ellipsis
                 />
                 <Table.Column
-                    dataIndex='first_name'
-                    key='first_name'
-                    title='Имя'
-                    render={(value) => <TextField value={value} />}
-                />
-                <Table.Column
-                    dataIndex='last_name'
-                    key='last_name'
-                    title='Фамилия'
-                    render={(value) => <TextField value={value} />}
-                />
-                <Table.Column
-                    dataIndex='directions'
-                    key='directions'
-                    title='Службы/Локации'
-                    render={(value) => <TextField value={value.map(({ name }) => name).join(', ')} />}
-                />
-                <Table.Column<Pick<VolEntity, 'id'>>
-                    title='Действия'
-                    dataIndex='actions'
-                    render={(_, record) => (
+                    title="Действия"
+                    dataIndex="actions"
+                    render={(_, record: VolEntity) => (
                         <Space>
                             <EditButton
                                 hideText
-                                size='small'
-                                resourceNameOrRouteName='volunteers'
+                                size="small"
+                                resourceNameOrRouteName="volunteers"
                                 recordItemId={record.id}
                             />
                             <Popconfirm
-                                title={'Уверены?'}
-                                okText={'Удалить'}
-                                cancelText={'Отмена'}
-                                okType='danger'
+                                title="Уверены?"
+                                okText="Удалить"
+                                cancelText="Отмена"
+                                okType="danger"
                                 onConfirm={(): void => {
-                                    setVolunteers(
-                                        volunteers.find((item) => {
-                                            return item.id === record.id;
-                                        })?.markedAdded
-                                            ? volunteers.filter((item) => {
-                                                  return item.id != record.id;
-                                              })
-                                            : volunteers.map((vol) =>
-                                                  vol.id === record.id ? ((vol.markedDeleted = true), vol) : vol
-                                              )
+                                    setVolunteers((prevVolunteers) =>
+                                        prevVolunteers.find((item) => item.id === record.id)?.markedAdded
+                                            ? prevVolunteers.filter((item) => item.id !== record.id)
+                                            : prevVolunteers.map((vol) =>
+                                                vol.id === record.id ? { ...vol, markedDeleted: true } : vol
+                                            )
                                     );
                                 }}
                             >
-                                <Button icon={<DeleteOutlined />} danger size='small' />
+                                <Button icon={<DeleteOutlined />} danger size="small" />
                             </Popconfirm>
                         </Space>
                     )}
                 />
             </Table>
+            <AddVolunteerModal
+                setVolunteers={setVolunteers}
+                volunteers={volunteers}
+                setIsOpen={setOpenAdd}
+                isOpen={openAdd}
+            />
         </Edit>
     );
 };

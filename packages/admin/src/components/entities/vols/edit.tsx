@@ -1,10 +1,12 @@
-import { Edit, Form, useForm } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { Edit, useForm } from '@refinedev/antd';
+import { Form } from 'antd';
+import type { IResourceComponentsProps } from '@refinedev/core';
 
-import type { VolEntity } from '~/interfaces';
+import type { VolEntity } from 'interfaces';
 
 import { CreateEdit } from './common';
 import useSaveConfirm from './use-save-confirm';
+import { FC } from 'react';
 
 export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
@@ -28,8 +30,8 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                 }
             }}
         >
-            <Form {...formProps} scrollToFirstError={true} layout='vertical'>
-                <CreateEdit form={form} />
+            <Form {...formProps} scrollToFirstError layout="vertical">
+                <CreateEdit />
             </Form>
             {renderModal()}
         </Edit>

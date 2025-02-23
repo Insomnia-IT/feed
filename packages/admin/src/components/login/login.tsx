@@ -1,9 +1,9 @@
+import { useLogin } from '@refinedev/core';
 import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Typography } from 'antd';
-import { useLogin } from '@pankod/refine-core';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, FC } from 'react';
 import QrScanner from 'qr-scanner';
 
-import logo from '../../../../scanner/src/assets/images/logo.svg';
+import logo from '../../assets/images/logo.svg';
 
 import {
     authContainerStyles,
@@ -16,6 +16,7 @@ import {
 } from './styles';
 
 const { Title } = Typography;
+
 export interface ILoginForm {
     username: string;
     password: string;
@@ -24,7 +25,7 @@ export interface ILoginForm {
 }
 
 const rowStyle = {
-    height: '100vh'
+    height: '100dvh'
 };
 
 type OptionValue = 'qr' | 'login';
@@ -88,16 +89,15 @@ export const LoginPage: FC = () => {
     };
 
     useEffect(() => {
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         function onHardwareScan({ detail: { scanCode } }): void {
             void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 
-        // @ts-ignore
         document.addEventListener('scan', onHardwareScan);
 
         return (): void => {
-            // @ts-ignore
             document.removeEventListener('scan', onHardwareScan);
         };
     }, [onScan]);
@@ -106,24 +106,40 @@ export const LoginPage: FC = () => {
         <div style={loginFormStyles}>
             <Card>
                 <Form<ILoginForm>
-                    layout='vertical'
+                    layout="vertical"
                     form={form}
                     onFinish={(values) => login(values)}
                     requiredMark={false}
                     initialValues={{ remember: false }}
                 >
-                    <Form.Item name='username' rules={[{ required: true, message: 'Пожалуйста, введите логин' }]}>
-                        <Input size='large' placeholder='Логин' />
+                    <Form.Item
+                        name="username"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Пожалуйста, введите логин'
+                            }
+                        ]}
+                    >
+                        <Input size="large" placeholder="Логин" />
                     </Form.Item>
-                    <Form.Item name='password' rules={[{ required: true, message: 'Пожалуйста, введите пароль' }]}>
-                        <Input type='password' placeholder='Пароль' size='large' />
+                    <Form.Item
+                        name="password"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Пожалуйста, введите пароль'
+                            }
+                        ]}
+                    >
+                        <Input type="password" placeholder="Пароль" size="large" />
                     </Form.Item>
                     <div style={{ marginBottom: '28px' }}>
-                        <Form.Item name='remember' valuePropName='checked' noStyle>
+                        <Form.Item name="remember" valuePropName="checked" noStyle>
                             <Checkbox style={{ fontSize: '14px' }}>Запомнить меня</Checkbox>
                         </Form.Item>
                     </div>
-                    <Button type='primary' size='large' htmlType='submit' loading={isLoading} block>
+                    <Button type="primary" size="large" htmlType="submit" loading={isLoading} block>
                         Войти
                     </Button>
                 </Form>
@@ -147,11 +163,10 @@ export const LoginPage: FC = () => {
 
     return (
         <Layout style={layoutStyles}>
-            <Row justify='center' align='middle' style={rowStyle}>
+            <Row justify="center" align="middle" style={rowStyle}>
                 <Col xs={22} style={containerStyles}>
                     <div style={imageContainer}>
-                        {/* @ts-ignore */}
-                        <img src={logo.src} alt='Логотип фестиваля' style={{ height: '44px' }} />
+                        <img src={logo} alt="Логотип фестиваля" style={{ height: '44px' }} />
                         <Title level={4} style={titleStyles}>
                             Вход в Кормитель
                         </Title>
