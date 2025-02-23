@@ -215,6 +215,16 @@ class FeedTransactionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return models.FeedTransaction.objects.create(**validated_data)
 
+class SyncFeedTransactionSerializer(serializers.ModelSerializer):
+    """Сериализатор для операции синхронизации, который не проверяет уникальность ulid"""
+    ulid = serializers.CharField(max_length=255)
+
+    class Meta:
+        model = models.FeedTransaction
+        fields = '__all__'
+        extra_kwargs = {
+            'ulid': {'validators': []}
+        }
 
 class KitchenSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
