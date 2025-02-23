@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import type {
     EaterType,
     EaterTypeExtended,
@@ -91,13 +92,20 @@ export function handleDataForColumnChart(
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
 ): Array<IColumnChartData> {
-    const result: Array<IColumnChartData> = [];
+    const result: IColumnChartData[] = [];
 
-    if (Object.keys(data).length === 0) {
+    if (!data || Object.keys(data).length === 0) {
         return result;
     }
 
-    for (const date in data[kitchenId]) {
+    const dayData = data[kitchenId];
+    if (!dayData) {
+        return result;
+    }
+
+    const dates = Object.keys(dayData).sort((a, b) => dayjs(a).diff(dayjs(b)));
+
+    for (const date of dates) {
         const row: IColumnChartData = {
             date,
             breakfast_plan: 0,
@@ -107,18 +115,29 @@ export function handleDataForColumnChart(
             dinner_plan: 0,
             dinner_fact: 0,
             night_plan: 0,
-            night_fact: 0
+            night_fact: 0,
+            plan_total: 0,
+            fact_total: 0
         };
 
-        for (const mealTime of mealTimeArr) {
-            const resPlan = data[kitchenId][date].plan[mealTime];
-            const resFact = data[kitchenId][date].fact[mealTime];
+        const oneDay = dayData[date];
+        if (!oneDay) {
+            result.push(row);
+            continue;
+        }
 
+        for (const mealTime of mealTimeArr) {
+            const resPlan = oneDay.plan[mealTime];
+            const resFact = oneDay.fact[mealTime];
             const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
 
             (row as any)[`${mealTime}_plan`] = plan;
             (row as any)[`${mealTime}_fact`] = fact;
         }
+
+        row.plan_total = row.breakfast_plan + row.lunch_plan + row.dinner_plan + row.night_plan;
+
+        row.fact_total = row.breakfast_fact + row.lunch_fact + row.dinner_fact + row.night_fact;
 
         result.push(row);
     }

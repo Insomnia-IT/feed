@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Brush } from 'recharts';
 
 interface IProps {
     data: {
@@ -21,6 +21,7 @@ const LinearChart: FC<IProps> = ({ data }) => {
                     <Legend />
                     <Line type="monotone" dataKey="plan" stroke="#8884d8" name="План" />
                     <Line type="monotone" dataKey="fact" stroke="#82ca9d" name="Факт" />
+                    <Brush dataKey="date" height={30} stroke="#8884d8" />
                 </LineChart>
             </ResponsiveContainer>
         </div>

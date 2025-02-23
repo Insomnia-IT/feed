@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ComposedChart, Line } from 'recharts';
 
 import { IColumnChartData } from '../types';
 
@@ -11,32 +11,28 @@ const ColumnChart: FC<IProps> = ({ data }) => {
     return (
         <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer>
-                <BarChart data={data} barCategoryGap="15%">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                <ComposedChart data={data} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+                    <CartesianGrid stroke="#f5f5f5" />
+                    <XAxis dataKey="dayLabel" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
 
-                    {/* Завтрак */}
-                    <Bar dataKey="breakfast_plan" fill="#8884d8" name="План: Завтрак" />
-                    <Bar dataKey="breakfast_fact" fill="#82ca9d" name="Факт: Завтрак" />
+                    <Bar dataKey="breakfast_fact" name="Факт: Завтрак" fill="#8884d8" />
+                    <Bar dataKey="lunch_fact" name="Факт: Обед" fill="#82ca9d" />
+                    <Bar dataKey="dinner_fact" name="Факт: Ужин" fill="#ffc658" />
+                    <Bar dataKey="night_fact" name="Факт: Дожор" fill="#ff7f50" />
 
-                    {/* Обед */}
-                    <Bar dataKey="lunch_plan" fill="#8884d8" name="План: Обед" />
-                    <Bar dataKey="lunch_fact" fill="#82ca9d" name="Факт: Обед" />
-
-                    {/* Ужин */}
-                    <Bar dataKey="dinner_plan" fill="#8884d8" name="План: Ужин" />
-                    <Bar dataKey="dinner_fact" fill="#82ca9d" name="Факт: Ужин" />
-
-                    {/* Дожор/Ночной прием */}
-                    <Bar dataKey="night_plan" fill="#8884d8" name="План: Дожор" />
-                    <Bar dataKey="night_fact" fill="#82ca9d" name="Факт: Дожор" />
-                </BarChart>
+                    <Line
+                        type="monotone"
+                        dataKey="plan_total"
+                        name="План (суммарно)"
+                        stroke="#ff7300"
+                        strokeWidth={2}
+                    />
+                </ComposedChart>
             </ResponsiveContainer>
         </div>
     );
 };
-
 export default ColumnChart;

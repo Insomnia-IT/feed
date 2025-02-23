@@ -69,4 +69,6 @@ export interface IColumnChartData {
     dinner_fact: number;
     night_plan: number;
     night_fact: number;
+    plan_total: number;
+    fact_total: number;
 }
