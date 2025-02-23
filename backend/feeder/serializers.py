@@ -267,7 +267,7 @@ class StatisticsSerializer(serializers.Serializer):
 
 class SyncWithFeederRequestSerializer(serializers.Serializer):
     last_updated = serializers.DateTimeField(allow_null=True)
-    transactions = FeedTransactionSerializer(many=True)
+    transactions = SyncFeedTransactionSerializer(many=True)
     kitchen_id = serializers.IntegerField(allow_null=True)
 
 
