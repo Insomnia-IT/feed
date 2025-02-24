@@ -1,16 +1,18 @@
 import styles from './mass-edit.module.css';
 import { Button, Form, Select, Typography } from 'antd';
 import {
-    CoffeeOutlined,
-    TeamOutlined,
-    IdcardOutlined,
+    ArrowLeftOutlined,
     CalendarOutlined,
+    CoffeeOutlined,
+    IdcardOutlined,
     MoreOutlined,
-    ArrowLeftOutlined
+    TeamOutlined
 } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { useList } from '@refinedev/core';
 import { GroupBadgeEntity } from '../../../../../interfaces';
+import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
+
 const { Title } = Typography;
 
 interface MassEditProps {
@@ -135,6 +137,7 @@ const ArrivalsFrame: React.FC = () => {
 };
 
 const GroupBadgeFrame: React.FC = () => {
+    const [selectedBadge, setSelectedBadge] = useState<GroupBadgeEntity | undefined>(undefined);
     const { data: groupBadges, isLoading: groupBadgesIsLoading } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         pagination: {
@@ -142,31 +145,41 @@ const GroupBadgeFrame: React.FC = () => {
         }
     });
 
-    const mappedBadges = (groupBadges?.data ?? []).map((item) => ({
+    const badges = groupBadges?.data ?? [];
+
+    const mappedBadges = badges.map((item) => ({
         value: item.name,
         id: item.id
     }));
 
-    const changeBadgeMany = (formValues: { groupBadge?: string }) => {
-        const { groupBadge } = formValues;
+    const onBadgeChange = (name: string) => {
+        const targetBadge = badges.find((item) => item.name === name);
 
-        const targetBadge = mappedBadges.find((item) => item.value === groupBadge);
-        console.log(targetBadge);
+        setSelectedBadge(targetBadge);
     };
 
     return (
-        <Form onFinish={changeBadgeMany} layout={'vertical'} style={{ width: '100%' }}>
+        <Form layout={'vertical'} style={{ width: '100%' }}>
             <Form.Item name="groupBadge" label="Групповой бейдж" rules={[{ required: true }]}>
                 <Select
+                    value={selectedBadge?.name}
                     style={{ width: '100%' }}
                     placeholder="Выберите бейдж"
                     loading={groupBadgesIsLoading}
                     options={mappedBadges}
+                    onChange={onBadgeChange}
                 />
             </Form.Item>
-            <Button className={styles.bottomButton} htmlType="submit" type={'primary'}>
-                Подтвердить
-            </Button>
+
+            <ConfirmModal
+                disabled={!selectedBadge}
+                title={'Привязать к новому групповому бейджу?'}
+                description={`Вы выбрали 5 волонтеров и привязываете их к групповому бейджу “${selectedBadge?.name}”.`}
+                warning={
+                    'Несколько выбранных волонтеров уже привязаны к другим групповым бейджам. Они перепривяжутся к новому.'
+                }
+                onConfirm={() => {}}
+            />
         </Form>
     );
 };

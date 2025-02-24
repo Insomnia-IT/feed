@@ -1,0 +1,22 @@
+.trigger {
+    width: 100%;
+}
+
+.warning {
+    color: #FAAD14;
+}
+
+.title {
+    display: flex;
+    column-gap: 16px;
+}
+
+.text {
+    display: flex;
+    flex-direction: column;
+    row-gap: 16px;
+}
+
+.text > div:empty {
+    display: none;
+}
