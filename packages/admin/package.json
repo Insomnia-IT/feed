@@ -14,7 +14,6 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@ant-design/plots": "^2.3.3",
         "@refinedev/antd": "^5.45.1",
         "@refinedev/core": "^4.57.1",
         "@refinedev/react-router-v6": "^4.6.2",
@@ -32,6 +31,7 @@
         "react-dom": "^18.3.1",
         "react-i18next": "^15.2.0",
         "react-quill": "^2.0.0",
+        "recharts": "^2.15.0",
         "ulid": "^2.3.0",
         "uuid": "^11.0.4"
     },
