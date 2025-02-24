@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "cross-env VITE_NEW_API_URL_ENV='http://localhost:8000/feedapi/v1' vite",
-        "dev:stage": "cross-env VITE_NEW_API_URL_ENV='https://srv.rumyantsev.com/feedapi/v1' vite",
+        "dev:stage": "cross-env VITE_NEW_API_URL_ENV='https://feedapp-dev.insomniafest.ru/feedapi/v1' vite",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "lint:js": "eslint .",
