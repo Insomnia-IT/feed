@@ -10,13 +10,16 @@ import {
 } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { useList } from '@refinedev/core';
-import { GroupBadgeEntity } from '../../../../../interfaces';
+import { GroupBadgeEntity, KitchenEntity } from 'interfaces';
 import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
 
 const { Title } = Typography;
 
+// TODO: заменить на реальный тип
+type VolunteerPlaceHolder = any;
+
 interface MassEditProps {
-    selectedVolunteers: any[];
+    selectedVolunteers: VolunteerPlaceHolder[];
     isAllSelected: boolean;
     unselectAll: () => void;
 }
@@ -35,7 +38,7 @@ export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], isA
                 </Title>
             </header>
             <section>список волонтеров </section>
-            <ActionsSection unselectAll={unselectAll} />
+            <ActionsSection unselectAll={unselectAll} selectedVolunteers={selectedVolunteers} />
         </div>
     );
 };
@@ -49,7 +52,10 @@ enum ActionSectionStates {
     CustomFields
 }
 
-const ActionsSection: React.FC<{ unselectAll: () => void }> = ({ unselectAll }) => {
+const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: VolunteerPlaceHolder[] }> = ({
+    unselectAll,
+    selectedVolunteers
+}) => {
     const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
 
     return (
@@ -74,11 +80,21 @@ const ActionsSection: React.FC<{ unselectAll: () => void }> = ({ unselectAll }) 
                     <Title level={5}>К выбору действий</Title>
                 </header>
             )}
-            {sectionState === ActionSectionStates.Kitchen ? <KitchenFrame /> : null}
-            {sectionState === ActionSectionStates.CustomFields ? <CustomFieldsFrame /> : null}
-            {sectionState === ActionSectionStates.HasTicket ? <HasTicketFrame /> : null}
-            {sectionState === ActionSectionStates.GroupBadge ? <GroupBadgeFrame /> : null}
-            {sectionState === ActionSectionStates.Arrivals ? <ArrivalsFrame /> : null}
+            {sectionState === ActionSectionStates.Kitchen ? (
+                <KitchenFrame selectedVolunteers={selectedVolunteers} />
+            ) : null}
+            {sectionState === ActionSectionStates.CustomFields ? (
+                <CustomFieldsFrame selectedVolunteers={selectedVolunteers} />
+            ) : null}
+            {sectionState === ActionSectionStates.HasTicket ? (
+                <HasTicketFrame selectedVolunteers={selectedVolunteers} />
+            ) : null}
+            {sectionState === ActionSectionStates.GroupBadge ? (
+                <GroupBadgeFrame selectedVolunteers={selectedVolunteers} />
+            ) : null}
+            {sectionState === ActionSectionStates.Arrivals ? (
+                <ArrivalsFrame selectedVolunteers={selectedVolunteers} />
+            ) : null}
 
             <Button className={styles.bottomButton} type={'link'} onClick={unselectAll}>
                 Снять выбор
@@ -120,24 +136,91 @@ const InitialFrame: React.FC<{ setSectionState: (state: ActionSectionStates) => 
     );
 };
 
-const KitchenFrame: React.FC = () => {
-    return <>KitchenFrame</>;
+const KitchenFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+    const [selectedKitchenName, setSelectedKitchenName] = useState<string | undefined>();
+
+    const { data: kitchensData } = useList<KitchenEntity>({
+        resource: 'kitchens',
+        pagination: {
+            pageSize: 10000
+        }
+    });
+
+    const kitchens = kitchensData?.data ?? [];
+
+    const closeModal = () => {
+        setSelectedKitchenName(undefined);
+    };
+
+    const confirmChange = () => {
+        const currentKitchen = kitchens.find((kitchen) => kitchen.name === selectedKitchenName);
+
+        console.log('changeKitchen to ', currentKitchen);
+
+        closeModal();
+    };
+
+    return (
+        <Form layout={'vertical'} style={{ width: '100%' }}>
+            <Form.Item
+                name="kitchen"
+                layout={'vertical'}
+                style={{ width: '100%' }}
+                label="Выберете кухню"
+                rules={[{ required: true }]}
+            >
+                <div style={{ display: 'flex', columnGap: '8px' }}>
+                    {kitchens.map((kitchen) => {
+                        return (
+                            <Button
+                                style={{ width: '50%' }}
+                                key={kitchen.name}
+                                onClick={() => {
+                                    setSelectedKitchenName(kitchen.name);
+                                }}
+                            >
+                                {kitchen.name}
+                            </Button>
+                        );
+                    })}
+                </div>
+            </Form.Item>
+            <ConfirmModal
+                title={'Поменять кухню?'}
+                description={`${getVolunteerCountText(selectedVolunteers?.length ?? 0)} и привязываете их к ${
+                    selectedKitchenName
+                }`}
+                onConfirm={confirmChange}
+                closeModal={closeModal}
+                isOpen={!!selectedKitchenName}
+            />
+        </Form>
+    );
 };
 
-const CustomFieldsFrame: React.FC = () => {
-    return <>CustomFieldsFrame</>;
+const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+    return <>CustomFieldsFrame {selectedVolunteers.length}</>;
 };
 
-const HasTicketFrame: React.FC = () => {
-    return <>HasTicketFrame</>;
+const HasTicketFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+    return <>HasTicketFrame {selectedVolunteers.length}</>;
 };
 
-const ArrivalsFrame: React.FC = () => {
-    return <>ArrivalsFrame</>;
+const ArrivalsFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+    return <>ArrivalsFrame {selectedVolunteers.length}</>;
 };
 
-const GroupBadgeFrame: React.FC = () => {
+const GroupBadgeFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
     const [selectedBadge, setSelectedBadge] = useState<GroupBadgeEntity | undefined>(undefined);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
     const { data: groupBadges, isLoading: groupBadgesIsLoading } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         pagination: {
@@ -158,9 +241,25 @@ const GroupBadgeFrame: React.FC = () => {
         setSelectedBadge(targetBadge);
     };
 
+    const confirmChange = () => {
+        console.log('confirmChange');
+    };
+
+    const getWarningText = () => {
+        return 'Несколько выбранных волонтеров уже привязаны к другим групповым бейджам. Они перепривяжутся к новому.';
+    };
+
+    const volunteerCount = selectedVolunteers?.length ?? 0;
+
     return (
         <Form layout={'vertical'} style={{ width: '100%' }}>
-            <Form.Item name="groupBadge" label="Групповой бейдж" rules={[{ required: true }]}>
+            <Form.Item
+                name="groupBadge"
+                layout={'vertical'}
+                style={{ width: '100%' }}
+                label="Групповой бейдж"
+                rules={[{ required: true }]}
+            >
                 <Select
                     value={selectedBadge?.name}
                     style={{ width: '100%' }}
@@ -171,15 +270,21 @@ const GroupBadgeFrame: React.FC = () => {
                 />
             </Form.Item>
 
+            <Button type={'primary'} style={{ width: '100%' }} onClick={openModal} disabled={!selectedBadge}>
+                Подтвердить
+            </Button>
             <ConfirmModal
-                disabled={!selectedBadge}
+                isOpen={isModalOpen}
+                closeModal={closeModal}
                 title={'Привязать к новому групповому бейджу?'}
-                description={`Вы выбрали 5 волонтеров и привязываете их к групповому бейджу “${selectedBadge?.name}”.`}
-                warning={
-                    'Несколько выбранных волонтеров уже привязаны к другим групповым бейджам. Они перепривяжутся к новому.'
-                }
-                onConfirm={() => {}}
+                description={`${getVolunteerCountText(volunteerCount)} и привязываете их к групповому бейджу “${selectedBadge?.name}”.`}
+                warning={getWarningText()}
+                onConfirm={confirmChange}
             />
         </Form>
     );
+};
+
+const getVolunteerCountText = (count: number) => {
+    return `Вы выбрали ${count} ${count % 10 === 1 ? 'волонтера' : 'волонтеров'}`;
 };
