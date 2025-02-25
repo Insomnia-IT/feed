@@ -63,7 +63,7 @@ export const VolList: FC = () => {
 
     const pagination: TablePaginationConfig = {
         total: volunteers?.total ?? 1,
-        showTotal: (total) => <><span data-testid="volunteer-count-caption">Кол-во волонтеров:</span> <span data-testid="volunteer-count-value">{total}</span></>,
+        showTotal: (total) => <><span data-testid="volunteer-count-caption">Волонтеров:</span> <span data-testid="volunteer-count-value">{total}</span></>,
         current: page,
         pageSize: pageSize,
         onChange: (page, pageSize) => {
@@ -163,6 +163,7 @@ export const VolList: FC = () => {
                         volunteersIsLoading={volunteersIsLoading}
                         volunteersData={volunteersData}
                         customFields={customFields}
+                        filterQueryParams={filterQueryParams}
                     />
                 )}
             </ActiveColumnsContextProvider>

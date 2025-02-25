@@ -1,37 +1,46 @@
 import type { VolEntity } from 'interfaces';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
+import { useList } from '@refinedev/core';
 
-export const useMassEdit = (
-    volunteersData: Array<VolEntity> = [],
-    totalVolunteersCount: number
-): {
-    selectedRows: number[];
-    setSelectedRows: (value: number[]) => void;
+export const useMassEdit = ({
+    totalVolunteersCount,
+    filterQueryParams
+}: {
+    volunteersData: Array<VolEntity>;
+    totalVolunteersCount: number;
+    filterQueryParams: string;
+}): {
+    selectedVols: Array<VolEntity>;
     unselectAllSelected: () => void;
-    isAllCurrentSelected: boolean;
-    setIsAllCurrentSelected: (value: boolean) => void;
     rowSelection: TableProps<VolEntity>['rowSelection'];
 } => {
-    const [selectedRows, setSelectedRows] = useState<number[]>([]);
-    const [isAllCurrentSelected, setIsAllCurrentSelected] = useState(false);
+    const { data: volunteers } = useList<VolEntity>({
+        resource: `volunteers/${filterQueryParams}`,
 
-    useEffect(() => {
-        if (isAllCurrentSelected) {
-            setSelectedRows(volunteersData.map((item) => item.id));
-        } else {
-            setSelectedRows([]);
+        pagination: {
+            current: 1,
+            pageSize: 10000
         }
-    }, [isAllCurrentSelected, volunteersData]);
+    });
+
+    const volunteersData: Array<VolEntity> = volunteers?.data ?? [];
+
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
     const unselectAllSelected = () => {
-        setIsAllCurrentSelected(false);
         setSelectedRows([]);
     };
 
+    const isAllCurrentSelected = totalVolunteersCount === selectedRows.length;
+
     const rowSelection: TableProps<VolEntity>['rowSelection'] = {
-        onChange: (_selectedRowKeys: React.Key[], selectedRows: VolEntity[]) => {
-            setSelectedRows(selectedRows.map((item) => item.id));
+        onSelect: (volunteer, isSelected) => {
+            if (isSelected) {
+                setSelectedRows([...selectedRows, volunteer.id]);
+            } else {
+                setSelectedRows(selectedRows.filter((id) => id !== volunteer.id));
+            }
         },
         selectedRowKeys: selectedRows,
         getCheckboxProps: (record: VolEntity) => ({
@@ -39,20 +48,29 @@ export const useMassEdit = (
         }),
         columnTitle: (
             <Checkbox
-                checked={isAllCurrentSelected}
+                checked={totalVolunteersCount === selectedRows.length}
                 onChange={() => {
-                    setIsAllCurrentSelected(!isAllCurrentSelected);
+                    if (isAllCurrentSelected) {
+                        setSelectedRows([]);
+                    } else {
+                        setSelectedRows(volunteersData.map((vol) => vol.id));
+                    }
                 }}
             />
         )
     };
 
+    const selectedVols = useMemo(() => {
+        if (isAllCurrentSelected) {
+            return volunteersData;
+        }
+
+        return volunteersData?.filter((vol) => selectedRows.includes(vol.id));
+    }, [isAllCurrentSelected, selectedRows]);
+
     return {
-        selectedRows,
-        setSelectedRows,
+        selectedVols,
         unselectAllSelected,
-        isAllCurrentSelected: isAllCurrentSelected || totalVolunteersCount === selectedRows.length,
-        setIsAllCurrentSelected,
         rowSelection
     };
 };

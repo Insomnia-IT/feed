@@ -40,14 +40,24 @@ export const VolunteerDesktopTable: FC<{
     pagination: TablePaginationConfig;
     statusById: Record<string, string>;
     customFields?: Array<CustomFieldEntity>;
-}> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading }) => {
+    filterQueryParams: string;
+}> = ({
+    customFields,
+    openVolunteer,
+    pagination,
+    statusById,
+    volunteersData,
+    volunteersIsLoading,
+    filterQueryParams
+}) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
 
     // TODO: вынести в контекст
-    const { selectedRows, isAllCurrentSelected, unselectAllSelected, rowSelection } = useMassEdit(
+    const { selectedVols, unselectAllSelected, rowSelection } = useMassEdit({
         volunteersData,
-        pagination?.total ?? 0
-    );
+        totalVolunteersCount: pagination?.total ?? 0,
+        filterQueryParams
+    });
 
     const getCellAction: (id: number) => { onClick: (event: any) => void } = (
         id: number
@@ -193,11 +203,7 @@ export const VolunteerDesktopTable: FC<{
                 columns={visibleColumns}
                 rowSelection={rowSelection}
             />
-            <MassEdit
-                isAllSelected={isAllCurrentSelected}
-                selectedVolunteers={selectedRows}
-                unselectAll={unselectAllSelected}
-            />
+            <MassEdit selectedVolunteers={selectedVols} unselectAll={unselectAllSelected} />
         </>
     );
 };

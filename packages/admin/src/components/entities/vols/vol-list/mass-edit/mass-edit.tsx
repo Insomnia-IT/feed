@@ -10,22 +10,18 @@ import {
 } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { useList } from '@refinedev/core';
-import { GroupBadgeEntity, KitchenEntity } from 'interfaces';
+import { GroupBadgeEntity, KitchenEntity, type VolEntity } from 'interfaces';
 import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
 
 const { Title } = Typography;
 
-// TODO: заменить на реальный тип
-type VolunteerPlaceHolder = any;
-
 interface MassEditProps {
-    selectedVolunteers: VolunteerPlaceHolder[];
-    isAllSelected: boolean;
+    selectedVolunteers: VolEntity[];
     unselectAll: () => void;
 }
 
-export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], isAllSelected = false, unselectAll }) => {
-    if (selectedVolunteers.length === 0 && !isAllSelected) {
+export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], unselectAll }) => {
+    if (selectedVolunteers.length === 0) {
         return null;
     }
 
@@ -34,7 +30,7 @@ export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], isA
             <header>
                 <Title level={4}>
                     Множественный выбор
-                    <span className={styles.counter}> {isAllSelected ? 'Все' : selectedVolunteers.length}</span>
+                    <span className={styles.counter}> {selectedVolunteers.length}</span>
                 </Title>
             </header>
             <section>список волонтеров </section>
@@ -52,7 +48,7 @@ enum ActionSectionStates {
     CustomFields
 }
 
-const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: VolunteerPlaceHolder[] }> = ({
+const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: VolEntity[] }> = ({
     unselectAll,
     selectedVolunteers
 }) => {
@@ -136,7 +132,7 @@ const InitialFrame: React.FC<{ setSectionState: (state: ActionSectionStates) => 
     );
 };
 
-const KitchenFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [selectedKitchenName, setSelectedKitchenName] = useState<string | undefined>();
 
     const { data: kitchensData } = useList<KitchenEntity>({
@@ -198,19 +194,19 @@ const KitchenFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = (
     );
 };
 
-const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     return <>CustomFieldsFrame {selectedVolunteers.length}</>;
 };
 
-const HasTicketFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+const HasTicketFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     return <>HasTicketFrame {selectedVolunteers.length}</>;
 };
 
-const ArrivalsFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     return <>ArrivalsFrame {selectedVolunteers.length}</>;
 };
 
-const GroupBadgeFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> = ({ selectedVolunteers }) => {
+const GroupBadgeFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [selectedBadge, setSelectedBadge] = useState<GroupBadgeEntity | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
@@ -246,7 +242,13 @@ const GroupBadgeFrame: React.FC<{ selectedVolunteers: VolunteerPlaceHolder[] }> 
     };
 
     const getWarningText = () => {
-        return 'Несколько выбранных волонтеров уже привязаны к другим групповым бейджам. Они перепривяжутся к новому.';
+        const someHasGroupBadge = selectedVolunteers.some((vol) => typeof vol.group_badge === 'number');
+
+        if (someHasGroupBadge) {
+            return 'Несколько выбранных волонтеров уже привязаны к другим групповым бейджам. Они перепривяжутся к новому.';
+        }
+
+        return undefined;
     };
 
     const volunteerCount = selectedVolunteers?.length ?? 0;
