@@ -185,7 +185,7 @@ export const VolunteerDesktopTable: FC<{
                     return getCellAction(record.id);
                 }}
                 scroll={{ x: '100%' }}
-                pagination={pagination}
+                pagination={{ ...pagination, position: ['bottomLeft'] }}
                 loading={volunteersIsLoading}
                 dataSource={volunteersData}
                 rowKey="id"
