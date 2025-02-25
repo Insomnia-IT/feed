@@ -45,7 +45,6 @@ enum ActionSectionStates {
     GroupBadge,
     Arrivals,
     Kitchen,
-    HasTicket,
     CustomFields
 }
 
@@ -58,7 +57,7 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
     return (
         <section className={styles.action}>
             {sectionState === ActionSectionStates.Initial ? (
-                <InitialFrame setSectionState={setSectionState} />
+                <InitialFrame selectedVolunteers={selectedVolunteers} setSectionState={setSectionState} />
             ) : (
                 <header>
                     <Button
@@ -78,9 +77,6 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
             {sectionState === ActionSectionStates.CustomFields ? (
                 <CustomFieldsFrame selectedVolunteers={selectedVolunteers} />
             ) : null}
-            {sectionState === ActionSectionStates.HasTicket ? (
-                <HasTicketFrame selectedVolunteers={selectedVolunteers} />
-            ) : null}
             {sectionState === ActionSectionStates.GroupBadge ? (
                 <GroupBadgeFrame selectedVolunteers={selectedVolunteers} />
             ) : null}
@@ -95,7 +91,12 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
     );
 };
 
-const InitialFrame: React.FC<{ setSectionState: (state: ActionSectionStates) => void }> = ({ setSectionState }) => {
+const InitialFrame: React.FC<{
+    setSectionState: (state: ActionSectionStates) => void;
+    selectedVolunteers: VolEntity[];
+}> = ({ setSectionState, selectedVolunteers }) => {
+    const [isTicketsModalOpen, setIsTicketsModalOpen] = useState<boolean>(false);
+
     return (
         <>
             <header>
@@ -118,7 +119,7 @@ const InitialFrame: React.FC<{ setSectionState: (state: ActionSectionStates) => 
                     <CoffeeOutlined />
                     Кухня
                 </Button>
-                <Button onClick={() => setSectionState(ActionSectionStates.HasTicket)}>
+                <Button onClick={() => setIsTicketsModalOpen(true)}>
                     <IdcardOutlined />
                     Билет выдан
                 </Button>
@@ -127,6 +128,15 @@ const InitialFrame: React.FC<{ setSectionState: (state: ActionSectionStates) => 
                     Кастомные поля
                 </Button>
             </div>
+            <ConfirmModal
+                title={'Выдать билеты?'}
+                description={`Вы выбрали ${selectedVolunteers.length} волонтеров и выдаете им билеты. Проверяйте несколько раз, каких волонтеров вы выбираете!`}
+                // TODO: сделать реальную проверку
+                warning={'Часть билетов выбранных волонтеров уже выданы'}
+                onConfirm={() => {}}
+                closeModal={() => setIsTicketsModalOpen(false)}
+                isOpen={isTicketsModalOpen}
+            />
         </>
     );
 };
@@ -195,10 +205,6 @@ const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedV
 
 const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     return <>CustomFieldsFrame {selectedVolunteers.length}</>;
-};
-
-const HasTicketFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
-    return <>HasTicketFrame {selectedVolunteers.length}</>;
 };
 
 const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
