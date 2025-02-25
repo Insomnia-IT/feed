@@ -1,5 +1,5 @@
 import type { VolEntity } from 'interfaces';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
 import { useList } from '@refinedev/core';
 
@@ -31,6 +31,10 @@ export const useMassEdit = ({
     const unselectAllSelected = () => {
         setSelectedRows([]);
     };
+
+    useEffect(() => {
+        setSelectedRows([]);
+    }, [filterQueryParams]);
 
     const isAllCurrentSelected = totalVolunteersCount === selectedRows.length;
 
