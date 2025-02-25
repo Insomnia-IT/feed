@@ -1,0 +1,32 @@
+.list {
+    scrollbar-gutter: stable;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100%;
+    margin-right: 10px;
+}
+
+.item {
+    display: flex;
+    flex-direction: row;
+    column-gap: 8px;
+}
+
+.bold {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 22px;
+
+}
+
+.counter {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 22px;
+
+    color: #8D959E;
+}

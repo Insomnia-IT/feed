@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { useList } from '@refinedev/core';
 import { GroupBadgeEntity, KitchenEntity, type VolEntity } from 'interfaces';
 import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
+import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list.tsx';
 
 const { Title } = Typography;
 
@@ -33,7 +34,7 @@ export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], uns
                     <span className={styles.counter}> {selectedVolunteers.length}</span>
                 </Title>
             </header>
-            <section>список волонтеров </section>
+            <SelectedVolunteerList selectedVolunteers={selectedVolunteers} />
             <ActionsSection unselectAll={unselectAll} selectedVolunteers={selectedVolunteers} />
         </div>
     );
@@ -57,12 +58,7 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
     return (
         <section className={styles.action}>
             {sectionState === ActionSectionStates.Initial ? (
-                <>
-                    <header>
-                        <Title level={5}>Быстрые действия</Title>
-                    </header>
-                    <InitialFrame setSectionState={setSectionState} />
-                </>
+                <InitialFrame setSectionState={setSectionState} />
             ) : (
                 <header>
                     <Button
@@ -102,6 +98,9 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
 const InitialFrame: React.FC<{ setSectionState: (state: ActionSectionStates) => void }> = ({ setSectionState }) => {
     return (
         <>
+            <header>
+                <Title level={5}>Быстрые действия</Title>
+            </header>
             <div className={styles.buttons}>
                 <Button onClick={() => setSectionState(ActionSectionStates.Arrivals)}>
                     <CalendarOutlined />
