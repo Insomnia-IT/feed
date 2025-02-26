@@ -1,5 +1,5 @@
 import styles from './mass-edit.module.css';
-import { Button, Form, Select, Typography } from 'antd';
+import { Button, DatePicker, Form, Select, Typography } from 'antd';
 import {
     ArrowLeftOutlined,
     CalendarOutlined,
@@ -9,8 +9,8 @@ import {
     TeamOutlined
 } from '@ant-design/icons';
 import React, { useState } from 'react';
-import { useList } from '@refinedev/core';
-import { GroupBadgeEntity, KitchenEntity, type VolEntity } from 'interfaces';
+import { useList, useSelect } from '@refinedev/core';
+import { GroupBadgeEntity, KitchenEntity, type StatusEntity, type TransportEntity, type VolEntity } from 'interfaces';
 import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
 import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list.tsx';
 
@@ -95,8 +95,6 @@ const InitialFrame: React.FC<{
     setSectionState: (state: ActionSectionStates) => void;
     selectedVolunteers: VolEntity[];
 }> = ({ setSectionState, selectedVolunteers }) => {
-    const [isTicketsModalOpen, setIsTicketsModalOpen] = useState<boolean>(false);
-
     return (
         <>
             <header>
@@ -119,20 +117,36 @@ const InitialFrame: React.FC<{
                     <CoffeeOutlined />
                     Кухня
                 </Button>
-                <Button onClick={() => setIsTicketsModalOpen(true)}>
-                    <IdcardOutlined />
-                    Билет выдан
-                </Button>
+                <BadgeButton selectedVolunteers={selectedVolunteers} />
                 <Button onClick={() => setSectionState(ActionSectionStates.CustomFields)}>
                     <MoreOutlined />
                     Кастомные поля
                 </Button>
             </div>
+        </>
+    );
+};
+
+const BadgeButton: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
+    const [isTicketsModalOpen, setIsTicketsModalOpen] = useState<boolean>(false);
+
+    const getWarningText = () => {
+        // TODO: сделать реальную проверку
+        if (selectedVolunteers.length % 2 === 1) {
+            return 'Часть выбранных волонтеров уже имеет бейдж';
+        }
+    };
+
+    return (
+        <>
+            <Button onClick={() => setIsTicketsModalOpen(true)}>
+                <IdcardOutlined />
+                Выдан бейдж
+            </Button>
             <ConfirmModal
                 title={'Выдать билеты?'}
-                description={`Вы выбрали ${selectedVolunteers.length} волонтеров и выдаете им билеты. Проверяйте несколько раз, каких волонтеров вы выбираете!`}
-                // TODO: сделать реальную проверку
-                warning={'Часть билетов выбранных волонтеров уже выданы'}
+                description={`Вы выбрали ${selectedVolunteers.length} волонтеров и выдаете им бейджи. Проверяйте несколько раз, каких волонтеров вы выбираете!`}
+                warning={getWarningText()}
                 onConfirm={() => {}}
                 closeModal={() => setIsTicketsModalOpen(false)}
                 isOpen={isTicketsModalOpen}
@@ -208,7 +222,75 @@ const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ sele
 };
 
 const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
-    return <>ArrivalsFrame {selectedVolunteers.length}</>;
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const { options: statusesOptions } = useSelect<StatusEntity>({ resource: 'statuses', optionLabel: 'name' });
+
+    const { options: transportsOptions } = useSelect<TransportEntity>({ resource: 'transports', optionLabel: 'name' });
+
+    const statusesOptionsNew =
+        statusesOptions?.map((item) =>
+            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
+                ? { ...item, label: `✅ ${item.label}` }
+                : item
+        ) ?? [];
+
+    const confirmChange = () => {
+        setIsModalOpen(false);
+    };
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    return (
+        <Form>
+            <Form.Item
+                style={{ paddingBottom: '5px' }}
+                layout={'vertical'}
+                name={'dates'}
+                label={'Даты заезда'}
+                rules={[{ required: true }]}
+            >
+                <DatePicker.RangePicker />
+            </Form.Item>
+            <Form.Item
+                style={{ paddingBottom: '5px' }}
+                layout={'vertical'}
+                name={'status'}
+                label={'Статус'}
+                rules={[{ required: true }]}
+            >
+                <Select options={statusesOptionsNew} />
+            </Form.Item>
+            <Form.Item
+                style={{ paddingBottom: '5px' }}
+                layout={'vertical'}
+                name={'arrived'}
+                label={'Как добрался'}
+                rules={[{ required: true }]}
+            >
+                <Select options={transportsOptions} />
+            </Form.Item>
+            <Form.Item style={{ paddingBottom: '15px' }} layout={'vertical'} name={'departed'} label={'Как уехал'}>
+                <Select options={transportsOptions} />
+            </Form.Item>
+            <Button
+                type={'primary'}
+                style={{ width: '100%' }}
+                onClick={() => {
+                    setIsModalOpen(true);
+                }}
+            >
+                Подтвердить
+            </Button>
+            <ConfirmModal
+                isOpen={isModalOpen}
+                closeModal={closeModal}
+                title={'Поменять данные заездов?'}
+                description={`${getVolunteerCountText(selectedVolunteers.length)} и меняете данные заездов.`}
+                onConfirm={confirmChange}
+            />
+        </Form>
+    );
 };
 
 const GroupBadgeFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
