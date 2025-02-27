@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import type { StatusEntity, TransportEntity, VolEntity } from '../../../../../interfaces';
+import type { StatusEntity, TransportEntity, VolEntity } from 'interfaces';
 import { useSelect } from '@refinedev/core';
 import { Button, DatePicker, Form, Select } from 'antd';
-import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
-import { getVolunteerCountText } from './get-volunteer-count-text.ts';
+import { ConfirmModal } from './confirm-modal/confirm-modal';
+import { getVolunteerCountText } from './get-volunteer-count-text';
 
 export const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

@@ -3,8 +3,8 @@ import type { VolEntity } from 'interfaces';
 import styles from './mass-edit.module.css';
 import { Button, Typography } from 'antd';
 import { CalendarOutlined, CoffeeOutlined, MoreOutlined, TeamOutlined } from '@ant-design/icons';
-import { HasBadgeButton } from './has-badge-button.tsx';
-import { ActionSectionStates } from './action-section-states.ts';
+import { HasBadgeButton } from './has-badge-button';
+import { ActionSectionStates } from './action-section-states';
 
 const { Title } = Typography;
 

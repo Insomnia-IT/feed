@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { GroupBadgeEntity, VolEntity } from '../../../../../interfaces';
+import { GroupBadgeEntity, VolEntity } from 'interfaces';
 import { useList } from '@refinedev/core';
 import { Button, Form, Select } from 'antd';
-import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
-import { getVolunteerCountText } from './get-volunteer-count-text.ts';
+import { ConfirmModal } from './confirm-modal/confirm-modal';
+import { getVolunteerCountText } from './get-volunteer-count-text';
 
 export const GroupBadgeFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [selectedBadge, setSelectedBadge] = useState<GroupBadgeEntity | undefined>(undefined);

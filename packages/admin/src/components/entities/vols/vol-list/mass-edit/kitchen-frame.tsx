@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { KitchenEntity, VolEntity } from '../../../../../interfaces';
+import { KitchenEntity, VolEntity } from 'interfaces';
 import { useList } from '@refinedev/core';
 import { Button, Form } from 'antd';
-import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
-import { getVolunteerCountText } from './get-volunteer-count-text.ts';
+import { ConfirmModal } from './confirm-modal/confirm-modal';
+import { getVolunteerCountText } from './get-volunteer-count-text';
 
 export const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [selectedKitchenName, setSelectedKitchenName] = useState<string | undefined>();

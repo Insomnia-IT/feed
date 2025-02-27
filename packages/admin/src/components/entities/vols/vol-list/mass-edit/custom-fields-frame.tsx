@@ -1,12 +1,12 @@
 import React, { ChangeEvent, useState } from 'react';
-import type { CustomFieldEntity, VolEntity } from '../../../../../interfaces';
+import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import { useList } from '@refinedev/core';
-import { HAS_BADGE_FIELD_NAME } from '../../../../../const.ts';
+import { HAS_BADGE_FIELD_NAME } from 'const.ts';
 import { Button, Checkbox, Form, Input } from 'antd';
 import styles from './mass-edit.module.css';
 import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
-import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
-import { getVolunteerCountText } from './get-volunteer-count-text.ts';
+import { ConfirmModal } from './confirm-modal/confirm-modal';
+import { getVolunteerCountText } from './get-volunteer-count-text';
 
 export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

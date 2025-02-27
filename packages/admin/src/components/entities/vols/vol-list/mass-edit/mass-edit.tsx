@@ -4,12 +4,12 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { type VolEntity } from 'interfaces';
 import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list.tsx';
-import { GroupBadgeFrame } from './group-badge-frame.tsx';
-import { ArrivalsFrame } from './arrivals-frame.tsx';
-import { KitchenFrame } from './kitchen-frame.tsx';
-import { InitialFrame } from './initial-frame.tsx';
-import { ActionSectionStates } from './action-section-states.ts';
-import { CustomFieldsFrame } from './custom-fields-frame.tsx';
+import { GroupBadgeFrame } from './group-badge-frame';
+import { ArrivalsFrame } from './arrivals-frame';
+import { KitchenFrame } from './kitchen-frame';
+import { InitialFrame } from './initial-frame';
+import { ActionSectionStates } from './action-section-states';
+import { CustomFieldsFrame } from './custom-fields-frame';
 
 const { Title } = Typography;
 

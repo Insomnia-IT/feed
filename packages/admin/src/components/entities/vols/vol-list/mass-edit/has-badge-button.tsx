@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import type { CustomFieldEntity, VolEntity } from '../../../../../interfaces';
+import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import { Button } from 'antd';
 import { IdcardOutlined } from '@ant-design/icons';
-import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
+import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { useList } from '@refinedev/core';
-import { HAS_BADGE_FIELD_NAME } from '../../../../../const.ts';
+import { HAS_BADGE_FIELD_NAME } from 'const';
 
 export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [isTicketsModalOpen, setIsTicketsModalOpen] = useState<boolean>(false);
