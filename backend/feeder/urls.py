@@ -23,6 +23,7 @@ router.register(r'transports', transport.TransportViewSet)
 router.register(r'statuses', status.StatusViewSet)
 
 router.register(r'access-roles', volunteer.AccessRoleViewSet)
+router.register(r'washes', wash.WashViewSet)
 
 
 urlpatterns = [
@@ -35,8 +36,6 @@ urlpatterns = [
     path('feed-transaction/bulk', feed.FeedTransactionBulk.as_view()),
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
-    # path('notion-sync', sync.SyncWithNotion.as_view()),
-    path("washes", wash.WashCreateView.as_view(), name="create_wash"),
-    path("volunteers/<int:id>/washes", wash.VolunteerWashesView.as_view(), name="volunteer_washes"),
+    # path('notion-sync', sync.SyncWithNotion.as_view()), 
 ]
 
