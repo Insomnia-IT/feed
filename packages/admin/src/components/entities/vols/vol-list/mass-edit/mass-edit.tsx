@@ -1,15 +1,15 @@
 import styles from './mass-edit.module.css';
-import { Button, Checkbox, Form, Input, Typography } from 'antd';
+import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
-import { type CustomFieldEntity, type VolEntity } from 'interfaces';
+import { type VolEntity } from 'interfaces';
 import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list.tsx';
 import { GroupBadgeFrame } from './group-badge-frame.tsx';
 import { ArrivalsFrame } from './arrivals-frame.tsx';
 import { KitchenFrame } from './kitchen-frame.tsx';
 import { InitialFrame } from './initial-frame.tsx';
 import { ActionSectionStates } from './action-section-states.ts';
-import { useList } from '@refinedev/core';
+import { CustomFieldsFrame } from './custom-fields-frame.tsx';
 
 const { Title } = Typography;
 
@@ -77,35 +77,5 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
                 Снять выбор
             </Button>
         </section>
-    );
-};
-
-const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
-    const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
-
-    const fields = data?.data ?? [];
-
-    console.log(selectedVolunteers);
-
-    return (
-        <>
-            <Form>
-                {fields.map(({ name, type }) => {
-                    const defaultChecked = false;
-                    const defaultValue = '';
-
-                    const handleChange = () => {
-                        // const value = type === 'boolean' ? e.target.checked : e.target.value;
-                    };
-
-                    return (
-                        <Form.Item key={name} label={name}>
-                            {type === 'boolean' && <Checkbox defaultChecked={defaultChecked} onChange={handleChange} />}
-                            {type === 'string' && <Input defaultValue={defaultValue} onChange={handleChange} />}
-                        </Form.Item>
-                    );
-                })}
-            </Form>
-        </>
     );
 };

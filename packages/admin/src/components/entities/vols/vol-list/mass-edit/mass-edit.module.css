@@ -8,7 +8,6 @@
 
     display: grid;
     grid-template-rows: 62px auto min-content;
-    justify-content: space-between;
 
     width: 375px;
 
@@ -58,6 +57,7 @@
 
 .action header {
     display: flex;
+    align-self: stretch;
     margin-bottom: 16px;
 }
 
@@ -71,4 +71,18 @@
 .bottomButton {
     margin-top: auto;
     width: 100%;
+}
+
+.customFields {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    width: auto;
+    overflow: auto;
+    height: calc(100% - 32px);
+    padding-right: 5px;
+}
+
+.customFields > * {
+    margin-bottom: 12px;
 }
