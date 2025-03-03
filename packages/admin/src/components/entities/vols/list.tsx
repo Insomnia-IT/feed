@@ -125,7 +125,7 @@ export const VolList: FC = () => {
                             </Row>
                             <Row style={{ gap: '24px' }} align="middle">
                                 <Col>
-                                    <b>Результат:</b> {volunteers?.total} волонтеров
+                                    <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
                                 </Col>
                                 <Row style={{ gap: '12px' }} align="middle">
                                     <ChooseColumnsButton
