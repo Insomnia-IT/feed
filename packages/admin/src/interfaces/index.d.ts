@@ -139,3 +139,18 @@ export interface ArrivalEntity {
     departure_transport: string;
     status: string;
 }
+
+interface IEngagement {
+    id: string;
+    year: number;
+    direction: {
+        name: string;
+    };
+    role: {
+        name: string;
+    };
+}
+
+export interface IPerson {
+    engagements: IEngagement[];
+}

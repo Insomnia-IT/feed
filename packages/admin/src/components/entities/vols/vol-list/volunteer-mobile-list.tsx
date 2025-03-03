@@ -22,7 +22,7 @@ export const VolunteerMobileList: FC<{
     volList: Array<VolEntity>;
     isLoading: boolean;
     statusById: Record<string, string>;
-    openVolunteer: (id: number) => Promise<any>;
+    openVolunteer: (id: number) => Promise<boolean>;
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
     return (
         <div className={styles.mobileVolList}>

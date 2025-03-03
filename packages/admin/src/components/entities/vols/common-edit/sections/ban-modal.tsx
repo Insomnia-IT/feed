@@ -7,7 +7,7 @@ interface IProps {
     currentComment: string;
     isBlocked: boolean;
     onCancel: () => void;
-    onSuccess: (updatedData: any) => void;
+    onSuccess: (updatedData: { is_blocked: boolean; comment: string }) => void;
     visible: boolean;
     volunteerId: string | number;
 }
