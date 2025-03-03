@@ -301,3 +301,8 @@ class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transport
         fields = '__all__'
+
+class WashSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Wash
+        fields = '__all__'
