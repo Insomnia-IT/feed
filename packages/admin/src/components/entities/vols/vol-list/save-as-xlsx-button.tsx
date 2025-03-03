@@ -112,8 +112,7 @@ const createAndSaveXLSX = async ({
                 'Веган/мясоед',
                 'Комментарий',
                 'Право доступа',
-                // eslint-disable-next-line no-unsafe-optional-chaining
-                ...customFields?.map((field): string => field.name)
+                ...(customFields?.map((field): string => field.name) ?? [])
             ];
 
             sheet.addRow(header);
