@@ -1,5 +1,5 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
-import { Table, Space, Button, DatePicker, Form, Input, Tag } from 'antd';
+import { Button, DatePicker, Form, Input, Space, Table, Tag } from 'antd';
 import { CrudFilter, HttpError, useList } from '@refinedev/core';
 import { FC, ReactNode, useCallback, useMemo } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { saveXLSX } from 'shared/lib/saveXLSX';
-import { FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
+import { DirectionEntity, FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { NEW_API_URL } from 'const';
 import { ColumnsType } from 'antd/es/table';
 
@@ -39,10 +39,10 @@ interface TransformedTransaction {
 export const FeedTransactionList: FC = () => {
     const { searchFormProps, tableProps, filters, setFilters, setCurrent, setPageSize } = useTable<
         FeedTransactionEntity,
-        HttpError
+        HttpError,
+        { search?: string; date?: [string, string] }
     >({
-        onSearch: (data) => {
-            const values = data as { search?: string; date?: [string, string] };
+        onSearch: (values: { search?: string; date?: [string, string] }) => {
             setFilters([]);
             const newFilters: Array<CrudFilter> = [];
 
@@ -103,15 +103,13 @@ export const FeedTransactionList: FC = () => {
         }
     });
 
-    const getGroupBadgeNameById = useCallback(
-        (id?: number): string => {
+    const getGroupBadgeById = useCallback(
+        (id?: number): GroupBadgeEntity | undefined => {
             if (typeof id !== 'number') {
-                return '';
+                return;
             }
 
-            const targetBadge = groupBadges?.data?.find((badge) => badge.id === id);
-
-            return targetBadge?.name ?? '';
+            return groupBadges?.data?.find((badge) => badge.id === id);
         },
         [groupBadges]
     );
@@ -136,9 +134,19 @@ export const FeedTransactionList: FC = () => {
         );
     }, [kitchens]);
 
+    const getTargetDirections = (item: FeedTransactionEntity): DirectionEntity[] => {
+        const targetGroupBadge = getGroupBadgeById(item.group_badge);
+        return (
+            volById?.[item.volunteer]?.directions ?? (targetGroupBadge?.direction ? [targetGroupBadge.direction] : [])
+        );
+    };
+
     const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
         return (
             transactions?.map<TransformedTransaction>((item: FeedTransactionEntity) => {
+                const targetGroupBadge = getGroupBadgeById(item.group_badge);
+                const targetDirections = getTargetDirections(item);
+
                 return {
                     ulid: item.ulid,
                     dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
@@ -149,8 +157,8 @@ export const FeedTransactionList: FC = () => {
                     kitchenName: kitchenNameById[item.kitchen],
                     amount: item.amount,
                     reason: item?.reason ?? undefined,
-                    groupBadgeName: getGroupBadgeNameById(item.group_badge),
-                    directions: (volById?.[item.volunteer]?.directions ?? []).map((dir) => dir.name)
+                    groupBadgeName: targetGroupBadge?.name ?? '',
+                    directions: targetDirections.map((dir) => dir?.name)
                 };
             }) ?? []
         );
@@ -238,13 +246,15 @@ export const FeedTransactionList: FC = () => {
                 kitchenNameById[tx.kitchen],
                 tx.amount,
                 tx?.reason ?? '',
-                getGroupBadgeNameById(tx.group_badge),
-                (volunteer?.directions ?? []).map((dir) => dir.name).join(',')
+                getGroupBadgeById(tx.group_badge),
+                getTargetDirections(tx)
+                    .map((dir) => dir.name)
+                    .join(',')
             ]);
         });
 
         void saveXLSX(workbook, 'feed-transactions');
-    }, [filters, kitchenNameById, volById, getGroupBadgeNameById]);
+    }, [filters, kitchenNameById, volById, getGroupBadgeById]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
