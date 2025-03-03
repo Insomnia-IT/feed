@@ -52,16 +52,16 @@ const WarningPartiallyFedModal: React.FC<{
             <div className={style.body}>
                 <div>
                     <Text>Покормлены {alreadyFedVegansCount + alreadyFedNonVegansCount}:</Text>
-                    {alreadyFedVegansCount > 0 && (
-                        <Text>
-                            {alreadyFedVegansCount}{' '}
-                            {getPlural(alreadyFedVegansCount, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
-                        </Text>
-                    )}
                     {alreadyFedNonVegansCount > 0 && (
                         <Text>
                             {alreadyFedNonVegansCount}{' '}
-                            {getPlural(alreadyFedNonVegansCount, ['Веган', 'Вегана', 'Веганов'])} 🥦
+                            {getPlural(alreadyFedNonVegansCount, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
+                        </Text>
+                    )}
+                    {alreadyFedVegansCount > 0 && (
+                        <Text>
+                            {alreadyFedVegansCount} {getPlural(alreadyFedVegansCount, ['Веган', 'Вегана', 'Веганов'])}{' '}
+                            🥦
                         </Text>
                     )}
                 </div>
@@ -81,7 +81,7 @@ const WarningPartiallyFedModal: React.FC<{
                 <Button variant='secondary' onClick={onClose}>
                     Отмена
                 </Button>
-                <Button onClick={primaryAction}>Покорить</Button>
+                <Button onClick={primaryAction}>Покормить</Button>
             </div>
         </Modal>
     );
