@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState } from 'react';
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import { useList } from '@refinedev/core';
-import { HAS_BADGE_FIELD_NAME } from 'const.ts';
+import { HAS_BADGE_FIELD_NAME } from 'const';
 import { Button, Checkbox, Form, Input } from 'antd';
 import styles from './mass-edit.module.css';
 import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
