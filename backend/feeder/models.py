@@ -294,7 +294,6 @@ class Wash(TimeMixin):
     id = models.AutoField(primary_key=True)
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="washes")
     actor = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="added_washes")
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Стирка"
