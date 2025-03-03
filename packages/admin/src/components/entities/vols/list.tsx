@@ -3,7 +3,6 @@ import { List } from '@refinedev/antd';
 import { Input, Row, Col, Select } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import { FC, useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
 import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
@@ -30,8 +29,7 @@ export const VolList: FC = () => {
         resource: 'volunteer-custom-fields'
     });
 
-    const { push } = useNavigation();
-    const queryClient = useQueryClient();
+    const { edit } = useNavigation();
 
     const {
         accessRoleById,
@@ -65,7 +63,7 @@ export const VolList: FC = () => {
 
     const pagination: TablePaginationConfig = {
         total: volunteers?.total ?? 1,
-        showTotal: (total) => <><span data-testid="volunteer-count-caption">Кол-во волонтеров:</span> <span data-testid="volunteer-count-value">{total}</span></>,
+        showTotal: (total) => <><span data-testid="volunteer-count-caption">Волонтеров:</span> <span data-testid="volunteer-count-value">{total}</span></>,
         current: page,
         pageSize: pageSize,
         onChange: (page, pageSize) => {
@@ -89,8 +87,8 @@ export const VolList: FC = () => {
     }, []);
 
     const openVolunteer = (id: number): Promise<boolean> => {
-        queryClient.clear();
-        push(`/volunteers/edit/${id}`);
+        edit('volunteers', id);
+
         return Promise.resolve(true);
     };
 
@@ -165,6 +163,7 @@ export const VolList: FC = () => {
                         volunteersIsLoading={volunteersIsLoading}
                         volunteersData={volunteersData}
                         customFields={customFields}
+                        filterQueryParams={filterQueryParams}
                     />
                 )}
             </ActiveColumnsContextProvider>
