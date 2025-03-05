@@ -288,3 +288,18 @@ class FeedTransaction(TimeMixin):
     class Meta:
         verbose_name = "Приём пищи"
         verbose_name_plural = "Приёмы пищи"
+
+class Volunteer_group_operation(models.Model):
+    group_operation_id = models.CharField(max_length=255, primary_key=True)
+    volunteers_ids = models.JSONField()#models.ManyToManyField(Volunteer)
+    original_data = models.JSONField()
+    new_data = models.JSONField()
+
+
+
+    def __str__(self):
+        return self.group_operation_id
+
+    class Meta:
+        verbose_name =  "Групповая операция"
+        verbose_name_plural = "Групповые операции"
