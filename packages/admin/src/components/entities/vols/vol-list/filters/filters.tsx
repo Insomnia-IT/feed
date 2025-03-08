@@ -140,7 +140,6 @@ export const Filters: FC<{
                             visibleFilters={visibleFilters}
                         />
                     }
-                    overlayInnerStyle={{ borderRadius: 0 }}
                     trigger="click"
                 >
                     <Button type="link" icon={<PlusOutlined />}>

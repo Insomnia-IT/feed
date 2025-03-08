@@ -9,6 +9,8 @@ import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from '../list.module.css';
+import { MassEdit } from './mass-edit/mass-edit.tsx';
+import { useMassEdit } from './mass-edit/use-mass-edit.tsx';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
     const value =
@@ -38,14 +40,32 @@ export const VolunteerDesktopTable: FC<{
     pagination: TablePaginationConfig;
     statusById: Record<string, string>;
     customFields?: Array<CustomFieldEntity>;
-}> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading }) => {
+    filterQueryParams: string;
+}> = ({
+    customFields,
+    openVolunteer,
+    pagination,
+    statusById,
+    volunteersData,
+    volunteersIsLoading,
+    filterQueryParams
+}) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
 
-    const getCellAction = (id: number) => {
+    // TODO: вынести в контекст
+    const { selectedVols, unselectAllSelected, rowSelection } = useMassEdit({
+        volunteersData,
+        totalVolunteersCount: pagination?.total ?? 0,
+        filterQueryParams
+    });
+
+    const getCellAction: (id: number) => { onClick: (event: any) => void } = (
+        id: number
+    ): { onClick: (event: any) => void } => {
         return {
-            onClick: (e: React.MouseEvent<HTMLElement>): Promise<boolean> | undefined => {
-                if (!(e.target as HTMLElement).closest('button')) {
-                    return openVolunteer(id);
+            onClick: (event): void => {
+                if (!(event.target.closest('button') || event.target.querySelector('input'))) {
+                    openVolunteer(id);
                 }
             }
         };
@@ -169,18 +189,22 @@ export const VolunteerDesktopTable: FC<{
         : fields.filter((column) => activeColumns.includes(String(column.key)));
 
     return (
-        <Table<VolEntity>
-            onRow={(record) => {
-                return getCellAction(record.id);
-            }}
-            scroll={{ x: '100%' }}
-            pagination={pagination}
-            loading={volunteersIsLoading}
-            dataSource={volunteersData}
-            rowKey="id"
-            rowClassName={styles.cursorPointer}
-            columns={visibleColumns}
-        />
+        <>
+            <Table<VolEntity>
+                onRow={(record) => {
+                    return getCellAction(record.id);
+                }}
+                scroll={{ x: '100%' }}
+                pagination={{ ...pagination, position: ['bottomLeft'] }}
+                loading={volunteersIsLoading}
+                dataSource={volunteersData}
+                rowKey="id"
+                rowClassName={styles.cursorPointer}
+                columns={visibleColumns}
+                rowSelection={rowSelection}
+            />
+            <MassEdit selectedVolunteers={selectedVols} unselectAll={unselectAllSelected} />
+        </>
     );
 };
 
