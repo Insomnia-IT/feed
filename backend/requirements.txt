@@ -14,3 +14,9 @@ python-dotenv
 dj-rest-auth
 pillow
 python-crontab
+opentelemetry-distro
+opentelemetry-instrumentation-django
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-logging
+opentelemetry-instrumentation-sqlite3
+opentelemetry-exporter-otlp

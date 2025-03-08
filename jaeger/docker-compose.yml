@@ -1,0 +1,53 @@
+services:
+  jaeger:
+    networks:
+      feed_network:
+        # This is the host name used in Prometheus scrape configuration.
+        aliases: [ spm_metrics_source ]
+    image: jaegertracing/jaeger:${JAEGER_VERSION:-latest}
+    volumes:
+      - ../db/jaeger_data:/tmp/jaeger
+      - "./jaeger-ui.json:/etc/jaeger/jaeger-ui.json" # Do we need this for v2 ? Seems to be running without this.
+      - "./config-spm.yaml:/etc/jaeger/config.yml"
+    command: [ "--config", "/etc/jaeger/config.yml" ]
+    ports:
+      - "16686:16686"
+      - "8888:8888"
+      - "8889:8889"
+      - "4317:4317"
+      - "4318:4318"
+
+  hotrod:
+    image: ${REGISTRY:-}jaegertracing/example-hotrod:${HOTROD_VERSION:-latest}
+    ports:
+      - "8080:8080"
+      - "8083:8083"
+    command: [ "all" ]
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+    networks:
+      - feed_network
+    depends_on:
+      - jaeger
+
+  # microsim:
+  #   networks:
+  #     - feed_network
+  #   image: yurishkuro/microsim:v0.5.0
+  #   command: "-d 24h -s 500ms"
+  #   environment:
+  #     - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4318/v1/traces
+  #   depends_on:
+  #     - jaeger
+
+  prometheus:
+    networks:
+      - feed_network
+    image: prom/prometheus:latest
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+
+networks:
+  feed_network:
