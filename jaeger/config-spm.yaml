@@ -29,17 +29,17 @@ extensions:
       metrics: some_metrics_storage
   jaeger_storage:
     backends:
-      # some_storage:
-      #   memory:
-      #     max_traces: 100000
       some_storage:
-        badger:
-          directories:
-            keys: "/tmp/jaeger/"
-            values: "/tmp/jaeger/"
-          ephemeral: false
-          ttl: 
-            spans: 144h
+        memory:
+          max_traces: 1000
+      # some_storage:
+      #   badger:
+      #     directories:
+      #       keys: "/tmp/jaeger/"
+      #       values: "/tmp/jaeger/"
+      #     ephemeral: false
+      #     ttl: 
+      #       spans: 144h
     metric_backends:
       some_metrics_storage:
         prometheus:
