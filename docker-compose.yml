@@ -3,8 +3,6 @@ name: feed
 
 services:
   backend:
-    networks:
-      - feed_network
     build:
       context: .
       dockerfile: Dockerfile_backend
@@ -18,6 +16,9 @@ services:
       OTEL_ENDPOINT: http://jaeger:4318/v1/traces
     volumes:
       - ${DB_DIR:-./db}:/app/db
+    depends_on:
+      - jaeger
+
   front:
     build:
       context: .
@@ -28,12 +29,10 @@ services:
     restart: always
     ports:
       - ${PORT:-80}:80
+    depends_on:
+      - backend
 
   jaeger:
-    networks:
-      feed_network:
-        # This is the host name used in Prometheus scrape configuration.
-        aliases: [ spm_metrics_source ]
     image: jaegertracing/jaeger:${JAEGER_VERSION:-latest}
     volumes:
       - ${DB_DIR:-./db}/jaeger_data:/tmp/jaeger
@@ -46,15 +45,12 @@ services:
       - "8889:8889"
       - "4317:4317"
       - "4318:4318"
+    depends_on:
+      - prometheus
 
   prometheus:
-    networks:
-      - feed_network
     image: prom/prometheus:latest
     volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./jaeger/prometheus.yml:/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
-
-networks:
-  feed_network:

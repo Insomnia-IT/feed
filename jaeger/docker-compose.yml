@@ -1,9 +1,5 @@
 services:
   jaeger:
-    networks:
-      feed_network:
-        # This is the host name used in Prometheus scrape configuration.
-        aliases: [ spm_metrics_source ]
     image: jaegertracing/jaeger:${JAEGER_VERSION:-latest}
     volumes:
       - ../db/jaeger_data:/tmp/jaeger
@@ -25,19 +21,12 @@ services:
     command: [ "all" ]
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
-    networks:
-      - feed_network
     depends_on:
       - jaeger
 
   prometheus:
-    networks:
-      - feed_network
     image: prom/prometheus:latest
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
-
-networks:
-  feed_network:
