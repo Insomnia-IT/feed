@@ -31,7 +31,7 @@ extensions:
     backends:
       some_storage:
         memory:
-          max_traces: 1000
+          max_traces: 10000
       # some_storage:
       #   badger:
       #     directories:
