@@ -15,7 +15,7 @@ router.register(r'kitchens', kitchen.KitchenViewSet)
 router.register(r'group-badges', group_badge.GroupBadgeViewSet)
 router.register(r'volunteer-custom-fields', volunteer.VolunteerCustomFieldViewSet)
 router.register(r'volunteer-custom-field-values', volunteer.VolunteerCustomFieldValueViewSet)
-router.register(r'volunteer-group', volunteer_group.VolunteerGroupViewSet)
+#router.register(r'volunteer-group', volunteer_group.VolunteerGroupViewSet)
 router.register(r'genders', gender.GenderViewSet)
 router.register(r'persons', person.PersonViewSet)
 router.register(r'photos', photo.PhotoViewSet)
@@ -36,6 +36,9 @@ urlpatterns = [
     path('feed-transaction/bulk', feed.FeedTransactionBulk.as_view()),
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
+    path('volunteer-group/', volunteer_group.VolunteerGroupViewSet.as_view()),
+    path('volunteer-group/<str:pk>/', volunteer_group.VolunteerGroupDeleteViewSet.as_view())
+
     # path('notion-sync', sync.SyncWithNotion.as_view()),
 ]
 
