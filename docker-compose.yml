@@ -12,8 +12,13 @@ services:
         SYNC_PASSWORD:
     container_name: feed_backend
     restart: always
+    environment:
+      OTEL_ENDPOINT: http://jaeger:4318/v1/traces
     volumes:
       - ${DB_DIR:-./db}:/app/db
+    depends_on:
+      - jaeger
+
   front:
     build:
       context: .
@@ -24,3 +29,28 @@ services:
     restart: always
     ports:
       - ${PORT:-80}:80
+    depends_on:
+      - backend
+
+  jaeger:
+    image: jaegertracing/jaeger:${JAEGER_VERSION:-latest}
+    volumes:
+      - ${DB_DIR:-./db}/jaeger_data:/tmp/jaeger
+      - "./jaeger/jaeger-ui.json:/etc/jaeger/jaeger-ui.json" # Do we need this for v2 ? Seems to be running without this.
+      - "./jaeger/config-spm.yaml:/etc/jaeger/config.yml"
+    command: [ "--config", "/etc/jaeger/config.yml" ]
+    ports:
+      - "16686:16686"
+      - "8888:8888"
+      - "8889:8889"
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - "./jaeger/prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
