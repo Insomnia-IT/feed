@@ -2,22 +2,25 @@ import uuid
 from django.core.serializers import serialize
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from feeder.models import Volunteer
+from rest_framework import viewsets, status
+from feeder.models import Volunteer,VolunteerGroupOperation
+from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer
+from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \
+    SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin
 
-
-class Volunteer_Group_ViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
+class VolunteerGroupViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                        MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
-    queryset = models.Volunteer.objects.all()
-    serializer_class = serializers.VolunteerSerializer
+    queryset = VolunteerGroupOperation.objects.all()
+    serializer_class = VolunteerGroupSerializer
     serializer_action_classes = {
-        'list': serializers.VolunteerListSerializer,
-        'retrieve': serializers.RetrieveVolunteerSerializer
+        'list': VolunteerListSerializer,
+        'retrieve': RetrieveVolunteerSerializer
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid']
-    filterset_class = VolunteerFilter
 
 
 @action(detail=False, methods=['patch'])
@@ -63,7 +66,7 @@ def bulk_update(self, request, *args, **kwargs):
         "fields_before_update": fields_before_update,
         "fields_after_update": fields_after_update
     }
-    log_serializer = VolunteerUpdateLogSerializer(data=log_data)
+    log_serializer = VolunteerGroupOperation(data=log_data)
     if log_serializer.is_valid():
         log_serializer.save()
     else:
@@ -81,8 +84,8 @@ def rollback(self, request, *args, **kwargs):
         return Response({"error": "operation_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        log_entry = VolunteerUpdateLog.objects.get(operation_id=operation_id)
-    except VolunteerUpdateLog.DoesNotExist:
+        log_entry = VolunteerGroupOperation.objects.get(operation_id=operation_id)
+    except VolunteerGroupOperation.DoesNotExist:
         return Response({"error": f"Operation with id {operation_id} does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
     fields_before_update = log_entry.fields_before_update

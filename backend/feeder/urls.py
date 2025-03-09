@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
-from feeder.views import sync, feed, statistic, color, volunteer, kitchen, group_badge, direction, gender, person, photo, staying, transport, status, volonteer_group
+from feeder.views import sync, feed, statistic, color, volunteer, kitchen, group_badge, direction, gender, person, photo, staying, transport, status, volunteer_group
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 router = routers.DefaultRouter()
@@ -15,7 +15,7 @@ router.register(r'kitchens', kitchen.KitchenViewSet)
 router.register(r'group-badges', group_badge.GroupBadgeViewSet)
 router.register(r'volunteer-custom-fields', volunteer.VolunteerCustomFieldViewSet)
 router.register(r'volunteer-custom-field-values', volunteer.VolunteerCustomFieldValueViewSet)
-router.register(r'volonteer-group', volonteer_group.VolonteerGroupViewSet)
+router.register(r'volunteer-group', volunteer_group.VolunteerGroupViewSet)
 router.register(r'genders', gender.GenderViewSet)
 router.register(r'persons', person.PersonViewSet)
 router.register(r'photos', photo.PhotoViewSet)

@@ -67,6 +67,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
     filterset_class = VolunteerFilter
 
 
+
 class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerCustomField.objects.all()

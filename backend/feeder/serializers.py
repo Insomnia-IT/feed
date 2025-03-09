@@ -274,3 +274,8 @@ class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transport
         fields = '__all__'
+
+class VolunteerGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VolunteerGroupOperation
+        fields = '__all__'

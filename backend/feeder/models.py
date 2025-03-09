@@ -289,7 +289,7 @@ class FeedTransaction(TimeMixin):
         verbose_name = "Приём пищи"
         verbose_name_plural = "Приёмы пищи"
 
-class Volunteer_group_operation(models.Model):
+class VolunteerGroupOperation(TimeMixin, SoftDeleteModelMixin):
     group_operation_id = models.CharField(max_length=255, primary_key=True)
     volunteers_ids = models.JSONField()#models.ManyToManyField(Volunteer)
     original_data = models.JSONField()
