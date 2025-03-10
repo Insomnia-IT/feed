@@ -37,7 +37,7 @@ urlpatterns = [
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
     path('volunteer-group/', volunteer_group.VolunteerGroupViewSet.as_view()),
-    path('volunteer-group/<str:pk>/', volunteer_group.VolunteerGroupDeleteViewSet.as_view(),
+    path('volunteer-group/<str:pk>/', volunteer_group.VolunteerGroupDeleteViewSet.as_view()),
     # path('notion-sync', sync.SyncWithNotion.as_view()),
 ]
 
