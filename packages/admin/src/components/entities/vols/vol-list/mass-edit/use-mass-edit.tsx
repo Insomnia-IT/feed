@@ -2,6 +2,7 @@ import type { VolEntity } from 'interfaces';
 import { useEffect, useMemo, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
 import { useList } from '@refinedev/core';
+import { LoadingOutlined } from '@ant-design/icons';
 
 export const useMassEdit = ({
     totalVolunteersCount,
@@ -57,19 +58,23 @@ export const useMassEdit = ({
             name: record.name
         }),
         columnTitle: (
-            <Checkbox
-                checked={selectedVols.length > 0 && totalVolunteersCount === selectedVols.length}
-                disabled={isLoading || totalVolunteersCount === 0}
-                title={isLoading ? 'Подождите, информация загружается...' : 'Выбрать всех в списке'}
-                indeterminate={!!selectedVols.length && !(totalVolunteersCount === selectedVols.length)}
-                onChange={() => {
-                    if (isAllCurrentSelected) {
-                        setSelectedVols([]);
-                    } else {
-                        setSelectedVols(volunteersData);
-                    }
-                }}
-            />
+            <>
+                <Checkbox
+                    style={isLoading ? { display: 'none' } : undefined}
+                    checked={selectedVols.length > 0 && totalVolunteersCount === selectedVols.length}
+                    disabled={isLoading || totalVolunteersCount === 0}
+                    title={isLoading ? 'Подождите, информация загружается...' : 'Выбрать всех в списке'}
+                    indeterminate={!!selectedVols.length && !(totalVolunteersCount === selectedVols.length)}
+                    onChange={() => {
+                        if (isAllCurrentSelected) {
+                            setSelectedVols([]);
+                        } else {
+                            setSelectedVols(volunteersData);
+                        }
+                    }}
+                />
+                {isLoading ? <LoadingOutlined /> : null}
+            </>
         )
     };
 
