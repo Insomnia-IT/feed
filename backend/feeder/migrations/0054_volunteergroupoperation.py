@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("feeder", "0051_remove_volunteer_color_type"),
+        ("feeder", "0053_wash_updated_at_alter_wash_created_at"),
     ]
 
     operations = [

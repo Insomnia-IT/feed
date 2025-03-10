@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("feeder", "0053_volunteergroupoperation_created_at_and_more"),
+        ("feeder", "0055_volunteergroupoperation_created_at_and_more"),
     ]
 
     operations = [
