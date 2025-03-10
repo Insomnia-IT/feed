@@ -17,11 +17,9 @@ export const SaveAsXlsxButton: FC<{
     transportById: Record<string, string>;
     kitchenNameById: Record<string, string>;
     feedTypeNameById: Record<string, string>;
-    colorNameById: Record<string, string>;
     accessRoleById: Record<string, string>;
 }> = ({
     accessRoleById,
-    colorNameById,
     customFields,
     feedTypeNameById,
     filterQueryParams,
@@ -40,7 +38,6 @@ export const SaveAsXlsxButton: FC<{
             onClick={() => {
                 void createAndSaveXLSX({
                     accessRoleById,
-                    colorNameById,
                     customFields,
                     feedTypeNameById,
                     filterQueryParams,
@@ -61,7 +58,6 @@ export const SaveAsXlsxButton: FC<{
 
 const createAndSaveXLSX = async ({
     accessRoleById,
-    colorNameById,
     customFields = [],
     feedTypeNameById,
     filterQueryParams,
@@ -79,7 +75,6 @@ const createAndSaveXLSX = async ({
     transportById: Record<string, string>;
     kitchenNameById: Record<string, string>;
     feedTypeNameById: Record<string, string>;
-    colorNameById: Record<string, string>;
     accessRoleById: Record<string, string>;
 }): Promise<void> => {
     setIsExporting(true);
@@ -116,10 +111,8 @@ const createAndSaveXLSX = async ({
                 'Тип питания',
                 'Веган/мясоед',
                 'Комментарий',
-                'Цвет бейджа',
                 'Право доступа',
-                // eslint-disable-next-line no-unsafe-optional-chaining
-                ...customFields?.map((field): string => field.name)
+                ...(customFields?.map((field): string => field.name) ?? [])
             ];
 
             sheet.addRow(header);
@@ -139,7 +132,9 @@ const createAndSaveXLSX = async ({
                     vol.name,
                     vol.first_name,
                     vol.last_name,
-                    vol.directions ? vol.directions.map((direction: { name: any }) => direction.name).join(', ') : '',
+                    vol.directions
+                        ? vol.directions.map((direction: { name: string }) => direction.name).join(', ')
+                        : '',
                     vol.main_role ? volunteerRoleById[vol.main_role] : '',
                     currentArrival ? statusById[currentArrival?.status] : '',
                     currentArrival ? dayjs(currentArrival.arrival_date).format(formDateFormat) : '',
@@ -157,10 +152,8 @@ const createAndSaveXLSX = async ({
                     vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
-                    vol.color_type ? colorNameById[vol.color_type] : '',
                     vol.access_role ? accessRoleById[vol.access_role] : '',
-                    // eslint-disable-next-line no-unsafe-optional-chaining
-                    ...customFields?.map((field) => {
+                    ...(customFields?.map((field) => {
                         const value =
                             vol.custom_field_values.find(
                                 (fieldValue: { custom_field: number }): boolean => fieldValue.custom_field === field.id
@@ -169,7 +162,7 @@ const createAndSaveXLSX = async ({
                             return value === 'true' ? 1 : 0;
                         }
                         return value;
-                    })
+                    }) ?? [])
                 ]);
             });
 

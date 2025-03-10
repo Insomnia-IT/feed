@@ -26,9 +26,13 @@ export const AdditionalSection = ({
 
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
 
+    const canAccessBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
+
+    const isDirectionHead = !canAccessBadgeEdit;
+
     const currentComment = form.getFieldValue('comment') || '';
 
-    const handleBanSuccess = (updatedData: any) => {
+    const handleBanSuccess = (updatedData: Record<string, unknown>) => {
         form.setFieldsValue(updatedData);
         setBanModalVisible(false);
     };
@@ -42,7 +46,10 @@ export const AdditionalSection = ({
             <p className={styles.formSection__title}>Дополнительно</p>
             <div className="commentArea">
                 <Form.Item label="Комментарий" name={'comment'}>
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} />
+                </Form.Item>
+                <Form.Item label="Заметка" name="direction_head_comment">
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!isDirectionHead} />
                 </Form.Item>
             </div>
             <Divider />

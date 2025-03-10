@@ -13,7 +13,7 @@ const IS_SERVER = typeof window === 'undefined';
 
 const MOBILE_QUERY = '(max-width: 576px)';
 
-export const MediaProvider = (props: { children: any }) => {
+export const MediaProvider = (props: { children: React.ReactNode }) => {
     const { children } = props;
 
     const [matches, setMatches] = useState<IMediaContext>({

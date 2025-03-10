@@ -1,90 +1,38 @@
-import { FC, Suspense, lazy } from 'react';
-import type { ColumnConfig } from '@ant-design/plots';
+import { FC } from 'react';
+import { ResponsiveContainer, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ComposedChart, Line } from 'recharts';
 
-import type { MealTime, StatisticType } from '../types';
+import { IColumnChartData } from '../types';
 
-const Column = lazy(() => import('@ant-design/plots').then(({ Column }) => ({ default: Column })));
-
-/** Данные для столбчатого графика */
-interface IColumnChartData {
-    date: string;
-    type: StatisticType;
-    value: number;
-    mealTime: MealTime;
+interface IProps {
+    data: IColumnChartData[];
 }
 
-type IColumnChartAnnotationData = {
-    date: string;
-    plan: number;
-    fact: number;
-};
-
-// const annotation = {
-//     type: 'text',
-//     style: {
-//         textAlign: 'center' as const,
-//         fontSize: 14,
-//         fill: 'rgba(0,0,0,0.85)'
-//     },
-//     offsetY: -20
-// };
-
-// function createAnnotation(data: Array<IColumnChartAnnotationData>) {
-//     const annotations: Options['annotations'] = [];
-//     data.forEach((datum, index) => {
-//         annotations.push({
-//             ...annotation,
-//             position: [`${(index / data.length) * 100 + 17}%`, '4%'],
-//             content: `${datum.fact} / ${datum.plan}`
-//         });
-//     });
-//     return annotations;
-// }
-
-/** Настройки для столбчатого графика */
-const columnConfig: Omit<ColumnConfig, 'data'> = {
-    xField: 'date',
-    yField: 'value',
-    group: true,
-    stack: true,
-    seriesField: 'mealTime',
-    // groupField: 'type',
-    padding: 50,
-    label: {
-        position: 'top',
-        content: (x: { value: string }) => {
-            const value = x.value || '';
-            return value;
-        },
-        layout: [
-            {
-                type: 'adjust-color'
-            }
-        ]
-    },
-    legend: {
-        position: 'top-left'
-    },
-    tooltip: false
-    // interactions: [
-    //     {
-    //         type: 'element-highlight-by-color'
-    //     }
-    // ]
-};
-
-const ColumnChart: FC<{
-    columnDataArr: Array<IColumnChartData>;
-    dataForAnnotation: Array<IColumnChartAnnotationData>;
-}> = (props) => {
-    //TODO: Разобраться почему не работают аннотации, а лучше использовать другую библиотеку для графиков, потому что говорили, что сейчас визуально не понятно, что происходит на графике
-    // const annotations = createAnnotation(props.dataForAnnotation);
+const ColumnChart: FC<IProps> = ({ data }) => {
     return (
-        <Suspense fallback={<div>Loading chart...</div>}>
-            <Column data={props.columnDataArr} {...columnConfig} />
-        </Suspense>
+        <div style={{ width: '100%', height: 400 }}>
+            <ResponsiveContainer>
+                <ComposedChart data={data} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+                    <CartesianGrid stroke="#f5f5f5" />
+                    <XAxis dataKey="dayLabel" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+
+                    <Bar dataKey="breakfast_fact" name="Факт: Завтрак" fill="#8884d8" />
+                    <Bar dataKey="lunch_fact" name="Факт: Обед" fill="#82ca9d" />
+                    <Bar dataKey="dinner_fact" name="Факт: Ужин" fill="#ffc658" />
+                    <Bar dataKey="night_fact" name="Факт: Дожор" fill="#ff7f50" />
+
+                    <Line
+                        type="monotone"
+                        dataKey="plan_total"
+                        name="План (суммарно)"
+                        stroke="#ff7300"
+                        strokeWidth={2}
+                    />
+                </ComposedChart>
+            </ResponsiveContainer>
+        </div>
     );
 };
-
-export { ColumnChart };
-export type { IColumnChartData, IColumnChartAnnotationData };
+export default ColumnChart;

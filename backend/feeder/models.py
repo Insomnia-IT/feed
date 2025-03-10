@@ -301,3 +301,13 @@ class VolunteerGroupOperation(TimeMixin, SoftDeleteModelMixin):
     class Meta:
         verbose_name =  "Групповая операция"
         verbose_name_plural = "Групповые операции"
+
+class Wash(TimeMixin):
+    """ Стирка """
+    id = models.AutoField(primary_key=True)
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="washes")
+    actor = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="added_washes")
+
+    class Meta:
+        verbose_name = "Стирка"
+        verbose_name_plural = "Стирки"

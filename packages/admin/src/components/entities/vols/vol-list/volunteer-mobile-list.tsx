@@ -22,7 +22,7 @@ export const VolunteerMobileList: FC<{
     volList: Array<VolEntity>;
     isLoading: boolean;
     statusById: Record<string, string>;
-    openVolunteer: (id: number) => Promise<any>;
+    openVolunteer: (id: number) => Promise<boolean>;
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
     return (
         <div className={styles.mobileVolList}>
@@ -54,7 +54,7 @@ export const VolunteerMobileList: FC<{
                                 {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
                             </div>
                             <div className={styles.textRow}>
-                                <span className={styles.bold}>Комментарий: </span>
+                                <span className={styles.bold}>Заметка: </span>
                                 {comment || '-'}
                             </div>
                         </div>

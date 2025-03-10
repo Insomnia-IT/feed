@@ -11,6 +11,7 @@ export interface VolunteerFieldExtended {
     fieldName: string;
     title: string;
     isCustom?: boolean;
+    customFieldId?: number;
 }
 
 export const volunteerTableCommonFields: Array<VolunteerField> = [

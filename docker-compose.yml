@@ -1,0 +1,26 @@
+version: '3.5'
+name: feed
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile_backend
+      args:
+        SYNC_URL:
+        SYNC_LOGIN:
+        SYNC_PASSWORD:
+    container_name: feed_backend
+    restart: always
+    volumes:
+      - ${DB_DIR:-./db}:/app/db
+  front:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_front
+      args:
+        NEW_API_URL: http://localhost:${PORT:-80}/feedapi/v1
+    container_name: feed_front
+    restart: always
+    ports:
+      - ${PORT:-80}:80

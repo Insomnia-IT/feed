@@ -1,5 +1,5 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
-import { Table, Space, Button, DatePicker, Form, Input, Tag } from 'antd';
+import { Button, DatePicker, Form, Input, Space, Table, Tag } from 'antd';
 import { CrudFilter, HttpError, useList } from '@refinedev/core';
 import { FC, ReactNode, useCallback, useMemo } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { saveXLSX } from 'shared/lib/saveXLSX';
-import { FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
+import { DirectionEntity, FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { NEW_API_URL } from 'const';
 import { ColumnsType } from 'antd/es/table';
 
@@ -26,7 +26,6 @@ interface TransformedTransaction {
     ulid: string;
     dateTime: string;
     volunteerName: string;
-    volunteerFIO: string;
     volunteerId: number;
     feedType: string;
     mealType: string;
@@ -37,11 +36,13 @@ interface TransformedTransaction {
     directions: Array<string>;
 }
 
-const GROUP_FEED_REASON = 'Групповое питание';
-
 export const FeedTransactionList: FC = () => {
-    const { searchFormProps, tableProps, filters, setFilters } = useTable<FeedTransactionEntity, HttpError>({
-        onSearch: (values: any) => {
+    const { searchFormProps, tableProps, filters, setFilters, setCurrent, setPageSize } = useTable<
+        FeedTransactionEntity,
+        HttpError,
+        { search?: string; date?: [string, string] }
+    >({
+        onSearch: (values: { search?: string; date?: [string, string] }) => {
             setFilters([]);
             const newFilters: Array<CrudFilter> = [];
 
@@ -95,22 +96,20 @@ export const FeedTransactionList: FC = () => {
         resource: 'kitchens'
     });
 
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
+    const { data: groupBadges, isLoading: groupBadgesIsLoading } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         pagination: {
             pageSize: 10000
         }
     });
 
-    const getGroupBadgeNameById = useCallback(
-        (id?: number): string => {
+    const getGroupBadgeById = useCallback(
+        (id?: number): GroupBadgeEntity | undefined => {
             if (typeof id !== 'number') {
-                return '';
+                return;
             }
 
-            const targetBadge = groupBadges?.data?.find((badge) => badge.id === id);
-
-            return targetBadge?.name ?? '';
+            return groupBadges?.data?.find((badge) => badge.id === id);
         },
         [groupBadges]
     );
@@ -135,22 +134,31 @@ export const FeedTransactionList: FC = () => {
         );
     }, [kitchens]);
 
+    const getTargetDirections = (item: FeedTransactionEntity): DirectionEntity[] => {
+        const targetGroupBadge = getGroupBadgeById(item.group_badge);
+        return (
+            volById?.[item.volunteer]?.directions ?? (targetGroupBadge?.direction ? [targetGroupBadge.direction] : [])
+        );
+    };
+
     const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
         return (
             transactions?.map<TransformedTransaction>((item: FeedTransactionEntity) => {
+                const targetGroupBadge = getGroupBadgeById(item.group_badge);
+                const targetDirections = getTargetDirections(item);
+
                 return {
                     ulid: item.ulid,
                     dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
                     volunteerName: volById?.[item.volunteer]?.name || 'Аноним',
-                    volunteerFIO: '',
                     volunteerId: item.volunteer,
                     feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
                     mealType: mealTimeById[item.meal_time],
                     kitchenName: kitchenNameById[item.kitchen],
                     amount: item.amount,
-                    reason: item?.reason?.replace(GROUP_FEED_REASON, ''),
-                    groupBadgeName: getGroupBadgeNameById(item.group_badge),
-                    directions: (volById?.[item.volunteer]?.directions ?? []).map((dir) => dir.name)
+                    reason: item?.reason ?? undefined,
+                    groupBadgeName: targetGroupBadge?.name ?? '',
+                    directions: targetDirections.map((dir) => dir?.name)
                 };
             }) ?? []
         );
@@ -194,10 +202,11 @@ export const FeedTransactionList: FC = () => {
 
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
         let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
+
         if (filters) {
-            filters.forEach((filter: any) => {
-                if (filter.value) {
-                    url = url.concat(`&${filter.field}=${filter.value}`);
+            filters.forEach((filter: CrudFilter) => {
+                if (filter.value && 'field' in filter) {
+                    url = url.concat(`&${filter?.field}=${filter.value}`);
                 }
             });
         }
@@ -211,7 +220,8 @@ export const FeedTransactionList: FC = () => {
             'Дата',
             'Время',
             'ID волонтера',
-            'Волонтер',
+            'Позывной',
+            'Фамилия Имя',
             'Тип питания',
             'Прием пищи',
             'Кухня',
@@ -223,23 +233,28 @@ export const FeedTransactionList: FC = () => {
         sheet.addRow(header);
 
         transactions?.forEach((tx) => {
+            const volunteer = volById[tx.volunteer];
+
             sheet.addRow([
                 dayjs(tx.dtime).format('DD.MM.YYYY'),
                 dayjs(tx.dtime).format('HH:mm:ss'),
                 tx.volunteer,
-                tx.volunteer ? volById[tx.volunteer]?.name : 'Аноним',
+                tx.volunteer ? volunteer?.name : 'Аноним',
+                [volunteer?.last_name, volunteer?.first_name].filter((item) => !!item).join(' '),
                 tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
                 mealTimeById[tx.meal_time],
                 kitchenNameById[tx.kitchen],
                 tx.amount,
-                tx?.reason?.replace(GROUP_FEED_REASON, '') ?? '',
-                getGroupBadgeNameById(tx.group_badge),
-                (volById?.[tx.volunteer]?.directions ?? []).map((dir) => dir.name).join(',')
+                tx?.reason ?? '',
+                getGroupBadgeById(tx.group_badge),
+                getTargetDirections(tx)
+                    .map((dir) => dir.name)
+                    .join(',')
             ]);
         });
 
         void saveXLSX(workbook, 'feed-transactions');
-    }, [filters, kitchenNameById, volById, getGroupBadgeNameById]);
+    }, [filters, kitchenNameById, volById, getGroupBadgeById]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
@@ -272,7 +287,16 @@ export const FeedTransactionList: FC = () => {
             </Form>
             <Table<TransformedTransaction>
                 loading={tableProps.loading}
-                pagination={tableProps.pagination}
+                pagination={{
+                    ...tableProps.pagination,
+                    onChange: (page, size) => {
+                        setCurrent(page);
+
+                        if (typeof size === 'number') {
+                            setPageSize(size);
+                        }
+                    }
+                }}
                 dataSource={transformedResult}
                 rowKey="ulid"
                 footer={() => (
@@ -280,7 +304,7 @@ export const FeedTransactionList: FC = () => {
                         type="primary"
                         onClick={handleClickDownload}
                         icon={<DownloadOutlined />}
-                        disabled={volsIsLoading || kitchensIsLoading}
+                        disabled={volsIsLoading || kitchensIsLoading || groupBadgesIsLoading}
                     >
                         Выгрузить
                     </Button>

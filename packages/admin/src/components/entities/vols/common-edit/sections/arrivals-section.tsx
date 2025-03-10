@@ -60,7 +60,7 @@ export const ArrivalsSection = ({
                 required: true
             },
             {
-                validator: async (_: any, value: string | number | Date | dayjs.Dayjs | null | undefined) => {
+                validator: async (_: unknown, value: string | number | Date | dayjs.Dayjs | null | undefined) => {
                     const arrivalDates = form
                         .getFieldValue('updated_arrivals')
                         .slice()
@@ -84,7 +84,7 @@ export const ArrivalsSection = ({
                 required: true
             },
             {
-                validator: async (_: any, value: string | number | Date) => {
+                validator: async (_: unknown, value: string | number | Date) => {
                     const arrivalDate = form.getFieldValue(['updated_arrivals', index, 'arrival_date']);
                     if (new Date(value) >= new Date(arrivalDate)) {
                         return Promise.resolve();
@@ -144,10 +144,22 @@ function ArrivalItem({
     setUpdatedArrivals: React.Dispatch<React.SetStateAction<UpdatedArrival[]>>;
     statusesOptions: { label: string; value: string }[];
     transportsOptions: { label: string; value: string }[];
-    activeFromValidationRules: (index: number) => any[];
-    activeToValidationRules: (index: number) => any[];
+    activeFromValidationRules: (
+        index: number
+    ) => Array<
+        | { required: boolean }
+        | {
+              validator: (
+                  rule: unknown,
+                  value: string | number | Date | dayjs.Dayjs | null | undefined
+              ) => Promise<void>;
+          }
+    >;
+    activeToValidationRules: (
+        index: number
+    ) => Array<{ required: boolean } | { validator: (rule: unknown, value: string | number | Date) => Promise<void> }>;
 }) {
-    const createChange = (fieldName: string) => (value: any) => {
+    const createChange = (fieldName: string) => (value: string | number | Date) => {
         const newUpdaterdArrivals = updatedArrivals.slice();
         newUpdaterdArrivals[index] = {
             ...arrival,

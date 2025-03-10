@@ -4,6 +4,8 @@ import { FC, useContext } from 'react';
 
 import { CustomFieldEntity } from 'interfaces';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
+import { useNavigation } from '@refinedev/core';
+import { EditButton } from '@refinedev/antd';
 
 export const ChooseColumnsButton: FC<{
     canListCustomFields: boolean;
@@ -11,9 +13,10 @@ export const ChooseColumnsButton: FC<{
 }> = ({ canListCustomFields }) => {
     const { activeColumns = [], allColumns = [], toggleOne } = useContext(ActiveColumnsContext) ?? {};
 
-    // TODO: вместо страницы должна быть модалка
+    const { create } = useNavigation();
+
     const handleClickCustomFields = (): void => {
-        window.location.href = `${window.location.origin}/volunteer-custom-fields`;
+        create('volunteer-custom-fields');
     };
 
     return (
@@ -35,6 +38,15 @@ export const ChooseColumnsButton: FC<{
                             >
                                 {field.title}
                             </Checkbox>
+                            {!field.isCustom || !field?.customFieldId ? null : (
+                                <EditButton
+                                    resource={'volunteer-custom-fields'}
+                                    recordItemId={field.customFieldId}
+                                    disabled={!canListCustomFields}
+                                    hideText
+                                    size="small"
+                                />
+                            )}
                         </Row>
                     ))}
                     <Row style={{ paddingTop: '8px' }}>

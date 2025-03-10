@@ -1,5 +1,5 @@
-export const getSorter = (field: string) => {
-    return (a: { [x: string]: any }, b: { [x: string]: any }) => {
+export const getSorter = <T>(field: keyof T) => {
+    return (a: T, b: T) => {
         const x = a[field] ?? '';
         const y = b[field] ?? '';
 

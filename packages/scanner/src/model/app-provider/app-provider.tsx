@@ -27,8 +27,7 @@ interface IAppContext {
     syncError: boolean;
     autoSync: boolean;
     toggleAutoSync: () => void;
-    syncSend: ({ lastSyncStart }: { lastSyncStart: number | null }) => Promise<void>;
-    doSync: () => void;
+    doSync: (override?: { kitchenId?: number }) => Promise<void>;
 }
 const AppContext = React.createContext<IAppContext | null>(null);
 
@@ -53,12 +52,7 @@ export const AppProvider = (props) => {
     const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);
     const [volCount, setVolCount] = useState<number>(0);
     const [autoSync, setAutoSync] = useState<boolean>(autoSyncLS ? autoSyncLS === '1' : true);
-    const {
-        error: syncError,
-        fetching: syncFetching,
-        send: syncSend,
-        updated
-    } = useSync(API_DOMAIN, pin, setAuth, kitchenId);
+    const { error: syncError, fetching: syncFetching, send: syncSend, updated } = useSync(API_DOMAIN, pin, setAuth);
     const toggleAutoSync = useCallback(() => {
         setAutoSync((prev) => {
             localStorage.setItem('autoSync', !prev ? '1' : '0');
@@ -71,16 +65,19 @@ export const AppProvider = (props) => {
         setLastSyncStart(ts);
     }, []);
 
-    const doSync = useCallback(() => {
-        if (navigator.onLine && !syncFetching) {
-            console.log('online, updating...');
-            try {
-                void syncSend({ lastSyncStart });
-            } catch (e) {
-                console.log(e);
+    const doSync = useCallback(
+        async ({ kitchenId: kitchenIdOverride }: { kitchenId?: number } = {}) => {
+            if (navigator.onLine && !syncFetching) {
+                console.log('online, updating...');
+                try {
+                    return await syncSend({ lastSyncStart, kitchenId: kitchenIdOverride || kitchenId });
+                } catch (e) {
+                    console.log(e);
+                }
             }
-        }
-    }, [lastSyncStart, syncFetching, syncSend]);
+        },
+        [kitchenId, lastSyncStart, syncFetching, syncSend]
+    );
 
     useEffect(() => {
         if (updated && !syncFetching) {
@@ -114,23 +111,9 @@ export const AppProvider = (props) => {
             deoptimizedSync: deoptimizedSyncLS,
             syncFetching,
             syncError,
-            syncSend,
             doSync
         }),
-        [
-            pin,
-            auth,
-            appError,
-            lastSyncStart,
-            volCount,
-            autoSync,
-            mealTime,
-            kitchenId,
-            syncFetching,
-            syncSend,
-            doSync,
-            syncError
-        ]
+        [pin, auth, appError, lastSyncStart, volCount, autoSync, mealTime, kitchenId, syncFetching, doSync, syncError]
     );
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

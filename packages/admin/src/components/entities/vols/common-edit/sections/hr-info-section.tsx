@@ -1,42 +1,49 @@
 import { Form, Input, Select } from 'antd';
+import { useSelect } from '@refinedev/antd';
 
 import { Rules } from 'components/form';
+import type { AccessRoleEntity, DirectionEntity, IPerson, VolunteerRoleEntity } from 'interfaces';
+import useCanAccess from '../../use-can-access';
 
 import styles from '../../common.module.css';
 
 export const HrInfoSection = ({
     canFullEditing,
-    allowRoleEdit,
     denyBadgeEdit,
-    person,
-    mainRole,
-    directionOptions,
-    rolesOptions,
-    accessRoleOptions
+    person
 }: {
     canFullEditing: boolean;
-    allowRoleEdit: boolean;
     denyBadgeEdit: boolean;
-    person: any;
-    mainRole: string;
-    directionOptions: { label: string; value: string | number }[];
-    rolesOptions: { label: string; value: string | number }[];
-    accessRoleOptions: { label: string; value: string | number }[];
+    person: IPerson | null;
 }) => {
     const form = Form.useFormInstance();
+    const mainRole = Form.useWatch('main_role', form);
+    const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
+
+    const { selectProps: rolesSelectProps } = useSelect<VolunteerRoleEntity>({
+        resource: 'volunteer-roles',
+        optionLabel: 'name'
+    });
+
+    const { selectProps: accessRoleselectProps } = useSelect<AccessRoleEntity>({
+        resource: 'access-roles',
+        optionLabel: 'name'
+    });
+
+    const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
+        resource: 'directions',
+        optionLabel: 'name',
+        optionValue: 'id'
+    });
 
     //TODO: вынести в константы
     const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
 
-    const onAccessRoleClear = () => {
-        setTimeout(() => {
+    const onAccessRoleClear = (): void => {
+        setTimeout((): void => {
             form.setFieldValue('access_role', '');
         });
     };
-
-    const getDirectionIds = (direction: any[]) => ({
-        value: direction ? direction.map((d) => d.id || d) : direction
-    });
 
     return (
         <>
@@ -47,14 +54,14 @@ export const HrInfoSection = ({
                         <Select
                             allowClear
                             disabled={!canFullEditing}
-                            options={accessRoleOptions}
                             onClear={onAccessRoleClear}
+                            {...accessRoleselectProps}
                         />
                     </Form.Item>
                 </div>
                 <div className={styles.hrInput}>
                     <Form.Item label="Роль" name="main_role" rules={Rules.required}>
-                        <Select disabled={!allowRoleEdit && !!person} options={rolesOptions} />
+                        <Select disabled={!allowRoleEdit && !!person} {...rolesSelectProps} />
                     </Form.Item>
                 </div>
             </div>
@@ -62,11 +69,10 @@ export const HrInfoSection = ({
                 <div className={styles.hrInput}>
                     <Form.Item
                         label="Служба / Локация"
-                        getValueProps={getDirectionIds}
                         name="directions"
                         rules={allowEmptyDirections ? undefined : Rules.required}
                     >
-                        <Select disabled={!allowRoleEdit && !!person} mode="multiple" options={directionOptions} />
+                        <Select disabled={!allowRoleEdit && !!person} mode="multiple" {...directionsSelectProps} />
                     </Form.Item>
                 </div>
                 <div className={styles.hrInput}>
