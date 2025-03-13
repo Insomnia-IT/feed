@@ -309,3 +309,13 @@ class WashSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Wash
         fields = '__all__'
+
+class VolunteerGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VolunteerGroupOperation
+        volunteers_ids = serializers.ListField(
+            child = serializers.IntegerField(),
+            min_length =1)
+        new_data = serializers.DictField()
+
+        fields = ['volunteers_ids', 'new_data']
