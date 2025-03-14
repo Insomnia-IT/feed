@@ -1,8 +1,19 @@
 from rest_framework import routers, serializers, viewsets
 
+from django.db import transaction
+
 from feeder import models
 from feeder.utils import StatisticType
+from feeder.views.mixins import get_request_user_id
 
+from history.models import History
+
+from uuid import UUID
+from datetime import datetime, date
+
+import arrow
+
+TZ = 'Europe/Moscow'
 
 class PhotoSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -92,7 +103,7 @@ class StatusSerializer(serializers.ModelSerializer):
 class ArrivalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Arrival
-        fields = '__all__'
+        exclude = ["volunteer"]
 
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -132,10 +143,143 @@ class RetrieveVolunteerSerializer(serializers.ModelSerializer):
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
+    arrivals = ArrivalSerializer(many=True, required=False)
+    directions = serializers.PrimaryKeyRelatedField(
+        queryset=models.Direction.objects.all(),
+        many=True
+    )
 
     class Meta:
         model = models.Volunteer
         exclude = ['person']
+    
+    def update(self, instance, validated_data):
+        arrivals_data = validated_data.pop('arrivals', [])
+        directions_data = validated_data.pop('directions', None)
+        
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+
+            if directions_data is not None:
+                instance.directions.set(directions_data)
+
+            self._process_arrivals(instance, arrivals_data or [], is_create=False)
+
+        return instance
+    
+    def create(self, validated_data):
+        arrivals_data = validated_data.pop('arrivals', [])
+        directions_data = validated_data.pop('directions', [])
+        
+        with transaction.atomic():
+            # Создаем волонтера через родительский метод
+            volunteer = models.Volunteer.objects.create(**validated_data)
+
+            # Устанавливаем направления
+            volunteer.directions.set(directions_data)
+            
+            # Создаем связанные заезды
+            self._process_arrivals(volunteer, arrivals_data, is_create=True)
+            
+        return volunteer
+    
+    def _process_arrivals(self, volunteer, arrivals_data, is_create=False):
+        current_arrivals = {str(a.id): a for a in volunteer.arrivals.all()}
+        processed_ids = set()
+
+        for arrival_data in arrivals_data:
+            arrival_id = arrival_data.get('id')
+            prepared_data = self._prepare_arrival_data(arrival_data)
+
+            if is_create and arrival_id:
+                prepared_data['id'] = arrival_id
+
+            if arrival_id and str(arrival_id) in current_arrivals:
+                # Обновление существующего заезда
+                arrival = current_arrivals[str(arrival_id)]
+                old_values = {field.name: getattr(arrival, field.name) for field in models.Arrival._meta.fields}
+                changed_data = {field: value for field, value in prepared_data.items() if getattr(arrival, field) != value}
+
+                for attr, value in prepared_data.items():
+                    setattr(arrival, attr, value)
+                arrival.save()
+
+                # Логируем изменения только если что-то изменилось
+                if changed_data:
+                    self._log_arrival_change(arrival, "UPDATE", old_values, changed_data)
+
+                processed_ids.add(str(arrival_id))
+            else:
+                # Создание нового заезда
+                arrival = models.Arrival.objects.create(volunteer=volunteer, **prepared_data)
+                processed_ids.add(str(arrival.id))
+                self._log_arrival_change(arrival, "CREATE", {}, prepared_data)
+
+        # Удаление заездов, которых нет в обновленных данных
+        if not is_create:
+            to_delete = [aid for aid in current_arrivals if aid not in processed_ids]
+            for aid in to_delete:
+                arrival = current_arrivals[aid]
+                old_values = {field.name: getattr(arrival, field.name) for field in models.Arrival._meta.fields}
+                self._log_arrival_change(arrival, "DELETE", old_values, {})
+                arrival.delete()
+
+    def _prepare_arrival_data(self, data):
+        data = data.copy()
+
+        relation_map = {
+            'status': models.Status,
+            'arrival_transport': models.Transport,
+            'departure_transport': models.Transport
+        }
+
+        for field, model in relation_map.items():
+            if field in data and isinstance(data[field], str):
+                data[field] = model.objects.get(id=data[field])
+
+        for date_field in ['arrival_date', 'departure_date']:
+            if date_field in data and isinstance(data[date_field], str):
+                dt_moscow = arrow.get(data[date_field]).to(TZ)
+                data[date_field] = dt_moscow.format("YYYY-MM-DD")
+        
+        return data
+    
+    def _log_arrival_change(self, arrival, action, old_data=None, new_data=None):
+        user_id = get_request_user_id(self.context["request"].user)
+
+        def serialize_value(value):
+            if isinstance(value, models.Status):
+                return str(value.id)
+            if isinstance(value, models.Transport):
+                return str(value.id)
+            if isinstance(value, date):  
+                return value.isoformat()
+            if isinstance(value, UUID):
+                return str(value)
+            return value
+
+        old_data = {k: serialize_value(v) for k, v in (old_data or {}).items()}
+        new_data = {k: serialize_value(v) for k, v in (new_data or {}).items()}
+
+        changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
+        old_changed_data = {k: old_data[k] for k in changed_data.keys() if k in old_data}
+
+        history_data = {
+            "status": History.STATUS_UPDATE if action == "UPDATE" else History.STATUS_CREATE,
+            "object_name": "arrival",
+            "actor_badge": user_id,
+            "action_at": datetime.utcnow(),
+            "data": changed_data,
+            "old_data": old_changed_data,
+            "volunteer_uuid": str(arrival.volunteer.uuid)
+        }
+
+        if action == "DELETE":
+            history_data["status"] = History.STATUS_DELETE
+            history_data["data"] = {"id": str(arrival.id), "deleted": True}
+
+        if history_data["data"]:
+            History.objects.create(**history_data)
 
 class VolunteerRoleSerializer(serializers.ModelSerializer):
     class Meta:
