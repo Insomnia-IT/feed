@@ -289,6 +289,19 @@ class FeedTransaction(TimeMixin):
         verbose_name = "Приём пищи"
         verbose_name_plural = "Приёмы пищи"
 
+class VolunteerGroupOperation(TimeMixin, SoftDeleteModelMixin):
+    group_operation_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    volunteers_ids = models.JSONField()
+    original_data = models.JSONField()
+    new_data = models.JSONField()
+
+    def __str__(self):
+        return self.group_operation_id
+
+    class Meta:
+        verbose_name =  "Групповая операция"
+        verbose_name_plural = "Групповые операции"
+
 class Wash(TimeMixin):
     """ Стирка """
     id = models.AutoField(primary_key=True)

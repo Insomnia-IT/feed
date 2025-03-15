@@ -125,7 +125,10 @@ class RetrieveVolunteerSerializer(serializers.ModelSerializer):
     def get_color_type(self, volunteer):
         main_role = getattr(volunteer, 'main_role', None)
         if main_role:
-            return models.Color.objects.get(name = main_role.color).id
+            try:
+                return models.Color.objects.get(name = main_role.color).id
+            except models.Color.DoesNotExist:
+                return None
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
@@ -222,7 +225,7 @@ class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
             return obj.kitchen.name
         else:
             return None
-        
+
     def get_group_badge_name(self, obj):
         if obj.group_badge:
             return obj.group_badge.name
@@ -306,3 +309,13 @@ class WashSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Wash
         fields = '__all__'
+
+class VolunteerGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.VolunteerGroupOperation
+        volunteers_ids = serializers.ListField(
+            child = serializers.IntegerField(),
+            min_length =1)
+        new_data = serializers.DictField()
+
+        fields = ['volunteers_ids', 'new_data']

@@ -39,7 +39,7 @@ yarn-error.log*
 **/*.db-wal
 **/*.db-shm
 
-/db/*.sqlite3
+/db
 
 .env
 .next
@@ -55,5 +55,3 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-
-admin_old
