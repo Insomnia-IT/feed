@@ -5,7 +5,8 @@
 .vscode/*
 !.vscode/settings.json
 
-
+.idea
+/.idea
 
 # dependencies
 /node_modules
