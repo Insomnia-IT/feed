@@ -47,7 +47,8 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
         <section className={styles.action}>
             {sectionState === ActionSectionStates.Initial ? (
                 <InitialFrame selectedVolunteers={selectedVolunteers} setSectionState={setSectionState} />
-            ) : (
+            ) : null}
+            {![ActionSectionStates.Initial, ActionSectionStates.Arrivals].includes(sectionState) ? (
                 <header>
                     <Button
                         size={'small'}
@@ -59,7 +60,7 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
                     />
                     <Title level={5}>К выбору действий</Title>
                 </header>
-            )}
+            ) : null}
             {sectionState === ActionSectionStates.Kitchen ? (
                 <KitchenFrame selectedVolunteers={selectedVolunteers} />
             ) : null}
@@ -70,7 +71,12 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
                 <GroupBadgeFrame selectedVolunteers={selectedVolunteers} />
             ) : null}
             {sectionState === ActionSectionStates.Arrivals ? (
-                <ArrivalsFrame selectedVolunteers={selectedVolunteers} />
+                <ArrivalsFrame
+                    goBack={() => {
+                        setSectionState(ActionSectionStates.Initial);
+                    }}
+                    selectedVolunteers={selectedVolunteers}
+                />
             ) : null}
 
             <Button className={styles.bottomButton} type={'link'} onClick={unselectAll}>
