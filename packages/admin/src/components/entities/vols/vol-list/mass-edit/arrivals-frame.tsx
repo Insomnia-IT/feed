@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import type { StatusEntity, VolEntity } from 'interfaces';
-import { useSelect } from '@refinedev/core';
-import { Button, DatePicker, Select, Typography } from 'antd';
-import { ConfirmModal } from './confirm-modal/confirm-modal';
-import { getVolunteerCountText } from './get-volunteer-count-text';
+import type { VolEntity } from 'interfaces';
+import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { SingleField } from './single-field.tsx';
 
 const { Title } = Typography;
 
@@ -96,111 +94,5 @@ export const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[]; goBack: 
                 />
             ) : null}
         </>
-    );
-};
-
-const SingleField: React.FC<{
-    type: 'date' | 'select';
-    name: string;
-    setter: (value?: string) => void;
-    title: string;
-    selectedVolunteers: VolEntity[];
-    resource: string;
-}> = ({ selectedVolunteers = [], title, type, resource, setter }) => {
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
-    const [currentValue, setCurrentValue] = useState<string | undefined>();
-    const confirmChange = (): void => {
-        setIsModalOpen(false);
-        setter(currentValue);
-    };
-
-    const confirmClear = (): void => {
-        setIsClearModalOpen(false);
-        setter(undefined);
-    };
-
-    return (
-        <>
-            <Title level={5}>{title}</Title>
-
-            {type === 'date' ? (
-                <DateValueChanger onChange={setCurrentValue} />
-            ) : (
-                <OptionValueChanger onChange={setCurrentValue} resource={resource} />
-            )}
-            <Button
-                disabled={!currentValue}
-                type={'primary'}
-                style={{ width: '100%' }}
-                onClick={() => {
-                    setIsModalOpen(true);
-                }}
-            >
-                Подтвердить
-            </Button>
-            <Button
-                style={{ width: '100%' }}
-                onClick={() => {
-                    setIsClearModalOpen(true);
-                }}
-            >
-                Очистить поле
-            </Button>
-            <ConfirmModal
-                isOpen={isModalOpen}
-                closeModal={(): void => {
-                    setIsModalOpen(false);
-                }}
-                title={'Поменять данные заездов?'}
-                description={`${getVolunteerCountText(selectedVolunteers.length)} и меняете поле "${title}".`}
-                onConfirm={confirmChange}
-            />
-            <ConfirmModal
-                isOpen={isClearModalOpen}
-                closeModal={(): void => {
-                    setIsClearModalOpen(false);
-                }}
-                title={'Очистить поле?'}
-                description={`${getVolunteerCountText(selectedVolunteers.length)} и очищаете поле "${title}"!`}
-                onConfirm={confirmClear}
-            />
-        </>
-    );
-};
-
-const DateValueChanger: React.FC<{ onChange: (value: string) => void }> = ({ onChange }) => {
-    return (
-        <DatePicker
-            style={{ width: '100%' }}
-            onChange={(_date, dateString): void => {
-                onChange(dateString as string);
-            }}
-        />
-    );
-};
-
-const OptionValueChanger: React.FC<{ resource: string; onChange: (value: string) => void }> = ({
-    resource,
-    onChange
-}) => {
-    const { options } = useSelect<StatusEntity>({ resource, optionLabel: 'name' });
-
-    const optionsMapped =
-        options?.map((item) =>
-            // Специальное отображение для поля "статус"
-            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
-                ? { ...item, label: `✅ ${item.label}` }
-                : item
-        ) ?? [];
-
-    return (
-        <Select
-            style={{ width: '100%' }}
-            onSelect={(value) => {
-                onChange(value);
-            }}
-            options={optionsMapped}
-        />
     );
 };
