@@ -1,78 +1,98 @@
 import React, { useState } from 'react';
-import type { StatusEntity, TransportEntity, VolEntity } from 'interfaces';
-import { useSelect } from '@refinedev/core';
-import { Button, DatePicker, Form, Select } from 'antd';
-import { ConfirmModal } from './confirm-modal/confirm-modal';
-import { getVolunteerCountText } from './get-volunteer-count-text';
+import type { VolEntity } from 'interfaces';
+import { Button, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { SingleField } from './single-field.tsx';
 
-export const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const { options: statusesOptions } = useSelect<StatusEntity>({ resource: 'statuses', optionLabel: 'name' });
+const { Title } = Typography;
 
-    const { options: transportsOptions } = useSelect<TransportEntity>({ resource: 'transports', optionLabel: 'name' });
+enum ArrivalField {
+    ArrivalDate = 'ArrivalDate',
+    DepartureDate = 'DepartureDate',
+    ArrivalStatus = 'ArrivalStatus',
+    ArrivalTransport = 'ArrivalTransport',
+    DepartureTransport = 'DepartureTransport'
+}
 
-    const statusesOptionsNew =
-        statusesOptions?.map((item) =>
-            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
-                ? { ...item, label: `✅ ${item.label}` }
-                : item
-        ) ?? [];
+interface ISingleFiled {
+    title: string;
+    type: 'date' | 'select';
+    fieldName: string;
+    resource: string;
+}
 
-    const confirmChange = () => {
-        setIsModalOpen(false);
-    };
-    const closeModal = () => {
-        setIsModalOpen(false);
+const fieldsDictionary: Record<ArrivalField, ISingleFiled> = {
+    [ArrivalField.ArrivalDate]: { title: 'Дата прибытия', type: 'date', fieldName: '', resource: '' },
+    [ArrivalField.DepartureDate]: { title: 'Дата отъезда', type: 'date', fieldName: '', resource: '' },
+    [ArrivalField.ArrivalStatus]: { title: 'Статус заезда', type: 'select', fieldName: '', resource: 'statuses' },
+    [ArrivalField.ArrivalTransport]: { title: 'Как приехал', type: 'select', fieldName: '', resource: 'transports' },
+    [ArrivalField.DepartureTransport]: { title: 'Как уехал', type: 'select', fieldName: '', resource: 'transports' }
+};
+
+export const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[]; goBack: () => void }> = ({
+    selectedVolunteers,
+    goBack
+}) => {
+    const [currentField, setCurrentField] = useState<ArrivalField | undefined>();
+
+    const targetField = currentField ? fieldsDictionary[currentField] : undefined;
+
+    const buttons = Object.entries(fieldsDictionary).map(([key, value]) => {
+        return (
+            <Button
+                key={value.title}
+                style={{ width: '100%' }}
+                onClick={() => {
+                    setCurrentField(key as ArrivalField);
+                }}
+            >
+                {value.title}
+            </Button>
+        );
+    });
+
+    const valueSetter = (newValue?: string): void => {
+        console.log({ newValue });
     };
 
     return (
-        <Form>
-            <Form.Item
-                style={{ paddingBottom: '5px' }}
-                layout={'vertical'}
-                name={'dates'}
-                label={'Даты заезда'}
-                rules={[{ required: true }]}
-            >
-                <DatePicker.RangePicker />
-            </Form.Item>
-            <Form.Item
-                style={{ paddingBottom: '5px' }}
-                layout={'vertical'}
-                name={'status'}
-                label={'Статус'}
-                rules={[{ required: true }]}
-            >
-                <Select options={statusesOptionsNew} />
-            </Form.Item>
-            <Form.Item
-                style={{ paddingBottom: '5px' }}
-                layout={'vertical'}
-                name={'arrived'}
-                label={'Как добрался'}
-                rules={[{ required: true }]}
-            >
-                <Select options={transportsOptions} />
-            </Form.Item>
-            <Form.Item style={{ paddingBottom: '15px' }} layout={'vertical'} name={'departed'} label={'Как уехал'}>
-                <Select options={transportsOptions} />
-            </Form.Item>
-            <Button
-                type={'primary'}
-                style={{ width: '100%' }}
-                onClick={() => {
-                    setIsModalOpen(true);
-                }}
-            >
-                Подтвердить
-            </Button>
-            <ConfirmModal
-                isOpen={isModalOpen}
-                closeModal={closeModal}
-                title={'Поменять данные заездов?'}
-                description={`${getVolunteerCountText(selectedVolunteers.length)} и меняете данные заездов.`}
-                onConfirm={confirmChange}
-            />
-        </Form>
+        <>
+            {currentField ? (
+                <header>
+                    <Button
+                        size={'small'}
+                        onClick={() => {
+                            setCurrentField(undefined);
+                        }}
+                        type={'text'}
+                        icon={<ArrowLeftOutlined />}
+                    />
+                    <Title level={5}>К выбору поля</Title>
+                </header>
+            ) : (
+                <header>
+                    <Button
+                        size={'small'}
+                        onClick={() => {
+                            goBack();
+                        }}
+                        type={'text'}
+                        icon={<ArrowLeftOutlined />}
+                    />
+                    <Title level={5}>К выбору действий</Title>
+                </header>
+            )}
+            {currentField ? null : buttons}
+            {targetField ? (
+                <SingleField
+                    type={targetField.type}
+                    name={targetField.fieldName}
+                    setter={valueSetter}
+                    title={targetField.title}
+                    selectedVolunteers={selectedVolunteers}
+                    resource={targetField.resource}
+                />
+            ) : null}
+        </>
     );
 };

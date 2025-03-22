@@ -125,3 +125,6 @@ python manage.py makemigrations
 ```bash
 ./local-dev.sh
 ```
+
+# OpenApi дока
+Swagger Ui можно найти тут: [локальный бекенд](http://localhost:8000/feedapi/v1), [стейдж](https://feedapp-dev.insomniafest.ru/feedapi/v1/)

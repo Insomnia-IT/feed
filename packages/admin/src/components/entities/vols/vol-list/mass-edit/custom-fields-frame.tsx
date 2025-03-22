@@ -1,20 +1,21 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { useState } from 'react';
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import { useList } from '@refinedev/core';
 import { HAS_BADGE_FIELD_NAME } from 'const';
-import { Button, Checkbox, Form, Input } from 'antd';
+import { Button, Form } from 'antd';
 import styles from './mass-edit.module.css';
-import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
+import { SingleField } from './single-field.tsx';
 
 export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
+    const [currentFieldName, setCurrentFieldName] = useState<string | undefined>(undefined);
 
-    const [fieldsValues, setFieldsValues] = useState<Record<string, string>>({});
+    const [fieldsValues, setFieldsValues] = useState<Record<string, string | undefined>>({});
 
-    const setFieldValue = (fieldName: string, fieldValue: string) => {
+    const setFieldValue = (fieldName: string, fieldValue?: string) => {
         setFieldsValues((prevState) => ({ ...prevState, [fieldName]: fieldValue }));
     };
 
@@ -28,35 +29,34 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = 
         setIsModalOpen(false);
     };
 
+    const currentField = fields.find((field) => field.name === currentFieldName);
+
     return (
         <>
             <Form className={styles.customFields}>
-                {fields.map(({ name, type }) => {
-                    const currentValue = fieldsValues[name] ?? '';
-
-                    const handleChange = (event: ChangeEvent<HTMLInputElement> | CheckboxChangeEvent): void => {
-                        const newValue =
-                            type === 'boolean' ? String(!!event?.target?.checked) : (event?.target?.value ?? '');
-                        setFieldValue(name, newValue);
-                    };
-
-                    return (
-                        <Form.Item key={name} label={name}>
-                            {type === 'boolean' && <Checkbox value={currentValue === 'true'} onChange={handleChange} />}
-                            {type === 'string' && <Input value={currentValue} onChange={handleChange} />}
-                        </Form.Item>
-                    );
-                })}
+                {currentField ? (
+                    <SingleField
+                        type={currentField.type as 'string' | 'boolean'}
+                        name={currentField.name}
+                        setter={(value) => setFieldValue(currentField.name, value)}
+                        title={currentField.name}
+                        selectedVolunteers={selectedVolunteers}
+                    />
+                ) : (
+                    fields.map(({ name }) => {
+                        return (
+                            <Button
+                                style={{ width: '100%' }}
+                                onClick={() => {
+                                    setCurrentFieldName(name);
+                                }}
+                            >
+                                {name}
+                            </Button>
+                        );
+                    })
+                )}
             </Form>
-            <Button
-                type={'primary'}
-                style={{ width: '100%' }}
-                onClick={() => {
-                    setIsModalOpen(true);
-                }}
-            >
-                Подтвердить
-            </Button>
             <ConfirmModal
                 isOpen={isModalOpen}
                 closeModal={closeModal}
