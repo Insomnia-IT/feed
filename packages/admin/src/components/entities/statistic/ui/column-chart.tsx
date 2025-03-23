@@ -1,38 +1,55 @@
-import { FC } from 'react';
-import { ResponsiveContainer, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ComposedChart, Line } from 'recharts';
+import { FC, useMemo } from 'react';
+import {
+    ResponsiveContainer,
+    Bar,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Legend,
+    BarChart
+} from 'recharts';
+import { Spin } from 'antd';
 
-import { IColumnChartData } from '../types';
+import { IColumnChartData, MealTime } from '../types';
 
 interface IProps {
     data: IColumnChartData[];
+    mealTime: MealTime;
+    loading?: boolean;
 }
 
-const ColumnChart: FC<IProps> = ({ data }) => {
+const ColumnChartByMealTime: FC<IProps> = ({ data, mealTime, loading }) => {
+    const chartData = useMemo(() => {
+        return data.map((item) => {
+            return {
+                date: item.date,
+                plan: (item as any)[`${mealTime}_plan`] || 0,
+                fact: (item as any)[`${mealTime}_fact`] || 0
+            };
+        });
+    }, [data, mealTime]);
+
+    if (loading) {
+        return <Spin />;
+    }
+
     return (
         <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer>
-                <ComposedChart data={data} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+                <BarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
                     <CartesianGrid stroke="#f5f5f5" />
-                    <XAxis dataKey="dayLabel" />
+                    <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip />
                     <Legend />
 
-                    <Bar dataKey="breakfast_fact" name="Факт: Завтрак" fill="#8884d8" />
-                    <Bar dataKey="lunch_fact" name="Факт: Обед" fill="#82ca9d" />
-                    <Bar dataKey="dinner_fact" name="Факт: Ужин" fill="#ffc658" />
-                    <Bar dataKey="night_fact" name="Факт: Дожор" fill="#ff7f50" />
-
-                    <Line
-                        type="monotone"
-                        dataKey="plan_total"
-                        name="План (суммарно)"
-                        stroke="#ff7300"
-                        strokeWidth={2}
-                    />
-                </ComposedChart>
+                    <Bar dataKey="plan" name="План" fill="#8884d8" />
+                    <Bar dataKey="fact" name="Факт" fill="#82ca9d" />
+                </BarChart>
             </ResponsiveContainer>
         </div>
     );
 };
-export default ColumnChart;
+
+export default ColumnChartByMealTime;
