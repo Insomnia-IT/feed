@@ -5,6 +5,7 @@
     "homepage": "/scanner",
     "scripts": {
         "dev": "cross-env PORT=3001 BROWSER=none CLIENT_ENV=development FAST_REFRESH=false craco start --verbose",
+        "dev:stage": "cross-env PORT=3001 BROWSER=none CLIENT_ENV=development FAST_REFRESH=false REACT_APP_NEW_API_URL_ENV='https://feedapp-dev.insomniafest.ru/feedapi/v1' craco start --verbose",
         "build": "CLIENT_ENV=production craco build --verbose",
         "lint:css": "stylelint ./src/**/*.css",
         "lint-fix:css": "stylelint --fix ./src/**/*.css",
