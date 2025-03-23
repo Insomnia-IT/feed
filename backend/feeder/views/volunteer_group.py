@@ -1,5 +1,4 @@
 import json
-import logging
 
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions, filters, status
@@ -36,7 +35,6 @@ class VolunteerGroupViewSet(APIView):
         # Сохраняем предыдущие значения полей
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values()
         original_data = {volunteer['id']: volunteer for volunteer in volunteers_before_update}
-        print("New data: ", new_data)
         for volunteer_id in volunteers_ids:
             try:
                 volunteer_instance = Volunteer.objects.get(id=volunteer_id)
@@ -90,7 +88,6 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         errors = []
 
         for volunteer_data in json.loads(original_data).values():
-            print(volunteer_data)
             volunteer_id = volunteer_data['id']
             try:
                 volunteer_instance = Volunteer.objects.get(id=volunteer_id)
