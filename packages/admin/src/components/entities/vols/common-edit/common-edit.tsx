@@ -17,7 +17,7 @@ import { useAnchorNavigation, useQrDuplicationCheck } from './hooks';
 import {
     AdditionalSection,
     ArrivalsSection,
-    BadgeSection,
+    // BadgeSection,
     CustomFieldsSection,
     HrInfoSection,
     PersonalInfoSection,
@@ -105,6 +105,10 @@ export const CommonEdit = () => {
                         kitchenOptions={kitchenOptions}
                         genderOptions={genderOptions}
                         denyFeedTypeEdit={denyFeedTypeEdit}
+                        canEditGroupBadge={canEditGroupBadge}
+                        colorTypeOptions={colorTypeOptions}
+                        groupBadgeOptions={groupBadgeOptions}
+                        handleQRChange={handleQRChange}
                     />
                 </section>
                 <section id="section2" className={styles.formSection}>
@@ -113,7 +117,7 @@ export const CommonEdit = () => {
                 <section id="section3" className={styles.formSection}>
                     <ArrivalsSection statusesOptions={statusesOptions} transportsOptions={transportsOptions} />
                 </section>
-                <section id="section4" className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
+                {/* <section id="section4" className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
                     <BadgeSection
                         denyBadgeEdit={denyBadgeEdit}
                         canEditGroupBadge={canEditGroupBadge}
@@ -121,7 +125,7 @@ export const CommonEdit = () => {
                         groupBadgeOptions={groupBadgeOptions}
                         handleQRChange={handleQRChange}
                     />
-                </section>
+                </section> */}
                 <section id="section5" className={styles.formSection}>
                     <CustomFieldsSection canBadgeEdit={canBadgeEdit} />
                 </section>
