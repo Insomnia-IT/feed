@@ -10,8 +10,7 @@ import type {
     IStatisticApi,
     IStatisticResponce,
     KitchenIdExtended,
-    MealTime,
-    StatisticType
+    MealTime
 } from '../types';
 import {
     convertResponceToData,
@@ -53,6 +52,11 @@ function PublicStatistic() {
     // Фильтр кухни
     const [kitchenId, setKitchenId] = useState<KitchenIdExtended>('all');
     const changeKitchenId = (e: RadioChangeEvent) => setKitchenId(e.target?.value);
+
+    const [selectedMealTime, setSelectedMealTime] = useState<MealTime>('breakfast');
+    const onChangeMealTime = (e: RadioChangeEvent) => {
+        setSelectedMealTime(e.target.value as MealTime);
+    };
 
     // Данные для дальнейшей обработки и отображения
     const [responce, setResponce] = useState<IStatisticResponce>([]);
@@ -103,28 +107,6 @@ function PublicStatistic() {
         try {
             const res = await axios.get(url);
             const sortedResponce = res.data.sort(sordResponceByDate);
-
-            const type = 'plan' as StatisticType;
-            for (const date of new Set((sortedResponce as Array<{ date: string }>).map((stat) => stat.date))) {
-                for (const meal_time of new Set(
-                    (
-                        sortedResponce as Array<{
-                            meal_time: Omit<MealTime, 'total'>;
-                        }>
-                    ).map((stat) => stat.meal_time)
-                )) {
-                    console.log(
-                        `stat: type - ${type}, date - ${date}, meal_time - ${meal_time}:`,
-                        (
-                            sortedResponce as Array<{
-                                type: StatisticType;
-                                meal_time: Omit<MealTime, 'total'>;
-                                date: string;
-                            }>
-                        ).filter((stat) => stat.type === type && stat.date === date && stat.meal_time === meal_time)
-                    );
-                }
-            }
             setResponce(sortedResponce);
         } catch (error) {
             console.log('stat, plan:', `logging failed - ${error}`);
@@ -139,7 +121,7 @@ function PublicStatistic() {
     // Преобразование данных с сервера для таблицы и графиков
     const dataForTable: Array<ITableStatData> = useMemo(
         () => handleDataForTable(data, dateStr, typeOfEater, kitchenId),
-        [responce, typeOfEater, kitchenId]
+        [data, dateStr, typeOfEater, kitchenId]
     );
     const dataForColumnChart = useMemo(
         () => handleDataForColumnChart(data, typeOfEater, kitchenId),
@@ -165,7 +147,7 @@ function PublicStatistic() {
                     <Radio.Group value={typeOfEater} onChange={changeTypeOfEater}>
                         <Radio.Button value="all">Все</Radio.Button>
                         <Radio.Button value="meatEater">Мясоеды</Radio.Button>
-                        <Radio.Button value="vegan">Вегетерианцы</Radio.Button>
+                        <Radio.Button value="vegan">Вегетарианцы</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item label="Кухня">
@@ -194,7 +176,22 @@ function PublicStatistic() {
                 <>
                     <TableStats data={dataForTable} loading={loading} />
                     <Divider />
-                    <ColumnChart data={dataForColumnChart} />
+                    <Form layout="inline" style={{ marginBottom: 16 }}>
+                        <Form.Item label="Выберите приём пищи:">
+                            <Radio.Group value={selectedMealTime} onChange={onChangeMealTime}>
+                                <Radio.Button value="breakfast">Завтрак</Radio.Button>
+                                <Radio.Button value="lunch">Обед</Radio.Button>
+                                <Radio.Button value="dinner">Ужин</Radio.Button>
+                                <Radio.Button value="night">Дожор</Radio.Button>
+                            </Radio.Group>
+                        </Form.Item>
+                    </Form>
+
+                    <ColumnChart
+                        data={dataForColumnChart}
+                        mealTime={selectedMealTime}
+                        loading={loading}
+                    />
                 </>
             ) : (
                 <LinearChart data={dataForLinearChart} />
