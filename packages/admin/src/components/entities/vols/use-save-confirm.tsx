@@ -1,7 +1,6 @@
 import { Modal, ButtonProps, FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
 import { dataProvider } from 'dataProvider';
 import type { VolCustomFieldValueEntity } from 'interfaces';
