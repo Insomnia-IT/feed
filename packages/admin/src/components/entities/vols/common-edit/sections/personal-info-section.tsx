@@ -4,6 +4,10 @@ import { Rules } from 'components/form';
 import HorseIcon from 'assets/icons/horse-icon';
 
 import styles from '../../common.module.css';
+import useCanAccess from '../../use-can-access';
+// import type { AccessRoleEntity, DirectionEntity, IPerson, VolunteerRoleEntity } from 'interfaces';
+import type { DirectionEntity, IPerson } from 'interfaces';
+import { useSelect } from '@refinedev/antd';
 
 export const PersonalInfoSection = ({
   isBlocked,
@@ -16,7 +20,8 @@ export const PersonalInfoSection = ({
   canEditGroupBadge,
   colorTypeOptions,
   groupBadgeOptions,
-  handleQRChange
+  handleQRChange,
+  person
 }: {
   isBlocked: boolean;
   denyBadgeEdit: boolean;
@@ -29,6 +34,7 @@ export const PersonalInfoSection = ({
   colorTypeOptions: { label: string; value: string | number }[];
   groupBadgeOptions: { label: string; value: string | number }[];
   handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  person: IPerson | null;
 }) => {
   const form = Form.useFormInstance();
 
@@ -37,6 +43,16 @@ export const PersonalInfoSection = ({
           form.setFieldValue('group_badge', '');
       });
   };
+
+  const mainRole = Form.useWatch('main_role', form);
+  const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
+  const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
+     const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
+          resource: 'directions',
+          optionLabel: 'name',
+          optionValue: 'id'
+      });
+  
     return (
         <>
             <div className={styles.formSection__title}>
@@ -139,6 +155,15 @@ export const PersonalInfoSection = ({
                 <div className={styles.badgeInfo}>
                     <Form.Item label="Цвет бейджа" name="color_type">
                         <Select disabled={true} options={colorTypeOptions} />
+                    </Form.Item>
+                </div>
+                <div className={styles.hrInput}>
+                    <Form.Item
+                        label="Служба / Локация"
+                        name="directions"
+                        rules={allowEmptyDirections ? undefined : Rules.required}
+                    >
+                        <Select disabled={!allowRoleEdit && !!person} mode="multiple" {...directionsSelectProps} />
                     </Form.Item>
                 </div>
             </div>
