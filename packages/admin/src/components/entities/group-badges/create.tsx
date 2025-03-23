@@ -11,7 +11,12 @@ export const GroupBadgeCreate: FC<IResourceComponentsProps> = () => {
     const { formProps, saveButtonProps } = useForm<GroupBadgeEntity>();
 
     return (
-        <Create saveButtonProps={saveButtonProps}>
+        <Create saveButtonProps={saveButtonProps} contentProps={{
+            style: {
+                marginBottom: 60,
+                overflow: 'auto'
+            }
+        }}>
             <Form {...formProps} layout="vertical">
                 <CreateEdit />
             </Form>
