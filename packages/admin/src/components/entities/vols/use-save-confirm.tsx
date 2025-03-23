@@ -21,8 +21,6 @@ const useSaveConfirm = (
         null
     );
 
-    const queryClient = useQueryClient();
-
     const handleOk = () => {
         setShowConfirmationModalReason(null);
         saveButtonProps?.onClick();
@@ -34,9 +32,8 @@ const useSaveConfirm = (
 
     return {
         onClick: () => {
-            const arrivals = form.getFieldValue('updated_arrivals') ?? form.getFieldValue('arrivals') ?? [];
+            const arrivals = form.getFieldValue('arrivals') ?? [];
             const activeFrom =
-                form.getFieldValue(['updated_arrivals', 0, 'arrival_date']) ??
                 form.getFieldValue(['arrivals', 0, 'arrival_date']);
             if (!arrivals.some(({ status }: { status: string }) => isActivatedStatus(status))) {
                 setShowConfirmationModalReason('is_active');
@@ -48,8 +45,6 @@ const useSaveConfirm = (
         },
         onMutationSuccess: async ({ data: { id } }) => {
             const updatedCustomFields = form.getFieldValue('updated_custom_fields');
-            const arrivals = form.getFieldValue('arrivals') ?? [];
-            const updatedArrivals = form.getFieldValue('updated_arrivals');
 
             if (updatedCustomFields) {
                 for (const customFieldId in updatedCustomFields) {
@@ -96,66 +91,6 @@ const useSaveConfirm = (
                         });
                     }
                 }
-            }
-
-            if (updatedArrivals) {
-                const serializeDate = (value: string | number | Date | dayjs.Dayjs | null | undefined) => {
-                    return dayjs(value).format('YYYY-MM-DD');
-                };
-                for (let i = 0; i < updatedArrivals.length; i++) {
-                    const updatedArrival = updatedArrivals[i];
-
-                    const arrival = arrivals.find((a: { id: number }) => a.id === updatedArrival.id);
-                    if (arrival) {
-                        if (JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
-                            const serializeField = (obj: Record<string, unknown>, fieldName: string) => {
-                                if (fieldName === 'arrival_date' || fieldName === 'departure_date') {
-                                    return serializeDate(
-                                        obj[fieldName] as string | number | Date | dayjs.Dayjs | null | undefined
-                                    );
-                                }
-                                return obj[fieldName];
-                            };
-                            await dataProvider.update({
-                                resource: 'arrivals',
-                                id: updatedArrival.id,
-                                variables: Object.keys(updatedArrival).reduce(
-                                    (acc, name) => ({
-                                        ...acc,
-                                        [name]:
-                                            updatedArrival[name] !== arrival[name]
-                                                ? serializeField(updatedArrival, name)
-                                                : undefined
-                                    }),
-                                    {}
-                                )
-                            });
-                        }
-                    } else {
-                        await dataProvider.create({
-                            resource: 'arrivals',
-                            variables: {
-                                ...updatedArrival,
-                                arrival_date: serializeDate(updatedArrival.arrival_date),
-                                departure_date: serializeDate(updatedArrival.departure_date),
-                                volunteer: id
-                            }
-                        });
-                    }
-                }
-
-                for (let i = 0; i < arrivals.length; i++) {
-                    const arrivalId = arrivals[i].id;
-                    const upadatedArrival = updatedArrivals.find((a: { id: number }) => a.id === arrivalId);
-                    if (!upadatedArrival) {
-                        await dataProvider.deleteOne({
-                            resource: 'arrivals',
-                            id: arrivalId
-                        });
-                    }
-                }
-
-                queryClient.clear();
             }
         },
         renderModal: () => {
