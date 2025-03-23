@@ -37,9 +37,10 @@ export const PersonalInfoSection = ({
                 <div className={styles.personalInfoWrap}>
                     <div className={styles.nickNameLastnameWrap}>
                         <div className={`${styles.nameInput} ${styles.padInp}`}>
-                            <Form.Item label="Имя на бейдже" name="name" rules={Rules.required}>
+                            <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>
                                 <Input readOnly={denyBadgeEdit} />
                             </Form.Item>
+                            
                         </div>
                         <div className={`${styles.nameInput} ${styles.padInp}`}>
                             <Form.Item label="Имя" name="first_name">
@@ -49,6 +50,11 @@ export const PersonalInfoSection = ({
                         <div className={styles.nameInput}>
                             <Form.Item label="Фамилия" name="last_name">
                                 <Input readOnly={denyBadgeEdit} />
+                            </Form.Item>
+                        </div>
+                        <div className={styles.phoneInput}>
+                            <Form.Item label="Telegram" name={['person', 'telegram']}>
+                                <Input />
                             </Form.Item>
                         </div>
                     </div>
