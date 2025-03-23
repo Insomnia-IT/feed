@@ -10,53 +10,51 @@ import type { DirectionEntity, IPerson } from 'interfaces';
 import { useSelect } from '@refinedev/antd';
 
 export const PersonalInfoSection = ({
-  isBlocked,
-  denyBadgeEdit,
-  denyFeedTypeEdit,
-  feedTypeOptions,
-  kitchenOptions,
-  genderOptions,
-  // Добавляем новые пропсы
-  canEditGroupBadge,
-  colorTypeOptions,
-  groupBadgeOptions,
-  handleQRChange,
-  person
+    isBlocked,
+    denyBadgeEdit,
+    denyFeedTypeEdit,
+    feedTypeOptions,
+    kitchenOptions,
+    genderOptions,
+    canEditGroupBadge,
+    colorTypeOptions,
+    groupBadgeOptions,
+    handleQRChange,
+    person
 }: {
-  isBlocked: boolean;
-  denyBadgeEdit: boolean;
-  denyFeedTypeEdit: boolean;
-  feedTypeOptions: { label: string; value: string | number }[];
-  kitchenOptions: { label: string; value: string | number }[];
-  genderOptions: { label: string; value: string | number }[];
-  // Добавляем новые пропсы
-  canEditGroupBadge: boolean;
-  colorTypeOptions: { label: string; value: string | number }[];
-  groupBadgeOptions: { label: string; value: string | number }[];
-  handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  person: IPerson | null;
+    isBlocked: boolean;
+    denyBadgeEdit: boolean;
+    denyFeedTypeEdit: boolean;
+    feedTypeOptions: { label: string; value: string | number }[];
+    kitchenOptions: { label: string; value: string | number }[];
+    genderOptions: { label: string; value: string | number }[];
+    canEditGroupBadge: boolean;
+    colorTypeOptions: { label: string; value: string | number }[];
+    groupBadgeOptions: { label: string; value: string | number }[];
+    handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    person: IPerson | null;
 }) => {
-  const form = Form.useFormInstance();
+    const form = Form.useFormInstance();
 
-  const onGroupBadgeClear = () => {
-      setTimeout(() => {
-          form.setFieldValue('group_badge', '');
-      });
-  };
+    const onGroupBadgeClear = () => {
+        setTimeout(() => {
+            form.setFieldValue('group_badge', '');
+        });
+    };
 
-  const mainRole = Form.useWatch('main_role', form);
-  const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
-  const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
-     const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
-          resource: 'directions',
-          optionLabel: 'name',
-          optionValue: 'id'
-      });
-  
+    const mainRole = Form.useWatch('main_role', form);
+    const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
+    const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
+    const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
+        resource: 'directions',
+        optionLabel: 'name',
+        optionValue: 'id'
+    });
+
     return (
         <>
             <div className={styles.formSection__title}>
-                Персональная информация
+                Волонтер
                 {isBlocked && (
                     <div className={styles.bannedWrap}>
                         <span className={styles.bannedDescr}>Забанен</span>
@@ -73,7 +71,6 @@ export const PersonalInfoSection = ({
                             <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>
                                 <Input readOnly={denyBadgeEdit} />
                             </Form.Item>
-                            
                         </div>
                         <div className={`${styles.nameInput} ${styles.padInp}`}>
                             <Form.Item label="Имя" name="first_name">
