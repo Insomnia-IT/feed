@@ -3,6 +3,8 @@ name: feed
 
 services:
   backend:
+    networks:
+      - internal
     build:
       context: .
       dockerfile: Dockerfile_backend
@@ -20,6 +22,8 @@ services:
       - jaeger
 
   front:
+    networks:
+      - internal
     build:
       context: .
       dockerfile: ./Dockerfile_front
@@ -33,20 +37,82 @@ services:
       - backend
 
   jaeger:
+    networks:
+      - internal
     image: jaegertracing/jaeger:${JAEGER_VERSION:-latest}
+    # environment:
+    #   SPAN_STORAGE_TYPE: elasticsearch
+    #   ES_SERVER_URLS: http://opensearch:9200
+    #   ES_USERNAME: "admin" # optional, if authentication is enabled
+    #   ES_PASSWORD: "QWEZXCas11" # optional, if authentication is enabled
+    #   ES_TLS_ENABLED: "false"        # set true if TLS is enabled
+    #   ES_VERSION: "7"                # OpenSearch uses Elasticsearch compatibility mode v7
+    #   ES_INDEX_PREFIX: "jaeger"
     volumes:
-      - ${DB_DIR:-./db}/jaeger_data:/tmp/jaeger
-      - "./jaeger/jaeger-ui.json:/etc/jaeger/jaeger-ui.json" # Do we need this for v2 ? Seems to be running without this.
+      - "./jaeger/jaeger-ui.json:/etc/jaeger/jaeger-ui.json"
       - "./jaeger/config-spm.yaml:/etc/jaeger/config.yml"
-    command: [ "--config", "/etc/jaeger/config.yml" ]
+      # - ./certs:/etc/certs
+    command: [ 
+      "--config", 
+      "/etc/jaeger/config.yml",
+      # "--es.num-shards=1",
+      # "--es.num-replicas=0",
+      # "--es.tls.enabled=true",
+      # "--log-level=debug"
+      ]
     ports:
       - "16686:16686"
     depends_on:
       - prometheus
+      - opensearch
 
+  opensearch:
+    networks:
+      - internal
+    image: opensearchproject/opensearch:2.19.1
+    container_name: opensearch
+    environment:
+      - discovery.type=single-node
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      # - plugins.security.disabled=true
+      - plugins.security.ssl.http.enabled=false
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=qazXSWedcVFR123!@#
+      - node.name=opensearch
+      # - OPENSEARCH_SSL_HTTP_ENABLED=true
+      # - OPENSEARCH_SSL_HTTP_CERTPATH=/usr/share/opensearch/config/certs/opensearch.crt
+      # - OPENSEARCH_SSL_HTTP_KEYPATH=/usr/share/opensearch/config/certs/opensearch.key
+      # - OPENSEARCH_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH=/usr/share/opensearch/config/certs/opensearch.crt
+
+    volumes:
+      - ${DB_DIR:-./db}/opensearch:/usr/share/opensearch/data
+      # - ./certs:/usr/share/opensearch/config/certs
+    ports:
+      - "9200:9200"
+
+  dashboard:
+    networks:
+      - internal
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      - OPENSEARCH_HOSTS="http://opensearch:9200"
+    depends_on:
+      - opensearch
+    # volumes:
+      # - ./certs:/usr/share/opensearch-dashboards/config/certs
+      # - ./jaeger/config-dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
   prometheus:
+    networks:
+      - internal
     image: prom/prometheus:latest
     volumes:
       - "./jaeger/prometheus.yml:/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
+
+networks:
+  internal:

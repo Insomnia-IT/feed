@@ -27,19 +27,54 @@ extensions:
     storage:
       traces: some_storage
       metrics: some_metrics_storage
+
   jaeger_storage:
     backends:
       some_storage:
-        memory:
-          max_traces: 10000
-      # some_storage:
-      #   badger:
-      #     directories:
-      #       keys: "/tmp/jaeger/"
-      #       values: "/tmp/jaeger/"
-      #     ephemeral: false
-      #     ttl: 
-      #       spans: 144h
+        elasticsearch:
+          tls:
+            insecure: true
+            insecure_skip_verify: true
+          server_urls: ["http://opensearch:9200/"]
+          auth:
+            basic:
+              username: admin
+              password: qazXSWedcVFR123!@#
+          indices:
+            index_prefix: "jaeger-main"
+            spans:
+              date_layout: "2006-01-02"
+              rollover_frequency: "day"
+              shards: 5
+              replicas: 1
+            services:
+              date_layout: "2006-01-02"
+              rollover_frequency: "day"
+              shards: 5
+              replicas: 1
+            dependencies:
+              date_layout: "2006-01-02"
+              rollover_frequency: "day"
+              shards: 5
+              replicas: 1
+            sampling:
+              date_layout: "2006-01-02"
+              rollover_frequency: "day"
+              shards: 5
+              replicas: 1
+      another_storage:
+        elasticsearch:
+          tls:
+            insecure: true
+            insecure_skip_verify: true
+          server_urls: ["http://opensearch:9200/"]
+          auth:
+            basic:
+              username: admin
+              password: qazXSWedcVFR123!@#
+          indices:
+            index_prefix: "jaeger-archive"
+
     metric_backends:
       some_metrics_storage:
         prometheus:
