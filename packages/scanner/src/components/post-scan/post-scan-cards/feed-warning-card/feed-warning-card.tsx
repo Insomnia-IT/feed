@@ -57,7 +57,7 @@ export const FeedWarningCard: FC<{
                     </div>
                 )}
                 <VolInfo vol={vol} />
-                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} color='white' /> : null}
+                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} /> : null}
             </CardContent>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>

@@ -5,20 +5,12 @@
     padding: 12px 16px;
     display: flex;
     align-items: center;
+    border: 2px solid var(--c-error);
+    background-color: var(--c-grey);
 }
 
 .text {
     display: inline-block;
     text-align: left;
     margin: auto;
-}
-
-.red {
-    border: 2px solid var(--c-error);
-    background-color: var(--c-grey);
-}
-
-.white {
-    border: 2px solid var(--c-white);
-    color: var(--c-white);
 }
