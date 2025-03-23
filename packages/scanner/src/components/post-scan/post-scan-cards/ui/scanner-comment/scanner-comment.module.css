@@ -1,0 +1,24 @@
+.scannerComment {
+    width: 100%;
+    word-break: break-word;
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+}
+
+.text {
+    display: inline-block;
+    text-align: left;
+    margin: auto;
+}
+
+.red {
+    border: 2px solid var(--c-error);
+    background-color: var(--c-grey);
+}
+
+.white {
+    border: 2px solid var(--c-white);
+    color: var(--c-white);
+}

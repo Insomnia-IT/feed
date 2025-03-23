@@ -8,6 +8,7 @@ import { Text, Title } from '~/shared/ui/typography';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 
 import css from './feed-card.module.css';
+import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 export const FeedCard: FC<{
     vol: Volunteer;
@@ -49,6 +50,9 @@ export const FeedCard: FC<{
                         )}
                     </div>
                 </div>
+
+                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} /> : null}
+
                 <div className={css.bottomBLock}>
                     <div className={css.buttonsBlock}>
                         <Button variant='secondary' onClick={close}>

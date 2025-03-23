@@ -59,7 +59,7 @@ export interface Volunteer {
     directions: Array<{ name: string }>;
     kitchen: number;
     group_badge: number | null;
-
+    scanner_comment: string | null;
     transactions: Array<Transaction> | null;
 }
 
@@ -78,7 +78,7 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 18;
+const DB_VERSION = 19;
 
 export class MySubClassedDexie extends Dexie {
     groupBadges!: Table<GroupBadge>;
