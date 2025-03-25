@@ -11,7 +11,17 @@ class WashViewSet(viewsets.ModelViewSet):
     queryset = Wash.objects.all()
     serializer_class = WashSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['volunteer_id', 'actor_id']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
+    pagination_class = None 
+    filterset_class = WashFilter
 
+class WashFilter(filters.FilterSet):
+    volunteer = filters.NumberFilter(field_name="volunteer_id", lookup_expr="exact")
+    actor = filters.NumberFilter(field_name="actor_id", lookup_expr="exact")
+    created_at_from = filters.DateTimeFilter(field_name="created_at", lookup_expr="gte")
+    created_at_to = filters.DateTimeFilter(field_name="created_at", lookup_expr="lte")
+
+    class Meta:
+        model = Wash
+        fields = ["volunteer", "actor", "created_at_from", "created_at_to"]
