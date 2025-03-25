@@ -12,8 +12,7 @@ class WashViewSet(viewsets.ModelViewSet):
     serializer_class = WashSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     ordering_fields = ['created_at']
-    ordering = ['-created_at']
-    pagination_class = None 
+    ordering = ['-created_at'] 
     filterset_class = WashFilter
 
 class WashFilter(filters.FilterSet):
