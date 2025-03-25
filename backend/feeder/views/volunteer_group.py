@@ -1,5 +1,6 @@
 import json
 
+from django.core.serializers import serialize
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.response import Response
@@ -90,19 +91,13 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         for volunteer_data in json.loads(original_data).values():
             volunteer_id = volunteer_data['id']
             try:
+                Volunteer.objects.filter(id=volunteer_id).update(**volunteer_data)
                 volunteer_instance = Volunteer.objects.get(id=volunteer_id)
-                serializer = VolunteerSerializer(volunteer_instance, data=volunteer_data, partial=True)
-                if serializer.is_valid():
-                    serializer.save()
-                    updated_volunteers.append(serializer.data)
-                    volunteer_instance.save()
-                else:
-                    errors.append({"id": volunteer_id, "errors": serializer.errors})
+                updated_volunteers.append(volunteer_instance)
             except Volunteer.DoesNotExist:
                 errors.append(
                     {"error": f"Volunteer with id {volunteer_id} does not exist", "volunteer_data": volunteer_data})
-
         if errors:
             return Response({"updated": updated_volunteers, "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(updated_volunteers, status=status.HTTP_200_OK)
+        return Response(serialize("json", updated_volunteers), status=status.HTTP_200_OK)
