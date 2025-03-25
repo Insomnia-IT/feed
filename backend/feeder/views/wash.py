@@ -19,8 +19,6 @@ class WashViewSet(viewsets.ModelViewSet):
 class WashFilter(filters.FilterSet):
     volunteer = filters.NumberFilter(field_name="volunteer_id", lookup_expr="exact")
     actor = filters.NumberFilter(field_name="actor_id", lookup_expr="exact")
-    created_at_from = filters.DateTimeFilter(field_name="created_at", lookup_expr="gte")
-    created_at_to = filters.DateTimeFilter(field_name="created_at", lookup_expr="lte")
 
     class Meta:
         model = Wash
