@@ -310,12 +310,10 @@ class WashSerializer(serializers.ModelSerializer):
         model = models.Wash
         fields = '__all__'
 
-class VolunteerGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.VolunteerGroupOperation
-        volunteers_ids = serializers.ListField(
-            child = serializers.IntegerField(),
-            min_length =1)
-        new_data = serializers.DictField()
+class GroupData(serializers.Serializer):
+    field = serializers.CharField()
+    data = serializers.CharField()
 
-        fields = ['volunteers_ids', 'new_data']
+class VolunteerGroupSerializer(serializers.Serializer):
+    volunteers_ids = serializers.ListField(child = serializers.IntegerField())
+    field_list = GroupData(many=True)
