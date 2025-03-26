@@ -1,10 +1,18 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from feeder.models import Wash
 from feeder.serializers import WashSerializer
-from rest_framework import filters
+from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+
+class WashFilter(django_filters.FilterSet):
+    volunteer = django_filters.NumberFilter(field_name="volunteer_id", lookup_expr="exact")
+    actor = django_filters.NumberFilter(field_name="actor_id", lookup_expr="exact")
+
+    class Meta:
+        model = Wash
+        fields = ["volunteer", "actor"]
 
 class WashViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -15,10 +23,3 @@ class WashViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at'] 
     filterset_class = WashFilter
 
-class WashFilter(filters.FilterSet):
-    volunteer = filters.NumberFilter(field_name="volunteer_id", lookup_expr="exact")
-    actor = filters.NumberFilter(field_name="actor_id", lookup_expr="exact")
-
-    class Meta:
-        model = Wash
-        fields = ["volunteer", "actor", "created_at_from", "created_at_to"]
