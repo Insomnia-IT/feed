@@ -12,6 +12,7 @@ import { WarningPartiallyFedModal } from '~/components/post-scan/post-scan-group
 import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
 
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
+import { NotFeedListModalTrigger } from '../not-feed-list-modal/not-feed-list-modal';
 
 import css from './post-scan-group-badge-misc.module.css';
 
@@ -104,13 +105,7 @@ export const GroupBadgeWarningCard: FC<{
 
             {reds.length > 0 && (
                 <div className={css.volunteerList}>
-                    <Text>
-                        <b>Без порции: </b>
-                        {reds
-                            .filter((vol) => vol.isActivated)
-                            .map((vol) => vol.name)
-                            .join(', ')}
-                    </Text>
+                    <NotFeedListModalTrigger doNotFeedVols={reds} />
                 </div>
             )}
 
