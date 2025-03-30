@@ -1,4 +1,4 @@
-import { Form, Input, Select, Checkbox, Image, Button } from 'antd';
+import { Form, Input, Select, Checkbox, Image, Button, Popconfirm } from 'antd';
 import { useState } from 'react';
 
 import { Rules } from 'components/form';
@@ -90,7 +90,15 @@ export const PersonalInfoSection = ({
                 style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
                 onError={() => setImageError(true)} // Устанавливаем ошибку, если изображение не загрузилось
               />
-              <Button
+
+              <Popconfirm
+                title="Удалить фото"
+                description="Вы уверены, что хотите удалить фото?"
+                okText="Да"
+                cancelText="Нет"
+                okButtonProps={{ style: { background: '#ff4d4f', borderColor: '#ff4d4f' } }}
+              >
+                <Button
                 className={styles.deleteButton}
                 danger
                 type="link"
@@ -99,6 +107,7 @@ export const PersonalInfoSection = ({
               >
                 Удалить фото
               </Button>
+              </Popconfirm>
             </>
 
           ) : (
