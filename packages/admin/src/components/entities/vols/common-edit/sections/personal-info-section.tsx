@@ -1,4 +1,5 @@
-import { Form, Input, Select, Checkbox, Image } from 'antd';
+import { Form, Input, Select, Checkbox, Image, Button } from 'antd';
+import { useState } from 'react';
 
 import { Rules } from 'components/form';
 import HorseIcon from 'assets/icons/horse-icon';
@@ -8,6 +9,7 @@ import useCanAccess from '../../use-can-access';
 // import type { AccessRoleEntity, DirectionEntity, IPerson, VolunteerRoleEntity } from 'interfaces';
 import type { DirectionEntity, IPerson } from 'interfaces';
 import { useSelect } from '@refinedev/antd';
+import { DeleteOutlined } from '@ant-design/icons';
 
 export const PersonalInfoSection = ({
   isBlocked,
@@ -35,6 +37,7 @@ export const PersonalInfoSection = ({
   person: IPerson | null;
 }) => {
   const form = Form.useFormInstance();
+  const [imageError, setImageError] = useState(false);
 
   const onGroupBadgeClear = () => {
     setTimeout(() => {
@@ -43,7 +46,7 @@ export const PersonalInfoSection = ({
   };
 
   const mainRole = Form.useWatch('main_role', form);
-  
+
   const allowEmptyDirections = ['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR'].includes(mainRole);
   const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
   const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
@@ -54,7 +57,14 @@ export const PersonalInfoSection = ({
 
   // const photo = form.getFieldValue('photo');
   const photo = 'https://sun1-85.userapi.com/s/v1/ig2/ortGZiVTcUqsOrQYxnjLm7MGA6ZRTLMDTs57g0ObQR7Tcg7Sn58SSkLevJyPNMfK5MCpbdJV33SLQd8IgEbPJv_o.jpg?quality=95&crop=428,36,1544,1544&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280,1440x1440&ava=1&cs=400x400';
-  console.log(photo);
+
+  const deletePhoto = () => {
+    setTimeout(() => {
+      form.setFieldsValue({ photo: '' }); // Устанавливаем пустую строку
+      setImageError(false);
+    });
+  };
+
 
 
   return (
@@ -68,20 +78,35 @@ export const PersonalInfoSection = ({
         )}
       </div>
       <div className={styles.personalWrap}>
-        <div className={styles.photoWrap}>
 
-          {photo ? (
-            <Image
-              src={photo}
-              alt="Фото волонтера"
-              width={120}
-              height={120}
-              style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
-            />
+        <div className={styles.photoWrap}>
+          {photo && !imageError ? (
+            <>
+              <Image
+                src={photo}
+                alt="Фото волонтера"
+                width={120}
+                height={120}
+                style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
+                onError={() => setImageError(true)} // Устанавливаем ошибку, если изображение не загрузилось
+              />
+              <Button
+                className={styles.deleteButton}
+                danger
+                type="link"
+                icon={<DeleteOutlined />}
+                onClick={deletePhoto}
+              >
+                Удалить фото
+              </Button>
+            </>
+
           ) : (
             <HorseIcon />
           )}
-          
+          <Form.Item name="photo" shouldUpdate>
+            <Input type="hidden" />
+          </Form.Item>
         </div>
         <div className={styles.personalInfoWrap}>
           <div className={styles.nickNameLastnameWrap}>
