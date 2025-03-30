@@ -55,17 +55,15 @@ export const PersonalInfoSection = ({
     optionValue: 'id'
   });
 
-  // const photo = form.getFieldValue('photo');
-  const photo = 'https://sun1-85.userapi.com/s/v1/ig2/ortGZiVTcUqsOrQYxnjLm7MGA6ZRTLMDTs57g0ObQR7Tcg7Sn58SSkLevJyPNMfK5MCpbdJV33SLQd8IgEbPJv_o.jpg?quality=95&crop=428,36,1544,1544&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280,1440x1440&ava=1&cs=400x400';
+  // const volPhoto = form.getFieldValue('photo');
+  const volPhoto = 'https://sun1-85.userapi.com/s/v1/ig2/ortGZiVTcUqsOrQYxnjLm7MGA6ZRTLMDTs57g0ObQR7Tcg7Sn58SSkLevJyPNMfK5MCpbdJV33SLQd8IgEbPJv_o.jpg?quality=95&crop=428,36,1544,1544&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280,1440x1440&ava=1&cs=400x400';
 
   const deletePhoto = () => {
     setTimeout(() => {
-      form.setFieldsValue({ photo: '' }); // Устанавливаем пустую строку
+      form.setFieldsValue({ photo: '' });
       setImageError(false);
     });
   };
-
-
 
   return (
     <>
@@ -80,15 +78,15 @@ export const PersonalInfoSection = ({
       <div className={styles.personalWrap}>
 
         <div className={styles.photoWrap}>
-          {photo && !imageError ? (
+          {volPhoto && !imageError ? (
             <>
               <Image
-                src={photo}
+                src={volPhoto}
                 alt="Фото волонтера"
-                width={120}
-                height={120}
+                width={112}
+                height={112}
                 style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
-                onError={() => setImageError(true)} // Устанавливаем ошибку, если изображение не загрузилось
+                onError={() => setImageError(true)} 
               />
 
               <Popconfirm
@@ -99,20 +97,23 @@ export const PersonalInfoSection = ({
                 okButtonProps={{ style: { background: '#ff4d4f', borderColor: '#ff4d4f' } }}
               >
                 <Button
-                className={styles.deleteButton}
-                danger
-                type="link"
-                icon={<DeleteOutlined />}
-                onClick={deletePhoto}
-              >
-                Удалить фото
-              </Button>
+                  className={styles.deleteButton}
+                  danger
+                  type="link"
+                  icon={<DeleteOutlined />}
+                  onClick={deletePhoto}
+                  style={{ right: '0px', position: 'static' }}
+                >Удалить фото
+                </Button>
               </Popconfirm>
             </>
 
           ) : (
             <HorseIcon />
           )}
+
+        </div>
+        <div>
           <Form.Item name="photo" shouldUpdate>
             <Input type="hidden" />
           </Form.Item>
