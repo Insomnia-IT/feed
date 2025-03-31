@@ -102,7 +102,8 @@ export const PersonalInfoSection = ({
                   type="link"
                   icon={<DeleteOutlined />}
                   onClick={deletePhoto}
-                  style={{ right: '0px', position: 'static' }}
+                  style={{ right: '0px', position: 'static', fontSize: '12px' }}
+                  
                 >Удалить фото
                 </Button>
               </Popconfirm>
