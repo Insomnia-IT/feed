@@ -63,7 +63,12 @@ export const VolList: FC = () => {
 
     const pagination: TablePaginationConfig = {
         total: volunteers?.total ?? 1,
-        showTotal: (total) => <><span data-testid="volunteer-count-caption">Волонтеров:</span> <span data-testid="volunteer-count-value">{total}</span></>,
+        showTotal: (total) => (
+            <>
+                <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
+                <span data-testid="volunteer-count-value">{total}</span>
+            </>
+        ),
         current: page,
         pageSize: pageSize,
         onChange: (page, pageSize) => {
@@ -111,7 +116,6 @@ export const VolList: FC = () => {
                     filterFields={filterFields}
                     searchText={searchText}
                     setSearchText={setSearchText}
-                    setPage={setPage}
                 />
                 <Row style={{ padding: '10px 0' }} justify="space-between">
                     {isDesktop && (
@@ -123,7 +127,8 @@ export const VolList: FC = () => {
                             </Row>
                             <Row style={{ gap: '24px' }} align="middle">
                                 <Col>
-                                    <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
+                                    <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
+                                    волонтеров
                                 </Col>
                                 <Row style={{ gap: '12px' }} align="middle">
                                     <ChooseColumnsButton

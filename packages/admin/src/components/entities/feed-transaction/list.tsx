@@ -1,7 +1,7 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
 import { Button, DatePicker, Form, Input, Space, Table, Tag } from 'antd';
 import { CrudFilter, HttpError, useList } from '@refinedev/core';
-import { FC, ReactNode, useCallback, useMemo } from 'react';
+import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ExcelJS from 'exceljs';
@@ -10,17 +10,13 @@ import dayjs from 'dayjs';
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { saveXLSX } from 'shared/lib/saveXLSX';
 import { DirectionEntity, FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
-import { NEW_API_URL } from 'const';
+import { mealTimeById, NEW_API_URL } from 'const';
 import { ColumnsType } from 'antd/es/table';
+import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters.ts';
+import { FilterItem } from '../vols/vol-list/filters/filter-types.ts';
+import { Filters } from '../vols/vol-list/filters/filters.tsx';
 
 const { RangePicker } = DatePicker;
-
-const mealTimeById: Record<string, string> = {
-    breakfast: 'Завтрак',
-    lunch: 'Обед',
-    dinner: 'Ужин',
-    night: 'Дожор'
-};
 
 interface TransformedTransaction {
     ulid: string;
@@ -37,13 +33,16 @@ interface TransformedTransaction {
 }
 
 export const FeedTransactionList: FC = () => {
+    const { filterFields, visibleFilters, setVisibleFilters } = useTransactionsFilters();
+    const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
+
     const { searchFormProps, tableProps, filters, setFilters, setCurrent, setPageSize } = useTable<
         FeedTransactionEntity,
         HttpError,
         { search?: string; date?: [string, string] }
     >({
         onSearch: (values: { search?: string; date?: [string, string] }) => {
-            setFilters([]);
+            setFilters([], 'replace');
             const newFilters: Array<CrudFilter> = [];
 
             newFilters.push({
@@ -65,21 +64,23 @@ export const FeedTransactionList: FC = () => {
                         operator: 'lte'
                     }
                 );
-            } else {
-                // Без этого фильтры некорректно сбрасываются
-                newFilters.push(
-                    {
-                        field: 'dtime_from',
-                        value: null,
-                        operator: 'gte'
-                    },
-                    {
-                        field: 'dtime_to',
-                        value: null,
-                        operator: 'lte'
-                    }
-                );
             }
+
+            activeFilters.forEach((filter) => {
+                const { name, value } = filter;
+
+                let valueToUse = value as string;
+
+                if (Array.isArray(value)) {
+                    valueToUse = value.length > 1 ? value.join(',') : valueToUse[0];
+                }
+
+                newFilters.push({
+                    field: name,
+                    value: valueToUse,
+                    operator: 'eq'
+                });
+            });
 
             return newFilters;
         }
@@ -134,12 +135,16 @@ export const FeedTransactionList: FC = () => {
         );
     }, [kitchens]);
 
-    const getTargetDirections = (item: FeedTransactionEntity): DirectionEntity[] => {
-        const targetGroupBadge = getGroupBadgeById(item.group_badge);
-        return (
-            volById?.[item.volunteer]?.directions ?? (targetGroupBadge?.direction ? [targetGroupBadge.direction] : [])
-        );
-    };
+    const getTargetDirections = useCallback(
+        (item: FeedTransactionEntity): DirectionEntity[] => {
+            const targetGroupBadge = getGroupBadgeById(item.group_badge);
+            return (
+                volById?.[item.volunteer]?.directions ??
+                (targetGroupBadge?.direction ? [targetGroupBadge.direction] : [])
+            );
+        },
+        [getGroupBadgeById, volById]
+    );
 
     const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
         return (
@@ -254,7 +259,7 @@ export const FeedTransactionList: FC = () => {
         });
 
         void saveXLSX(workbook, 'feed-transactions');
-    }, [filters, kitchenNameById, volById, getGroupBadgeById]);
+    }, [filters, volById, kitchenNameById, getGroupBadgeById, getTargetDirections]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
@@ -277,6 +282,8 @@ export const FeedTransactionList: FC = () => {
                         type="default"
                         htmlType="reset"
                         onClick={() => {
+                            setActiveFilters([]);
+                            setVisibleFilters([]);
                             searchFormProps?.form?.resetFields();
                             searchFormProps?.form?.submit();
                         }}
@@ -284,6 +291,13 @@ export const FeedTransactionList: FC = () => {
                         Очистить
                     </Button>
                 </Space>
+                <Filters
+                    filterFields={filterFields}
+                    visibleFilters={visibleFilters}
+                    setVisibleFilters={setVisibleFilters}
+                    activeFilters={activeFilters}
+                    setActiveFilters={setActiveFilters}
+                />
             </Form>
             <Table<TransformedTransaction>
                 loading={tableProps.loading}
