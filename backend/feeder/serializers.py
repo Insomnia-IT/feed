@@ -1,6 +1,7 @@
 from rest_framework import routers, serializers, viewsets
 
 from django.db import transaction
+from django.utils import timezone
 
 from feeder import models
 from feeder.utils import StatisticType
@@ -9,7 +10,7 @@ from feeder.views.mixins import get_request_user_id
 from history.models import History
 
 from uuid import UUID
-from datetime import datetime, date
+from datetime import date
 
 import arrow
 
@@ -101,6 +102,7 @@ class StatusSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ArrivalSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
     class Meta:
         model = models.Arrival
         exclude = ["volunteer"]
@@ -268,7 +270,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
             "status": History.STATUS_UPDATE if action == "UPDATE" else History.STATUS_CREATE,
             "object_name": "arrival",
             "actor_badge": user_id,
-            "action_at": datetime.utcnow(),
+            "action_at": timezone.now(),
             "data": changed_data,
             "old_data": old_changed_data,
             "volunteer_uuid": str(arrival.volunteer.uuid)
