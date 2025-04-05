@@ -87,7 +87,7 @@ export const PersonalInfoSection = ({
                 width={112}
                 height={112}
                 style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
-                onError={() => setImageError(true)} 
+                onError={() => setImageError(true)}
               />
 
               <Popconfirm
@@ -104,7 +104,120 @@ export const PersonalInfoSection = ({
                   type="link"
                   icon={<DeleteOutlined />}
                   style={{ right: '0px', position: 'static', fontSize: '12px' }}
-                  
+
+                >Удалить фото
+                </Button>
+              </Popconfirm>
+            </>
+
+          ) : (
+            <HorseIcon />
+          )}
+
+        </div>
+        <div>
+          <Form.Item name="photo" shouldUpdate>
+            <Input type="hidden" />
+          </Form.Item>
+        </div>
+        <div className={styles.personalInfoWrap}>
+          <div className={styles.nickNameLastnameWrap}>
+            <div className={`${styles.nameInput} ${styles.padInp}`}>
+              <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>
+                <Input readOnly={denyBadgeEdit} />
+              </Form.Item>
+            </div>
+            <div className={styles.badgeInfo}>
+              <Form.Item label="Групповой бейдж" name="group_badge">
+                <Select
+                  disabled={!canEditGroupBadge}
+                  allowClear
+                  options={groupBadgeOptions}
+                  onClear={onGroupBadgeClear}
+                />
+              </Form.Item>
+            </div>
+          </div>
+          <div className={styles.nickNameLastnameWrap}>
+            <div className={styles.nameInput}>
+              <Form.Item label="Позывной" name="nick_name">
+                <Input readOnly={denyBadgeEdit} />
+              </Form.Item>
+            </div>
+            <div className={`${styles.nameInput} ${styles.padInp}`}>
+              <Form.Item label="Имя" name="first_name">
+                <Input readOnly={denyBadgeEdit} />
+              </Form.Item>
+            </div>
+            <div className={styles.nameInput}>
+              <Form.Item label="Фамилия" name="last_name">
+                <Input readOnly={denyBadgeEdit} />
+              </Form.Item>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div className={styles.badgeInfoWrap}>
+        <Form.Item
+          label="Служба / Локация"
+          name="directions"
+          rules={allowEmptyDirections ? undefined : Rules.required}
+        >
+          <Select disabled={!allowRoleEdit && !!person} mode="multiple" {...directionsSelectProps} />
+        </Form.Item>
+        <Form.Item label="Номер бейджа" name="badge_number" className={styles.badgeInfoPartItem}>
+          <Input disabled={denyBadgeEdit} />
+        </Form.Item>
+        <Form.Item label="Цвет бейджа" name="color_type">
+          <Select disabled={true} options={colorTypeOptions} />
+        </Form.Item>
+      </div>
+
+
+
+
+
+      ===
+      <div className={styles.formSection__title}>
+        Волонтер
+        {isBlocked && (
+          <div className={styles.bannedWrap}>
+            <span className={styles.bannedDescr}>Забанен</span>
+          </div>
+        )}
+      </div>
+      <div className={styles.personalWrap}>
+
+        <div className={styles.photoWrap}>
+          {volPhoto && !imageError ? (
+            <>
+              <Image
+                src={volPhoto}
+                alt="Фото волонтера"
+                width={112}
+                height={112}
+                style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
+                onError={() => setImageError(true)}
+              />
+
+              <Popconfirm
+                title="Удалить фото"
+                description="Вы уверены, что хотите удалить фото?"
+                okText="Да"
+                cancelText="Нет"
+                okButtonProps={{ style: { background: '#ff4d4f', borderColor: '#ff4d4f' } }}
+                onConfirm={deletePhoto}
+              >
+                <Button
+                  className={styles.deleteButton}
+                  danger
+                  type="link"
+                  icon={<DeleteOutlined />}
+                  style={{ right: '0px', position: 'static', fontSize: '12px' }}
+
                 >Удалить фото
                 </Button>
               </Popconfirm>
