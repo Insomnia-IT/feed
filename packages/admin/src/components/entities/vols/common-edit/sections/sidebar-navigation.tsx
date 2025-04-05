@@ -14,26 +14,26 @@ export const SidebarNavigation = ({
                     className={`${styles.navList__item} ${activeAnchor === 'section1' ? styles.active : ''}`}
                     data-id="section1"
                 >
-                    Персональная информация
+                    Волонтер
                 </li>
                 <li
                     className={`${styles.navList__item} ${activeAnchor === 'section2' ? styles.active : ''}`}
                     data-id="section2"
                 >
-                    HR информация
+                    Даты на поле
                 </li>
                 <li
                     className={`${styles.navList__item} ${activeAnchor === 'section3' ? styles.active : ''}`}
                     data-id="section3"
                 >
-                    Даты на поле
+                    Личная информация
                 </li>
                 <li
                     className={`${styles.navList__item} ${activeAnchor === 'section4' ? styles.active : ''}`}
                     data-id="section4"
                     style={{ display: denyBadgeEdit ? 'none' : '' }}
                 >
-                    Бейдж
+                    HR информация
                 </li>
                 <li
                     className={`${styles.navList__item} ${activeAnchor === 'section5' ? styles.active : ''}`}

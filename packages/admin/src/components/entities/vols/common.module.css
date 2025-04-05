@@ -157,10 +157,25 @@
 } */
 
 .twoColumnsWrap {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.twoEqualColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+.twoColumnsStartWrap {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 12px;
-  align-items: start;
+  grid-auto-flow: column; /* Элементы располагаются в строку (по умолчанию row) */
+  grid-template-columns: auto auto; /* Ширина колонок определяется содержимым */
+  gap: 16px; /* Отступ между элементами */
+  justify-content: start; /* Выравнивание по началу контейнера */
 }
 
 .nameInput:not(:last-child) {
