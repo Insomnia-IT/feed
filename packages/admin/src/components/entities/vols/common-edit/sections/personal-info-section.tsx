@@ -62,6 +62,7 @@ export const PersonalInfoSection = ({
     setTimeout(() => {
       form.setFieldsValue({ photo: '' });
       setImageError(false);
+      console.log('Фото удалено');
     });
   };
 
@@ -95,13 +96,13 @@ export const PersonalInfoSection = ({
                 okText="Да"
                 cancelText="Нет"
                 okButtonProps={{ style: { background: '#ff4d4f', borderColor: '#ff4d4f' } }}
+                onConfirm={deletePhoto}
               >
                 <Button
                   className={styles.deleteButton}
                   danger
                   type="link"
                   icon={<DeleteOutlined />}
-                  onClick={deletePhoto}
                   style={{ right: '0px', position: 'static', fontSize: '12px' }}
                   
                 >Удалить фото
