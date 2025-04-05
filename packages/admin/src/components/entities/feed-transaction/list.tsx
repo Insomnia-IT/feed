@@ -12,9 +12,9 @@ import { saveXLSX } from 'shared/lib/saveXLSX';
 import { DirectionEntity, FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { mealTimeById, NEW_API_URL } from 'const';
 import { ColumnsType } from 'antd/es/table';
-import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters.ts';
-import { FilterItem } from '../vols/vol-list/filters/filter-types.ts';
-import { Filters } from '../vols/vol-list/filters/filters.tsx';
+import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
+import { FilterItem } from '../vols/vol-list/filters/filter-types';
+import { Filters } from '../vols/vol-list/filters/filters';
 
 const { RangePicker } = DatePicker;
 

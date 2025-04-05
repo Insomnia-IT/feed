@@ -1,8 +1,12 @@
 import { useMemo, useState } from 'react';
-import { FilterFieldType } from '../../vols/vol-list/filters/filter-types.ts';
+import { FilterFieldType } from '../../vols/vol-list/filters/filter-types';
 import { useList } from '@refinedev/core';
 import { GroupBadgeEntity, KitchenEntity } from 'interfaces';
 import { mealTimeById } from 'const';
+
+const mealTypes = Object.entries(mealTimeById).map(([id, name]) => {
+    return { id, name };
+});
 
 export const useTransactionsFilters = () => {
     const [visibleFilters, setVisibleFilters] = useState<Array<string>>([]);
@@ -12,10 +16,6 @@ export const useTransactionsFilters = () => {
         pagination: {
             pageSize: 0
         }
-    });
-
-    const mealTypes = Object.entries(mealTimeById).map(([id, name]) => {
-        return { id, name };
     });
 
     const { data: groupBadges } = useList<GroupBadgeEntity>({
@@ -64,7 +64,7 @@ export const useTransactionsFilters = () => {
                 lookup: () => groupBadges?.data ?? []
             }
         ];
-    }, [kitchens?.data, mealTypes, groupBadges?.data]);
+    }, [kitchens?.data, groupBadges?.data]);
 
     return { filterFields, visibleFilters, setVisibleFilters };
 };
