@@ -140,9 +140,27 @@
     flex-wrap: nowrap;
 }
 
-.nickNameLastnameWrap {
-    display: flex;
-    align-items: center;
+.nickNameFirstNameLastNameWrap {
+    /* display: flex;
+    align-items: center; */
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+/* .nameGroupBadgeWrap {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    align-items: start;
+} */
+
+.twoColumnsWrap {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  align-items: start;
 }
 
 .nameInput:not(:last-child) {
@@ -227,10 +245,21 @@
 }
 
 .badgeInfoWrap {
-    display: flex;
+    /* display: flex;
     flex-grow: 1;
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: center; */
+    /* display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start; */
+}
+
+.threeColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
 }
 
 .badgeInfo:not(:last-child) {
@@ -246,7 +275,7 @@
     gap: 12px;
 }
 
-.badgeInfoPart>* {
+.badgeInfoPart > * {
     flex: 1;
 }
 
@@ -444,7 +473,7 @@
 }
 
 @media (max-width: 768px) {
-    .nickNameLastnameWrap {
+    .nickNameFirstNameLastNameWrap {
         flex-direction: column;
     }
 

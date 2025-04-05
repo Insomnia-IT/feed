@@ -14,14 +14,14 @@ import { DeleteOutlined } from '@ant-design/icons';
 export const PersonalInfoSection = ({
   isBlocked,
   denyBadgeEdit,
-  denyFeedTypeEdit,
-  feedTypeOptions,
-  kitchenOptions,
-  genderOptions,
+  // denyFeedTypeEdit,
+  // feedTypeOptions,
+  // kitchenOptions,
+  // genderOptions,
   canEditGroupBadge,
   colorTypeOptions,
   groupBadgeOptions,
-  handleQRChange,
+  // handleQRChange,
   person
 }: {
   isBlocked: boolean;
@@ -121,46 +121,33 @@ export const PersonalInfoSection = ({
           </Form.Item>
         </div>
         <div className={styles.personalInfoWrap}>
-          <div className={styles.nickNameLastnameWrap}>
-            <div className={`${styles.nameInput} ${styles.padInp}`}>
-              <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>
-                <Input readOnly={denyBadgeEdit} />
-              </Form.Item>
-            </div>
-            <div className={styles.badgeInfo}>
-              <Form.Item label="Групповой бейдж" name="group_badge">
-                <Select
-                  disabled={!canEditGroupBadge}
-                  allowClear
-                  options={groupBadgeOptions}
-                  onClear={onGroupBadgeClear}
-                />
-              </Form.Item>
-            </div>
+          <div className={styles.twoColumnsWrap}>
+            <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>
+              <Input readOnly={denyBadgeEdit} />
+            </Form.Item>
+            <Form.Item label="Групповой бейдж" name="group_badge">
+              <Select
+                disabled={!canEditGroupBadge}
+                allowClear
+                options={groupBadgeOptions}
+                onClear={onGroupBadgeClear}
+              />
+            </Form.Item>
           </div>
-          <div className={styles.nickNameLastnameWrap}>
-            <div className={styles.nameInput}>
-              <Form.Item label="Позывной" name="nick_name">
-                <Input readOnly={denyBadgeEdit} />
-              </Form.Item>
-            </div>
-            <div className={`${styles.nameInput} ${styles.padInp}`}>
-              <Form.Item label="Имя" name="first_name">
-                <Input readOnly={denyBadgeEdit} />
-              </Form.Item>
-            </div>
-            <div className={styles.nameInput}>
-              <Form.Item label="Фамилия" name="last_name">
-                <Input readOnly={denyBadgeEdit} />
-              </Form.Item>
-            </div>
+          <div className={styles.threeColumnsWrap}>
+            <Form.Item label="Позывной" name="nick_name">
+              <Input readOnly={denyBadgeEdit} />
+            </Form.Item>
+            <Form.Item label="Имя" name="first_name">
+              <Input readOnly={denyBadgeEdit} />
+            </Form.Item>
+            <Form.Item label="Фамилия" name="last_name">
+              <Input readOnly={denyBadgeEdit} />
+            </Form.Item>
           </div>
         </div>
       </div>
-
-
-
-      <div className={styles.badgeInfoWrap}>
+      <div className={styles.threeColumnsWrap}>
         <Form.Item
           label="Служба / Локация"
           name="directions"
@@ -174,8 +161,9 @@ export const PersonalInfoSection = ({
         <Form.Item label="Цвет бейджа" name="color_type">
           <Select disabled={true} options={colorTypeOptions} />
         </Form.Item>
-      </div>
+      </div >
 
+{/* 
 
 
 
@@ -234,7 +222,7 @@ export const PersonalInfoSection = ({
           </Form.Item>
         </div>
         <div className={styles.personalInfoWrap}>
-          <div className={styles.nickNameLastnameWrap}>
+          <div className={styles.nickNameFirstNameLastNameWrap}>
             <div className={`${styles.nameInput} ${styles.padInp}`}>
               <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>
                 <Input readOnly={denyBadgeEdit} />
@@ -256,7 +244,7 @@ export const PersonalInfoSection = ({
               </Form.Item>
             </div>
           </div>
-          <div className={styles.nickNameLastnameWrap}>
+          <div className={styles.nickNameFirstNameLastNameWrap}>
             <div className={styles.phoneInput}>
               <Form.Item label="Телефон" name="phone">
                 <Input type="phone" />
@@ -331,7 +319,7 @@ export const PersonalInfoSection = ({
             <Select disabled={!allowRoleEdit && !!person} mode="multiple" {...directionsSelectProps} />
           </Form.Item>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };
