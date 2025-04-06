@@ -84,6 +84,12 @@ export const PersonalInfoSection = ({
                         <Checkbox>Веган</Checkbox>
                     </Form.Item>
                 </div>
+
+                <div className={styles.isActiveCheckbox}>
+                    <Form.Item name="is_ticket_received" valuePropName="checked">
+                        <Checkbox disabled>Выдан билет</Checkbox>
+                    </Form.Item>
+                </div>
             </div>
         </>
     );
