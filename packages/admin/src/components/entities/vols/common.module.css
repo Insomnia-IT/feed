@@ -140,9 +140,24 @@
     flex-wrap: nowrap;
 }
 
-.nickNameLastnameWrap {
-    display: flex;
-    align-items: center;
+
+.twoColumnsWrap {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+}
+
+.twoEqualColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.twoColumnsStartWrap {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: auto auto;
+    gap: 16px;
 }
 
 .nameInput:not(:last-child) {
@@ -226,11 +241,10 @@
     flex-grow: 1;
 }
 
-.badgeInfoWrap {
-    display: flex;
-    flex-grow: 1;
-    flex-wrap: nowrap;
-    align-items: center;
+.threeColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
 }
 
 .badgeInfo:not(:last-child) {
@@ -246,7 +260,7 @@
     gap: 12px;
 }
 
-.badgeInfoPart>* {
+.badgeInfoPart > * {
     flex: 1;
 }
 
@@ -436,6 +450,24 @@
     background-color: #d9f7be;
 }
 
+.badgeColorCircle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.inputWithEllips {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; 
+}
+
 /* ADAPTIVES */
 @media (max-width: 1366px) {
     .edit__nav {
@@ -444,9 +476,6 @@
 }
 
 @media (max-width: 768px) {
-    .nickNameLastnameWrap {
-        flex-direction: column;
-    }
 
     .nameInput {
         width: 100%;
@@ -455,8 +484,8 @@
     .photoWrap {
         position: absolute;
         margin-right: 0;
-        top: 70px;
-        right: 10px;
+        top: 83px;
+        right: 16px;
         z-index: 1000;
     }
 
@@ -503,6 +532,23 @@
     .dateLabelEmpty {
         display: none;
     }
+
+    .threeColumnsWrap {
+        grid-template-columns: 100%;
+        margin: 14px 0;
+    }
+    .threeColumnsWrap > * {
+        margin-bottom: 0px;
+    }
+
+    .twoColumnsWrap {
+      display: grid;
+      grid-template-columns: calc(100% - 136px);
+  }
+
+  .twoColumnsWrap > * {
+      margin-bottom: 0px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -544,4 +590,9 @@
         display: block;
         margin-bottom: 5px;
     }
+
+    .twoColumnsWrap {
+      display: grid;
+      grid-template-columns: calc(100% - 128px);
+  }
 }

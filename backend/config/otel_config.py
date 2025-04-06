@@ -10,7 +10,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 import logging
 import os
 
-OTEL_ENDPOINT = os.environ.get("OTEL_ENDPOINT", "http://localhost:4318/v1/traces")
+OTEL_ENDPOINT = os.environ.get("OTEL_ENDPOINT") # http://localhost:4318/v1/traces
 
 
 def request_hook(span, request):
@@ -22,6 +22,8 @@ def response_hook(span, request, response):
     pass
 
 def configure_opentelemetry():
+    if not OTEL_ENDPOINT:
+        return
     resource = Resource(attributes={"service.name": "feed-app"})
     trace.set_tracer_provider(TracerProvider(resource=resource))
     otlp_exporter = OTLPSpanExporter(
