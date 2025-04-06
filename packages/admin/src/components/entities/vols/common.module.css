@@ -145,14 +145,12 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 12px;
-    align-items: start;
 }
 
 .twoEqualColumnsWrap {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    align-items: start;
 }
 
 .twoColumnsStartWrap {
@@ -160,7 +158,6 @@
     grid-auto-flow: column;
     grid-template-columns: auto auto;
     gap: 16px;
-    justify-content: start;
 }
 
 .nameInput:not(:last-child) {
@@ -248,7 +245,6 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
-    align-items: start;
 }
 
 .badgeInfo:not(:last-child) {
