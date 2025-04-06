@@ -1,90 +1,70 @@
-import { Form, Input, Select, Checkbox } from 'antd';
+import { Form, Input, Select, Checkbox, Divider } from 'antd';
 
 import { Rules } from 'components/form';
-import HorseIcon from 'assets/icons/horse-icon';
 
 import styles from '../../common.module.css';
 
 export const PersonalInfoSection = ({
-    isBlocked,
-    denyBadgeEdit,
-    denyFeedTypeEdit,
-    feedTypeOptions,
-    kitchenOptions,
-    genderOptions
+  denyBadgeEdit,
+  denyFeedTypeEdit,
+  feedTypeOptions,
+  kitchenOptions,
+  genderOptions,
+  handleQRChange
 }: {
-    isBlocked: boolean;
-    denyBadgeEdit: boolean;
-    denyFeedTypeEdit: boolean;
-    feedTypeOptions: { label: string; value: string | number }[];
-    kitchenOptions: { label: string; value: string | number }[];
-    genderOptions: { label: string; value: string | number }[];
+  denyBadgeEdit: boolean;
+  denyFeedTypeEdit: boolean;
+  feedTypeOptions: { label: string; value: string | number }[];
+
+  kitchenOptions: { label: string; value: string | number }[];
+  genderOptions: { label: string; value: string | number }[];
+  handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-    return (
-        <>
-            <div className={styles.formSection__title}>
-                Персональная информация
-                {isBlocked && (
-                    <div className={styles.bannedWrap}>
-                        <span className={styles.bannedDescr}>Забанен</span>
-                    </div>
-                )}
-            </div>
-            <div className={styles.personalWrap}>
-                <div className={styles.photoWrap}>
-                    <HorseIcon />
-                </div>
-                <div className={styles.personalInfoWrap}>
-                    <div className={styles.nickNameLastnameWrap}>
-                        <div className={`${styles.nameInput} ${styles.padInp}`}>
-                            <Form.Item label="Имя на бейдже" name="name" rules={Rules.required}>
-                                <Input readOnly={denyBadgeEdit} />
-                            </Form.Item>
-                        </div>
-                        <div className={`${styles.nameInput} ${styles.padInp}`}>
-                            <Form.Item label="Имя" name="first_name">
-                                <Input readOnly={denyBadgeEdit} />
-                            </Form.Item>
-                        </div>
-                        <div className={styles.nameInput}>
-                            <Form.Item label="Фамилия" name="last_name">
-                                <Input readOnly={denyBadgeEdit} />
-                            </Form.Item>
-                        </div>
-                    </div>
-                    <div className={styles.nickNameLastnameWrap}>
-                        <div className={styles.phoneInput}>
-                            <Form.Item label="Телефон" name="phone">
-                                <Input type="phone" />
-                            </Form.Item>
-                        </div>
-                        <div className={styles.genderSelect}>
-                            <Form.Item label="Пол волонтера" name="gender">
-                                <Select disabled={denyBadgeEdit} options={genderOptions} />
-                            </Form.Item>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className={styles.kitchenTypeWrap}>
-                <div className={styles.kitchenSelect}>
-                    <Form.Item label="Кухня" name="kitchen" rules={Rules.required}>
-                        <Select options={kitchenOptions} />
-                    </Form.Item>
-                </div>
-                <div className={styles.typeMeal}>
-                    <Form.Item label="Тип питания" name="feed_type" rules={Rules.required}>
-                        <Select disabled={denyFeedTypeEdit} options={feedTypeOptions} />
-                    </Form.Item>
-                </div>
-            </div>
-            <div className={styles.isActiveCheckboxWrap}>
-                <div className={styles.isActiveCheckbox}>
-                    <Form.Item name="is_vegan" valuePropName="checked">
-                        <Checkbox>Веган</Checkbox>
-                    </Form.Item>
-                </div>
-            </div>
-        </>
-    );
+
+  return (
+    <>
+      <p className={styles.formSection__title}>Личная информация</p>
+
+      <div className={styles.twoEqualColumnsWrap}>
+        <Form.Item label="Кухня" name="kitchen" rules={Rules.required}>
+          <Select options={kitchenOptions} />
+        </Form.Item>
+        <Form.Item label="Тип питания" name="feed_type" rules={Rules.required}>
+          <Select disabled={denyFeedTypeEdit} options={feedTypeOptions} />
+        </Form.Item>
+      </div>
+
+      <div className={styles.threeColumnsWrap}>
+        <Form.Item label="Телефон" name="phone">
+          <Input type="phone" />
+        </Form.Item>
+        <Form.Item label="Telegram" name={['person', 'telegram']}>
+          <Input readOnly={denyBadgeEdit} disabled={true} />
+        </Form.Item>
+        <Form.Item label="Пол волонтера" name="gender">
+          <Select disabled={denyBadgeEdit} options={genderOptions} />
+        </Form.Item>
+      </div>
+      <div className={styles.twoColumnsStartWrap}>
+        <Form.Item name="is_vegan" valuePropName="checked">
+          <Checkbox>Веган</Checkbox>
+        </Form.Item>
+        <Form.Item name="is_child" valuePropName="checked">
+          <Checkbox>Это ребенок</Checkbox>
+        </Form.Item>
+      </div>
+
+      <Divider style={{ marginTop: '0px' }} />
+
+      <div className={styles.badgeInfo}>
+        <Form.Item label="QR бейджа" name="qr" rules={Rules.required}>
+          <Input disabled={denyBadgeEdit} onChange={handleQRChange} />
+        </Form.Item>
+        <Form.Item name="is_badged_leader" valuePropName="checked">
+          <Checkbox>Бейдж у Руководителя</Checkbox>
+        </Form.Item>
+      </div>
+
+    </>
+  );
 };
