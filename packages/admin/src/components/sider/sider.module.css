@@ -1,3 +1,13 @@
+.antLayoutSider {
+    position: relative;
+}
+
+.antLayoutSiderMobile {
+    position: fixed;
+    height: 100vh;
+    z-index: 999;
+}
+
 .mobileSider {
     position: fixed;
     width: 100%;
