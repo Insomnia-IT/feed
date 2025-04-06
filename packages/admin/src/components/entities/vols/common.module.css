@@ -171,11 +171,11 @@
 }
 
 .twoColumnsStartWrap {
-  display: grid;
-  grid-auto-flow: column; /* Элементы располагаются в строку (по умолчанию row) */
-  grid-template-columns: auto auto; /* Ширина колонок определяется содержимым */
-  gap: 16px; /* Отступ между элементами */
-  justify-content: start; /* Выравнивание по началу контейнера */
+    display: grid;
+    grid-auto-flow: column; /* Элементы располагаются в строку (по умолчанию row) */
+    grid-template-columns: auto auto; /* Ширина колонок определяется содержимым */
+    gap: 16px; /* Отступ между элементами */
+    justify-content: start; /* Выравнивание по началу контейнера */
 }
 
 .nameInput:not(:last-child) {
@@ -499,8 +499,8 @@
     .photoWrap {
         position: absolute;
         margin-right: 0;
-        top: 70px;
-        right: 10px;
+        top: 83px;
+        right: 16px;
         z-index: 1000;
     }
 
@@ -547,6 +547,24 @@
     .dateLabelEmpty {
         display: none;
     }
+
+    .threeColumnsWrap {
+        grid-template-columns: 100%;
+        margin: 14px 0;
+    }
+    .threeColumnsWrap > * {
+        margin-bottom: 0px;
+    }
+
+    .twoColumnsWrap {
+      display: grid;
+      grid-template-columns: calc(100% - 124px);
+      /* gap: 0px; */
+  }
+
+  .twoColumnsWrap > * {
+      margin-bottom: 0px;
+  }
 }
 
 @media (max-width: 576px) {
