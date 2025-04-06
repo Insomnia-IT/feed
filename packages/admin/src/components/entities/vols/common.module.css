@@ -140,21 +140,6 @@
     flex-wrap: nowrap;
 }
 
-.nickNameFirstNameLastNameWrap {
-    /* display: flex;
-    align-items: center; */
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    align-items: start;
-}
-
-/* .nameGroupBadgeWrap {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 12px;
-    align-items: start;
-} */
 
 .twoColumnsWrap {
     display: grid;
@@ -172,10 +157,10 @@
 
 .twoColumnsStartWrap {
     display: grid;
-    grid-auto-flow: column; /* Элементы располагаются в строку (по умолчанию row) */
-    grid-template-columns: auto auto; /* Ширина колонок определяется содержимым */
-    gap: 16px; /* Отступ между элементами */
-    justify-content: start; /* Выравнивание по началу контейнера */
+    grid-auto-flow: column;
+    grid-template-columns: auto auto;
+    gap: 16px;
+    justify-content: start;
 }
 
 .nameInput:not(:last-child) {
@@ -257,17 +242,6 @@
 
 .badgeQR {
     flex-grow: 1;
-}
-
-.badgeInfoWrap {
-    /* display: flex;
-    flex-grow: 1;
-    flex-wrap: nowrap;
-    align-items: center; */
-    /* display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    align-items: start; */
 }
 
 .threeColumnsWrap {
@@ -480,6 +454,24 @@
     background-color: #d9f7be;
 }
 
+.badgeColorCircle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.inputWithEllips {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; 
+}
+
 /* ADAPTIVES */
 @media (max-width: 1366px) {
     .edit__nav {
@@ -488,9 +480,6 @@
 }
 
 @media (max-width: 768px) {
-    .nickNameFirstNameLastNameWrap {
-        flex-direction: column;
-    }
 
     .nameInput {
         width: 100%;
@@ -558,8 +547,7 @@
 
     .twoColumnsWrap {
       display: grid;
-      grid-template-columns: calc(100% - 124px);
-      /* gap: 0px; */
+      grid-template-columns: calc(100% - 136px);
   }
 
   .twoColumnsWrap > * {
@@ -606,4 +594,9 @@
         display: block;
         margin-bottom: 5px;
     }
+
+    .twoColumnsWrap {
+      display: grid;
+      grid-template-columns: calc(100% - 128px);
+  }
 }

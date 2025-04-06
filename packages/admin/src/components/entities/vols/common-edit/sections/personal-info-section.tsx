@@ -15,9 +15,7 @@ export const PersonalInfoSection = ({
   denyBadgeEdit: boolean;
   denyFeedTypeEdit: boolean;
   feedTypeOptions: { label: string; value: string | number }[];
-  canEditGroupBadge: boolean;
-  colorTypeOptions: { label: string; value: string | number }[];
-  groupBadgeOptions: { label: string; value: string | number }[];
+
   kitchenOptions: { label: string; value: string | number }[];
   genderOptions: { label: string; value: string | number }[];
   handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -41,7 +39,7 @@ export const PersonalInfoSection = ({
           <Input type="phone" />
         </Form.Item>
         <Form.Item label="Telegram" name={['person', 'telegram']}>
-          <Input />
+          <Input disabled={true} />
         </Form.Item>
         <Form.Item label="Пол волонтера" name="gender">
           <Select disabled={denyBadgeEdit} options={genderOptions} />

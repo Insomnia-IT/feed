@@ -119,9 +119,6 @@ export const CommonEdit = () => {
         <section id="section3" className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
           <PersonalInfoSection
             denyBadgeEdit={denyBadgeEdit}
-            canEditGroupBadge={canEditGroupBadge}
-            colorTypeOptions={colorTypeOptions}
-            groupBadgeOptions={groupBadgeOptions}
             handleQRChange={handleQRChange}
             feedTypeOptions={feedTypeOptions}
             kitchenOptions={kitchenOptions}

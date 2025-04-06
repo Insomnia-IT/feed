@@ -8,6 +8,7 @@ import type { DirectionEntity, IPerson } from 'interfaces';
 import { useSelect } from '@refinedev/antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
+
 export const VolInfoSection = ({
   isBlocked,
   denyBadgeEdit,
@@ -47,16 +48,46 @@ export const VolInfoSection = ({
     optionValue: 'id'
   });
 
-  const volPhoto = form.getFieldValue('photo'); 
+  const volPhoto = form.getFieldValue('photo');
   // const volPhoto = 'https://sun1-85.userapi.com/s/v1/ig2/ortGZiVTcUqsOrQYxnjLm7MGA6ZRTLMDTs57g0ObQR7Tcg7Sn58SSkLevJyPNMfK5MCpbdJV33SLQd8IgEbPJv_o.jpg?quality=95&crop=428,36,1544,1544&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280,1440x1440&ava=1&cs=400x400';
 
   const deletePhoto = () => {
     setTimeout(() => {
       form.setFieldsValue({ photo: '' });
       setImageError(false);
-      console.log('Фото удалено');
     });
   };
+
+  const badgeColorMap: Record<number, string> = {
+    1: '#f5222d',
+    2: '#52c41a',
+    3: '#1890ff',
+    4: '#722ed1',
+    5: '#fa8c16',
+    6: '#fadb14',
+    7: '#d9d9d9'
+  };
+
+  const getColorCircle = (color: string) => (
+    <span
+      className={styles.badgeColorCircle}
+      style={{ backgroundColor: color }}
+    />
+  );
+
+  const colorTypeOptionsWithBadges = colorTypeOptions.map(({ label, value }) => {
+    const color = badgeColorMap[value as number] || 'default';
+    return {
+      value,
+      label: (
+        <span>
+          {getColorCircle(color)}
+          {label}
+        </span>
+      )
+    };
+  });
+
 
   return (
     <>
@@ -64,7 +95,7 @@ export const VolInfoSection = ({
         Волонтер
         {isBlocked && (
           <div className={styles.bannedWrap}>
-            <span className={styles.bannedDescr}>Забанен</span>
+            <span className={styles.bannedDescr}>Заблокирован</span>
           </div>
         )}
       </div>
@@ -149,8 +180,8 @@ export const VolInfoSection = ({
         <Form.Item label="Номер бейджа" name="badge_number" className={styles.badgeInfoPartItem}>
           <Input disabled={denyBadgeEdit} />
         </Form.Item>
-        <Form.Item label="Цвет бейджа" name="color_type">
-          <Select disabled={true} options={colorTypeOptions} />
+        <Form.Item label="Цвет бейджа" name="color_type" className={styles.inputWithEllips} >
+          <Select disabled={true} options={colorTypeOptionsWithBadges} />
         </Form.Item>
       </div >
     </>
