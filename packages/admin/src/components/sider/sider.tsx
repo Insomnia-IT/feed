@@ -76,7 +76,6 @@ const CustomSider: FC = () => {
         (tree: ITreeMenu[]): React.ReactNode[] => {
             return tree
                 .map((item) => {
-                    console.log('item', item);
                     const { children, icon, label, name, route } = item;
                     const key = route || name;
 
