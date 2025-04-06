@@ -6,7 +6,6 @@ import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
 
 import { Rules } from 'components/form';
 import { formDateFormat } from 'shared/lib';
-// import { getSorter } from 'utils'; // TODO sort
 
 import styles from '../../common.module.css';
 
