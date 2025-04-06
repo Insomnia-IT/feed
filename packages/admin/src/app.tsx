@@ -29,7 +29,7 @@ import i18n from './i18n';
 import { ACL } from 'acl';
 import { MediaProvider } from 'shared/providers';
 import { authProvider } from 'authProvider';
-import { CustomSider } from 'components';
+import CustomSider from 'components/sider/sider';
 import { Dashboard } from 'components/dashboard';
 import { dataProvider } from 'dataProvider';
 import { LoginPage } from 'components/login';
