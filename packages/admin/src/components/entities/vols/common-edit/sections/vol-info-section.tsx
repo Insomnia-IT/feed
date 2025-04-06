@@ -49,7 +49,6 @@ export const VolInfoSection = ({
   });
 
   const volPhoto = form.getFieldValue('photo');
-  // const volPhoto = 'https://sun1-85.userapi.com/s/v1/ig2/ortGZiVTcUqsOrQYxnjLm7MGA6ZRTLMDTs57g0ObQR7Tcg7Sn58SSkLevJyPNMfK5MCpbdJV33SLQd8IgEbPJv_o.jpg?quality=95&crop=428,36,1544,1544&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280,1440x1440&ava=1&cs=400x400';
 
   const deletePhoto = () => {
     setTimeout(() => {

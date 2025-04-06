@@ -109,7 +109,6 @@ export const CommonEdit = () => {
             colorTypeOptions={colorTypeOptions}
             groupBadgeOptions={groupBadgeOptions}
             handleQRChange={handleQRChange}
-            // denyBadgeEdit={denyBadgeEdit}
             person={person}
           />
         </section>

@@ -39,7 +39,7 @@ export const PersonalInfoSection = ({
           <Input type="phone" />
         </Form.Item>
         <Form.Item label="Telegram" name={['person', 'telegram']}>
-          <Input disabled={true} />
+          <Input readOnly={denyBadgeEdit} disabled={true} />
         </Form.Item>
         <Form.Item label="Пол волонтера" name="gender">
           <Select disabled={denyBadgeEdit} options={genderOptions} />
