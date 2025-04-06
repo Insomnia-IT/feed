@@ -112,8 +112,13 @@ class VolunteerListArrivalSerializer(serializers.ModelSerializer):
         model = models.Arrival
         fields = ['arrival_date', 'departure_date', 'status', 'arrival_transport', 'departure_transport']
 
+class SortArrivalsMixin:
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response["arrivals"] = sorted(response["arrivals"], key=lambda x: x["arrival_date"])
+        return response
 
-class VolunteerListSerializer(serializers.ModelSerializer):
+class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     directions = DirectionSerializer(many=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
@@ -123,9 +128,7 @@ class VolunteerListSerializer(serializers.ModelSerializer):
         model = models.Volunteer
         fields = '__all__'
 
-
-
-class RetrieveVolunteerSerializer(serializers.ModelSerializer):
+class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
     arrivals = ArrivalSerializer(many=True)
@@ -143,8 +146,7 @@ class RetrieveVolunteerSerializer(serializers.ModelSerializer):
             except models.Color.DoesNotExist:
                 return None
 
-
-class VolunteerSerializer(serializers.ModelSerializer):
+class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     arrivals = ArrivalSerializer(many=True, required=False)
     directions = serializers.PrimaryKeyRelatedField(
         queryset=models.Direction.objects.all(),
@@ -154,7 +156,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Volunteer
         exclude = ['person']
-    
+
     def update(self, instance, validated_data):
         arrivals_data = validated_data.pop('arrivals', [])
         directions_data = validated_data.pop('directions', None)
