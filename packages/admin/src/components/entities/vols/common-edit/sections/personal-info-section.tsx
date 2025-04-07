@@ -52,6 +52,9 @@ export const PersonalInfoSection = ({
         <Form.Item name="is_child" valuePropName="checked">
           <Checkbox>Это ребенок</Checkbox>
         </Form.Item>
+        <Form.Item name="is_ticket_received" valuePropName="checked">
+          <Checkbox disabled>Выдан билет</Checkbox>
+        </Form.Item>
       </div>
 
       <Divider style={{ marginTop: '0px' }} />
