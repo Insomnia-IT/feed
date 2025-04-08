@@ -39,7 +39,7 @@ class VolunteerGroupViewSet(APIView):
         for volunteer_id in volunteers_ids:
             try:
                 volunteer_instance = Volunteer.objects.get(id=volunteer_id)
-                serializer = VolunteerSerializer(volunteer_instance, data=new_data, partial=True)
+                serializer = VolunteerSerializer(volunteer_instance, data=new_data, partial=True, context = {"request": request})
                 if serializer.is_valid():
                     serializer.save()
                     updated_volunteers.append(serializer)
@@ -48,9 +48,12 @@ class VolunteerGroupViewSet(APIView):
             except Volunteer.DoesNotExist:
                 errors.append({"error": f"Volunteer with id {volunteer_id} does not exist", "volunteer_id": volunteer_id})
             except Exception as e:
-                errors.append({"error": "Failed to renew volunteer data", "errors": e})
+                errors.append({"error": "Failed to renew volunteer data", "errors": f"{type(e)} {str(e)}"})
         if errors:
-            return Response({"updated": updated_volunteers, "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"updated": updated_volunteers,
+                "errors": errors},
+                status=status.HTTP_400_BAD_REQUEST)
 
         # Сохраняем новое состояние полей
         try:
@@ -68,7 +71,8 @@ class VolunteerGroupViewSet(APIView):
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(
-            {"id": volunteer_log_instance.group_operation_id}, status=status.HTTP_200_OK)
+            {"id": volunteer_log_instance.group_operation_id},
+            status=status.HTTP_200_OK)
 
 class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated,]
