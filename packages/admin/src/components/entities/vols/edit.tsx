@@ -9,6 +9,7 @@ import type { VolEntity } from 'interfaces';
 import { CreateEdit } from './common';
 import useSaveConfirm from './use-save-confirm';
 import { FC } from 'react';
+import styles from './common.module.css';
 
 export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
@@ -19,6 +20,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
 
     const name = Form.useWatch('name', form);
+    const isBlocked = Form.useWatch('is_blocked', form);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
 
@@ -46,6 +48,16 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     return (
         <Edit
             breadcrumb={<CustomBreadcrumb />}
+            title={
+                <div className={styles.pageTitle}>
+                    Информация о волонтере
+                    {isBlocked && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Заблокирован</span>
+                        </div>
+                    )}
+                </div>
+            }
             saveButtonProps={{
                 ...saveButtonProps,
                 onClick
