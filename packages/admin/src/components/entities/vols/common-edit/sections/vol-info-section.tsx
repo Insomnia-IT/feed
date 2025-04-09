@@ -10,14 +10,12 @@ import { DeleteOutlined } from '@ant-design/icons';
 
 
 export const VolInfoSection = ({
-  isBlocked,
   denyBadgeEdit,
   canEditGroupBadge,
   colorTypeOptions,
   groupBadgeOptions,
   person
 }: {
-  isBlocked: boolean;
   denyBadgeEdit: boolean;
   denyFeedTypeEdit: boolean;
   feedTypeOptions: { label: string; value: string | number }[];
@@ -79,7 +77,7 @@ export const VolInfoSection = ({
     return {
       value,
       label: (
-        <span>
+        <span className={styles.badgeColorContainer}>
           {getColorCircle(color)}
           {label}
         </span>
@@ -91,12 +89,7 @@ export const VolInfoSection = ({
   return (
     <>
       <div className={styles.formSection__title}>
-        Волонтер
-        {isBlocked && (
-          <div className={styles.bannedWrap}>
-            <span className={styles.bannedDescr}>Заблокирован</span>
-          </div>
-        )}
+        <h4>Волонтер</h4>
       </div>
       <div className={styles.personalWrap}>
         <div className={styles.photoWrap}>
@@ -156,14 +149,14 @@ export const VolInfoSection = ({
             </Form.Item>
           </div>
           <div className={styles.threeColumnsWrap}>
-            <Form.Item label="Позывной" name="nick_name">
-              <Input readOnly={denyBadgeEdit} />
-            </Form.Item>
             <Form.Item label="Имя" name="first_name">
               <Input readOnly={denyBadgeEdit} />
             </Form.Item>
             <Form.Item label="Фамилия" name="last_name">
               <Input readOnly={denyBadgeEdit} />
+            </Form.Item>
+            <Form.Item label="Позывной" name="nick_name">
+              <Input readOnly={denyBadgeEdit} disabled={true} />
             </Form.Item>
           </div>
         </div>
