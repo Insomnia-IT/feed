@@ -99,7 +99,6 @@ export const CommonEdit = () => {
       <div className={styles.formWrap} ref={containerRef}>
         <section id="section1" className={styles.formSection}>
           <VolInfoSection
-            isBlocked={isBlocked}
             denyBadgeEdit={denyBadgeEdit}
             feedTypeOptions={feedTypeOptions}
             kitchenOptions={kitchenOptions}
