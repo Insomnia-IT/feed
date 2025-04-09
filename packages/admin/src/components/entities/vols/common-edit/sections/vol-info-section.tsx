@@ -79,7 +79,7 @@ export const VolInfoSection = ({
     return {
       value,
       label: (
-        <span>
+        <span className={styles.badgeColorContainer}>
           {getColorCircle(color)}
           {label}
         </span>
@@ -156,14 +156,14 @@ export const VolInfoSection = ({
             </Form.Item>
           </div>
           <div className={styles.threeColumnsWrap}>
-            <Form.Item label="Позывной" name="nick_name">
-              <Input readOnly={denyBadgeEdit} />
-            </Form.Item>
             <Form.Item label="Имя" name="first_name">
               <Input readOnly={denyBadgeEdit} />
             </Form.Item>
             <Form.Item label="Фамилия" name="last_name">
               <Input readOnly={denyBadgeEdit} />
+            </Form.Item>
+            <Form.Item label="Позывной" name="nick_name">
+              <Input readOnly={denyBadgeEdit} disabled={true} />
             </Form.Item>
           </div>
         </div>

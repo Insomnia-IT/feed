@@ -154,10 +154,11 @@
 }
 
 .twoColumnsStartWrap {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-columns: auto auto;
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 
 .nameInput:not(:last-child) {
@@ -247,12 +248,17 @@
     gap: 12px;
 }
 
+.threeColumnsWrap > * {
+    align-self: start;
+}
+
+
 .badgeInfo:not(:last-child) {
     margin-right: 12px;
 }
 
 .badgeInfo {
-    width: 50%;
+    width: 100%;
 }
 
 .badgeInfoPart {
@@ -456,7 +462,9 @@
   height: 12px;
   border-radius: 50%;
   margin-right: 8px;
-  flex-shrink: 0;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 
 .inputWithEllips {
@@ -465,7 +473,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%; 
+  max-width: 100%;
+}
+
+.inputWithEllips .ant-select-selection-item {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.inputWithEllips .ant-select-selection-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ADAPTIVES */
