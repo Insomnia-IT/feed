@@ -33,7 +33,7 @@ class DirectionTypeSerializer(serializers.ModelSerializer):
 class DirectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Direction
-        fields = ['id', 'name', 'first_year', 'last_year', 'notion_id', 'type']
+        fields = '__all__'
 
 
 class ViewDirectionSerializer(serializers.ModelSerializer):
@@ -47,7 +47,7 @@ class ViewDirectionSerializer(serializers.ModelSerializer):
 class EngagementRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.EngagementRole
-        fields = ['id', 'name', 'is_team']
+        fields = '__all__'
 
 
 class EngagementSerializer(serializers.ModelSerializer):
@@ -87,22 +87,15 @@ class VolunteerCustomFieldValueNestedSerializer(serializers.ModelSerializer):
         fields = ['custom_field', 'value']
 
 
-class DepartmentNestedSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = models.Department
-        fields = '__all__'
-
-
 class PersonSerializer(serializers.ModelSerializer):
-    engagements = serializers.SerializerMethodField()
+    engagements = EngagementSerializer(many=True)
+    # engagements = serializers.SerializerMethodField()
 
-    def get_engagements(self, obj):
-        return EngagementSerializer(
-            obj.engagements.all().order_by('-year')[:1],
-            many=True
-        ).data
+    # def get_engagements(self, obj):
+    #     return EngagementSerializer(
+    #         obj.engagements.all().order_by('-year')[:1],
+    #         many=True
+    #     ).data
 
     class Meta:
         model = models.Person
