@@ -22,29 +22,24 @@ FROM base as builder
 
 RUN apk add --no-cache curl python3
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
-RUN echo "yarn cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
+RUN echo "npm cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
 
 RUN apk add --no-cache build-base libffi-dev icu-dev sqlite-dev
 
-ENV YARN_CACHE_FOLDER=/root/.yarn
 COPY nginx.conf /app/
 
 ARG NEW_API_URL
-ENV NEW_API_URL_ENV=${NEW_API_URL}
+ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
 ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 
 COPY ./package.json /app/package.json
-COPY ./yarn.lock /app/yarn.lock
+COPY ./package-lock.json /app/package-lock.json
 
 COPY ./packages/admin/package.json /app/packages/admin/package.json
-COPY ./packages/admin/next-i18next.config.mjs /app/packages/admin/next-i18next.config.mjs
-COPY ./packages/admin/next.config.mjs /app/packages/admin/next.config.mjs
-COPY ./packages/core/package.json /app/packages/core/package.json
-COPY ./packages/ui/package.json /app/packages/ui/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 
-RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
-    yarn --frozen-lockfile
+RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    npm ci
 
 COPY ./backend/icu/icu.c /app/backend/icu/
 RUN gcc -fPIC -shared backend/icu/icu.c `pkg-config --libs --cflags icu-uc icu-io` -o backend/icu/libSqliteIcu.so
@@ -52,20 +47,18 @@ RUN ls -1al /app/backend/icu
 
 COPY . /app
 
-RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/pwa-ver.txt
+RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/packages/scanner/src/pwa-ver.txt
 
-RUN --mount=type=cache,sharing=locked,target=/root/.yarn \
-    yarn build
+RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    npm run build
 
-# RUN yarn --prod --frozen-lockfile
+# RUN npm prune --production
 
 # RUN /usr/local/bin/node-clean
-
 
 FROM base as runner
 
 EXPOSE 3000
-EXPOSE 4301
 EXPOSE 80
 
 RUN apk add --no-cache nginx python3 py3-pip tzdata curl
@@ -80,22 +73,12 @@ ENV ADMIN_BASE_PATH_ENV=${ADMIN_BASE_PATH}
 
 COPY --from=builder /app/entry.sh /app
 
-COPY --from=builder /app/node_modules /app/node_modules
-
 COPY --from=builder /app/postcss.config.js /app/
 COPY --from=builder /app/tsconfig.json /app/
 COPY --from=builder /app/tsconfig.paths.json /app/
 COPY --from=builder /app/package.json /app/
 
-COPY --from=builder /app/packages/core/package.json /app/packages/core/
-COPY --from=builder /app/packages/core/webpack/ /app/packages/core/webpack/
-
-COPY --from=builder /app/packages/admin/next-i18next.config.mjs /app/packages/admin/
-COPY --from=builder /app/packages/admin/next.config.mjs /app/packages/admin/
-COPY --from=builder /app/packages/admin/.next/ /app/packages/admin/.next/
-COPY --from=builder /app/packages/admin/public/ /app/packages/admin/public/
-
-COPY --from=builder /app/packages/ui/package.json /app/packages/ui/
+COPY --from=builder /app/packages/admin/dist/ /app/packages/admin/dist/
 
 COPY --from=builder /app/packages/scanner/package.json /app/packages/scanner/
 COPY --from=builder /app/packages/scanner/build/ /app/packages/scanner/build/

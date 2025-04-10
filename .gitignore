@@ -2,7 +2,8 @@
 
 # IDEs
 .devcontainer
-.vscode
+.vscode/*
+!.vscode/settings.json
 
 .idea
 /.idea
@@ -38,7 +39,7 @@ yarn-error.log*
 **/*.db-wal
 **/*.db-shm
 
-/db/*.sqlite3
+/db
 
 .env
 .next

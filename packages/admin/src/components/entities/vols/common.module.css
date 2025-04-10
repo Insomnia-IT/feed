@@ -72,29 +72,34 @@
 
 .formSection__title {
     display: flex;
-    flex-wrap: nowrap;
     align-items: center;
+    gap: 16px;
     margin-bottom: 16px;
-    color: rgb(0 0 0 / 0.85);
-    font-weight: 500;
+}
+
+.formSection__title h4 {
+    margin: 0;
     font-size: 16px;
-    line-height: 150%;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
 }
 
 /* personal */
 
 .bannedWrap {
-    padding-left: 16px;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: #fff1f0;
+    border: 1px solid #ffa39e;
+    border-radius: 2px;
 }
 
 .bannedDescr {
-    padding: 1px 8px;
-    border: 1px solid rgb(255 163 158);
-    border-radius: 2px;
-    background-color: rgb(255 241 240);
-    color: rgb(245 34 45);
     font-size: 12px;
     line-height: 20px;
+    color: #cf1322;
+    font-weight: 400;
 }
 
 .isActiveCheckboxWrap {
@@ -140,9 +145,25 @@
     flex-wrap: nowrap;
 }
 
-.nickNameLastnameWrap {
+
+.twoColumnsWrap {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+}
+
+.twoEqualColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.twoColumnsStartWrap {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 
 .nameInput:not(:last-child) {
@@ -226,19 +247,23 @@
     flex-grow: 1;
 }
 
-.badgeInfoWrap {
-    display: flex;
-    flex-grow: 1;
-    flex-wrap: nowrap;
-    align-items: center;
+.threeColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
 }
+
+.threeColumnsWrap > * {
+    align-self: start;
+}
+
 
 .badgeInfo:not(:last-child) {
     margin-right: 12px;
 }
 
 .badgeInfo {
-    width: 50%;
+    width: 100%;
 }
 
 .badgeInfoPart {
@@ -381,7 +406,7 @@
     padding: 10px 16px;
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #D9D9D9;
+    border-bottom: 1px solid #d9d9d9;
 }
 
 .itemTitleWrap {
@@ -398,13 +423,13 @@
 .itemTitleRoute {
     cursor: pointer;
     text-decoration: underline;
-    transition: color .3s ease-in-out;
+    transition: color 0.3s ease-in-out;
 }
 
 .itemTitleRoute:hover,
 .itemTitleRoute:focus {
-    color: #1890FF;
-    transition: color .3s ease-in-out;
+    color: #1890ff;
+    transition: color 0.3s ease-in-out;
 }
 
 .itemAction {
@@ -429,11 +454,43 @@
 
 .itemDrescrOld {
     text-decoration: line-through;
-    background-color: #FFA39E;
+    background-color: #ffa39e;
 }
 
 .itemDrescrNew {
-    background-color: #D9F7BE;
+    background-color: #d9f7be;
+}
+
+.badgeColorCircle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+.inputWithEllips {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.inputWithEllips .ant-select-selection-item {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.inputWithEllips .ant-select-selection-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ADAPTIVES */
@@ -445,10 +502,6 @@
 
 @media (max-width: 768px) {
 
-    .nickNameLastnameWrap {
-        flex-direction: column;
-    }
-
     .nameInput {
         width: 100%;
     }
@@ -456,8 +509,8 @@
     .photoWrap {
         position: absolute;
         margin-right: 0;
-        top: 70px;
-        right: 10px;
+        top: 83px;
+        right: 16px;
         z-index: 1000;
     }
 
@@ -504,10 +557,26 @@
     .dateLabelEmpty {
         display: none;
     }
+
+    .threeColumnsWrap {
+        grid-template-columns: 100%;
+        margin: 14px 0;
+    }
+    .threeColumnsWrap > * {
+        margin-bottom: 0px;
+    }
+
+    .twoColumnsWrap {
+      display: grid;
+      grid-template-columns: calc(100% - 136px);
+  }
+
+  .twoColumnsWrap > * {
+      margin-bottom: 0px;
+  }
 }
 
 @media (max-width: 576px) {
-
     .hrInputsWrap {
         flex-direction: column;
     }
@@ -546,4 +615,30 @@
         display: block;
         margin-bottom: 5px;
     }
+
+    .twoColumnsWrap {
+      display: grid;
+      grid-template-columns: calc(100% - 128px);
+  }
+}
+
+.pageTitle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageTitle h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }

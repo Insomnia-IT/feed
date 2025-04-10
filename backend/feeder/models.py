@@ -129,6 +129,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     position = models.TextField(null=True, blank=True, verbose_name="")
     qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
     is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован?")
+    is_ticket_received = models.BooleanField(default=False, verbose_name="Выдан ли билет?")
     is_vegan = models.BooleanField(default=False, verbose_name="Вегетарианец?")
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     direction_head_comment = models.TextField(null=True, blank=True, verbose_name="Комментарий руководителя локации")
@@ -141,17 +142,16 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         related_name='volunteers',
         verbose_name="Право доступа",
     )
-    color_type = models.ForeignKey(
-        'Color',
-        null=True, blank=True, on_delete=models.PROTECT,
-        related_name='volunteers',
-        verbose_name="Цвет бэджика",
-    )
     group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, related_name='volunteers', verbose_name="Групповой бейдж")
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
     main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
     notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
+    scanner_comment = models.CharField(max_length=255, null=True, blank=True, verbose_name="Комментарий при сканировании")
+    responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='volunteers',
+        verbose_name="Ответственный")
+    is_child = models.BooleanField('IsChild', null=True, blank=True, default=False)
 
     class Meta:
         verbose_name = "Волонтёр"
@@ -276,6 +276,7 @@ def validate_meal_time(value):
 class FeedTransaction(TimeMixin):
     ulid = models.CharField(max_length=255, primary_key=True)
     volunteer = models.ForeignKey(Volunteer, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Волонтёр")
+    group_badge = models.ForeignKey(GroupBadge, null=True, blank=True, on_delete=models.SET_NULL, related_name='feed_transactions', verbose_name="Групповой бейдж")
     is_vegan = models.BooleanField(null=True, verbose_name="Вегетарианец?")
     kitchen = models.ForeignKey(Kitchen, on_delete=models.PROTECT, verbose_name="Кухня")
     amount = models.IntegerField(default=0, verbose_name="Количество")
@@ -287,3 +288,26 @@ class FeedTransaction(TimeMixin):
     class Meta:
         verbose_name = "Приём пищи"
         verbose_name_plural = "Приёмы пищи"
+
+class VolunteerGroupOperation(TimeMixin, SoftDeleteModelMixin):
+    group_operation_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    volunteers_ids = models.JSONField()
+    original_data = models.JSONField()
+    new_data = models.JSONField()
+
+    def __str__(self):
+        return self.group_operation_id
+
+    class Meta:
+        verbose_name =  "Групповая операция"
+        verbose_name_plural = "Групповые операции"
+
+class Wash(TimeMixin):
+    """ Стирка """
+    id = models.AutoField(primary_key=True)
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="washes")
+    actor = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="added_washes")
+
+    class Meta:
+        verbose_name = "Стирка"
+        verbose_name_plural = "Стирки"

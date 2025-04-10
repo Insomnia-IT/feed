@@ -1,0 +1,16 @@
+.scannerComment {
+    width: 100%;
+    word-break: break-word;
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--c-error);
+    background-color: var(--c-grey);
+}
+
+.text {
+    display: inline-block;
+    text-align: left;
+    margin: auto;
+}

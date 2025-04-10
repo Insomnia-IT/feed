@@ -1,6 +1,7 @@
+import { AccessControlProvider } from '@refinedev/core';
 import { AccessControl } from 'accesscontrol';
 
-import { AppRoles, getUserData } from '~/auth';
+import { AppRoles, getUserData } from 'auth';
 
 export const ac = new AccessControl();
 ac
@@ -27,10 +28,10 @@ ac
     .update(['group-badges', 'volunteer-custom-fields'])
     .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
 
-export const ACL = {
-    can: async ({ action, resource }) => {
+export const ACL: AccessControlProvider = {
+    can: async ({ action, resource }: { action: string; resource?: string }) => {
         let can = false;
-        const user = await getUserData(null, true);
+        const user = await getUserData(true);
         if (user) {
             const { roles } = user;
             roles.forEach((role: string) => {

@@ -6,12 +6,7 @@ import { useSyncTransactions } from '~/request/use-sync-trans';
 import { useGetGroupBadges } from './use-get-group-badges';
 import type { ApiHook } from './lib';
 
-export const useSync = (
-    baseUrl: string,
-    pin: string | null,
-    setAuth: (auth: boolean) => void,
-    kitchenId: number
-): ApiHook => {
+export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);
     const [fetching, setFetching] = useState<any>(false);
@@ -23,12 +18,11 @@ export const useSync = (
     const { fetching: syncTransactionsFetching, send: syncTransactionsSend } = useSyncTransactions(
         baseUrl,
         pin,
-        setAuth,
-        kitchenId
+        setAuth
     );
 
     const send = useCallback(
-        ({ lastSyncStart }) => {
+        ({ kitchenId, lastSyncStart }: { kitchenId: number; lastSyncStart: number | null }) => {
             if (volsFetching || syncTransactionsFetching || groupBadgesFetching) {
                 return;
             }
@@ -37,7 +31,6 @@ export const useSync = (
 
             setFetching(true);
 
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             return new Promise(async (res, rej) => {
                 const success = (): void => {
                     setFetching(false);
@@ -55,15 +48,16 @@ export const useSync = (
                 };
 
                 try {
+                    const updatedAtFrom = new Date(lastSyncStart || 0).toISOString();
                     const volsPromise = volsSend({
-                        updated_at__from: new Date(lastSyncStart).toISOString(),
+                        updated_at__from: updatedAtFrom,
                         limit: '10000'
                     });
                     const groupBadgesPromise = groupBadgesSend({
-                        updated_at__from: new Date(lastSyncStart).toISOString(),
+                        updated_at__from: updatedAtFrom,
                         limit: '1000'
                     });
-                    const syncTransactionsPromise = syncTransactionsSend();
+                    const syncTransactionsPromise = syncTransactionsSend({ kitchenId });
                     const results = await Promise.allSettled([
                         volsPromise,
                         groupBadgesPromise,

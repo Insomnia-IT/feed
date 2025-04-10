@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/router';
-import type { GetListResponse } from '@pankod/refine-core';
-import { useList } from '@pankod/refine-core';
+import { useParams, useNavigate } from 'react-router-dom';
+import { GetListResponse, useList } from '@refinedev/core';
 
-import { NEW_API_URL } from '~/const';
+import { NEW_API_URL } from 'const';
 import type {
     AccessRoleEntity,
     ColorTypeEntity,
@@ -16,8 +15,8 @@ import type {
     StatusEntity,
     TransportEntity,
     VolunteerRoleEntity
-} from '~/interfaces';
-import { dataProvider } from '~/dataProvider';
+} from 'interfaces';
+import { dataProvider } from 'dataProvider';
 
 import styles from './common.module.css';
 
@@ -38,6 +37,8 @@ interface IActor {
     name: string;
 }
 
+type IVolunteer = IActor;
+
 interface IResult {
     action_at: string;
     actor: IActor | null;
@@ -47,6 +48,7 @@ interface IResult {
     object_name: string;
     status: string;
     old_data: IData;
+    volunteer: IVolunteer;
 }
 
 interface IData {
@@ -72,9 +74,14 @@ interface IData {
     arrival_date: string;
     is_blocked: boolean;
     custom_field: string;
+    // проверить поля ниже
+    group_badge: string;
+    directions: string[];
+    value: string;
+    is_ticket_received: boolean;
 }
 
-const localizedFieldNames = {
+const localizedFieldNames: Record<string, string> = {
     comment: 'Комментарий',
     direction_head_comment: 'Комментарий руководителя локации',
     feed_type: 'Тип питания',
@@ -99,8 +106,12 @@ const localizedFieldNames = {
     directions: 'Службы/локации',
     group_badge: 'Групповой бейдж',
     number: 'Номер бейджа',
-    batch: 'Партия бейджа'
+    batch: 'Партия бейджа',
+    is_ticket_received: 'Билет'
 };
+export interface CommonHistoryProps {
+    role: 'volunteer' | 'actor';
+  }
 
 function returnCurrentField(fieldName: string): string {
     return localizedFieldNames[fieldName] ?? fieldName;
@@ -122,13 +133,19 @@ function returnisBlockedFieldValue(value: boolean | undefined) {
     }
 }
 
-export function CommonHistory() {
-    const router = useRouter();
+function returnTicketReceivedValue(value: boolean | undefined) {
+    if (value) {
+        return 'Выдан';
+    } else {
+        return 'Не выдан';
+    }
+}
+
+export function CommonHistory({ role }: CommonHistoryProps) {
+    const { id: volId } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const [uuid, setUuid] = useState('');
     const [data, setData] = useState<Array<IResult>>();
-    const url = document.location.pathname;
-    const matchResult = url.match(/\/(\d+)$/);
-    const volId = matchResult ? matchResult[1] : null;
     const setNewUuid = async () => {
         const response: IUuid = await axios.get(`${NEW_API_URL}/volunteers/${volId}`);
         const result = response.data.uuid;
@@ -213,7 +230,7 @@ export function CommonHistory() {
     const groupBadgeById = useMapFromList(groupBadges);
 
     const historyData = async () => {
-        const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?volunteer_uuid=${uuid}`);
+        const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`);
         const result = response.data.results;
         const reversedResult = result.reverse();
         setData(reversedResult);
@@ -238,8 +255,8 @@ export function CommonHistory() {
     }
 
     const handleRouteClick = (id: number | undefined) => {
-        if (!id) return;
-        location.href = `${location.origin}/volunteers/edit/${id}`;
+        navigate(`/volunteers/edit/${id}`);
+        navigate(0);
     };
 
     function returnCurrentStatusString(status: string): string {
@@ -261,6 +278,8 @@ export function CommonHistory() {
             return returnVeganFieldValue(obj[key]);
         } else if (key === 'is_blocked') {
             return returnisBlockedFieldValue(obj[key]);
+        } else if (key === 'is_ticket_received') {
+            return returnTicketReceivedValue(obj[key]);
         } else if (key === 'comment') {
             const result: string | undefined = obj[key];
             if (!result) return;
@@ -286,7 +305,7 @@ export function CommonHistory() {
         } else if (key === 'group_badge') {
             return groupBadgeById[obj[key]];
         } else if (key === 'directions') {
-            return obj[key].map((id) => directionById[id]).join(', ');
+            return obj[key].map((id: string | number) => directionById[id]).join(', ');
         } else if (key === 'arrival_transport' || key === 'departure_transport') {
             return transportById[obj[key]];
         } else if (key === 'custom_field') {
@@ -300,7 +319,7 @@ export function CommonHistory() {
                 return obj[key];
             }
         } else {
-            return obj[key];
+            return (obj as unknown as Record<string, string>)[key];
         }
     }
 
@@ -330,40 +349,45 @@ export function CommonHistory() {
 
     function getCorrectTitleEvent(typeInfo: string) {
         if (typeInfo === 'arrival') {
-            return <span className={`${styles.itemAction} ${styles.itemActionModif}`}>{`информацию по заезду`}</span>;
+            return <span className={`${styles.itemAction} ${styles.itemActionModif}`}>{'информацию по заезду'}</span>;
         } else if (typeInfo === 'volunteer') {
             return (
-                <span className={`${styles.itemAction} ${styles.itemActionModif}`}>{`информацию по волонтеру`}</span>
+                <span className={`${styles.itemAction} ${styles.itemActionModif}`}>{'информацию по волонтеру'}</span>
             );
         } else if (typeInfo === 'volunteercustomfieldvalue') {
             return (
                 <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
-                    {`информацию по кастомному полю`}
+                    {'информацию по кастомному полю'}
                 </span>
             );
         } else {
             <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
-                {`сообщите о баге, если видите это!`}
+                {'сообщите о баге, если видите это!'}
             </span>;
         }
     }
 
-    const renderHistory = (array: Array<IResult> | undefined) => {
+    const renderHistory = (array: Array<IResult> | undefined,  role: 'volunteer' | 'actor') => {
         if (array === undefined) {
             return 'ИЗМЕНЕНИЙ НЕТ';
         }
         return array.map((item) => {
             const getId = () => {
-                if (!item.actor) return;
-                if (item.actor.id) {
-                    return item.actor.id;
+                if (role === 'volunteer') {
+                    return item.actor?.id;
                 } else {
-                    return;
+                    return item.volunteer?.id;
                 }
             };
-            const getActorName = (item) => {
-                if (item.actor) {
-                    return item.actor.name;
+            const getActorName = (item: IResult) => {
+                if (role === 'volunteer') {
+                    if (item.actor) {
+                        return item.actor.name;
+                    }
+                } else {
+                    if (item.volunteer) {
+                        return item.volunteer.name;
+                    }
                 }
                 if (item.by_sync) {
                     return 'Синхронизация';
@@ -396,5 +420,5 @@ export function CommonHistory() {
             );
         });
     };
-    return <div className={styles.historyWrap}>{renderHistory(data)}</div>;
+    return <div className={styles.historyWrap}>{renderHistory(data, role)}</div>;
 }

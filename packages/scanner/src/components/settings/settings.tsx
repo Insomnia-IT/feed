@@ -48,7 +48,7 @@ export const Settings = () => {
                 <Button
                     className={css.button}
                     onClick={() => {
-                        doSync();
+                        void doSync();
                     }}
                     disabled={syncFetching}
                 >

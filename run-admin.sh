@@ -1,3 +1,3 @@
 cd ./packages/admin
-yarn run dev
+npm run dev
 cd ../..

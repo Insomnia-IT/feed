@@ -1,14 +1,14 @@
+import dayjs from 'dayjs';
 import type {
     EaterType,
     EaterTypeExtended,
+    IColumnChartData,
     IData,
     IEaterTypeAmount,
     IStatisticResponce,
     KitchenIdExtended
 } from '../types';
 import { dataEmpty, datumInstance, mealTimeArr } from '../types';
-import type { ILinearChartData } from '../ui/linear-chart';
-import type { IColumnChartAnnotationData, IColumnChartData } from '../ui/column-chart';
 import type { ITableStatData } from '../ui/table-stats';
 
 export function convertResponceToData(res: IStatisticResponce): IData {
@@ -91,41 +91,68 @@ export function handleDataForColumnChart(
     data: IData,
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
-): { dataForColumnChart: Array<IColumnChartData>; dataForAnnotation: Array<IColumnChartAnnotationData> } {
-    const dataForColumnChart: Array<IColumnChartData> = [];
-    const dataForAnnotation: Array<IColumnChartAnnotationData> = [];
+): Array<IColumnChartData> {
+    const result: IColumnChartData[] = [];
 
-    if (Object.keys(data).length === 0) {
-        return { dataForColumnChart, dataForAnnotation };
+    if (!data || Object.keys(data).length === 0) {
+        return result;
     }
 
-    for (const date in data[kitchenId]) {
-        for (const mealTime of mealTimeArr) {
-            const resPlan = data[kitchenId][date].plan[mealTime];
-            const resFact = data[kitchenId][date].fact[mealTime];
-            const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-            dataForColumnChart.push(
-                { date, type: 'fact', mealTime, value: values.fact },
-                { date, type: 'plan', mealTime, value: values.plan }
-            );
-        }
-        const resPlan = data[kitchenId][date].plan.total;
-        const resFact = data[kitchenId][date].fact.total;
-        const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-        dataForAnnotation.push({
+    const dayData = data[kitchenId];
+    if (!dayData) {
+        return result;
+    }
+
+    const dates = Object.keys(dayData).sort((a, b) => dayjs(a).diff(dayjs(b)));
+
+    for (const date of dates) {
+        const row: IColumnChartData = {
             date,
-            ...values
-        });
+            breakfast_plan: 0,
+            breakfast_fact: 0,
+            lunch_plan: 0,
+            lunch_fact: 0,
+            dinner_plan: 0,
+            dinner_fact: 0,
+            night_plan: 0,
+            night_fact: 0,
+            plan_total: 0,
+            fact_total: 0
+        };
+
+        const oneDay = dayData[date];
+        if (!oneDay) {
+            result.push(row);
+            continue;
+        }
+
+        for (const mealTime of mealTimeArr) {
+            const resPlan = oneDay.plan[mealTime];
+            const resFact = oneDay.fact[mealTime];
+            const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+
+            (row as any)[`${mealTime}_plan`] = plan;
+            (row as any)[`${mealTime}_fact`] = fact;
+        }
+
+        row.plan_total = row.breakfast_plan + row.lunch_plan + row.dinner_plan + row.night_plan;
+
+        row.fact_total = row.breakfast_fact + row.lunch_fact + row.dinner_fact + row.night_fact;
+
+        result.push(row);
     }
-    return { dataForColumnChart, dataForAnnotation };
+
+    return result;
 }
+
 /**Преобразование данных от сервера для линейного графика*/
 export function handleDataForLinearChart(
     data: IData,
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
-): Array<ILinearChartData> {
-    const result: Array<ILinearChartData> = [];
+): Array<{ date: string; plan: number; fact: number }> {
+    const result: Array<{ date: string; plan: number; fact: number }> = [];
+
     if (Object.keys(data).length === 0) {
         return result;
     }
@@ -133,8 +160,14 @@ export function handleDataForLinearChart(
     for (const date in data[kitchenId]) {
         const resPlan = data[kitchenId][date].plan.total;
         const resFact = data[kitchenId][date].fact.total;
-        const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
-        result.push({ type: 'fact', date, value: values.fact }, { type: 'plan', date, value: values.plan });
+        const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+
+        result.push({
+            date,
+            plan,
+            fact
+        });
     }
+
     return result;
 }

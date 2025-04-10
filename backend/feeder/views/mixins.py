@@ -33,14 +33,27 @@ class VolunteerExtraFilterMixin(ModelViewSet):
         feeded_date = self.request.query_params.get('feeded_date')
         non_feeded_date = self.request.query_params.get('non_feeded_date')
 
-        if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:
+        if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:  
             arrive_qs = Arrival.objects.all()
+            
             if arrival_date:
-                arrive_qs = arrive_qs.filter(arrival_date=arrival_date)
+                if ':' in arrival_date:
+                    start_date, end_date = arrival_date.split(':')
+                    arrive_qs = arrive_qs.filter(arrival_date__gte=start_date, arrival_date__lte=end_date)
+                else:
+                    arrive_qs = arrive_qs.filter(arrival_date=arrival_date)
             if departure_date:
-                arrive_qs = arrive_qs.filter(departure_date=departure_date)
+                if ':' in departure_date:
+                    start_date, end_date = departure_date.split(':')
+                    arrive_qs = arrive_qs.filter(departure_date__gte=start_date, departure_date__lte=end_date)
+                else:
+                    arrive_qs = arrive_qs.filter(departure_date=departure_date)
             if staying_date:
-                arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
+                if ':' in staying_date:
+                    start_date, end_date = staying_date.split(':')
+                    arrive_qs = arrive_qs.filter(arrival_date__lte=end_date, departure_date__gte=start_date)
+                else:
+                    arrive_qs = arrive_qs.filter(arrival_date__lte=staying_date, departure_date__gte=staying_date)
             if staying_date and len(arrival_status) == 0:
                 arrive_qs = arrive_qs.filter(status__id__in=['ARRIVED', 'STARTED', 'JOINED'])
             if len(arrival_status):
@@ -52,8 +65,14 @@ class VolunteerExtraFilterMixin(ModelViewSet):
             qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
 
         if feeded_date or non_feeded_date:
-            feed_datetime = arrow.get(feeded_date or non_feeded_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
-            feed_transactions_qs = FeedTransaction.objects.filter(dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime), volunteer_id__isnull=False)
+            if ':' in (feeded_date or non_feeded_date):
+                start_date_feed, end_date_feed = (feeded_date or non_feeded_date).split(':')
+                start_datetime_feed = arrow.get(start_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
+                end_datetime_feed = arrow.get(end_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR).shift(days=+1)
+                feed_transactions_qs = FeedTransaction.objects.filter(dtime__gte=start_datetime_feed.datetime, dtime__lt=end_datetime_feed.datetime, volunteer_id__isnull=False)
+            else:
+                feed_datetime = arrow.get(feeded_date or non_feeded_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
+                feed_transactions_qs = FeedTransaction.objects.filter(dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime), volunteer_id__isnull=False)
             if feeded_date:
                 qs = qs.filter(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
             if non_feeded_date:

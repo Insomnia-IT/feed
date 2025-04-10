@@ -29,16 +29,20 @@ class VolunteerFilter(django_filters.FilterSet):
     badge_number = django_filters.CharFilter(field_name="badge_number", lookup_expr='icontains')
     comment = django_filters.CharFilter(field_name="comment", lookup_expr='icontains')
     is_blocked = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
+    is_ticket_received = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
     is_vegan = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
     direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
     direction_name = django_filters.CharFilter(field_name="directions__name", lookup_expr='icontains')
     directions = django_filters.ModelMultipleChoiceFilter(queryset=models.Direction.objects.all())
+    scanner_comment = django_filters.CharFilter(field_name="scanner_comment", lookup_expr='icontains')
+    responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
+    is_child = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
 
     class Meta:
         model = models.Volunteer
-        fields = ['color_type', 'feed_type', 'kitchen', 'group_badge', 'main_role', 'access_role', 'uuid']
+        fields = ['feed_type', 'kitchen', 'group_badge', 'main_role', 'access_role', 'uuid']
 
 
 class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
@@ -62,6 +66,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
     search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid',
                      'person__name', 'person__last_name', 'person__first_name', 'person__nickname', 'person__other_names']
     filterset_class = VolunteerFilter
+
 
 
 class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
