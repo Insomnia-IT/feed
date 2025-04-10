@@ -177,9 +177,6 @@ components:
           format: uuid
         comment:
           type: string
-        notion_id:
-          type: string
-          format: uuid
     Arrival:
       type: object
       required:
@@ -262,6 +259,7 @@ components:
             - PARTICIPANT
             - FELLOW
             - CONTRACTOR
+            - MASTER
         position:
           type: string
         status:
@@ -278,9 +276,6 @@ components:
             - COMPLETE
             - JOINED
         direction:
-          type: string
-          format: uuid
-        notion_id:
           type: string
           format: uuid
     Person:
@@ -325,9 +320,6 @@ components:
           type: string
         vegan:
           type: boolean
-        notion_id:
-          type: string
-          format: uuid
     Direction:
       type: object
       required:
@@ -350,8 +342,12 @@ components:
         type:
           type: string
           enum:
-            - TODO
-        notion_id:
-          type: string
-          format: uuid
+            - CITY_SERVICE
+            - FIELD_SERVICE
+            - UNIVERSAL_SERVICE
+            - FEDERAL_LOCATION
+            - GRANT_LOCATION
+            - COMMERCIAL_LOCATION
+            - LATERAL_LOCATION
+            - RESPONSIBILITY_AREA
     
