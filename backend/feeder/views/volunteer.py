@@ -63,7 +63,8 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
         'retrieve': serializers.RetrieveVolunteerSerializer
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid']
+    search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid',
+                     'person__name', 'person__last_name', 'person__first_name', 'person__nickname', 'person__other_names', 'person__telegram']
     filterset_class = VolunteerFilter
 
 

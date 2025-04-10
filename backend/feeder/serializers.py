@@ -35,6 +35,7 @@ class DirectionSerializer(serializers.ModelSerializer):
         model = models.Direction
         fields = '__all__'
 
+
 class ViewDirectionSerializer(serializers.ModelSerializer):
     type = DirectionTypeSerializer()
 
@@ -47,6 +48,7 @@ class EngagementRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.EngagementRole
         fields = '__all__'
+
 
 class EngagementSerializer(serializers.ModelSerializer):
     role = EngagementRoleSerializer()
@@ -84,28 +86,40 @@ class VolunteerCustomFieldValueNestedSerializer(serializers.ModelSerializer):
         model = models.VolunteerCustomFieldValue
         fields = ['custom_field', 'value']
 
+
 class PersonSerializer(serializers.ModelSerializer):
     engagements = EngagementSerializer(many=True)
+    # engagements = serializers.SerializerMethodField()
+
+    # def get_engagements(self, obj):
+    #     return EngagementSerializer(
+    #         obj.engagements.all().order_by('-year')[:1],
+    #         many=True
+    #     ).data
 
     class Meta:
         model = models.Person
         fields = '__all__'
+
 
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transport
         fields = '__all__'
 
+
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Status
         fields = '__all__'
+
 
 class ArrivalSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
     class Meta:
         model = models.Arrival
         exclude = ["volunteer"]
+
 
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -298,6 +312,7 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
         model = models.GroupBadge
         fields = '__all__'
 
+
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     direction = DirectionSerializer(required=False)
@@ -317,6 +332,7 @@ class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Color
         fields = '__all__'
+
 
 class AccessRoleSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
