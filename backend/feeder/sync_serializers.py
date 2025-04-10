@@ -92,7 +92,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         fields = (
             "id", "deleted", "name", "first_name", "last_name", "gender", "phone",
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
-            "person", "comment", "notion_id", "directions", "email", "qr", "is_blocked", "comment",
+            "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type"
         )
@@ -170,7 +170,7 @@ class DirectionHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     class Meta:
         model = Direction
         fields = (
-            "id", "name", "first_year", "last_year", "type", "notion_id"
+            "id", "name", "first_year", "last_year", "type"
         )
 
 
@@ -182,7 +182,7 @@ class EngagementHistoryDataSerializer(SaveSyncSerializerMixin, serializers.Model
     class Meta:
         model = Engagement
         fields = (
-            "id", "year", "person", "role", "position", "status", "direction", "notion_id"
+            "id", "year", "person", "role", "position", "status", "direction"
         )
 
 
@@ -193,7 +193,7 @@ class PersonHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSeri
         model = Person
         fields = (
             "id", "name", "first_name", "last_name", "nickname", "other_names", "gender", "birth_date",
-            "phone", "telegram", "email", "city", "vegan", "notion_id"
+            "phone", "telegram", "email", "city", "vegan"
         )
 
     def to_internal_value(self, data):

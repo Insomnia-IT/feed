@@ -14,7 +14,7 @@ class VolunteerAdmin(admin.ModelAdmin):
     readonly_fields = (
         "uuid", "deleted_at", "name", "first_name", "last_name", "gender", "phone", "is_vegan",
         "feed_type", "badge_number", "printing_batch", "position", "photo",
-        "person", "comment", "notion_id", "directions"
+        "person", "comment", "directions"
     )
     fieldsets = (
         (None, {"fields": ("uuid", "name", "first_name", "last_name", "person", "gender", "photo")}),
@@ -22,7 +22,7 @@ class VolunteerAdmin(admin.ModelAdmin):
         ("Contacts", {"fields": ("email", "phone",)}),
         (" ", {"fields": ("parent", "comment")}),
         (" ", {"fields": ("directions", "access_role", "main_role", "position", )}),
-        (" ", {"fields": ("qr", "badge_number", "printing_batch", "group_badge", "notion_id")}),
+        (" ", {"fields": ("qr", "badge_number", "printing_batch", "group_badge")}),
         ("Kitchen", {"fields": ("kitchen", "feed_type", "is_vegan", )}),
     )
 
