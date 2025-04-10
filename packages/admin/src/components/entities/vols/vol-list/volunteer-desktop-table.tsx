@@ -9,8 +9,8 @@ import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from '../list.module.css';
-import { MassEdit } from './mass-edit/mass-edit.tsx';
-import { useMassEdit } from './mass-edit/use-mass-edit.tsx';
+
+import { TableRowSelection } from 'antd/es/table/interface';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
     const value =
@@ -40,24 +40,9 @@ export const VolunteerDesktopTable: FC<{
     pagination: TablePaginationConfig;
     statusById: Record<string, string>;
     customFields?: Array<CustomFieldEntity>;
-    filterQueryParams: string;
-}> = ({
-    customFields,
-    openVolunteer,
-    pagination,
-    statusById,
-    volunteersData,
-    volunteersIsLoading,
-    filterQueryParams
-}) => {
+    rowSelection?: TableRowSelection<VolEntity> | undefined;
+}> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading, rowSelection }) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
-
-    // TODO: вынести в контекст
-    const { selectedVols, unselectAllSelected, rowSelection } = useMassEdit({
-        volunteersData,
-        totalVolunteersCount: pagination?.total ?? 0,
-        filterQueryParams
-    });
 
     const getCellAction: (id: number) => { onClick: (event: any) => void } = (
         id: number
@@ -203,7 +188,6 @@ export const VolunteerDesktopTable: FC<{
                 columns={visibleColumns}
                 rowSelection={rowSelection}
             />
-            <MassEdit selectedVolunteers={selectedVols} unselectAll={unselectAllSelected} />
         </>
     );
 };

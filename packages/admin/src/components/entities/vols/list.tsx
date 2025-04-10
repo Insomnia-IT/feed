@@ -17,6 +17,8 @@ import useCanAccess from './use-can-access';
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
+import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
+import { MassEdit } from './vol-list/mass-edit/mass-edit';
 
 export const VolList: FC = () => {
     const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
@@ -52,13 +54,23 @@ export const VolList: FC = () => {
         customFields
     });
 
-    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
+    const {
+        data: volunteers,
+        isLoading: volunteersIsLoading,
+        refetch: reloadVolunteers
+    } = useList<VolEntity>({
         resource: `volunteers/${filterQueryParams}`,
 
         pagination: {
             current: isMobile ? 1 : page,
             pageSize: isMobile ? 10000 : pageSize
         }
+    });
+
+    const { selectedVols, unselectAllSelected, rowSelection } = useMassEdit({
+        volunteersData: volunteers?.data ?? [],
+        totalVolunteersCount: volunteers?.total ?? 0,
+        filterQueryParams
     });
 
     const pagination: TablePaginationConfig = {
@@ -161,15 +173,24 @@ export const VolList: FC = () => {
                     />
                 )}
                 {isDesktop && (
-                    <VolunteerDesktopTable
-                        openVolunteer={openVolunteer}
-                        pagination={pagination}
-                        statusById={statusById}
-                        volunteersIsLoading={volunteersIsLoading}
-                        volunteersData={volunteersData}
-                        customFields={customFields}
-                        filterQueryParams={filterQueryParams}
-                    />
+                    <>
+                        <VolunteerDesktopTable
+                            openVolunteer={openVolunteer}
+                            pagination={pagination}
+                            statusById={statusById}
+                            volunteersIsLoading={volunteersIsLoading}
+                            volunteersData={volunteersData}
+                            customFields={customFields}
+                            rowSelection={rowSelection}
+                        />
+                        <MassEdit
+                            selectedVolunteers={selectedVols}
+                            unselectAll={unselectAllSelected}
+                            reloadVolunteers={async () => {
+                                await reloadVolunteers();
+                            }}
+                        />
+                    </>
                 )}
             </ActiveColumnsContextProvider>
         </List>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
-import { useList } from '@refinedev/core';
+import { useList, useNotification } from '@refinedev/core';
 import { HAS_BADGE_FIELD_NAME } from 'const';
 import { Button, Form } from 'antd';
 import styles from './mass-edit.module.css';
@@ -12,6 +12,7 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = 
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
     const [currentFieldName, setCurrentFieldName] = useState<string | undefined>(undefined);
+    const { open = () => {} } = useNotification();
 
     const [fieldsValues, setFieldsValues] = useState<Record<string, string | undefined>>({});
 
@@ -24,6 +25,11 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = 
     const confirmChange = (): void => {
         setIsModalOpen(false);
         console.log(fieldsValues);
+        open({
+            message: 'это поле ещё нельзя менять(',
+            type: 'error',
+            undoableTimeout: 5000
+        });
     };
     const closeModal = (): void => {
         setIsModalOpen(false);

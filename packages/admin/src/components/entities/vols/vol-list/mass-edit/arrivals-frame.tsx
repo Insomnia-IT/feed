@@ -3,6 +3,7 @@ import type { VolEntity } from 'interfaces';
 import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { SingleField } from './single-field.tsx';
+import { useNotification } from '@refinedev/core';
 
 const { Title } = Typography;
 
@@ -34,6 +35,7 @@ export const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[]; goBack: 
     goBack
 }) => {
     const [currentField, setCurrentField] = useState<ArrivalField | undefined>();
+    const { open = () => {} } = useNotification();
 
     const targetField = currentField ? fieldsDictionary[currentField] : undefined;
 
@@ -53,6 +55,11 @@ export const ArrivalsFrame: React.FC<{ selectedVolunteers: VolEntity[]; goBack: 
 
     const valueSetter = (newValue?: string): void => {
         console.log({ newValue });
+        open({
+            message: 'это поле ещё нельзя менять(',
+            type: 'error',
+            undoableTimeout: 5000
+        });
     };
 
     return (
