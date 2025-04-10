@@ -1,5 +1,5 @@
 import { FC, useEffect, useState, useMemo, useCallback } from 'react';
-import { Layout as AntdLayout, Grid, Menu, type MenuProps } from 'antd';
+import { Layout, Grid, Menu } from 'antd';
 import {
     CanAccess,
     ITreeMenu,
@@ -13,16 +13,14 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { LogoutOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
-import { ItemType } from 'antd/lib/menu/interface';
 
 import { UserData } from 'auth';
 import { authProvider } from 'authProvider';
 import type { AccessRoleEntity } from 'interfaces';
 
-import { antLayoutSider, antLayoutSiderMobile } from './styles';
 import styles from './sider.module.css';
 
-export const CustomSider: FC = () => {
+const CustomSider: FC = () => {
     const [collapsed, setCollapsed] = useState(false);
     const [screenSize, setScreenSize] = useState(window.innerWidth);
     const [userName, setUserName] = useState('');
@@ -60,63 +58,6 @@ export const CustomSider: FC = () => {
         logout();
     }, [logout, queryClient]);
 
-    const generateMenuItems = useCallback((tree: ITreeMenu[], _selectedKey?: string): MenuProps['items'] => {
-        return tree.map((item) => {
-            const { children, icon, label, name, parentName, route } = item;
-            const key = route || name;
-            const isSelected = key === _selectedKey;
-            const isParent = parentName !== undefined && children.length === 0;
-            const isRoute = !isParent;
-
-            if (children.length > 0) {
-                return {
-                    key,
-                    icon: icon ?? <UnorderedListOutlined />,
-                    label,
-                    children: generateMenuItems(children, _selectedKey)
-                };
-            }
-
-            return {
-                key,
-                icon: icon ?? (isRoute && <UnorderedListOutlined />),
-                style: isSelected ? { fontWeight: 'bold' } : {},
-                label: (
-                    <CanAccess resource={name.toLowerCase()} action="list" params={{ resource: item }}>
-                        <Link to={route as string}>{label}</Link>
-                    </CanAccess>
-                )
-            };
-        });
-    }, []);
-
-    const menuItemsAntd = useMemo(() => {
-        const userMenuItem: ItemType = {
-            key: 'user-info',
-            label: accessRoleName ? `${userName} (${accessRoleName})` : userName || '—',
-            disabled: true
-        };
-
-        const itemsFromRefine = generateMenuItems(menuItems, selectedKey);
-
-        const logoutItem: ItemType | undefined = isExistAuthentication
-            ? {
-                  key: 'logout',
-                  icon: <LogoutOutlined />,
-                  label: 'Выход',
-                  onClick: handleLogout
-              }
-            : undefined;
-
-        return [userMenuItem, ...(itemsFromRefine ?? []), ...(logoutItem ? [logoutItem] : [])];
-    }, [accessRoleName, userName, generateMenuItems, menuItems, selectedKey, isExistAuthentication, handleLogout]);
-
-    useEffect(() => {
-        const handleResize = () => setScreenSize(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
     const { push } = useNavigation();
     const location = useLocation();
     const myPath = location.pathname;
@@ -130,6 +71,78 @@ export const CustomSider: FC = () => {
             setCurrentPath('');
         }
     }, [myPath]);
+
+    const renderMenuItems = useCallback(
+        (tree: ITreeMenu[]): React.ReactNode[] => {
+            return tree
+                .map((item) => {
+                    const { children, icon, label, name, route } = item;
+                    const key = route || name;
+
+                    if (children && children.length > 0) {
+                        const subItems = renderMenuItems(children);
+                        if (subItems.length === 0) {
+                            return null;
+                        }
+                        return (
+                            <Menu.SubMenu key={key} icon={icon ?? <UnorderedListOutlined />} title={label}>
+                                {subItems}
+                            </Menu.SubMenu>
+                        );
+                    }
+
+                    return (
+                        <CanAccess
+                            key={key}
+                            resource={name.toLowerCase()}
+                            action="list"
+                            params={{ resource: item }}
+                            fallback={null}
+                        >
+                            <Menu.Item
+                                key={key}
+                                icon={icon ?? <UnorderedListOutlined />}
+                                style={key === selectedKey ? { fontWeight: 'bold' } : {}}
+                            >
+                                <Link to={route as string}>{label}</Link>
+                            </Menu.Item>
+                        </CanAccess>
+                    );
+                })
+                .filter(Boolean) as React.ReactNode[];
+        },
+        [selectedKey]
+    );
+
+    const userMenuItems = useMemo(() => {
+        const items: React.ReactNode[] = [];
+
+        items.push(
+            <Menu.Item key="user-info" disabled>
+                {accessRoleName ? `${userName} (${accessRoleName})` : userName || '—'}
+            </Menu.Item>
+        );
+
+        if (menuItems) {
+            items.push(...renderMenuItems(menuItems));
+        }
+
+        if (isExistAuthentication) {
+            items.push(
+                <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
+                    Выход
+                </Menu.Item>
+            );
+        }
+
+        return items;
+    }, [accessRoleName, userName, menuItems, renderMenuItems, isExistAuthentication, handleLogout]);
+
+    useEffect(() => {
+        const handleResize = () => setScreenSize(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     return (
         <>
@@ -155,28 +168,31 @@ export const CustomSider: FC = () => {
                     </button>
                 </div>
             ) : (
-                <AntdLayout.Sider
+                <Layout.Sider
+                    className={isMobile ? styles.antLayoutSiderMobile : styles.antLayoutSider}
                     collapsible
                     collapsedWidth={isMobile ? 0 : 80}
                     collapsed={collapsed}
                     breakpoint="lg"
                     onCollapse={(c) => setCollapsed(c)}
-                    style={isMobile ? antLayoutSiderMobile : antLayoutSider}
                 >
                     {Title && <Title collapsed={collapsed} />}
                     <Menu
                         theme="dark"
                         mode="inline"
-                        items={menuItemsAntd}
                         selectedKeys={[selectedKey]}
                         onClick={() => {
                             if (!breakpoint.lg) {
                                 setCollapsed(true);
                             }
                         }}
-                    />
-                </AntdLayout.Sider>
+                    >
+                        {userMenuItems}
+                    </Menu>
+                </Layout.Sider>
             )}
         </>
     );
 };
+
+export default CustomSider;

@@ -1,13 +1,11 @@
 import { DatePicker, Form, Select, Button } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
 
 import { Rules } from 'components/form';
-import type { ArrivalEntity } from 'interfaces';
 import { formDateFormat } from 'shared/lib';
-import { getSorter } from 'utils';
 
 import styles from '../../common.module.css';
 
@@ -19,8 +17,6 @@ export const ArrivalsSection = ({
     transportsOptions: { label: string; value: string }[];
 }) => {
     const form = Form.useFormInstance();
-    const arrivals = Form.useWatch<Array<ArrivalEntity>>('arrivals', form);
-    const [updatedArrivals, setUpdatedArrivals] = useState<Array<UpdatedArrival>>([]);
 
     const statusesOptionsNew =
         statusesOptions?.map((item) =>
@@ -28,31 +24,6 @@ export const ArrivalsSection = ({
                 ? { ...item, label: `✅ ${item.label}` }
                 : item
         ) || [];
-
-    useEffect(() => {
-        if (!arrivals) return;
-        setUpdatedArrivals(
-            arrivals
-                .slice()
-                .sort(getSorter('arrival_date'))
-                .map((arr) => ({ ...arr }))
-        );
-    }, [arrivals]);
-
-    useEffect(() => {
-        form.setFieldValue('updated_arrivals', updatedArrivals);
-    }, [updatedArrivals, form]);
-
-    const addArrival = () => {
-        setUpdatedArrivals((prev) => [
-            ...prev,
-            {
-                id: uuidv4(),
-                arrival_transport: 'UNDEFINED',
-                departure_transport: 'UNDEFINED'
-            }
-        ]);
-    };
 
     const activeFromValidationRules = useCallback(
         (index: number) => [
@@ -62,7 +33,7 @@ export const ArrivalsSection = ({
             {
                 validator: async (_: unknown, value: string | number | Date | dayjs.Dayjs | null | undefined) => {
                     const arrivalDates = form
-                        .getFieldValue('updated_arrivals')
+                        .getFieldValue('arrivals')
                         .slice()
                         .map((a: { arrival_date: dayjs.Dayjs }) => dayjs(a.arrival_date).format('YYYY-MM-DD'));
                     arrivalDates.splice(index, 1);
@@ -85,7 +56,7 @@ export const ArrivalsSection = ({
             },
             {
                 validator: async (_: unknown, value: string | number | Date) => {
-                    const arrivalDate = form.getFieldValue(['updated_arrivals', index, 'arrival_date']);
+                    const arrivalDate = form.getFieldValue(['arrivals', index, 'arrival_date']);
                     if (new Date(value) >= new Date(arrivalDate)) {
                         return Promise.resolve();
                     }
@@ -99,49 +70,57 @@ export const ArrivalsSection = ({
     return (
         <>
             <p className={styles.formSection__title}>Даты на поле</p>
-            <Form.Item name="arrivals" hidden />
 
-            {updatedArrivals.map((arrival, index) => (
-                <ArrivalItem
-                    key={arrival.id}
-                    arrival={arrival}
-                    index={index}
-                    updatedArrivals={updatedArrivals}
-                    setUpdatedArrivals={setUpdatedArrivals}
-                    statusesOptions={statusesOptionsNew}
-                    transportsOptions={transportsOptions}
-                    activeFromValidationRules={activeFromValidationRules}
-                    activeToValidationRules={activeToValidationRules}
-                />
-            ))}
-            <Button
-                className={styles.addArrivalButton}
-                type="primary"
-                icon={<PlusSquareOutlined />}
-                onClick={addArrival}
-            >
-                Добавить заезд
-            </Button>
+            <Form.List name="arrivals">
+                {(arrivalFields, { add, remove }) => {
+                    const addArrival = () => {
+                        add({
+                            id: uuidv4(),
+                            arrival_transport: 'UNDEFINED',
+                            departure_transport: 'UNDEFINED'
+                        });
+                    };
+                    return <>
+                        <div>{arrivalFields?.map((arrivalField, index) => (
+                            <ArrivalItem
+                                key={arrivalField.key}
+                                index={index}
+                                remove={remove}
+                                isSingle={arrivalFields.length === 1}
+                                statusesOptions={statusesOptionsNew}
+                                transportsOptions={transportsOptions}
+                                activeFromValidationRules={activeFromValidationRules}
+                                activeToValidationRules={activeToValidationRules}
+                            />
+                        ))}</div>
+                        <Button
+                            key="add"
+                            className={styles.addArrivalButton}
+                            type="primary"
+                            icon={<PlusSquareOutlined />}
+                            onClick={addArrival}
+                        >
+                            Добавить заезд
+                        </Button>
+                    </>;
+                }}
+            </Form.List>
         </>
     );
 };
 
-type UpdatedArrival = Partial<ArrivalEntity> & Pick<ArrivalEntity, 'id'>;
-
 function ArrivalItem({
-    arrival,
     index,
-    updatedArrivals,
-    setUpdatedArrivals,
+    isSingle,
+    remove,
     statusesOptions,
     transportsOptions,
     activeFromValidationRules,
     activeToValidationRules
 }: {
-    arrival: UpdatedArrival;
     index: number;
-    updatedArrivals: UpdatedArrival[];
-    setUpdatedArrivals: React.Dispatch<React.SetStateAction<UpdatedArrival[]>>;
+    isSingle: boolean;
+    remove: (index: number) => void;
     statusesOptions: { label: string; value: string }[];
     transportsOptions: { label: string; value: string }[];
     activeFromValidationRules: (
@@ -149,28 +128,25 @@ function ArrivalItem({
     ) => Array<
         | { required: boolean }
         | {
-              validator: (
-                  rule: unknown,
-                  value: string | number | Date | dayjs.Dayjs | null | undefined
-              ) => Promise<void>;
-          }
+            validator: (
+                rule: unknown,
+                value: string | number | Date | dayjs.Dayjs | null | undefined
+            ) => Promise<void>;
+        }
     >;
     activeToValidationRules: (
         index: number
     ) => Array<{ required: boolean } | { validator: (rule: unknown, value: string | number | Date) => Promise<void> }>;
 }) {
-    const createChange = (fieldName: string) => (value: string | number | Date) => {
-        const newUpdaterdArrivals = updatedArrivals.slice();
-        newUpdaterdArrivals[index] = {
-            ...arrival,
-            [fieldName]: value
-        };
-        setUpdatedArrivals(newUpdaterdArrivals);
+    const form = Form.useFormInstance();
+
+    const createDateChange = (fieldName: string) => (value: string | number | Date) => {
+        const normalizedValue = dayjs.isDayjs(value) ? value.format('YYYY-MM-DD') : value
+        form.setFieldValue(['arrivals', index, fieldName], normalizedValue);
     };
 
     const deleteArrival = () => {
-        const newUpdatedArrivals = updatedArrivals.filter(({ id }) => id !== arrival.id);
-        setUpdatedArrivals(newUpdatedArrivals);
+        remove(index);
     };
 
     const getDateValue = (value: string | number | Date | dayjs.Dayjs | null | undefined) => ({
@@ -190,7 +166,7 @@ function ArrivalItem({
                             icon={<DeleteOutlined />}
                             onClick={deleteArrival}
                             style={{
-                                visibility: updatedArrivals.length === 1 ? 'hidden' : undefined
+                                visibility: isSingle ? 'hidden' : undefined
                             }}
                         >
                             Удалить
@@ -199,13 +175,12 @@ function ArrivalItem({
                     <div className={styles.dateInput}>
                         <Form.Item
                             label="Статус заезда"
-                            name={['updated_arrivals', index, 'status']}
+                            name={[index, 'status']}
                             rules={Rules.required}
                         >
                             <Select
                                 options={statusesOptions}
                                 style={{ width: '100%' }}
-                                onChange={createChange('status')}
                             />
                         </Form.Item>
                     </div>
@@ -226,27 +201,26 @@ function ArrivalItem({
                     <div className={styles.dateInput}>
                         <Form.Item
                             label="Дата заезда"
-                            name={['updated_arrivals', index, 'arrival_date']}
+                            name={[index, 'arrival_date']}
                             getValueProps={getDateValue}
                             rules={activeFromValidationRules(index)}
                         >
                             <DatePicker
                                 format={formDateFormat}
                                 style={{ width: '100%' }}
-                                onChange={createChange('arrival_date')}
+                                onChange={createDateChange('arrival_date')}
                             />
                         </Form.Item>
                     </div>
                     <div className={styles.dateInput}>
                         <Form.Item
                             label="Как добрался?"
-                            name={['updated_arrivals', index, 'arrival_transport']}
+                            name={[index, 'arrival_transport']}
                             rules={Rules.required}
                         >
                             <Select
                                 options={transportsOptions}
                                 style={{ width: '100%' }}
-                                onChange={createChange('arrival_transport')}
                             />
                         </Form.Item>
                     </div>
@@ -261,27 +235,26 @@ function ArrivalItem({
                     <div className={styles.dateInput}>
                         <Form.Item
                             label="Дата отъезда"
-                            name={['updated_arrivals', index, 'departure_date']}
+                            name={[index, 'departure_date']}
                             getValueProps={getDateValue}
                             rules={activeToValidationRules(index)}
                         >
                             <DatePicker
                                 format={formDateFormat}
                                 style={{ width: '100%' }}
-                                onChange={createChange('departure_date')}
+                                onChange={createDateChange('departure_date')}
                             />
                         </Form.Item>
                     </div>
                     <div className={styles.dateInput}>
                         <Form.Item
                             label="Как уехал?"
-                            name={['updated_arrivals', index, 'departure_transport']}
+                            name={[index, 'departure_transport']}
                             rules={Rules.required}
                         >
                             <Select
                                 options={transportsOptions}
                                 style={{ width: '100%' }}
-                                onChange={createChange('departure_transport')}
                             />
                         </Form.Item>
                     </div>

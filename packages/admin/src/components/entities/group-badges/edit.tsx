@@ -97,10 +97,19 @@ export const GroupBadgeEdit: FC = () => {
     const activeVolunteers = volunteers.filter((item) => !item.markedDeleted);
 
     return (
-        <Edit saveButtonProps={saveButtonProps}>
+        <Edit
+            saveButtonProps={saveButtonProps}
+            contentProps={{
+                style: {
+                    marginBottom: 60,
+                    overflow: 'auto'
+                }
+            }}
+        >
             <Form {...formProps} layout="vertical">
                 <CreateEdit />
-                <span data-testid="volunteer-count-caption">Количество волонтеров:</span> <span data-testid="volunteer-count-value">{activeVolunteers?.length}</span>
+                <span data-testid="volunteer-count-caption">Количество волонтеров:</span>{' '}
+                <span data-testid="volunteer-count-value">{activeVolunteers?.length}</span>
             </Form>
             <Divider />
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -153,8 +162,8 @@ export const GroupBadgeEdit: FC = () => {
                                         prevVolunteers.find((item) => item.id === record.id)?.markedAdded
                                             ? prevVolunteers.filter((item) => item.id !== record.id)
                                             : prevVolunteers.map((vol) =>
-                                                vol.id === record.id ? { ...vol, markedDeleted: true } : vol
-                                            )
+                                                  vol.id === record.id ? { ...vol, markedDeleted: true } : vol
+                                              )
                                     );
                                 }}
                             >

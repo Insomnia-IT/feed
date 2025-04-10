@@ -45,8 +45,23 @@ export const AdditionalSection = ({
         <>
             <p className={styles.formSection__title}>Дополнительно</p>
             <div className="commentArea">
-                <Form.Item label="Комментарий" name={'comment'}>
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} />
+                <Form.Item
+                    label="Комментарий для отображения в кормителе (Это увидят все сканирующие QR)"
+                    name={'scanner_comment'}
+                >
+                    <Input.TextArea
+                        placeholder="Срочно отправить в Бюро"
+                        autoSize={{ minRows: 2, maxRows: 6 }}
+                        disabled={isDirectionHead}
+                        maxLength={255}
+                    />
+                </Form.Item>
+                <Form.Item label="Комментарий для бюро" name={'comment'}>
+                    <Input.TextArea
+                        placeholder="Место для фантазий"
+                        autoSize={{ minRows: 2, maxRows: 6 }}
+                        disabled={isDirectionHead}
+                    />
                 </Form.Item>
                 <Form.Item label="Заметка" name="direction_head_comment">
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!isDirectionHead} />

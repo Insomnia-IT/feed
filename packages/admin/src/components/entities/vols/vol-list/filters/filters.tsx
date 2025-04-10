@@ -10,10 +10,10 @@ import { FilterItemControl } from './filter-item-control';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 
 export const Filters: FC<{
+    /** Available filer fields */
     filterFields: Array<FilterField>;
-    setPage: (num: number) => void;
-    searchText: string;
-    setSearchText: (value: string) => void;
+    searchText?: string;
+    setSearchText?: (value: string) => void;
     visibleFilters: Array<string>;
     setVisibleFilters: (value: Array<string>) => void;
     activeFilters: Array<FilterItem>;
@@ -152,7 +152,9 @@ export const Filters: FC<{
                         icon={<DeleteOutlined />}
                         onClick={() => {
                             setActiveFilters([]);
-                            setSearchText('');
+                            if (setSearchText) {
+                                setSearchText('');
+                            }
                         }}
                     >
                         Сбросить фильтрацию

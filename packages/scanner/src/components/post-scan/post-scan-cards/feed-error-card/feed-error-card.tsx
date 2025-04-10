@@ -9,6 +9,7 @@ import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
 
 import css from './feed-error-card.module.css';
+import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 export const FeedErrorCard: FC<{
     msg: Array<string>;
@@ -48,7 +49,9 @@ export const FeedErrorCard: FC<{
                     )}
                 </div>
                 <VolInfo vol={vol} />
+                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} /> : null}
             </CardContent>
+
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>
                     <Button variant='alternative' onClick={() => handleClose()}>

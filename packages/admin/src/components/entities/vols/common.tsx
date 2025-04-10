@@ -40,7 +40,7 @@ export const CreateEdit = () => {
     const items = [
         {
             key: '1',
-            label: screenSize.width <= 576 ? 'Инфо' : 'Персональная информация',
+            label: screenSize.width <= 576 ? 'Инфо' : 'Основное',
             children: <CommonEdit />
         },
         {

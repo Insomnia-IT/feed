@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { KitchenEntity, VolEntity } from 'interfaces';
-import { useList } from '@refinedev/core';
+import { useList, useNotification } from '@refinedev/core';
 import { Button, Form } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
 
-export const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
+export const KitchenFrame: React.FC<{
+    selectedVolunteers: VolEntity[];
+    doChange: (params: { fieldName: string; fieldValue: string }) => Promise<void>;
+}> = ({ selectedVolunteers, doChange }) => {
     const [selectedKitchenName, setSelectedKitchenName] = useState<string | undefined>();
+    const { open = () => {} } = useNotification();
 
     const { data: kitchensData } = useList<KitchenEntity>({
         resource: 'kitchens',
@@ -24,7 +28,16 @@ export const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ se
     const confirmChange = () => {
         const currentKitchen = kitchens.find((kitchen) => kitchen.name === selectedKitchenName);
 
-        console.log('changeKitchen to ', currentKitchen);
+        if (currentKitchen?.id) {
+            doChange({ fieldName: 'kitchen', fieldValue: String(currentKitchen.id) });
+        } else {
+            open({
+                message: 'Некорректная кухня!',
+                description: 'Выбранная кухня не существует, либо не заполнен id',
+                type: 'error',
+                undoableTimeout: 5000
+            });
+        }
 
         closeModal();
     };

@@ -17,6 +17,8 @@ import useCanAccess from './use-can-access';
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
+import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
+import { MassEdit } from './vol-list/mass-edit/mass-edit';
 
 export const VolList: FC = () => {
     const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
@@ -52,7 +54,11 @@ export const VolList: FC = () => {
         customFields
     });
 
-    const { data: volunteers, isLoading: volunteersIsLoading } = useList<VolEntity>({
+    const {
+        data: volunteers,
+        isLoading: volunteersIsLoading,
+        refetch: reloadVolunteers
+    } = useList<VolEntity>({
         resource: `volunteers/${filterQueryParams}`,
 
         pagination: {
@@ -61,9 +67,20 @@ export const VolList: FC = () => {
         }
     });
 
+    const { selectedVols, unselectAllSelected, rowSelection } = useMassEdit({
+        volunteersData: volunteers?.data ?? [],
+        totalVolunteersCount: volunteers?.total ?? 0,
+        filterQueryParams
+    });
+
     const pagination: TablePaginationConfig = {
         total: volunteers?.total ?? 1,
-        showTotal: (total) => <><span data-testid="volunteer-count-caption">Волонтеров:</span> <span data-testid="volunteer-count-value">{total}</span></>,
+        showTotal: (total) => (
+            <>
+                <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
+                <span data-testid="volunteer-count-value">{total}</span>
+            </>
+        ),
         current: page,
         pageSize: pageSize,
         onChange: (page, pageSize) => {
@@ -111,7 +128,6 @@ export const VolList: FC = () => {
                     filterFields={filterFields}
                     searchText={searchText}
                     setSearchText={setSearchText}
-                    setPage={setPage}
                 />
                 <Row style={{ padding: '10px 0' }} justify="space-between">
                     {isDesktop && (
@@ -123,7 +139,8 @@ export const VolList: FC = () => {
                             </Row>
                             <Row style={{ gap: '24px' }} align="middle">
                                 <Col>
-                                    <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
+                                    <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
+                                    волонтеров
                                 </Col>
                                 <Row style={{ gap: '12px' }} align="middle">
                                     <ChooseColumnsButton
@@ -156,15 +173,24 @@ export const VolList: FC = () => {
                     />
                 )}
                 {isDesktop && (
-                    <VolunteerDesktopTable
-                        openVolunteer={openVolunteer}
-                        pagination={pagination}
-                        statusById={statusById}
-                        volunteersIsLoading={volunteersIsLoading}
-                        volunteersData={volunteersData}
-                        customFields={customFields}
-                        filterQueryParams={filterQueryParams}
-                    />
+                    <>
+                        <VolunteerDesktopTable
+                            openVolunteer={openVolunteer}
+                            pagination={pagination}
+                            statusById={statusById}
+                            volunteersIsLoading={volunteersIsLoading}
+                            volunteersData={volunteersData}
+                            customFields={customFields}
+                            rowSelection={rowSelection}
+                        />
+                        <MassEdit
+                            selectedVolunteers={selectedVols}
+                            unselectAll={unselectAllSelected}
+                            reloadVolunteers={async () => {
+                                await reloadVolunteers();
+                            }}
+                        />
+                    </>
                 )}
             </ActiveColumnsContextProvider>
         </List>
