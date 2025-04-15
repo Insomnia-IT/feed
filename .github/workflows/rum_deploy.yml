@@ -12,6 +12,8 @@ jobs:
     env:
       IMAGE_NAME_BASENAME: feed-admin
       DB_DIR: /var/feed_db
+      OPEN_SEARCH_PASSWORD: ${{ secrets.OPEN_SEARCH_PASSWORD }}
+      OPEN_SEARCH_USER_NAME: ${{ secrets.OPEN_SEARCH_USER_NAME }}
     steps:
     - uses: actions/checkout@v3
 # DB

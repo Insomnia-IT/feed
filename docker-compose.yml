@@ -40,6 +40,9 @@ services:
     networks:
       - internal
     image: jaegertracing/jaeger:${JAEGER_VERSION:-latest}
+    environment:
+      OPEN_SEARCH_PASSWORD: ${OPEN_SEARCH_PASSWORD:-qaZxsWedC1323}
+      OPEN_SEARCH_USER_NAME: ${OPEN_SEARCH_USER_NAME:-admin}  
     # environment:
     #   SPAN_STORAGE_TYPE: elasticsearch
     #   ES_SERVER_URLS: http://opensearch:9200
@@ -76,7 +79,7 @@ services:
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
       # - plugins.security.disabled=true
       - plugins.security.ssl.http.enabled=false
-      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=qazXSWedcVFR123!@#
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPEN_SEARCH_PASSWORD:-qaZxsWedC1323}
       - node.name=opensearch
       # - OPENSEARCH_SSL_HTTP_ENABLED=true
       # - OPENSEARCH_SSL_HTTP_CERTPATH=/usr/share/opensearch/config/certs/opensearch.crt
