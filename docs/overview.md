@@ -2,7 +2,7 @@
 
 ### Используемый стек
 
-Фронтенд: React + nextjs + refine + antd
+Фронтенд: React + refine + antd
 
 Бекенд: python + django
 
