@@ -77,10 +77,10 @@ services:
     image: opensearchproject/opensearch:2.19.1
     container_name: opensearch
     healthcheck:
-      test: ["CMD-SHELL", "curl -k -u admin:${OPEN_SEARCH_PASSWORD:-qaZxsWedC1323} --silent --fail https://localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
+      test: curl -s http://opensearch:9200 >/dev/null || exit 1
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
     environment:
       - discovery.type=single-node
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
