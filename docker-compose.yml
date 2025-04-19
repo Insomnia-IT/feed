@@ -66,14 +66,21 @@ services:
     ports:
       - "16686:16686"
     depends_on:
-      - prometheus
-      - opensearch
+      prometheus:
+        condition: service_started
+      opensearch:
+        condition: service_healthy
 
   opensearch:
     networks:
       - internal
     image: opensearchproject/opensearch:2.19.1
     container_name: opensearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k -u admin:${OPEN_SEARCH_PASSWORD:-qaZxsWedC1323} --silent --fail https://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       - discovery.type=single-node
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
