@@ -119,14 +119,19 @@ export function handleDataForColumnChart(
             date,
             breakfast_plan: 0,
             breakfast_fact: 0,
+            breakfast_predict: 0,
             lunch_plan: 0,
             lunch_fact: 0,
+            lunch_predict: 0,
             dinner_plan: 0,
             dinner_fact: 0,
+            dinner_predict: 0,
             night_plan: 0,
             night_fact: 0,
+            night_predict: 0,
             plan_total: 0,
-            fact_total: 0
+            fact_total: 0,
+            predict_total: 0
         };
 
         const oneDay = dayData[date];
@@ -164,7 +169,7 @@ export function handleDataForLinearChart(
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
 ): Array<{ date: string; plan: number; fact: number }> {
-    const result: Array<{ date: string; plan: number; fact: number }> = [];
+    const result: Array<{ date: string; plan: number; fact: number; predict: number }> = [];
 
     if (Object.keys(data).length === 0) {
         return result;
@@ -173,12 +178,14 @@ export function handleDataForLinearChart(
     for (const date in data[kitchenId]) {
         const resPlan = data[kitchenId][date].plan.total;
         const resFact = data[kitchenId][date].fact.total;
-        const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+        const resPredict = data[kitchenId][date].predict.total;
+        const { plan, fact, predict } = findValuesForTypeEaters(resPlan, resFact, resPredict, typeOfEater);
 
         result.push({
             date,
             plan,
-            fact
+            fact,
+            predict
         });
     }
 
