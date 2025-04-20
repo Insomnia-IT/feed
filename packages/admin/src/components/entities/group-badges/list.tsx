@@ -119,7 +119,11 @@ export const GroupBadgeList: FC = () => {
                         dataIndex="comment"
                         key="comment"
                         title="Комментарий"
-                        render={(value) => <div dangerouslySetInnerHTML={{ __html: value }} />}
+                        render={(value) => (
+                            <Tooltip title={value}>
+                                <div className={styles.ellipsis} dangerouslySetInnerHTML={{ __html: value }} />
+                            </Tooltip>
+                        )}
                         ellipsis
                     />
                 </Table>
