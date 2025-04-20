@@ -7,9 +7,9 @@ import { VolInfo } from '~/components/post-scan/post-scan-cards/vol-info/vol-inf
 import type { Volunteer } from '~/db';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
+import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 import css from './feed-error-card.module.css';
-import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 export const FeedErrorCard: FC<{
     msg: Array<string>;

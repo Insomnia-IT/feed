@@ -7,9 +7,9 @@ import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
+import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 import css from './feed-warning-card.module.css';
-import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 export const FeedWarningCard: FC<{
     vol: Volunteer;
