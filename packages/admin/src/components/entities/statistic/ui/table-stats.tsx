@@ -6,6 +6,7 @@ interface ITableStatData {
     mealTimeType: string;
     plan: number;
     fact: number;
+    predict: number;
 }
 const columns: ColumnsType<ITableStatData> = [
     {
@@ -19,7 +20,12 @@ const columns: ColumnsType<ITableStatData> = [
         key: 'fact'
     },
     {
-        title: 'План (по количеству людей на поле)',
+        title: 'Прогноз (по формуле)',
+        dataIndex: 'predict',
+        key: 'predict'
+    },
+    {
+        title: 'На поле',
         dataIndex: 'plan',
         key: 'plan'
     }
