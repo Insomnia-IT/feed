@@ -1,6 +1,9 @@
-import React, { FC } from 'react';
-import css from './scanner-comment.module.css';
+import type { FC } from 'react';
+import React from 'react';
+
 import { Text } from '~/shared/ui/typography';
+
+import css from './scanner-comment.module.css';
 
 interface ScannerCommentProps {
     text: string;

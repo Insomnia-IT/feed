@@ -78,6 +78,7 @@ interface IData {
     group_badge: string;
     directions: string[];
     value: string;
+    is_ticket_received: boolean;
 }
 
 const localizedFieldNames: Record<string, string> = {
@@ -105,7 +106,8 @@ const localizedFieldNames: Record<string, string> = {
     directions: 'Службы/локации',
     group_badge: 'Групповой бейдж',
     number: 'Номер бейджа',
-    batch: 'Партия бейджа'
+    batch: 'Партия бейджа',
+    is_ticket_received: 'Билет'
 };
 export interface CommonHistoryProps {
     role: 'volunteer' | 'actor';
@@ -128,6 +130,14 @@ function returnisBlockedFieldValue(value: boolean | undefined) {
         return 'Заблокирован';
     } else {
         return 'Разблокирован';
+    }
+}
+
+function returnTicketReceivedValue(value: boolean | undefined) {
+    if (value) {
+        return 'Выдан';
+    } else {
+        return 'Не выдан';
     }
 }
 
@@ -268,6 +278,8 @@ export function CommonHistory({ role }: CommonHistoryProps) {
             return returnVeganFieldValue(obj[key]);
         } else if (key === 'is_blocked') {
             return returnisBlockedFieldValue(obj[key]);
+        } else if (key === 'is_ticket_received') {
+            return returnTicketReceivedValue(obj[key]);
         } else if (key === 'comment') {
             const result: string | undefined = obj[key];
             if (!result) return;

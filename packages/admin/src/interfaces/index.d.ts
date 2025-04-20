@@ -25,6 +25,7 @@ export interface VolEntity {
     access_role?: string;
     arrivals: Array<ArrivalEntity>;
     direction_head_comment?: string;
+    is_ticket_received?: boolean;
 }
 
 export interface KitchenEntity {

@@ -3,12 +3,13 @@ import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import { Button } from 'antd';
 import { IdcardOutlined } from '@ant-design/icons';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
-import { useList } from '@refinedev/core';
+import { useList, useNotification } from '@refinedev/core';
 import { HAS_BADGE_FIELD_NAME } from 'const';
 
 export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
     const [isTicketsModalOpen, setIsTicketsModalOpen] = useState<boolean>(false);
     const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
+    const { open = () => {} } = useNotification();
 
     const HAS_BADGE_FIELD_ID = (data?.data ?? []).find((field) => field.name === HAS_BADGE_FIELD_NAME)?.id;
 
@@ -34,6 +35,12 @@ export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ 
         if (!HAS_BADGE_FIELD_ID) {
             return;
         }
+
+        open({
+            message: 'это поле ещё нельзя менять(',
+            type: 'error',
+            undoableTimeout: 5000
+        });
 
         closeModal();
     };
