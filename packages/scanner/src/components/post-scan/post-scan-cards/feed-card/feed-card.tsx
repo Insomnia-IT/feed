@@ -6,9 +6,9 @@ import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-co
 import { Button } from '~/shared/ui/button/button';
 import { Text, Title } from '~/shared/ui/typography';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
+import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 import css from './feed-card.module.css';
-import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 export const FeedCard: FC<{
     vol: Volunteer;

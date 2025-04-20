@@ -38,18 +38,22 @@ export function convertResponceToData(res: IStatisticResponce): IData {
 function findValuesForTypeEaters(
     resPlan: IEaterTypeAmount,
     resFact: IEaterTypeAmount,
+    resPredict: IEaterTypeAmount,
     typeOfEater?: EaterTypeExtended
-): { plan: number; fact: number } {
-    const shallowCopy = { plan: 0, fact: 0 };
+): { plan: number; fact: number, predict: number } {
+    const shallowCopy = { plan: 0, fact: 0, predict: 0 };
     if (typeOfEater === 'meatEater') {
         shallowCopy.plan = resPlan.meatEater;
         shallowCopy.fact = resFact.meatEater;
+        shallowCopy.predict = resPredict.meatEater;
     } else if (typeOfEater === 'vegan') {
         shallowCopy.plan = resPlan.vegan;
         shallowCopy.fact = resFact.vegan;
+        shallowCopy.predict = resPredict.vegan;
     } else {
         shallowCopy.plan = resPlan.vegan + resPlan.meatEater;
         shallowCopy.fact = resFact.vegan + resFact.meatEater;
+        shallowCopy.predict = resPredict.vegan + resPredict.meatEater;
     }
     return shallowCopy;
 }
@@ -67,22 +71,27 @@ export function handleDataForTable(
     const datum = data[kitchenId][date];
     const plan = { breakfast: 0, lunch: 0, dinner: 0, night: 0, total: 0 };
     const fact = { breakfast: 0, lunch: 0, dinner: 0, night: 0, total: 0 };
-    if (datum != undefined)
+    const predict = { breakfast: 0, lunch: 0, dinner: 0, night: 0, total: 0 };
+    if (datum != undefined) {
         for (const mealTime of mealTimeArr) {
             const resPlan = datum.plan[mealTime];
             const resFact = datum.fact[mealTime];
-            const values = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+            const resPredict = datum.predict[mealTime];
+            const values = findValuesForTypeEaters(resPlan, resFact, resPredict, typeOfEater);
             plan[mealTime] = values.plan;
             fact[mealTime] = values.fact;
-            plan.total += values.plan;
-            fact.total += values.fact;
+            predict[mealTime] = values.predict;
+            // plan.total += values.plan;
+            // fact.total += values.fact;
+            // predict.total += values.predict;
         }
+    }
     return [
-        { key: '1', mealTimeType: 'Завтрак', plan: plan.breakfast, fact: fact.breakfast },
-        { key: '2', mealTimeType: 'Обед', plan: plan.lunch, fact: fact.lunch },
-        { key: '3', mealTimeType: 'Ужин', plan: plan.dinner, fact: fact.dinner },
-        { key: '4', mealTimeType: 'Дожор', plan: plan.night, fact: fact.night },
-        { key: '5', mealTimeType: 'Всего', plan: plan.total, fact: fact.total }
+        { key: '1', mealTimeType: 'Завтрак', plan: plan.breakfast, fact: fact.breakfast, predict: predict.breakfast },
+        { key: '2', mealTimeType: 'Обед', plan: plan.lunch, fact: fact.lunch, predict: predict.lunch },
+        { key: '3', mealTimeType: 'Ужин', plan: plan.dinner, fact: fact.dinner, predict: predict.dinner },
+        { key: '4', mealTimeType: 'Дожор', plan: plan.night, fact: fact.night, predict: predict.night }
+        // { key: '5', mealTimeType: 'Всего', plan: plan.total, fact: fact.total, predict: predict.total }
     ];
 }
 
@@ -110,14 +119,19 @@ export function handleDataForColumnChart(
             date,
             breakfast_plan: 0,
             breakfast_fact: 0,
+            breakfast_predict: 0,
             lunch_plan: 0,
             lunch_fact: 0,
+            lunch_predict: 0,
             dinner_plan: 0,
             dinner_fact: 0,
+            dinner_predict: 0,
             night_plan: 0,
             night_fact: 0,
+            night_predict: 0,
             plan_total: 0,
-            fact_total: 0
+            fact_total: 0,
+            predict_total: 0
         };
 
         const oneDay = dayData[date];
@@ -129,15 +143,19 @@ export function handleDataForColumnChart(
         for (const mealTime of mealTimeArr) {
             const resPlan = oneDay.plan[mealTime];
             const resFact = oneDay.fact[mealTime];
-            const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+            const resPredict = oneDay.predict[mealTime];
+            const { plan, fact, predict } = findValuesForTypeEaters(resPlan, resFact, resPredict, typeOfEater);
 
             (row as any)[`${mealTime}_plan`] = plan;
             (row as any)[`${mealTime}_fact`] = fact;
+            (row as any)[`${mealTime}_predict`] = predict;
         }
 
         row.plan_total = row.breakfast_plan + row.lunch_plan + row.dinner_plan + row.night_plan;
 
         row.fact_total = row.breakfast_fact + row.lunch_fact + row.dinner_fact + row.night_fact;
+
+        row.predict_total = row.breakfast_predict + row.lunch_predict + row.dinner_predict + row.night_predict;
 
         result.push(row);
     }
@@ -151,7 +169,7 @@ export function handleDataForLinearChart(
     typeOfEater: EaterTypeExtended,
     kitchenId: KitchenIdExtended
 ): Array<{ date: string; plan: number; fact: number }> {
-    const result: Array<{ date: string; plan: number; fact: number }> = [];
+    const result: Array<{ date: string; plan: number; fact: number; predict: number }> = [];
 
     if (Object.keys(data).length === 0) {
         return result;
@@ -160,12 +178,14 @@ export function handleDataForLinearChart(
     for (const date in data[kitchenId]) {
         const resPlan = data[kitchenId][date].plan.total;
         const resFact = data[kitchenId][date].fact.total;
-        const { plan, fact } = findValuesForTypeEaters(resPlan, resFact, typeOfEater);
+        const resPredict = data[kitchenId][date].predict.total;
+        const { plan, fact, predict } = findValuesForTypeEaters(resPlan, resFact, resPredict, typeOfEater);
 
         result.push({
             date,
             plan,
-            fact
+            fact,
+            predict
         });
     }
 
