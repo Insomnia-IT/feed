@@ -251,7 +251,7 @@ export const FeedTransactionList: FC = () => {
                 kitchenNameById[tx.kitchen],
                 tx.amount,
                 tx?.reason ?? '',
-                getGroupBadgeById(tx.group_badge),
+                getGroupBadgeById(tx.group_badge)?.name,
                 getTargetDirections(tx)
                     .map((dir) => dir.name)
                     .join(',')
