@@ -8,7 +8,7 @@ import { Text, Title } from '~/shared/ui/typography';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
-import css from '~/components/post-scan/post-scan-cards/ui/card-content/card-content.module.css';
+import css from './feed-card.module.css';
 
 export const FeedCard: FC<{
     vol: Volunteer;

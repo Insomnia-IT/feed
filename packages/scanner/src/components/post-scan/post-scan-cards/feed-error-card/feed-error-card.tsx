@@ -8,7 +8,7 @@ import type { Volunteer } from '~/db';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
 import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
-import css from '~/components/post-scan/post-scan-cards/ui/card-content/card-content.module.css';
+import css from './feed-error-card.module.css';
 
 export const FeedErrorCard: FC<{
     msg: Array<string>;
