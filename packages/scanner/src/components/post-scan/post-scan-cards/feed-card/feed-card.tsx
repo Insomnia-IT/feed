@@ -18,7 +18,7 @@ export const FeedCard: FC<{
     const isChild = vol.feed_type === FeedType.Child;
     const [disabled, setDisabled] = useState(false);
 
-    const handleFeed = () => {
+    const handleFeed = (): void => {
         setDisabled(true);
         doFeed();
     };
