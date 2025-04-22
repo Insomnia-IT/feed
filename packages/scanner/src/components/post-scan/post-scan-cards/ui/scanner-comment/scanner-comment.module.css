@@ -38,4 +38,8 @@
     .text {
         color: var(--c-txt);
     }
+
+    .exclamation {
+        color: var(--c-error);
+    }
 }

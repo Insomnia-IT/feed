@@ -8,7 +8,6 @@ import { Text, Title } from '~/shared/ui/typography';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
-
 import css from '~/components/post-scan/post-scan-cards/ui/card-content/card-content.module.css';
 
 export const FeedCard: FC<{
@@ -41,8 +40,8 @@ export const FeedCard: FC<{
                     ) : (
                         <Text>Вы отсканировали бейдж волонтера:</Text>
                     )}
-                    <Text className={css.volInfo}>
-                        {vol.name}, {vol.is_vegan ? 'веган🥦' : 'мясоед🥩'}
+                    <Text className={css.volInfoLarge}>
+                        {vol.name}, {vol.is_vegan ? 'веган 🥦' : 'мясоед 🥩'}
                     </Text>
                     {vol.directions.length === 1 && <Text>Служба: {vol.directions[0].name}</Text>}
                     {vol.directions.length > 1 && (
@@ -63,48 +62,6 @@ export const FeedCard: FC<{
                 </div>
                 <VolAndUpdateInfo textColor='black' />
             </div>
-
-            {/* <CardContent>
-                <div className={css.info}>
-                    {isChild ? (
-                        <Title className={css.title}>
-                            👶 Кормить <br /> ребенка
-                        </Title>
-                    ) : (
-                        <Title className={css.title}>
-                            Кормить <br /> волонтера
-                        </Title>
-                    )}
-                    <div className={css.detail}>
-                        {isChild ? (
-                            <Text>Вы отсканировали бейдж ребенка:</Text>
-                        ) : (
-                            <Text>Вы отсканировали бейдж волонтера:</Text>
-                        )}
-                        <Text className={css.volInfo}>
-                            {vol.name}, {vol.is_vegan ? 'веган🥦' : 'мясоед🥩'}
-                        </Text>
-                        {vol.directions.length === 1 && <Text>Служба: {vol.directions[0].name}</Text>}
-                        {vol.directions.length > 1 && (
-                            <Text>Службы: {vol.directions.map((dep) => dep.name).join(', ')}</Text>
-                        )}
-                    </div>
-                </div>
-
-                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} variant='red' /> : null}
-
-                <div className={css.bottomBLock}>
-                    <div className={css.buttonsBlock}>
-                        <Button variant='secondary' onClick={close}>
-                            Отмена
-                        </Button>
-                        <Button onClick={handleFeed} disabled={disabled}>
-                            Кормить
-                        </Button>
-                    </div>
-                    <VolAndUpdateInfo textColor='black' />
-                </div>
-            </CardContent> */}
         </CardContainer>
     );
 };
