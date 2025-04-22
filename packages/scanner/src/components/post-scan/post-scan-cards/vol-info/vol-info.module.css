@@ -1,7 +1,8 @@
 .volInfo {
-    border: 2px solid var(--c-white);
     border-radius: 16px;
     padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 100%;
 
     .text {
         font-weight: 600;

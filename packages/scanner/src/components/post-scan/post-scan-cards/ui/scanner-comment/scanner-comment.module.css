@@ -6,11 +6,36 @@
     display: flex;
     align-items: center;
     border: 2px solid var(--c-error);
-    background-color: var(--c-grey);
+    border-radius: 4px;
+    margin-top: auto;
 }
 
 .text {
     display: inline-block;
     text-align: left;
     margin: auto;
+    color: var(--c-txt);
+}
+
+.exclamation {
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.white {
+    border-color: var(--c-white);
+    color: var(--c-white);
+
+    .text {
+        color: var(--c-white);
+    }
+}
+
+.red {
+    border-color: var(--c-error);
+    color: var(--c-txt);
+
+    .text {
+        color: var(--c-txt);
+    }
 }
