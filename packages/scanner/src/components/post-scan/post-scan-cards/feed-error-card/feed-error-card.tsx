@@ -8,7 +8,6 @@ import type { Volunteer } from '~/db';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
 import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
-
 import css from './feed-error-card.module.css';
 
 export const FeedErrorCard: FC<{
@@ -25,9 +24,11 @@ export const FeedErrorCard: FC<{
     };
 
     return (
-        <CardContainer className={css.errorCard} cardColor='red'>
+        <CardContainer cardColor='red'>
             <CardContent>
-                <Title color='white'>Отказано</Title>
+                <Title className={css.title} color='white'>
+                    Отказано
+                </Title>
                 <div className={css.errorList}>
                     {msg.length > 1 && (
                         <div className={css.errorList}>
@@ -49,7 +50,7 @@ export const FeedErrorCard: FC<{
                     )}
                 </div>
                 <VolInfo vol={vol} />
-                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} /> : null}
+                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} variant='white' /> : null}
             </CardContent>
 
             <div className={css.bottomBLock}>

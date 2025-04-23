@@ -1,5 +1,17 @@
-.errorCard {
-    justify-content: space-between;
+.errorList {
+    text-align: start;
+    width: 100%;
+    padding: 0 4px;
+    line-height: 120%;
+}
+
+.errorMessage {
+    text-align: center;
+    width: 100%;
+}
+
+.title {
+    text-align: center;
 }
 
 .bottomBLock {
@@ -8,19 +20,16 @@
     align-items: stretch;
     gap: 12px;
     width: 100%;
+    margin-top: auto;
 }
 
 .buttonsBlock {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
     width: 100%;
 }
 
-.errorList {
-    text-align: start;
-}
-
-.errorMessage {
-    text-align: center;
+.buttonsBlock > *:only-child {
+    grid-column: 1 / -1;
 }

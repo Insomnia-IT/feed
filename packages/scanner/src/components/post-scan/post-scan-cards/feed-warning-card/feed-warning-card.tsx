@@ -29,9 +29,11 @@ export const FeedWarningCard: FC<{
     };
 
     return (
-        <CardContainer className={css.warningCard} cardColor='blue'>
+        <CardContainer cardColor='blue'>
             <CardContent>
-                <Title color='white'>⚠️ Вы уверены?</Title>
+                <Title className={css.title} color='white'>
+                    ⚠️ Вы уверены?
+                </Title>
                 {msg.length > 1 && (
                     <div className={css.errorList}>
                         {msg.map((m, index) => (
@@ -57,7 +59,7 @@ export const FeedWarningCard: FC<{
                     </div>
                 )}
                 <VolInfo vol={vol} />
-                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} /> : null}
+                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} variant='white' /> : null}
             </CardContent>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>

@@ -1,5 +1,12 @@
-.warningCard {
-    justify-content: space-between;
+.errorList {
+    text-align: start;
+    width: 100%;
+    padding: 0 4px;
+    line-height: 120%;
+}
+
+.title {
+    text-align: center;
 }
 
 .bottomBLock {
@@ -8,15 +15,16 @@
     align-items: stretch;
     gap: 12px;
     width: 100%;
+    margin-top: auto;
 }
 
 .buttonsBlock {
     display: grid;
-    gap: 10px;
-    grid-template-columns: auto auto;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
     width: 100%;
 }
 
-.errorList {
-    text-align: start;
+.buttonsBlock > *:only-child {
+    grid-column: 1 / -1;
 }
