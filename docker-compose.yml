@@ -80,7 +80,7 @@ services:
       test: curl -s http://opensearch:9200 >/dev/null || exit 1
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
     environment:
       - discovery.type=single-node
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
