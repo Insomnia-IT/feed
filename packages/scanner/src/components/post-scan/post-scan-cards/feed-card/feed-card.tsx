@@ -6,7 +6,7 @@ import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-co
 import { Button } from '~/shared/ui/button/button';
 import { Text, Title } from '~/shared/ui/typography';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
-import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
+import { BureauComment } from '~/components/post-scan/post-scan-cards/ui/bureau-comment/bureau-comment';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
 import css from './feed-card.module.css';
 
@@ -49,7 +49,7 @@ export const FeedCard: FC<{
                     )}
                 </div>
 
-                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} variant='red' /> : null}
+                {vol?.scanner_comment ? <BureauComment text={vol.scanner_comment} variant='red' /> : null}
             </CardContent>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>
