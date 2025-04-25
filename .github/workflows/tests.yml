@@ -1,11 +1,12 @@
 name: Tests
-# on: [workflow_dispatch]
-on: [push]
-# on:
-#   workflow_dispatch:
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
-  try_gitlab_cicd:
+  do_stuffffff:
     runs-on: ubuntu-latest
 
     container:
@@ -27,18 +28,18 @@ jobs:
           docker info
         continue-on-error: true
 
-      - name: 🍏 Try some testing
+      - name: ⌛ Do Testing
         run: |
           cd tests
           bash run_tests.sh || touch /tmp/testFailed
 
-      - name: "Shorter test log"
+      - name: 🍏 Shorter Log
         run: cat /tmp/tests.short.log
 
-      - name: "Verdict"
+      - name: Verdict
         run: if [ -f /tmp/testFailed ]; then
-          echo "Tests Failed"; exit 1;
+          echo "Tests Failed!"; exit 1;
           else
-          echo "Tests Success";
+          echo "Tests Success!";
           fi
 
