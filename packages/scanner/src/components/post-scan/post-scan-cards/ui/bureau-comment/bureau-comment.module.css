@@ -1,0 +1,29 @@
+.bureauComment {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.title {
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.white {
+    color: var(--c-white);
+
+    .title {
+        color: var(--c-white);
+    }
+}
+
+.red {
+    color: var(--c-txt);
+
+    .title {
+        color: var(--c-txt);
+    }
+}
