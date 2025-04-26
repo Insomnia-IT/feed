@@ -9,10 +9,10 @@ pytest, selenium
 # получить окружение и либы
 python -m venv venv
 . venv/bin/activate
-pip install -r requiments.txt
+pip install -r requirements.txt
 
-pytest # запустить тесты в файлах test_***.py
-pytest test_resgress.py other.py # запустить тесты в конкретных файлах
+python -m pytest # запустить тесты в файлах test_***.py
+python -m pytest test_regress.py # запустить тесты в конкретных файлах
 ```
 
 

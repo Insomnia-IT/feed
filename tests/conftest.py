@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
+import os
 
 import pytest
 
@@ -20,7 +21,10 @@ def language(request):
 def browser(language):
     options = Options()
     options.add_experimental_option('prefs', {'intl.accept_languages': language})
-    # browser = webdriver.Chrome(options=options)
-    browser = webdriver.Remote(command_executor='http://chrome:4444/wd/hub', options=options)
+    if os.environ.get('WEBDRIVER_REMOTE'):
+        browser = webdriver.Remote(command_executor='http://chrome:4444/wd/hub', options=options)
+    else:
+        browser = webdriver.Chrome(options=options)
+
     yield browser
     browser.quit()

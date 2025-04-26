@@ -2,12 +2,18 @@
 
 services:
   chrome:
+    networks:
+      - tests
     # image: selenium/standalone-chromium:latest
     image: selenium/standalone-chromium:135.0
     hostname: chrome
     privileged: true
     shm_size: 2g
   tests:
+    networks:
+      - tests
+    environment:
+      WEBDRIVER_REMOTE: true
     build:
       context: .
       network: host
@@ -15,17 +21,18 @@ services:
     command: bash -c "sleep 10s && python -m pytest --count=$NREPS test_regress.py"
     depends_on:
       - chrome
+  # pinger: # for troubleshoot
+  #   build:
+  #     context: .
+  #     network: host
+  #   # network_mode: host
+  #   command: bash -c "ping google.com -c 3 ; sleep 1s"
 
-  pinger: # for troubleshoot
-    build:
-      context: .
-      network: host
-    # network_mode: host
-    command: bash -c "ping google.com -c 3 ; sleep 1s"
+  # easy_test: # for example
+  #   build:
+  #     context: .
+  #     network: host
+  #   command: python -m pytest --count=$NREPS test_minimal.py
 
-  easy_test: # for example
-    build:
-      context: .
-      network: host
-    command: python -m pytest --count=$NREPS test_minimal.py
-
+networks:
+  tests:
