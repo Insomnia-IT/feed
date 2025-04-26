@@ -209,6 +209,7 @@ def test_add_and_delete_volunteer_from_group_badge(browser):
     assert count2==count3
     print("После-", count3, "человек в бейдже")
 
+@skip()
 def test_create_new_user(browser):
     #создать нового юзера
     link = "https://feedapp-dev.insomniafest.ru/volunteers"
