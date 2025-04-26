@@ -92,8 +92,6 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         if not operation_id:
             return Response({"error": "operation_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        print(operation_id)
-        
         histories = History.objects.filter(
             group_operation_uuid=operation_id
         )
