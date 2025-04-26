@@ -122,7 +122,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     History.objects.create(
                         status=History.STATUS_UPDATE,
                         object_name='volunteer',
-                        actor_badge=1,
+                        actor_badge=get_request_user_id(request.user),
                         action_at=timezone.now(),
                         data=old_data,
                         old_data=new_data,
