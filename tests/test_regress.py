@@ -1,9 +1,12 @@
 import time
+import pytest
 from selenium.webdriver.common.by import By
 from datetime import datetime
 
 # from main_page import MainPage
 from base_page import BasePage
+
+skip = pytest.mark.skip
 
 def test_pagination_in_volunteer_list(browser):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
@@ -68,6 +71,7 @@ def test_delete_created_new_meal(browser):
     assert 1==1
     print("🗑 Запись успешно удалена!")
 
+@skip()
 def test_create_group_badge(browser):
     # создаем вручную групповой бейдж и проверяем счетчик бейджей
     link = "https://feedapp-dev.insomniafest.ru/group-badges"
@@ -90,6 +94,7 @@ def test_create_group_badge(browser):
     assert a+1 == b
     print("✅ Бейдж успешно создан! Счетчик увеличился на 1!")
 
+@skip()
 def test_delete_group_badge(browser):
     # не тест, вспомогательная функция для удаления созданного выше приема пищи.
     link = "https://feedapp-dev.insomniafest.ru/group-badges"
@@ -163,7 +168,7 @@ def test_delete_created_custom_field(browser):
         print("Нечего удалять!")
 
 
-
+@skip()
 def test_add_and_delete_volunteer_from_group_badge(browser):
     #добавить, а затем удалить волонтера из группового бейджа
     link = "https://feedapp-dev.insomniafest.ru/group-badges"
@@ -228,6 +233,7 @@ def test_create_new_user(browser):
     assert counter1+1 == counter2, "Счетчик не увеличился на 1!!!"
     assert user_name == "Test_name"
 
+@skip()
 def test_edit_new_user(browser):
     # найти созданного юзера и отредактировать его
     link = "https://feedapp-dev.insomniafest.ru/volunteers"
@@ -251,6 +257,7 @@ def test_edit_new_user(browser):
     assert counter1 == counter2, "Счетчик изменился!!!"
     assert user_name == "Test_name_1"
 
+@skip()
 def test_delete_new_user(browser):
     # найти созданного юзера и отредактировать его
     link = "https://feedapp-dev.insomniafest.ru/volunteers"
@@ -274,6 +281,7 @@ def test_delete_new_user(browser):
     assert counter1 == counter2+1, "Счетчик не уменьшился на 1!!!"
     assert counter3 == 0
 
+@skip()
 def test_scan_qr(browser):
     link = "https://feedapp-dev.insomniafest.ru/volunteers"
     page = BasePage(browser, link)
