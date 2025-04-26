@@ -172,7 +172,9 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         exclude = ['person']
 
     def update(self, instance, validated_data):
-        arrivals_data = validated_data.pop('arrivals', [])
+        arrivals_data = None
+        if 'arrivals' in validated_data:
+            arrivals_data = validated_data.pop('arrivals')
         directions_data = validated_data.pop('directions', None)
         
         with transaction.atomic():
@@ -181,7 +183,8 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             if directions_data is not None:
                 instance.directions.set(directions_data)
 
-            self._process_arrivals(instance, arrivals_data or [], is_create=False)
+            if arrivals_data is not None:
+                self._process_arrivals(instance, arrivals_data, is_create=False)
 
         return instance
     

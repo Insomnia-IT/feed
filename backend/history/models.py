@@ -30,6 +30,7 @@ class History(models.Model):
     data = models.JSONField(encoder=UUIDEncoder, blank=True, null=True)
     old_data = models.JSONField(encoder=UUIDEncoder, blank=True, null=True)
     volunteer_uuid = models.CharField(max_length=128, blank=True, null=True)
+    group_operation_uuid = models.CharField(max_length=128, blank=True, null=True)
 
     class Meta:
         verbose_name = "История"
