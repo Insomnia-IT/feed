@@ -98,10 +98,10 @@ class VolunteerGroupViewSet(APIView):
                             db_value = value_map[key]
                             db_value.value = str(value)
                             to_update.append(db_value)
-                    # if to_update:
-                    #     VolunteerCustomFieldValue.objects.bulk_update(
-                    #         to_update, ['value']
-                    #     )
+                    if to_update:
+                        VolunteerCustomFieldValue.objects.bulk_update(
+                            to_update, ['value']
+                        )
 
                     History.objects.create(
                         status=History.STATUS_UPDATE,
