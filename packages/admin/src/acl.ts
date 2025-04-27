@@ -51,6 +51,7 @@ export const ACL: AccessControlProvider = {
                         break;
                     case 'full_list':
                     case 'badge_edit':
+                    case 'bulk_edit':
                         can = role !== AppRoles.DIRECTION_HEAD;
                         break;
                     case 'feed_type_edit':
@@ -62,9 +63,6 @@ export const ACL: AccessControlProvider = {
                         break;
                     case 'full_edit':
                         can = role === AppRoles.ADMIN;
-                        break;
-                    case 'bulk_edit': // массовое редактирование
-                        can = role !== AppRoles.DIRECTION_HEAD;
                         break;
                 }
             });
