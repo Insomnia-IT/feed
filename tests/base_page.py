@@ -7,7 +7,7 @@ from selenium.webdriver.common.keys import Keys
 from datetime import datetime
 import time
 
-from locators import *
+from .locators import *
 # registration meal_create badge_create feed_history_pagination group_badges custom_field create_user
 
 class BasePage:
