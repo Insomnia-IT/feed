@@ -63,6 +63,9 @@ export const ACL: AccessControlProvider = {
                     case 'full_edit':
                         can = role === AppRoles.ADMIN;
                         break;
+                    case 'bulk_edit': // массовое редактирование
+                        can = role !== AppRoles.DIRECTION_HEAD;
+                        break;
                 }
             });
         } else {

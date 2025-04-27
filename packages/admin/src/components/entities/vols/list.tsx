@@ -30,6 +30,7 @@ export const VolList: FC = () => {
         action: 'list',
         resource: 'volunteer-custom-fields'
     });
+    const canBulkEdit = useCanAccess({ action: 'bulk_edit', resource: 'volunteers' });
 
     const { edit } = useNavigation();
 
@@ -181,15 +182,17 @@ export const VolList: FC = () => {
                             volunteersIsLoading={volunteersIsLoading}
                             volunteersData={volunteersData}
                             customFields={customFields}
-                            rowSelection={rowSelection}
+                            rowSelection={canBulkEdit ? rowSelection : undefined}
                         />
-                        <MassEdit
-                            selectedVolunteers={selectedVols}
-                            unselectAll={unselectAllSelected}
-                            reloadVolunteers={async () => {
-                                await reloadVolunteers();
-                            }}
-                        />
+                        {canBulkEdit && (
+                            <MassEdit
+                                selectedVolunteers={selectedVols}
+                                unselectAll={unselectAllSelected}
+                                reloadVolunteers={async () => {
+                                    await reloadVolunteers();
+                                }}
+                            />
+                        )}
                     </>
                 )}
             </ActiveColumnsContextProvider>
