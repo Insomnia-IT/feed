@@ -108,7 +108,7 @@ class VolunteerGroupViewSet(APIView):
                         object_name='volunteer',
                         actor_badge=get_request_user_id(request.user),
                         action_at=timezone.now(),
-                        data=new_data,
+                        data={**new_data, **custom_fields_data},
                         old_data=original_data[volunteer_id],
                         volunteer_uuid=str(vol.uuid),
                         group_operation_uuid=str(group_operation_uuid),
