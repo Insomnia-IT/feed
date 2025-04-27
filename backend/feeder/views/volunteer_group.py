@@ -19,6 +19,8 @@ from history.models import History
 
 from uuid import uuid4, UUID
 
+from feeder.models import VolunteerCustomFieldValue, VolunteerCustomField
+
 
 class VolunteerGroupViewSet(APIView):
     permission_classes = [permissions.IsAuthenticated, ]
@@ -29,14 +31,37 @@ class VolunteerGroupViewSet(APIView):
     def post(self, request, *args, **kwargs):
         volunteers_ids = request.data.get('volunteers_ids', [])
         new_data_list = request.data.get('field_list', {})
+        new_data_custom_list = request.data.get('custom_field_list', {})
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         new_data = {}
         for entity in new_data_list:
             new_data[entity['field']] = entity['data']
-        
+
+        custom_fields_data = {}
+        for entity in new_data_custom_list:
+            custom_fields_data[entity['field']] = entity['data']
+
+        if custom_fields_data:
+            custom_fields = VolunteerCustomField.objects.filter(
+                name__in=custom_fields_data.keys()
+            )
+
+        # Получаем существующие значения для обновления
+        existing_values = VolunteerCustomFieldValue.objects.filter(
+            volunteer_id__in=volunteers_ids,
+            custom_field__in=custom_fields
+            ).select_related('custom_field')
+
+        # Создаем словарь для быстрого доступа
+        value_map = {
+            (v.volunteer_id, v.custom_field.name): v for v in existing_values
+        }
+        to_update = []
+
+
         if not isinstance(new_data, dict) or len(new_data) == 0:
             return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -46,7 +71,8 @@ class VolunteerGroupViewSet(APIView):
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values('id', *new_data.keys())
         original_data = {volunteer['id']: {field: volunteer[field] for field in new_data.keys()} for volunteer in volunteers_before_update}
         group_operation_uuid = uuid4()
-
+        #
+        #
         with transaction.atomic():
             for volunteer_id in volunteers_ids:
                 try:
@@ -56,6 +82,26 @@ class VolunteerGroupViewSet(APIView):
 
                     vol = serializer.save()
                     updated_volunteers.append(vol)
+                    if custom_fields_data:
+                        custom_fields = VolunteerCustomField.objects.filter(
+                            name__in=custom_fields_data.keys()
+                        )
+                    for field_name, value in custom_fields_data.items():
+                        field = next((f for f in custom_fields if f.name == field_name), None)
+                        if not field:
+                            print("Didn't find a field")
+                            continue
+
+                        key = (volunteer_id, field_name)
+                        if key in value_map:
+                            # Обновляем существующее значение
+                            db_value = value_map[key]
+                            db_value.value = str(value)
+                            to_update.append(db_value)
+                    # if to_update:
+                    #     VolunteerCustomFieldValue.objects.bulk_update(
+                    #         to_update, ['value']
+                    #     )
 
                     History.objects.create(
                         status=History.STATUS_UPDATE,
@@ -91,7 +137,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         operation_id = pk
         if not operation_id:
             return Response({"error": "operation_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         histories = History.objects.filter(
             group_operation_uuid=operation_id
         )

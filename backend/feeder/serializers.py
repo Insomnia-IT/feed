@@ -176,7 +176,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         if 'arrivals' in validated_data:
             arrivals_data = validated_data.pop('arrivals')
         directions_data = validated_data.pop('directions', None)
-        
+
         with transaction.atomic():
             instance = super().update(instance, validated_data)
 
@@ -187,23 +187,23 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                 self._process_arrivals(instance, arrivals_data, is_create=False)
 
         return instance
-    
+
     def create(self, validated_data):
         arrivals_data = validated_data.pop('arrivals', [])
         directions_data = validated_data.pop('directions', [])
-        
+
         with transaction.atomic():
             # Создаем волонтера через родительский метод
             volunteer = models.Volunteer.objects.create(**validated_data)
 
             # Устанавливаем направления
             volunteer.directions.set(directions_data)
-            
+
             # Создаем связанные заезды
             self._process_arrivals(volunteer, arrivals_data, is_create=True)
-            
+
         return volunteer
-    
+
     def _process_arrivals(self, volunteer, arrivals_data, is_create=False):
         current_arrivals = {str(a.id): a for a in volunteer.arrivals.all()}
         processed_ids = set()
@@ -262,9 +262,9 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             if date_field in data and isinstance(data[date_field], str):
                 dt_moscow = arrow.get(data[date_field]).to(TZ)
                 data[date_field] = dt_moscow.format("YYYY-MM-DD")
-        
+
         return data
-    
+
     def _log_arrival_change(self, arrival, action, old_data=None, new_data=None):
         user_id = get_request_user_id(self.context["request"].user)
 
@@ -273,7 +273,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                 return str(value.id)
             if isinstance(value, models.Transport):
                 return str(value.id)
-            if isinstance(value, date):  
+            if isinstance(value, date):
                 return value.isoformat()
             if isinstance(value, UUID):
                 return str(value)
@@ -484,3 +484,4 @@ class GroupData(serializers.Serializer):
 class VolunteerGroupSerializer(serializers.Serializer):
     volunteers_ids = serializers.ListField(child = serializers.IntegerField())
     field_list = GroupData(many=True)
+    custom_field_list = GroupData(many=True)
