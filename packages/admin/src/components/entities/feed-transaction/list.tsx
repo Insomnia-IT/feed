@@ -69,7 +69,7 @@ export const FeedTransactionList: FC = () => {
             activeFilters.forEach((filter) => {
                 const { name, value } = filter;
 
-                let valueToUse = value as string;
+                let valueToUse = typeof value === 'boolean' ? String(value) : (value as string);
 
                 if (Array.isArray(value)) {
                     valueToUse = value.length > 1 ? value.join(',') : valueToUse[0];
@@ -81,6 +81,8 @@ export const FeedTransactionList: FC = () => {
                     operator: 'eq'
                 });
             });
+
+            console.log(newFilters, activeFilters);
 
             return newFilters;
         }
