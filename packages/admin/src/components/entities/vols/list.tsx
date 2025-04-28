@@ -68,7 +68,7 @@ export const VolList: FC = () => {
         }
     });
 
-    const { selectedVols, unselectAllSelected, rowSelection } = useMassEdit({
+    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
         volunteersData: volunteers?.data ?? [],
         totalVolunteersCount: volunteers?.total ?? 0,
         filterQueryParams
@@ -188,6 +188,7 @@ export const VolList: FC = () => {
                             <MassEdit
                                 selectedVolunteers={selectedVols}
                                 unselectAll={unselectAllSelected}
+                                unselectVolunteer={unselectVolunteer}
                                 reloadVolunteers={async () => {
                                     await reloadVolunteers();
                                 }}
