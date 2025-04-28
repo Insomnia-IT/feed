@@ -296,7 +296,11 @@ export const FeedTransactionList: FC = () => {
                     visibleFilters={visibleFilters}
                     setVisibleFilters={setVisibleFilters}
                     activeFilters={activeFilters}
-                    setActiveFilters={setActiveFilters}
+                    setActiveFilters={(filters) => {
+                        setActiveFilters(filters);
+
+                        searchFormProps?.form?.submit();
+                    }}
                 />
             </Form>
             <Table<TransformedTransaction>
