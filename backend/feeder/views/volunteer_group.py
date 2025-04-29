@@ -11,7 +11,7 @@ from django.utils import timezone
 
 
 from feeder import serializers
-from feeder.models import Volunteer,VolunteerGroupOperation
+from feeder.models import Volunteer,VolunteerGroupOperation, Arrival
 from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer
 from feeder.views.mixins import get_request_user_id
 
@@ -34,10 +34,14 @@ class VolunteerGroupViewSet(APIView):
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
         
         new_data = {}
+        new_data_arrival = {}
         for entity in new_data_list:
-            new_data[entity['field']] = entity['data']
-        
-        if not isinstance(new_data, dict) or len(new_data) == 0:
+            if entity['field'][:9] == "arrivals.":
+                new_data_arrival[entity['field'][9:]] = entity['data']
+            else:
+                new_data[entity['field']] = entity['data']
+
+        if not isinstance(new_data, dict) or not isinstance(new_data_arrival, dict) or not new_data and not new_data_arrival:
             return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
 
         updated_volunteers = []
@@ -45,13 +49,47 @@ class VolunteerGroupViewSet(APIView):
 
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values('id', *new_data.keys())
         original_data = {volunteer['id']: {field: volunteer[field] for field in new_data.keys()} for volunteer in volunteers_before_update}
+        
         group_operation_uuid = uuid4()
 
         with transaction.atomic():
             for volunteer_id in volunteers_ids:
                 try:
                     vol = Volunteer.objects.get(id=volunteer_id)
-                    serializer = VolunteerSerializer(vol, data=new_data, partial=True, context={'request': request})
+
+                    arrivals = Arrival.objects.filter(volunteer=vol)
+
+                    all_arrivals = []
+                    today = timezone.localdate()
+                    target = None
+                    if new_data_arrival:
+                        target = (
+                            arrivals
+                            .filter(departure_date__gte=today)
+                            .order_by('arrival_date')
+                            .first()
+                        )
+                        # if not target:
+                        #     raise ValidationError({
+                        #         "arrivals": "no current or upcoming arrival to update"
+                        #     })
+                    
+                    for arr in arrivals:
+                        entry = {"id": arr.id}
+                        if target and arr.id == target.id:
+                            entry.update(new_data_arrival)
+                        all_arrivals.append(entry)
+                    
+                    payload = new_data.copy()
+                    if new_data_arrival and target:
+                        payload['arrivals'] = all_arrivals
+
+                    context = {'request': request, 'group_op': group_operation_uuid}
+
+                    if target:
+                        context['arr_id'] = target.id
+
+                    serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
                     serializer.is_valid(raise_exception=True)
 
                     vol = serializer.save()
@@ -103,13 +141,13 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         updated_volunteers = []
         errors = []
 
-        with transaction.atomic():
-            for hist in histories:
-                volunteer_id = hist.volunteer_uuid
-                old_data = hist.old_data or {}
-                new_data = hist.data or {}
+        try:
+            with transaction.atomic():
+                for hist in histories.filter(object_name='volunteer'):
+                    volunteer_id = hist.volunteer_uuid
+                    old_data = hist.old_data or {}
+                    new_data = hist.data or {}
 
-                try:
                     vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
                     serializer = VolunteerSerializer(vol, data=old_data, partial=True, context={'request': request})
                     serializer.is_valid(raise_exception=True)
@@ -127,12 +165,44 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                         volunteer_uuid=str(vol.uuid),
                         group_operation_uuid=str(group_operation_uuid),
                     )
-                except ValidationError as ve:
-                    errors.append({"id": volunteer_id, "errors": ve.detail})
-                except Volunteer.DoesNotExist:
-                    errors.append({"error": f"Volunteer with id {volunteer_id} does not exist", "volunteer_id": volunteer_id})
-                except Exception as e:
-                    errors.append({"error": "Failed to renew volunteer data", "errors": f"{type(e)} {str(e)}"})
+                
+                for hist in histories.filter(object_name='arrival'):
+                    volunteer_id = hist.volunteer_uuid
+                    old_data = hist.old_data or {}
+                    new_data = hist.data or {}
+
+                    arr_id = old_data.get('id')
+                    target = arrivals.get(id=arr_id)
+
+                    if not target:
+                        continue
+
+                    vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
+                    arrivals = Arrival.objects.filter(volunteer=vol)
+                    
+                    all_arrivals = []
+                    for arr in arrivals:
+                        entry = {"id": arr.id}
+                        if target and arr.id == target.id:
+                            entry.update(old_data)
+                        all_arrivals.append(entry)
+                    
+                    payload = {}
+                    payload['arrivals'] = all_arrivals
+
+                    context = {'request': request, 'group_op': group_operation_uuid, 'arr_id': target.id}
+
+                    serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
+                    serializer.is_valid(raise_exception=True)
+
+                    vol = serializer.save()
+                    updated_volunteers.append(vol)
+        except ValidationError as ve:
+            errors.append({"id": volunteer_id, "errors": ve.detail})
+        except Volunteer.DoesNotExist:
+            errors.append({"error": f"Volunteer with id {volunteer_id} does not exist", "volunteer_id": volunteer_id})
+        except Exception as e:
+            errors.append({"error": "Failed to renew volunteer data", "errors": f"{type(e)} {str(e)}"})
 
         if errors:
             return Response(
