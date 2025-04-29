@@ -44,23 +44,17 @@ class VolunteerGroupViewSet(APIView):
         for entity in new_data_custom_list:
             custom_fields_data[entity['field']] = entity['data']
 
-        if custom_fields_data:
-            custom_fields = VolunteerCustomField.objects.filter(
-                name__in=custom_fields_data.keys()
-            )
-
         # Получаем существующие значения для обновления
-        existing_values = VolunteerCustomFieldValue.objects.filter(
+        existing_custom_values = VolunteerCustomFieldValue.objects.filter(
             volunteer_id__in=volunteers_ids,
-            custom_field__in=custom_fields
-            ).select_related('custom_field')
+            custom_field_id__in=custom_fields_data.keys()
+            )
 
         # Создаем словарь для быстрого доступа
         value_map = {
-            (v.volunteer_id, v.custom_field.name): v for v in existing_values
+            (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
         }
         to_update = []
-
 
         if not isinstance(new_data, dict) or len(new_data) == 0:
             return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
@@ -71,8 +65,7 @@ class VolunteerGroupViewSet(APIView):
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values('id', *new_data.keys())
         original_data = {volunteer['id']: {field: volunteer[field] for field in new_data.keys()} for volunteer in volunteers_before_update}
         group_operation_uuid = uuid4()
-        #
-        #
+
         with transaction.atomic():
             for volunteer_id in volunteers_ids:
                 try:
@@ -82,16 +75,18 @@ class VolunteerGroupViewSet(APIView):
 
                     vol = serializer.save()
                     updated_volunteers.append(vol)
-                    if custom_fields_data:
-                        custom_fields = VolunteerCustomField.objects.filter(
-                            name__in=custom_fields_data.keys()
-                        )
-                    for field_name, value in custom_fields_data.items():
-                        field = next((f for f in custom_fields if f.name == field_name), None)
-                        if not field:
-                            print("Didn't find a field")
-                            continue
+                    History.objects.create(
+                        status=History.STATUS_UPDATE,
+                        object_name='volunteer',
+                        actor_badge=get_request_user_id(request.user),
+                        action_at=timezone.now(),
+                        data=new_data,
+                        old_data=original_data[volunteer_id],
+                        volunteer_uuid=str(vol.uuid),
+                        group_operation_uuid=str(group_operation_uuid),
+                    )
 
+                    for field_name, value in custom_fields_data.items():
                         key = (volunteer_id, field_name)
                         if key in value_map:
                             # Обновляем существующее значение
@@ -103,16 +98,19 @@ class VolunteerGroupViewSet(APIView):
                             to_update, ['value']
                         )
 
-                    History.objects.create(
-                        status=History.STATUS_UPDATE,
-                        object_name='volunteer',
-                        actor_badge=get_request_user_id(request.user),
-                        action_at=timezone.now(),
-                        data={**new_data, **custom_fields_data},
-                        old_data=original_data[volunteer_id],
-                        volunteer_uuid=str(vol.uuid),
-                        group_operation_uuid=str(group_operation_uuid),
-                    )
+                        for custom_field in custom_fields_data.keys():
+                            if (volunteer_id, custom_field) in value_map.keys():
+                                History.objects.create(
+                                    status=History.STATUS_UPDATE,
+                                    object_name='volunteercustomfieldvalue',
+                                    actor_badge=get_request_user_id(request.user),
+                                    action_at=timezone.now(),
+                                    data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
+                                    old_data={"value": custom_fields_data[custom_field]},
+                                    volunteer_uuid=str(vol.uuid),
+                                    group_operation_uuid=str(group_operation_uuid),
+                                )
+
                 except ValidationError as ve:
                     errors.append({"id": volunteer_id, "errors": ve.detail})
                 except Volunteer.DoesNotExist:
@@ -121,7 +119,7 @@ class VolunteerGroupViewSet(APIView):
                     errors.append({"error": "Failed to renew volunteer data", "errors": f"{type(e)} {str(e)}"})
         if errors:
             return Response(
-                {"updated": updated_volunteers,
+                {"updated": "updated_volunteers",
                 "errors": errors},
                 status=status.HTTP_400_BAD_REQUEST)
 
