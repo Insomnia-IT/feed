@@ -149,13 +149,14 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
         with transaction.atomic():
             for hist in histories:
+                #if hist.object_name == 'volunteer': #volunteercustomfieldvalue
                 volunteer_id = hist.volunteer_uuid
                 old_data = hist.old_data or {}
                 new_data = hist.data or {}
 
                 try:
                     vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
-                    serializer = VolunteerSerializer(vol, data=old_data, partial=True, context={'request': request})
+                    serializer = VolunteerListSerializer(vol, data=old_data, partial=True, context={'request': request})
                     serializer.is_valid(raise_exception=True)
 
                     vol = serializer.save()
@@ -171,6 +172,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                         volunteer_uuid=str(vol.uuid),
                         group_operation_uuid=str(group_operation_uuid),
                     )
+
                 except ValidationError as ve:
                     errors.append({"id": volunteer_id, "errors": ve.detail})
                 except Volunteer.DoesNotExist:
