@@ -11,7 +11,7 @@ from django.utils import timezone
 
 
 from feeder import serializers
-from feeder.models import Volunteer,VolunteerGroupOperation, VolunteerCustomFieldValue,Arrival,
+from feeder.models import Volunteer,VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival
 from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer
 from feeder.views.mixins import get_request_user_id
 
