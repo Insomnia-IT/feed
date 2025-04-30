@@ -219,8 +219,11 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                 # Обновление существующего заезда
                 arrival = current_arrivals[str(arrival_id)]
                 old_values = {field.name: getattr(arrival, field.name) for field in models.Arrival._meta.fields}
-                changed_data = {field: value for field, value in prepared_data.items() if getattr(arrival, field) != value}
-
+                
+                if self.context["group_op"] and self.context['arr_id'] and self.context['arr_id'] == arrival_id:
+                    changed_data = {field: value for field, value in prepared_data.items()}
+                else:
+                    changed_data = {field: value for field, value in prepared_data.items() if getattr(arrival, field) != value}
                 for attr, value in prepared_data.items():
                     setattr(arrival, attr, value)
                 arrival.save()
@@ -282,7 +285,10 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         old_data = {k: serialize_value(v) for k, v in (old_data or {}).items()}
         new_data = {k: serialize_value(v) for k, v in (new_data or {}).items()}
 
-        changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
+        if self.context["group_op"] and self.context['arr_id'] and self.context['arr_id'] == arrival.id:
+            changed_data = {k: v for k, v in new_data.items()}
+        else:
+            changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
         old_changed_data = {k: old_data[k] for k in changed_data.keys() if k in old_data}
 
         history_data = {
@@ -298,6 +304,9 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         if action == "DELETE":
             history_data["status"] = History.STATUS_DELETE
             history_data["data"] = {"id": str(arrival.id), "deleted": True}
+
+        if self.context["group_op"]:
+            history_data["group_operation_uuid"] = str(self.context["group_op"])
 
         if history_data["data"]:
             History.objects.create(**history_data)

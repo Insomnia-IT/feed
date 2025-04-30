@@ -2,6 +2,7 @@ import { Divider } from 'antd';
 import { FC, memo, useCallback, useEffect, useRef } from 'react';
 import QrScanner from 'qr-scanner';
 import sas from 'onscan.js';
+import { useNavigate } from 'react-router-dom';
 
 import { isBrowser } from 'utils';
 import { axios } from 'authProvider';
@@ -29,6 +30,7 @@ export const Dashboard: FC = () => {
     const scanner = useRef<QrScanner | null>(null);
     const video = useRef<HTMLVideoElement | null>(null);
     const loadingRef = useRef(false);
+    const navigate = useNavigate();
 
     const onScan = useCallback(async (qr: string) => {
         if (loadingRef.current) return;
@@ -43,7 +45,7 @@ export const Dashboard: FC = () => {
             if (!data.results.length) {
                 alert('Волонтер не найден');
             } else {
-                window.location.href = `${window.location.href}volunteers/edit/${data.results[0].id}`;
+                navigate(`/volunteers/edit/${data.results[0].id}`);
             }
         } catch (e) {
             console.log(e);
