@@ -29,6 +29,7 @@ class VolunteerGroupViewSet(APIView):
     def post(self, request, *args, **kwargs):
         volunteers_ids = request.data.get('volunteers_ids', [])
         new_data_list = request.data.get('field_list', {})
+        new_data_arrival_list = request.data.get('arrival_field_list', {})
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
@@ -36,10 +37,10 @@ class VolunteerGroupViewSet(APIView):
         new_data = {}
         new_data_arrival = {}
         for entity in new_data_list:
-            if entity['field'][:9] == "arrivals.":
-                new_data_arrival[entity['field'][9:]] = entity['data']
-            else:
-                new_data[entity['field']] = entity['data']
+            new_data[entity['field']] = entity['data']
+        
+        for entity in new_data_arrival_list:
+            new_data_arrival[entity['field']] = entity['data']
 
         if not isinstance(new_data, dict) or not isinstance(new_data_arrival, dict) or not new_data and not new_data_arrival:
             return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
