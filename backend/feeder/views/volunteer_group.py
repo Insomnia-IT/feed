@@ -55,6 +55,9 @@ class VolunteerGroupViewSet(APIView):
         value_map = {
             (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
         }
+        value_map_old = {
+            (v.volunteer_id, v.custom_field.id): v.value for v in existing_custom_values
+        }
         to_update = []
         if not isinstance(new_data, dict) or not isinstance(new_data_arrival, dict) or not new_data and not new_data_arrival:
             return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
@@ -139,7 +142,7 @@ class VolunteerGroupViewSet(APIView):
                                     actor_badge=get_request_user_id(request.user),
                                     action_at=timezone.now(),
                                     data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
-                                    old_data={"value": custom_fields_data[custom_field]},
+                                    old_data={"value": value_map_old[(volunteer_id, custom_field)]},
                                     volunteer_uuid=str(vol.uuid),
                                     group_operation_uuid=str(group_operation_uuid),
                                 )
@@ -267,7 +270,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
         if errors:
             return Response(
-                {#"updated": updated_volunteers,
+                {"updated": updated_volunteers,
                 "errors": errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
