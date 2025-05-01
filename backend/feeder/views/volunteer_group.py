@@ -11,7 +11,7 @@ from django.utils import timezone
 
 
 from feeder import serializers
-from feeder.models import Volunteer,VolunteerGroupOperation, Arrival
+from feeder.models import Volunteer,VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival
 from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer
 from feeder.views.mixins import get_request_user_id
 
@@ -29,10 +29,11 @@ class VolunteerGroupViewSet(APIView):
     def post(self, request, *args, **kwargs):
         volunteers_ids = request.data.get('volunteers_ids', [])
         new_data_list = request.data.get('field_list', {})
+        new_data_custom_list = request.data.get('custom_field_list', {})
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         new_data = {}
         new_data_arrival = {}
         for entity in new_data_list:
@@ -40,7 +41,24 @@ class VolunteerGroupViewSet(APIView):
                 new_data_arrival[entity['field'][9:]] = entity['data']
             else:
                 new_data[entity['field']] = entity['data']
+        custom_fields_data = {}
+        for entity in new_data_custom_list:
+            custom_fields_data[entity['field']] = entity['data']
 
+        # Получаем существующие значения для обновления
+        existing_custom_values = VolunteerCustomFieldValue.objects.filter(
+            volunteer_id__in=volunteers_ids,
+            custom_field_id__in=custom_fields_data.keys()
+            )
+
+        # Создаем словарь для быстрого доступа
+        value_map = {
+            (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
+        }
+        value_map_old = {
+            (v.volunteer_id, v.custom_field.id): v.value for v in existing_custom_values
+        }
+        to_update = []
         if not isinstance(new_data, dict) or not isinstance(new_data_arrival, dict) or not new_data and not new_data_arrival:
             return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -49,7 +67,6 @@ class VolunteerGroupViewSet(APIView):
 
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values('id', *new_data.keys())
         original_data = {volunteer['id']: {field: volunteer[field] for field in new_data.keys()} for volunteer in volunteers_before_update}
-        
         group_operation_uuid = uuid4()
 
         with transaction.atomic():
@@ -73,13 +90,13 @@ class VolunteerGroupViewSet(APIView):
                         #     raise ValidationError({
                         #         "arrivals": "no current or upcoming arrival to update"
                         #     })
-                    
+
                     for arr in arrivals:
                         entry = {"id": arr.id}
                         if target and arr.id == target.id:
                             entry.update(new_data_arrival)
                         all_arrivals.append(entry)
-                    
+
                     payload = new_data.copy()
                     if new_data_arrival and target:
                         payload['arrivals'] = all_arrivals
@@ -94,7 +111,6 @@ class VolunteerGroupViewSet(APIView):
 
                     vol = serializer.save()
                     updated_volunteers.append(vol)
-
                     History.objects.create(
                         status=History.STATUS_UPDATE,
                         object_name='volunteer',
@@ -105,6 +121,32 @@ class VolunteerGroupViewSet(APIView):
                         volunteer_uuid=str(vol.uuid),
                         group_operation_uuid=str(group_operation_uuid),
                     )
+
+                    for field_name, value in custom_fields_data.items():
+                        key = (volunteer_id, field_name)
+                        if key in value_map:
+                            # Обновляем существующее значение
+                            db_value = value_map[key]
+                            db_value.value = str(value)
+                            to_update.append(db_value)
+                    if to_update:
+                        VolunteerCustomFieldValue.objects.bulk_update(
+                            to_update, ['value']
+                        )
+
+                        for custom_field in custom_fields_data.keys():
+                            if (volunteer_id, custom_field) in value_map.keys():
+                                History.objects.create(
+                                    status=History.STATUS_UPDATE,
+                                    object_name='volunteercustomfieldvalue',
+                                    actor_badge=get_request_user_id(request.user),
+                                    action_at=timezone.now(),
+                                    data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
+                                    old_data={"value": value_map_old[(volunteer_id, custom_field)]},
+                                    volunteer_uuid=str(vol.uuid),
+                                    group_operation_uuid=str(group_operation_uuid),
+                                )
+
                 except ValidationError as ve:
                     errors.append({"id": volunteer_id, "errors": ve.detail})
                 except Volunteer.DoesNotExist:
@@ -129,7 +171,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         operation_id = pk
         if not operation_id:
             return Response({"error": "operation_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         histories = History.objects.filter(
             group_operation_uuid=operation_id
         )
@@ -165,7 +207,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                         volunteer_uuid=str(vol.uuid),
                         group_operation_uuid=str(group_operation_uuid),
                     )
-                
+
                 for hist in histories.filter(object_name='arrival'):
                     volunteer_id = hist.volunteer_uuid
                     old_data = hist.old_data or {}
@@ -179,14 +221,14 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
                     vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
                     arrivals = Arrival.objects.filter(volunteer=vol)
-                    
+
                     all_arrivals = []
                     for arr in arrivals:
                         entry = {"id": arr.id}
                         if target and arr.id == target.id:
                             entry.update(old_data)
                         all_arrivals.append(entry)
-                    
+
                     payload = {}
                     payload['arrivals'] = all_arrivals
 
@@ -197,6 +239,28 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
                     vol = serializer.save()
                     updated_volunteers.append(vol)
+                for hist in histories.filter(object_name='volunteercustomfieldvalue'):
+                    volunteer_id = Volunteer.objects.get(uuid=hist.volunteer_uuid).id
+                    data = hist.data
+                    print("Data: ", data)
+                    old_data = hist.old_data
+                    print("Old data: ", data)
+                    custom_field = data["custom_field"]
+                    VolunteerCustomFieldValue.objects.filter(
+                        volunteer_id=volunteer_id,
+                        custom_field_id=custom_field,
+                    ).update(value = old_data["value"])
+                    History.objects.create(
+                        status=History.STATUS_UPDATE,
+                        object_name='volunteercustomfieldvalue',
+                        actor_badge=get_request_user_id(request.user),
+                        action_at=timezone.now(),
+                        data={"value": old_data["value"], "custom_field": custom_field,
+                              "id": data["id"]},
+                        old_data={"value": hist.data["value"]},
+                        volunteer_uuid=str(vol.uuid),
+                        group_operation_uuid=str(group_operation_uuid),
+                    )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
