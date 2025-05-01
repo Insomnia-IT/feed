@@ -236,6 +236,28 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
                     vol = serializer.save()
                     updated_volunteers.append(vol)
+                for hist in histories.filter(object_name='volunteercustomfieldvalue'):
+                    volunteer_id = Volunteer.objects.get(uuid=hist.volunteer_uuid).id
+                    data = hist.data
+                    print("Data: ", data)
+                    old_data = hist.old_data
+                    print("Old data: ", data)
+                    custom_field = data["custom_field"]
+                    VolunteerCustomFieldValue.objects.filter(
+                        volunteer_id=volunteer_id,
+                        custom_field_id=custom_field,
+                    ).update(value = old_data["value"])
+                    History.objects.create(
+                        status=History.STATUS_UPDATE,
+                        object_name='volunteercustomfieldvalue',
+                        actor_badge=get_request_user_id(request.user),
+                        action_at=timezone.now(),
+                        data={"value": old_data["value"], "custom_field": custom_field,
+                              "id": data["id"]},
+                        old_data={"value": hist.data["value"]},
+                        volunteer_uuid=str(vol.uuid),
+                        group_operation_uuid=str(group_operation_uuid),
+                    )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
@@ -245,7 +267,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
         if errors:
             return Response(
-                {"updated": updated_volunteers,
+                {#"updated": updated_volunteers,
                 "errors": errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
