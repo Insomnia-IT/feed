@@ -1,5 +1,5 @@
 import type { VolEntity } from 'interfaces';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
 import { useList } from '@refinedev/core';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -14,6 +14,7 @@ export const useMassEdit = ({
 }): {
     selectedVols: Array<VolEntity>;
     unselectAllSelected: () => void;
+    unselectVolunteer: (volunteer: VolEntity) => void;
     rowSelection: TableProps<VolEntity>['rowSelection'];
 } => {
     const { data: volunteers, isLoading } = useList<VolEntity>({
@@ -32,10 +33,6 @@ export const useMassEdit = ({
     const unselectAllSelected = () => {
         setSelectedVols([]);
     };
-
-    useEffect(() => {
-        setSelectedVols([]);
-    }, [filterQueryParams]);
 
     const isAllCurrentSelected = totalVolunteersCount === selectedVols.length;
 
@@ -79,8 +76,11 @@ export const useMassEdit = ({
     };
 
     return {
+        rowSelection,
         selectedVols: selectedVols,
         unselectAllSelected,
-        rowSelection
+        unselectVolunteer: (volunteer: VolEntity) => {
+            onVolunteerSelection(volunteer, false);
+        }
     };
 };

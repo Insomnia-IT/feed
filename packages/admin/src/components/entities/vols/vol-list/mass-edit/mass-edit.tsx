@@ -18,6 +18,7 @@ const { Title } = Typography;
 interface MassEditProps {
     selectedVolunteers: VolEntity[];
     unselectAll: () => void;
+    unselectVolunteer: (volunteer: VolEntity) => void;
     reloadVolunteers: () => Promise<void>;
 }
 
@@ -67,7 +68,12 @@ const useDoChange = ({
     };
 };
 
-export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], unselectAll, reloadVolunteers }) => {
+export const MassEdit: React.FC<MassEditProps> = ({
+    selectedVolunteers = [],
+    unselectAll,
+    unselectVolunteer,
+    reloadVolunteers
+}) => {
     const doChange = useDoChange({ vols: selectedVolunteers, unselectAll, reloadVolunteers });
 
     if (selectedVolunteers.length === 0) {
@@ -82,7 +88,7 @@ export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], uns
                     <span className={styles.counter}> {selectedVolunteers.length}</span>
                 </Title>
             </header>
-            <SelectedVolunteerList selectedVolunteers={selectedVolunteers} />
+            <SelectedVolunteerList unselectVolunteer={unselectVolunteer} selectedVolunteers={selectedVolunteers} />
             <ActionsSection doChange={doChange} unselectAll={unselectAll} selectedVolunteers={selectedVolunteers} />
         </div>
     );
