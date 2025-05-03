@@ -40,7 +40,7 @@ function findValuesForTypeEaters(
     resFact: IEaterTypeAmount,
     resPredict: IEaterTypeAmount,
     typeOfEater?: EaterTypeExtended
-): { plan: number; fact: number, predict: number } {
+): { plan: number; fact: number; predict: number } {
     const shallowCopy = { plan: 0, fact: 0, predict: 0 };
     if (typeOfEater === 'meatEater') {
         shallowCopy.plan = resPlan.meatEater;

@@ -33,11 +33,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                     const isLast = index === breadcrumbs.length - 1;
                     return (
                         <Breadcrumb.Item key={item.label}>
-                            {isLast ? (
-                                volunteerName
-                            ) : (
-                                <Link to={item.href || '#'}>{item.label}</Link>
-                            )}
+                            {isLast ? volunteerName : <Link to={item.href || '#'}>{item.label}</Link>}
                         </Breadcrumb.Item>
                     );
                 })}

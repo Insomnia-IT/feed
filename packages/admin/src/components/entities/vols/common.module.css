@@ -145,7 +145,6 @@
     flex-wrap: nowrap;
 }
 
-
 .twoColumnsWrap {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -256,7 +255,6 @@
 .threeColumnsWrap > * {
     align-self: start;
 }
-
 
 .badgeInfo:not(:last-child) {
     margin-right: 12px;
@@ -462,35 +460,35 @@
 }
 
 .badgeColorCircle {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
 }
 
 .inputWithEllips {
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .inputWithEllips .ant-select-selection-item {
-  display: flex;
-  align-items: center;
-  overflow: hidden;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
 }
 
 .inputWithEllips .ant-select-selection-item span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ADAPTIVES */
@@ -501,7 +499,6 @@
 }
 
 @media (max-width: 768px) {
-
     .nameInput {
         width: 100%;
     }
@@ -567,13 +564,13 @@
     }
 
     .twoColumnsWrap {
-      display: grid;
-      grid-template-columns: calc(100% - 136px);
-  }
+        display: grid;
+        grid-template-columns: calc(100% - 136px);
+    }
 
-  .twoColumnsWrap > * {
-      margin-bottom: 0px;
-  }
+    .twoColumnsWrap > * {
+        margin-bottom: 0px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -617,28 +614,28 @@
     }
 
     .twoColumnsWrap {
-      display: grid;
-      grid-template-columns: calc(100% - 128px);
-  }
+        display: grid;
+        grid-template-columns: calc(100% - 128px);
+    }
 }
 
 .pageTitle {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .pageTitle h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.85);
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
 }
 
 @media (max-width: 576px) {
-  .pageTitle {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
+    .pageTitle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
 }

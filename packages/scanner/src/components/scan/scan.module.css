@@ -1,44 +1,44 @@
 .overlay {
-  display: flex;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%,-50%);
-  border: 4px solid var(--c-white);
-  border-radius: 16px;
-  width: 65vw;
-  height: 65vw;
-  max-width: 60vh;
-  max-height: 60vh;
-  z-index: var(--z-scan-overlay);
-  box-shadow: 0px 0px 0px 80vh rgba(0, 0, 0, 0.6);
+    display: flex;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 4px solid var(--c-white);
+    border-radius: 16px;
+    width: 65vw;
+    height: 65vw;
+    max-width: 60vh;
+    max-height: 60vh;
+    z-index: var(--z-scan-overlay);
+    box-shadow: 0px 0px 0px 80vh rgba(0, 0, 0, 0.6);
 }
 
 .head {
-  position: absolute;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  left: 16px;
-  right: 16px;
-  top: 20px;
-  height: 52px;
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    left: 16px;
+    right: 16px;
+    top: 20px;
+    height: 52px;
 }
 
 .bottomBlock {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 214px;
-  bottom: 21px;
-  left: 50%;
-  transform: translateX(-50%);
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 214px;
+    bottom: 21px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .mealTimeText {
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--c-white);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--c-white);
 }
