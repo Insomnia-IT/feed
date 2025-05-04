@@ -1,29 +1,29 @@
 {
-  "short_name": "Кормитель",
-  "name": "Кормитель",
-  "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "android-chrome-96x96.png",
-      "type": "image/png",
-      "sizes": "96x96"
-    },
-    {
-      "src": "mstile-150x150.png",
-      "type": "image/png",
-      "sizes": "150x150"
+    "short_name": "Кормитель",
+    "name": "Кормитель",
+    "icons": [
+        {
+            "src": "favicon.ico",
+            "sizes": "64x64 32x32 24x24 16x16",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "android-chrome-96x96.png",
+            "type": "image/png",
+            "sizes": "96x96"
+        },
+        {
+            "src": "mstile-150x150.png",
+            "type": "image/png",
+            "sizes": "150x150"
+        }
+    ],
+    "orientation": "portrait",
+    "start_url": ".",
+    "display": "fullscreen",
+    "theme_color": "#000000",
+    "background_color": "#ffffff",
+    "launch_handler": {
+        "route_to": "existing-client-retain"
     }
-  ],
-  "orientation": "portrait",
-  "start_url": ".",
-  "display": "fullscreen",
-  "theme_color": "#000000",
-  "background_color": "#ffffff",
-  "launch_handler": {
-    "route_to": "existing-client-retain"
-  }
 }

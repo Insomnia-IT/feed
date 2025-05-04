@@ -1,10 +1,10 @@
 import { RadarChartOutlined } from '@ant-design/icons';
 
-import { IPerson } from 'interfaces';
+import { PersonEntity } from 'interfaces';
 
 import styles from '../../common.module.css';
 
-export const PreviousYearsSection = ({ person }: { person: IPerson | null }) => {
+export const PreviousYearsSection = ({ person }: { person: PersonEntity | null }) => {
     const engagements = person?.engagements || [];
 
     return (

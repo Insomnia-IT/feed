@@ -8,6 +8,7 @@ import { Text, Title } from '~/shared/ui/typography';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { BureauComment } from '~/components/post-scan/post-scan-cards/ui/bureau-comment/bureau-comment';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
+
 import css from './feed-card.module.css';
 
 export const FeedCard: FC<{

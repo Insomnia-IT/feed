@@ -1,14 +1,5 @@
 import { FC, useMemo } from 'react';
-import {
-    ResponsiveContainer,
-    Bar,
-    CartesianGrid,
-    XAxis,
-    YAxis,
-    Tooltip,
-    Legend,
-    BarChart
-} from 'recharts';
+import { ResponsiveContainer, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, BarChart } from 'recharts';
 import { Spin } from 'antd';
 
 import { IColumnChartData, MealTime } from '../types';

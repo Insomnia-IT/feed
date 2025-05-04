@@ -31,7 +31,10 @@ export const crudDataProvider = (
                     return acc;
                 }, {}),
                 limit: pagination?.mode === 'server' && pagination?.pageSize ? pagination.pageSize : 10000,
-                offset: pagination?.mode === 'server' && pagination?.current && pagination?.pageSize ? (pagination.current - 1) * pagination.pageSize : 0
+                offset:
+                    pagination?.mode === 'server' && pagination?.current && pagination?.pageSize
+                        ? (pagination.current - 1) * pagination.pageSize
+                        : 0
             },
             headers: headersFromMeta
         });

@@ -5,13 +5,7 @@ import axios from 'axios';
 import { NEW_API_URL } from 'const';
 import { dayjsExtended as dayjsExt, formDateFormat } from 'shared/lib';
 
-import type {
-    EaterTypeExtended,
-    IStatisticApi,
-    IStatisticResponce,
-    KitchenIdExtended,
-    MealTime
-} from '../types';
+import type { EaterTypeExtended, IStatisticApi, IStatisticResponce, KitchenIdExtended, MealTime } from '../types';
 import {
     convertResponceToData,
     handleDataForColumnChart,
@@ -187,11 +181,7 @@ function PublicStatistic() {
                         </Form.Item>
                     </Form>
 
-                    <ColumnChart
-                        data={dataForColumnChart}
-                        mealTime={selectedMealTime}
-                        loading={loading}
-                    />
+                    <ColumnChart data={dataForColumnChart} mealTime={selectedMealTime} loading={loading} />
                 </>
             ) : (
                 <LinearChart data={dataForLinearChart} />
