@@ -72,7 +72,7 @@ export const FeedTransactionList: FC = () => {
                 let valueToUse: string = typeof value === 'boolean' ? String(value) : (value as string);
 
                 if (Array.isArray(value)) {
-                    valueToUse = value.length > 1 ? value.join(',') : valueToUse[0];
+                    valueToUse = value.length > 1 ? value.join(',') : String(valueToUse[0]);
                 }
 
                 newFilters.push({
