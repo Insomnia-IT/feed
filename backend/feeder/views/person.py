@@ -9,4 +9,4 @@ class PersonViewSet(viewsets.ModelViewSet):
     queryset = models.Person.objects.all()
     serializer_class = serializers.PersonSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', ]
+    search_fields = ['first_name', 'last_name', 'name', 'nickname', 'other_names', 'telegram', 'phone', 'email']
