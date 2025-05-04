@@ -27,6 +27,9 @@ import {
 
 //TODO: разнести стили по секциям
 import styles from '../common.module.css';
+import { axios } from 'authProvider';
+import { NEW_API_URL } from 'const';
+import { useLocation } from 'react-router-dom';
 
 export const CommonEdit = () => {
     const form = Form.useFormInstance();
@@ -40,6 +43,29 @@ export const CommonEdit = () => {
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
 
     const person = Form.useWatch('person', form);
+
+    const loadPerson = async () => {
+        const personId = new URLSearchParams(search).get('person_id');
+        if (!personId) return;
+
+        try {
+            const { data } = await axios.get(`${NEW_API_URL}/persons/${personId}`);
+
+            form.setFieldValue('person_id', personId);
+            form.setFieldValue('person', data);
+            ['first_name', 'last_name', 'name', 'is_vegan', 'gender'].forEach((fieldName) => {
+                form.setFieldValue(fieldName, data[fieldName]);
+            })
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    const { search } = useLocation();
+
+    useEffect(() => {
+        loadPerson();
+    }, [search, form]);
 
     const volunteerId = form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);

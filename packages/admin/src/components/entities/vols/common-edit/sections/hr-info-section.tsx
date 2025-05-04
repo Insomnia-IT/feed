@@ -2,7 +2,7 @@ import { Form, Input, Select } from 'antd';
 import { useSelect } from '@refinedev/antd';
 
 import { Rules } from 'components/form';
-import type { AccessRoleEntity, IPerson, VolunteerRoleEntity } from 'interfaces';
+import type { AccessRoleEntity, PersonEntity, VolunteerRoleEntity } from 'interfaces';
 import useCanAccess from '../../use-can-access';
 
 import styles from '../../common.module.css';
@@ -14,7 +14,7 @@ export const HrInfoSection = ({
 }: {
     canFullEditing: boolean;
     denyBadgeEdit: boolean;
-    person: IPerson | null;
+    person: PersonEntity | null;
 }) => {
     const form = Form.useFormInstance();
     const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });

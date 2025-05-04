@@ -141,7 +141,7 @@ export interface ArrivalEntity {
     status: string;
 }
 
-interface IEngagement {
+interface EngagementEntity {
     id: string;
     year: number;
     direction: {
@@ -152,6 +152,16 @@ interface IEngagement {
     };
 }
 
-export interface IPerson {
-    engagements: IEngagement[];
+export interface PersonEntity {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    name?: string;
+    nickname?: string;
+    other_names?: string;
+    phone?: string;
+    email?: string;
+    photo?: string;
+    is_vegan?: boolean;
+    engagements: EngagementEntity[];
 }
