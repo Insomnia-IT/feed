@@ -5,8 +5,12 @@ import { IdcardOutlined } from '@ant-design/icons';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { useList, useNotification } from '@refinedev/core';
 import { HAS_BADGE_FIELD_NAME } from 'const';
+import { ChangeMassEditField } from './mass-edit-types';
 
-export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
+export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[]; doChange: ChangeMassEditField }> = ({
+    selectedVolunteers,
+    doChange
+}) => {
     const [isTicketsModalOpen, setIsTicketsModalOpen] = useState<boolean>(false);
     const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
     const { open = () => {} } = useNotification();
@@ -33,16 +37,25 @@ export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ 
 
     const onConfirm = () => {
         if (!HAS_BADGE_FIELD_ID) {
+            open({
+                message: `Функционал сломан. Не найден id кастомного поля "${HAS_BADGE_FIELD_NAME}"`,
+                type: 'error',
+                undoableTimeout: 5000
+            });
+
+            console.error(
+                `<HasBadgeButton/> error: Функционал сломан. Не найден id кастомного поля "${HAS_BADGE_FIELD_NAME}"`,
+                { data, HAS_BADGE_FIELD_ID, HAS_BADGE_FIELD_NAME }
+            );
+
             return;
         }
 
-        open({
-            message: 'это поле ещё нельзя менять(',
-            type: 'error',
-            undoableTimeout: 5000
+        doChange({
+            isCustom: true,
+            fieldName: String(HAS_BADGE_FIELD_ID),
+            fieldValue: 'true'
         });
-
-        closeModal();
     };
 
     return (
@@ -56,7 +69,7 @@ export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ 
                 description={`Вы выбрали ${selectedVolunteers.length} волонтеров и выдаете им бейджи. Проверяйте несколько раз, каких волонтеров вы выбираете!`}
                 warning={getWarningText()}
                 onConfirm={onConfirm}
-                closeModal={() => setIsTicketsModalOpen(false)}
+                closeModal={closeModal}
                 isOpen={isTicketsModalOpen}
             />
         </>

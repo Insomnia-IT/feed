@@ -10,8 +10,8 @@ import { KitchenFrame } from './kitchen-frame';
 import { InitialFrame } from './initial-frame';
 import { ActionSectionStates } from './action-section-states';
 import { CustomFieldsFrame } from './custom-fields-frame';
-import { useApiUrl, useNotification } from '@refinedev/core';
-import { axios } from '../../../../../authProvider';
+import { ChangeMassEditField } from './mass-edit-types';
+import { useDoChange } from './use-do-change';
 
 const { Title } = Typography;
 
@@ -21,52 +21,6 @@ interface MassEditProps {
     unselectVolunteer: (volunteer: VolEntity) => void;
     reloadVolunteers: () => Promise<void>;
 }
-
-const useDoChange = ({
-    vols,
-    unselectAll,
-    reloadVolunteers
-}: {
-    vols: VolEntity[];
-    unselectAll: () => void;
-    reloadVolunteers: () => Promise<void>;
-}) => {
-    const apiUrl = useApiUrl();
-    const { open = () => {} } = useNotification();
-
-    return async ({ fieldValue, fieldName }: { fieldName: string; fieldValue: string }) => {
-        try {
-            await axios.post(apiUrl + '/volunteer-group/', {
-                volunteers_ids: vols.map((vol) => vol.id),
-                field_list: [
-                    {
-                        field: fieldName,
-                        data: fieldValue
-                    }
-                ]
-            });
-
-            open({
-                message: 'Изменения успешно применены',
-                description: 'Список волонтеров сейчас обновится',
-                type: 'success',
-                undoableTimeout: 5000
-            });
-
-            unselectAll();
-
-            await reloadVolunteers();
-        } catch (error) {
-            console.error(error);
-
-            open({
-                message: 'Произошла ошибка. Возможно, изменения были не применены',
-                type: 'error',
-                undoableTimeout: 5000
-            });
-        }
-    };
-};
 
 export const MassEdit: React.FC<MassEditProps> = ({
     selectedVolunteers = [],
@@ -97,14 +51,18 @@ export const MassEdit: React.FC<MassEditProps> = ({
 const ActionsSection: React.FC<{
     unselectAll: () => void;
     selectedVolunteers: VolEntity[];
-    doChange: (params: { fieldName: string; fieldValue: string }) => Promise<void>;
+    doChange: ChangeMassEditField;
 }> = ({ unselectAll, selectedVolunteers, doChange }) => {
     const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
 
     return (
         <section className={styles.action}>
             {sectionState === ActionSectionStates.Initial ? (
-                <InitialFrame selectedVolunteers={selectedVolunteers} setSectionState={setSectionState} />
+                <InitialFrame
+                    selectedVolunteers={selectedVolunteers}
+                    setSectionState={setSectionState}
+                    doChange={doChange}
+                />
             ) : null}
             {![ActionSectionStates.Initial, ActionSectionStates.Arrivals].includes(sectionState) ? (
                 <header>
@@ -123,13 +81,14 @@ const ActionsSection: React.FC<{
                 <KitchenFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
             ) : null}
             {sectionState === ActionSectionStates.CustomFields ? (
-                <CustomFieldsFrame selectedVolunteers={selectedVolunteers} />
+                <CustomFieldsFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
             ) : null}
             {sectionState === ActionSectionStates.GroupBadge ? (
                 <GroupBadgeFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
             ) : null}
             {sectionState === ActionSectionStates.Arrivals ? (
                 <ArrivalsFrame
+                    doChange={doChange}
                     goBack={() => {
                         setSectionState(ActionSectionStates.Initial);
                     }}

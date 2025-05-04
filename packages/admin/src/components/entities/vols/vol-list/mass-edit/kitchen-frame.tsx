@@ -29,18 +29,24 @@ export const KitchenFrame: React.FC<{
     const confirmChange = () => {
         const currentKitchen = kitchens.find((kitchen) => kitchen.name === selectedKitchenName);
 
-        if (currentKitchen?.id) {
-            doChange({ fieldName: 'kitchen', fieldValue: String(currentKitchen.id) });
-        } else {
+        if (!currentKitchen?.id) {
             open({
                 message: 'Некорректная кухня!',
                 description: 'Выбранная кухня не существует, либо не заполнен id',
                 type: 'error',
                 undoableTimeout: 5000
             });
+
+            console.error('<KitchenFrame/> error: Выбранная кухня не существует, либо не заполнен id', {
+                currentKitchen,
+                selectedVolunteers,
+                kitchensData
+            });
+
+            return;
         }
 
-        closeModal();
+        doChange({ fieldName: 'kitchen', fieldValue: String(currentKitchen.id) });
     };
 
     return (
