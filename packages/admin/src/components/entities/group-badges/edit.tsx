@@ -1,30 +1,31 @@
+import { FC, useEffect, useMemo, useState } from 'react';
 import { Edit, EditButton, TextField, useForm, useTable } from '@refinedev/antd';
 import { Button, Table, Form, Typography, Space, Divider, Input, Popconfirm, Row, Col } from 'antd';
 import { useUpdateMany } from '@refinedev/core';
 import { DeleteOutlined } from '@ant-design/icons';
-import { FC, useEffect, useState } from 'react';
 
-import type { GroupBadgeEntity, VolEntity } from 'interfaces';
+import type { DirectionEntity, GroupBadgeEntity, VolEntity } from 'interfaces';
 import { CreateEdit } from './common';
 import { AddVolunteerModal } from 'components/entities/group-badges/add-volunteer-modal';
 
 const { Title } = Typography;
 
 export const GroupBadgeEdit: FC = () => {
-    const { mutate } = useUpdateMany();
-
     const [volunteers, setVolunteers] = useState<Array<VolEntity & { markedDeleted: boolean; markedAdded: boolean }>>(
         []
     );
-
     const [openAdd, setOpenAdd] = useState(false);
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(10);
+
+    const { mutate } = useUpdateMany();
 
     const { formProps, id, saveButtonProps } = useForm<GroupBadgeEntity>({
         onMutationSuccess: () => {
             const volunteersToDelete = volunteers.filter((item) => item.markedDeleted);
             const volunteersToAdd = volunteers.filter((item) => item.markedAdded);
 
-            if (volunteersToDelete.length > 0) {
+            if (volunteersToDelete.length) {
                 mutate({
                     resource: 'volunteers',
                     ids: volunteersToDelete.map((vol) => vol.id),
@@ -32,7 +33,7 @@ export const GroupBadgeEdit: FC = () => {
                 });
             }
 
-            if (volunteersToAdd.length > 0) {
+            if (volunteersToAdd.length) {
                 mutate({
                     resource: 'volunteers',
                     ids: volunteersToAdd.map((vol) => vol.id),
@@ -42,108 +43,110 @@ export const GroupBadgeEdit: FC = () => {
         }
     });
 
-    const { setFilters, tableProps: currentVolsTableParams } = useTable<VolEntity>({
+    const { setFilters, tableProps: tablePropsVolunteers } = useTable<VolEntity>({
         resource: 'volunteers',
-        initialFilter: [
-            {
-                field: 'group_badge',
-                operator: 'eq',
-                value: id
-            }
-        ],
-        initialSorter: [
-            {
-                field: 'id',
-                order: 'desc'
-            }
-        ],
-        hasPagination: false,
-        initialPageSize: 10000
+        initialFilter: [{ field: 'group_badge', operator: 'eq', value: id }],
+        initialSorter: [{ field: 'id', order: 'desc' }],
+        pagination: {
+            current: page,
+            pageSize
+        }
     });
 
+    const syncedVolunteers = useMemo(() => {
+        const prevMap = new Map(volunteers.map((v) => [v.id, v]));
+        return (
+            tablePropsVolunteers.dataSource?.map((v) => ({
+                ...v,
+                markedDeleted: prevMap.get(v.id)?.markedDeleted ?? false,
+                markedAdded: prevMap.get(v.id)?.markedAdded ?? false
+            })) ?? []
+        );
+    }, [tablePropsVolunteers.dataSource, volunteers]);
+
     useEffect(() => {
-        console.log('called!');
+        setVolunteers(syncedVolunteers);
+    }, [syncedVolunteers]);
 
-        // По идее, тут дополняем данные полями 'markedDeleted' и 'markedAdded' и записываем их в volunteers
-        setVolunteers((prevVolunteers) => {
-            const prevVolunteersMap = new Map(prevVolunteers.map((vol) => [vol.id, vol]));
-
-            return (
-                currentVolsTableParams.dataSource?.map((vol) => ({
-                    ...vol,
-                    markedDeleted: prevVolunteersMap.get(vol.id)?.markedDeleted ?? false,
-                    markedAdded: prevVolunteersMap.get(vol.id)?.markedAdded ?? false
-                })) ?? []
-            );
-        });
-    }, [currentVolsTableParams.dataSource]);
-
-    const handleChangeInputValue = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const value = event.target.value;
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters([
-            {
-                field: 'group_badge',
-                operator: 'eq',
-                value: id
-            },
-            {
-                field: 'search',
-                operator: 'eq',
-                value
-            }
+            { field: 'group_badge', operator: 'eq', value: id },
+            { field: 'search', operator: 'eq', value: e.target.value }
         ]);
     };
 
-    const activeVolunteers = volunteers.filter((item) => !item.markedDeleted);
+    const handleRemoveVolunteer = (record: VolEntity) => {
+        setVolunteers((prev) =>
+            prev.find((v) => v.id === record.id)?.markedAdded
+                ? prev.filter((v) => v.id !== record.id)
+                : prev.map((v) => (v.id === record.id ? { ...v, markedDeleted: true } : v))
+        );
+    };
+
+    const handlePageChange = (newPage: number, newSize: number) => {
+        setPage(newPage);
+        setPageSize(newSize);
+    };
+
+    const pagination = {
+        total:
+            tablePropsVolunteers.pagination && tablePropsVolunteers.pagination.total
+                ? tablePropsVolunteers.pagination.total
+                : 0,
+        current: page,
+        pageSize: pageSize,
+        showTotal: (total: number) => (
+            <>
+                <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
+                <span data-testid="volunteer-count-value">{total}</span>
+            </>
+        ),
+        onChange: handlePageChange
+    };
+
+    const visibleVolunteers = volunteers.filter((v) => !v.markedDeleted);
 
     return (
-        <Edit
-            saveButtonProps={saveButtonProps}
-            contentProps={{
-                style: {
-                    marginBottom: 60,
-                    overflow: 'auto'
-                }
-            }}
-        >
+        <Edit saveButtonProps={saveButtonProps} contentProps={{ style: { marginBottom: 60, overflow: 'auto' } }}>
             <Form {...formProps} layout="vertical">
                 <CreateEdit />
                 <span data-testid="volunteer-count-caption">Количество волонтеров:</span>{' '}
-                <span data-testid="volunteer-count-value">{activeVolunteers?.length}</span>
+                <span data-testid="volunteer-count-value">{pagination.total}</span>
             </Form>
+
             <Divider />
+
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
                 <Col>
                     <Title level={5}>Волонтеры</Title>
                 </Col>
                 <Col>
                     <Space>
-                        <Input placeholder="Поиск волонтера" allowClear onChange={handleChangeInputValue} />
+                        <Input placeholder="Поиск волонтера" allowClear onChange={handleSearchChange} />
                         <Button type="primary" onClick={() => setOpenAdd(true)}>
                             Добавить волонтера
                         </Button>
                     </Space>
                 </Col>
             </Row>
-            <Table {...currentVolsTableParams} dataSource={activeVolunteers} rowKey="id">
-                <Table.Column dataIndex="name" key="name" title="Имя на бейдже" />
-                <Table.Column dataIndex="first_name" key="first_name" title="Имя" />
-                <Table.Column dataIndex="last_name" key="last_name" title="Фамилия" />
+
+            <Table {...tablePropsVolunteers} dataSource={visibleVolunteers} rowKey="id" pagination={pagination}>
+                <Table.Column dataIndex="name" title="Имя на бейдже" />
+                <Table.Column dataIndex="first_name" title="Имя" />
+                <Table.Column dataIndex="last_name" title="Фамилия" />
                 <Table.Column
                     dataIndex="directions"
-                    key="directions"
                     title="Службы/Локации"
-                    render={(directions) => (
+                    render={(directions: DirectionEntity[]) => (
                         <TextField
                             style={{ whiteSpace: 'pre-wrap' }}
-                            value={directions.map(({ name }: { name: string }) => name).join(', ')}
+                            value={directions.map(({ name }) => name).join(', ')}
                         />
                     )}
                     ellipsis
                 />
                 <Table.Column
                     title="Действия"
-                    dataIndex="actions"
                     render={(_, record: VolEntity) => (
                         <Space>
                             <EditButton
@@ -157,15 +160,7 @@ export const GroupBadgeEdit: FC = () => {
                                 okText="Удалить"
                                 cancelText="Отмена"
                                 okType="danger"
-                                onConfirm={(): void => {
-                                    setVolunteers((prevVolunteers) =>
-                                        prevVolunteers.find((item) => item.id === record.id)?.markedAdded
-                                            ? prevVolunteers.filter((item) => item.id !== record.id)
-                                            : prevVolunteers.map((vol) =>
-                                                  vol.id === record.id ? { ...vol, markedDeleted: true } : vol
-                                              )
-                                    );
-                                }}
+                                onConfirm={() => handleRemoveVolunteer(record)}
                             >
                                 <Button icon={<DeleteOutlined />} danger size="small" />
                             </Popconfirm>
@@ -173,6 +168,7 @@ export const GroupBadgeEdit: FC = () => {
                     )}
                 />
             </Table>
+
             <AddVolunteerModal
                 setVolunteers={setVolunteers}
                 volunteers={volunteers}
