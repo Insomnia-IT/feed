@@ -15,10 +15,8 @@ export const GroupBadgeEdit: FC = () => {
         []
     );
     const [openAdd, setOpenAdd] = useState(false);
-    const [page, setPage] = useState<number>(() => parseFloat(localStorage.getItem('groupBadgePage') || '1') || 1);
-    const [pageSize, setPageSize] = useState<number>(
-        () => parseFloat(localStorage.getItem('groupBadgePageSize') || '10') || 10
-    );
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(10);
 
     const { mutate } = useUpdateMany();
 
@@ -88,8 +86,6 @@ export const GroupBadgeEdit: FC = () => {
     const handlePageChange = (newPage: number, newSize: number) => {
         setPage(newPage);
         setPageSize(newSize);
-        localStorage.setItem('groupBadgePage', newPage.toString());
-        localStorage.setItem('groupBadgePageSize', newSize.toString());
     };
 
     const pagination = {
