@@ -4,7 +4,7 @@ import { Rules } from 'components/form';
 import HorseIcon from 'assets/icons/horse-icon';
 import styles from '../../common.module.css';
 import useCanAccess from '../../use-can-access';
-import type { DirectionEntity, IPerson } from 'interfaces';
+import type { DirectionEntity, PersonEntity } from 'interfaces';
 import { useSelect } from '@refinedev/antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
@@ -25,7 +25,7 @@ export const VolInfoSection = ({
   colorTypeOptions: { label: string; value: string | number }[];
   groupBadgeOptions: { label: string; value: string | number }[];
   handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  person: IPerson | null;
+  person: PersonEntity | null;
 }) => {
   const form = Form.useFormInstance();
   const [imageError, setImageError] = useState(false);

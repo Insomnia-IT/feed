@@ -3,6 +3,7 @@ import React from 'react';
 import cn from 'classnames';
 
 import { Text } from '~/shared/ui/typography';
+
 import { ScannerComment } from '../scanner-comment/scanner-comment';
 
 import css from './bureau-comment.module.css';
