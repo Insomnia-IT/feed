@@ -29,6 +29,6 @@
     font-size: 16px;
 
     ::placeholder {
-        color: var(--c-secondary-txt)
+        color: var(--c-secondary-txt);
     }
 }

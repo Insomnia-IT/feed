@@ -7,6 +7,6 @@
     }
 
     &.white {
-        color: var(--c-white)
+        color: var(--c-white);
     }
 }

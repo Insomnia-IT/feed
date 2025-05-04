@@ -283,11 +283,7 @@ export const useFilters = ({
     const transportById = useMapFromList(transports);
 
     return {
-        isFiltersLoading:
-            kitchensIsLoading ||
-            feedTypesIsLoading ||
-            accessRolesIsLoading ||
-            volunteerRolesIsLoading,
+        isFiltersLoading: kitchensIsLoading || feedTypesIsLoading || accessRolesIsLoading || volunteerRolesIsLoading,
         filterQueryParams,
         searchText,
         setSearchText,

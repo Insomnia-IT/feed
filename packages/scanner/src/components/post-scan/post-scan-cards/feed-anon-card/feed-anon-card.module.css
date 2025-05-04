@@ -1,12 +1,12 @@
 .cardContainer {
-  padding-top: 32px;
-  justify-content: space-between;
+    padding-top: 32px;
+    justify-content: space-between;
 }
 
 .head {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
 }
 
 .bottomBLock {
@@ -18,24 +18,23 @@
 }
 
 .buttonsBlock {
-  display: grid;
-  grid-template-areas: "a b" "c c" "d d";
-  gap: 8px;
+    display: grid;
+    grid-template-areas: 'a b' 'c c' 'd d';
+    gap: 8px;
 }
 
 .feedMeatEater {
-  grid-area: a;
+    grid-area: a;
 }
 
 .feedVegan {
-  grid-area: b;
+    grid-area: b;
 }
 
 .feedGroup {
-  grid-area: c;
+    grid-area: c;
 }
 
 .cancel {
-  grid-area: d;
+    grid-area: d;
 }
-

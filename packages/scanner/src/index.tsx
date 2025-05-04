@@ -22,9 +22,7 @@ ReactDOM.render(<HotApp/>, document.getElementById('root'));*/
 //@ts-ignore
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 const dev = process.env.NODE_ENV !== 'production';
-root.render(
-    <App/>
-);
+root.render(<App />);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

@@ -32,8 +32,7 @@ const useSaveConfirm = (
     return {
         onClick: () => {
             const arrivals = form.getFieldValue('arrivals') ?? [];
-            const activeFrom =
-                form.getFieldValue(['arrivals', 0, 'arrival_date']);
+            const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
             if (!arrivals.some(({ status }: { status: string }) => isActivatedStatus(status))) {
                 setShowConfirmationModalReason('is_active');
             } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
