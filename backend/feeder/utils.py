@@ -78,7 +78,7 @@ def get_stat_amount(stat, item):
     else:
         return 0
 
-def calculate_statistics(date_from, date_to):
+def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None):
     start_time = time.time()
     # convert from str to a datetime type (Arrow)
     stat_date_from = arrow.get(date_from, tzinfo=TZ)
@@ -101,6 +101,15 @@ def calculate_statistics(date_from, date_to):
     stat = dict()
 
     for txn in transactions:
+        if anonymous is True and txn.get('volunteer_id') is not None:
+            continue
+        if anonymous is False and txn.get('volunteer_id') is None:
+            continue
+        if group_badge is True and txn.get('group_badge') is not None:
+            continue
+        if group_badge is False and txn.get('group_badge') is None:
+            continue
+        
         state_date = arrow.get(txn['dtime'])
         adjusted_date = (
             state_date.shift(days=-1) 

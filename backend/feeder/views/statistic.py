@@ -27,6 +27,8 @@ class Statistics(APIView):
         result = calculate_statistics(
             serializer.validated_data.get('date_from', today),
             serializer.validated_data.get('date_to', today),
+            serializer.validated_data.get('anonymous'),
+            serializer.validated_data.get('group_badge')
         )
 
         return Response(

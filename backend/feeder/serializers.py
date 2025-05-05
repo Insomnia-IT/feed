@@ -438,6 +438,8 @@ class KitchenSerializer(serializers.ModelSerializer):
 class FilterStatisticsSerializer(serializers.Serializer):
     date_from = serializers.DateField()
     date_to = serializers.DateField()
+    anonymous = serializers.BooleanField(allow_null=True)
+    group_badge = serializers.BooleanField(allow_null=True)
 
 
 class StatisticsSerializer(serializers.Serializer):
