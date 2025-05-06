@@ -69,6 +69,7 @@ export interface FeedTransactionEntity {
     reason: string | null;
     kitchen: number;
     group_badge?: number;
+    volunteer_name?: string;
 }
 
 export interface GroupBadgeEntity {
