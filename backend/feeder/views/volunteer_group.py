@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from feeder import serializers
 from feeder.models import Volunteer,VolunteerGroupOperation, Arrival
-from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer
+from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer, ArrivalSerializer
 from feeder.views.mixins import get_request_user_id
 
 from history.models import History
@@ -28,22 +28,40 @@ class VolunteerGroupViewSet(APIView):
     )
     def post(self, request, *args, **kwargs):
         volunteers_ids = request.data.get('volunteers_ids', [])
-        new_data_list = request.data.get('field_list', {})
-        new_data_arrival_list = request.data.get('arrival_field_list', {})
+        new_data_list = request.data.get('field_list', [])
+        new_data_arrival_list = request.data.get('arrival_field_list', [])
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
         
+        vol_allowed = set(VolunteerSerializer().fields.keys())
+
+        arr_allowed = set(ArrivalSerializer().fields.keys())
+        
         new_data = {}
         new_data_arrival = {}
+        invalid_vol = []
+        invalid_arr = []
+
         for entity in new_data_list:
             new_data[entity['field']] = entity['data']
+            if entity['field'] not in vol_allowed:
+                invalid_vol.append(entity['field'])
         
         for entity in new_data_arrival_list:
             new_data_arrival[entity['field']] = entity['data']
+            if entity['field'] not in arr_allowed:
+                invalid_arr.append(entity['field'])
 
-        if not isinstance(new_data, dict) or not isinstance(new_data_arrival, dict) or not new_data and not new_data_arrival:
-            return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
+        if not len(new_data) and not len(new_data_arrival):
+            return Response({"error": "Fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if invalid_vol or invalid_arr:
+            return Response({
+                "error": "Found invalid fields",
+                "invalid_volunteer_fields": invalid_vol,
+                "invalid_arrival_fields": invalid_arr
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         updated_volunteers = []
         errors = []
@@ -53,6 +71,21 @@ class VolunteerGroupViewSet(APIView):
         
         group_operation_uuid = uuid4()
 
+        if new_data_arrival:
+            missing = []
+            today = timezone.localdate()
+            for volunteer_id in volunteers_ids:
+                if not Arrival.objects.filter(
+                        volunteer_id=volunteer_id,
+                        departure_date__gte=today
+                    ).exists():
+                    missing.append(volunteer_id)
+            if missing:
+                return Response({
+                    "error": "No current or upcoming arrival to update",
+                    "volunteers_without_arrivals": missing
+                }, status=status.HTTP_400_BAD_REQUEST)
+
         with transaction.atomic():
             for volunteer_id in volunteers_ids:
                 try:
@@ -61,7 +94,6 @@ class VolunteerGroupViewSet(APIView):
                     arrivals = Arrival.objects.filter(volunteer=vol)
 
                     all_arrivals = []
-                    today = timezone.localdate()
                     target = None
                     if new_data_arrival:
                         target = (
@@ -70,10 +102,6 @@ class VolunteerGroupViewSet(APIView):
                             .order_by('arrival_date')
                             .first()
                         )
-                        # if not target:
-                        #     raise ValidationError({
-                        #         "arrivals": "no current or upcoming arrival to update"
-                        #     })
                     
                     for arr in arrivals:
                         entry = {"id": arr.id}
