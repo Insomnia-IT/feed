@@ -65,26 +65,12 @@ class VolunteerGroupViewSet(APIView):
 
         updated_volunteers = []
         errors = []
+        missing_arrs = []
 
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values('id', *new_data.keys())
         original_data = {volunteer['id']: {field: volunteer[field] for field in new_data.keys()} for volunteer in volunteers_before_update}
         
         group_operation_uuid = uuid4()
-
-        if new_data_arrival:
-            missing = []
-            today = timezone.localdate()
-            for volunteer_id in volunteers_ids:
-                if not Arrival.objects.filter(
-                        volunteer_id=volunteer_id,
-                        departure_date__gte=today
-                    ).exists():
-                    missing.append(volunteer_id)
-            if missing:
-                return Response({
-                    "error": "No current or upcoming arrival to update",
-                    "volunteers_without_arrivals": missing
-                }, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
             for volunteer_id in volunteers_ids:
@@ -94,6 +80,7 @@ class VolunteerGroupViewSet(APIView):
                     arrivals = Arrival.objects.filter(volunteer=vol)
 
                     all_arrivals = []
+                    today = timezone.localdate()
                     target = None
                     if new_data_arrival:
                         target = (
@@ -102,6 +89,8 @@ class VolunteerGroupViewSet(APIView):
                             .order_by('arrival_date')
                             .first()
                         )
+                        if not target:
+                            missing_arrs.append(volunteer_id)
                     
                     for arr in arrivals:
                         entry = {"id": arr.id}
@@ -147,7 +136,8 @@ class VolunteerGroupViewSet(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"id": str(group_operation_uuid)},
+            {"id": str(group_operation_uuid),
+             "missing_arrivals": missing_arrs},
             status=status.HTTP_200_OK)
 
 class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
