@@ -174,12 +174,6 @@ export const PostScanGroupBadge: FC<{
             return;
         }
 
-        // nobody eats
-        if (vols?.length === validationGroupsNext.reds.length) {
-            setView(Views.RED);
-            return;
-        }
-
         // all vols or some of them eat but there is messages to show
         setView(Views.YELLOW);
     }, [kitchenId, mealTime, vols]);
@@ -232,8 +226,7 @@ const ResultScreen: React.FC<{
                     validationGroups={validationGroups}
                 />
             );
-        case Views.RED:
-            return <ErrorCard close={closeFeed} msg={`Вы отсканировали групповой бейдж “${name}”. Никто не ест.`} />;
+
         default:
             return <ErrorCard close={closeFeed} msg={'Непредвиденная ошибка'} />;
     }
