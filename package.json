@@ -7,40 +7,39 @@
         "bootstrap": "lerna clean -y && rimraf ./node_modules/ && npm install",
         "build": "lerna run build --stream --scope @feed/admin --scope @feed/scanner",
         "build:since": "nx affected --target=build",
-        "dep": "nx dep",
-        "bl": "browserslist --update-db",
+        "dep": "nx graph",
+        "bl": "npx update-browserslist-db@latest",
         "lint:js": "lerna run lint:js",
         "lint-fix:js": "lerna run lint-fix:js",
-        "lint:css": "stylelint ./packages/**/*.css",
-        "lint-fix:css": "stylelint --fix ./packages/**/*.css",
+        "lint:css": "stylelint 'packages/**/*.{css,scss,less}'",
+        "lint-fix:css": "stylelint --fix 'packages/**/*.{css,scss,less}'",
         "lint:ts": "lerna run tc",
         "lint": "npm-run-all -s lint:*",
         "lint-fix": "npm-run-all -s lint-fix:*",
         "tc": "lerna run tc",
-        "todo": "leasot -x --reporter markdown 'packages/**/*.(ts|tsx)' > TODO.md",
+        "todo": "leasot -x --reporter markdown \"packages/**/*.ts\" \"packages/**/*.tsx\" > TODO.md",
         "madge": "npx madge",
         "stat": "tokei",
-        "husky-install": "npm run husky install"
+        "postinstall": "husky install"
     },
     "workspaces": [
         "packages/*"
     ],
-    "resolutions": {
-        "axios": "^1.3.3"
-    },
     "devDependencies": {
-        "lerna": "^6.5.1",
-        "nx": "^15.7.2"
-    },
-    "dependencies": {
+        "@stylistic/stylelint-plugin": "^3.1.2",
         "cross-env": "^7.0.3",
-        "husky": "^8.0.3",
-        "leasot": "^13.2.0",
+        "husky": "^9.1.7",
+        "leasot": "^14.4.0",
+        "lerna": "^8.2.2",
+        "lint-staged": "^15.5.1",
         "npm-run-all": "^4.1.5",
-        "recharts": "^2.15.1",
-        "rimraf": "^4.1.2"
+        "nx": "20.8.1",
+        "rimraf": "^6.0.1",
+        "stylelint": "^16.19.1",
+        "stylelint-config-standard": "^38.0.0"
     },
-    "peerDependencies": {
-        "stylelint": "^14.0.0"
+    "lint-staged": {
+        "*.{ts,tsx,js,jsx}": "prettier --write",
+        "*.{css,scss,less}": "stylelint --fix"
     }
 }

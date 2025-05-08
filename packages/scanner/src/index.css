@@ -41,15 +41,12 @@ html {
 body {
     height: 100%;
     margin: 0;
-    /* stylelint-disable */
-    font-family: 'Inter', sans-serif;
+    font-family: Inter, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
 }
 
 code {
-    /* stylelint-disable */
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-    /* stylelint-enable */
 }

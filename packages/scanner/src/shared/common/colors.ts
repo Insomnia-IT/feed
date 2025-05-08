@@ -5,11 +5,11 @@ export type Colors = {
     yellow: '#fad900';
     dark: '#333333';
     light: '#f5f5f5';
-    blue: '#3D2EE8';
+    blue: '#3d2ee8';
     white: '#ffffff';
-    grey: '#F5F7F8';
-    error: '#DD2E4E';
-    success: '#1A9A6B';
-    txt: '#1B1B1B';
-    'secondary-txt': '#8F8F8F';
+    grey: '#f5f7f8';
+    error: '#dd2e4e';
+    success: '#1a9a6b';
+    txt: '#1b1b1b';
+    'secondary-txt': '#8f8f8f';
 };

@@ -1,5 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-git log -n 1 --pretty=format:%at packages/scanner > pwa-ver.txt
-git add pwa-ver.txt
+#  TODO: Узнать зачем нужен этот файл, при каждом коммите на main ветке
+# git log -n 1 --pretty=format:%at packages/scanner > pwa-ver.txt
+# git add pwa-ver.txt
+
+npx lint-staged

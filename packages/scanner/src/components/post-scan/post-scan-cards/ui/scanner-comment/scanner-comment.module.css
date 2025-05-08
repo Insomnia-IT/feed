@@ -1,7 +1,6 @@
 .scannerComment {
     width: 100%;
-    word-break: break-word;
-    border-radius: 16px;
+    overflow-wrap: break-word;
     padding: 12px 16px;
     display: flex;
     align-items: center;

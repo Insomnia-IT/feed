@@ -10,6 +10,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+
     /* Вычитаем высоту заголовка модалки и высоту кнопки */
     height: calc(100% - (44px + 52px));
     overflow: scroll;

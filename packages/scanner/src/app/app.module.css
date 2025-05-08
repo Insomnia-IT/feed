@@ -1,5 +1,6 @@
 :root {
     --fs: calc(4vw + 12px);
+
     overflow: hidden;
     overscroll-behavior: none;
 }
