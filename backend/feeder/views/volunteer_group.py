@@ -27,9 +27,14 @@ class VolunteerGroupViewSet(APIView):
         request=serializers.VolunteerGroupSerializer(),
     )
     def post(self, request, *args, **kwargs):
+
         volunteers_ids = request.data.get('volunteers_ids', [])
         new_data_list = request.data.get('field_list', {})
         new_data_custom_list = request.data.get('custom_field_list', {})
+
+        # Проверки правильности структуры запроса
+        if not new_data_list and not new_data_custom_list:
+            return Response({"error": "fields or custom fields should be set"}, status=status.HTTP_400_BAD_REQUEST)
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
@@ -37,12 +42,18 @@ class VolunteerGroupViewSet(APIView):
         new_data = {}
         new_data_arrival = {}
         for entity in new_data_list:
+            if entity and not isinstance(entity, dict):
+                return Response({"error": "fields should be a non-empty dictionary"},
+                                status=status.HTTP_400_BAD_REQUEST)
             if entity['field'][:9] == "arrivals.":
                 new_data_arrival[entity['field'][9:]] = entity['data']
             else:
                 new_data[entity['field']] = entity['data']
         custom_fields_data = {}
         for entity in new_data_custom_list:
+            if entity and not isinstance(entity, dict):
+                return Response({"error": "custom fields should be a non-empty dictionary"},
+                                status=status.HTTP_400_BAD_REQUEST)
             custom_fields_data[entity['field']] = entity['data']
 
         # Получаем существующие значения для обновления
@@ -59,8 +70,7 @@ class VolunteerGroupViewSet(APIView):
             (v.volunteer_id, v.custom_field.id): v.value for v in existing_custom_values
         }
         to_update = []
-        if not isinstance(new_data, dict) or not isinstance(new_data_arrival, dict) or not new_data and not new_data_arrival:
-            return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
+
 
         updated_volunteers = []
         errors = []

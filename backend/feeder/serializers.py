@@ -219,7 +219,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                 # Обновление существующего заезда
                 arrival = current_arrivals[str(arrival_id)]
                 old_values = {field.name: getattr(arrival, field.name) for field in models.Arrival._meta.fields}
-                
+
                 if self.context["group_op"] and self.context['arr_id'] and self.context['arr_id'] == arrival_id:
                     changed_data = {field: value for field, value in prepared_data.items()}
                 else:
@@ -492,5 +492,5 @@ class GroupData(serializers.Serializer):
 
 class VolunteerGroupSerializer(serializers.Serializer):
     volunteers_ids = serializers.ListField(child = serializers.IntegerField())
-    field_list = GroupData(many=True)
-    custom_field_list = GroupData(many=True)
+    field_list = GroupData(many=True, allow_empty=True)
+    custom_field_list = GroupData(many=True, allow_empty=True)
