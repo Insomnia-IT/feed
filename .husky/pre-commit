@@ -1,5 +1,5 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
 #  TODO: Узнать зачем нужен этот файл, при каждом коммите на main ветке
 # git log -n 1 --pretty=format:%at packages/scanner > pwa-ver.txt
