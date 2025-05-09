@@ -4,7 +4,7 @@
     "private": true,
     "license": "MIT",
     "scripts": {
-        "bootstrap": "lerna clean -y && rimraf ./node_modules/ && npm install",
+        "bootstrap": "npm ci",
         "build": "lerna run build --stream --scope @feed/admin --scope @feed/scanner",
         "build:since": "nx affected --target=build",
         "dep": "nx graph",
@@ -20,7 +20,6 @@
         "todo": "leasot -x --reporter markdown \"packages/**/*.ts\" \"packages/**/*.tsx\" > TODO.md",
         "madge": "npx madge",
         "stat": "tokei",
-        "postinstall": "husky",
         "prepare": "husky"
     },
     "workspaces": [
