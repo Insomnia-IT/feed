@@ -5,13 +5,15 @@ import { Button, Typography } from 'antd';
 import { CalendarOutlined, CoffeeOutlined, MoreOutlined, TeamOutlined } from '@ant-design/icons';
 import { HasBadgeButton } from './has-badge-button';
 import { ActionSectionStates } from './action-section-states';
+import { ChangeMassEditField } from './mass-edit-types';
 
 const { Title } = Typography;
 
 export const InitialFrame: React.FC<{
     setSectionState: (state: ActionSectionStates) => void;
     selectedVolunteers: VolEntity[];
-}> = ({ setSectionState, selectedVolunteers }) => {
+    doChange: ChangeMassEditField;
+}> = ({ setSectionState, selectedVolunteers, doChange }) => {
     return (
         <>
             <header>
@@ -34,7 +36,7 @@ export const InitialFrame: React.FC<{
                     <CoffeeOutlined />
                     Кухня
                 </Button>
-                <HasBadgeButton selectedVolunteers={selectedVolunteers} />
+                <HasBadgeButton doChange={doChange} selectedVolunteers={selectedVolunteers} />
                 <Button onClick={() => setSectionState(ActionSectionStates.CustomFields)}>
                     <MoreOutlined />
                     Кастомные поля

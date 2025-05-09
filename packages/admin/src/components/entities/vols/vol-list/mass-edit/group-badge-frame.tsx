@@ -4,10 +4,11 @@ import { useList, useNotification } from '@refinedev/core';
 import { Button, Form, Select } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
+import { ChangeMassEditField } from './mass-edit-types';
 
 export const GroupBadgeFrame: React.FC<{
     selectedVolunteers: VolEntity[];
-    doChange: (params: { fieldName: string; fieldValue: string }) => Promise<void>;
+    doChange: ChangeMassEditField;
 }> = ({ selectedVolunteers, doChange }) => {
     const [selectedBadge, setSelectedBadge] = useState<GroupBadgeEntity | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -41,16 +42,24 @@ export const GroupBadgeFrame: React.FC<{
     };
 
     const confirmChange = () => {
-        if (selectedBadge) {
-            doChange({ fieldName: 'group_badge', fieldValue: String(selectedBadge.id) });
-        } else {
+        if (!selectedBadge) {
             open({
                 message: 'Некорректный бейдж!',
                 description: 'Выбранный бейдж не существует, либо не заполнен id',
                 type: 'error',
                 undoableTimeout: 5000
             });
+
+            console.error('<GroupBadgeFrame/> error: Выбранный бейдж не существует, либо не заполнен id', {
+                selectedBadge,
+                selectedVolunteers,
+                groupBadges
+            });
+
+            return;
         }
+
+        doChange({ fieldName: 'group_badge', fieldValue: String(selectedBadge.id) });
     };
 
     const getWarningText = () => {

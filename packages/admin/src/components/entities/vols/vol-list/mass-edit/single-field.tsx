@@ -4,13 +4,12 @@ import { Button, Checkbox, DatePicker, Input, Select, Typography } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
 import { getVolunteerCountText } from './get-volunteer-count-text.ts';
 import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
-import { useSelect } from '@refinedev/core';
+import { useNotification, useSelect } from '@refinedev/core';
 const { Title } = Typography;
 
 export const SingleField: React.FC<{
     type: 'date' | 'select' | 'string' | 'boolean';
-    name: string;
-    setter: (value?: string) => void;
+    setter: (value: string | null) => void;
     title: string;
     selectedVolunteers: VolEntity[];
     resource?: string;
@@ -18,14 +17,34 @@ export const SingleField: React.FC<{
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
     const [currentValue, setCurrentValue] = useState<string | undefined>(undefined);
+    const { open = () => {} } = useNotification();
     const confirmChange = (): void => {
         setIsModalOpen(false);
+
+        if (typeof currentValue === 'undefined' || !currentValue) {
+            open({
+                message:
+                    'Ошибка заполнения поля. Поле не должно быть пустым.\n Для сброса значения воспользуйтесь кнопкой "Очистить поле"',
+                type: 'error',
+                undoableTimeout: 5000
+            });
+
+            console.error('<SingleField/> error: Ошибка заполнения поля. Поле не должно быть пустым', {
+                type,
+                title,
+                resource,
+                selectedVolunteers
+            });
+
+            return;
+        }
+
         setter(currentValue);
     };
 
     const confirmClear = (): void => {
         setIsClearModalOpen(false);
-        setter(undefined);
+        setter(null);
     };
 
     return (

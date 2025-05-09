@@ -4,10 +4,11 @@ import { useList, useNotification } from '@refinedev/core';
 import { Button, Form } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
+import { ChangeMassEditField } from './mass-edit-types';
 
 export const KitchenFrame: React.FC<{
     selectedVolunteers: VolEntity[];
-    doChange: (params: { fieldName: string; fieldValue: string }) => Promise<void>;
+    doChange: ChangeMassEditField;
 }> = ({ selectedVolunteers, doChange }) => {
     const [selectedKitchenName, setSelectedKitchenName] = useState<string | undefined>();
     const { open = () => {} } = useNotification();
@@ -28,18 +29,24 @@ export const KitchenFrame: React.FC<{
     const confirmChange = () => {
         const currentKitchen = kitchens.find((kitchen) => kitchen.name === selectedKitchenName);
 
-        if (currentKitchen?.id) {
-            doChange({ fieldName: 'kitchen', fieldValue: String(currentKitchen.id) });
-        } else {
+        if (!currentKitchen?.id) {
             open({
                 message: 'Некорректная кухня!',
                 description: 'Выбранная кухня не существует, либо не заполнен id',
                 type: 'error',
                 undoableTimeout: 5000
             });
+
+            console.error('<KitchenFrame/> error: Выбранная кухня не существует, либо не заполнен id', {
+                currentKitchen,
+                selectedVolunteers,
+                kitchensData
+            });
+
+            return;
         }
 
-        closeModal();
+        doChange({ fieldName: 'kitchen', fieldValue: String(currentKitchen.id) });
     };
 
     return (
@@ -48,7 +55,7 @@ export const KitchenFrame: React.FC<{
                 name="kitchen"
                 layout={'vertical'}
                 style={{ width: '100%' }}
-                label="Выберете кухню"
+                label="Выберите кухню"
                 rules={[{ required: true }]}
             >
                 <div style={{ display: 'flex', columnGap: '8px' }}>

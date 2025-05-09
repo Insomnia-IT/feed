@@ -65,7 +65,7 @@ export function CommonFoodTest() {
     const formatDate = (isoDate: string) => dayjs(isoDate).format('DD MMMM HH:mm:ss');
 
     const translateMealType = (mealType: string) =>
-        ({ breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' })[mealType] || 'дожор?';
+        ({ breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' })[mealType] || 'дожор';
 
     const columns = [
         {
