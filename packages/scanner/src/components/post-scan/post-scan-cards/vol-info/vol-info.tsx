@@ -38,7 +38,10 @@ const calculateTargetArrivalDatesText = (arrivals: Array<Arrival>): string => {
         const targetArrivalEnd = targetDates.end;
 
         // Если дата старта текущего заезда ближе к сегодня - считаем его целевым.
-        if (today.diff(targetArrivalEnd) > today.diff(start) && today.diff(targetArrivalStart) > today.diff(start)) {
+        if (
+            Math.abs(today.diff(targetArrivalEnd)) > Math.abs(today.diff(start)) &&
+            Math.abs(today.diff(targetArrivalStart)) > Math.abs(today.diff(start))
+        ) {
             targetDates = { start, end };
         }
     }
