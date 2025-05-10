@@ -22,7 +22,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
     dtime_from = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='gte')
     dtime_to = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='lte')
     meal_time = django_filters.CharFilter(field_name="meal_time", lookup_expr="exact")
-    group_badge = django_filters.NumberFilter(field_name="group_badge")
+    group_badge = django_filters.CharFilter(field_name="group_badge", lookup_expr="exact")
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
     is_group_badge = django_filters.BooleanFilter(method="filter_is_group_badge")
 
