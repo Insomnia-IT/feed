@@ -40,5 +40,5 @@
     "linterOptions": { "exclude": ["node_modules", "**/*.js"] },
     "files": ["env.d.ts", "src/service-worker.d.ts"],
     "exclude": ["node_modules", "**/*.js"],
-    "include": ["src", ".eslintrc.js", "typings.d.ts"]
+    "include": ["src", ".eslintrc", "typings.d.ts"]
 }
