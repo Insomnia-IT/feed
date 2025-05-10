@@ -1,5 +1,4 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
-git log -n 1 --pretty=format:%at packages/scanner > pwa-ver.txt
-git add pwa-ver.txt
+npx lint-staged

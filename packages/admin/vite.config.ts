@@ -22,36 +22,3 @@ export default defineConfig({
         port: 3002
     }
 });
-
-// Может быть полезно, удалить после успешного деплоя
-
-// build: {
-//     rollupOptions: {
-//         output: {
-//             assetFileNames: ({ name }) => {
-//                 if (/\.(gif|jpe?g|png|svg)$/.test(name || "")) {
-//                     return "assets/images/[name][extname]";
-//                 }
-
-//                 if (/\.ttf$/.test(name || "")) {
-//                     return "assets/fonts/[name][extname]";
-//                 }
-
-//                 // https://rollupjs.org/guide/en/#outputassetfilenames
-//                 return "assets/[name]-[hash][extname]";
-//             },
-
-//                 manualChunks(id) {
-//                 if (id.includes("node_modules")) {
-//                     return "vendor";
-//                 }
-//             },
-//             dir: "./dist",
-//         },
-//     },
-// },
-// css: {
-//     modules: {
-//         localsConvention: "camelCaseOnly",
-//     },
-// },

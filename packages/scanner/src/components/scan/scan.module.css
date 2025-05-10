@@ -11,7 +11,7 @@
     max-width: 60vh;
     max-height: 60vh;
     z-index: var(--z-scan-overlay);
-    box-shadow: 0px 0px 0px 80vh rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 0 80vh rgb(0 0 0 / 0.6);
 }
 
 .head {

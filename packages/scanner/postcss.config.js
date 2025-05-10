@@ -4,8 +4,6 @@ const fs = require('fs');
 const DEV = process.env.NODE_ENV !== 'production';
 
 module.exports = (ctx) => {
-    const context = ctx.webpackLoaderContext._compiler.context;
-    // const rebuildColors = context.includes('packages/admin');
     const rebuildColors = true;
 
     return {
@@ -16,10 +14,9 @@ module.exports = (ctx) => {
             autoprefixer: {
                 overrideBrowserslist: ['last 2 versions']
             },
-            // [path.resolve(__dirname, './packages/common/webpack/postcss-ie11-pseudo-class.js')]: {},
             'postcss-import': {
                 path: [path.resolve(__dirname, 'node_modules'), 'src'],
-                plugins: DEV ? [require('stylelint')({})] : []
+                plugins: []
             },
             'postcss-modules': ctx.options.modules
                 ? {
@@ -69,7 +66,6 @@ module.exports = (ctx) => {
                       ]
                     : []
             }
-            // 'postcss-hexrgba': {},
         }
     };
 };

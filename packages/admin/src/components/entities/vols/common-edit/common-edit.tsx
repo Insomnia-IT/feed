@@ -55,12 +55,11 @@ export const CommonEdit = () => {
             form.setFieldValue('person', data);
             ['first_name', 'last_name', 'name', 'is_vegan', 'gender'].forEach((fieldName) => {
                 form.setFieldValue(fieldName, data[fieldName]);
-            })
-
+            });
         } catch (e) {
             console.error(e);
         }
-    }
+    };
     const { search } = useLocation();
 
     useEffect(() => {
