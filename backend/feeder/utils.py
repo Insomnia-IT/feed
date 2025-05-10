@@ -105,9 +105,9 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None):
             continue
         if anonymous is False and txn.get('volunteer_id') is None:
             continue
-        if group_badge is True and txn.get('group_badge') is not None:
+        if group_badge is True and txn.get('group_badge') is None:
             continue
-        if group_badge is False and txn.get('group_badge') is None:
+        if group_badge is False and txn.get('group_badge') is not None:
             continue
 
         state_date = arrow.get(txn['dtime'])
@@ -150,6 +150,11 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None):
     # Предварительная обработка данных волонтеров
     processed_volunteers = []
     for vol in volunteers:
+        if group_badge is True and vol.group_badge is None:
+            continue
+        if group_badge is False and vol.group_badge is not None:
+            continue
+
         for arrival in vol.relevant_arrivals or []:
             active_from = arrow.get(arrival.arrival_date).to(TZ).floor('day')
             active_to = arrow.get(arrival.departure_date).to(TZ).floor('day')
