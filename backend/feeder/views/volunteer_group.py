@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from feeder import serializers
 from feeder.models import Volunteer,VolunteerGroupOperation, Arrival
-from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer
+from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer, ArrivalSerializer
 from feeder.views.mixins import get_request_user_id
 
 from history.models import History
@@ -28,25 +28,44 @@ class VolunteerGroupViewSet(APIView):
     )
     def post(self, request, *args, **kwargs):
         volunteers_ids = request.data.get('volunteers_ids', [])
-        new_data_list = request.data.get('field_list', {})
-        new_data_arrival_list = request.data.get('arrival_field_list', {})
+        new_data_list = request.data.get('field_list', [])
+        new_data_arrival_list = request.data.get('arrival_field_list', [])
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
         
+        vol_allowed = set(VolunteerSerializer().fields.keys())
+
+        arr_allowed = set(ArrivalSerializer().fields.keys())
+        
         new_data = {}
         new_data_arrival = {}
+        invalid_vol = []
+        invalid_arr = []
+
         for entity in new_data_list:
             new_data[entity['field']] = entity['data']
+            if entity['field'] not in vol_allowed:
+                invalid_vol.append(entity['field'])
         
         for entity in new_data_arrival_list:
             new_data_arrival[entity['field']] = entity['data']
+            if entity['field'] not in arr_allowed:
+                invalid_arr.append(entity['field'])
 
-        if not isinstance(new_data, dict) or not isinstance(new_data_arrival, dict) or not new_data and not new_data_arrival:
-            return Response({"error": "fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
+        if not len(new_data) and not len(new_data_arrival):
+            return Response({"error": "Fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if invalid_vol or invalid_arr:
+            return Response({
+                "error": "Found invalid fields",
+                "invalid_volunteer_fields": invalid_vol,
+                "invalid_arrival_fields": invalid_arr
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         updated_volunteers = []
         errors = []
+        missing_arrs = []
 
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values('id', *new_data.keys())
         original_data = {volunteer['id']: {field: volunteer[field] for field in new_data.keys()} for volunteer in volunteers_before_update}
@@ -70,10 +89,8 @@ class VolunteerGroupViewSet(APIView):
                             .order_by('arrival_date')
                             .first()
                         )
-                        # if not target:
-                        #     raise ValidationError({
-                        #         "arrivals": "no current or upcoming arrival to update"
-                        #     })
+                        if not target:
+                            missing_arrs.append(volunteer_id)
                     
                     for arr in arrivals:
                         entry = {"id": arr.id}
@@ -119,7 +136,8 @@ class VolunteerGroupViewSet(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"id": str(group_operation_uuid)},
+            {"id": str(group_operation_uuid),
+             "missing_arrivals": missing_arrs},
             status=status.HTTP_200_OK)
 
 class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
