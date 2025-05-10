@@ -26,7 +26,7 @@ class DirectionViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = DirectionFilter
-    search_fields = ['name', 'type', 'first_year', 'last_year', 'notion_id']
+    search_fields = ['name', 'type', 'first_year', 'last_year']
 
 
 class DirectionTypeViewSet(viewsets.ModelViewSet):
