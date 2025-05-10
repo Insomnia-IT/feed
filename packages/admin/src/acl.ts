@@ -51,6 +51,7 @@ export const ACL: AccessControlProvider = {
                         break;
                     case 'full_list':
                     case 'badge_edit':
+                    case 'bulk_edit': // массовые изменения
                         can = role !== AppRoles.DIRECTION_HEAD;
                         break;
                     case 'feed_type_edit':

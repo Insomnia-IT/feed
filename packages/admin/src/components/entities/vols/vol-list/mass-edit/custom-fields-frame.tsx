@@ -1,69 +1,70 @@
 import React, { useState } from 'react';
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
-import { useList } from '@refinedev/core';
+import { useList, useNotification } from '@refinedev/core';
 import { HAS_BADGE_FIELD_NAME } from 'const';
 import { Button, Form } from 'antd';
 import styles from './mass-edit.module.css';
-import { ConfirmModal } from './confirm-modal/confirm-modal';
-import { getVolunteerCountText } from './get-volunteer-count-text';
 import { SingleField } from './single-field.tsx';
+import { ChangeMassEditField } from './mass-edit-types';
 
-export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doChange: ChangeMassEditField }> = ({
+    selectedVolunteers,
+    doChange
+}) => {
     const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
     const [currentFieldName, setCurrentFieldName] = useState<string | undefined>(undefined);
+    const { open = () => {} } = useNotification();
 
-    const [fieldsValues, setFieldsValues] = useState<Record<string, string | undefined>>({});
+    const setFieldValue = ({ id, fieldValue }: { id: number; fieldValue: string | null }) => {
+        if (!id) {
+            open({
+                message: 'Ошибка заполнения поля. Не найден id кастомного поля.',
+                type: 'error',
+                undoableTimeout: 5000
+            });
 
-    const setFieldValue = (fieldName: string, fieldValue?: string) => {
-        setFieldsValues((prevState) => ({ ...prevState, [fieldName]: fieldValue }));
+            console.error('<CustomFieldsFrame/> error: Ошибка заполнения поля. Не найден id кастомного поля.', {
+                selectedVolunteers,
+                data,
+                id,
+                fieldValue,
+                currentFieldName
+            });
+
+            return;
+        }
+
+        doChange({ fieldName: String(id), fieldValue, isCustom: true });
     };
 
     const fields = (data?.data ?? []).filter((field) => field.name !== HAS_BADGE_FIELD_NAME);
 
-    const confirmChange = (): void => {
-        setIsModalOpen(false);
-        console.log(fieldsValues);
-    };
-    const closeModal = (): void => {
-        setIsModalOpen(false);
-    };
-
     const currentField = fields.find((field) => field.name === currentFieldName);
 
     return (
-        <>
-            <Form className={styles.customFields}>
-                {currentField ? (
-                    <SingleField
-                        type={currentField.type as 'string' | 'boolean'}
-                        name={currentField.name}
-                        setter={(value) => setFieldValue(currentField.name, value)}
-                        title={currentField.name}
-                        selectedVolunteers={selectedVolunteers}
-                    />
-                ) : (
-                    fields.map(({ name }) => {
-                        return (
-                            <Button
-                                style={{ width: '100%' }}
-                                onClick={() => {
-                                    setCurrentFieldName(name);
-                                }}
-                            >
-                                {name}
-                            </Button>
-                        );
-                    })
-                )}
-            </Form>
-            <ConfirmModal
-                isOpen={isModalOpen}
-                closeModal={closeModal}
-                title={'Поменять кастомные поля?'}
-                description={`${getVolunteerCountText(selectedVolunteers.length)} и меняете кастомные поля.`}
-                onConfirm={confirmChange}
-            />
-        </>
+        <Form className={styles.customFields}>
+            {currentField ? (
+                <SingleField
+                    type={currentField.type as 'string' | 'boolean'}
+                    setter={(value) => setFieldValue({ id: currentField?.id, fieldValue: value })}
+                    title={currentField.name}
+                    selectedVolunteers={selectedVolunteers}
+                />
+            ) : (
+                fields.map(({ name }, index) => {
+                    return (
+                        <Button
+                            key={String(name) + String(index)}
+                            style={{ width: '100%' }}
+                            onClick={() => {
+                                setCurrentFieldName(name);
+                            }}
+                        >
+                            {name}
+                        </Button>
+                    );
+                })
+            )}
+        </Form>
     );
 };

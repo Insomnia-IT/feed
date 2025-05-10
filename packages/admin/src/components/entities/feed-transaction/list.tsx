@@ -69,10 +69,10 @@ export const FeedTransactionList: FC = () => {
             activeFilters.forEach((filter) => {
                 const { name, value } = filter;
 
-                let valueToUse = value as string;
+                let valueToUse: string = typeof value === 'boolean' ? String(value) : (value as string);
 
                 if (Array.isArray(value)) {
-                    valueToUse = value.length > 1 ? value.join(',') : valueToUse[0];
+                    valueToUse = value.length > 1 ? value.join(',') : String(valueToUse[0]);
                 }
 
                 newFilters.push({
@@ -251,7 +251,7 @@ export const FeedTransactionList: FC = () => {
                 kitchenNameById[tx.kitchen],
                 tx.amount,
                 tx?.reason ?? '',
-                getGroupBadgeById(tx.group_badge),
+                getGroupBadgeById(tx.group_badge)?.name,
                 getTargetDirections(tx)
                     .map((dir) => dir.name)
                     .join(',')
@@ -296,7 +296,11 @@ export const FeedTransactionList: FC = () => {
                     visibleFilters={visibleFilters}
                     setVisibleFilters={setVisibleFilters}
                     activeFilters={activeFilters}
-                    setActiveFilters={setActiveFilters}
+                    setActiveFilters={(filters) => {
+                        setActiveFilters(filters);
+
+                        searchFormProps?.form?.submit();
+                    }}
                 />
             </Form>
             <Table<TransformedTransaction>

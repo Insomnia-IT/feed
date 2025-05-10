@@ -3,22 +3,33 @@ import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { type VolEntity } from 'interfaces';
-import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list.tsx';
+import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list';
 import { GroupBadgeFrame } from './group-badge-frame';
 import { ArrivalsFrame } from './arrivals-frame';
 import { KitchenFrame } from './kitchen-frame';
 import { InitialFrame } from './initial-frame';
 import { ActionSectionStates } from './action-section-states';
 import { CustomFieldsFrame } from './custom-fields-frame';
+import { ChangeMassEditField } from './mass-edit-types';
+import { useDoChange } from './use-do-change';
 
 const { Title } = Typography;
 
 interface MassEditProps {
     selectedVolunteers: VolEntity[];
     unselectAll: () => void;
+    unselectVolunteer: (volunteer: VolEntity) => void;
+    reloadVolunteers: () => Promise<void>;
 }
 
-export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], unselectAll }) => {
+export const MassEdit: React.FC<MassEditProps> = ({
+    selectedVolunteers = [],
+    unselectAll,
+    unselectVolunteer,
+    reloadVolunteers
+}) => {
+    const doChange = useDoChange({ vols: selectedVolunteers, unselectAll, reloadVolunteers });
+
     if (selectedVolunteers.length === 0) {
         return null;
     }
@@ -31,22 +42,27 @@ export const MassEdit: React.FC<MassEditProps> = ({ selectedVolunteers = [], uns
                     <span className={styles.counter}> {selectedVolunteers.length}</span>
                 </Title>
             </header>
-            <SelectedVolunteerList selectedVolunteers={selectedVolunteers} />
-            <ActionsSection unselectAll={unselectAll} selectedVolunteers={selectedVolunteers} />
+            <SelectedVolunteerList unselectVolunteer={unselectVolunteer} selectedVolunteers={selectedVolunteers} />
+            <ActionsSection doChange={doChange} unselectAll={unselectAll} selectedVolunteers={selectedVolunteers} />
         </div>
     );
 };
 
-const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: VolEntity[] }> = ({
-    unselectAll,
-    selectedVolunteers
-}) => {
+const ActionsSection: React.FC<{
+    unselectAll: () => void;
+    selectedVolunteers: VolEntity[];
+    doChange: ChangeMassEditField;
+}> = ({ unselectAll, selectedVolunteers, doChange }) => {
     const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
 
     return (
         <section className={styles.action}>
             {sectionState === ActionSectionStates.Initial ? (
-                <InitialFrame selectedVolunteers={selectedVolunteers} setSectionState={setSectionState} />
+                <InitialFrame
+                    selectedVolunteers={selectedVolunteers}
+                    setSectionState={setSectionState}
+                    doChange={doChange}
+                />
             ) : null}
             {![ActionSectionStates.Initial, ActionSectionStates.Arrivals].includes(sectionState) ? (
                 <header>
@@ -62,16 +78,17 @@ const ActionsSection: React.FC<{ unselectAll: () => void; selectedVolunteers: Vo
                 </header>
             ) : null}
             {sectionState === ActionSectionStates.Kitchen ? (
-                <KitchenFrame selectedVolunteers={selectedVolunteers} />
+                <KitchenFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
             ) : null}
             {sectionState === ActionSectionStates.CustomFields ? (
-                <CustomFieldsFrame selectedVolunteers={selectedVolunteers} />
+                <CustomFieldsFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
             ) : null}
             {sectionState === ActionSectionStates.GroupBadge ? (
-                <GroupBadgeFrame selectedVolunteers={selectedVolunteers} />
+                <GroupBadgeFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
             ) : null}
             {sectionState === ActionSectionStates.Arrivals ? (
                 <ArrivalsFrame
+                    doChange={doChange}
                     goBack={() => {
                         setSectionState(ActionSectionStates.Initial);
                     }}

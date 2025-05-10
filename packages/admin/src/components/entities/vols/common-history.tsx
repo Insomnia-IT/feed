@@ -78,6 +78,7 @@ interface IData {
     group_badge: string;
     directions: string[];
     value: string;
+    is_ticket_received: boolean;
 }
 
 const localizedFieldNames: Record<string, string> = {
@@ -105,11 +106,12 @@ const localizedFieldNames: Record<string, string> = {
     directions: 'Службы/локации',
     group_badge: 'Групповой бейдж',
     number: 'Номер бейджа',
-    batch: 'Партия бейджа'
+    batch: 'Партия бейджа',
+    is_ticket_received: 'Билет'
 };
 export interface CommonHistoryProps {
     role: 'volunteer' | 'actor';
-  }
+}
 
 function returnCurrentField(fieldName: string): string {
     return localizedFieldNames[fieldName] ?? fieldName;
@@ -128,6 +130,14 @@ function returnisBlockedFieldValue(value: boolean | undefined) {
         return 'Заблокирован';
     } else {
         return 'Разблокирован';
+    }
+}
+
+function returnTicketReceivedValue(value: boolean | undefined) {
+    if (value) {
+        return 'Выдан';
+    } else {
+        return 'Не выдан';
     }
 }
 
@@ -220,7 +230,9 @@ export function CommonHistory({ role }: CommonHistoryProps) {
     const groupBadgeById = useMapFromList(groupBadges);
 
     const historyData = async () => {
-        const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`);
+        const response: IHistoryData = await axios.get(
+            `${NEW_API_URL}/history/?${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`
+        );
         const result = response.data.results;
         const reversedResult = result.reverse();
         setData(reversedResult);
@@ -268,6 +280,8 @@ export function CommonHistory({ role }: CommonHistoryProps) {
             return returnVeganFieldValue(obj[key]);
         } else if (key === 'is_blocked') {
             return returnisBlockedFieldValue(obj[key]);
+        } else if (key === 'is_ticket_received') {
+            return returnTicketReceivedValue(obj[key]);
         } else if (key === 'comment') {
             const result: string | undefined = obj[key];
             if (!result) return;
@@ -355,7 +369,7 @@ export function CommonHistory({ role }: CommonHistoryProps) {
         }
     }
 
-    const renderHistory = (array: Array<IResult> | undefined,  role: 'volunteer' | 'actor') => {
+    const renderHistory = (array: Array<IResult> | undefined, role: 'volunteer' | 'actor') => {
         if (array === undefined) {
             return 'ИЗМЕНЕНИЙ НЕТ';
         }

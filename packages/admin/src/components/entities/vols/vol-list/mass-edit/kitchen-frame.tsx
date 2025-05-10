@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { KitchenEntity, VolEntity } from 'interfaces';
-import { useList } from '@refinedev/core';
+import { useList, useNotification } from '@refinedev/core';
 import { Button, Form } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
+import { ChangeMassEditField } from './mass-edit-types';
 
-export const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ selectedVolunteers }) => {
+export const KitchenFrame: React.FC<{
+    selectedVolunteers: VolEntity[];
+    doChange: ChangeMassEditField;
+}> = ({ selectedVolunteers, doChange }) => {
     const [selectedKitchenName, setSelectedKitchenName] = useState<string | undefined>();
+    const { open = () => {} } = useNotification();
 
     const { data: kitchensData } = useList<KitchenEntity>({
         resource: 'kitchens',
@@ -24,9 +29,24 @@ export const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ se
     const confirmChange = () => {
         const currentKitchen = kitchens.find((kitchen) => kitchen.name === selectedKitchenName);
 
-        console.log('changeKitchen to ', currentKitchen);
+        if (!currentKitchen?.id) {
+            open({
+                message: 'Некорректная кухня!',
+                description: 'Выбранная кухня не существует, либо не заполнен id',
+                type: 'error',
+                undoableTimeout: 5000
+            });
 
-        closeModal();
+            console.error('<KitchenFrame/> error: Выбранная кухня не существует, либо не заполнен id', {
+                currentKitchen,
+                selectedVolunteers,
+                kitchensData
+            });
+
+            return;
+        }
+
+        doChange({ fieldName: 'kitchen', fieldValue: String(currentKitchen.id) });
     };
 
     return (
@@ -35,7 +55,7 @@ export const KitchenFrame: React.FC<{ selectedVolunteers: VolEntity[] }> = ({ se
                 name="kitchen"
                 layout={'vertical'}
                 style={{ width: '100%' }}
-                label="Выберете кухню"
+                label="Выберите кухню"
                 rules={[{ required: true }]}
             >
                 <div style={{ display: 'flex', columnGap: '8px' }}>

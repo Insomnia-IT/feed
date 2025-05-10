@@ -7,9 +7,9 @@ import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
 import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
+import { BureauComment } from '~/components/post-scan/post-scan-cards/ui/bureau-comment/bureau-comment';
 
 import css from './feed-warning-card.module.css';
-import { ScannerComment } from '~/components/post-scan/post-scan-cards/ui/scanner-comment/scanner-comment';
 
 export const FeedWarningCard: FC<{
     vol: Volunteer;
@@ -29,9 +29,11 @@ export const FeedWarningCard: FC<{
     };
 
     return (
-        <CardContainer className={css.warningCard} cardColor='blue'>
+        <CardContainer cardColor='blue'>
             <CardContent>
-                <Title color='white'>⚠️ Вы уверены?</Title>
+                <Title className={css.title} color='white'>
+                    ⚠️ Вы уверены?
+                </Title>
                 {msg.length > 1 && (
                     <div className={css.errorList}>
                         {msg.map((m, index) => (
@@ -57,7 +59,7 @@ export const FeedWarningCard: FC<{
                     </div>
                 )}
                 <VolInfo vol={vol} />
-                {vol?.scanner_comment ? <ScannerComment text={vol.scanner_comment} /> : null}
+                {vol?.scanner_comment ? <BureauComment text={vol.scanner_comment} variant='white' /> : null}
             </CardContent>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>

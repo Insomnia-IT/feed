@@ -24,6 +24,7 @@ STAT_DATE_FORMAT = 'YYYY-MM-DD'
 TZ = 'Europe/Moscow'
 
 class StatisticType(Enum):
+    PREDICT = 'predict'
     PLAN = 'plan'
     FACT = 'fact'
 
@@ -57,16 +58,27 @@ def convert_to_start_of_day_by_moscow(timestamp: int) -> int:
 def capitalize(s: str) -> str:
     if s:
         return s[0].title()+s[1:]
+    
+def get_stat_key(item):
+    return ",".join([item['date'], item['type'], item['meal_time'], str(item['is_vegan']), str(item['kitchen_id'])])
 
 def append_stat(stat: dict, item):
-    key = ",".join([item['date'], item['type'], item['meal_time'], str(item['is_vegan']), str(item['kitchen_id'])])
+    key = get_stat_key(item)
     stat_item = stat.get(key)
     if stat_item:
         stat_item['amount'] += item['amount']
     else:
         stat[key] = item
 
-def calculate_statistics(date_from, date_to):
+def get_stat_amount(stat, item):
+    key = get_stat_key(item)
+    stat_item = stat.get(key)
+    if stat_item:
+        return stat_item['amount']
+    else:
+        return 0
+
+def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None):
     start_time = time.time()
     # convert from str to a datetime type (Arrow)
     stat_date_from = arrow.get(date_from, tzinfo=TZ)
@@ -81,7 +93,7 @@ def calculate_statistics(date_from, date_to):
     
     # get transactions by criteria of fact statistic
     transactions = fact_query.values(
-        'dtime', 'meal_time', 'kitchen_id', 'amount', 'is_vegan'
+        'dtime', 'meal_time', 'kitchen_id', 'amount', 'is_vegan', 'volunteer_id', 'group_badge'
     )
     print(f'transactions loaded: {time.time() - start_time}')
 
@@ -89,6 +101,15 @@ def calculate_statistics(date_from, date_to):
     stat = dict()
 
     for txn in transactions:
+        if anonymous is True and txn.get('volunteer_id') is not None:
+            continue
+        if anonymous is False and txn.get('volunteer_id') is None:
+            continue
+        if group_badge is True and txn.get('group_badge') is None:
+            continue
+        if group_badge is False and txn.get('group_badge') is not None:
+            continue
+
         state_date = arrow.get(txn['dtime'])
         adjusted_date = (
             state_date.shift(days=-1) 
@@ -129,6 +150,11 @@ def calculate_statistics(date_from, date_to):
     # Предварительная обработка данных волонтеров
     processed_volunteers = []
     for vol in volunteers:
+        if group_badge is True and vol.group_badge is None:
+            continue
+        if group_badge is False and vol.group_badge is not None:
+            continue
+
         for arrival in vol.relevant_arrivals or []:
             active_from = arrow.get(arrival.arrival_date).to(TZ).floor('day')
             active_to = arrow.get(arrival.departure_date).to(TZ).floor('day')
@@ -149,6 +175,7 @@ def calculate_statistics(date_from, date_to):
 
     # iterate over date range (day by day) between from and to
     date_range = list(arrow.Arrow.range('day', stat_date_from, stat_date_to))
+    prev_day = None
     for current_stat_date in date_range:
         # Get volunteers by criterias of plan statistic.
         #
@@ -192,7 +219,43 @@ def calculate_statistics(date_from, date_to):
                     'kitchen_id': vol_data['kitchen_id']
                 })
 
-
+        # set PREDICT statistics for current date
+        for meal_time in get_meal_times(True):
+            for is_vegan in [False, True]:
+                for kitchen_id in [1, 2]:
+                    predict_amount = 0 
+                    if prev_day:
+                        prev_plan = get_stat_amount(stat, {
+                            'date': prev_day.format(STAT_DATE_FORMAT),
+                            'type': StatisticType.PLAN.value,
+                            'meal_time': meal_time,
+                            'is_vegan': is_vegan,
+                            'kitchen_id': kitchen_id
+                        })
+                        prev_fact = get_stat_amount(stat, {
+                            'date': prev_day.format(STAT_DATE_FORMAT),
+                            'type': StatisticType.FACT.value,
+                            'meal_time': meal_time,
+                            'is_vegan': is_vegan,
+                            'kitchen_id': kitchen_id
+                        })
+                        current_plan = get_stat_amount(stat, {
+                            'date': current_day.format(STAT_DATE_FORMAT),
+                            'type': StatisticType.PLAN.value,
+                            'meal_time': meal_time,
+                            'is_vegan': is_vegan,
+                            'kitchen_id': kitchen_id
+                        })
+                        predict_amount = 0 if prev_plan == 0 else current_plan * prev_fact / prev_plan
+                    append_stat(stat, {
+                        'date': current_day.format(STAT_DATE_FORMAT),
+                        'type': StatisticType.PREDICT.value,
+                        'meal_time': meal_time,
+                        'is_vegan': is_vegan,
+                        'amount': predict_amount,
+                        'kitchen_id': kitchen_id
+                    })
+        prev_day = current_day
     print(f'Total time: {time.time() - start_time}')
 
     # combine fact and plan stats into result

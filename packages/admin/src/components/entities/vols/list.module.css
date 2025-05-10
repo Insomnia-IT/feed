@@ -12,8 +12,7 @@
 .filterItems {
     display: flex;
     flex-wrap: wrap;
-    row-gap: 8px;
-    column-gap: 8px;
+    gap: 8px;
 }
 
 .filterItemButton {
@@ -69,12 +68,10 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-
     width: 100%;
     border-radius: 2px;
     padding: 12px;
     background: #fff;
-
     min-width: 0;
 
     .textRow {

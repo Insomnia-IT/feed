@@ -1,36 +1,18 @@
 import { useList } from '@refinedev/core';
 import { Button, Table } from 'antd';
 import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 
-import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
+import type { FeedTransactionEntity, KitchenEntity } from 'interfaces';
 import { saveXLSX } from 'shared/lib/saveXLSX';
-import { NEW_API_URL } from 'const';
 import useCanAccess from './use-can-access';
 
 import styles from './common.module.css';
 
-interface IData {
-    count: number;
-    next: number;
-    previous: number;
-    results: Array<FeedTransactionEntity>;
-}
-
-export function CommonFoodTest() {
-    const { id: volId } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-
-    const [foodCount, setFoodCount] = useState(0);
-    const [foodData, setFoodData] = useState<FeedTransactionEntity[]>([]);
-    const canCreateFeedTransaction = useCanAccess({
-        action: 'create',
-        resource: 'feed-transaction'
-    });
+const useScreenSize = () => {
     const [screenSize, setScreenSize] = useState({
         width: window.innerWidth,
         height: window.innerHeight
@@ -46,25 +28,44 @@ export function CommonFoodTest() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    return screenSize;
+};
+
+export function CommonFoodTest() {
+    const navigate = useNavigate();
+    const canCreateFeedTransaction = useCanAccess({
+        action: 'create',
+        resource: 'feed-transaction'
+    });
+    const screenSize = useScreenSize();
+
+    const { id: volId } = useParams<{ id: string }>();
+    const { data } = useList<FeedTransactionEntity>({
+        resource: 'feed-transaction',
+        filters: [
+            {
+                field: 'volunteer',
+                value: String(volId),
+                operator: 'eq'
+            }
+        ]
+    });
+
+    const { foodData, foodCount }: { foodData: FeedTransactionEntity[]; foodCount: number } = useMemo(() => {
+        const foodData = data?.data ?? [];
+        const foodCount = foodData.reduce((sum, item) => sum + item.amount, 0);
+
+        return { foodData, foodCount };
+    }, [data]);
+
     const handleCreateClick = () => {
         navigate('/feed-transaction/create');
     };
 
-    const loadFoodData = useCallback(async () => {
-        if (!volId) return;
-        const { data }: { data: IData } = await axios.get(`${NEW_API_URL}/feed-transaction/?volunteer=${volId}`);
-        setFoodCount(data.results.reduce((sum, item) => sum + item.amount, 0));
-        setFoodData(data.results);
-    }, [volId]);
-
-    useEffect(() => {
-        void loadFoodData();
-    }, [loadFoodData]);
-
     const formatDate = (isoDate: string) => dayjs(isoDate).format('DD MMMM HH:mm:ss');
 
     const translateMealType = (mealType: string) =>
-        ({ breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' })[mealType] || 'дожор?';
+        ({ breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' })[mealType] || 'дожор';
 
     const columns = [
         {
@@ -83,17 +84,7 @@ export function CommonFoodTest() {
         { title: 'Ошибка', dataIndex: 'reason' }
     ];
 
-    const volsQuery = useList<VolEntity>({ resource: 'volunteers' });
     const kitchensQuery = useList<KitchenEntity>({ resource: 'kitchens' });
-
-    const volNameById = useMemo(
-        () =>
-            (volsQuery?.data?.data.reduce((acc, vol) => ({ ...acc, [vol.id]: vol.name }), {}) || {}) as Record<
-                string,
-                string
-            >,
-        [volsQuery]
-    );
 
     const kitchenNameById = useMemo(
         () =>
@@ -118,22 +109,22 @@ export function CommonFoodTest() {
             'Причина'
         ]);
 
-        foodData?.forEach((tx) =>
+        foodData?.forEach((tx) => {
             sheet.addRow([
                 dayjs(tx.dtime).format('DD.MM.YYYY'),
                 dayjs(tx.dtime).format('HH:mm:ss'),
                 tx.volunteer,
-                volNameById[tx.volunteer] || 'Аноним',
+                tx?.volunteer_name || 'Аноним',
                 tx.is_vegan ? 'Веган' : 'Мясоед',
                 translateMealType(tx.meal_time),
                 kitchenNameById[tx.kitchen],
                 tx.amount,
                 tx.reason
-            ])
-        );
+            ]);
+        });
 
         void saveXLSX(workbook, 'feed-transactions');
-    }, [kitchenNameById, volNameById, foodData]);
+    }, [kitchenNameById, foodData]);
 
     return (
         <div>

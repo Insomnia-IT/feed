@@ -35,6 +35,7 @@ class DirectionSerializer(serializers.ModelSerializer):
         model = models.Direction
         fields = '__all__'
 
+
 class ViewDirectionSerializer(serializers.ModelSerializer):
     type = DirectionTypeSerializer()
 
@@ -47,6 +48,7 @@ class EngagementRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.EngagementRole
         fields = '__all__'
+
 
 class EngagementSerializer(serializers.ModelSerializer):
     role = EngagementRoleSerializer()
@@ -84,28 +86,40 @@ class VolunteerCustomFieldValueNestedSerializer(serializers.ModelSerializer):
         model = models.VolunteerCustomFieldValue
         fields = ['custom_field', 'value']
 
+
 class PersonSerializer(serializers.ModelSerializer):
     engagements = EngagementSerializer(many=True)
+    # engagements = serializers.SerializerMethodField()
+
+    # def get_engagements(self, obj):
+    #     return EngagementSerializer(
+    #         obj.engagements.all().order_by('-year')[:1],
+    #         many=True
+    #     ).data
 
     class Meta:
         model = models.Person
         fields = '__all__'
+
 
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Transport
         fields = '__all__'
 
+
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Status
         fields = '__all__'
+
 
 class ArrivalSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
     class Meta:
         model = models.Arrival
         exclude = ["volunteer"]
+
 
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -152,13 +166,19 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         queryset=models.Direction.objects.all(),
         many=True
     )
+    person_id = serializers.PrimaryKeyRelatedField(
+        source='person', 
+        queryset=models.Person.objects.all()
+    )
 
     class Meta:
         model = models.Volunteer
         exclude = ['person']
 
     def update(self, instance, validated_data):
-        arrivals_data = validated_data.pop('arrivals', [])
+        arrivals_data = None
+        if 'arrivals' in validated_data:
+            arrivals_data = validated_data.pop('arrivals')
         directions_data = validated_data.pop('directions', None)
         
         with transaction.atomic():
@@ -167,7 +187,8 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             if directions_data is not None:
                 instance.directions.set(directions_data)
 
-            self._process_arrivals(instance, arrivals_data or [], is_create=False)
+            if arrivals_data is not None:
+                self._process_arrivals(instance, arrivals_data, is_create=False)
 
         return instance
     
@@ -190,6 +211,8 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     def _process_arrivals(self, volunteer, arrivals_data, is_create=False):
         current_arrivals = {str(a.id): a for a in volunteer.arrivals.all()}
         processed_ids = set()
+        group_op = self.context['group_op'] if 'group_op' in self.context else None
+        group_arr_id = self.context['arr_id'] if 'arr_id' in self.context else None
 
         for arrival_data in arrivals_data:
             arrival_id = arrival_data.get('id')
@@ -202,22 +225,25 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                 # Обновление существующего заезда
                 arrival = current_arrivals[str(arrival_id)]
                 old_values = {field.name: getattr(arrival, field.name) for field in models.Arrival._meta.fields}
-                changed_data = {field: value for field, value in prepared_data.items() if getattr(arrival, field) != value}
-
+                
+                if group_op and group_arr_id == arrival_id:
+                    changed_data = {field: value for field, value in prepared_data.items()}
+                else:
+                    changed_data = {field: value for field, value in prepared_data.items() if getattr(arrival, field) != value}
                 for attr, value in prepared_data.items():
                     setattr(arrival, attr, value)
                 arrival.save()
 
                 # Логируем изменения только если что-то изменилось
                 if changed_data:
-                    self._log_arrival_change(arrival, "UPDATE", old_values, changed_data)
+                    self._log_arrival_change(arrival, "UPDATE", old_values, changed_data, group_op, group_arr_id)
 
                 processed_ids.add(str(arrival_id))
             else:
                 # Создание нового заезда
                 arrival = models.Arrival.objects.create(volunteer=volunteer, **prepared_data)
                 processed_ids.add(str(arrival.id))
-                self._log_arrival_change(arrival, "CREATE", {}, prepared_data)
+                self._log_arrival_change(arrival, "CREATE", {}, prepared_data, group_op, group_arr_id)
 
         # Удаление заездов, которых нет в обновленных данных
         if not is_create:
@@ -225,7 +251,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             for aid in to_delete:
                 arrival = current_arrivals[aid]
                 old_values = {field.name: getattr(arrival, field.name) for field in models.Arrival._meta.fields}
-                self._log_arrival_change(arrival, "DELETE", old_values, {})
+                self._log_arrival_change(arrival, "DELETE", old_values, {}, group_op, group_arr_id)
                 arrival.delete()
 
     def _prepare_arrival_data(self, data):
@@ -248,7 +274,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         
         return data
     
-    def _log_arrival_change(self, arrival, action, old_data=None, new_data=None):
+    def _log_arrival_change(self, arrival, action, old_data=None, new_data=None, group_op=None, group_arr_id=None):
         user_id = get_request_user_id(self.context["request"].user)
 
         def serialize_value(value):
@@ -265,7 +291,10 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         old_data = {k: serialize_value(v) for k, v in (old_data or {}).items()}
         new_data = {k: serialize_value(v) for k, v in (new_data or {}).items()}
 
-        changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
+        if group_op and group_arr_id == arrival.id:
+            changed_data = {k: v for k, v in new_data.items()}
+        else:
+            changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
         old_changed_data = {k: old_data[k] for k in changed_data.keys() if k in old_data}
 
         history_data = {
@@ -282,6 +311,9 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             history_data["status"] = History.STATUS_DELETE
             history_data["data"] = {"id": str(arrival.id), "deleted": True}
 
+        if group_op:
+            history_data["group_operation_uuid"] = str(group_op)
+
         if history_data["data"]:
             History.objects.create(**history_data)
 
@@ -297,6 +329,7 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.GroupBadge
         fields = '__all__'
+
 
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -317,6 +350,7 @@ class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Color
         fields = '__all__'
+
 
 class AccessRoleSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
@@ -404,6 +438,8 @@ class KitchenSerializer(serializers.ModelSerializer):
 class FilterStatisticsSerializer(serializers.Serializer):
     date_from = serializers.DateField()
     date_to = serializers.DateField()
+    anonymous = serializers.BooleanField(allow_null=True, default=None)
+    group_badge = serializers.BooleanField(allow_null=True, default=None)
 
 
 class StatisticsSerializer(serializers.Serializer):
@@ -464,4 +500,5 @@ class GroupData(serializers.Serializer):
 
 class VolunteerGroupSerializer(serializers.Serializer):
     volunteers_ids = serializers.ListField(child = serializers.IntegerField())
+    arrival_field_list = GroupData(many=True)
     field_list = GroupData(many=True)
