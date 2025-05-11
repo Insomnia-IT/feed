@@ -231,7 +231,7 @@ export function CommonHistory({ role }: CommonHistoryProps) {
 
     const historyData = async () => {
         const response: IHistoryData = await axios.get(
-            `${NEW_API_URL}/history/?${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`
+            `${NEW_API_URL}/history/?limit=100000&${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`
         );
         const result = response.data.results;
         const reversedResult = result.reverse();
