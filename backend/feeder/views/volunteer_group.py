@@ -160,7 +160,7 @@ class VolunteerGroupViewSet(APIView):
                                     actor_badge=get_request_user_id(request.user),
                                     action_at=timezone.now(),
                                     data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
-                                    old_data={"value": value_map[(volunteer_id, custom_field)]},
+                                    old_data={"value": value_map[(volunteer_id, custom_field)].value},
                                     volunteer_uuid=str(vol.uuid),
                                     group_operation_uuid=str(group_operation_uuid),
                                 )
