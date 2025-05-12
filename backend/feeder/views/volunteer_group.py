@@ -65,6 +65,9 @@ class VolunteerGroupViewSet(APIView):
         value_map = {
             (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
         }
+        value_map_old = {
+            (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
+        }
         to_update = []
         to_create = []
 
@@ -131,7 +134,7 @@ class VolunteerGroupViewSet(APIView):
 
                     for field_name, value in custom_fields_data.items():
                         key = (volunteer_id, field_name)
-                        if key in value_map:
+                        if key in value_map.keys():
                             # Обновляем существующее значение
                             db_value = value_map[key]
                             db_value.value = str(value)
@@ -160,7 +163,7 @@ class VolunteerGroupViewSet(APIView):
                                     actor_badge=get_request_user_id(request.user),
                                     action_at=timezone.now(),
                                     data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
-                                    old_data={"value": value_map[(volunteer_id, custom_field)].value},
+                                    old_data={"value": value_map_old[(volunteer_id, custom_field)].value},
                                     volunteer_uuid=str(vol.uuid),
                                     group_operation_uuid=str(group_operation_uuid),
                                 )
@@ -169,17 +172,16 @@ class VolunteerGroupViewSet(APIView):
                             to_create,
                         )
                         for custom_field in custom_fields_data.keys():
-                            if (volunteer_id, custom_field) in value_map.keys():
-                                History.objects.create(
-                                    status=History.STATUS_CREATE,
-                                    object_name='volunteercustomfieldvalue',
-                                    actor_badge=get_request_user_id(request.user),
-                                    action_at=timezone.now(),
-                                    data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
-                                    old_data=None,
-                                    volunteer_uuid=str(vol.uuid),
-                                    group_operation_uuid=str(group_operation_uuid),
-                                )
+                            History.objects.create(
+                                status=History.STATUS_CREATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": change_id},
+                                old_data=None,
+                                volunteer_uuid=str(vol.uuid),
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
 
                 except ValidationError as ve:
                     errors.append({"id": volunteer_id, "errors": ve.detail})
@@ -277,21 +279,38 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     data = hist.data
                     old_data = hist.old_data
                     custom_field = data["custom_field"]
-                    VolunteerCustomFieldValue.objects.filter(
-                        volunteer_id=volunteer_id,
-                        custom_field_id=custom_field,
-                    ).update(value = old_data["value"])
-                    History.objects.create(
-                        status=History.STATUS_UPDATE,
-                        object_name='volunteercustomfieldvalue',
-                        actor_badge=get_request_user_id(request.user),
-                        action_at=timezone.now(),
-                        data={"value": old_data["value"], "custom_field": custom_field,
-                              "id": data["id"]},
-                        old_data={"value": hist.data["value"]},
-                        volunteer_uuid=str(vol.uuid),
-                        group_operation_uuid=str(group_operation_uuid),
-                    )
+                    if old_data:
+                        VolunteerCustomFieldValue.objects.filter(
+                            volunteer_id=volunteer_id,
+                            custom_field_id=custom_field,
+                        ).update(value = old_data["value"])
+                        History.objects.create(
+                            status=History.STATUS_UPDATE,
+                            object_name='volunteercustomfieldvalue',
+                            actor_badge=get_request_user_id(request.user),
+                            action_at=timezone.now(),
+                            data={"value": old_data["value"], "custom_field": custom_field,
+                                "id": data["id"]},
+                            old_data={"value": hist.data["value"]},
+                            volunteer_uuid=str(vol.uuid),
+                            group_operation_uuid=str(group_operation_uuid),
+                        )
+                    elif old_data is None:
+                        VolunteerCustomFieldValue.objects.filter(
+                            volunteer_id=volunteer_id,
+                            custom_field_id=custom_field,
+                        ).delete()
+                        History.objects.create(
+                            status=History.STATUS_UPDATE,
+                            object_name='volunteercustomfieldvalue',
+                            actor_badge=get_request_user_id(request.user),
+                            action_at=timezone.now(),
+                            data={"value": None, "custom_field": custom_field,
+                                  "id": data["id"]},
+                            old_data={"value": hist.data["value"]},
+                            volunteer_uuid=str(vol.uuid),
+                            group_operation_uuid=str(group_operation_uuid),
+                        )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
