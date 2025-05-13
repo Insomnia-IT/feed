@@ -46,6 +46,7 @@ import {
     VolunteerCustomFieldList,
     VolunteerCustomFieldShow
 } from 'components/entities/volunteer-custom-fields';
+import { Wash } from 'components/wash';
 
 const App: React.FC = () => {
     const { t, i18n: i18next } = useTranslation();
@@ -157,6 +158,8 @@ const App: React.FC = () => {
                                         }
                                     >
                                         <Route path="/dashboard" element={<Dashboard />} />
+
+                                        <Route path="/wash" element={<Wash />} />
 
                                         <Route index element={<NavigateToResource resource="volunteers" />} />
 
