@@ -44,8 +44,7 @@ export const VolInfoSection = ({
         optionValue: 'id'
     });
 
-    // const volPhoto = form.getFieldValue('photo');
-    const volPhoto = 'https://opis-cdn.tinkoffjournal.ru/mercury/ecovolunteer-126.eizafu.jpg'
+    const volPhoto = form.getFieldValue('photo');
 
     const badgeColorMap: Record<number, string> = {
         1: '#f5222d',
