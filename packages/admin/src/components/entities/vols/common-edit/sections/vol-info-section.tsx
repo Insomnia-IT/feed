@@ -1,4 +1,4 @@
-import { Form, Input, Select, Image, Button, Popconfirm } from 'antd';
+import { Form, Input, Select, Image } from 'antd';
 import { useState } from 'react';
 import { Rules } from 'components/form';
 import HorseIcon from 'assets/icons/horse-icon';
@@ -6,7 +6,6 @@ import styles from '../../common.module.css';
 import useCanAccess from '../../use-can-access';
 import type { DirectionEntity, PersonEntity } from 'interfaces';
 import { useSelect } from '@refinedev/antd';
-import { DeleteOutlined } from '@ant-design/icons';
 
 export const VolInfoSection = ({
     denyBadgeEdit,
@@ -45,14 +44,8 @@ export const VolInfoSection = ({
         optionValue: 'id'
     });
 
-    const volPhoto = form.getFieldValue('photo');
-
-    const deletePhoto = () => {
-        setTimeout(() => {
-            form.setFieldsValue({ photo: '' });
-            setImageError(false);
-        });
-    };
+    // const volPhoto = form.getFieldValue('photo');
+    const volPhoto = 'https://opis-cdn.tinkoffjournal.ru/mercury/ecovolunteer-126.eizafu.jpg'
 
     const badgeColorMap: Record<number, string> = {
         1: '#f5222d',
@@ -89,35 +82,17 @@ export const VolInfoSection = ({
             <div className={styles.personalWrap}>
                 <div className={styles.photoWrap}>
                     {volPhoto && !imageError ? (
-                        <>
-                            <Image
-                                src={volPhoto}
-                                alt="Фото волонтера"
-                                width={112}
-                                height={112}
-                                style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
-                                onError={() => setImageError(true)}
-                            />
-
-                            <Popconfirm
-                                title="Удалить фото"
-                                description="Вы уверены, что хотите удалить фото?"
-                                okText="Да"
-                                cancelText="Нет"
-                                okButtonProps={{ style: { background: '#ff4d4f', borderColor: '#ff4d4f' } }}
-                                onConfirm={deletePhoto}
-                            >
-                                <Button
-                                    className={styles.deleteButton}
-                                    danger
-                                    type="link"
-                                    icon={<DeleteOutlined />}
-                                    style={{ right: '0px', position: 'static', fontSize: '12px' }}
-                                >
-                                    Удалить фото
-                                </Button>
-                            </Popconfirm>
-                        </>
+                        <Image
+                            src={volPhoto}
+                            alt="Фото волонтера"
+                            width={112}
+                            height={112}
+                            style={{ objectFit: 'cover', borderRadius: '2px', border: '1px solid #D9D9D9' }}
+                            onError={() => setImageError(true)}
+                            preview={{
+                                toolbarRender: () => null
+                            }}
+                        />
                     ) : (
                         <HorseIcon />
                     )}
