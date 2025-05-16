@@ -32,8 +32,7 @@ const useSaveConfirm = (
     return {
         onClick: () => {
             const arrivals = form.getFieldValue('arrivals') ?? [];
-            const activeFrom =
-                form.getFieldValue(['arrivals', 0, 'arrival_date']);
+            const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
             if (!arrivals.some(({ status }: { status: string }) => isActivatedStatus(status))) {
                 setShowConfirmationModalReason('is_active');
             } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
@@ -105,7 +104,7 @@ const useSaveConfirm = (
                         <>
                             <p>Пользователь не активирован. Вы уверены, что хотите продолжить сохранение?</p>
                             <p>Неактивированный пользователь не будет получать питание.</p>
-                            <p>Для активанции выставите статус заезда в &quot;Заехал на поле&quot;</p>
+                            <p>Для активации выставите статус заезда в &quot;Заехал на поле&quot;</p>
                         </>
                     )}
                     {showConfirmationModalReason === 'active_from' && (

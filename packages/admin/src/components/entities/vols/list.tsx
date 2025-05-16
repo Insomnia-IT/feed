@@ -1,6 +1,6 @@
 import { useNavigation, useList } from '@refinedev/core';
 import { List } from '@refinedev/antd';
-import { Input, Row, Col, Select } from 'antd';
+import { Input, Row, Col } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import { FC, useEffect, useState } from 'react';
 
@@ -19,6 +19,7 @@ import { ActiveColumnsContextProvider } from './vol-list/active-columns-context'
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
+import { PersonsTable } from './vol-list/persons-table';
 
 export const VolList: FC = () => {
     const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
@@ -68,7 +69,7 @@ export const VolList: FC = () => {
         }
     });
 
-    const { selectedVols, unselectAllSelected, rowSelection } = useMassEdit({
+    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
         volunteersData: volunteers?.data ?? [],
         totalVolunteersCount: volunteers?.total ?? 0,
         filterQueryParams
@@ -112,6 +113,8 @@ export const VolList: FC = () => {
 
     const volunteersData = volunteers?.data ?? [];
 
+    const showPersons = searchText && !volunteersIsLoading && volunteersData.length === 0;
+
     return (
         <List>
             <ActiveColumnsContextProvider customFields={customFields}>
@@ -134,9 +137,9 @@ export const VolList: FC = () => {
                     {isDesktop && (
                         <>
                             <Row style={{ gap: '24px' }} align="middle">
-                                <b>Сохраненные таблицы:</b>
+                                {/* <b>Сохраненные таблицы:</b>
 
-                                <Select placeholder="Выберите" disabled></Select>
+                                <Select placeholder="Выберите" disabled></Select> */}
                             </Row>
                             <Row style={{ gap: '24px' }} align="middle">
                                 <Col>
@@ -175,7 +178,7 @@ export const VolList: FC = () => {
                 )}
                 {isDesktop && (
                     <>
-                        <VolunteerDesktopTable
+                        {!showPersons && <VolunteerDesktopTable
                             openVolunteer={openVolunteer}
                             pagination={pagination}
                             statusById={statusById}
@@ -183,11 +186,13 @@ export const VolList: FC = () => {
                             volunteersData={volunteersData}
                             customFields={customFields}
                             rowSelection={canBulkEdit ? rowSelection : undefined}
-                        />
+                        />}
+                        {showPersons && <PersonsTable searchText={searchText} />}
                         {canBulkEdit && (
                             <MassEdit
                                 selectedVolunteers={selectedVols}
                                 unselectAll={unselectAllSelected}
+                                unselectVolunteer={unselectVolunteer}
                                 reloadVolunteers={async () => {
                                     await reloadVolunteers();
                                 }}

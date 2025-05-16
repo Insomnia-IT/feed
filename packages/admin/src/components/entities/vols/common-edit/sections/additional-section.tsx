@@ -109,6 +109,7 @@ export const AdditionalSection = ({
                     <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                 </Form.Item>
                 <Form.Item name="person" hidden />
+                <Form.Item name="person_id" hidden />
             </div>
         </>
     );

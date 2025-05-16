@@ -22,7 +22,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
     dtime_from = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='gte')
     dtime_to = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='lte')
     meal_time = django_filters.CharFilter(field_name="meal_time", lookup_expr="exact")
-    group_badge = django_filters.CharFilter(field_name="group_badge", lookup_expr="exact")
+    group_badge = django_filters.NumberFilter(field_name="group_badge")
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
     is_group_badge = django_filters.BooleanFilter(method="filter_is_group_badge")
 
@@ -33,8 +33,8 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     def filter_is_group_badge(self, queryset, name, value):
         if value:
-            return queryset.filter(volunteer__isnull=True)
-        return queryset.filter(volunteer__isnull=False)
+            return queryset.filter(group_badge__isnull=True)
+        return queryset.filter(group_badge__isnull=False)
 
     class Meta:
         model = models.FeedTransaction

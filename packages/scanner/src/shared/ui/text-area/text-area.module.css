@@ -19,16 +19,14 @@
     background: var(--c-grey);
     cursor: auto;
     border: none;
-
     height: 19px;
     width: 100%;
     resize: none;
-
     color: var(--c-txt);
     font-weight: 400;
     font-size: 16px;
 
     ::placeholder {
-        color: var(--c-secondary-txt)
+        color: var(--c-secondary-txt);
     }
 }

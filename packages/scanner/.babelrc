@@ -7,14 +7,10 @@
                 "onlyRemoveTypeImports": true
             }
         ],
-        [
-            "@babel/react"
-        ]
+        ["@babel/react"]
     ],
     "plugins": [
-        [
-            "@babel/plugin-proposal-class-properties"
-        ],
+        ["@babel/plugin-proposal-class-properties"],
         "@babel/plugin-transform-runtime",
         [
             "@babel/plugin-transform-react-jsx",
@@ -25,9 +21,7 @@
         [
             "module-resolver",
             {
-                "root": [
-                    "./src"
-                ]
+                "root": ["./src"]
             }
         ]
     ]

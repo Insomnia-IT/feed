@@ -1,49 +1,49 @@
 .label {
-  display: flex;
-  align-items: center;
-  column-gap: 8px;
-  cursor: pointer;
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+    cursor: pointer;
 }
 
 .customCheckbox {
-  min-width: 40px;
-  width: 64px;
-  height: 32px;
-  background-color: var(--c-grey);
-  border: 2px solid var(--c-blue);
-  border-radius: 23px;
-  position: relative;
-  padding: 2px 4px;
-  transition: all 0.3s;
-
-  &::after {
-    content: '';
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    background-color: var(--c-blue);
+    min-width: 40px;
+    width: 64px;
+    height: 32px;
+    background-color: var(--c-grey);
+    border: 2px solid var(--c-blue);
     border-radius: 23px;
-    position: absolute;
-    top: 2px;
-    left: 2px;
+    position: relative;
+    padding: 2px 4px;
     transition: all 0.3s;
-  }
+
+    &::after {
+        content: '';
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background-color: var(--c-blue);
+        border-radius: 23px;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: all 0.3s;
+    }
 }
 
 .checkbox {
-  width: 0;
-  height: 0;
-  position: absolute;
-  opacity: 0;
-  visibility: hidden;
+    width: 0;
+    height: 0;
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
 
-  &:checked ~ .customCheckbox {
-    background-color: var(--c-blue);
+    &:checked ~ .customCheckbox {
+        background-color: var(--c-blue);
 
-    &::after {
-      left: 100%;
-      background-color: var(--c-white);
-      transform: translateX(calc(-100% - 2px));
+        &::after {
+            left: 100%;
+            background-color: var(--c-white);
+            transform: translateX(calc(-100% - 2px));
+        }
     }
-  }
 }

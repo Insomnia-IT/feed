@@ -111,7 +111,7 @@ const localizedFieldNames: Record<string, string> = {
 };
 export interface CommonHistoryProps {
     role: 'volunteer' | 'actor';
-  }
+}
 
 function returnCurrentField(fieldName: string): string {
     return localizedFieldNames[fieldName] ?? fieldName;
@@ -230,7 +230,9 @@ export function CommonHistory({ role }: CommonHistoryProps) {
     const groupBadgeById = useMapFromList(groupBadges);
 
     const historyData = async () => {
-        const response: IHistoryData = await axios.get(`${NEW_API_URL}/history/?${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`);
+        const response: IHistoryData = await axios.get(
+            `${NEW_API_URL}/history/?limit=100000&${role === 'actor' ? 'actor_badge' : 'volunteer_uuid'}=${uuid}`
+        );
         const result = response.data.results;
         const reversedResult = result.reverse();
         setData(reversedResult);
@@ -367,7 +369,7 @@ export function CommonHistory({ role }: CommonHistoryProps) {
         }
     }
 
-    const renderHistory = (array: Array<IResult> | undefined,  role: 'volunteer' | 'actor') => {
+    const renderHistory = (array: Array<IResult> | undefined, role: 'volunteer' | 'actor') => {
         if (array === undefined) {
             return 'ИЗМЕНЕНИЙ НЕТ';
         }

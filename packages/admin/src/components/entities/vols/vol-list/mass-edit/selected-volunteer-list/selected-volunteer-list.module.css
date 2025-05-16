@@ -1,7 +1,6 @@
 .list {
     scrollbar-gutter: stable;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden auto;
     max-height: 100%;
     margin-right: 10px;
 }
@@ -13,20 +12,18 @@
 }
 
 .bold {
-    font-family: 'Roboto';
+    font-family: Roboto, sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
     line-height: 22px;
-
 }
 
 .counter {
-    font-family: 'Roboto';
+    font-family: Roboto, sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
     line-height: 22px;
-
-    color: #8D959E;
+    color: #8d959e;
 }

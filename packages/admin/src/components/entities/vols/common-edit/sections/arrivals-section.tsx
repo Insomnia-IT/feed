@@ -80,29 +80,33 @@ export const ArrivalsSection = ({
                             departure_transport: 'UNDEFINED'
                         });
                     };
-                    return <>
-                        <div>{arrivalFields?.map((arrivalField, index) => (
-                            <ArrivalItem
-                                key={arrivalField.key}
-                                index={index}
-                                remove={remove}
-                                isSingle={arrivalFields.length === 1}
-                                statusesOptions={statusesOptionsNew}
-                                transportsOptions={transportsOptions}
-                                activeFromValidationRules={activeFromValidationRules}
-                                activeToValidationRules={activeToValidationRules}
-                            />
-                        ))}</div>
-                        <Button
-                            key="add"
-                            className={styles.addArrivalButton}
-                            type="primary"
-                            icon={<PlusSquareOutlined />}
-                            onClick={addArrival}
-                        >
-                            Добавить заезд
-                        </Button>
-                    </>;
+                    return (
+                        <>
+                            <div>
+                                {arrivalFields?.map((arrivalField, index) => (
+                                    <ArrivalItem
+                                        key={arrivalField.key}
+                                        index={index}
+                                        remove={remove}
+                                        isSingle={arrivalFields.length === 1}
+                                        statusesOptions={statusesOptionsNew}
+                                        transportsOptions={transportsOptions}
+                                        activeFromValidationRules={activeFromValidationRules}
+                                        activeToValidationRules={activeToValidationRules}
+                                    />
+                                ))}
+                            </div>
+                            <Button
+                                key="add"
+                                className={styles.addArrivalButton}
+                                type="primary"
+                                icon={<PlusSquareOutlined />}
+                                onClick={addArrival}
+                            >
+                                Добавить заезд
+                            </Button>
+                        </>
+                    );
                 }}
             </Form.List>
         </>
@@ -123,16 +127,14 @@ function ArrivalItem({
     remove: (index: number) => void;
     statusesOptions: { label: string; value: string }[];
     transportsOptions: { label: string; value: string }[];
-    activeFromValidationRules: (
-        index: number
-    ) => Array<
+    activeFromValidationRules: (index: number) => Array<
         | { required: boolean }
         | {
-            validator: (
-                rule: unknown,
-                value: string | number | Date | dayjs.Dayjs | null | undefined
-            ) => Promise<void>;
-        }
+              validator: (
+                  rule: unknown,
+                  value: string | number | Date | dayjs.Dayjs | null | undefined
+              ) => Promise<void>;
+          }
     >;
     activeToValidationRules: (
         index: number
@@ -141,7 +143,7 @@ function ArrivalItem({
     const form = Form.useFormInstance();
 
     const createDateChange = (fieldName: string) => (value: string | number | Date) => {
-        const normalizedValue = dayjs.isDayjs(value) ? value.format('YYYY-MM-DD') : value
+        const normalizedValue = dayjs.isDayjs(value) ? value.format('YYYY-MM-DD') : value;
         form.setFieldValue(['arrivals', index, fieldName], normalizedValue);
     };
 
@@ -173,15 +175,8 @@ function ArrivalItem({
                         </Button>
                     </div>
                     <div className={styles.dateInput}>
-                        <Form.Item
-                            label="Статус заезда"
-                            name={[index, 'status']}
-                            rules={Rules.required}
-                        >
-                            <Select
-                                options={statusesOptions}
-                                style={{ width: '100%' }}
-                            />
+                        <Form.Item label="Статус заезда" name={[index, 'status']} rules={Rules.required}>
+                            <Select options={statusesOptions} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
                 </div>
@@ -213,15 +208,8 @@ function ArrivalItem({
                         </Form.Item>
                     </div>
                     <div className={styles.dateInput}>
-                        <Form.Item
-                            label="Как добрался?"
-                            name={[index, 'arrival_transport']}
-                            rules={Rules.required}
-                        >
-                            <Select
-                                options={transportsOptions}
-                                style={{ width: '100%' }}
-                            />
+                        <Form.Item label="Как добрался?" name={[index, 'arrival_transport']} rules={Rules.required}>
+                            <Select options={transportsOptions} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
                 </div>
@@ -247,15 +235,8 @@ function ArrivalItem({
                         </Form.Item>
                     </div>
                     <div className={styles.dateInput}>
-                        <Form.Item
-                            label="Как уехал?"
-                            name={[index, 'departure_transport']}
-                            rules={Rules.required}
-                        >
-                            <Select
-                                options={transportsOptions}
-                                style={{ width: '100%' }}
-                            />
+                        <Form.Item label="Как уехал?" name={[index, 'departure_transport']} rules={Rules.required}>
+                            <Select options={transportsOptions} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
                 </div>

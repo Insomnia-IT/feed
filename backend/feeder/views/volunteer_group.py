@@ -11,8 +11,8 @@ from django.utils import timezone
 
 
 from feeder import serializers
-from feeder.models import Volunteer,VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival
-from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer
+from feeder.models import Volunteer, VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival
+from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer, ArrivalSerializer
 from feeder.views.mixins import get_request_user_id
 
 from history.models import History
@@ -27,10 +27,10 @@ class VolunteerGroupViewSet(APIView):
         request=serializers.VolunteerGroupSerializer(),
     )
     def post(self, request, *args, **kwargs):
-
         volunteers_ids = request.data.get('volunteers_ids', [])
-        new_data_list = request.data.get('field_list', {})
-        new_data_custom_list = request.data.get('custom_field_list', {})
+        new_data_list = request.data.get('field_list', [])
+        new_data_arrival_list = request.data.get('arrival_field_list', [])
+        new_data_custom_list = request.data.get('custom_field_list', [])
 
         # Проверки правильности структуры запроса
         if not new_data_list and not new_data_custom_list:
@@ -39,9 +39,24 @@ class VolunteerGroupViewSet(APIView):
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
 
+        vol_allowed = set(VolunteerSerializer().fields.keys())
+
+        arr_allowed = set(ArrivalSerializer().fields.keys())
+
         new_data = {}
         new_data_arrival = {}
+        invalid_vol = []
+        invalid_arr = []
+
         for entity in new_data_list:
+            new_data[entity['field']] = entity['data']
+            if entity['field'] not in vol_allowed:
+                invalid_vol.append(entity['field'])
+
+        for entity in new_data_arrival_list:
+            new_data_arrival[entity['field']] = entity['data']
+            if entity['field'] not in arr_allowed:
+                invalid_arr.append(entity['field'])
             if entity and not isinstance(entity, dict):
                 return Response({"error": "fields should be a non-empty dictionary"},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -70,12 +85,23 @@ class VolunteerGroupViewSet(APIView):
         }
         to_update = []
         to_create = []
+        if not len(new_data) and not len(new_data_arrival):
+            return Response({"error": "Fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if invalid_vol or invalid_arr:
+            return Response({
+                "error": "Found invalid fields",
+                "invalid_volunteer_fields": invalid_vol,
+                "invalid_arrival_fields": invalid_arr
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         updated_volunteers = []
         errors = []
+        missing_arrs = []
 
         volunteers_before_update = Volunteer.objects.filter(id__in=volunteers_ids).values('id', *new_data.keys())
         original_data = {volunteer['id']: {field: volunteer[field] for field in new_data.keys()} for volunteer in volunteers_before_update}
+        
         group_operation_uuid = uuid4()
 
         with transaction.atomic():
@@ -96,17 +122,15 @@ class VolunteerGroupViewSet(APIView):
                             .order_by('arrival_date')
                             .first()
                         )
-                        # if not target:
-                        #     raise ValidationError({
-                        #         "arrivals": "no current or upcoming arrival to update"
-                        #     })
-
+                        if not target:
+                            missing_arrs.append(volunteer_id)
+                    
                     for arr in arrivals:
                         entry = {"id": arr.id}
                         if target and arr.id == target.id:
                             entry.update(new_data_arrival)
                         all_arrivals.append(entry)
-
+                    
                     payload = new_data.copy()
                     if new_data_arrival and target:
                         payload['arrivals'] = all_arrivals
@@ -121,6 +145,7 @@ class VolunteerGroupViewSet(APIView):
 
                     vol = serializer.save()
                     updated_volunteers.append(vol)
+
                     History.objects.create(
                         status=History.STATUS_UPDATE,
                         object_name='volunteer',
@@ -195,7 +220,8 @@ class VolunteerGroupViewSet(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"id": str(group_operation_uuid)},
+            {"id": str(group_operation_uuid),
+             "missing_arrivals": missing_arrs},
             status=status.HTTP_200_OK)
 
 class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
@@ -206,7 +232,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         operation_id = pk
         if not operation_id:
             return Response({"error": "operation_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         histories = History.objects.filter(
             group_operation_uuid=operation_id
         )
@@ -242,7 +268,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                         volunteer_uuid=str(vol.uuid),
                         group_operation_uuid=str(group_operation_uuid),
                     )
-
+                
                 for hist in histories.filter(object_name='arrival'):
                     volunteer_id = hist.volunteer_uuid
                     old_data = hist.old_data or {}
@@ -256,14 +282,14 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
                     vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
                     arrivals = Arrival.objects.filter(volunteer=vol)
-
+                    
                     all_arrivals = []
                     for arr in arrivals:
                         entry = {"id": arr.id}
                         if target and arr.id == target.id:
                             entry.update(old_data)
                         all_arrivals.append(entry)
-
+                    
                     payload = {}
                     payload['arrivals'] = all_arrivals
 

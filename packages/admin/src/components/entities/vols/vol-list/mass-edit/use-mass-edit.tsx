@@ -1,8 +1,8 @@
 import type { VolEntity } from 'interfaces';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
-import { useList } from '@refinedev/core';
 import { LoadingOutlined } from '@ant-design/icons';
+import { dataProvider } from 'dataProvider';
 
 export const useMassEdit = ({
     totalVolunteersCount,
@@ -14,28 +14,15 @@ export const useMassEdit = ({
 }): {
     selectedVols: Array<VolEntity>;
     unselectAllSelected: () => void;
+    unselectVolunteer: (volunteer: VolEntity) => void;
     rowSelection: TableProps<VolEntity>['rowSelection'];
 } => {
-    const { data: volunteers, isLoading } = useList<VolEntity>({
-        resource: `volunteers/${filterQueryParams}`,
-
-        pagination: {
-            current: 1,
-            pageSize: 0
-        }
-    });
-
-    const volunteersData: Array<VolEntity> = volunteers?.data ?? [];
-
     const [selectedVols, setSelectedVols] = useState<VolEntity[]>([]);
+    const [isSelectAllLoading, setIsSelectAllLoading] = useState(false);
 
     const unselectAllSelected = () => {
         setSelectedVols([]);
     };
-
-    useEffect(() => {
-        setSelectedVols([]);
-    }, [filterQueryParams]);
 
     const isAllCurrentSelected = totalVolunteersCount === selectedVols.length;
 
@@ -60,27 +47,43 @@ export const useMassEdit = ({
         columnTitle: (
             <>
                 <Checkbox
-                    style={isLoading ? { display: 'none' } : undefined}
+                    style={isSelectAllLoading ? { display: 'none' } : undefined}
                     checked={selectedVols.length > 0 && totalVolunteersCount === selectedVols.length}
-                    disabled={isLoading || totalVolunteersCount === 0}
-                    title={isLoading ? 'Подождите, информация загружается...' : 'Выбрать всех в списке'}
+                    disabled={isSelectAllLoading || totalVolunteersCount === 0}
+                    title={isSelectAllLoading ? 'Подождите, информация загружается...' : 'Выбрать всех в списке'}
                     indeterminate={!!selectedVols.length && !(totalVolunteersCount === selectedVols.length)}
-                    onChange={() => {
+                    onChange={async () => {
                         if (isAllCurrentSelected) {
                             setSelectedVols([]);
                         } else {
-                            setSelectedVols(volunteersData);
+                            setIsSelectAllLoading(true);
+                            try {
+                                const { data: volunteersData } = await dataProvider.getList<VolEntity>({
+                                    resource: `volunteers/${filterQueryParams}`,
+                                    pagination: {
+                                        current: 1,
+                                        pageSize: 0
+                                    }
+                                });
+
+                                setSelectedVols(volunteersData);
+                            } finally {
+                                setIsSelectAllLoading(false);
+                            }
                         }
                     }}
                 />
-                {isLoading ? <LoadingOutlined /> : null}
+                {isSelectAllLoading ? <LoadingOutlined /> : null}
             </>
         )
     };
 
     return {
-        selectedVols: selectedVols,
+        rowSelection,
+        selectedVols,
         unselectAllSelected,
-        rowSelection
+        unselectVolunteer: (volunteer: VolEntity) => {
+            onVolunteerSelection(volunteer, false);
+        }
     };
 };

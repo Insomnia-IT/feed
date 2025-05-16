@@ -5,6 +5,7 @@
 .vscode/*
 !.vscode/settings.json
 
+.nx
 .idea
 /.idea
 

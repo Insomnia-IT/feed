@@ -1,15 +1,15 @@
 import { RadarChartOutlined } from '@ant-design/icons';
 
-import { IPerson } from 'interfaces';
+import { PersonEntity } from 'interfaces';
 
 import styles from '../../common.module.css';
 
-export const PreviousYearsSection = ({ person }: { person: IPerson | null }) => {
+export const PreviousYearsSection = ({ person }: { person: PersonEntity | null }) => {
     const engagements = person?.engagements || [];
 
     return (
         <>
-            <p className={styles.formSection__title}>Участие во все года</p>
+            <p className={styles.formSection__title}>Участие в прошлых годах</p>
             <div className={styles.engagementsWrap}>
                 {engagements.length > 0 &&
                     engagements.map((item) => (
