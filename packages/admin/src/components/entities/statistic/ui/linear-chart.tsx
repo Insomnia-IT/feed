@@ -6,6 +6,7 @@ interface IProps {
         date: string;
         plan: number;
         fact: number;
+        predict: number;
     }[];
 }
 
@@ -19,8 +20,9 @@ const LinearChart: FC<IProps> = ({ data }) => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="plan" stroke="#8884d8" name="План" />
+                    <Line type="monotone" dataKey="plan" stroke="#222222" name="На поле" />
                     <Line type="monotone" dataKey="fact" stroke="#82ca9d" name="Факт" />
+                    <Line type="monotone" dataKey="predict" stroke="#8884d8" name="Прогноз" />
                     <Brush dataKey="date" height={30} stroke="#8884d8" />
                 </LineChart>
             </ResponsiveContainer>
