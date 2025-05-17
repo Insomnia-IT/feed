@@ -495,6 +495,14 @@ class WashSerializer(serializers.ModelSerializer):
         model = models.Wash
         fields = '__all__'
 
+class WashListSerializer(serializers.ModelSerializer):
+    volunteer = VolunteerListSerializer()
+    actor = VolunteerListSerializer()
+
+    class Meta:
+        model = models.Wash
+        fields = '__all__'
+
 class GroupData(serializers.Serializer):
     field = serializers.CharField()
     data = serializers.CharField()
