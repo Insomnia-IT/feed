@@ -9,7 +9,9 @@ export const useSearchVolunteer = (qr?: string) => {
             const { data } = await axios.get<VolunteersResponse>(`${NEW_API_URL}/volunteers/`, {
                 params: { qr }
             });
+
             return data.results[0];
-        }
+        },
+        queryKey: [qr]
     });
 };

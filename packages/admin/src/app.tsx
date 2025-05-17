@@ -46,6 +46,7 @@ import {
     VolunteerCustomFieldList,
     VolunteerCustomFieldShow
 } from 'components/entities/volunteer-custom-fields';
+import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
 import { Wash } from 'components/wash';
 
 const App: React.FC = () => {
@@ -136,6 +137,11 @@ const App: React.FC = () => {
                                         name: 'scanner-page',
                                         list: '/scanner-page',
                                         icon: <MobileOutlined />
+                                    },
+                                    {
+                                        name: 'wash',
+                                        list: '/wash',
+                                        icon: <ExperimentOutlined />
                                     },
                                     {
                                         name: 'sync',
