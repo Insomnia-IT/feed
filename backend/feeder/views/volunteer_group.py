@@ -85,8 +85,6 @@ class VolunteerGroupViewSet(APIView):
         }
         to_update = []
         to_create = []
-        if not len(new_data) and not len(new_data_arrival):
-            return Response({"error": "Fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
 
         if invalid_vol or invalid_arr:
             return Response({
