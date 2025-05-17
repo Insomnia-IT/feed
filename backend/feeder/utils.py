@@ -79,6 +79,14 @@ def get_stat_amount(stat, item):
         return stat_item['amount']
     else:
         return 0
+    
+
+def get_kitchen_id_by_history(history_by_volunteer, volunteer_uuid, current_date):
+    if volunteer_uuid in history_by_volunteer:
+        history_items = history_by_volunteer[volunteer_uuid]
+        for item in history_items:
+            if current_date < item['action_at']:
+                return item['old_data']['kitchen']
 
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, prediction_alg='1', apply_history=False):
     start_time = time.time()
@@ -158,9 +166,10 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
         print('history', len(history))
         for item in history:
             volunteer_uuid = item.get('volunteer_uuid')
-            if not volunteer_uuid in history_by_volunteer:
-                history_by_volunteer[volunteer_uuid] = item
-
+            if volunteer_uuid in history_by_volunteer:
+                history_by_volunteer[volunteer_uuid].append(item)
+            else:
+                history_by_volunteer[volunteer_uuid] = [item]
     # Предварительная обработка данных волонтеров
     processed_volunteers = []
     for vol in volunteers:
@@ -209,7 +218,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
         for vol_data in processed_volunteers:
             active_from = vol_data['active_from']
             active_to = vol_data['active_to']
-            kitchen_id = apply_history and vol_data['uuid'] in history_by_volunteer and history_by_volunteer[vol_data['uuid']]['old_data']['kitchen'] or vol_data['kitchen_id']
+            kitchen_id = apply_history and get_kitchen_id_by_history(history_by_volunteer, vol_data['uuid'], current_day) or vol_data['kitchen_id']
 
             if not (active_from <= current_day <= active_to):
                 continue
