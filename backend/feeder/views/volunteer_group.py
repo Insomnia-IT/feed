@@ -33,8 +33,8 @@ class VolunteerGroupViewSet(APIView):
         new_data_custom_list = request.data.get('custom_field_list', [])
 
         # Проверки правильности структуры запроса
-        if not new_data_list and not new_data_custom_list:
-            return Response({"error": "fields or custom fields should be set"}, status=status.HTTP_400_BAD_REQUEST)
+        if not new_data_list and not new_data_custom_list and not new_data_arrival_list:
+            return Response({"error": "fields, arrivals or custom fields should be set"}, status=status.HTTP_400_BAD_REQUEST)
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
