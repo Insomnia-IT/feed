@@ -167,7 +167,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         many=True
     )
     person_id = serializers.PrimaryKeyRelatedField(
-        source='person', 
+        source='person',
         queryset=models.Person.objects.all()
     )
 
@@ -282,7 +282,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                 return str(value.id)
             if isinstance(value, models.Transport):
                 return str(value.id)
-            if isinstance(value, date):  
+            if isinstance(value, date):
                 return value.isoformat()
             if isinstance(value, UUID):
                 return str(value)
@@ -502,4 +502,5 @@ class GroupData(serializers.Serializer):
 class VolunteerGroupSerializer(serializers.Serializer):
     volunteers_ids = serializers.ListField(child = serializers.IntegerField())
     arrival_field_list = GroupData(many=True)
-    field_list = GroupData(many=True)
+    field_list = GroupData(many=True, allow_empty=True)
+    custom_field_list = GroupData(many=True, allow_empty=True)
