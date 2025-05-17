@@ -151,12 +151,12 @@ function PublicStatistic() {
         [data, dateStr, typeOfEater, kitchenId]
     );
     const dataForColumnChart = useMemo(
-        () => handleDataForColumnChart(data, typeOfEater, kitchenId),
-        [data, typeOfEater, kitchenId]
+        () => handleDataForColumnChart(data, typeOfEater, kitchenId, selectedMealTime),
+        [data, typeOfEater, kitchenId, selectedMealTime]
     );
     const dataForLinearChart = useMemo(
-        () => handleDataForLinearChart(data, typeOfEater, kitchenId),
-        [data, typeOfEater, kitchenId]
+        () => handleDataForLinearChart(data, typeOfEater, kitchenId, selectedMealTime),
+        [data, typeOfEater, kitchenId, selectedMealTime]
     );
 
     return (
@@ -235,22 +235,20 @@ function PublicStatistic() {
                     </Radio.Group>
                 </Form.Item>
             </Form>
-            {statisticViewType === 'date' ? (
-                <>
-                    <TableStats data={dataForTable} loading={loading} />
-                    <Form layout="inline" style={{ marginBottom: 16 }}>
-                        <Form.Item label="Выберите приём пищи:">
-                            <Radio.Group value={selectedMealTime} onChange={onChangeMealTime}>
-                                <Radio.Button value="breakfast">Завтрак</Radio.Button>
-                                <Radio.Button value="lunch">Обед</Radio.Button>
-                                <Radio.Button value="dinner">Ужин</Radio.Button>
-                                <Radio.Button value="night">Дожор</Radio.Button>
-                            </Radio.Group>
-                        </Form.Item>
-                    </Form>
+            {statisticViewType === 'date' && <TableStats data={dataForTable} loading={loading} />}
+            <Form layout="inline" style={{ marginBottom: 16 }}>
+                <Form.Item label="Выберите приём пищи:">
+                    <Radio.Group value={selectedMealTime} onChange={onChangeMealTime}>
+                        <Radio.Button value="breakfast">Завтрак</Radio.Button>
+                        <Radio.Button value="lunch">Обед</Radio.Button>
+                        <Radio.Button value="dinner">Ужин</Radio.Button>
+                        <Radio.Button value="night">Дожор</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+            </Form>
 
-                    <ColumnChart data={dataForColumnChart} mealTime={selectedMealTime} />
-                </>
+            {statisticViewType === 'date' ? (
+                <ColumnChart data={dataForColumnChart} mealTime={selectedMealTime} />
             ) : (
                 <LinearChart data={dataForLinearChart} />
             )}
