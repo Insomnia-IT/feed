@@ -103,7 +103,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
     
     # get transactions by criteria of fact statistic
     transactions = fact_query.values(
-        'dtime', 'meal_time', 'kitchen_id', 'amount', 'is_vegan', 'volunteer_id', 'group_badge'
+        'dtime', 'meal_time', 'kitchen_id', 'amount', 'is_vegan', 'volunteer_id', 'group_badge', 'reason'
     )
     print(f'transactions loaded: {time.time() - start_time}')
 
@@ -115,9 +115,9 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
             continue
         if anonymous is False and txn.get('volunteer_id') is None:
             continue
-        if group_badge is True and txn.get('group_badge') is None:
+        if group_badge is True and (txn.get('group_badge') is None and not (txn.get('reason') and 'Групповое питание' in txn.get('reason'))):
             continue
-        if group_badge is False and txn.get('group_badge') is not None:
+        if group_badge is False and (txn.get('group_badge') is not None or (txn.get('reason') and 'Групповое питание' in txn.get('reason'))):
             continue
 
         state_date = arrow.get(txn['dtime'])
