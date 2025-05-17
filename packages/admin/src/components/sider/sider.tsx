@@ -150,27 +150,32 @@ const CustomSider: FC = () => {
         <>
             {screenSize <= 576 ? (
                 <div className={styles.mobileSider}>
-                    <button
-                        className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
-                        onClick={() => push('/volunteers')}
-                    >
-                        <UserOutlined style={{ fontSize: '20px' }} />
-                        <span className={styles.buttonText}>Волонтеры</span>
-                    </button>
-                    <button
-                        className={`${styles.siderButton} ${currentPath === 'gb' ? styles.siderButtonActive : ''}`}
-                        onClick={() => push('/group-badges')}
-                    >
-                        <TeamOutlined style={{ fontSize: '20px' }} />
-                        <span className={styles.buttonText}>Группы</span>
-                    </button>
-                    <button
-                        className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
-                        onClick={() => push('/wash')}
-                    >
-                        <SmileOutlined style={{ fontSize: '20px' }} />
-                        <span className={styles.buttonText}>Стиратель</span>
-                    </button>
+                    {accessRoleName === 'Сова' ? (
+                        <button
+                            className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
+                            onClick={() => push('/wash')}
+                        >
+                            <SmileOutlined style={{ fontSize: '20px' }} />
+                            <span className={styles.buttonText}>Стиратель</span>
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
+                                onClick={() => push('/volunteers')}
+                            >
+                                <UserOutlined style={{ fontSize: '20px' }} />
+                                <span className={styles.buttonText}>Волонтеры</span>
+                            </button>
+                            <button
+                                className={`${styles.siderButton} ${currentPath === 'gb' ? styles.siderButtonActive : ''}`}
+                                onClick={() => push('/group-badges')}
+                            >
+                                <TeamOutlined style={{ fontSize: '20px' }} />
+                                <span className={styles.buttonText}>Группы</span>
+                            </button>
+                        </>
+                    )}
                     <button className={styles.siderButton} onClick={handleLogout}>
                         <LogoutOutlined style={{ fontSize: '20px' }} />
                         <span className={styles.buttonText}>Выход</span>
