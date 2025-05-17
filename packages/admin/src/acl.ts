@@ -24,9 +24,10 @@ ac
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
-    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction'])
-    .update(['group-badges', 'volunteer-custom-fields'])
-    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
+    .read(['wash'])
+    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash'])
+    .update(['group-badges', 'volunteer-custom-fields', 'wash'])
+    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers', 'wash']);
 
 export const ACL: AccessControlProvider = {
     can: async ({ action, resource }: { action: string; resource?: string }) => {

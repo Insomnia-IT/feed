@@ -166,3 +166,11 @@ export interface PersonEntity {
     is_vegan?: boolean;
     engagements: EngagementEntity[];
 }
+
+export interface WashEntity {
+    id: number;
+    created_at: string;
+    updated_at: string;
+    volunteer: number;
+    actor: number;
+}
