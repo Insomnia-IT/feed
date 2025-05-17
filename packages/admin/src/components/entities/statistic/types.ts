@@ -7,6 +7,8 @@ export type EaterTypeExtended = EaterType | 'all';
 
 export type KitcheId = 'first' | 'second';
 export type KitchenIdExtended = KitcheId | 'all';
+export type BooleanExtended = 'true' | 'false' | 'all';
+export type PredictionAlg = '1' | '2';
 
 export type IEaterTypeAmount = {
     [eaterType in EaterType]: number;
