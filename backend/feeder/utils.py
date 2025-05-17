@@ -218,7 +218,6 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
         for vol_data in processed_volunteers:
             active_from = vol_data['active_from']
             active_to = vol_data['active_to']
-            kitchen_id = apply_history and get_kitchen_id_by_history(history_by_volunteer, vol_data['uuid'], current_day) or vol_data['kitchen_id']
 
             if not (active_from <= current_day <= active_to):
                 continue
@@ -236,6 +235,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                 meal_times_set = get_meal_times(is_paid) # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
 
             for meal_time in meal_times_set:
+                kitchen_id = apply_history and get_kitchen_id_by_history(history_by_volunteer, vol_data['uuid'], current_day.shift(days=-1) if meal_time == 'breakfast' else current_day) or vol_data['kitchen_id']
                 append_stat(stat, {
                     'date': current_day.format(STAT_DATE_FORMAT),
                     'type': StatisticType.PLAN.value,
@@ -272,24 +272,32 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                             'is_vegan': is_vegan,
                             'kitchen_id': kitchen_id
                         })
-                        if prediction_alg == '2':
+                        if prediction_alg == '3':
                             predict_amount = 0 if prev_plan == 0 else current_plan * prev_fact / prev_plan
                         else:
-                            if prev_fact == 0 and prev_prev_day:
-                                prev_plan = get_stat_amount(stat, {
-                                    'date': prev_prev_day.format(STAT_DATE_FORMAT),
+                            prev_prev_fact = get_stat_amount(stat, {
+                                'date': (prev_prev_day or prev_day).format(STAT_DATE_FORMAT),
+                                'type': StatisticType.FACT.value,
+                                'meal_time': meal_time,
+                                'is_vegan': is_vegan,
+                                'kitchen_id': kitchen_id
+                            })
+                            prev_prev_plan = get_stat_amount(stat, {
+                                    'date': (prev_prev_day or prev_day).format(STAT_DATE_FORMAT),
                                     'type': StatisticType.PLAN.value,
                                     'meal_time': meal_time,
                                     'is_vegan': is_vegan,
                                     'kitchen_id': kitchen_id
                                 })
-                                prev_fact = get_stat_amount(stat, {
-                                    'date': prev_prev_day.format(STAT_DATE_FORMAT),
-                                    'type': StatisticType.FACT.value,
-                                    'meal_time': meal_time,
-                                    'is_vegan': is_vegan,
-                                    'kitchen_id': kitchen_id
-                                })
+                            if prediction_alg == '2':
+                                if 2 * prev_fact < prev_prev_fact and prev_prev_day:
+                                    prev_fact = prev_prev_fact
+                                    prev_plan = prev_prev_plan
+                            else:
+                                if current_plan > prev_plan and prev_plan > prev_prev_plan and prev_fact < prev_prev_fact:
+                                    prev_fact = prev_prev_fact
+                                    prev_plan = prev_prev_plan
+
                             predict_amount = 0 if prev_plan == 0 else math.sqrt(current_plan) * prev_fact / math.sqrt(prev_plan)
                     append_stat(stat, {
                         'date': current_day.format(STAT_DATE_FORMAT),

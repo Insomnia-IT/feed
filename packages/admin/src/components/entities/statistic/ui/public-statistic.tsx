@@ -216,13 +216,45 @@ function PublicStatistic() {
                     <Radio.Group value={predictionAlg} onChange={changePredictionAlg}>
                         <Radio.Button value="1">
                             Первый{' '}
-                            <Tooltip title="ФАКТ (вчера или позавчера) / SQRT(НА_ПОЛЕ (вчера или позавчера)) * SQRT(НА_ПОЛЕ (сегодня))">
+                            <Tooltip
+                                title={() => (
+                                    <>
+                                        ФАКТ(вчера или позавчера) / SQRT(НА_ПОЛЕ(вчера или позавчера)) *
+                                        SQRT(НА_ПОЛЕ(сегодня))
+                                        <br />
+                                        выбирается позавчера, если НА_ПОЛЕ растет, а ФАКТ падает
+                                    </>
+                                )}
+                            >
                                 <InfoCircleOutlined />
                             </Tooltip>
                         </Radio.Button>
                         <Radio.Button value="2">
                             Второй{' '}
-                            <Tooltip title="ФАКТ (вчера) / НА_ПОЛЕ (вчера) * НА_ПОЛЕ (сегодня)">
+                            <Tooltip
+                                title={() => (
+                                    <>
+                                        ФАКТ(вчера или позавчера) / SQRT(НА_ПОЛЕ(вчера или позавчера)) *
+                                        SQRT(НА_ПОЛЕ(сегодня))
+                                        <br />
+                                        выбирается позавчера, если вчера была сильная просадка
+                                    </>
+                                )}
+                            >
+                                <InfoCircleOutlined />
+                            </Tooltip>
+                        </Radio.Button>
+                        <Radio.Button value="3">
+                            Третий{' '}
+                            <Tooltip
+                                title={() => (
+                                    <>
+                                        ФАКТ(вчера) / НА_ПОЛЕ(вчера) * НА_ПОЛЕ(сегодня)
+                                        <br />
+                                        формула прошлого года
+                                    </>
+                                )}
+                            >
                                 <InfoCircleOutlined />
                             </Tooltip>
                         </Radio.Button>
