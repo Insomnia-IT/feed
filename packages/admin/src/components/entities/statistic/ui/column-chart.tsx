@@ -49,9 +49,9 @@ const ColumnChartByMealTime: FC<IProps> = ({ data, loading }) => {
                     <Tooltip />
                     <Legend />
 
-                    <Line type="monotone" dataKey="plan" stroke="#222222" name="На поле" label={labelProps} />
                     <Bar dataKey="fact" name="Факт" fill="#82ca9d" label={labelProps} />
                     <Bar dataKey="predict" name="Прогноз" fill="#8884d8" label={labelProps} />
+                    <Line type="monotone" dataKey="plan" stroke="#222222" name="На поле" label={labelProps} />
                 </ComposedChart>
             </ResponsiveContainer>
         </div>
