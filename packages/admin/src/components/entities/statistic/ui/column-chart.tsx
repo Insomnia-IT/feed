@@ -10,12 +10,14 @@ interface IProps {
     loading?: boolean;
 }
 
+const labelProps = { stroke: '#333' };
+
 const ColumnChartByMealTime: FC<IProps> = ({ data, mealTime, loading }) => {
     const chartData = useMemo(() => {
         return data.map((item) => {
             return {
                 date: item.date,
-                plan: (item as any)[`${mealTime}_plan`] || 0,
+                predict: (item as any)[`${mealTime}_predict`] || 0,
                 fact: (item as any)[`${mealTime}_fact`] || 0
             };
         });
@@ -35,8 +37,8 @@ const ColumnChartByMealTime: FC<IProps> = ({ data, mealTime, loading }) => {
                     <Tooltip />
                     <Legend />
 
-                    <Bar dataKey="plan" name="План" fill="#8884d8" />
-                    <Bar dataKey="fact" name="Факт" fill="#82ca9d" />
+                    <Bar dataKey="fact" name="Факт" fill="#82ca9d" label={labelProps} />
+                    <Bar dataKey="predict" name="Прогноз" fill="#8884d8" label={labelProps} />
                 </BarChart>
             </ResponsiveContainer>
         </div>

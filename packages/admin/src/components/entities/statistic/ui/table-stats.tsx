@@ -34,7 +34,6 @@ const columns: ColumnsType<ITableStatData> = [
 function TableStats(props: { data: Array<ITableStatData>; loading: boolean }) {
     return (
         <Table
-            title={() => <b>Сравнительная таблица по питанию</b>}
             bordered
             size="small"
             pagination={false}

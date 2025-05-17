@@ -440,7 +440,8 @@ class FilterStatisticsSerializer(serializers.Serializer):
     date_to = serializers.DateField()
     anonymous = serializers.BooleanField(allow_null=True, default=None)
     group_badge = serializers.BooleanField(allow_null=True, default=None)
-
+    prediction_alg = serializers.CharField(allow_null=True, default=None)
+    apply_history = serializers.BooleanField(allow_null=True, default=None)
 
 class StatisticsSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
