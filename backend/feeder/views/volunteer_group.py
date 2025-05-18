@@ -60,10 +60,6 @@ class VolunteerGroupViewSet(APIView):
             if entity and not isinstance(entity, dict):
                 return Response({"error": "fields should be a non-empty dictionary"},
                                 status=status.HTTP_400_BAD_REQUEST)
-            if entity['field'][:9] == "arrivals.":
-                new_data_arrival[entity['field'][9:]] = entity['data']
-            else:
-                new_data[entity['field']] = entity['data']
         custom_fields_data = {}
         for entity in new_data_custom_list:
             if entity and not isinstance(entity, dict):
