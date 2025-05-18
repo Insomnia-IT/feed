@@ -153,7 +153,7 @@ export const CommonEdit = () => {
                     <HrInfoSection canFullEditing={canFullEditing} denyBadgeEdit={denyBadgeEdit} person={person} />
                 </section>
                 <section id="section5" className={styles.formSection}>
-                    <CustomFieldsSection canBadgeEdit={canBadgeEdit} />
+                    <CustomFieldsSection canBadgeEdit={canBadgeEdit} volunteerId={volunteerId} />
                 </section>
                 <section id="section6" className={styles.formSection}>
                     <AdditionalSection
