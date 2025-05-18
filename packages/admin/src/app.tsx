@@ -46,6 +46,8 @@ import {
     VolunteerCustomFieldList,
     VolunteerCustomFieldShow
 } from 'components/entities/volunteer-custom-fields';
+import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
+import { Wash } from 'components/wash';
 
 const App: React.FC = () => {
     const { t, i18n: i18next } = useTranslation();
@@ -137,6 +139,11 @@ const App: React.FC = () => {
                                         icon: <MobileOutlined />
                                     },
                                     {
+                                        name: 'wash',
+                                        list: '/wash',
+                                        icon: <ExperimentOutlined />
+                                    },
+                                    {
                                         name: 'sync',
                                         list: '/sync',
                                         icon: <SyncOutlined />
@@ -157,6 +164,8 @@ const App: React.FC = () => {
                                         }
                                     >
                                         <Route path="/dashboard" element={<Dashboard />} />
+
+                                        <Route path="/wash" element={<Wash />} />
 
                                         <Route index element={<NavigateToResource resource="volunteers" />} />
 

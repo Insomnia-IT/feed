@@ -7,6 +7,8 @@ export type EaterTypeExtended = EaterType | 'all';
 
 export type KitcheId = 'first' | 'second';
 export type KitchenIdExtended = KitcheId | 'all';
+export type BooleanExtended = 'true' | 'false' | 'all';
+export type PredictionAlg = '1' | '2';
 
 export type IEaterTypeAmount = {
     [eaterType in EaterType]: number;
@@ -68,19 +70,7 @@ export const dataEmpty: IData = {
 
 export interface IColumnChartData {
     date: string;
-    breakfast_plan: number;
-    breakfast_fact: number;
-    breakfast_predict: number;
-    lunch_plan: number;
-    lunch_fact: number;
-    lunch_predict: number;
-    dinner_plan: number;
-    dinner_fact: number;
-    dinner_predict: number;
-    night_plan: number;
-    night_fact: number;
-    night_predict: number;
-    plan_total: number;
-    fact_total: number;
-    predict_total: number;
+    plan: number;
+    fact: number;
+    predict: number;
 }

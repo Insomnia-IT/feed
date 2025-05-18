@@ -167,8 +167,9 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         many=True
     )
     person_id = serializers.PrimaryKeyRelatedField(
-        source='person',
-        queryset=models.Person.objects.all()
+        source='person', 
+        queryset=models.Person.objects.all(),
+        required=False
     )
 
     class Meta:
@@ -282,7 +283,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                 return str(value.id)
             if isinstance(value, models.Transport):
                 return str(value.id)
-            if isinstance(value, date):
+            if isinstance(value, date):  
                 return value.isoformat()
             if isinstance(value, UUID):
                 return str(value)
@@ -440,7 +441,8 @@ class FilterStatisticsSerializer(serializers.Serializer):
     date_to = serializers.DateField()
     anonymous = serializers.BooleanField(allow_null=True, default=None)
     group_badge = serializers.BooleanField(allow_null=True, default=None)
-
+    prediction_alg = serializers.CharField(allow_null=True, default=None)
+    apply_history = serializers.BooleanField(allow_null=True, default=None)
 
 class StatisticsSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
@@ -490,6 +492,14 @@ class TransportSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class WashSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Wash
+        fields = '__all__'
+
+class WashListSerializer(serializers.ModelSerializer):
+    volunteer = VolunteerListSerializer()
+    actor = VolunteerListSerializer()
+
     class Meta:
         model = models.Wash
         fields = '__all__'

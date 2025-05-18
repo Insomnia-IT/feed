@@ -13,6 +13,7 @@ ac
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
+    .read(['wash'])
     .create(['volunteers'])
     .read(['directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
     // Старший смены
