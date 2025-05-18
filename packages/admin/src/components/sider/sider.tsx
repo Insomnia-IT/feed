@@ -151,7 +151,7 @@ const CustomSider: FC = () => {
         <>
             {screenSize <= 576 ? (
                 <div className={styles.mobileSider}>
-                    {accessRoleName !== 'Сова' ? (
+                    {accessRoleName === 'Сова' ? (
                         <button
                             className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
                             onClick={() => push('/wash')}
