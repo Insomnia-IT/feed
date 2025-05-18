@@ -511,4 +511,5 @@ class GroupData(serializers.Serializer):
 class VolunteerGroupSerializer(serializers.Serializer):
     volunteers_ids = serializers.ListField(child = serializers.IntegerField())
     arrival_field_list = GroupData(many=True)
-    field_list = GroupData(many=True)
+    field_list = GroupData(many=True, allow_empty=True)
+    custom_field_list = GroupData(many=True, allow_empty=True)

@@ -11,7 +11,7 @@ from django.utils import timezone
 
 
 from feeder import serializers
-from feeder.models import Volunteer,VolunteerGroupOperation, Arrival
+from feeder.models import Volunteer, VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival, VolunteerCustomField
 from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer, ArrivalSerializer
 from feeder.views.mixins import get_request_user_id
 
@@ -30,14 +30,19 @@ class VolunteerGroupViewSet(APIView):
         volunteers_ids = request.data.get('volunteers_ids', [])
         new_data_list = request.data.get('field_list', [])
         new_data_arrival_list = request.data.get('arrival_field_list', [])
+        new_data_custom_list = request.data.get('custom_field_list', [])
+
+        # Проверки правильности структуры запроса
+        if not new_data_list and not new_data_custom_list and not new_data_arrival_list:
+            return Response({"error": "fields, arrivals or custom fields should be set"}, status=status.HTTP_400_BAD_REQUEST)
 
         if not isinstance(volunteers_ids, list) or len(volunteers_ids) == 0:
             return Response({"error": "volunteer_ids should be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         vol_allowed = set(VolunteerSerializer().fields.keys())
 
         arr_allowed = set(ArrivalSerializer().fields.keys())
-        
+
         new_data = {}
         new_data_arrival = {}
         invalid_vol = []
@@ -47,15 +52,39 @@ class VolunteerGroupViewSet(APIView):
             new_data[entity['field']] = entity['data']
             if entity['field'] not in vol_allowed:
                 invalid_vol.append(entity['field'])
-        
+
         for entity in new_data_arrival_list:
             new_data_arrival[entity['field']] = entity['data']
             if entity['field'] not in arr_allowed:
                 invalid_arr.append(entity['field'])
+            if entity and not isinstance(entity, dict):
+                return Response({"error": "fields should be a non-empty dictionary"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if entity['field'][:9] == "arrivals.":
+                new_data_arrival[entity['field'][9:]] = entity['data']
+            else:
+                new_data[entity['field']] = entity['data']
+        custom_fields_data = {}
+        for entity in new_data_custom_list:
+            if entity and not isinstance(entity, dict):
+                return Response({"error": "custom fields should be a non-empty dictionary"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            custom_fields_data[entity['field']] = entity['data']
 
-        if not len(new_data) and not len(new_data_arrival):
-            return Response({"error": "Fields should be a non-empty dictionary"}, status=status.HTTP_400_BAD_REQUEST)
-        
+        # Получаем существующие значения для обновления
+        existing_custom_values = VolunteerCustomFieldValue.objects.filter(
+            volunteer_id__in=volunteers_ids,
+            custom_field_id__in=custom_fields_data.keys()
+            )
+
+        # Создаем словарь для быстрого доступа
+        value_map = {
+            (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
+        }
+        value_map_old = {
+            (v.volunteer_id, v.custom_field.id): str(v.value) for v in existing_custom_values
+        }
+
         if invalid_vol or invalid_arr:
             return Response({
                 "error": "Found invalid fields",
@@ -73,7 +102,11 @@ class VolunteerGroupViewSet(APIView):
         group_operation_uuid = uuid4()
 
         with transaction.atomic():
+            change_id = VolunteerCustomFieldValue.objects.all().order_by("-id")[0].id + 1
             for volunteer_id in volunteers_ids:
+                to_update = []
+                to_create = []
+
                 try:
                     vol = Volunteer.objects.get(id=volunteer_id)
 
@@ -106,23 +139,73 @@ class VolunteerGroupViewSet(APIView):
 
                     if target:
                         context['arr_id'] = target.id
+                    if payload:
+                        serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
+                        serializer.is_valid(raise_exception=True)
 
-                    serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
-                    serializer.is_valid(raise_exception=True)
+                        vol = serializer.save()
+                        updated_volunteers.append(vol)
 
-                    vol = serializer.save()
-                    updated_volunteers.append(vol)
+                        History.objects.create(
+                            status=History.STATUS_UPDATE,
+                            object_name='volunteer',
+                            actor_badge=get_request_user_id(request.user),
+                            action_at=timezone.now(),
+                            data=new_data,
+                            old_data=original_data[volunteer_id],
+                            volunteer_uuid=str(vol.uuid),
+                            group_operation_uuid=str(group_operation_uuid),
+                        )
 
-                    History.objects.create(
-                        status=History.STATUS_UPDATE,
-                        object_name='volunteer',
-                        actor_badge=get_request_user_id(request.user),
-                        action_at=timezone.now(),
-                        data=new_data,
-                        old_data=original_data[volunteer_id],
-                        volunteer_uuid=str(vol.uuid),
-                        group_operation_uuid=str(group_operation_uuid),
-                    )
+                    for field_name, value in custom_fields_data.items():
+                        key = (volunteer_id, int(field_name))
+                        if key in value_map.keys():
+                            # Обновляем существующее значение
+                            db_value = value_map[key]
+                            db_value.value = str(value)
+                            to_update.append(db_value)
+                        else:
+                            # Добавляем новые поля
+                            to_create.append(
+                                VolunteerCustomFieldValue(
+                                    id = change_id,
+                                    volunteer_id = volunteer_id,
+                                    value = str(value),
+                                    custom_field_id=field_name
+                                ))
+                            change_id+=1
+                    if to_update:
+                        VolunteerCustomFieldValue.objects.bulk_update(
+                            to_update, ['value']
+                        )
+
+                        for custom_field in custom_fields_data.keys():
+                            History.objects.create(
+                                status=History.STATUS_UPDATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, int(custom_field))].id},
+                                old_data={"value": value_map_old[(volunteer_id, int(custom_field))]},
+                                volunteer_uuid=str(vol.uuid),
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
+                    if to_create:
+                        VolunteerCustomFieldValue.objects.bulk_create(
+                            to_create,
+                        )
+                        for custom_field in custom_fields_data.keys():
+                            History.objects.create(
+                                status=History.STATUS_CREATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": change_id},
+                                old_data=None,
+                                volunteer_uuid=str(vol.uuid),
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
+
                 except ValidationError as ve:
                     errors.append({"id": volunteer_id, "errors": ve.detail})
                 except Volunteer.DoesNotExist:
@@ -131,8 +214,7 @@ class VolunteerGroupViewSet(APIView):
                     errors.append({"error": "Failed to renew volunteer data", "errors": f"{type(e)} {str(e)}"})
         if errors:
             return Response(
-                {"updated": updated_volunteers,
-                "errors": errors},
+                {"errors": errors},
                 status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
@@ -162,6 +244,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
         try:
             with transaction.atomic():
+
                 for hist in histories.filter(object_name='volunteer'):
                     volunteer_id = hist.volunteer_uuid
                     old_data = hist.old_data or {}
@@ -215,7 +298,44 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     serializer.is_valid(raise_exception=True)
 
                     vol = serializer.save()
-                    updated_volunteers.append(vol)
+                    updated_volunteers.append(vol.id)
+                for hist in histories.filter(object_name='volunteercustomfieldvalue'):
+                    volunteer_id = Volunteer.objects.get(uuid=hist.volunteer_uuid).id
+                    data = hist.data
+                    old_data = hist.old_data
+                    custom_field = data["custom_field"]
+                    if old_data:
+                        VolunteerCustomFieldValue.objects.filter(
+                            volunteer_id=volunteer_id,
+                            custom_field_id=custom_field,
+                        ).update(value = old_data["value"])
+                        History.objects.create(
+                            status=History.STATUS_UPDATE,
+                            object_name='volunteercustomfieldvalue',
+                            actor_badge=get_request_user_id(request.user),
+                            action_at=timezone.now(),
+                            data={"value": old_data["value"], "custom_field": custom_field,
+                                "id": data["id"]},
+                            old_data={"value": hist.data["value"]},
+                            volunteer_uuid=hist.volunteer_uuid,
+                            group_operation_uuid=str(group_operation_uuid),
+                        )
+                    elif old_data is None:
+                        VolunteerCustomFieldValue.objects.filter(
+                            volunteer_id=volunteer_id,
+                            custom_field_id=custom_field,
+                        ).delete()
+                        History.objects.create(
+                            status=History.STATUS_UPDATE,
+                            object_name='volunteercustomfieldvalue',
+                            actor_badge=get_request_user_id(request.user),
+                            action_at=timezone.now(),
+                            data={"value": None, "custom_field": custom_field,
+                                  "id": data["id"]},
+                            old_data={"value": hist.data["value"]},
+                            volunteer_uuid=hist.volunteer_uuid,
+                            group_operation_uuid=str(group_operation_uuid),
+                        )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
