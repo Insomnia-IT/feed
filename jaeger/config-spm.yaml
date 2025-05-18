@@ -38,8 +38,8 @@ extensions:
           server_urls: ["http://opensearch:9200/"]
           auth:
             basic:
-              username: ${env:OPEN_SEARCH_USER_NAME:-admin}
-              password: ${env:OPEN_SEARCH_PASSWORD:-qaZxsWedC1323}
+              username: admin
+              password: qaZxsWedC1323
           indices:
             index_prefix: "jaeger-main"
             spans:
@@ -70,8 +70,8 @@ extensions:
           server_urls: ["http://opensearch:9200/"]
           auth:
             basic:
-              username: ${env:OPEN_SEARCH_USER_NAME:-admin}
-              password: ${env:OPEN_SEARCH_PASSWORD:-qaZxsWedC1323}
+              username: admin
+              password: qaZxsWedC1323
           indices:
             index_prefix: "jaeger-archive"
 
