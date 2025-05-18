@@ -168,7 +168,8 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     )
     person_id = serializers.PrimaryKeyRelatedField(
         source='person', 
-        queryset=models.Person.objects.all()
+        queryset=models.Person.objects.all(),
+        required=False
     )
 
     class Meta:
