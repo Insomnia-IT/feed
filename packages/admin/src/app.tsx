@@ -48,9 +48,12 @@ import {
 } from 'components/entities/volunteer-custom-fields';
 import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
 import { Wash } from 'components/wash';
+import { WashesHistory } from './components/wash/list/washes-history';
+import { useIsMobile } from './shared/hooks';
 
 const App: React.FC = () => {
     const { t, i18n: i18next } = useTranslation();
+    const { isMobile } = useIsMobile();
 
     const i18nProvider = {
         translate: (key: string, params: Record<string, object>) => t(key, params),
@@ -165,7 +168,14 @@ const App: React.FC = () => {
                                     >
                                         <Route path="/dashboard" element={<Dashboard />} />
 
-                                        <Route path="/wash" element={<Wash />} />
+                                        {isMobile ? (
+                                            <Route path="/wash" element={<Wash />} />
+                                        ) : (
+                                            <Route path="/wash">
+                                                <Route index element={<WashesHistory />} />
+                                                <Route path="create" element={<Wash />} />
+                                            </Route>
+                                        )}
 
                                         <Route index element={<NavigateToResource resource="volunteers" />} />
 

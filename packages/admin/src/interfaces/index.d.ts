@@ -171,6 +171,6 @@ export interface WashEntity {
     id: number;
     created_at: string;
     updated_at: string;
-    volunteer: number;
-    actor: number;
+    volunteer: VolEntity;
+    actor: VolEntity;
 }
