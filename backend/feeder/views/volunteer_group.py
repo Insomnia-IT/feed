@@ -86,7 +86,7 @@ class VolunteerGroupViewSet(APIView):
             (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
         }
         value_map_old = {
-            (v.volunteer_id, v.custom_field.id): v for v in existing_custom_values
+            (v.volunteer_id, v.custom_field.id): str(v.value) for v in existing_custom_values
         }
         to_update = []
         to_create = []
@@ -142,23 +142,23 @@ class VolunteerGroupViewSet(APIView):
 
                     if target:
                         context['arr_id'] = target.id
+                    if payload:
+                        serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
+                        serializer.is_valid(raise_exception=True)
 
-                    serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
-                    serializer.is_valid(raise_exception=True)
+                        vol = serializer.save()
+                        updated_volunteers.append(vol)
 
-                    vol = serializer.save()
-                    updated_volunteers.append(vol)
-
-                    History.objects.create(
-                        status=History.STATUS_UPDATE,
-                        object_name='volunteer',
-                        actor_badge=get_request_user_id(request.user),
-                        action_at=timezone.now(),
-                        data=new_data,
-                        old_data=original_data[volunteer_id],
-                        volunteer_uuid=str(vol.uuid),
-                        group_operation_uuid=str(group_operation_uuid),
-                    )
+                        History.objects.create(
+                            status=History.STATUS_UPDATE,
+                            object_name='volunteer',
+                            actor_badge=get_request_user_id(request.user),
+                            action_at=timezone.now(),
+                            data=new_data,
+                            old_data=original_data[volunteer_id],
+                            volunteer_uuid=str(vol.uuid),
+                            group_operation_uuid=str(group_operation_uuid),
+                        )
 
                     for field_name, value in custom_fields_data.items():
                         key = (volunteer_id, field_name)
@@ -191,7 +191,7 @@ class VolunteerGroupViewSet(APIView):
                                     actor_badge=get_request_user_id(request.user),
                                     action_at=timezone.now(),
                                     data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
-                                    old_data={"value": value_map_old[(volunteer_id, custom_field)].value},
+                                    old_data={"value": value_map_old[(volunteer_id, custom_field)]},
                                     volunteer_uuid=str(vol.uuid),
                                     group_operation_uuid=str(group_operation_uuid),
                                 )
@@ -249,6 +249,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
         try:
             with transaction.atomic():
+
                 for hist in histories.filter(object_name='volunteer'):
                     volunteer_id = hist.volunteer_uuid
                     old_data = hist.old_data or {}
@@ -321,7 +322,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                             data={"value": old_data["value"], "custom_field": custom_field,
                                 "id": data["id"]},
                             old_data={"value": hist.data["value"]},
-                            volunteer_uuid=str(vol.uuid),
+                            volunteer_uuid=hist.volunteer_uuid,
                             group_operation_uuid=str(group_operation_uuid),
                         )
                     elif old_data is None:
@@ -337,7 +338,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                             data={"value": None, "custom_field": custom_field,
                                   "id": data["id"]},
                             old_data={"value": hist.data["value"]},
-                            volunteer_uuid=str(vol.uuid),
+                            volunteer_uuid=hist.volunteer_uuid,
                             group_operation_uuid=str(group_operation_uuid),
                         )
         except ValidationError as ve:
