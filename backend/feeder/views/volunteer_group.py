@@ -84,8 +84,6 @@ class VolunteerGroupViewSet(APIView):
         value_map_old = {
             (v.volunteer_id, v.custom_field.id): str(v.value) for v in existing_custom_values
         }
-        to_update = []
-        to_create = []
 
         if invalid_vol or invalid_arr:
             return Response({
@@ -106,6 +104,9 @@ class VolunteerGroupViewSet(APIView):
         with transaction.atomic():
             change_id = VolunteerCustomFieldValue.objects.all().order_by("-id")[0].id + 1
             for volunteer_id in volunteers_ids:
+                to_update = []
+                to_create = []
+
                 try:
                     vol = Volunteer.objects.get(id=volunteer_id)
 
@@ -157,7 +158,7 @@ class VolunteerGroupViewSet(APIView):
                         )
 
                     for field_name, value in custom_fields_data.items():
-                        key = (volunteer_id, field_name)
+                        key = (volunteer_id, int(field_name))
                         if key in value_map.keys():
                             # Обновляем существующее значение
                             db_value = value_map[key]
@@ -179,18 +180,16 @@ class VolunteerGroupViewSet(APIView):
                         )
 
                         for custom_field in custom_fields_data.keys():
-
-                            if (volunteer_id, custom_field) in value_map.keys():
-                                History.objects.create(
-                                    status=History.STATUS_UPDATE,
-                                    object_name='volunteercustomfieldvalue',
-                                    actor_badge=get_request_user_id(request.user),
-                                    action_at=timezone.now(),
-                                    data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, custom_field)].id},
-                                    old_data={"value": value_map_old[(volunteer_id, custom_field)]},
-                                    volunteer_uuid=str(vol.uuid),
-                                    group_operation_uuid=str(group_operation_uuid),
-                                )
+                            History.objects.create(
+                                status=History.STATUS_UPDATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": custom_fields_data[custom_field], "custom_field": custom_field, "id": value_map[(volunteer_id, int(custom_field))].id},
+                                old_data={"value": value_map_old[(volunteer_id, int(custom_field))]},
+                                volunteer_uuid=str(vol.uuid),
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
                     if to_create:
                         VolunteerCustomFieldValue.objects.bulk_create(
                             to_create,
