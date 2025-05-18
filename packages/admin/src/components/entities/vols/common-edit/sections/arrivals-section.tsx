@@ -57,7 +57,7 @@ export const ArrivalsSection = ({
             {
                 validator: async (_: unknown, value: string | number | Date) => {
                     const arrivalDate = form.getFieldValue(['arrivals', index, 'arrival_date']);
-                    if (new Date(value) >= new Date(arrivalDate)) {
+                    if (dayjs(value) >= dayjs(arrivalDate)) {
                         return Promise.resolve();
                     }
                     return Promise.reject(new Error('Дата заезда не может быть раньше Даты отъезда'));
