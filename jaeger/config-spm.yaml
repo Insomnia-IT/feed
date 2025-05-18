@@ -36,6 +36,10 @@ extensions:
             insecure: true
             insecure_skip_verify: true
           server_urls: ["http://opensearch:9200/"]
+          auth:
+            basic:
+              username: admin
+              password: qaZxsWedC1323
           indices:
             index_prefix: "jaeger-main"
             spans:
@@ -64,6 +68,10 @@ extensions:
             insecure: true
             insecure_skip_verify: true
           server_urls: ["http://opensearch:9200/"]
+          auth:
+            basic:
+              username: admin
+              password: qaZxsWedC1323
           indices:
             index_prefix: "jaeger-archive"
 
