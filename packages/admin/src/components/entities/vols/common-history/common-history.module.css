@@ -1,0 +1,72 @@
+.itemDescrWrap {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgb(0 0 0 / 0.85);
+}
+
+.itemAction {
+    padding-left: 8px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 183%;
+    color: #8d959e;
+}
+
+.itemDrescrOld {
+    text-decoration: line-through;
+    background-color: #ffa39e;
+    overflow-wrap: anywhere;
+}
+
+.itemDrescrNew {
+    background-color: #d9f7be;
+    overflow-wrap: anywhere;
+}
+
+.historyWrap {
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
+
+.historyItem {
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+.itemTitleWrap {
+    margin-bottom: 8px;
+}
+
+.itemTitle {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 157%;
+    color: rgb(0 0 0 / 0.85);
+}
+
+.itemTitleRoute {
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.3s ease-in-out;
+}
+
+.itemTitleRoute:hover,
+.itemTitleRoute:focus {
+    color: #1890ff;
+    transition: color 0.3s ease-in-out;
+}
+
+.itemActionModif {
+    padding-left: 3px;
+    text-decoration: underline;
+}
+
+.cancelGroupBtn {
+    padding-left: 0;
+    margin-top: 4px;
+}

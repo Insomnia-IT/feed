@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { CommonEdit } from './common-edit/common-edit';
 import { CommonFoodTest } from './common-food';
-import { CommonHistory } from './common-history';
+import { CommonHistory } from './common-history/common-history';
 
 export const CreateEdit = () => {
     const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
