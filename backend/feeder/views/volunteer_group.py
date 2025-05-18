@@ -65,13 +65,9 @@ class VolunteerGroupViewSet(APIView):
             else:
                 new_data[entity['field']] = entity['data']
         custom_fields_data = {}
-        custom_fields_ids = list(VolunteerCustomField.objects.all().values_list('id', flat=True))
         for entity in new_data_custom_list:
             if entity and not isinstance(entity, dict):
                 return Response({"error": "custom fields should be a non-empty dictionary"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            if entity['field'] not in custom_fields_ids:
-                return Response({"error": "custom fields id wasn't found"},
                                 status=status.HTTP_400_BAD_REQUEST)
             custom_fields_data[entity['field']] = entity['data']
 
