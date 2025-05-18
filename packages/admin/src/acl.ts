@@ -27,7 +27,10 @@ ac
     .extend(AppRoles.SENIOR)
     .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction'])
     .update(['group-badges', 'volunteer-custom-fields'])
-    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
+    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers'])
+    .create('wash');
+
+ac.grant(AppRoles.SOVA).read('wash').create('wash');
 
 export const ACL: AccessControlProvider = {
     can: async ({ action, resource }: { action: string; resource?: string }) => {
@@ -35,6 +38,7 @@ export const ACL: AccessControlProvider = {
         const user = await getUserData(true);
         if (user) {
             const { roles } = user;
+
             roles.forEach((role: string) => {
                 switch (action) {
                     case 'list':

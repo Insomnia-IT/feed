@@ -19,6 +19,7 @@ import { authProvider } from 'authProvider';
 import type { AccessRoleEntity } from 'interfaces';
 
 import styles from './sider.module.css';
+import { useIsMobile } from '../../shared/hooks';
 
 const CustomSider: FC = () => {
     const [collapsed, setCollapsed] = useState(false);
@@ -34,7 +35,7 @@ const CustomSider: FC = () => {
     const { menuItems, selectedKey } = useMenu();
     const breakpoint = Grid.useBreakpoint();
 
-    const isMobile = typeof breakpoint.lg === 'undefined' ? false : !breakpoint.lg;
+    const { isMobile } = useIsMobile();
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
         resource: 'access-roles'
@@ -150,7 +151,7 @@ const CustomSider: FC = () => {
         <>
             {screenSize <= 576 ? (
                 <div className={styles.mobileSider}>
-                    {accessRoleName === 'Сова' ? (
+                    {accessRoleName !== 'Сова' ? (
                         <button
                             className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
                             onClick={() => push('/wash')}

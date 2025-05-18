@@ -2,8 +2,8 @@ import { Divider } from 'antd';
 import { FC, useCallback, useState } from 'react';
 
 import { QrScannerComponent } from 'components/qr-scanner-component';
-import { PostScan } from './components/post-scan';
-import { useScannerController } from 'components/qr-scanner-component/hooks/useScannerController';
+import { PostScan } from '../components/post-scan.tsx';
+import { useScannerController } from 'components/qr-scanner-component/hooks/useScannerController.ts';
 
 export const Wash: FC = () => {
     const [scannedVolunteerQr, setScannedVolunteerQr] = useState<string | undefined>();

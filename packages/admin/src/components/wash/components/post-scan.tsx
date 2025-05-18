@@ -7,7 +7,7 @@ import { useList } from '@refinedev/core';
 import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
 
-import styles from './washes.module.css';
+import styles from './washes-post-scan.module.css';
 
 export interface PostScanProps {
     volunteerQr?: string;

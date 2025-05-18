@@ -7,6 +7,7 @@ export enum AppRoles {
     ADMIN = 'ADMIN',
     SENIOR = 'SENIOR',
     CAT = 'CAT',
+    SOVA = 'SOVA',
     DIRECTION_HEAD = 'DIRECTION_HEAD'
 }
 
