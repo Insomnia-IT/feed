@@ -26,16 +26,26 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
 
+    console.log(form.isFieldsTouched());
+
     useEffect(() => {
         if (isFirstRender.current) {
             isFirstRender.current = false;
             return;
         }
 
-        return () => {
-            alert('Вы покинули страницу информации о волонтере');
+        const checkForChanges = () => {
+            if (form.isFieldsTouched()) {
+                alert('У вас есть несохранённые изменения. Пожалуйста, сохраните их перед уходом.');
+            } else {
+                alert('Вы покинули страницу информации о волонтере');
+            }
         };
-    }, []);
+
+        return () => {
+            checkForChanges();
+        };
+    }, [form]);
 
     const CustomBreadcrumb = () => {
         if (!breadcrumbs) return null;
