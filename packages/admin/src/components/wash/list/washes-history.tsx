@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { transformWashesForShow, WashToShow } from './utils.ts';
 import { SaveWashesAsExcelButton } from './save-washes-as-excel-button.tsx';
 import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
+import type { Dayjs } from 'dayjs';
 
 export const WashesHistory = () => {
     const navigate = useNavigate();
@@ -12,10 +13,10 @@ export const WashesHistory = () => {
 
     const columns = [
         {
-            title: 'Имя волонтера',
+            title: 'Позывной',
             dataIndex: 'volunteerName'
         },
-        { title: 'Полное имя', dataIndex: 'volunteerFullName' },
+        { title: 'ФИО', dataIndex: 'volunteerFullName' },
         {
             dataIndex: 'directions',
             title: 'Службы',
@@ -28,9 +29,12 @@ export const WashesHistory = () => {
             }
         },
         { title: 'Дней на поле', dataIndex: 'daysOnField' },
-        { title: 'Дата стирки', dataIndex: 'washDate' },
-        { title: 'Дата стирки', dataIndex: 'washDate' },
-        { title: 'Имя совы', dataIndex: 'owlName' }
+        {
+            title: 'Дата стирки',
+            dataIndex: 'washDate',
+            render: (washDate: Dayjs) => washDate.format('DD/MM/YY HH:mm:ss')
+        },
+        { title: 'Позывной совы', dataIndex: 'owlName' }
     ];
 
     return (

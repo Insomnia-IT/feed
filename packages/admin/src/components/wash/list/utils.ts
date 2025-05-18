@@ -1,12 +1,12 @@
 import { type ArrivalEntity, VolEntity, WashEntity } from 'interfaces';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 export interface WashToShow {
     id: number;
     volunteerName?: string;
     volunteerFullName?: string;
     directions?: string[];
-    washDate: string;
+    washDate: Dayjs;
     daysOnField: string;
     owlName: string;
 }
@@ -31,7 +31,7 @@ export const transformWashesForShow = (wash: WashEntity): WashToShow => {
         volunteerName: name,
         volunteerFullName: [first_name, last_name].join(' '),
         directions: directions?.map((direction) => direction.name),
-        washDate: dayjs(wash.created_at).format('DD/MM/YY HH:mm:ss'),
+        washDate: dayjs(wash.created_at),
         daysOnField: getDaysOnFieldText(wash.volunteer, wash.created_at),
         owlName
     };
