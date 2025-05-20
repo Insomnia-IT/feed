@@ -1,6 +1,6 @@
 import { Form, Modal } from 'antd';
 import { useSelect } from '@refinedev/core';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import type {
     AccessRoleEntity,
@@ -31,38 +31,42 @@ import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
 import { useLocation } from 'react-router-dom';
 
-export const CommonEdit = () => {
+export const CommonEdit: React.FC = () => {
     const form = Form.useFormInstance();
+
+    const person = Form.useWatch('person', form);
+    const { search, pathname } = useLocation();
+
+    const isCreationProcess = pathname.includes('create');
 
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
-    const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' });
+
+    // Во время создания нужно редактировать тип питания
+    const denyFeedTypeEdit = !useCanAccess({ action: 'feed_type_edit', resource: 'volunteers' }) && !isCreationProcess;
     const canBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
     const canUnban = useCanAccess({ action: 'unban', resource: 'volunteers' });
     const canEditGroupBadge = useCanAccess({ action: 'edit', resource: 'group-badges' });
     const canDelete = useCanAccess({ action: 'delete', resource: 'volunteers' });
 
-    const person = Form.useWatch('person', form);
-
-    const loadPerson = async () => {
-        const personId = new URLSearchParams(search).get('person_id');
-        if (!personId) return;
-
-        try {
-            const { data } = await axios.get(`${NEW_API_URL}/persons/${personId}`);
-
-            form.setFieldValue('person_id', personId);
-            form.setFieldValue('person', data);
-            ['first_name', 'last_name', 'name', 'is_vegan', 'gender'].forEach((fieldName) => {
-                form.setFieldValue(fieldName, data[fieldName]);
-            });
-        } catch (e) {
-            console.error(e);
-        }
-    };
-    const { search } = useLocation();
-
     useEffect(() => {
+        const loadPerson = async () => {
+            const personId = new URLSearchParams(search).get('person_id');
+            if (!personId) return;
+
+            try {
+                const { data } = await axios.get(`${NEW_API_URL}/persons/${personId}`);
+
+                form.setFieldValue('person_id', personId);
+                form.setFieldValue('person', data);
+                ['first_name', 'last_name', 'name', 'is_vegan', 'gender'].forEach((fieldName) => {
+                    form.setFieldValue(fieldName, data[fieldName]);
+                });
+            } catch (error) {
+                console.error('<CommonEdit> loadPerson', error);
+            }
+        };
+
         loadPerson();
     }, [search, form]);
 
