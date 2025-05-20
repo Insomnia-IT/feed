@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import type { VolEntity } from 'interfaces';
 import { Button, Checkbox, DatePicker, Input, Select, Typography } from 'antd';
-import { ConfirmModal } from './confirm-modal/confirm-modal.tsx';
-import { getVolunteerCountText } from './get-volunteer-count-text.ts';
+import { ConfirmModal } from './confirm-modal/confirm-modal';
+import { getVolunteerCountText } from './get-volunteer-count-text';
 import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
 import { useNotification, useSelect } from '@refinedev/core';
 const { Title } = Typography;

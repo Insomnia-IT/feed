@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { VolEntity } from 'interfaces';
 import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { SingleField } from './single-field.tsx';
+import { SingleField } from './single-field';
 import { useNotification } from '@refinedev/core';
 import { ChangeMassEditField } from './mass-edit-types';
 
