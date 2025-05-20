@@ -3,11 +3,12 @@ import { getUserData } from 'auth';
 import React, { FC } from 'react';
 import { useAddWash } from '../hooks/useAddWash';
 import { useSearchVolunteer } from '../hooks/useSearchVolunteer';
-import { useList } from '@refinedev/core';
+import { useList, useNotification } from '@refinedev/core';
 import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
 
 import styles from './washes-post-scan.module.css';
+import { getDaysOnFieldText } from '../list/utils';
 
 export interface PostScanProps {
     volunteerQr?: string;
@@ -15,6 +16,7 @@ export interface PostScanProps {
 }
 
 export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
+    const { open = () => {} } = useNotification();
     const { mutate: addWash, isLoading: isUpdateInProgress } = useAddWash();
 
     const { data: volunteer, isLoading: isVolunteerLoading } = useSearchVolunteer(volunteerQr);
@@ -30,9 +32,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
     );
 
-    const dajsOnFieldText = currentArrival
-        ? Math.abs(dayjs(currentArrival.arrival_date).diff(dayjs(currentArrival.departure_date), 'day'))
-        : 'У волонтера нет активного заезда';
+    const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate: dayjs() });
 
     const washesInCurrentArrival =
         volunteerWashes?.data.filter((washItem) => {
@@ -59,11 +59,20 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
         const userData = await getUserData(true);
 
         if (!volunteer || isVolunteerLoading) {
+            open({
+                message: 'Ошибка: не найден волонтер',
+                type: 'error'
+            });
+
             return;
         }
 
         if (typeof userData !== 'object' || !userData?.id) {
-            alert('Ошибка: не найден ID актора');
+            open({
+                message: 'Ошибка: не найден ID актора',
+                type: 'error'
+            });
+
             return;
         }
 
@@ -74,11 +83,20 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             },
             {
                 onSuccess: () => {
+                    open({
+                        message: 'Стирка успешно добавлена',
+                        type: 'success',
+                        undoableTimeout: 3000
+                    });
                     onClose();
                 },
                 onError: (error) => {
                     console.error(error);
-                    alert('Ошибка при добавлении стирки');
+
+                    open({
+                        message: 'Ошибка при добавлении стрики',
+                        type: 'error'
+                    });
 
                     onClose();
                 }
@@ -102,7 +120,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
 
             <ModalItem title="Службы" value={directions} />
 
-            <ModalItem title="Дней на поле всего" value={dajsOnFieldText} />
+            <ModalItem title="Дней на поле всего" value={daysOnFieldText} />
 
             <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
 

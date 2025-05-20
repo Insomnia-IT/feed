@@ -11,14 +11,15 @@ export interface WashToShow {
     owlName: string;
 }
 
-const getDaysOnFieldText = (volunteer: VolEntity, washDate: string): string => {
+export const getDaysOnFieldText = ({ volunteer, washDate }: { volunteer?: VolEntity; washDate: Dayjs }): string => {
     const currentArrival: ArrivalEntity | undefined = volunteer?.arrivals.find(
         ({ arrival_date, departure_date }: { arrival_date: string; departure_date: string }) =>
-            dayjs(arrival_date) < dayjs(washDate) && dayjs(departure_date) > dayjs(washDate).subtract(1, 'day')
+            dayjs(arrival_date) < dayjs(washDate) && dayjs(departure_date) > washDate.subtract(1, 'day')
     );
 
     return currentArrival
-        ? String(Math.abs(dayjs(currentArrival.arrival_date).diff(dayjs(currentArrival.departure_date), 'day')))
+        ? // Количество дней в заездах = разница между датами + один день
+          String(Math.abs(dayjs(currentArrival.arrival_date).diff(dayjs(currentArrival.departure_date), 'day')) + 1)
         : 'У волонтера нет активного заезда';
 };
 
@@ -32,7 +33,7 @@ export const transformWashesForShow = (wash: WashEntity): WashToShow => {
         volunteerFullName: [first_name, last_name].join(' '),
         directions: directions?.map((direction) => direction.name),
         washDate: dayjs(wash.created_at),
-        daysOnField: getDaysOnFieldText(wash.volunteer, wash.created_at),
+        daysOnField: getDaysOnFieldText({ volunteer: wash.volunteer, washDate: dayjs(wash.created_at) }),
         owlName
     };
 };
