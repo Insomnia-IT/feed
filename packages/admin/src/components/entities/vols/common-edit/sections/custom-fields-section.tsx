@@ -1,54 +1,49 @@
+import React, { useMemo } from 'react';
 import { Form, Input, Checkbox } from 'antd';
-import React, { useEffect, useState } from 'react';
-import { useOne } from '@refinedev/core';
+import { useList, useOne } from '@refinedev/core';
 
 import { CustomFieldEntity, VolEntity } from 'interfaces';
-import { dataProvider } from '../../../../../dataProvider.ts';
 
 import styles from '../../common.module.css';
 
-export const CustomFieldsSection = ({ canBadgeEdit }: { canBadgeEdit: boolean }) => {
-    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
-
-    useEffect(() => {
-        const loadCustomFields = async () => {
-            const { data } = await dataProvider.getList<CustomFieldEntity>({
-                resource: 'volunteer-custom-fields'
-            });
-
-            setCustomFields(data);
-        };
-
-        void loadCustomFields();
-    }, []);
-
+export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: { canBadgeEdit: boolean; volunteerId: string }) => {
     const form = Form.useFormInstance();
-    const volunteerId = form.getFieldValue('id');
 
-    const { data } = useOne<VolEntity>({
+    const { data: customFieldsData } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
+
+    const { data: volunteerData } = useOne<VolEntity>({
         resource: 'volunteers',
         id: volunteerId
     });
 
-    const customFieldValues = data?.data?.custom_field_values;
+    const customFieldValues = volunteerData?.data?.custom_field_values;
 
-    useEffect(() => {
-        // Заполняем "фиктивные" поля значениями из апи
-        customFieldValues?.forEach(({ custom_field, value }) => {
-            form.setFieldValue(['updated_custom_fields', custom_field.toString()], value);
+    const customFieldValuesById = useMemo(() => {
+        const result = new Map();
+        customFieldValues?.forEach(({ value, custom_field }) => {
+            result.set(custom_field, value);
         });
-    }, [customFieldValues, form]);
+
+        return result;
+    }, [customFieldValues]);
 
     return (
         <>
             <p className={styles.formSection__title}>Кастомные Поля</p>
-            {customFields
-                .filter((item) => item.mobile || canBadgeEdit)
+            {customFieldsData?.data
+                ?.filter((item) => item.mobile || canBadgeEdit)
                 .map(({ id, name, type }) => {
+                    const fieldName = ['updated_custom_fields', id.toString()];
+
+                    // Для случая стирания поля, чтобы старое значение не "мигало"
+                    const isFieldTouched = form.isFieldTouched(fieldName);
+
+                    const valueFromAPI = isFieldTouched ? undefined : customFieldValuesById.get(id);
+
                     // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
                     return (
-                        <Form.Item key={name} label={name} name={['updated_custom_fields', id.toString()]}>
-                            <CustomFieldValueHandler type={type} />
+                        <Form.Item key={name} label={name} name={fieldName}>
+                            <CustomFieldValueHandler type={type} valueFromAPI={valueFromAPI} />
                         </Form.Item>
                     );
                 })}
@@ -59,11 +54,14 @@ export const CustomFieldsSection = ({ canBadgeEdit }: { canBadgeEdit: boolean })
 const CustomFieldValueHandler: React.FC<{
     id?: string;
     value?: string;
+    valueFromAPI?: string;
     onChange?: (value: string) => void;
     type: string;
-}> = ({ id, value, onChange = () => {}, type }) => {
+}> = ({ id, value, valueFromAPI, onChange = () => {}, type }) => {
+    const targetValue = value ?? valueFromAPI;
+
     if (type === 'boolean') {
-        const checked = value === 'true';
+        const checked = targetValue === 'true';
 
         return (
             <Checkbox defaultChecked={false} checked={checked} onChange={(e) => onChange(String(e.target.checked))} />
@@ -73,7 +71,7 @@ const CustomFieldValueHandler: React.FC<{
     return (
         <Input
             id={id}
-            value={value}
+            value={targetValue}
             onChange={(e): void => {
                 onChange(e.target.value);
             }}
