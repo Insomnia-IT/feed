@@ -12,7 +12,7 @@ export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[]; doChang
     doChange
 }) => {
     const [isTicketsModalOpen, setIsTicketsModalOpen] = useState<boolean>(false);
-    const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
+    const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields', pagination: { pageSize: 0 } });
     const { open = () => {} } = useNotification();
 
     const HAS_BADGE_FIELD_ID = (data?.data ?? []).find((field) => field.name === HAS_BADGE_FIELD_NAME)?.id;
