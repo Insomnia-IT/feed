@@ -4,7 +4,7 @@ import { useList, useNotification } from '@refinedev/core';
 import { HAS_BADGE_FIELD_NAME } from 'const';
 import { Button, Form } from 'antd';
 import styles from './mass-edit.module.css';
-import { SingleField } from './single-field.tsx';
+import { SingleField } from './single-field';
 import { ChangeMassEditField } from './mass-edit-types';
 
 export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doChange: ChangeMassEditField }> = ({

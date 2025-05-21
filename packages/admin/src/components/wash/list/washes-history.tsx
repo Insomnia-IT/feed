@@ -2,8 +2,8 @@ import { List, useTable } from '@refinedev/antd';
 import { Button, Col, Row, Table, Tag } from 'antd';
 import { WashEntity } from 'interfaces';
 import { useNavigate } from 'react-router-dom';
-import { transformWashesForShow, WashToShow } from './utils.ts';
-import { SaveWashesAsExcelButton } from './save-washes-as-excel-button.tsx';
+import { transformWashesForShow, WashToShow } from './utils';
+import { SaveWashesAsExcelButton } from './save-washes-as-excel-button';
 import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
 import type { Dayjs } from 'dayjs';
 
