@@ -4,7 +4,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { IResourceComponentsProps } from '@refinedev/core';
 import { useBreadcrumb } from '@refinedev/core';
 import { Link, useNavigate } from 'react-router-dom';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 
 import type { VolEntity } from 'interfaces';
 
@@ -22,7 +22,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
         },
-        warnWhenUnsavedChanges: true
+        warnWhenUnsavedChanges: false
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
 
@@ -32,17 +32,22 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { breadcrumbs } = useBreadcrumb();
 
     useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        // Добавляем запись в историю при монтировании компонента
+        window.history.pushState(null, '', window.location.href);
+
+        const handlePopState = () => {
             const isDirty = form.isFieldsTouched();
             if (isDirty) {
-                e.preventDefault();
-                e.returnValue = '';
+                // Показываем модальное окно
+                handleNavigation(window.location.pathname);
+                // Возвращаем историю в исходное состояние
+                window.history.pushState(null, '', window.location.href);
             }
         };
 
-        window.addEventListener('beforeunload', handleBeforeUnload);
+        window.addEventListener('popstate', handlePopState);
         return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('popstate', handlePopState);
         };
     }, [form]);
 
