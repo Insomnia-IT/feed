@@ -1,5 +1,6 @@
 import { Edit, useForm } from '@refinedev/antd';
 import { Form, Breadcrumb, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { IResourceComponentsProps } from '@refinedev/core';
 import { useBreadcrumb } from '@refinedev/core';
 import { Link, useNavigate } from 'react-router-dom';
@@ -63,6 +64,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
         console.log('Modal Cancel clicked');
         setIsModalVisible(false);
         setPendingNavigation(null);
+        onClick();
     };
 
     useNavigationGuard(handleNavigation, form);
@@ -128,14 +130,19 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                 {renderModal()}
             </Edit>
             <Modal
-                title="Подтверждение перехода"
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '22px' }} />
+                        <span>Вы не сохранили изменения</span>
+                    </div>
+                }
                 open={isModalVisible}
-                onOk={handleModalOk}
-                onCancel={handleModalCancel}
-                okText="Перейти"
-                cancelText="Отмена"
+                onOk={handleModalCancel}
+                onCancel={handleModalOk}
+                okText="Сохранить"
+                cancelText="Отменить изменения"
             >
-                <p>Вы уверены, что хотите покинуть страницу редактирования волонтера? Все несохраненные изменения будут потеряны.</p>
+                <p>Если вы выйдете из профиля волонтера, не сохранив изменения, то новые данные исчезнут</p>
             </Modal>
         </>
     );
