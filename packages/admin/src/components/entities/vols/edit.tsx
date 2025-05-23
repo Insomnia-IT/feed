@@ -32,15 +32,18 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
 
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            e.preventDefault();
-            e.returnValue = '';
+            const isDirty = form.isFieldsTouched();
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
-    }, []);
+    }, [form]);
 
     const handleNavigation = (path: string) => {
         console.log('handleNavigation called with path:', path);
@@ -62,7 +65,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
         setPendingNavigation(null);
     };
 
-    useNavigationGuard(handleNavigation);
+    useNavigationGuard(handleNavigation, form);
 
     const CustomBreadcrumb = () => {
         if (!breadcrumbs) return null;
@@ -132,7 +135,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                 okText="Перейти"
                 cancelText="Отмена"
             >
-                <p>Вы уверены, что хотите покинуть страницу редактирования волонтера?</p>
+                <p>Вы уверены, что хотите покинуть страницу редактирования волонтера? Все несохраненные изменения будут потеряны.</p>
             </Modal>
         </>
     );

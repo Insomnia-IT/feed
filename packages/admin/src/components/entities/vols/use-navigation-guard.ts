@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Form } from 'antd';
+import type { FormInstance } from 'antd';
 
-export const useNavigationGuard = (onNavigationAttempt: (path: string) => void) => {
+export const useNavigationGuard = (onNavigationAttempt: (path: string) => void, form: FormInstance) => {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,10 +29,16 @@ export const useNavigationGuard = (onNavigationAttempt: (path: string) => void) 
 
                     // Проверяем, что это не страница редактирования волонтера
                     if (!path.startsWith('/volunteers/edit/')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Preventing navigation and calling onNavigationAttempt');
-                        onNavigationAttempt(path);
+                        // Проверяем, есть ли несохраненные изменения
+                        const isDirty = form.isFieldsTouched();
+                        console.log('Form is dirty:', isDirty);
+
+                        if (isDirty) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Preventing navigation and calling onNavigationAttempt');
+                            onNavigationAttempt(path);
+                        }
                     }
                 } catch (error) {
                     console.error('Error processing navigation:', error);
@@ -44,5 +52,5 @@ export const useNavigationGuard = (onNavigationAttempt: (path: string) => void) 
         return () => {
             document.removeEventListener('click', handleClick, true);
         };
-    }, [onNavigationAttempt]);
+    }, [onNavigationAttempt, form]);
 }; 
