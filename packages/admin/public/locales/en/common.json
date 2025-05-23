@@ -8,7 +8,7 @@
             "remember": "Remember me",
             "forgotPassword": "Forgot password?",
             "title": "Sign in your account",
-            "noAccount": "Don’t have an account?"
+            "noAccount": "Don't have an account?"
         },
         "error": {
             "info": "You may have forgotten to add the {{action}} component to {{resource}} resource.",

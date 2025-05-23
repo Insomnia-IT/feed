@@ -74,7 +74,10 @@ const App: React.FC = () => {
                     <MediaProvider>
                         <AntdApp>
                             <Refine
-                                routerProvider={routerProvider}
+                                routerProvider={{
+                                    ...routerProvider,
+                                    warnWhenUnsavedChanges: true
+                                }}
                                 notificationProvider={notificationProvider}
                                 dataProvider={dataProvider}
                                 i18nProvider={i18nProvider}

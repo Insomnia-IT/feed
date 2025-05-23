@@ -3,44 +3,27 @@ import { Form, Breadcrumb } from 'antd';
 import type { IResourceComponentsProps } from '@refinedev/core';
 import { useBreadcrumb } from '@refinedev/core';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { FC } from 'react';
 
 import type { VolEntity } from 'interfaces';
 
 import { CreateEdit } from './common';
 import useSaveConfirm from './use-save-confirm';
-import { FC } from 'react';
 import styles from './common.module.css';
 
 export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
-        }
+        },
+        warnWhenUnsavedChanges: true
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
-    const [isDirty, setIsDirty] = useState(false);
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
-
-    // Отслеживаем изменения формы
-    const formValues = Form.useWatch([], form);
-    
-    useEffect(() => {
-        const isFormDirty = form.isFieldsTouched();
-        setIsDirty(isFormDirty);
-    }, [form, formValues]);
-
-    useEffect(() => {
-        return () => {
-            if (isDirty) {
-                alert('У вас есть несохранённые изменения. Пожалуйста, сохраните их перед уходом.');
-            }
-        };
-    }, [isDirty]);
 
     const CustomBreadcrumb = () => {
         if (!breadcrumbs) return null;
