@@ -57,7 +57,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
         setPendingNavigation(path);
     };
 
-    const handleModalOk = () => {
+    const handleModalCancel = () => {
         console.log('Modal OK clicked, navigating to:', pendingNavigation);
         setIsModalVisible(false);
         if (pendingNavigation) {
@@ -65,7 +65,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
         }
     };
 
-    const handleModalCancel = () => {
+    const handleModalOk = () => {
         console.log('Modal Cancel clicked');
         setIsModalVisible(false);
         setPendingNavigation(null);
@@ -142,10 +142,11 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                     </div>
                 }
                 open={isModalVisible}
-                onOk={handleModalCancel}
-                onCancel={handleModalOk}
+                onOk={handleModalOk}
+                onCancel={handleModalCancel}
                 okText="Сохранить"
                 cancelText="Отменить изменения"
+                closable={false}
             >
                 <p>Если вы выйдете из профиля волонтера, не сохранив изменения, то новые данные исчезнут</p>
             </Modal>
