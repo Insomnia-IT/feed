@@ -390,6 +390,7 @@ class FeedTransactionSerializer(serializers.ModelSerializer):
 class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     volunteer_name = serializers.SerializerMethodField()
+    volunteer_directions = serializers.SerializerMethodField()
     kitchen_name = serializers.SerializerMethodField()
     group_badge_name = serializers.SerializerMethodField()
 
@@ -402,6 +403,12 @@ class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
             return obj.volunteer.name
         else:
             return None
+
+    def get_volunteer_directions(self, obj):
+        if obj.volunteer:
+            return [d.name for d in obj.volunteer.directions.all()]
+        else:
+            return []
 
     def get_kitchen_name(self, obj):
         if obj.kitchen:
