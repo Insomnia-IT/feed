@@ -69,6 +69,14 @@ export const VolList: FC = () => {
         }
     });
 
+    const { data: searchVolunteers, isLoading: searchVolunteersIsLoading } = useList<VolEntity>({
+        resource: `volunteers/?search=${searchText}`,
+        pagination: {
+            current: 1,
+            pageSize: 1
+        }
+    });
+
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
         volunteersData: volunteers?.data ?? [],
         totalVolunteersCount: volunteers?.total ?? 0,
@@ -113,7 +121,7 @@ export const VolList: FC = () => {
 
     const volunteersData = volunteers?.data ?? [];
 
-    const showPersons = searchText && !volunteersIsLoading && volunteersData.length === 0;
+    const showPersons = searchText && !searchVolunteersIsLoading && searchVolunteers?.data.length === 0;
 
     return (
         <List>
@@ -178,15 +186,17 @@ export const VolList: FC = () => {
                 )}
                 {isDesktop && (
                     <>
-                        {!showPersons && <VolunteerDesktopTable
-                            openVolunteer={openVolunteer}
-                            pagination={pagination}
-                            statusById={statusById}
-                            volunteersIsLoading={volunteersIsLoading}
-                            volunteersData={volunteersData}
-                            customFields={customFields}
-                            rowSelection={canBulkEdit ? rowSelection : undefined}
-                        />}
+                        {!showPersons && (
+                            <VolunteerDesktopTable
+                                openVolunteer={openVolunteer}
+                                pagination={pagination}
+                                statusById={statusById}
+                                volunteersIsLoading={volunteersIsLoading}
+                                volunteersData={volunteersData}
+                                customFields={customFields}
+                                rowSelection={canBulkEdit ? rowSelection : undefined}
+                            />
+                        )}
                         {showPersons && <PersonsTable searchText={searchText} />}
                         {canBulkEdit && (
                             <MassEdit
