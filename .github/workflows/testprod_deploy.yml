@@ -17,25 +17,16 @@ jobs:
 # ADMIN
     - name: build admin
       run: |
-          docker build \
-             --progress=plain \
-             -t $IMAGE_NAME_BASENAME:$GITHUB_SHA  \
-             --build-arg NEW_API_URL=https://redmine.cb27.ru:17444/feedapi/v1 \
-             --build-arg SYNC_URL=http://prod.agreetesting.rumyantsev.com/api/v1/feeder/ \
-             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
-             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }} \
-             --build-arg ENABLE_SYNC_TO_NOTION=True \
-            .
-    - name: stop admin
+          docker compose build \
+            --build-arg NEW_API_URL=https://redmine.cb27.ru:17444/feedapi/v1 \
+            --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
+            --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
+            --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
+    - name: stop feed_admin
       run: docker rm -f $IMAGE_NAME_BASENAME
     - name: run admin
       run: |
-        docker run -d \
-          -p 8888:80 \
-          -v ${DB_DIR}:/app/db \
-          --restart=always \
-          --name $IMAGE_NAME_BASENAME \
-          $IMAGE_NAME_BASENAME:$GITHUB_SHA
+        DB_DIR=${DB_DIR} PORT=8888 docker compose up -d --remove-orphans
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f

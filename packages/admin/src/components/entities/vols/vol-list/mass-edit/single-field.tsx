@@ -124,7 +124,7 @@ const BooleanValueChanger: React.FC<{ onChange: (value: string) => void }> = ({ 
         <Checkbox
             style={{ width: '100%' }}
             onChange={(event: CheckboxChangeEvent): void => {
-                onChange(String(event.target.value));
+                onChange(String(event.target.checked));
             }}
         />
     );

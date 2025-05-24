@@ -11,7 +11,7 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doCh
     selectedVolunteers,
     doChange
 }) => {
-    const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
+    const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields', pagination: { pageSize: 0 } });
     const [currentFieldName, setCurrentFieldName] = useState<string | undefined>(undefined);
     const { open = () => {} } = useNotification();
 

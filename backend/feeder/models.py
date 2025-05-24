@@ -18,7 +18,6 @@ class Direction(TimeMixin, CommentMixin):
     type = models.ForeignKey('DirectionType', on_delete=models.PROTECT)
     first_year = models.IntegerField(null=True, blank=True)
     last_year = models.IntegerField(null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
 
 class Arrival(TimeMixin, CommentMixin):
@@ -84,7 +83,6 @@ class Person(TimeMixin, CommentMixin):
     phone = models.CharField(max_length=255, null=True, blank=True)
     email = models.CharField(max_length=255, null=True, blank=True)
     is_vegan = models.BooleanField(default=False)
-    notion_id = models.CharField(max_length=255, db_index=True)
 
 
 class Photo(TimeMixin):
@@ -109,7 +107,6 @@ class Engagement(TimeMixin):
     role = models.ForeignKey(EngagementRole, on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-    notion_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
 
 class Volunteer(TimeMixin, SoftDeleteModelMixin):
@@ -146,7 +143,6 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
     main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
     scanner_comment = models.CharField(max_length=255, null=True, blank=True, verbose_name="Комментарий при сканировании")
     responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
         related_name='volunteers',
@@ -165,8 +161,8 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         return self.feed_type != 1
 
     def save(self, *args, **kwargs):
-        if not self.pk and not self.qr and self.notion_id:
-            self.qr = str(self.notion_id).replace("-", "")
+        if not self.pk and not self.qr and self.uuid:
+            self.qr = str(self.uuid).replace("-", "")
         super().save(*args, **kwargs)
 
 class Kitchen(TimeMixin):

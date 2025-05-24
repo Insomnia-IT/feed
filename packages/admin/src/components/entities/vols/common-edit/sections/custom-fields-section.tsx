@@ -9,7 +9,10 @@ import styles from '../../common.module.css';
 export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: { canBadgeEdit: boolean; volunteerId: string }) => {
     const form = Form.useFormInstance();
 
-    const { data: customFieldsData } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' });
+    const { data: customFieldsData } = useList<CustomFieldEntity>({
+        resource: 'volunteer-custom-fields',
+        pagination: { pageSize: 0 }
+    });
 
     const { data: volunteerData } = useOne<VolEntity>({
         resource: 'volunteers',

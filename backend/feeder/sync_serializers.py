@@ -6,6 +6,7 @@ from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionTyp
                            Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen)
 from history.models import History
 
+from django.conf import settings
 
 class SaveSyncSerializerMixin(object):
     class Meta:
@@ -51,6 +52,9 @@ class SaveSyncSerializerMixin(object):
         elif not hasattr(self.Meta, "uuid_field") or self.Meta.uuid_field == "id":
             self.validated_data["id"] = uuid
 
+        if settings.SKIP_BACK_SYNC and hasattr(self, "activated") and not self.activated:
+            return self.instance
+
         super().save(**kwargs)
 
         new_data = self.data
@@ -79,6 +83,7 @@ class SaveSyncSerializerMixin(object):
 class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid")
     deleted = serializers.SerializerMethodField()
+    activated = serializers.SerializerMethodField()
     vegan = serializers.BooleanField(source="is_vegan", required=False)
     infant = serializers.SerializerMethodField()
     feed = serializers.SerializerMethodField()
@@ -92,9 +97,10 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         fields = (
             "id", "deleted", "name", "first_name", "last_name", "gender", "phone",
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
-            "person", "comment", "notion_id", "directions", "email", "qr", "is_blocked", "comment",
+            "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment",
-            "access_role", "group_badge", "kitchen", "main_role", "feed_type"
+            "access_role", "group_badge", "kitchen", "main_role", "feed_type",
+            "activated"
         )
         uuid_field = "uuid"
 
@@ -102,6 +108,12 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         if hasattr(obj, "deleted_at") and obj.deleted_at:
             return True
         return False
+    
+    def get_activated(self, obj):
+        return Arrival.objects.filter(
+            status__in=['ARRIVED', 'STARTED', 'JOINED'],
+            volunteer=obj.id
+        ).count() > 0
 
     def get_infant(self, obj):
         feed = obj.feed_type
@@ -146,6 +158,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
 class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     deleted = serializers.SerializerMethodField()
+    activated = serializers.SerializerMethodField()
     badge = serializers.SlugRelatedField(source="volunteer", slug_field="uuid", queryset=Volunteer.objects.all())
     status = serializers.SlugRelatedField(slug_field="id", queryset=Status.objects.all())
     arrival_transport = serializers.SlugRelatedField(slug_field="id", queryset=Transport.objects.all())
@@ -156,12 +169,16 @@ class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSer
         fields = (
             "id", "deleted", "badge", "status", "arrival_date",
             "arrival_transport", "departure_date", "departure_transport",
+            "activated"
         )
 
     def get_deleted(self, obj):
         if hasattr(obj, "deleted_at") and obj.deleted_at:
             return True
         return False
+    
+    def get_activated(self, obj):
+        return obj.status in ['ARRIVED', 'STARTED', 'JOINED']
 
 
 class DirectionHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
@@ -170,7 +187,7 @@ class DirectionHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     class Meta:
         model = Direction
         fields = (
-            "id", "name", "first_year", "last_year", "type", "notion_id"
+            "id", "name", "first_year", "last_year", "type"
         )
 
 
@@ -182,7 +199,7 @@ class EngagementHistoryDataSerializer(SaveSyncSerializerMixin, serializers.Model
     class Meta:
         model = Engagement
         fields = (
-            "id", "year", "person", "role", "position", "status", "direction", "notion_id"
+            "id", "year", "person", "role", "position", "status", "direction"
         )
 
 
@@ -193,7 +210,7 @@ class PersonHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSeri
         model = Person
         fields = (
             "id", "name", "first_name", "last_name", "nickname", "other_names", "gender", "birth_date",
-            "phone", "telegram", "email", "city", "vegan", "notion_id"
+            "phone", "telegram", "email", "city", "vegan"
         )
 
     def to_internal_value(self, data):
