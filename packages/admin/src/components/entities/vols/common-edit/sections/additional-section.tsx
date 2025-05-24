@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Divider, Form, Input, Button, Checkbox } from 'antd';
-import { FrownOutlined, SmileOutlined } from '@ant-design/icons';
+import { Divider, Form, Input, Button, Checkbox, Tooltip } from 'antd';
+import { FrownOutlined, SmileOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { DeleteButton } from '@refinedev/antd';
 import { useNavigate } from 'react-router-dom';
 
@@ -46,25 +46,45 @@ export const AdditionalSection = ({
             <p className={styles.formSection__title}>Дополнительно</p>
             <div className="commentArea">
                 <Form.Item
-                    label="Комментарий для отображения в кормителе (Это увидят все сканирующие QR)"
-                    name={'scanner_comment'}
+                    label={
+                        <>
+                            <span>Комментарий бюро</span>
+                            <Tooltip title="заполняется в бюро, виден руководителю">
+                                <InfoCircleOutlined style={{ marginLeft: 4 }} />
+                            </Tooltip>
+                        </>
+                    }
+                    name="comment"
                 >
-                    <Input.TextArea
-                        placeholder="Срочно отправить в Бюро"
-                        autoSize={{ minRows: 2, maxRows: 6 }}
-                        disabled={isDirectionHead}
-                        maxLength={255}
-                    />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} maxLength={255} />
                 </Form.Item>
-                <Form.Item label="Комментарий для бюро" name={'comment'}>
-                    <Input.TextArea
-                        placeholder="Место для фантазий"
-                        autoSize={{ minRows: 2, maxRows: 6 }}
-                        disabled={isDirectionHead}
-                    />
-                </Form.Item>
-                <Form.Item label="Заметка" name="direction_head_comment">
+
+                <Form.Item
+                    label={
+                        <>
+                            <span>Комментарий руководителя службы</span>
+                            <Tooltip title="заполняется руководителем, виден в бюро">
+                                <InfoCircleOutlined style={{ marginLeft: 4 }} />
+                            </Tooltip>
+                        </>
+                    }
+                    name="direction_head_comment"
+                >
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!isDirectionHead} />
+                </Form.Item>
+
+                <Form.Item
+                    label={
+                        <>
+                            <span>Сообщение для волонтера</span>
+                            <Tooltip title="будет видно в кормителе">
+                                <InfoCircleOutlined style={{ marginLeft: 4 }} />
+                            </Tooltip>
+                        </>
+                    }
+                    name="scanner_comment"
+                >
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} maxLength={255} />
                 </Form.Item>
             </div>
             <Divider />
@@ -77,7 +97,7 @@ export const AdditionalSection = ({
                     disabled={isBlocked ? !canUnban : false}
                 >
                     {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
-                    {`${isBlocked ? 'Разблокировать волонтера' : 'Заблокировать Волонтера'}`}
+                    {isBlocked ? 'Разблокировать волонтера' : 'Заблокировать волонтера'}
                 </Button>
 
                 <BanModal
@@ -105,7 +125,7 @@ export const AdditionalSection = ({
                 )}
             </div>
             <div className={styles.visuallyHidden}>
-                <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: '0' }}>
+                <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: 0 }}>
                     <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                 </Form.Item>
                 <Form.Item name="person" hidden />
