@@ -24,7 +24,7 @@ jobs:
       run: |
           docker compose build \
             --build-arg NEW_API_URL=https://feedapp-dev.insomniafest.ru/feedapi/v1 \
-            --build-arg SYNC_URL=http://9000.agreetesting.rumyantsev.com/api/v1/feeder/ \
+            --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
     - name: stop feed_admin
