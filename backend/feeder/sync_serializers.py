@@ -99,7 +99,8 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment",
-            "access_role", "group_badge", "kitchen", "main_role", "feed_type"
+            "access_role", "group_badge", "kitchen", "main_role", "feed_type",
+            "activated"
         )
         uuid_field = "uuid"
 
@@ -168,6 +169,7 @@ class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSer
         fields = (
             "id", "deleted", "badge", "status", "arrival_date",
             "arrival_transport", "departure_date", "departure_transport",
+            "activated"
         )
 
     def get_deleted(self, obj):
