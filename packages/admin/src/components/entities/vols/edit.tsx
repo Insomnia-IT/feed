@@ -4,7 +4,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import type { IResourceComponentsProps } from '@refinedev/core';
 import { useBreadcrumb } from '@refinedev/core';
 import { Link, useNavigate } from 'react-router-dom';
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 
 import type { VolEntity } from 'interfaces';
 
@@ -12,6 +12,8 @@ import { CreateEdit } from './common';
 import useSaveConfirm from './use-save-confirm';
 import { useNavigationGuard } from './use-navigation-guard';
 import styles from './common.module.css';
+
+const DEFAULT_VOLUNTEER_NAME = 'Волонтер';
 
 export const VolEdit: FC<IResourceComponentsProps> = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -28,49 +30,41 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
-    const volunteerName = name || 'Волонтер';
+    const volunteerName = name || DEFAULT_VOLUNTEER_NAME;
     const { breadcrumbs } = useBreadcrumb();
 
+    const handleNavigation = useCallback((path: string) => {
+        setIsModalVisible(true);
+        setPendingNavigation(path);
+    }, []);
+
+    const handleModalCancel = useCallback(() => {
+        setIsModalVisible(false);
+        if (pendingNavigation) {
+            navigate(pendingNavigation);
+        }
+    }, [pendingNavigation, navigate]);
+
+    const handleModalOk = useCallback(() => {
+        setIsModalVisible(false);
+        setPendingNavigation(null);
+        onClick();
+    }, [onClick]);
+
     useEffect(() => {
-        // Добавляем запись в историю при монтировании компонента
         window.history.pushState(null, '', window.location.href);
 
         const handlePopState = () => {
             const isDirty = form.isFieldsTouched();
             if (isDirty) {
-                // Показываем модальное окно
                 handleNavigation(window.location.pathname);
-                // Возвращаем историю в исходное состояние
                 window.history.pushState(null, '', window.location.href);
             }
         };
 
         window.addEventListener('popstate', handlePopState);
-        return () => {
-            window.removeEventListener('popstate', handlePopState);
-        };
-    }, [form]);
-
-    const handleNavigation = (path: string) => {
-        console.log('handleNavigation called with path:', path);
-        setIsModalVisible(true);
-        setPendingNavigation(path);
-    };
-
-    const handleModalCancel = () => {
-        console.log('Modal OK clicked, navigating to:', pendingNavigation);
-        setIsModalVisible(false);
-        if (pendingNavigation) {
-            navigate(pendingNavigation);
-        }
-    };
-
-    const handleModalOk = () => {
-        console.log('Modal Cancel clicked');
-        setIsModalVisible(false);
-        setPendingNavigation(null);
-        onClick();
-    };
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [form, handleNavigation]);
 
     useNavigationGuard(handleNavigation, form);
 
@@ -83,13 +77,14 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                     const isLast = index === breadcrumbs.length - 1;
                     return (
                         <Breadcrumb.Item key={item.label}>
-                            {isLast ? volunteerName : (
-                                <Link 
-                                    to={item.href || '#'} 
+                            {isLast ? (
+                                volunteerName
+                            ) : (
+                                <Link
+                                    to={item.href || '#'}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log('Breadcrumb clicked:', item.href);
                                         handleNavigation(item.href || '#');
                                     }}
                                 >
@@ -103,20 +98,22 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
         );
     };
 
+    const renderTitle = () => (
+        <div className={styles.pageTitle}>
+            Информация о волонтере
+            {isBlocked && (
+                <div className={styles.bannedWrap}>
+                    <span className={styles.bannedDescr}>Заблокирован</span>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <>
             <Edit
                 breadcrumb={<CustomBreadcrumb />}
-                title={
-                    <div className={styles.pageTitle}>
-                        Информация о волонтере
-                        {isBlocked && (
-                            <div className={styles.bannedWrap}>
-                                <span className={styles.bannedDescr}>Заблокирован</span>
-                            </div>
-                        )}
-                    </div>
-                }
+                title={renderTitle()}
                 saveButtonProps={{
                     ...saveButtonProps,
                     onClick
@@ -135,12 +132,6 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                 {renderModal()}
             </Edit>
             <Modal
-                title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '22px' }} />
-                        <span>Вы не сохранили изменения</span>
-                    </div>
-                }
                 open={isModalVisible}
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
@@ -148,7 +139,14 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                 cancelText="Отменить изменения"
                 closable={false}
             >
-                <p>Если вы выйдете из профиля волонтера, не сохранив изменения, то новые данные исчезнут</p>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                    <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '22px', marginTop: '2px' }} />
+
+                    <div>
+                        <h3 style={{ marginBottom: '8px' }}>Вы не сохранили изменения</h3>
+                        <p>Если вы выйдете из профиля волонтера, не сохранив изменения, то новые данные исчезнут</p>
+                    </div>
+                </div>
             </Modal>
         </>
     );
