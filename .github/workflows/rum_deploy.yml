@@ -12,6 +12,7 @@ jobs:
     env:
       IMAGE_NAME_BASENAME: feed-admin
       DB_DIR: /var/feed_db
+      SKIP_BACK_SYNC: True
       OPEN_SEARCH_PASSWORD: ${{ secrets.OPEN_SEARCH_PASSWORD }}
       OPEN_SEARCH_USER_NAME: ${{ secrets.OPEN_SEARCH_USER_NAME }}
     steps:
