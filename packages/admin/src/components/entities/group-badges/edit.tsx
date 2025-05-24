@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Edit, EditButton, TextField, useForm, useTable } from '@refinedev/antd';
 import { Button, Table, Form, Typography, Space, Divider, Input, Popconfirm, Row, Col } from 'antd';
 import { useUpdateMany } from '@refinedev/core';
@@ -53,20 +53,10 @@ export const GroupBadgeEdit: FC = () => {
         }
     });
 
-    const syncedVolunteers = useMemo(() => {
-        const prevMap = new Map(volunteers.map((v) => [v.id, v]));
-        return (
-            tablePropsVolunteers.dataSource?.map((v) => ({
-                ...v,
-                markedDeleted: prevMap.get(v.id)?.markedDeleted ?? false,
-                markedAdded: prevMap.get(v.id)?.markedAdded ?? false
-            })) ?? []
-        );
-    }, [tablePropsVolunteers.dataSource, volunteers]);
-
     useEffect(() => {
-        setVolunteers(syncedVolunteers);
-    }, [syncedVolunteers]);
+        const data = tablePropsVolunteers.dataSource || [];
+        setVolunteers(data.map((v) => ({ ...v, markedDeleted: false, markedAdded: false })));
+    }, [tablePropsVolunteers.dataSource]);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters([
@@ -94,7 +84,7 @@ export const GroupBadgeEdit: FC = () => {
                 ? tablePropsVolunteers.pagination.total
                 : 0,
         current: page,
-        pageSize: pageSize,
+        pageSize,
         showTotal: (total: number) => (
             <>
                 <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
