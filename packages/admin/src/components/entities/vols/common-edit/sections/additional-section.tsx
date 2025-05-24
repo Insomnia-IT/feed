@@ -56,7 +56,7 @@ export const AdditionalSection = ({
                     }
                     name="comment"
                 >
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} maxLength={255} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} />
                 </Form.Item>
 
                 <Form.Item
