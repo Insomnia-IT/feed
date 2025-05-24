@@ -1,0 +1,14 @@
+.item {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+
+    p {
+        width: 50%;
+    }
+}
+
+.message {
+    margin-top: 20px;
+    text-align: center;
+}

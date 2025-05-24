@@ -1,55 +1,34 @@
 import type { FC } from 'react';
-import { useCallback } from 'react';
-import cs from 'classnames';
+import { useState } from 'react';
 import cn from 'classnames';
 
-import type { Volunteer } from '~/db';
-import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
+import type { TransactionJoined, Volunteer } from '~/db';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
 import { getPlural } from '~/shared/lib/utils';
+import { FeedOtherCount } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
+import { WarningPartiallyFedModal } from '~/components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
+import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
 
-import { getAllVols } from '../post-scan-group-badge.utils';
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
+import { NotFeedListModalTrigger } from '../not-feed-list-modal/not-feed-list-modal';
 
 import css from './post-scan-group-badge-misc.module.css';
 
-const VolunteerList: FC<{
-    warningVols?: Array<Volunteer>;
-    errorVols?: Array<Volunteer>;
-}> = ({ errorVols, warningVols }) => (
-    <div className={css.volunteerList}>
-        {warningVols && warningVols.length > 0 && (
-            <Text>
-                <b>В долг: </b>
-                {warningVols.map((vol) => vol.name).join(', ')}
-            </Text>
-        )}
-        {errorVols && errorVols.length > 0 && (
-            <Text>
-                <b>Без порции: </b>
-                {errorVols.map((vol) => vol.name).join(', ')}
-            </Text>
-        )}
-    </div>
-);
-const GroupBadgeInfo: FC<{
+export const GroupBadgeInfo: FC<{
     name: string;
-    vols: Array<Volunteer>;
-    volsToFeed?: Array<Volunteer>;
-}> = ({ name, vols, volsToFeed }) => {
-    const totalVegs = vols.filter((vol) => vol.is_vegan).length;
-    const totalMeats = vols.filter((vol) => !vol.is_vegan).length;
+    volsToFeed: Array<Volunteer>;
+}> = ({ name, volsToFeed }) => {
+    const totalVegs = volsToFeed.filter((vol) => vol.is_vegan).length;
+    const totalMeats = volsToFeed.filter((vol) => !vol.is_vegan).length;
 
-    const _volsToFeed = volsToFeed ?? vols;
     return (
         <div className={css.info}>
             <Title>Групповой бейдж</Title>
             <div className={css.detail}>
                 <Text>
-                    Вы отсканировали групповой бейдж “{name}” ({_volsToFeed.length}):
+                    Вы отсканировали групповой бейдж “{name}” ({volsToFeed.length}):
                 </Text>
                 <div className={cn(css.counts, { [css.oneCount]: totalVegs === 0 || totalMeats === 0 })}>
                     {totalMeats > 0 && (
@@ -68,83 +47,112 @@ const GroupBadgeInfo: FC<{
     );
 };
 
-export const GroupBadgeSuccessCard: FC<{
-    name: string;
-    volsToFeed: Array<ValidatedVol>;
-    doFeed: (vols: Array<ValidatedVol>) => void;
-    close: () => void;
-}> = ({ close, doFeed, name, volsToFeed }) => {
-    return (
-        <CardContainer>
-            <div className={css.groupBadgeCard}>
-                <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
-                <div className={css.bottomBLock}>
-                    <div className={css.buttonsBlock}>
-                        <Button variant='secondary' onClick={close}>
-                            Отмена
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                doFeed(volsToFeed);
-                                close();
-                            }}
-                        >
-                            Кормить({volsToFeed.length})
-                        </Button>
-                    </div>
-                    <VolAndUpdateInfo textColor='black' />
-                </div>
-            </div>
-        </CardContainer>
-    );
-};
 export const GroupBadgeWarningCard: FC<{
+    alreadyFedTransactions: Array<TransactionJoined>;
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
-    doNotFeed: (vols: Array<ValidatedVol>) => void;
+    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
     close: () => void;
-}> = ({ close, doFeed, doNotFeed, name, validationGroups }) => {
-    const { greens, reds, yellows } = validationGroups;
-    const volsToFeed = [...greens, ...yellows];
-    const handleCancel = () => {
-        doNotFeed([...reds, ...yellows]);
-        close();
-    };
-    const handleFeed = () => {
-        doFeed(volsToFeed);
+}> = ({ alreadyFedTransactions, close, doFeed, doFeedAnons, name, validationGroups }) => {
+    const { greens, reds } = validationGroups;
+    const volsToFeed = [...greens];
+
+    const [showOtherCount, setShowOtherCount] = useState(false);
+    const [vegansCount, setVegansCount] = useState(0);
+    const [nonVegansCount, setNonVegansCount] = useState(0);
+    const [isWarningModalShown, setIsWarningModalShown] = useState(false);
+
+    const isPartiallyFed = !!alreadyFedTransactions.length;
+
+    const handleFeed = (): void => {
+        if (showOtherCount) {
+            doFeedAnons({ vegansCount, nonVegansCount });
+        } else {
+            if (isPartiallyFed) {
+                setIsWarningModalShown(true);
+                return;
+            }
+
+            doFeed(volsToFeed);
+        }
+
         close();
     };
 
+    const alreadyFedCount = calculateAlreadyFedCount(alreadyFedTransactions);
+
+    // Максимальное количество = количество людей, прошедших валидацию * 1.5 - количество уже покормленных. Но не меньше нуля!
+    const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedCount, 0);
+
+    const amountToFeed = showOtherCount
+        ? vegansCount + nonVegansCount
+        : Math.max(volsToFeed.length - alreadyFedCount, 0);
+
     return (
-        <CardContainer>
-            <div className={css.groupBadgeCard}>
-                <GroupBadgeInfo name={name} vols={volsToFeed} volsToFeed={volsToFeed} />
-                {(reds.length > 0 || yellows.length > 0) && <VolunteerList errorVols={reds} warningVols={yellows} />}
-                <div className={css.bottomBLock}>
-                    <div className={css.buttonsBlock}>
-                        <Button variant='secondary' onClick={handleCancel}>
-                            Отмена
-                        </Button>
-                        <Button onClick={handleFeed}>Кормить({volsToFeed.length})</Button>
-                    </div>
-                    <VolAndUpdateInfo textColor='black' />
+        <div className={css.groupBadgeCard}>
+            <WarningPartiallyFedModal
+                alreadyFedTransactions={alreadyFedTransactions}
+                setShowModal={setIsWarningModalShown}
+                doFeedAnons={(value: { vegansCount: number; nonVegansCount: number }) => {
+                    doFeedAnons(value);
+                    close();
+                }}
+                greenVols={validationGroups.greens}
+                showModal={isWarningModalShown}
+            />
+            <GroupBadgeInfo name={name} volsToFeed={volsToFeed} />
+
+            {reds.length > 0 && (
+                <div className={css.volunteerList}>
+                    <NotFeedListModalTrigger doNotFeedVols={reds} />
                 </div>
-            </div>
-        </CardContainer>
+            )}
+
+            {showOtherCount ? (
+                <FeedOtherCount
+                    maxCount={maxCountOther}
+                    vegansCount={vegansCount}
+                    nonVegansCount={nonVegansCount}
+                    setVegansCount={setVegansCount}
+                    setNonVegansCount={setNonVegansCount}
+                />
+            ) : null}
+
+            <BottomBlock
+                amountToFeed={amountToFeed}
+                handlePrimaryAction={handleFeed}
+                handleCancel={close}
+                handleAlternativeAction={() => setShowOtherCount(!showOtherCount)}
+                alternativeText={showOtherCount ? 'Кормить всех' : 'Кормить часть'}
+            />
+        </div>
     );
 };
 
-export const GroupBadgeErrorCard: FC<{
-    msg: string;
-    volsNotToFeed: Array<ValidatedVol>;
-    doNotFeed: (vols: Array<ValidatedVol>) => void;
-    close: () => void;
-}> = ({ close, doNotFeed, msg, volsNotToFeed }) => {
-    const handleClose = useCallback(() => {
-        doNotFeed(volsNotToFeed);
-        close();
-    }, [close, doNotFeed, volsNotToFeed]);
-
-    return <ErrorCard msg={msg} close={handleClose} />;
+const BottomBlock: React.FC<{
+    handleCancel: () => void;
+    handlePrimaryAction: () => void;
+    handleAlternativeAction?: () => void;
+    alternativeText?: string;
+    amountToFeed: number;
+}> = ({ alternativeText, amountToFeed, handleAlternativeAction, handleCancel, handlePrimaryAction }) => {
+    return (
+        <div className={css.bottomBLock}>
+            <div className={css.buttonsBlock}>
+                <Button variant='secondary' onClick={handleCancel}>
+                    Отмена
+                </Button>
+                <Button disabled={amountToFeed <= 0} onClick={handlePrimaryAction}>
+                    Кормить ({amountToFeed})
+                </Button>
+            </div>
+            {alternativeText ? (
+                <Button onClick={handleAlternativeAction} variant='secondary'>
+                    {alternativeText}
+                </Button>
+            ) : null}
+            <VolAndUpdateInfo textColor='black' />
+        </div>
+    );
 };

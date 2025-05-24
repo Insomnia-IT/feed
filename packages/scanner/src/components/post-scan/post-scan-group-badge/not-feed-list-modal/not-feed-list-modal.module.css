@@ -1,0 +1,24 @@
+.modal {
+    height: 70vh;
+}
+
+.trigger {
+    width: 100%;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    /* Вычитаем высоту заголовка модалки и высоту кнопки */
+    height: calc(100% - (44px + 52px));
+    overflow: scroll;
+}
+
+.item {
+    border-radius: 10px;
+    border-color: #0c0c0c;
+    border-style: solid;
+    border-width: 1px;
+}

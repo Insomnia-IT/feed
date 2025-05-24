@@ -12,12 +12,10 @@ class MyAdminSite(AdminSite):
 admin_site = MyAdminSite(name='admin')
 
 
-admin_site.register(Location)
 admin_site.register(Color)
 admin_site.register(FeedType)
 admin_site.register(FeedTransaction)
 admin_site.register(Kitchen)
-admin_site.register(Department)
 admin_site.register(Direction)
 admin_site.register(Transport)
 admin_site.register(VolunteerRole)
@@ -32,3 +30,4 @@ admin_site.register(Status)
 admin_site.register(GroupBadge)
 admin_site.register(VolunteerCustomField)
 admin_site.register(VolunteerCustomFieldValue)
+admin_site.register(Wash)

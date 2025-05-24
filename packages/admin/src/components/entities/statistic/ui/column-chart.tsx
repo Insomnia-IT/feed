@@ -1,99 +1,61 @@
-import type { ColumnConfig, Options } from '@ant-design/plots';
-import dynamic from 'next/dynamic';
+import { FC, useMemo } from 'react';
+import {
+    ResponsiveContainer,
+    Bar,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Legend,
+    Line,
+    ComposedChart,
+    LabelProps
+} from 'recharts';
+import { Spin } from 'antd';
 
-import type { MealTime, StatisticType } from '../types';
-const Column = dynamic(() => import('@ant-design/plots').then(({ Column }) => Column), { ssr: false });
+import { IColumnChartData, MealTime } from '../types';
 
-/** Данные для столбчатого графика */
-interface IColumnChartData {
-    date: string;
-    type: StatisticType;
-    value: number;
+interface IProps {
+    data: IColumnChartData[];
     mealTime: MealTime;
+    loading?: boolean;
 }
 
-type IColumnChartAnnotationData = {
-    date: string;
-    plan: number;
-    fact: number;
-};
+const labelProps: LabelProps = { stroke: '#333', fill: '#333', position: 'top' };
 
-const annotation = {
-    type: 'text',
-    style: {
-        textAlign: 'center' as const,
-        fontSize: 14,
-        fill: 'rgba(0,0,0,0.85)'
-    },
-    offsetY: -20
-};
-
-function createAnnotation(data: Array<IColumnChartAnnotationData>) {
-    const annotations: Options['annotations'] = [];
-    data.forEach((datum, index) => {
-        annotations.push({
-            ...annotation,
-            position: [`${(index / data.length) * 100 + 17}%`, '4%'],
-            content: `${datum.fact} / ${datum.plan}`
+const ColumnChartByMealTime: FC<IProps> = ({ data, loading }) => {
+    const chartData = useMemo(() => {
+        return data.map((item) => {
+            return {
+                date: item.date,
+                plan: item.plan || 0,
+                predict: item.predict || 0,
+                fact: item.fact || 0
+            };
         });
-    });
-    return annotations;
-}
+    }, [data]);
 
-/**Настройки для столбчатого графика*/
-const columnConfig: Omit<ColumnConfig, 'data'> = {
-    xField: 'date',
-    yField: 'value',
-    isGroup: true,
-    isStack: true,
-    seriesField: 'mealTime',
-    groupField: 'type',
-    padding: 50,
-    label: {
-        position: 'middle',
-        content: (x) => {
-            const value = x.value || '';
-            return value;
-        },
-        layout: [
-            {
-                type: 'adjust-color'
-            }
-        ]
-    },
-    legend: {
-        position: 'top-left'
-    },
-    tooltip: false,
-    // tooltip: {
-    //     // customContent: (title, data) => {
-    //     //     return `<div>${title}</div>`;
-    //     // },
-    //     // customItems: (originalItems: TooltipItem[]) => {
-    //     //     // process originalItems,
-    //     //     console.log(originalItems);
-    //     //     return originalItems;
-    //     // },
-    //     formatter: (datum) => {
-    //         return {
-    //             name: `${datum.mealTime} ${datum.type === 'plan' ? 'plan' : 'fact'}`,
-    //             value: datum.value
-    //         };
-    //     }
-    // },
-    interactions: [
-        {
-            type: 'element-highlight-by-color'
-        }
-    ]
+    if (loading) {
+        return <Spin />;
+    }
+
+    return (
+        <div style={{ width: '100%', height: 400 }}>
+            <ResponsiveContainer>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+                    <CartesianGrid stroke="#f5f5f5" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+
+                    <Bar dataKey="fact" name="Факт" fill="#82ca9d" label={labelProps} />
+                    <Bar dataKey="predict" name="Прогноз" fill="#8884d8" label={labelProps} />
+                    <Line type="monotone" dataKey="plan" stroke="#222222" name="На поле" label={labelProps} />
+                </ComposedChart>
+            </ResponsiveContainer>
+        </div>
+    );
 };
 
-function ColumnChart(props: {
-    columnDataArr: Array<IColumnChartData>;
-    dataForAnnotation: Array<IColumnChartAnnotationData>;
-}) {
-    const annotations = createAnnotation(props.dataForAnnotation);
-    return <Column data={props.columnDataArr} {...columnConfig} annotations={annotations} />;
-}
-export { ColumnChart };
-export type { IColumnChartData, IColumnChartAnnotationData };
+export default ColumnChartByMealTime;

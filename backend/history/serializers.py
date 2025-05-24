@@ -6,6 +6,7 @@ from history.models import History
 
 class HistorySerializer(serializers.ModelSerializer):
     actor = serializers.SerializerMethodField()
+    volunteer = serializers.SerializerMethodField()
     by_sync = serializers.SerializerMethodField()
 
     class Meta:
@@ -22,6 +23,15 @@ class HistorySerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
+    def get_volunteer(self, obj):
+        try:
+            volunteer = Volunteer.objects.get(uuid=obj.volunteer_uuid)
+            return {
+                "id": volunteer.pk,
+                "name": volunteer.name
+            }
+        except Exception:
+            return None
     def get_by_sync(self, obj):
         return not obj.actor_badge
 

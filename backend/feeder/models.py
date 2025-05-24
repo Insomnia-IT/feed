@@ -18,7 +18,6 @@ class Direction(TimeMixin, CommentMixin):
     type = models.ForeignKey('DirectionType', on_delete=models.PROTECT)
     first_year = models.IntegerField(null=True, blank=True)
     last_year = models.IntegerField(null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
 
 class Arrival(TimeMixin, CommentMixin):
@@ -84,7 +83,6 @@ class Person(TimeMixin, CommentMixin):
     phone = models.CharField(max_length=255, null=True, blank=True)
     email = models.CharField(max_length=255, null=True, blank=True)
     is_vegan = models.BooleanField(default=False)
-    notion_id = models.CharField(max_length=255, db_index=True)
 
 
 class Photo(TimeMixin):
@@ -109,7 +107,6 @@ class Engagement(TimeMixin):
     role = models.ForeignKey(EngagementRole, on_delete=models.PROTECT)
     position = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, null=True, blank=True)
-    notion_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
 
 class Volunteer(TimeMixin, SoftDeleteModelMixin):
@@ -128,14 +125,8 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     photo = models.TextField(null=True, blank=True, verbose_name="Фотография")
     position = models.TextField(null=True, blank=True, verbose_name="")
     qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
-    active_from = models.DateTimeField(null=True, blank=True, verbose_name="Активен с ")
-    active_to = models.DateTimeField(null=True, blank=True, verbose_name="Активен до")
-    arrival_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата прибытия")
-    departure_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата отъезда")
-    daily_eats = models.IntegerField(default=0, verbose_name="Количество приёмов пищи в день")
-    balance = models.IntegerField(default=0, verbose_name="Баланс")
-    is_active = models.BooleanField(default=False, verbose_name="Активен?")
     is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован?")
+    is_ticket_received = models.BooleanField(default=False, verbose_name="Выдан ли билет?")
     is_vegan = models.BooleanField(default=False, verbose_name="Вегетарианец?")
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     direction_head_comment = models.TextField(null=True, blank=True, verbose_name="Комментарий руководителя локации")
@@ -148,19 +139,15 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         related_name='volunteers',
         verbose_name="Право доступа",
     )
-    departments = models.ManyToManyField('Department', verbose_name="Департамент")
-    color_type = models.ForeignKey(
-        'Color',
-        null=True, blank=True, on_delete=models.PROTECT,
-        related_name='volunteers',
-        verbose_name="Цвет бэджика",
-    )
-    group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Групповой бейдж")
+    group_badge = models.ForeignKey('GroupBadge', null=True, blank=True, on_delete=models.SET_NULL, related_name='volunteers', verbose_name="Групповой бейдж")
     feed_type = models.ForeignKey('FeedType', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Тип питания")
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
-    ref_to = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Связан с ", related_name="refs")
     main_role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
-    notion_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
+    scanner_comment = models.CharField(max_length=255, null=True, blank=True, verbose_name="Комментарий при сканировании")
+    responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='volunteers',
+        verbose_name="Ответственный")
+    is_child = models.BooleanField('IsChild', null=True, blank=True, default=False)
 
     class Meta:
         verbose_name = "Волонтёр"
@@ -174,28 +161,9 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         return self.feed_type != 1
 
     def save(self, *args, **kwargs):
-        if not self.pk and not self.qr and self.notion_id:
-            self.qr = str(self.notion_id).replace("-", "")
+        if not self.pk and not self.qr and self.uuid:
+            self.qr = str(self.uuid).replace("-", "")
         super().save(*args, **kwargs)
-
-
-class Department(TimeMixin):
-    name = models.CharField(max_length=255, verbose_name="Название", db_index=True)
-    code = models.CharField(max_length=255, null=True, blank=True, verbose_name="Код")
-    comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
-    lead = models.ForeignKey(
-        'Volunteer', null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='department_leader',
-        verbose_name="Лидер",
-    )
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Департамент"
-        verbose_name_plural = "Департаменты"
-
 
 class Kitchen(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название")
@@ -225,6 +193,7 @@ class GroupBadge(TimeMixin, CommentMixin, NameMixin):
 class VolunteerCustomField(TimeMixin, CommentMixin):
     name = models.CharField(verbose_name='Название', unique=True, max_length=100)
     type = models.CharField(verbose_name='Тип данных', max_length=20)
+    mobile = models.BooleanField(null=False, default=False, verbose_name="Показывать в мобильной админке?")
 
     def __str__(self):
         return self.name
@@ -248,20 +217,6 @@ class VolunteerCustomFieldValue(TimeMixin):
         constraints = [
             models.UniqueConstraint(fields=['volunteer', 'custom_field'], name='unique fields')
         ]
-
-
-class Location(TimeMixin):
-    name = models.CharField(max_length=255, verbose_name="Название", db_index=True)
-    code = models.CharField(max_length=255, null=True, blank=True, verbose_name="Код")
-    comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Локация"
-        verbose_name_plural = "Локации"
-
 
 class Color(TimeMixin):
     name = models.CharField(max_length=255, verbose_name="Название")
@@ -317,6 +272,7 @@ def validate_meal_time(value):
 class FeedTransaction(TimeMixin):
     ulid = models.CharField(max_length=255, primary_key=True)
     volunteer = models.ForeignKey(Volunteer, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Волонтёр")
+    group_badge = models.ForeignKey(GroupBadge, null=True, blank=True, on_delete=models.SET_NULL, related_name='feed_transactions', verbose_name="Групповой бейдж")
     is_vegan = models.BooleanField(null=True, verbose_name="Вегетарианец?")
     kitchen = models.ForeignKey(Kitchen, on_delete=models.PROTECT, verbose_name="Кухня")
     amount = models.IntegerField(default=0, verbose_name="Количество")
@@ -328,3 +284,26 @@ class FeedTransaction(TimeMixin):
     class Meta:
         verbose_name = "Приём пищи"
         verbose_name_plural = "Приёмы пищи"
+
+class VolunteerGroupOperation(TimeMixin, SoftDeleteModelMixin):
+    group_operation_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    volunteers_ids = models.JSONField()
+    original_data = models.JSONField()
+    new_data = models.JSONField()
+
+    def __str__(self):
+        return self.group_operation_id
+
+    class Meta:
+        verbose_name =  "Групповая операция"
+        verbose_name_plural = "Групповые операции"
+
+class Wash(TimeMixin):
+    """ Стирка """
+    id = models.AutoField(primary_key=True)
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="washes")
+    actor = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="added_washes")
+
+    class Meta:
+        verbose_name = "Стирка"
+        verbose_name_plural = "Стирки"

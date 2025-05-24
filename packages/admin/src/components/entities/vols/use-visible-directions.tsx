@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 
-import type { UserData } from '~/auth';
-import { getUserData } from '~/auth';
+import type { UserData } from 'auth';
+import { getUserData } from 'auth';
 
 import useCanAccess from './use-can-access';
 
 const useVisibleDirections = (): Array<string> | undefined => {
-    const canFullList = useCanAccess({ action: 'full_list', resource: 'volunteers' });
+    const canFullList = useCanAccess({
+        action: 'full_list',
+        resource: 'volunteers'
+    });
 
     const [authorizedUserData, setAuthorizedUserData] = useState<UserData | null>(null);
 
     const loadAuthorizedUserData = async () => {
-        const user = await getUserData(null, true);
+        const user = await getUserData(true);
         setAuthorizedUserData(user);
     };
 
@@ -21,7 +24,7 @@ const useVisibleDirections = (): Array<string> | undefined => {
         }
     }, [canFullList, authorizedUserData]);
 
-    return canFullList ? undefined : authorizedUserData?.directions ?? [];
+    return canFullList ? undefined : (authorizedUserData?.directions ?? []);
 };
 
 export default useVisibleDirections;

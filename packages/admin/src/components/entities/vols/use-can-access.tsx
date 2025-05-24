@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { ACL } from '~/acl';
+import { ACL } from 'acl';
 
 const useCanAccess = ({ action, resource }: { action: string; resource: string }): boolean => {
     const [canAccess, setCanAccess] = useState(false);

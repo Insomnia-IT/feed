@@ -1,13 +1,12 @@
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-import type { MealTime } from '../types';
-
 interface ITableStatData {
     key: string;
     mealTimeType: string;
     plan: number;
     fact: number;
+    predict: number;
 }
 const columns: ColumnsType<ITableStatData> = [
     {
@@ -16,23 +15,27 @@ const columns: ColumnsType<ITableStatData> = [
         key: 'mealTimeType'
     },
     {
-        title: 'План (по количеству людей на поле)',
-        dataIndex: 'plan',
-        key: 'plan'
-    },
-    {
         title: 'Факт (количество приемов пищи)',
         dataIndex: 'fact',
         key: 'fact'
+    },
+    {
+        title: 'Прогноз (по формуле)',
+        dataIndex: 'predict',
+        key: 'predict'
+    },
+    {
+        title: 'На поле',
+        dataIndex: 'plan',
+        key: 'plan'
     }
 ];
 
 function TableStats(props: { data: Array<ITableStatData>; loading: boolean }) {
     return (
         <Table
-            title={() => <b>Сравнительная таблица по питанию</b>}
             bordered
-            size='small'
+            size="small"
             pagination={false}
             loading={props.loading}
             columns={columns}

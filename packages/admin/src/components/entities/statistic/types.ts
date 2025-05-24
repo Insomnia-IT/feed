@@ -1,4 +1,4 @@
-export type StatisticType = 'plan' | 'fact';
+export type StatisticType = 'plan' | 'fact' | 'predict';
 export type MealTime = 'breakfast' | 'lunch' | 'dinner' | 'night' | 'total';
 export const mealTimeArr: Array<MealTime> = ['breakfast', 'lunch', 'dinner', 'night'];
 
@@ -7,6 +7,8 @@ export type EaterTypeExtended = EaterType | 'all';
 
 export type KitcheId = 'first' | 'second';
 export type KitchenIdExtended = KitcheId | 'all';
+export type BooleanExtended = 'true' | 'false' | 'all';
+export type PredictionAlg = '1' | '2';
 
 export type IEaterTypeAmount = {
     [eaterType in EaterType]: number;
@@ -50,6 +52,13 @@ export const datumInstance: DataType = {
         lunch: { meatEater: 0, vegan: 0 },
         night: { meatEater: 0, vegan: 0 },
         total: { meatEater: 0, vegan: 0 }
+    },
+    predict: {
+        breakfast: { meatEater: 0, vegan: 0 },
+        dinner: { meatEater: 0, vegan: 0 },
+        lunch: { meatEater: 0, vegan: 0 },
+        night: { meatEater: 0, vegan: 0 },
+        total: { meatEater: 0, vegan: 0 }
     }
 };
 
@@ -58,3 +67,10 @@ export const dataEmpty: IData = {
     first: {},
     second: {}
 };
+
+export interface IColumnChartData {
+    date: string;
+    plan: number;
+    fact: number;
+    predict: number;
+}

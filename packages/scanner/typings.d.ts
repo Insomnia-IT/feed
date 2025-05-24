@@ -24,13 +24,7 @@ declare module '*.svg?raw' {
     const content: string;
     export default content;
 }
-
-declare module '!!raw-loader!*' {
-    const contents: string;
-    export = contents;
-}
-
-declare module '!!raw-loader!./*.svg' {
+declare module '*.txt' {
     const content: string;
     export default content;
 }

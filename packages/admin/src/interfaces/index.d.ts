@@ -12,9 +12,7 @@ export interface VolEntity {
     position?: string;
     is_vegan?: boolean; // nutritionType
     is_blocked?: boolean;
-    daily_eats?: number;
     comment?: string;
-    ref_to?: number; // chef
     directions?: Array<DirectionEntity>;
     kitchen?: number;
     // location?: LocationEntity[];
@@ -22,12 +20,12 @@ export interface VolEntity {
     feed_type?: number; //FeedTypeEntity;
     qr_code?: string;
     group_badge?: number | undefined;
-    kitchen?: number;
     printing_batch?: number;
     main_role?: string;
     access_role?: string;
     arrivals: Array<ArrivalEntity>;
     direction_head_comment?: string;
+    is_ticket_received?: boolean;
 }
 
 export interface KitchenEntity {
@@ -68,8 +66,10 @@ export interface FeedTransactionEntity {
     meal_time: string;
     volunteer: number;
     is_vegan: boolean | null;
-    reason: string;
+    reason: string | null;
     kitchen: number;
+    group_badge?: number;
+    volunteer_name?: string;
 }
 
 export interface GroupBadgeEntity {
@@ -78,12 +78,15 @@ export interface GroupBadgeEntity {
     direction?: DirectionEntity;
     name: string;
     comment?: string;
+    /* Количество волонтеров в бейдже */
+    volunteer_count: number;
 }
 
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
     comment?: string;
+    mobile: boolean;
 }
 
 export interface DirectionEntity {
@@ -108,6 +111,7 @@ export interface CustomFieldEntity {
     name: string;
     type: string;
     comment: string;
+    mobile: boolean;
 }
 
 export interface VolCustomFieldValueEntity {
@@ -136,4 +140,37 @@ export interface ArrivalEntity {
     departure_date: string;
     departure_transport: string;
     status: string;
+}
+
+interface EngagementEntity {
+    id: string;
+    year: number;
+    direction: {
+        name: string;
+    };
+    role: {
+        name: string;
+    };
+}
+
+export interface PersonEntity {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    name?: string;
+    nickname?: string;
+    other_names?: string;
+    phone?: string;
+    email?: string;
+    photo?: string;
+    is_vegan?: boolean;
+    engagements: EngagementEntity[];
+}
+
+export interface WashEntity {
+    id: number;
+    created_at: string;
+    updated_at: string;
+    volunteer: VolEntity;
+    actor: VolEntity;
 }

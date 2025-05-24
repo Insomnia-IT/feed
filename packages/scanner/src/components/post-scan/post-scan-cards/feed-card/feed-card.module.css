@@ -1,29 +1,18 @@
-.feedCard {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-
-    height: 100%;
-    width: 100%;
-}
-
-.info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 32px;
-
-    .volInfo {
-        font-weight: 600;
-        font-size: 24px;
-    }
-}
-
 .detail {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    width: 100%;
+}
+
+.volInfoLarge {
+    font-size: 24px;
+    font-weight: bold;
+    padding: 16px 0;
+}
+
+.title {
+    text-align: center;
 }
 
 .bottomBLock {
@@ -32,6 +21,7 @@
     align-items: stretch;
     gap: 12px;
     width: 100%;
+    margin-top: auto;
 }
 
 .buttonsBlock {

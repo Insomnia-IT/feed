@@ -1,7 +1,6 @@
 :root {
     --header-h-desktop: 5.2rem;
     --header-h-mobile: 3rem;
-
     --z-index-popup: 10;
     --z-scan-overlay: -1;
     --z-scan-qrscan: -2;

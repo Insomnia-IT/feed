@@ -1,23 +1,22 @@
-import Backend from 'i18next-http-backend';
-// import detector from 'i18next-browser-languagedetector';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { isBrowser } from 'nookies/dist/utils';
+import Backend from 'i18next-http-backend';
 
-void i18n
-    .use(Backend)
-    // .use(detector)
+i18n.use(Backend)
     .use(initReactI18next)
     .init({
+        debug: true,
         lng: 'ru',
-        load: 'languageOnly',
-        supportedLngs: ['ru', 'en'],
-        backend: {
-            loadPath: isBrowser() ? '/locales/{{lng}}/{{ns}}.json' : '../public/locales/{{lng}}/{{ns}}.json'
-        },
+        fallbackLng: ['ru'],
+        ns: ['common'],
         defaultNS: 'common',
-        fallbackLng: ['en', 'de']
-    });
+        backend: {
+            loadPath: '/locales/{{lng}}/{{ns}}.json'
+        },
+        interpolation: {
+            escapeValue: false
+        }
+    })
+    .catch((err) => console.error('Ошибка инициализации i18n:', err));
 
-// eslint-disable-next-line import/no-default-export
 export default i18n;

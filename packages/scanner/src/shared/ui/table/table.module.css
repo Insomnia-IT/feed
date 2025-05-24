@@ -13,10 +13,14 @@
     font-size: 16px;
 }
 
-.tbody {
-    .row:nth-child(even) {
-        background-color: var(--c-light);
-    }
+.cell {
+    padding: 0 12px;
+    text-align: center;
+}
+
+.head {
+    padding: 0 12px;
+    text-align: center;
 }
 
 .row {
@@ -31,12 +35,8 @@
     }
 }
 
-.head {
-    padding: 0 12px;
-    text-align: center;
-}
-
-.cell {
-    padding: 0 12px;
-    text-align: center;
+.tbody {
+    .row:nth-child(even) {
+        background-color: var(--c-light);
+    }
 }

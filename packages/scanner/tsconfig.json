@@ -6,13 +6,7 @@
         "target": "es2020",
         "module": "esnext",
         "jsx": "react-jsx",
-        "lib": [
-            "es6",
-            "dom",
-            "es2021",
-            "dom.iterable",
-            "esnext"
-        ],
+        "lib": ["es6", "dom", "es2021", "dom.iterable", "esnext"],
         "downlevelIteration": true,
         "importHelpers": true,
         "declaration": true,
@@ -39,38 +33,12 @@
         "checkJs": false,
         "allowJs": true,
         "noEmit": true,
-        "rootDirs": [
-            "./",
-            "./src",
-            "../../node_modules"
-        ],
-        "typeRoots": [
-            "node_modules/@types",
-            "../../node_modules/@types"
-        ],
-        "paths": {
-            "~/*": [
-                "./src/*"
-            ]
-        }
+        "rootDirs": ["./", "./src", "../../node_modules"],
+        "typeRoots": ["node_modules/@types", "../../node_modules/@types"],
+        "paths": { "~/*": ["./src/*"] }
     },
-    "linterOptions": {
-        "exclude": [
-            "node_modules",
-            "**/*.js"
-        ]
-    },
-    "files": [
-        "env.d.ts",
-        "src/service-worker.d.ts"
-    ],
-    "exclude": [
-        "node_modules",
-        "**/*.js"
-    ],
-    "include": [
-        "src",
-        ".eslintrc",
-        "typings.d.ts"
-    ]
+    "linterOptions": { "exclude": ["node_modules", "**/*.js"] },
+    "files": ["env.d.ts", "src/service-worker.d.ts"],
+    "exclude": ["node_modules", "**/*.js"],
+    "include": ["src", ".eslintrc", "typings.d.ts"]
 }

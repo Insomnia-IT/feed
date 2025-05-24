@@ -1,10 +1,10 @@
-import { Edit, Form, Input, Select, useForm, useSelect } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
+import { FC } from 'react';
+import { Edit, useForm, useSelect } from '@refinedev/antd';
+import { Form, Input, Select } from 'antd';
+import type { IResourceComponentsProps } from '@refinedev/core';
 
-import 'react-mde/lib/styles/css/react-mde-all.css';
-
-import { Rules } from '~/components/form/rules';
-import type { DirectionEntity, DirectionTypeEntity, VolEntity } from '~/interfaces';
+import { Rules } from 'components/form/rules';
+import type { DirectionEntity, DirectionTypeEntity } from 'interfaces';
 
 export const DirectionEdit: FC<IResourceComponentsProps> = () => {
     const { formProps, saveButtonProps } = useForm<DirectionEntity>();
@@ -16,11 +16,11 @@ export const DirectionEdit: FC<IResourceComponentsProps> = () => {
 
     return (
         <Edit saveButtonProps={saveButtonProps}>
-            <Form {...formProps} layout='vertical'>
-                <Form.Item label='Название' name='name' rules={Rules.required}>
+            <Form {...formProps} layout="vertical">
+                <Form.Item label="Название" name="name" rules={Rules.required}>
                     <Input />
                 </Form.Item>
-                <Form.Item label='Тип' name='type' rules={Rules.required}>
+                <Form.Item label="Тип" name="type" rules={Rules.required}>
                     <Select {...typesSelectProps} />
                 </Form.Item>
             </Form>

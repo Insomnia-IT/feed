@@ -1,0 +1,73 @@
+.mobileList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    padding-bottom: 56px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 2px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 14px;
+    color: #555;
+}
+
+.label {
+    font-weight: 500;
+    color: #333;
+}
+
+.name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.comment {
+    font-size: 14px;
+    color: #777;
+}
+
+.comment .label {
+    display: inline-block;
+    margin-right: 4px;
+    color: #444;
+}
+
+.bold {
+    font-weight: 600;
+}
+
+.ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

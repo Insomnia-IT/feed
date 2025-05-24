@@ -1,12 +1,10 @@
-import type { ButtonProps, FormInstance } from '@pankod/refine-antd';
-import { Modal } from '@pankod/refine-antd';
+import { Modal, ButtonProps, FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
-import { dataProvider } from '~/dataProvider';
-import type { VolCustomFieldValueEntity } from '~/interfaces';
-import { isActivatedStatus } from '~/shared/lib';
+import { dataProvider } from 'dataProvider';
+import type { VolCustomFieldValueEntity } from 'interfaces';
+import { isActivatedStatus } from 'shared/lib';
 
 const useSaveConfirm = (
     form: FormInstance,
@@ -16,13 +14,11 @@ const useSaveConfirm = (
 ): {
     onClick: () => void;
     renderModal: () => JSX.Element;
-    onMutationSuccess: ({ data }: { data: any }) => Promise<void>;
+    onMutationSuccess: ({ data }: { data: { id: number } }) => Promise<void>;
 } => {
     const [showConfirmationModalReason, setShowConfirmationModalReason] = useState<null | 'is_active' | 'active_from'>(
         null
     );
-
-    const queryClient = useQueryClient();
 
     const handleOk = () => {
         setShowConfirmationModalReason(null);
@@ -35,11 +31,9 @@ const useSaveConfirm = (
 
     return {
         onClick: () => {
-            const arrivals = form.getFieldValue('updated_arrivals') ?? form.getFieldValue('arrivals') ?? [];
-            const activeFrom =
-                form.getFieldValue(['updated_arrivals', 0, 'arrival_date']) ??
-                form.getFieldValue(['arrivals', 0, 'arrival_date']);
-            if (!arrivals.some(({ status }) => isActivatedStatus(status))) {
+            const arrivals = form.getFieldValue('arrivals') ?? [];
+            const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
+            if (!arrivals.some(({ status }: { status: string }) => isActivatedStatus(status))) {
                 setShowConfirmationModalReason('is_active');
             } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
                 setShowConfirmationModalReason('active_from');
@@ -49,12 +43,21 @@ const useSaveConfirm = (
         },
         onMutationSuccess: async ({ data: { id } }) => {
             const updatedCustomFields = form.getFieldValue('updated_custom_fields');
+
             if (updatedCustomFields) {
                 for (const customFieldId in updatedCustomFields) {
                     const { data: customValues } = await dataProvider.getList<VolCustomFieldValueEntity>({
                         filters: [
-                            { field: 'volunteer', operator: 'eq', value: id },
-                            { field: 'custom_field', operator: 'eq', value: customFieldId }
+                            {
+                                field: 'volunteer',
+                                operator: 'eq',
+                                value: id
+                            },
+                            {
+                                field: 'custom_field',
+                                operator: 'eq',
+                                value: customFieldId
+                            }
                         ],
                         resource: 'volunteer-custom-field-values'
                     });
@@ -87,80 +90,21 @@ const useSaveConfirm = (
                     }
                 }
             }
-            const arrivals = form.getFieldValue('arrivals') ?? [];
-            const updatedArrivals = form.getFieldValue('updated_arrivals');
-            if (updatedArrivals) {
-                const serializeDate = (value) => {
-                    return dayjs(value).format('YYYY-MM-DD');
-                };
-                for (let i = 0; i < updatedArrivals.length; i++) {
-                    const updatedArrival = updatedArrivals[i];
-
-                    const arrival = arrivals.find((a) => a.id === updatedArrival.id);
-                    if (arrival) {
-                        if (JSON.stringify(updatedArrival) !== JSON.stringify(arrival)) {
-                            const serializeField = (obj, fieldName) => {
-                                if (fieldName === 'arrival_date' || fieldName === 'departure_date') {
-                                    return serializeDate(obj[fieldName]);
-                                }
-                                return obj[fieldName];
-                            };
-                            await dataProvider.update({
-                                resource: 'arrivals',
-                                id: updatedArrival.id,
-                                variables: Object.keys(updatedArrival).reduce(
-                                    (acc, name) => ({
-                                        ...acc,
-                                        [name]:
-                                            updatedArrival[name] !== arrival[name]
-                                                ? serializeField(updatedArrival, name)
-                                                : undefined
-                                    }),
-                                    {}
-                                )
-                            });
-                        }
-                    } else {
-                        await dataProvider.create({
-                            resource: 'arrivals',
-                            variables: {
-                                ...updatedArrival,
-                                arrival_date: serializeDate(updatedArrival.arrival_date),
-                                departure_date: serializeDate(updatedArrival.departure_date),
-                                volunteer: id
-                            }
-                        });
-                    }
-                }
-
-                for (let i = 0; i < arrivals.length; i++) {
-                    const arrivalId = arrivals[i].id;
-                    const upadatedArrival = updatedArrivals.find((a) => a.id === arrivalId);
-                    if (!upadatedArrival) {
-                        await dataProvider.deleteOne({
-                            resource: 'arrivals',
-                            id: arrivalId
-                        });
-                    }
-                }
-
-                queryClient.clear();
-            }
         },
         renderModal: () => {
             return (
                 <Modal
-                    title='Сохранение'
+                    title="Сохранение"
                     open={showConfirmationModalReason !== null}
                     onOk={handleOk}
                     onCancel={handleCancel}
-                    okText='Сохранить'
+                    okText="Сохранить"
                 >
                     {showConfirmationModalReason === 'is_active' && (
                         <>
                             <p>Пользователь не активирован. Вы уверены, что хотите продолжить сохранение?</p>
                             <p>Неактивированный пользователь не будет получать питание.</p>
-                            <p>Для активанции выставите статус заезда в &quot;Заехал на поле&quot;</p>
+                            <p>Для активации выставите статус заезда в &quot;Заехал на поле&quot;</p>
                         </>
                     )}
                     {showConfirmationModalReason === 'active_from' && (

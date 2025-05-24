@@ -1,26 +1,33 @@
-import type { LineConfig } from '@ant-design/plots';
-import dynamic from 'next/dynamic';
+import { FC } from 'react';
+import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Brush } from 'recharts';
 
-import type { StatisticType } from '../types';
-const Line = dynamic(() => import('@ant-design/plots').then(({ Line }) => Line), { ssr: false });
-
-/** Данные для линейного графика */
-interface ILinearChartData {
-    date: string;
-    value: number;
-    type: StatisticType;
+interface IProps {
+    data: {
+        date: string;
+        plan: number;
+        fact: number;
+        predict: number;
+    }[];
 }
 
-/**Настройки для линейчатого графика*/
-const lineConfig: Omit<LineConfig, 'data'> = {
-    xField: 'date',
-    yField: 'value',
-    seriesField: 'type',
-    yAxis: {
-        tickInterval: 5
-    }
+const LinearChart: FC<IProps> = ({ data }) => {
+    return (
+        <div style={{ width: '100%', height: 600, marginTop: 40 }}>
+            <ResponsiveContainer>
+                <LineChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="plan" stroke="#222222" name="На поле" />
+                    <Line type="monotone" dataKey="fact" stroke="#82ca9d" name="Факт" />
+                    <Line type="monotone" dataKey="predict" stroke="#8884d8" name="Прогноз" />
+                    <Brush dataKey="date" height={30} stroke="#8884d8" />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
 };
-export default function LinearChart(props: { linearChartData: Array<ILinearChartData> }) {
-    return <Line data={props.linearChartData} {...lineConfig} />;
-}
-export type { ILinearChartData };
+
+export default LinearChart;

@@ -9,7 +9,6 @@ import css from './error-card.module.css';
 export const ErrorCard: FC<{
     title?: string;
     msg: string;
-    doNotFeed?: (reason: string) => void;
     close: () => void;
 }> = ({ close, msg = 'Бейдж не найден', title = 'Ошибка сканирования' }) => {
     return (

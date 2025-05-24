@@ -1,11 +1,21 @@
+.antLayoutSider {
+    position: relative;
+}
+
+.antLayoutSiderMobile {
+    position: fixed;
+    height: 100vh;
+    z-index: 3;
+}
+
 .mobileSider {
     position: fixed;
     width: 100%;
     bottom: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    z-index: 20000000;
-    background-color: #FFF;
+    display: flex;
+    justify-content: space-around;
+    z-index: 4;
+    background-color: #fff;
 }
 
 .siderButton {
@@ -17,7 +27,7 @@
     border: none;
     outline: none;
     background-color: transparent;
-    color: #8D959E;
+    color: #8d959e;
     font-weight: 400;
 }
 

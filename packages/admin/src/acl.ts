@@ -1,6 +1,7 @@
+import { AccessControlProvider } from '@refinedev/core';
 import { AccessControl } from 'accesscontrol';
 
-import { AppRoles, getUserData } from '~/auth';
+import { AppRoles, getUserData } from 'auth';
 
 export const ac = new AccessControl();
 ac
@@ -12,6 +13,7 @@ ac
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
+    .read(['wash'])
     .create(['volunteers'])
     .read(['directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
     // Старший смены
@@ -25,14 +27,18 @@ ac
     .extend(AppRoles.SENIOR)
     .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction'])
     .update(['group-badges', 'volunteer-custom-fields'])
-    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers']);
+    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers'])
+    .create('wash');
 
-export const ACL = {
-    can: async ({ action, resource }) => {
+ac.grant(AppRoles.SOVA).read('wash').create('wash');
+
+export const ACL: AccessControlProvider = {
+    can: async ({ action, resource }: { action: string; resource?: string }) => {
         let can = false;
-        const user = await getUserData(null, true);
+        const user = await getUserData(true);
         if (user) {
             const { roles } = user;
+
             roles.forEach((role: string) => {
                 switch (action) {
                     case 'list':
@@ -50,9 +56,13 @@ export const ACL = {
                         break;
                     case 'full_list':
                     case 'badge_edit':
+                    case 'bulk_edit': // массовые изменения
                         can = role !== AppRoles.DIRECTION_HEAD;
                         break;
+                    case 'feed_type_edit':
                     case 'unban':
+                        can = role !== AppRoles.CAT;
+                        break;
                     case 'role_edit':
                         can = role === AppRoles.ADMIN || role == AppRoles.SENIOR;
                         break;

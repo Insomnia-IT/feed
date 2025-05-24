@@ -2,6 +2,12 @@
 
 # IDEs
 .devcontainer
+.vscode/*
+!.vscode/settings.json
+
+.nx
+.idea
+/.idea
 
 # dependencies
 /node_modules
@@ -34,7 +40,7 @@ yarn-error.log*
 **/*.db-wal
 **/*.db-shm
 
-/db/*.sqlite3
+/db
 
 .env
 .next

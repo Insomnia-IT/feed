@@ -6,7 +6,7 @@ from feeder.models import Volunteer, Arrival
 
 class VolunteerAdmin(admin.ModelAdmin):
     list_display = (
-        "uuid", "is_active", "is_deleted", "created_at", "updated_at", "first_name", "last_name", "name"
+        "uuid", "is_deleted", "created_at", "updated_at", "first_name", "last_name", "name"
     )
     search_fields = (
         "uuid", "first_name", "last_name", "name"
@@ -14,17 +14,16 @@ class VolunteerAdmin(admin.ModelAdmin):
     readonly_fields = (
         "uuid", "deleted_at", "name", "first_name", "last_name", "gender", "phone", "is_vegan",
         "feed_type", "badge_number", "printing_batch", "position", "photo",
-        "person", "comment", "notion_id", "directions"
+        "person", "comment", "directions"
     )
     fieldsets = (
         (None, {"fields": ("uuid", "name", "first_name", "last_name", "person", "gender", "photo")}),
-        ("Status", {"fields": ("is_active", "is_blocked",)}),
+        ("Status", {"fields": ("is_blocked",)}),
         ("Contacts", {"fields": ("email", "phone",)}),
-        (" ", {"fields": ("parent", "ref_to", "comment")}),
-        (" ", {"fields": ("directions", "access_role", "departments", "main_role", "position", )}),
-        (" ", {"fields": ("qr", "badge_number", "printing_batch", "group_badge", "color_type", "notion_id")}),
-        ("Dates", {"fields": ("active_from", "active_to", "arrival_date", "departure_date")}),
-        ("Kitchen", {"fields": ("kitchen", "feed_type", "daily_eats", "balance", "is_vegan", )}),
+        (" ", {"fields": ("parent", "comment")}),
+        (" ", {"fields": ("directions", "access_role", "main_role", "position", )}),
+        (" ", {"fields": ("qr", "badge_number", "printing_batch", "group_badge")}),
+        ("Kitchen", {"fields": ("kitchen", "feed_type", "is_vegan", )}),
     )
 
     def is_deleted(self, obj):

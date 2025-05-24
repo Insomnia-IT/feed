@@ -3,10 +3,12 @@
 import os
 import sys
 
+from config.otel_config import configure_opentelemetry
 
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    configure_opentelemetry()
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

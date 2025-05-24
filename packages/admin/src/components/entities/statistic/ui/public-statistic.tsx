@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, DatePicker, Divider, Form, Radio, Space } from 'antd';
-import type { RadioChangeEvent } from '@pankod/refine-antd';
+import { Button, DatePicker, Form, Radio, RadioChangeEvent, Space, Tooltip } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-import { NEW_API_URL } from '~/const';
-import { dayjsExtended as dayjsExt, formDateFormat } from '~/shared/lib';
+import { NEW_API_URL } from 'const';
+import { dayjsExtended as dayjsExt, formDateFormat } from 'shared/lib';
 
 import type {
+    BooleanExtended,
     EaterTypeExtended,
     IStatisticApi,
     IStatisticResponce,
     KitchenIdExtended,
     MealTime,
-    StatisticType
+    PredictionAlg
 } from '../types';
 import {
     convertResponceToData,
@@ -23,9 +24,10 @@ import {
 
 import type { ITableStatData } from './table-stats';
 import TableStats from './table-stats';
-import type { ILinearChartData } from './linear-chart';
 import LinearChart from './linear-chart';
-import { ColumnChart, IColumnChartData } from './column-chart';
+import ColumnChart from './column-chart';
+
+import styles from './public-statistic.module.css';
 
 type StatisticViewType = 'date' | 'range';
 
@@ -37,6 +39,7 @@ function convertDateToStringForApi(date: dayjsExt.Dayjs | null | undefined) {
     }
     return date.format('YYYY-MM-DD');
 }
+
 function sordResponceByDate(a: IStatisticApi, b: IStatisticApi): 1 | -1 | 0 {
     if (dayjsExt(a.date).isAfter(b.date)) return 1;
     else return -1;
@@ -53,7 +56,21 @@ function PublicStatistic() {
 
     // Фильтр кухни
     const [kitchenId, setKitchenId] = useState<KitchenIdExtended>('all');
+    const [anonymous, setAnonymous] = useState<BooleanExtended>('all');
+    const [groupBadge, setGroupBadge] = useState<BooleanExtended>('all');
+    const [predictionAlg, setPredictionAlg] = useState<PredictionAlg>('1');
+    const [applyHistory, setApplyHistory] = useState<BooleanExtended>('false');
+
     const changeKitchenId = (e: RadioChangeEvent) => setKitchenId(e.target?.value);
+    const changeAnonymous = (e: RadioChangeEvent) => setAnonymous(e.target?.value);
+    const changeGroupBadge = (e: RadioChangeEvent) => setGroupBadge(e.target?.value);
+    const changePredictionAlg = (e: RadioChangeEvent) => setPredictionAlg(e.target?.value);
+    const changeApplyHistory = (e: RadioChangeEvent) => setApplyHistory(e.target?.value);
+
+    const [selectedMealTime, setSelectedMealTime] = useState<MealTime>('breakfast');
+    const onChangeMealTime = (e: RadioChangeEvent) => {
+        setSelectedMealTime(e.target.value as MealTime);
+    };
 
     // Данные для дальнейшей обработки и отображения
     const [responce, setResponce] = useState<IStatisticResponce>([]);
@@ -61,7 +78,7 @@ function PublicStatistic() {
 
     // Для выбора даты
     const [date, setDate] = useState<dayjsExt.Dayjs | null>(dayjsExt().startOf('date'));
-    const changeDate = (value: dayjsExt.Dayjs | null, dateString: string) => {
+    const changeDate = (value: dayjsExt.Dayjs | null) => {
         if (!value) {
             return setDate(dayjsExt());
         }
@@ -99,29 +116,24 @@ function PublicStatistic() {
         statsUrl = `${NEW_API_URL}/statistics/?date_from=${startDatePeriodStr}&date_to=${endDatePeriodStr}`;
     }
 
-    const loadStats = async (url) => {
+    const loadStats = async (
+        url: string,
+        anonymous: BooleanExtended,
+        groupBadge: BooleanExtended,
+        predictionAlg: PredictionAlg,
+        applyHistory: BooleanExtended
+    ) => {
         setLoading(true);
         try {
-            const res = await axios.get(url);
-            const sortedResponce = res.data.sort(sordResponceByDate);
-
-            const type = 'plan' as StatisticType;
-            for (const date of new Set((sortedResponce as Array<{ date: string }>).map((stat) => stat.date))) {
-                for (const meal_time of new Set(
-                    (sortedResponce as Array<{ meal_time: Omit<MealTime, 'total'> }>).map((stat) => stat.meal_time)
-                )) {
-                    console.log(
-                        `stat: type - ${type}, date - ${date}, meal_time - ${meal_time}:`,
-                        (
-                            sortedResponce as Array<{
-                                type: StatisticType;
-                                meal_time: Omit<MealTime, 'total'>;
-                                date: string;
-                            }>
-                        ).filter((stat) => stat.type === type && stat.date === date && stat.meal_time === meal_time)
-                    );
+            const res = await axios.get(url, {
+                params: {
+                    anonymous: anonymous === 'all' ? undefined : anonymous,
+                    group_badge: groupBadge === 'all' ? undefined : groupBadge,
+                    prediction_alg: predictionAlg,
+                    apply_history: applyHistory
                 }
-            }
+            });
+            const sortedResponce = res.data.sort(sordResponceByDate);
             setResponce(sortedResponce);
         } catch (error) {
             console.log('stat, plan:', `logging failed - ${error}`);
@@ -131,45 +143,29 @@ function PublicStatistic() {
     };
 
     useEffect(() => {
-        void loadStats(statsUrl);
-    }, [statsUrl]);
+        void loadStats(statsUrl, anonymous, groupBadge, predictionAlg, applyHistory);
+    }, [statsUrl, anonymous, groupBadge, predictionAlg, applyHistory]);
     // Преобразование данных с сервера для таблицы и графиков
     const dataForTable: Array<ITableStatData> = useMemo(
         () => handleDataForTable(data, dateStr, typeOfEater, kitchenId),
-        [responce, typeOfEater, kitchenId]
+        [data, dateStr, typeOfEater, kitchenId]
     );
-    const { dataForAnnotation, dataForColumnChart } = useMemo(
-        () => handleDataForColumnChart(data, typeOfEater, kitchenId),
-        [responce, typeOfEater, kitchenId]
+    const dataForColumnChart = useMemo(
+        () => handleDataForColumnChart(data, typeOfEater, kitchenId, selectedMealTime),
+        [data, typeOfEater, kitchenId, selectedMealTime]
     );
-    const dataForLinearChart: Array<ILinearChartData> = useMemo(
-        () => handleDataForLinearChart(data, typeOfEater, kitchenId),
-        [responce, typeOfEater, kitchenId]
+    const dataForLinearChart = useMemo(
+        () => handleDataForLinearChart(data, typeOfEater, kitchenId, selectedMealTime),
+        [data, typeOfEater, kitchenId, selectedMealTime]
     );
 
     return (
-        <>
-            <Form layout='inline'>
+        <Form layout="vertical" className={styles.layout}>
+            <Form layout="inline">
                 <Form.Item>
                     <Radio.Group value={statisticViewType} onChange={changeStatisticViewType}>
-                        <Radio.Button value='date'>На дату</Radio.Button>
-                        <Radio.Button value='range'>Диапазон дат</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-            </Form>
-            <Form layout='inline'>
-                <Form.Item label='Тип людей по питанию'>
-                    <Radio.Group value={typeOfEater} onChange={changeTypeOfEater}>
-                        <Radio.Button value='all'>Все</Radio.Button>
-                        <Radio.Button value='meatEater'>Мясоеды</Radio.Button>
-                        <Radio.Button value='vegan'>Вегетерианцы</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-                <Form.Item label='Кухня'>
-                    <Radio.Group value={kitchenId} onChange={changeKitchenId}>
-                        <Radio.Button value='all'>Все</Radio.Button>
-                        <Radio.Button value='first'>Первая</Radio.Button>
-                        <Radio.Button value='second'>Вторая</Radio.Button>
+                        <Radio.Button value="date">На дату</Radio.Button>
+                        <Radio.Button value="range">Диапазон дат</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item>
@@ -187,16 +183,109 @@ function PublicStatistic() {
                     )}
                 </Form.Item>
             </Form>
+            <Form layout="inline">
+                <Form.Item label="Тип людей по питанию">
+                    <Radio.Group value={typeOfEater} onChange={changeTypeOfEater}>
+                        <Radio.Button value="all">Все</Radio.Button>
+                        <Radio.Button value="meatEater">Мясоеды</Radio.Button>
+                        <Radio.Button value="vegan">Вегетарианцы</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item label="Кухня">
+                    <Radio.Group value={kitchenId} onChange={changeKitchenId}>
+                        <Radio.Button value="all">Все</Radio.Button>
+                        <Radio.Button value="first">Первая</Radio.Button>
+                        <Radio.Button value="second">Вторая</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item label="Аноним">
+                    <Radio.Group value={anonymous} onChange={changeAnonymous}>
+                        <Radio.Button value="all">Все</Radio.Button>
+                        <Radio.Button value="true">Да</Radio.Button>
+                        <Radio.Button value="false">Нет</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item label="Групповой бейдж">
+                    <Radio.Group value={groupBadge} onChange={changeGroupBadge}>
+                        <Radio.Button value="all">Все</Radio.Button>
+                        <Radio.Button value="true">Да</Radio.Button>
+                        <Radio.Button value="false">Нет</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item label="Алгоритм прогноза">
+                    <Radio.Group value={predictionAlg} onChange={changePredictionAlg}>
+                        <Radio.Button value="1">
+                            Первый{' '}
+                            <Tooltip
+                                title={() => (
+                                    <>
+                                        ФАКТ(вчера или позавчера) / SQRT(НА_ПОЛЕ(вчера или позавчера)) *
+                                        SQRT(НА_ПОЛЕ(сегодня))
+                                        <br />
+                                        выбирается позавчера, если НА_ПОЛЕ растет, а ФАКТ падает
+                                    </>
+                                )}
+                            >
+                                <InfoCircleOutlined />
+                            </Tooltip>
+                        </Radio.Button>
+                        <Radio.Button value="2">
+                            Второй{' '}
+                            <Tooltip
+                                title={() => (
+                                    <>
+                                        ФАКТ(вчера или позавчера) / SQRT(НА_ПОЛЕ(вчера или позавчера)) *
+                                        SQRT(НА_ПОЛЕ(сегодня))
+                                        <br />
+                                        выбирается позавчера, если вчера была сильная просадка
+                                    </>
+                                )}
+                            >
+                                <InfoCircleOutlined />
+                            </Tooltip>
+                        </Radio.Button>
+                        <Radio.Button value="3">
+                            Третий{' '}
+                            <Tooltip
+                                title={() => (
+                                    <>
+                                        ФАКТ(вчера) / НА_ПОЛЕ(вчера) * НА_ПОЛЕ(сегодня)
+                                        <br />
+                                        формула прошлого года
+                                    </>
+                                )}
+                            >
+                                <InfoCircleOutlined />
+                            </Tooltip>
+                        </Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+                <Form.Item label="Применить историю">
+                    <Radio.Group value={applyHistory} onChange={changeApplyHistory}>
+                        <Radio.Button value="true">Да</Radio.Button>
+                        <Radio.Button value="false">Нет</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+            </Form>
+            {statisticViewType === 'date' && <TableStats data={dataForTable} loading={loading} />}
+            <Form layout="inline" style={{ marginBottom: 16 }}>
+                <Form.Item label="Выберите приём пищи:">
+                    <Radio.Group value={selectedMealTime} onChange={onChangeMealTime}>
+                        <Radio.Button value="breakfast">Завтрак</Radio.Button>
+                        <Radio.Button value="lunch">Обед</Radio.Button>
+                        <Radio.Button value="dinner">Ужин</Radio.Button>
+                        <Radio.Button value="night">Дожор</Radio.Button>
+                    </Radio.Group>
+                </Form.Item>
+            </Form>
+
             {statisticViewType === 'date' ? (
-                <>
-                    <TableStats data={dataForTable} loading={loading} />
-                    <Divider />
-                    <ColumnChart columnDataArr={dataForColumnChart} dataForAnnotation={dataForAnnotation} />
-                </>
+                <ColumnChart data={dataForColumnChart} mealTime={selectedMealTime} />
             ) : (
-                <LinearChart linearChartData={dataForLinearChart} />
+                <LinearChart data={dataForLinearChart} />
             )}
-        </>
+        </Form>
     );
 }
+
 export { PublicStatistic };

@@ -1,16 +1,15 @@
-import { Show, Typography } from '@pankod/refine-antd';
-import type { IResourceComponentsProps } from '@pankod/refine-core';
-import { useShow } from '@pankod/refine-core';
-import dynamic from 'next/dynamic';
+import { FC } from 'react';
+import { Typography } from 'antd';
+import { Show } from '@refinedev/antd';
+import { useShow, IResourceComponentsProps } from '@refinedev/core';
+import { TextEditor } from 'components/controls/text-editor';
 
-import type { VolunteerCustomFieldEntity } from '~/interfaces';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import type { VolunteerCustomFieldEntity } from 'interfaces';
 
 const { Text, Title } = Typography;
 
 export const VolunteerCustomFieldShow: FC<IResourceComponentsProps> = () => {
-    const { queryResult, showId } = useShow<VolunteerCustomFieldEntity>();
+    const { queryResult } = useShow<VolunteerCustomFieldEntity>();
     const { data, isLoading } = queryResult;
     const record = data?.data;
 
@@ -18,9 +17,8 @@ export const VolunteerCustomFieldShow: FC<IResourceComponentsProps> = () => {
         <Show isLoading={isLoading}>
             <Title level={5}>Название</Title>
             <Text>{record?.name}</Text>
-
             <Title level={5}>Комментарий</Title>
-            <ReactQuill theme='bubble' readOnly value={record?.comment} />
+            <TextEditor theme="bubble" readOnly value={record?.comment} />
         </Show>
     );
 };
