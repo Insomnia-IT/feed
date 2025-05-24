@@ -16,6 +16,7 @@ services:
     restart: always
     environment:
       OTEL_ENDPOINT: http://jaeger:4318/v1/traces
+      SKIP_BACK_SYNC: ${SKIP_BACK_SYNC:-False}
     volumes:
       - ${DB_DIR:-./db}:/app/db
     # depends_on:

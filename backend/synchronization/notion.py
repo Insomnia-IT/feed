@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from urllib.parse import urljoin
 import json
+import os
 
 import requests
 from django.conf import settings
@@ -17,7 +18,6 @@ from history.serializers import HistorySyncSerializer
 from synchronization.models import SynchronizationSystemActions as SyncModel
 
 logger = logging.getLogger(__name__)
-
 
 class NotionSync:
     all_data = False
@@ -149,5 +149,8 @@ class NotionSync:
 
     def main(self, all_data=False):
         self.all_data = all_data
-        self.sync_to_notion()
+
+        if not settings.SKIP_BACK_SYNC:
+            self.sync_to_notion()
+
         self.sync_from_notion()
