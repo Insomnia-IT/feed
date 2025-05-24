@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from config.admin import admin_site
-from feeder.models import Volunteer, Arrival
+from feeder.models import Volunteer, Arrival, Person
 
 
 class VolunteerAdmin(admin.ModelAdmin):
@@ -35,6 +35,13 @@ class VolunteerAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+class PersonAdmin(admin.ModelAdmin):
+    list_display = (
+        "id", "first_name", "last_name", "name", "nickname", "other_names", "telegram"
+    )
+    search_fields = (
+        "id", "first_name", "last_name", "name", "nickname", "other_names", "telegram"
+    )
 
 class ArrivalAdmin(admin.ModelAdmin):
     list_display = (
@@ -57,3 +64,4 @@ class ArrivalAdmin(admin.ModelAdmin):
 
 admin_site.register(Volunteer, VolunteerAdmin)
 admin_site.register(Arrival, ArrivalAdmin)
+admin_site.register(Person, PersonAdmin)
