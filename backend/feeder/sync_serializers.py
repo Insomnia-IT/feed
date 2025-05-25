@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
                            Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen)
+from feeder.utils import download_and_save_photo
+
 from history.models import History
 
 from django.conf import settings
@@ -136,6 +138,8 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     def to_internal_value(self, data):
         if data.get("batch") == "None":
             data["batch"] = None
+
+        self._photo_url = data.pop("photo", None)
         return super().to_internal_value(data)
 
     def validate(self, attrs):
@@ -154,6 +158,17 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         if not kitchen:
             attrs["kitchen"] = Kitchen.objects.get(name="Кухня №1")
         return super().validate(attrs)
+    
+    def save(self, **kwargs):
+        instance = super().save(**kwargs)
+
+        if hasattr(self, "_photo_url") and self._photo_url:
+            photo_path = download_and_save_photo(self._photo_url, instance.id)
+            if photo_path and instance.photo != photo_path:
+                instance.photo = photo_path
+                instance.save(update_fields=["photo"])
+
+        return instance
 
 
 class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):

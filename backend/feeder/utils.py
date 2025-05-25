@@ -2,8 +2,11 @@ import arrow
 import requests
 import math
 import time
+import os
 
 from enum import Enum
+
+from urllib.parse import urlparse
 
 from django.db import transaction
 from django.conf import settings
@@ -24,6 +27,10 @@ DAY_START_HOUR = 7
 
 STAT_DATE_FORMAT = 'YYYY-MM-DD'
 TZ = 'Europe/Moscow'
+
+ALLOWED_HOSTS = {"grist.insomniafest.ru"}
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
+ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png"}
 
 class StatisticType(Enum):
     PREDICT = 'predict'
@@ -316,3 +323,40 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
     second_date_str = stat_date_from.shift(days=+1).floor('day').format(STAT_DATE_FORMAT)
     # filter two first days
     return filter(lambda item: item['date'] != first_date_str and item['date'] != second_date_str, stat.values()) 
+
+def download_and_save_photo(photo_url: str, volunteer_id: int) -> str | None:
+    try:
+        parsed = urlparse(photo_url)
+        if parsed.scheme not in {"http", "https"} or parsed.hostname not in ALLOWED_HOSTS:
+            print(f"[PHOTO SYNC] Недопустимый адрес: {photo_url}")
+            return None
+        
+        response = requests.get(photo_url, timeout=10, stream=True)
+        response.raise_for_status()
+
+        content_type = response.headers.get("Content-Type", "")
+        print(content_type)
+        if content_type not in ALLOWED_CONTENT_TYPES:
+            print(f"[PHOTO SYNC] Недопустимый тип файла: {content_type}")
+            return None
+
+        content_length = int(response.headers.get("Content-Length", 0))
+        print(content_length)
+        if content_length > MAX_IMAGE_SIZE:
+            print(f"[PHOTO SYNC] Слишком большой файл: {content_length} байт")
+            return None
+
+        filename = f"{volunteer_id}.jpg"
+        folder = settings.PHOTO_STORAGE_PATH
+        os.makedirs(folder, exist_ok=True)
+        filepath = os.path.join(folder, filename)
+        print(filepath)
+
+        with open(filepath, 'wb') as f:
+            for chunk in response.iter_content(8192):
+                f.write(chunk)
+
+        return f"/files/{filename}"
+    except Exception as e:
+        print(f"[PHOTO SYNC ERROR] Volunteer {volunteer_id}: {e}")
+        return None
