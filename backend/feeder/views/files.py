@@ -15,7 +15,3 @@ class FileServeView(APIView):
         if not os.path.exists(filepath):
             return Response({"error": f"File does not exist"}, status=status.HTTP_404_NOT_FOUND)
         return FileResponse(open(filepath, 'rb'), content_type='image/jpeg')
-    
-
-
-
