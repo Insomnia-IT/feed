@@ -335,13 +335,11 @@ def download_and_save_photo(photo_url: str, volunteer_id: int) -> str | None:
         response.raise_for_status()
 
         content_type = response.headers.get("Content-Type", "")
-        print(content_type)
         if content_type not in ALLOWED_CONTENT_TYPES:
             print(f"[PHOTO SYNC] Недопустимый тип файла: {content_type}")
             return None
 
         content_length = int(response.headers.get("Content-Length", 0))
-        print(content_length)
         if content_length > MAX_IMAGE_SIZE:
             print(f"[PHOTO SYNC] Слишком большой файл: {content_length} байт")
             return None
@@ -350,7 +348,6 @@ def download_and_save_photo(photo_url: str, volunteer_id: int) -> str | None:
         folder = settings.PHOTO_STORAGE_PATH
         os.makedirs(folder, exist_ok=True)
         filepath = os.path.join(folder, filename)
-        print(filepath)
 
         with open(filepath, 'wb') as f:
             for chunk in response.iter_content(8192):
