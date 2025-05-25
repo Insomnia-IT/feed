@@ -108,5 +108,16 @@
       "visible": true,
       "description": "подключился к работе прямо на месте"
     }
+  },
+  {
+    "model": "feeder.status",
+    "pk": "UNDEFINED",
+    "fields": {
+      "created_at": "2023-05-03T19:12:10.851Z",
+      "updated_at": "2023-05-03T19:12:10.851Z",
+      "name": "нет бейджа",
+      "visible": false,
+      "description": "бейдж не оформлен, нельзя передать"
+    }
   }
 ]
