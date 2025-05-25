@@ -1,12 +1,9 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { FormInstance } from 'antd';
 
 const VOLUNTEER_EDIT_PATH = '/volunteers/edit/';
 
 export const useNavigationGuard = (onNavigationAttempt: (path: string) => void, form: FormInstance) => {
-    const navigate = useNavigate();
-
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
