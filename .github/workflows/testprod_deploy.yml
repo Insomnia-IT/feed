@@ -9,6 +9,7 @@ jobs:
     env:
       IMAGE_NAME_BASENAME: feed-admin
       DB_DIR: /var/feed_db
+      SKIP_BACK_SYNC: True
     steps:
     - uses: actions/checkout@v3
 # DB
