@@ -209,6 +209,8 @@ SKIP_BACK_SYNC = os.environ.get("SKIP_BACK_SYNC", "") == "True"
 
 IS_SYNC_TO_NOTION_ON = os.environ.get("IS_SYNC_TO_NOTION_ON", "False")
 
+PHOTO_STORAGE_PATH = BASE_DIR / os.getenv("PHOTO_STORAGE_PATH", "media/files")
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
