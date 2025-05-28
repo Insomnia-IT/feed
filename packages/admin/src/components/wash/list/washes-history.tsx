@@ -9,7 +9,7 @@ import type { Dayjs } from 'dayjs';
 
 export const WashesHistory = () => {
     const navigate = useNavigate();
-    const { tableProps } = useTable<WashEntity>({ resource: 'washes' });
+    const { tableProps, setCurrent, setPageSize } = useTable<WashEntity>({ resource: 'washes' });
 
     const columns = [
         {
@@ -56,7 +56,16 @@ export const WashesHistory = () => {
                 </Col>
             </Row>
             <Table<WashToShow>
-                pagination={tableProps.pagination}
+                pagination={{
+                    ...tableProps.pagination,
+                    onChange: (page, size) => {
+                        setCurrent(page);
+
+                        if (typeof size === 'number') {
+                            setPageSize(size);
+                        }
+                    }
+                }}
                 dataSource={tableProps.dataSource?.map(transformWashesForShow) ?? []}
                 columns={columns}
                 rowKey="id"
