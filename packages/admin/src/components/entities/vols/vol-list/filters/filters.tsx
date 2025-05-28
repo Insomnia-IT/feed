@@ -78,8 +78,6 @@ export const Filters: FC<{
     const onFilterValueChange = (fieldName: string, filterListItem: FilterListItem, single = false): void => {
         const filterItem = activeFilters.find((f) => f.name === fieldName);
 
-        console.log(filterItem, fieldName, filterListItem, single);
-
         if (filterItem && Array.isArray(filterItem.value)) {
             let newValues = single ? [filterListItem.value] : [...filterItem.value, filterListItem.value];
 

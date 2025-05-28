@@ -36,13 +36,13 @@ export const FeedTransactionList: FC = () => {
     const { filterFields, visibleFilters, setVisibleFilters } = useTransactionsFilters();
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
 
-    const { searchFormProps, tableProps, filters, setFilters, setCurrent, setPageSize } = useTable<
+    const { searchFormProps, tableProps, filters, setCurrent, setPageSize } = useTable<
         FeedTransactionEntity,
         HttpError,
         { search?: string; date?: [string, string] }
     >({
+        defaultSetFilterBehavior: 'replace',
         onSearch: (values: { search?: string; date?: [string, string] }) => {
-            setFilters([], 'replace');
             const newFilters: Array<CrudFilter> = [];
 
             newFilters.push({
@@ -299,7 +299,8 @@ export const FeedTransactionList: FC = () => {
                     setActiveFilters={(filters) => {
                         setActiveFilters(filters);
 
-                        searchFormProps?.form?.submit();
+                        // Для более отзывчивого поведения
+                        setTimeout(() => searchFormProps?.form?.submit());
                     }}
                 />
             </Form>
