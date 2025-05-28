@@ -27,7 +27,7 @@ jobs:
       run: docker rm -f $IMAGE_NAME_BASENAME
     - name: run admin
       run: |
-        DB_DIR=${DB_DIR} SKIP_BACK_SYNC=True PORT=8888 docker compose up -d --force-recreate --remove-orphans
+        DB_DIR=${DB_DIR} SKIP_BACK_SYNC=True PORT=8888 docker compose up -d --remove-orphans
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f
