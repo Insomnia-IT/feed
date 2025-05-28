@@ -31,6 +31,9 @@ export const Filters: FC<{
         const visible = visibleFilters.includes(name);
         if (visible) {
             setVisibleFilters(visibleFilters.filter((currentName: string): boolean => currentName !== name));
+
+            // При скрытии фильтра, очищаем его значение
+            setActiveFilters(activeFilters.filter((filterItem: FilterItem): boolean => filterItem.name !== name));
         } else {
             setVisibleFilters([...visibleFilters, name]);
         }
@@ -74,6 +77,8 @@ export const Filters: FC<{
 
     const onFilterValueChange = (fieldName: string, filterListItem: FilterListItem, single = false): void => {
         const filterItem = activeFilters.find((f) => f.name === fieldName);
+
+        console.log(filterItem, fieldName, filterListItem, single);
 
         if (filterItem && Array.isArray(filterItem.value)) {
             let newValues = single ? [filterListItem.value] : [...filterItem.value, filterListItem.value];
