@@ -68,8 +68,13 @@ export interface FeedTransactionEntity {
     is_vegan: boolean | null;
     reason: string | null;
     kitchen: number;
+    kitchen_name?: string | null;
     group_badge?: number;
     volunteer_name?: string;
+    volunteer_first_name?: string | null;
+    volunteer_last_name?: string | null;
+    volunteer_directions?: Array<string> | null;
+    group_badge_name?: string | null;
 }
 
 export interface GroupBadgeEntity {

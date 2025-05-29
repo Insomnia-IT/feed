@@ -31,6 +31,9 @@ export const Filters: FC<{
         const visible = visibleFilters.includes(name);
         if (visible) {
             setVisibleFilters(visibleFilters.filter((currentName: string): boolean => currentName !== name));
+
+            // При скрытии фильтра, очищаем его значение
+            setActiveFilters(activeFilters.filter((filterItem: FilterItem): boolean => filterItem.name !== name));
         } else {
             setVisibleFilters([...visibleFilters, name]);
         }

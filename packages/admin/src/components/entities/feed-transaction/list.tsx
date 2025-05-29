@@ -1,7 +1,7 @@
 import { DeleteButton, List, useTable } from '@refinedev/antd';
 import { Button, DatePicker, Form, Input, Space, Table, Tag } from 'antd';
-import { CrudFilter, HttpError, useList } from '@refinedev/core';
-import { FC, ReactNode, useCallback, useMemo, useState } from 'react';
+import { CrudFilter, HttpError } from '@refinedev/core';
+import { FC, ReactNode, useCallback, useState } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ExcelJS from 'exceljs';
@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { saveXLSX } from 'shared/lib/saveXLSX';
-import { DirectionEntity, FeedTransactionEntity, GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
+import { FeedTransactionEntity } from 'interfaces';
 import { mealTimeById, NEW_API_URL } from 'const';
 import { ColumnsType } from 'antd/es/table';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
@@ -36,13 +36,13 @@ export const FeedTransactionList: FC = () => {
     const { filterFields, visibleFilters, setVisibleFilters } = useTransactionsFilters();
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
 
-    const { searchFormProps, tableProps, filters, setFilters, setCurrent, setPageSize } = useTable<
+    const { searchFormProps, tableProps, filters, setCurrent, setPageSize } = useTable<
         FeedTransactionEntity,
         HttpError,
         { search?: string; date?: [string, string] }
     >({
+        defaultSetFilterBehavior: 'replace',
         onSearch: (values: { search?: string; date?: [string, string] }) => {
-            setFilters([], 'replace');
             const newFilters: Array<CrudFilter> = [];
 
             newFilters.push({
@@ -86,84 +86,21 @@ export const FeedTransactionList: FC = () => {
         }
     });
 
-    const { data: vols, isLoading: volsIsLoading } = useList<VolEntity>({
-        resource: 'volunteers',
-        pagination: {
-            pageSize: 10000
-        }
-    });
-
-    const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
-        resource: 'kitchens'
-    });
-
-    const { data: groupBadges, isLoading: groupBadgesIsLoading } = useList<GroupBadgeEntity>({
-        resource: 'group-badges',
-        pagination: {
-            pageSize: 10000
-        }
-    });
-
-    const getGroupBadgeById = useCallback(
-        (id?: number): GroupBadgeEntity | undefined => {
-            if (typeof id !== 'number') {
-                return;
-            }
-
-            return groupBadges?.data?.find((badge) => badge.id === id);
-        },
-        [groupBadges]
-    );
-
-    const volById = useMemo(() => {
-        return (vols ? vols.data : []).reduce(
-            (acc, vol) => ({
-                ...acc,
-                [vol.id]: vol
-            }),
-            {} as Record<string, VolEntity>
-        );
-    }, [vols]);
-
-    const kitchenNameById = useMemo(() => {
-        return (kitchens ? kitchens.data : []).reduce(
-            (acc, kitchen) => ({
-                ...acc,
-                [kitchen.id]: kitchen.name
-            }),
-            {} as Record<string, string>
-        );
-    }, [kitchens]);
-
-    const getTargetDirections = useCallback(
-        (item: FeedTransactionEntity): DirectionEntity[] => {
-            const targetGroupBadge = getGroupBadgeById(item.group_badge);
-            return (
-                volById?.[item.volunteer]?.directions ??
-                (targetGroupBadge?.direction ? [targetGroupBadge.direction] : [])
-            );
-        },
-        [getGroupBadgeById, volById]
-    );
-
     const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
         return (
             transactions?.map<TransformedTransaction>((item: FeedTransactionEntity) => {
-                const targetGroupBadge = getGroupBadgeById(item.group_badge);
-                const targetDirections = getTargetDirections(item);
-
                 return {
                     ulid: item.ulid,
                     dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
-                    volunteerName: volById?.[item.volunteer]?.name || 'Аноним',
+                    volunteerName: item?.volunteer_name || 'Аноним',
                     volunteerId: item.volunteer,
                     feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
                     mealType: mealTimeById[item.meal_time],
-                    kitchenName: kitchenNameById[item.kitchen],
+                    kitchenName: item?.kitchen_name ?? '',
                     amount: item.amount,
                     reason: item?.reason ?? undefined,
-                    groupBadgeName: targetGroupBadge?.name ?? '',
-                    directions: targetDirections.map((dir) => dir?.name)
+                    groupBadgeName: item.group_badge_name ?? '',
+                    directions: item?.volunteer_directions ?? []
                 };
             }) ?? []
         );
@@ -238,28 +175,24 @@ export const FeedTransactionList: FC = () => {
         sheet.addRow(header);
 
         transactions?.forEach((tx) => {
-            const volunteer = volById[tx.volunteer];
-
             sheet.addRow([
                 dayjs(tx.dtime).format('DD.MM.YYYY'),
                 dayjs(tx.dtime).format('HH:mm:ss'),
                 tx.volunteer,
-                tx.volunteer ? volunteer?.name : 'Аноним',
-                [volunteer?.last_name, volunteer?.first_name].filter((item) => !!item).join(' '),
+                tx?.volunteer_name ?? 'Аноним',
+                [tx.volunteer_last_name, tx.volunteer_first_name].filter((item) => !!item).join(' '),
                 tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
                 mealTimeById[tx.meal_time],
-                kitchenNameById[tx.kitchen],
+                tx?.kitchen_name ?? '',
                 tx.amount,
                 tx?.reason ?? '',
-                getGroupBadgeById(tx.group_badge)?.name,
-                getTargetDirections(tx)
-                    .map((dir) => dir.name)
-                    .join(',')
+                tx?.group_badge_name ?? '',
+                (tx?.volunteer_directions ?? []).join(',')
             ]);
         });
 
         void saveXLSX(workbook, 'feed-transactions');
-    }, [filters, volById, kitchenNameById, getGroupBadgeById, getTargetDirections]);
+    }, [filters]);
 
     const handleClickDownload = useCallback((): void => {
         void createAndSaveXLSX();
@@ -299,7 +232,8 @@ export const FeedTransactionList: FC = () => {
                     setActiveFilters={(filters) => {
                         setActiveFilters(filters);
 
-                        searchFormProps?.form?.submit();
+                        // Для более отзывчивого поведения
+                        setTimeout(() => searchFormProps?.form?.submit());
                     }}
                 />
             </Form>
@@ -318,12 +252,7 @@ export const FeedTransactionList: FC = () => {
                 dataSource={transformedResult}
                 rowKey="ulid"
                 footer={() => (
-                    <Button
-                        type="primary"
-                        onClick={handleClickDownload}
-                        icon={<DownloadOutlined />}
-                        disabled={volsIsLoading || kitchensIsLoading || groupBadgesIsLoading}
-                    >
+                    <Button type="primary" onClick={handleClickDownload} icon={<DownloadOutlined />}>
                         Выгрузить
                     </Button>
                 )}
