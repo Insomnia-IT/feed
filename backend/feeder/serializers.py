@@ -237,14 +237,14 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
 
                 # Логируем изменения только если что-то изменилось
                 if changed_data:
-                    self._log_arrival_change(arrival, "UPDATE", old_values, changed_data, group_op, group_arr_id)
+                    self._log_arrival_change(arrival, volunteer, "UPDATE", old_values, changed_data, group_op, group_arr_id)
 
                 processed_ids.add(str(arrival_id))
             else:
                 # Создание нового заезда
                 arrival = models.Arrival.objects.create(volunteer=volunteer, **prepared_data)
                 processed_ids.add(str(arrival.id))
-                self._log_arrival_change(arrival, "CREATE", {}, prepared_data, group_op, group_arr_id)
+                self._log_arrival_change(arrival, volunteer, "CREATE", {}, prepared_data, group_op, group_arr_id)
 
         # Удаление заездов, которых нет в обновленных данных
         if not is_create:
@@ -252,7 +252,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             for aid in to_delete:
                 arrival = current_arrivals[aid]
                 old_values = {field.name: getattr(arrival, field.name) for field in models.Arrival._meta.fields}
-                self._log_arrival_change(arrival, "DELETE", old_values, {}, group_op, group_arr_id)
+                self._log_arrival_change(arrival, volunteer, "DELETE", old_values, {}, group_op, group_arr_id)
                 arrival.delete()
 
     def _prepare_arrival_data(self, data):
@@ -275,7 +275,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         
         return data
     
-    def _log_arrival_change(self, arrival, action, old_data=None, new_data=None, group_op=None, group_arr_id=None):
+    def _log_arrival_change(self, arrival, volunteer, action, old_data=None, new_data=None, group_op=None, group_arr_id=None):
         user_id = get_request_user_id(self.context["request"].user)
 
         def serialize_value(value):
@@ -297,6 +297,8 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         else:
             changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
         old_changed_data = {k: old_data[k] for k in changed_data.keys() if k in old_data}
+
+        changed_data['badge'] = volunteer.uuid
 
         history_data = {
             "status": History.STATUS_UPDATE if action == "UPDATE" else History.STATUS_CREATE,
