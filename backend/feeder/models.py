@@ -303,7 +303,7 @@ class Wash(TimeMixin):
     id = models.AutoField(primary_key=True)
     volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="washes")
     actor = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="added_washes")
-    washCount = models.PositiveIntegerField(default=0, verbose_name="Количество")
+    wash_count = models.PositiveIntegerField(default=0, verbose_name="Количество")
 
     class Meta:
         verbose_name = "Стирка"
