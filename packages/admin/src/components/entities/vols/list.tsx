@@ -69,14 +69,6 @@ export const VolList: FC = () => {
         }
     });
 
-    const { data: searchVolunteers, isLoading: searchVolunteersIsLoading } = useList<VolEntity>({
-        resource: `volunteers/?search=${searchText}`,
-        pagination: {
-            current: 1,
-            pageSize: 1
-        }
-    });
-
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
         volunteersData: volunteers?.data ?? [],
         totalVolunteersCount: volunteers?.total ?? 0,
@@ -120,11 +112,12 @@ export const VolList: FC = () => {
     };
 
     const volunteersData = volunteers?.data ?? [];
+    const noActiveFilters = activeFilters.length === 0;
 
-    const showPersons = searchText && !searchVolunteersIsLoading && searchVolunteers?.data.length === 0;
+    const showPersons = searchText && noActiveFilters && volunteersData.length === 0;
 
     return (
-        <List>
+        <List canCreate={noActiveFilters}>
             <ActiveColumnsContextProvider customFields={customFields}>
                 <Input
                     placeholder="Поиск по волонтерам, датам, службам"
