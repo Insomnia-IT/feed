@@ -15,7 +15,7 @@ export interface UserData {
     id?: number | string;
     exp: number;
     iat: number;
-    roles: Array<AppRoles.ADMIN | AppRoles.SENIOR | AppRoles.CAT | AppRoles.DIRECTION_HEAD>;
+    roles: Array<AppRoles.ADMIN | AppRoles.SENIOR | AppRoles.CAT | AppRoles.DIRECTION_HEAD | AppRoles.SOVA>;
     directions?: Array<string>;
     username: string;
 }

@@ -14,7 +14,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { LogoutOutlined, SmileOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
 
-import { UserData } from 'auth';
+import { AppRoles, UserData } from 'auth';
 import { authProvider } from 'authProvider';
 import type { AccessRoleEntity } from 'interfaces';
 
@@ -24,7 +24,7 @@ import { useIsMobile } from '../../shared/hooks';
 const CustomSider: FC = () => {
     const [collapsed, setCollapsed] = useState(false);
     const [screenSize, setScreenSize] = useState(window.innerWidth);
-    const [userName, setUserName] = useState('');
+    const [user, setUser] = useState<UserData>();
     const [accessRoleName, setAccessRoleName] = useState('');
     const [currentPath, setCurrentPath] = useState('');
 
@@ -47,7 +47,7 @@ const CustomSider: FC = () => {
         void authProvider.getIdentity().then((res) => {
             const user = res as UserData;
             if (user) {
-                setUserName(user.username ?? '');
+                setUser(user);
                 const roleName = accessRoles?.data.find((role) => role.id === user.roles[0])?.name ?? '';
                 setAccessRoleName(roleName);
             }
@@ -122,7 +122,7 @@ const CustomSider: FC = () => {
 
         items.push(
             <Menu.Item key="user-info" disabled>
-                {accessRoleName ? `${userName} (${accessRoleName})` : userName || '—'}
+                {accessRoleName ? `${user?.username} (${accessRoleName})` : user?.username || '—'}
             </Menu.Item>
         );
 
@@ -139,7 +139,7 @@ const CustomSider: FC = () => {
         }
 
         return items;
-    }, [accessRoleName, userName, menuItems, renderMenuItems, isExistAuthentication, handleLogout]);
+    }, [accessRoleName, user, menuItems, renderMenuItems, isExistAuthentication, handleLogout]);
 
     useEffect(() => {
         const handleResize = () => setScreenSize(window.innerWidth);
@@ -151,7 +151,7 @@ const CustomSider: FC = () => {
         <>
             {screenSize <= 576 ? (
                 <div className={styles.mobileSider}>
-                    {accessRoleName === 'Сова' ? (
+                    {user?.roles[0] === AppRoles.SOVA ? (
                         <button
                             className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
                             onClick={() => push('/wash')}

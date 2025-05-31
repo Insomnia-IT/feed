@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
-import { Authenticated, Refine } from '@refinedev/core';
+import { Authenticated, Refine, useGetIdentity } from '@refinedev/core';
 import { ErrorComponent, ThemedLayoutV2, useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
@@ -50,6 +50,13 @@ import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
 import { Wash } from 'components/wash';
 import { WashesHistory } from './components/wash/list/washes-history';
 import { useIsMobile } from './shared/hooks';
+import { AppRoles, UserData } from 'auth';
+
+const InitialNavigation = () => {
+    const { data: user } = useGetIdentity<UserData>();
+
+    return user ? <NavigateToResource resource={user.roles[0] === AppRoles.SOVA ? 'wash' : 'volunteers'} /> : null;
+};
 
 const App: React.FC = () => {
     const { t, i18n: i18next } = useTranslation();
@@ -166,6 +173,8 @@ const App: React.FC = () => {
                                             </Authenticated>
                                         }
                                     >
+                                        <Route index element={<InitialNavigation />} />
+
                                         <Route path="/dashboard" element={<Dashboard />} />
 
                                         {isMobile ? (
@@ -176,8 +185,6 @@ const App: React.FC = () => {
                                                 <Route path="create" element={<Wash />} />
                                             </Route>
                                         )}
-
-                                        <Route index element={<NavigateToResource resource="volunteers" />} />
 
                                         <Route path="/volunteers">
                                             <Route index element={<VolList />} />
@@ -221,19 +228,7 @@ const App: React.FC = () => {
                                         <Route path="*" element={<ErrorComponent />} />
                                     </Route>
 
-                                    <Route
-                                        element={
-                                            <Authenticated
-                                                key="authenticated-outer"
-                                                v3LegacyAuthProviderCompatible={false}
-                                                fallback={<Outlet />}
-                                            >
-                                                <NavigateToResource />
-                                            </Authenticated>
-                                        }
-                                    >
-                                        <Route path="/login" element={<LoginPage />} />
-                                    </Route>
+                                    <Route path="/login" element={<LoginPage />} />
                                 </Routes>
 
                                 <UnsavedChangesNotifier />
