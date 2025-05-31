@@ -40,7 +40,7 @@
         "clone": "Копия",
         "notAccessTitle": "Нет доступа"
     },
-    "warnWhenUnsavedChanges": "Are you sure you want to leave? You have unsaved changes.",
+    "warnWhenUnsavedChanges": "Вы уверены, что хотите покинуть страницу? У вас есть несохраненные изменения.",
     "notifications": {
         "success": "Успешно",
         "error": "Ошибка (status code: {{statusCode}})",
