@@ -7,8 +7,6 @@ from rest_framework.response import Response
 import os
 
 class FileServeView(APIView):
-    permission_classes = [permissions.IsAuthenticated, ]
-
     def get(self, request, filename):
         filepath = os.path.join(settings.PHOTO_STORAGE_PATH, filename)
 

@@ -331,7 +331,7 @@ def download_and_save_photo(photo_url: str, volunteer_id: int) -> str | None:
             print(f"[PHOTO SYNC] Недопустимый адрес: {photo_url}")
             return None
         
-        response = requests.get(photo_url, timeout=10, stream=True)
+        response = requests.get(photo_url, timeout=10, stream=True, headers={"Authorization": "Bearer " + settings.PHOTO_AUTH_TOKEN})
         response.raise_for_status()
 
         content_type = response.headers.get("Content-Type", "")
@@ -353,7 +353,7 @@ def download_and_save_photo(photo_url: str, volunteer_id: int) -> str | None:
             for chunk in response.iter_content(8192):
                 f.write(chunk)
 
-        return f"/files/{filename}"
+        return f"/feedapi/v1/files/{filename}"
     except Exception as e:
         print(f"[PHOTO SYNC ERROR] Volunteer {volunteer_id}: {e}")
         return None
