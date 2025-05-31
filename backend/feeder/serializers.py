@@ -298,6 +298,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
         old_changed_data = {k: old_data[k] for k in changed_data.keys() if k in old_data}
 
+        changed_data['id'] = arrival.id
         changed_data['badge'] = volunteer.uuid
 
         history_data = {
