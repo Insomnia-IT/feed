@@ -1,7 +1,7 @@
 import type { AuthActionResponse, AuthProvider, HttpError } from '@refinedev/core';
 import axios from 'axios';
 
-import { clearUserData, getUserData, setUserData } from 'auth';
+import { AppRoles, clearUserData, getUserData, setUserData } from 'auth';
 import { NEW_API_URL } from 'const';
 
 export const authProvider: AuthProvider = {
@@ -47,9 +47,11 @@ export const authProvider: AuthProvider = {
                 setUserData(key);
             }
 
+            const user = await getUserData(true);
+
             return {
                 success: true,
-                redirectTo: '/volunteers'
+                redirectTo: user?.roles[0] === AppRoles.SOVA ? '/wash' : '/volunteers'
             };
         } catch (error) {
             return {
