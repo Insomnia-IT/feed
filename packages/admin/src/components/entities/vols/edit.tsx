@@ -3,7 +3,6 @@ import { Form, Breadcrumb } from 'antd';
 import type { IResourceComponentsProps } from '@refinedev/core';
 import { useBreadcrumb } from '@refinedev/core';
 import { Link } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
 
 import type { VolEntity } from 'interfaces';
 
@@ -16,26 +15,16 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
-        }
+        },
+        warnWhenUnsavedChanges: true
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
-    const isFirstRender = useRef(true);
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
 
-    useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
-
-        return () => {
-            alert('Вы покинули страницу информации о волонтере');
-        };
-    }, []);
 
     const CustomBreadcrumb = () => {
         if (!breadcrumbs) return null;
