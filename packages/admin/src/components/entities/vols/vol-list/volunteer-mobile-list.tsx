@@ -30,7 +30,9 @@ const checkArrivalStatus = (arrival: ArrivalEntity | null): boolean => {
     const today = dayjs();
     const yesterday = today.subtract(1, 'day');
 
-    return (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) && arrival.status !== 'on_field';
+    return (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) && 
+           arrival.status !== 'STARTED' && 
+           arrival.status !== 'JOINED';
 };
 
 /* Компонент отображающий список волонтеров на телефоне */
@@ -154,7 +156,7 @@ export const VolunteerMobileList: FC<{
                             Что-то не так, отредактируйте карточку
                         </Typography.Title>
                         <p>
-                            Волонтер {selectedVol?.name} не отмечен "Заехал на поле". Проверьте информацию в детальной карточке
+                            Волонтер {selectedVol?.name} не отмечен "Приступил". Проверьте информацию в детальной карточке
                         </p>
                     </div>
                 </div>
