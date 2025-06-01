@@ -110,7 +110,20 @@ export const VolunteerMobileList: FC<{
                                         : [
                                               {
                                                   key: 'edit',
-                                                  text: '✓ Приступил',
+                                                  text: (
+                                                      <div style={{ 
+                                                          display: 'flex', 
+                                                          flexDirection: 'column', 
+                                                          alignItems: 'center',
+                                                          gap: '8px'
+                                                      }}>
+                                                          <span style={{ 
+                                                              fontSize: '24px', 
+                                                              lineHeight: '1'
+                                                          }}>✓</span>
+                                                          <span>Приступил</span>
+                                                      </div>
+                                                  ),
                                                   color: '#34C759',
                                                   onClick: () => handleAction(vol)
                                               }
