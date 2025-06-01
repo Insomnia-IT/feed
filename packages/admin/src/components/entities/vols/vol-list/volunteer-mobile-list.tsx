@@ -2,6 +2,7 @@ import { Spin, Tag } from 'antd';
 import { SwipeAction } from 'antd-mobile';
 import { FC } from 'react';
 import dayjs from 'dayjs';
+import { useDataProvider } from '@refinedev/core';
 
 import type { VolEntity, ArrivalEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
@@ -41,7 +42,9 @@ export const VolunteerMobileList: FC<{
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
-    const handleAction = (vol: VolEntity) => {
+    const dataProvider = useDataProvider();
+
+    const handleAction = async (vol: VolEntity) => {
         const currentArrival = findClosestArrival(vol.arrivals);
         
         if (currentArrival) {
@@ -49,7 +52,25 @@ export const VolunteerMobileList: FC<{
         }
         
         if (checkArrivalStatus(currentArrival)) {
-            console.log('Статус этого заезда меняется на "на поле"');
+            try {
+                // Обновляем статус заезда на ARRIVED
+                await dataProvider().update({
+                    resource: 'volunteers',
+                    id: vol.id,
+                    variables: {
+                        arrivals: vol.arrivals.map(arrival => 
+                            arrival.id === currentArrival?.id 
+                                ? { ...arrival, status: 'ARRIVED' }
+                                : arrival
+                        )
+                    }
+                });
+                
+                // Обновляем список волонтеров
+                window.location.reload();
+            } catch (error) {
+                console.error('Ошибка при обновлении статуса:', error);
+            }
         } else {
             console.log('Что-то не так, отредактируй карточку');
         }
@@ -96,8 +117,6 @@ export const VolunteerMobileList: FC<{
                                 <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                                 <div>
                                     {isBlocked && <Tag color="red">Заблокирован</Tag>}
-                                    {/* Можно сделать синим тег "На поле" */}
-                                    {/* {<Tag color={currentArrival?.status === 'ARRIVED' ? 'blue' : getOnFieldColors(vol)}>{currentStatus}</Tag>} */}
                                     <Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>
                                 </div>
                                 <div className={styles.textRow}>
