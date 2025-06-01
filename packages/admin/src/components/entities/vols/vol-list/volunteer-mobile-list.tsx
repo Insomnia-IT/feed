@@ -1,9 +1,9 @@
-import { Spin, Tag, Modal } from 'antd';
+import { Spin, Tag, Modal, Typography } from 'antd';
+import { CloseCircleOutlined } from '@ant-design/icons';
 import { SwipeAction } from 'antd-mobile';
 import { FC, useState } from 'react';
 import dayjs from 'dayjs';
 import { useDataProvider } from '@refinedev/core';
-import { CloseCircleOutlined } from '@ant-design/icons';
 
 import type { VolEntity, ArrivalEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
@@ -30,10 +30,7 @@ const checkArrivalStatus = (arrival: ArrivalEntity | null): boolean => {
     const today = dayjs();
     const yesterday = today.subtract(1, 'day');
 
-    return (
-        (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) &&
-        arrival.status !== 'on_field'
-    );
+    return (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) && arrival.status !== 'on_field';
 };
 
 /* Компонент отображающий список волонтеров на телефоне */
@@ -44,15 +41,16 @@ export const VolunteerMobileList: FC<{
     openVolunteer: (id: number) => Promise<boolean>;
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
     const dataProvider = useDataProvider();
-    const [modalVolunteer, setModalVolunteer] = useState<VolEntity | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
 
     const handleAction = async (vol: VolEntity) => {
         const currentArrival = findClosestArrival(vol.arrivals);
-        
+
         if (currentArrival) {
             console.log(`Текущий статус заезда: ${statusById[currentArrival.status]}`);
         }
-        
+
         if (checkArrivalStatus(currentArrival)) {
             try {
                 // Обновляем статус заезда на ARRIVED
@@ -60,22 +58,33 @@ export const VolunteerMobileList: FC<{
                     resource: 'volunteers',
                     id: vol.id,
                     variables: {
-                        arrivals: vol.arrivals.map(arrival => 
-                            arrival.id === currentArrival?.id 
-                                ? { ...arrival, status: 'ARRIVED' }
-                                : arrival
+                        arrivals: vol.arrivals.map((arrival) =>
+                            arrival.id === currentArrival?.id ? { ...arrival, status: 'ARRIVED' } : arrival
                         )
                     }
                 });
-                
+
                 // Обновляем список волонтеров
                 window.location.reload();
             } catch (error) {
                 console.error('Ошибка при обновлении статуса:', error);
             }
         } else {
-            setModalVolunteer(vol);
+            setSelectedVol(vol);
+            setIsModalOpen(true);
         }
+    };
+
+    const handleModalOk = () => {
+        setIsModalOpen(false);
+        if (selectedVol) {
+            void openVolunteer(selectedVol.id);
+        }
+    };
+
+    const handleModalCancel = () => {
+        setIsModalOpen(false);
+        setSelectedVol(null);
     };
 
     return (
@@ -132,41 +141,27 @@ export const VolunteerMobileList: FC<{
                     })
                 )}
             </div>
-
             <Modal
-                title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <CloseCircleOutlined style={{ color: 'red', fontSize: '20px' }} />
-                        <span>Что-то не так, отредактируйте карточку</span>
-                    </div>
-                }
-                open={!!modalVolunteer}
-                onCancel={() => setModalVolunteer(null)}
-                footer={[
-                    <button
-                        key="back"
-                        className="ant-btn ant-btn-default"
-                        onClick={() => setModalVolunteer(null)}
-                    >
-                        Обратно в список
-                    </button>,
-                    <button
-                        key="card"
-                        className="ant-btn ant-btn-primary"
-                        onClick={() => {
-                            if (modalVolunteer) {
-                                void openVolunteer(modalVolunteer.id);
-                            }
-                        }}
-                    >
-                        К карточке
-                    </button>
-                ]}
+                open={isModalOpen}
+                onOk={handleModalOk}
+                onCancel={handleModalCancel}
+                okText="К карточке"
+                cancelText="Обратно в список"
+                closeIcon={null}
             >
-                <p>
-                    Волонтер "{modalVolunteer?.name}" не отмечен "Заехал на поле". 
-                    Проверьте информацию в детальной карточке.
-                </p>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                    <div style={{ marginBottom: 16 }}>
+                        <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 24 }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography.Title level={5} style={{ marginBottom: 16 }}>
+                            Что-то не так, отредактируйте карточку
+                        </Typography.Title>
+                        <p>
+                            Волонтер {selectedVol?.name} не отмечен "Заехал на поле". Проверьте информацию в детальной карточке
+                        </p>
+                    </div>
+                </div>
             </Modal>
         </>
     );
