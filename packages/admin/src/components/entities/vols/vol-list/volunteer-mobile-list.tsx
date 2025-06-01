@@ -49,13 +49,13 @@ export const VolunteerMobileList: FC<{
 
         if (checkArrivalStatus(currentArrival)) {
             try {
-                // Обновляем статус заезда на ARRIVED
+                // Обновляем статус заезда на STARTED
                 await dataProvider().update({
                     resource: 'volunteers',
                     id: vol.id,
                     variables: {
                         arrivals: vol.arrivals.map((arrival) =>
-                            arrival.id === currentArrival?.id ? { ...arrival, status: 'ARRIVED' } : arrival
+                            arrival.id === currentArrival?.id ? { ...arrival, status: 'STARTED' } : arrival
                         )
                     }
                 });
@@ -103,12 +103,12 @@ export const VolunteerMobileList: FC<{
                             <SwipeAction
                                 key={vol.id}
                                 rightActions={
-                                    currentArrival?.status === 'ARRIVED'
+                                    currentArrival?.status === 'STARTED' || currentArrival?.status === 'JOINED'
                                         ? []
                                         : [
                                               {
                                                   key: 'edit',
-                                                  text: '✓',
+                                                  text: '✓ Приступил',
                                                   color: 'primary',
                                                   onClick: () => handleAction(vol)
                                               }
