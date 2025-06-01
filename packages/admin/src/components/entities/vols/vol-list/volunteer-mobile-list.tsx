@@ -18,6 +18,7 @@ const formatDate = (value?: string): string => {
 };
 
 /* Компонент отображающий список волонтеров на телефоне */
+/* TODO: Добавить кнопку "На поле" */
 export const VolunteerMobileList: FC<{
     volList: Array<VolEntity>;
     isLoading: boolean;
