@@ -138,8 +138,6 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     def to_internal_value(self, data):
         if data.get("batch") == "None":
             data["batch"] = None
-
-        self._photo_url = data.pop("photo", None)
         return super().to_internal_value(data)
 
     def validate(self, attrs):
@@ -160,13 +158,19 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         return super().validate(attrs)
     
     def save(self, **kwargs):
+        uuid = self.initial_data.get("id")
+        instance = self.get_instance_by_uuid(uuid)
+        old_photo_url = getattr(instance, "photo", None) if instance else None
+
         instance = super().save(**kwargs)
 
-        if hasattr(self, "_photo_url") and self._photo_url:
-            photo_path = download_and_save_photo(self._photo_url, instance.id)
-            if photo_path and instance.photo != photo_path:
-                instance.photo = photo_path
-                instance.save(update_fields=["photo"])
+        new_photo_url = self.initial_data.get("photo")
+
+        if new_photo_url and new_photo_url != old_photo_url:
+            photo_path = download_and_save_photo(new_photo_url, instance.id)
+            if photo_path:
+                instance.photo_local = photo_path
+                instance.save(update_fields=["photo_local"])
 
         return instance
 
