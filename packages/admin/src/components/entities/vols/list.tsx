@@ -1,4 +1,4 @@
-import { useNavigation, useList } from '@refinedev/core';
+import { useNavigation, useList, CanAccess } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col } from 'antd';
 import type { TablePaginationConfig } from 'antd';
@@ -118,92 +118,94 @@ export const VolList: FC = () => {
 
     return (
         <List canCreate={noActiveFilters}>
-            <ActiveColumnsContextProvider customFields={customFields}>
-                <Input
-                    placeholder="Поиск по волонтерам, датам, службам"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    allowClear
-                />
-                <Filters
-                    activeFilters={activeFilters}
-                    setActiveFilters={setActiveFilters}
-                    visibleFilters={visibleFilters}
-                    setVisibleFilters={setVisibleFilters}
-                    filterFields={filterFields}
-                    searchText={searchText}
-                    setSearchText={setSearchText}
-                />
-                <Row style={{ padding: '10px 0' }} justify="space-between">
-                    {isDesktop && (
-                        <>
-                            <Row style={{ gap: '24px' }} align="middle">
-                                {/* <b>Сохраненные таблицы:</b>
+            <CanAccess fallback="У вас нет доступа к этой странице">
+                <ActiveColumnsContextProvider customFields={customFields}>
+                    <Input
+                        placeholder="Поиск по волонтерам, датам, службам"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        allowClear
+                    />
+                    <Filters
+                        activeFilters={activeFilters}
+                        setActiveFilters={setActiveFilters}
+                        visibleFilters={visibleFilters}
+                        setVisibleFilters={setVisibleFilters}
+                        filterFields={filterFields}
+                        searchText={searchText}
+                        setSearchText={setSearchText}
+                    />
+                    <Row style={{ padding: '10px 0' }} justify="space-between">
+                        {isDesktop && (
+                            <>
+                                <Row style={{ gap: '24px' }} align="middle">
+                                    {/* <b>Сохраненные таблицы:</b>
 
                                 <Select placeholder="Выберите" disabled></Select> */}
-                            </Row>
-                            <Row style={{ gap: '24px' }} align="middle">
-                                <Col>
-                                    <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
-                                    волонтеров
-                                </Col>
-                                <Row style={{ gap: '12px' }} align="middle">
-                                    <ChooseColumnsButton
-                                        canListCustomFields={canListCustomFields}
-                                        customFields={customFields}
-                                    />
-                                    <SaveAsXlsxButton
-                                        isDisabled={!volunteersData.length || isFiltersLoading}
-                                        filterQueryParams={filterQueryParams}
-                                        customFields={customFields}
-                                        volunteerRoleById={volunteerRoleById}
-                                        statusById={statusById}
-                                        transportById={transportById}
-                                        kitchenNameById={kitchenNameById}
-                                        feedTypeNameById={feedTypeNameById}
-                                        accessRoleById={accessRoleById}
-                                    />
                                 </Row>
-                            </Row>
+                                <Row style={{ gap: '24px' }} align="middle">
+                                    <Col>
+                                        <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
+                                        волонтеров
+                                    </Col>
+                                    <Row style={{ gap: '12px' }} align="middle">
+                                        <ChooseColumnsButton
+                                            canListCustomFields={canListCustomFields}
+                                            customFields={customFields}
+                                        />
+                                        <SaveAsXlsxButton
+                                            isDisabled={!volunteersData.length || isFiltersLoading}
+                                            filterQueryParams={filterQueryParams}
+                                            customFields={customFields}
+                                            volunteerRoleById={volunteerRoleById}
+                                            statusById={statusById}
+                                            transportById={transportById}
+                                            kitchenNameById={kitchenNameById}
+                                            feedTypeNameById={feedTypeNameById}
+                                            accessRoleById={accessRoleById}
+                                        />
+                                    </Row>
+                                </Row>
+                            </>
+                        )}
+                    </Row>
+
+                    {isMobile && (
+                        <VolunteerMobileList
+                            statusById={statusById}
+                            volList={volunteersData}
+                            openVolunteer={openVolunteer}
+                            isLoading={volunteersIsLoading}
+                        />
+                    )}
+                    {isDesktop && (
+                        <>
+                            {!showPersons && (
+                                <VolunteerDesktopTable
+                                    openVolunteer={openVolunteer}
+                                    pagination={pagination}
+                                    statusById={statusById}
+                                    volunteersIsLoading={volunteersIsLoading}
+                                    volunteersData={volunteersData}
+                                    customFields={customFields}
+                                    rowSelection={canBulkEdit ? rowSelection : undefined}
+                                />
+                            )}
+                            {showPersons && <PersonsTable searchText={searchText} />}
+                            {canBulkEdit && (
+                                <MassEdit
+                                    selectedVolunteers={selectedVols}
+                                    unselectAll={unselectAllSelected}
+                                    unselectVolunteer={unselectVolunteer}
+                                    reloadVolunteers={async () => {
+                                        await reloadVolunteers();
+                                    }}
+                                />
+                            )}
                         </>
                     )}
-                </Row>
-
-                {isMobile && (
-                    <VolunteerMobileList
-                        statusById={statusById}
-                        volList={volunteersData}
-                        openVolunteer={openVolunteer}
-                        isLoading={volunteersIsLoading}
-                    />
-                )}
-                {isDesktop && (
-                    <>
-                        {!showPersons && (
-                            <VolunteerDesktopTable
-                                openVolunteer={openVolunteer}
-                                pagination={pagination}
-                                statusById={statusById}
-                                volunteersIsLoading={volunteersIsLoading}
-                                volunteersData={volunteersData}
-                                customFields={customFields}
-                                rowSelection={canBulkEdit ? rowSelection : undefined}
-                            />
-                        )}
-                        {showPersons && <PersonsTable searchText={searchText} />}
-                        {canBulkEdit && (
-                            <MassEdit
-                                selectedVolunteers={selectedVols}
-                                unselectAll={unselectAllSelected}
-                                unselectVolunteer={unselectVolunteer}
-                                reloadVolunteers={async () => {
-                                    await reloadVolunteers();
-                                }}
-                            />
-                        )}
-                    </>
-                )}
-            </ActiveColumnsContextProvider>
+                </ActiveColumnsContextProvider>
+            </CanAccess>
         </List>
     );
 };
