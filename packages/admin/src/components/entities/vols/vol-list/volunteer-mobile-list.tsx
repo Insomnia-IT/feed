@@ -111,7 +111,7 @@ export const VolunteerMobileList: FC<{
                                               {
                                                   key: 'edit',
                                                   text: '✓ Приступил',
-                                                  color: 'primary',
+                                                  color: '#34C759',
                                                   onClick: () => handleAction(vol)
                                               }
                                           ]
