@@ -47,10 +47,6 @@ export const VolunteerMobileList: FC<{
     const handleAction = async (vol: VolEntity) => {
         const currentArrival = findClosestArrival(vol.arrivals);
 
-        if (currentArrival) {
-            console.log(`Текущий статус заезда: ${statusById[currentArrival.status]}`);
-        }
-
         if (checkArrivalStatus(currentArrival)) {
             try {
                 // Обновляем статус заезда на ARRIVED
