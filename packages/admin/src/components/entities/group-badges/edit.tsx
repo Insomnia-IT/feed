@@ -9,7 +9,7 @@ import { useDebouncedCallback } from 'shared/hooks';
 import { CreateEdit } from './common';
 import { AddVolunteerModal } from './add-volunteer-modal';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export const GroupBadgeEdit: FC = () => {
     const { open = () => {} } = useNotification();
@@ -37,12 +37,14 @@ export const GroupBadgeEdit: FC = () => {
             {
                 onSuccess: () => {
                     invalidate({ resource: 'volunteers', invalidates: ['list'] });
-                    open({ type: 'success', message: 'Волонтер удалён' });
+                    open({ type: 'success', message: 'Волонтёр удалён' });
                 },
                 onError: () => open({ type: 'error', message: 'Не удалось удалить' })
             }
         );
     };
+
+    const total = tableProps.pagination && 'total' in tableProps.pagination ? tableProps.pagination.total : 0;
 
     return (
         <Edit saveButtonProps={saveButtonProps} contentProps={{ style: { marginBottom: 60, overflow: 'auto' } }}>
@@ -54,12 +56,19 @@ export const GroupBadgeEdit: FC = () => {
 
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
                 <Col>
-                    <Title level={5}>Волонтеры</Title>
+                    <Title level={5}>
+                        Волонтёры{' '}
+                        {typeof total === 'number' && (
+                            <Text type="secondary" style={{ fontSize: '0.875rem' }}>
+                                ({total})
+                            </Text>
+                        )}
+                    </Title>
                 </Col>
                 <Col>
                     <Space>
                         <Input
-                            placeholder="Поиск волонтера"
+                            placeholder="Поиск волонтёра"
                             allowClear
                             onChange={(e) => debouncedSearch(e.target.value)}
                         />
