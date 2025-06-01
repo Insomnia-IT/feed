@@ -1,4 +1,5 @@
 import { Spin, Tag } from 'antd';
+import { SwipeAction } from 'antd-mobile';
 import { FC } from 'react';
 
 import type { VolEntity } from 'interfaces';
@@ -25,6 +26,10 @@ export const VolunteerMobileList: FC<{
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
+    const handleAction = (action: string, volId: number) => {
+        console.log(`Выполнено действие "${action}" для волонтера с ID ${volId}`);
+    };
+
     return (
         <div className={styles.mobileVolList}>
             {isLoading ? (
@@ -41,24 +46,35 @@ export const VolunteerMobileList: FC<{
                     const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
 
                     return (
-                        <div
-                            className={styles.volCard}
+                        <SwipeAction
                             key={vol.id}
-                            onClick={() => {
-                                void openVolunteer(vol.id);
-                            }}
+                            rightActions={[
+                                {
+                                    key: 'edit',
+                                    text: 'На поле',
+                                    color: 'primary',
+                                    onClick: () => handleAction('edit', vol.id)
+                                }
+                            ]}
                         >
-                            <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
-                            <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
-                            <div>
-                                {isBlocked && <Tag color="red">Заблокирован</Tag>}
-                                {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
+                            <div
+                                className={styles.volCard}
+                                onClick={() => {
+                                    void openVolunteer(vol.id);
+                                }}
+                            >
+                                <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
+                                <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
+                                <div>
+                                    {isBlocked && <Tag color="red">Заблокирован</Tag>}
+                                    {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
+                                </div>
+                                <div className={styles.textRow}>
+                                    <span className={styles.bold}>Заметка: </span>
+                                    {comment || '-'}
+                                </div>
                             </div>
-                            <div className={styles.textRow}>
-                                <span className={styles.bold}>Заметка: </span>
-                                {comment || '-'}
-                            </div>
-                        </div>
+                        </SwipeAction>
                     );
                 })
             )}
