@@ -44,6 +44,10 @@ export const VolunteerMobileList: FC<{
     const handleAction = (vol: VolEntity) => {
         const currentArrival = findClosestArrival(vol.arrivals);
         
+        if (currentArrival) {
+            console.log(`Текущий статус заезда: ${statusById[currentArrival.status]}`);
+        }
+        
         if (checkArrivalStatus(currentArrival)) {
             console.log('Статус этого заезда меняется на "на поле"');
         } else {
@@ -69,14 +73,18 @@ export const VolunteerMobileList: FC<{
                     return (
                         <SwipeAction
                             key={vol.id}
-                            rightActions={[
-                                {
-                                    key: 'edit',
-                                    text: '✓',
-                                    color: 'primary',
-                                    onClick: () => handleAction(vol)
-                                }
-                            ]}
+                            rightActions={
+                                currentArrival?.status === 'ARRIVED'
+                                    ? []
+                                    : [
+                                          {
+                                              key: 'edit',
+                                              text: '✓',
+                                              color: 'primary',
+                                              onClick: () => handleAction(vol)
+                                          }
+                                      ]
+                            }
                         >
                             <div
                                 className={styles.volCard}
