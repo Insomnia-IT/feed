@@ -123,6 +123,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     phone = models.CharField(max_length=255, null=True, blank=True, verbose_name="Телефон")
     email = models.CharField(max_length=255, null=True, blank=True, verbose_name="E-mail")
     photo = models.TextField(null=True, blank=True, verbose_name="Фотография")
+    photo_local = models.TextField(null=True, blank=True, verbose_name="Загруженная фотография")
     position = models.TextField(null=True, blank=True, verbose_name="")
     qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
     is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован?")
