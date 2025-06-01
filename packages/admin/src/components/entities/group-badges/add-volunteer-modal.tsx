@@ -1,120 +1,123 @@
-import { Input, Modal, Table } from 'antd';
+import { FC, useState } from 'react';
+import { Button, Input, Modal, Table } from 'antd';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import { useState } from 'react';
-import type { FC, Key } from 'react';
-import { useList } from '@refinedev/core';
+import { CrudFilters, useInvalidate, useList, useNotification, useUpdateMany } from '@refinedev/core';
 
 import type { VolEntity } from 'interfaces';
 import { useMedia } from 'shared/providers';
-import useVisibleDirections from 'components/entities/vols/use-visible-directions';
+import { useDebouncedCallback } from 'shared/hooks';
+import useVisibleDirections from '../vols/use-visible-directions';
 
-type VolEntityExtended = VolEntity & { markedDeleted: boolean; markedAdded: boolean };
-
-export const AddVolunteerModal: FC<{
-    isOpen: boolean;
-    setIsOpen: (value: boolean) => void;
-    volunteers: Array<VolEntityExtended>;
-    setVolunteers: (value: Array<VolEntityExtended>) => void;
-}> = ({ isOpen, setIsOpen, setVolunteers, volunteers }) => {
-    const [searchText, setSearchText] = useState('');
-    const [selected, setSelected] = useState<Array<Key>>([]);
+export const AddVolunteerModal: FC<{ groupBadgeId: number }> = ({ groupBadgeId }) => {
+    const [isOpenModal, setOpenModal] = useState(false);
+    const [search, setSearch] = useState('');
+    const [selectedIds, setSelectedIds] = useState<React.Key[]>([]);
+    const [page, setPage] = useState(1);
 
     const { isDesktop } = useMedia();
     const visibleDirections = useVisibleDirections();
 
-    const { data, isLoading: isVolunteersAllLoading } = useList<VolEntity>({
+    const invalidate = useInvalidate();
+    const { open = () => {} } = useNotification();
+    const { mutate: updateMany } = useUpdateMany();
+
+    const pageSize = isDesktop ? 10 : 5;
+
+    const serverFilters: CrudFilters = [];
+    if (search) {
+        serverFilters.push({
+            field: 'search',
+            operator: 'eq',
+            value: search
+        });
+    }
+
+    const { data, isLoading } = useList<VolEntity>({
         resource: 'volunteers',
+        filters: serverFilters,
         pagination: {
-            pageSize: 0
+            mode: 'server',
+            current: page,
+            pageSize
         }
     });
-    const { data: volunteersAll = [] } = data ?? {};
 
-    const addVolunteers = (): void => {
-        //если волонтер уже был в списке, но помечен на удаление, убираем флаг удаления
-        const updatedVolunteers = volunteers.map((item) => ({
-            ...item,
-            markedDeleted: selected.includes(item.id) ? false : item.markedDeleted,
-            markedAdded: item?.markedAdded ?? false
-        }));
+    const volunteersRaw = data?.data ?? [];
+    const total = data?.total ?? 0;
 
-        // добавляем только тех волонтеров, которых не было в списке
-        const currentIds = volunteers.map((item) => item.id);
-        const newVolunteers = volunteersAll
-            .filter((item) => selected.includes(item.id) && !currentIds.includes(item.id))
-            .map((item) => ({ ...item, markedDeleted: false, markedAdded: true }));
-
-        setVolunteers([...updatedVolunteers, ...newVolunteers]);
-        setSelected([]);
-    };
-
-    // Если волонтер уже есть в volunteers, но с флагом markedDeleted, считаем, что его нет в бейдже
-    const currentIds = volunteers.filter((item) => !item.markedDeleted).map((item) => item.id);
-
-    const filteredVols = volunteersAll.filter(
-        (vol) => !visibleDirections || vol.directions?.some(({ id }) => visibleDirections.includes(id))
+    const volunteers = volunteersRaw.filter((v) =>
+        visibleDirections ? v.directions?.some(({ id }) => visibleDirections.includes(id)) : true
     );
 
-    const searchTextLower = searchText.toLowerCase();
-    const filteredData = filteredVols.filter((item) => {
-        if (!searchText) {
-            return !currentIds.includes(item.id);
-        }
-
-        const isSelected = selected.includes(item.id);
-        const isNotCurrent = !currentIds.includes(item.id);
-        const matchesSearch = [
-            item.name,
-            item.first_name,
-            item.last_name,
-            item.directions?.map(({ name }) => name).join(', ')
-        ]
-            .filter(Boolean)
-            .some((text) => text?.toLowerCase().includes(searchTextLower));
-
-        return isNotCurrent && (matchesSearch || isSelected);
-    });
-
     const rowSelection: TableRowSelection<VolEntity> = {
-        selectedRowKeys: selected,
-        onChange: setSelected,
-        type: 'checkbox'
+        selectedRowKeys: selectedIds,
+        onChange: setSelectedIds,
+        preserveSelectedRowKeys: true
     };
 
+    const addVols = () => {
+        updateMany(
+            {
+                resource: 'volunteers',
+                ids: selectedIds as number[],
+                values: { group_badge: groupBadgeId }
+            },
+            {
+                onSuccess: () => {
+                    invalidate({ resource: 'volunteers', invalidates: ['list'] });
+                    open({ type: 'success', message: 'Волонтеры добавлены' });
+                    setOpenModal(false);
+                    setSelectedIds([]);
+                },
+                onError: () => open({ type: 'error', message: 'Не удалось добавить' })
+            }
+        );
+    };
+
+    const debouncedSearch = useDebouncedCallback((value: string) => {
+        setSearch(value);
+        setPage(1);
+    });
+
     return (
-        <Modal
-            title="Добавить волонтеров"
-            open={isOpen}
-            onOk={(): void => {
-                addVolunteers();
-                setIsOpen(false);
-            }}
-            onCancel={() => setIsOpen(false)}
-        >
-            <Input
-                placeholder="Поиск..."
-                value={searchText}
-                onChange={(event): void => {
-                    setSearchText(event.target.value);
-                }}
-                style={{ marginBottom: 16 }}
-            />
-            <Table
-                rowSelection={rowSelection}
-                dataSource={filteredData}
-                rowKey="id"
-                loading={isVolunteersAllLoading}
-                size="small"
-                pagination={{
-                    pageSize: isDesktop ? 100 : 5,
-                    showSizeChanger: false,
-                    size: 'small'
-                }}
+        <>
+            <Button type="primary" onClick={() => setOpenModal(true)}>
+                Добавить волонтера
+            </Button>
+
+            <Modal
+                title="Добавить волонтеров"
+                open={isOpenModal}
+                onOk={addVols}
+                onCancel={() => setOpenModal(false)}
+                okButtonProps={{ disabled: !selectedIds.length }}
             >
-                <Table.Column dataIndex="name" key="name" title="Имя на бейдже" ellipsis width="40%" />
-                <Table.Column dataIndex="first_name" key="first_name" title="Имя" ellipsis />
-                <Table.Column dataIndex="last_name" key="last_name" title="Фамилия" ellipsis />
-            </Table>
-        </Modal>
+                <Input
+                    placeholder="Поиск..."
+                    allowClear
+                    onChange={(e) => debouncedSearch(e.target.value)}
+                    style={{ marginBottom: 16 }}
+                />
+
+                <Table
+                    rowSelection={rowSelection}
+                    dataSource={volunteers}
+                    rowKey="id"
+                    loading={isLoading}
+                    size="small"
+                    pagination={{
+                        current: page,
+                        pageSize,
+                        total,
+                        showSizeChanger: false,
+                        onChange: (p) => setPage(p)
+                    }}
+                >
+                    <Table.Column dataIndex="name" title="Имя на бейдже" ellipsis width="40%" />
+                    <Table.Column dataIndex="first_name" title="Имя" ellipsis />
+                    <Table.Column dataIndex="last_name" title="Фамилия" ellipsis />
+                </Table>
+            </Modal>
+        </>
     );
 };
