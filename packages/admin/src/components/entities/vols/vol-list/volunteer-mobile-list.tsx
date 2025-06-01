@@ -1,6 +1,7 @@
 import { Spin, Tag } from 'antd';
 import { SwipeAction } from 'antd-mobile';
 import { FC } from 'react';
+import dayjs from 'dayjs';
 
 import type { VolEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
@@ -25,8 +26,24 @@ export const VolunteerMobileList: FC<{
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
-    const handleAction = (action: string, volId: number) => {
-        console.log(`Выполнено действие "${action}" для волонтера с ID ${volId}`);
+    const handleAction = (vol: VolEntity) => {
+        const currentArrival = findClosestArrival(vol.arrivals);
+        if (currentArrival) {
+            const arrivalDate = dayjs(currentArrival.arrival_date);
+            const today = dayjs();
+            const yesterday = today.subtract(1, 'day');
+
+            if (
+                (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) &&
+                currentArrival.status !== 'on_field'
+            ) {
+                console.log('Статус этого заезда меняется на "на поле"');
+            } else {
+                console.log('Что-то не так, отредактируй карточку');
+            }
+        } else {
+            console.log('Что-то не так, отредактируй карточку');
+        }
     };
 
     return (
@@ -52,7 +69,7 @@ export const VolunteerMobileList: FC<{
                                     key: 'edit',
                                     text: '✓',
                                     color: 'primary',
-                                    onClick: () => handleAction('edit', vol.id)
+                                    onClick: () => handleAction(vol)
                                 }
                             ]}
                         >
