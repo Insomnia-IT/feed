@@ -96,7 +96,9 @@ export const VolunteerMobileList: FC<{
                                 <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                                 <div>
                                     {isBlocked && <Tag color="red">Заблокирован</Tag>}
-                                    {<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}
+                                    {/* Можно сделать синим тег "На поле" */}
+                                    {/* {<Tag color={currentArrival?.status === 'ARRIVED' ? 'blue' : getOnFieldColors(vol)}>{currentStatus}</Tag>} */}
+                                    <Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>
                                 </div>
                                 <div className={styles.textRow}>
                                     <span className={styles.bold}>Заметка: </span>
