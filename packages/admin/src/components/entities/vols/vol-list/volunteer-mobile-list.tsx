@@ -3,7 +3,7 @@ import { SwipeAction } from 'antd-mobile';
 import { FC } from 'react';
 import dayjs from 'dayjs';
 
-import type { VolEntity } from 'interfaces';
+import type { VolEntity, ArrivalEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 
 import styles from '../list.module.css';
@@ -19,6 +19,21 @@ const formatDate = (value?: string): string => {
     });
 };
 
+const checkArrivalStatus = (arrival: ArrivalEntity | null): boolean => {
+    if (!arrival) {
+        return false;
+    }
+
+    const arrivalDate = dayjs(arrival.arrival_date);
+    const today = dayjs();
+    const yesterday = today.subtract(1, 'day');
+
+    return (
+        (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) &&
+        arrival.status !== 'on_field'
+    );
+};
+
 /* Компонент отображающий список волонтеров на телефоне */
 export const VolunteerMobileList: FC<{
     volList: Array<VolEntity>;
@@ -28,19 +43,9 @@ export const VolunteerMobileList: FC<{
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
     const handleAction = (vol: VolEntity) => {
         const currentArrival = findClosestArrival(vol.arrivals);
-        if (currentArrival) {
-            const arrivalDate = dayjs(currentArrival.arrival_date);
-            const today = dayjs();
-            const yesterday = today.subtract(1, 'day');
-
-            if (
-                (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) &&
-                currentArrival.status !== 'on_field'
-            ) {
-                console.log('Статус этого заезда меняется на "на поле"');
-            } else {
-                console.log('Что-то не так, отредактируй карточку');
-            }
+        
+        if (checkArrivalStatus(currentArrival)) {
+            console.log('Статус этого заезда меняется на "на поле"');
         } else {
             console.log('Что-то не так, отредактируй карточку');
         }
