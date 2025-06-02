@@ -3,7 +3,7 @@ import { CloseCircleOutlined } from '@ant-design/icons';
 import { SwipeAction } from 'antd-mobile';
 import { FC, useState } from 'react';
 import dayjs from 'dayjs';
-import { useDataProvider } from '@refinedev/core';
+import { useDataProvider, useInvalidate } from '@refinedev/core';
 
 import type { VolEntity, ArrivalEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
@@ -43,6 +43,7 @@ export const VolunteerMobileList: FC<{
     openVolunteer: (id: number) => Promise<boolean>;
 }> = ({ isLoading, openVolunteer, statusById, volList }) => {
     const dataProvider = useDataProvider();
+    const invalidate = useInvalidate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
 
@@ -63,7 +64,10 @@ export const VolunteerMobileList: FC<{
                 });
 
                 // Обновляем список волонтеров
-                window.location.reload();
+                invalidate({
+                    resource: 'volunteers',
+                    invalidates: ['all']
+                });
             } catch (error) {
                 console.error('Ошибка при обновлении статуса:', error);
             }
@@ -158,10 +162,10 @@ export const VolunteerMobileList: FC<{
                     </div>
                     <div className={styles.modalTextContent}>
                         <Typography.Title level={5} className={styles.modalTitle}>
-                            Что-то не так, отредактируйте карточку
+                        Не найден подходящий заезд
                         </Typography.Title>
                         <p>
-                            Волонтер {selectedVol?.name} не отмечен "Приступил". Проверьте информацию в детальной карточке
+                        Перейдите к карточке волонтера {selectedVol?.name} и поправьте информацию о заезде там
                         </p>
                     </div>
                 </div>
