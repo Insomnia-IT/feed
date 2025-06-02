@@ -111,16 +111,8 @@ export const VolunteerMobileList: FC<{
                                               {
                                                   key: 'edit',
                                                   text: (
-                                                      <div style={{ 
-                                                          display: 'flex', 
-                                                          flexDirection: 'column', 
-                                                          alignItems: 'center',
-                                                          gap: '8px'
-                                                      }}>
-                                                          <span style={{ 
-                                                              fontSize: '24px', 
-                                                              lineHeight: '1'
-                                                          }}>✓</span>
+                                                      <div className={styles.swipeActionContent}>
+                                                          <span className={styles.swipeActionIcon}>✓</span>
                                                           <span>Приступил</span>
                                                       </div>
                                                   ),
@@ -160,12 +152,12 @@ export const VolunteerMobileList: FC<{
                 cancelText="Обратно в список"
                 closeIcon={null}
             >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                    <div style={{ marginBottom: 16 }}>
-                        <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 24 }} />
+                <div className={styles.modalContent}>
+                    <div className={styles.modalIconWrapper}>
+                        <CloseCircleOutlined className={styles.modalIcon} />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography.Title level={5} style={{ marginBottom: 16 }}>
+                    <div className={styles.modalTextContent}>
+                        <Typography.Title level={5} className={styles.modalTitle}>
                             Что-то не так, отредактируйте карточку
                         </Typography.Title>
                         <p>
