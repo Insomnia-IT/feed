@@ -5,7 +5,7 @@ import { isActivatedStatus } from 'shared/lib';
 
 import type { FilterField } from './filters/filter-types';
 
-export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | undefined => {
+export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | 'orange' | undefined => {
     const day = dayjs();
     const currentArrival = findClosestArrival(vol.arrivals);
     const currentArrivalArray: Array<ArrivalEntity> = [];
@@ -21,7 +21,7 @@ export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | undefined =>
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         )
     ) {
-        return 'green';
+        return currentArrival?.status === 'ARRIVED' ? 'orange' : 'green';
     }
 
     if (
