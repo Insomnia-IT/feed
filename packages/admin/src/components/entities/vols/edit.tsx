@@ -1,21 +1,18 @@
-import { Edit, useForm } from '@refinedev/antd';
-import { Form, Breadcrumb } from 'antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
-import { useBreadcrumb } from '@refinedev/core';
+import { FC, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { Edit, useForm } from '@refinedev/antd';
+import { useBreadcrumb, type IResourceComponentsProps } from '@refinedev/core';
+import { Form, Breadcrumb } from 'antd';
 
 import type { VolEntity } from 'interfaces';
-
 import { CreateEdit } from './common';
 import useSaveConfirm from './use-save-confirm';
-import { FC } from 'react';
+
 import styles from './common.module.css';
 
 export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
-        onMutationSuccess: (e) => {
-            void onMutationSuccess(e);
-        },
+        onMutationSuccess: (e) => onMutationSuccess(e),
         warnWhenUnsavedChanges: true
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
@@ -25,27 +22,21 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
 
+    const crumbItems = useMemo(() => {
+        if (!breadcrumbs?.length) return [];
 
-    const CustomBreadcrumb = () => {
-        if (!breadcrumbs) return null;
-
-        return (
-            <Breadcrumb>
-                {breadcrumbs.map((item, index) => {
-                    const isLast = index === breadcrumbs.length - 1;
-                    return (
-                        <Breadcrumb.Item key={item.label}>
-                            {isLast ? volunteerName : <Link to={item.href || '#'}>{item.label}</Link>}
-                        </Breadcrumb.Item>
-                    );
-                })}
-            </Breadcrumb>
-        );
-    };
+        return breadcrumbs.map((item, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            return {
+                key: item.label,
+                title: isLast ? volunteerName : <Link to={item.href || '#'}>{item.label}</Link>
+            };
+        });
+    }, [breadcrumbs, volunteerName]);
 
     return (
         <Edit
-            breadcrumb={<CustomBreadcrumb />}
+            breadcrumb={crumbItems.length > 0 ? <Breadcrumb items={crumbItems} /> : null}
             title={
                 <div className={styles.pageTitle}>
                     Информация о волонтере
@@ -56,16 +47,9 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                     )}
                 </div>
             }
-            saveButtonProps={{
-                ...saveButtonProps,
-                onClick
-            }}
+            saveButtonProps={{ ...saveButtonProps, onClick }}
             contentProps={{
-                style: {
-                    background: 'initial',
-                    boxShadow: 'initial',
-                    height: '100%'
-                }
+                style: { background: 'initial', boxShadow: 'initial', height: '100%' }
             }}
         >
             <Form {...formProps} scrollToFirstError layout="vertical">
