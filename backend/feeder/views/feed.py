@@ -33,8 +33,8 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     def filter_is_group_badge(self, queryset, name, value):
         if value:
-            return queryset.filter(group_badge__isnull=True)
-        return queryset.filter(group_badge__isnull=False)
+            return queryset.filter(group_badge__isnull=False)
+        return queryset.filter(group_badge__isnull=True)
 
     class Meta:
         model = models.FeedTransaction

@@ -15,7 +15,8 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
-        }
+        },
+        warnWhenUnsavedChanges: true
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
 
@@ -23,6 +24,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
     const isBlocked = Form.useWatch('is_blocked', form);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
+
 
     const CustomBreadcrumb = () => {
         if (!breadcrumbs) return null;

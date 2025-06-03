@@ -40,7 +40,7 @@
         "clone": "Копия",
         "notAccessTitle": "Нет доступа"
     },
-    "warnWhenUnsavedChanges": "Are you sure you want to leave? You have unsaved changes.",
+    "warnWhenUnsavedChanges": "Вы не сохранили изменения. Если вы выйдете из профиля волонтера не сохранив изменения, то новые данные исчезнут",
     "notifications": {
         "success": "Успешно",
         "error": "Ошибка (status code: {{statusCode}})",

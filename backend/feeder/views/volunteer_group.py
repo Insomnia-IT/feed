@@ -155,10 +155,11 @@ class VolunteerGroupViewSet(APIView):
 
                     for field_name, value in custom_fields_data.items():
                         key = (volunteer_id, int(field_name))
+                        value = str(value) if value is not None else ""
                         if key in value_map.keys():
                             # Обновляем существующее значение
                             db_value = value_map[key]
-                            db_value.value = str(value)
+                            db_value.value = value
                             to_update.append(db_value)
                         else:
                             # Добавляем новые поля
@@ -166,7 +167,7 @@ class VolunteerGroupViewSet(APIView):
                                 VolunteerCustomFieldValue(
                                     id = change_id,
                                     volunteer_id = volunteer_id,
-                                    value = str(value),
+                                    value = value,
                                     custom_field_id=field_name
                                 ))
                             change_id+=1

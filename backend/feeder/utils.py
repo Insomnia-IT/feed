@@ -104,7 +104,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
     fact_query = models.FeedTransaction.objects.filter(
         dtime__range=(
             stat_date_from.shift(hours=+DAY_START_HOUR).datetime,
-            stat_date_to.shift(days=+1, hours=+DAY_START_HOUR).datetime
+            stat_date_to.shift(days=+1, hours=+DAY_START_HOUR, seconds=-1).datetime
         )
     )
     
@@ -127,7 +127,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
         if group_badge is False and (txn.get('group_badge') is not None or (txn.get('reason') and 'Групповое питание' in txn.get('reason'))):
             continue
 
-        state_date = arrow.get(txn['dtime'])
+        state_date = arrow.get(txn['dtime']).to(TZ).shift(hours=-DAY_START_HOUR)
         adjusted_date = (
             state_date.shift(days=-1) 
             if state_date.hour < DAY_START_HOUR and txn['meal_time'] == meal_times[3] # = "night"
