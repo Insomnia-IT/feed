@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
-from feeder.views import sync, feed, statistic, color, volunteer, kitchen, group_badge, direction, gender, person, photo, staying, transport, status, volunteer_group, wash
+from feeder.views import sync, feed, statistic, color, volunteer, kitchen, group_badge, direction, gender, person, photo, staying, transport, status, volunteer_group, wash, files
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 router = routers.DefaultRouter()
@@ -38,6 +38,7 @@ urlpatterns = [
     path('statistics/', statistic.Statistics.as_view()),
     path('volunteer-group/', volunteer_group.VolunteerGroupViewSet.as_view()),
     path('volunteer-group/<str:pk>/', volunteer_group.VolunteerGroupDeleteViewSet.as_view()),
+    path('files/<str:filename>', files.FileServeView.as_view()),
     # path('notion-sync', sync.SyncWithNotion.as_view()),
 ]
 

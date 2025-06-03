@@ -9,6 +9,7 @@ export interface VolEntity {
     phone?: string;
     email?: string;
     photo?: string;
+    photo_local?: string;
     position?: string;
     is_vegan?: boolean; // nutritionType
     is_blocked?: boolean;
@@ -167,7 +168,6 @@ export interface PersonEntity {
     other_names?: string;
     phone?: string;
     email?: string;
-    photo?: string;
     is_vegan?: boolean;
     engagements: EngagementEntity[];
 }
