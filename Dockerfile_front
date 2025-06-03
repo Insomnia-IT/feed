@@ -39,7 +39,20 @@ COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm ci
 
-COPY . /app
+COPY ./packages /app/packages
+COPY ./types /app/types
+COPY ./.eslintignore /app/.eslintignore
+COPY ./.eslintrc /app/.eslintrc
+COPY ./.eslintrc.js /app/.eslintrc.js
+COPY ./env.d.ts /app/env.d.ts
+COPY ./lerna.json /app/lerna.json
+COPY ./nx.json /app/nx.json
+COPY ./postcss.config.js /app/postcss.config.js
+COPY ./stylelint.config.mjs /app/stylelint.config.mjs
+COPY ./tsconfig.eslint.json /app/tsconfig.eslint.json
+COPY ./tsconfig.json /app/tsconfig.json
+COPY ./tsconfig.paths.json /app/tsconfig.paths.json
+COPY ./typings.d.ts /app/typings.d.ts
 
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/packages/scanner/src/pwa-ver.txt
 
