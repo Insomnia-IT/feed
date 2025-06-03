@@ -328,20 +328,20 @@ def download_and_save_photo(photo_url: str, volunteer_id: int) -> str | None:
     try:
         parsed = urlparse(photo_url)
         if parsed.scheme not in {"http", "https"} or parsed.hostname not in ALLOWED_HOSTS:
-            print(f"[PHOTO SYNC] Недопустимый адрес: {photo_url}")
+            print(f"[PHOTO SYNC] {volunteer_id} Недопустимый адрес: {photo_url}")
             return None
         
-        response = requests.get(photo_url, timeout=10, stream=True, headers={"Authorization": "Bearer " + settings.PHOTO_AUTH_TOKEN})
+        response = requests.head(photo_url, timeout=10, headers={"Authorization": "Bearer " + settings.PHOTO_AUTH_TOKEN})
         response.raise_for_status()
 
         content_type = response.headers.get("Content-Type", "")
         if content_type not in ALLOWED_CONTENT_TYPES:
-            print(f"[PHOTO SYNC] Недопустимый тип файла: {content_type}")
+            print(f"[PHOTO SYNC] {volunteer_id} Недопустимый тип файла: {content_type}")
             return None
 
         content_length = int(response.headers.get("Content-Length", 0))
         if content_length > MAX_IMAGE_SIZE:
-            print(f"[PHOTO SYNC] Слишком большой файл: {content_length} байт")
+            print(f"[PHOTO SYNC] {volunteer_id} Слишком большой файл: {content_length} байт")
             return None
 
         filename = f"{volunteer_id}.jpg"
@@ -349,11 +349,14 @@ def download_and_save_photo(photo_url: str, volunteer_id: int) -> str | None:
         os.makedirs(folder, exist_ok=True)
         filepath = os.path.join(folder, filename)
 
+        response = requests.get(photo_url, timeout=10, stream=True, headers={"Authorization": "Bearer " + settings.PHOTO_AUTH_TOKEN})
+        response.raise_for_status()
+
         with open(filepath, 'wb') as f:
             for chunk in response.iter_content(8192):
                 f.write(chunk)
 
-        return f"/feedapi/v1/files/{filename}"
+        return f"/files/{filename}"
     except Exception as e:
         print(f"[PHOTO SYNC ERROR] Volunteer {volunteer_id}: {e}")
         return None

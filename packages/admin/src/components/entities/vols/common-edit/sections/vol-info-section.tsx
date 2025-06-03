@@ -6,6 +6,9 @@ import styles from '../../common.module.css';
 import useCanAccess from '../../use-can-access';
 import type { DirectionEntity, PersonEntity } from 'interfaces';
 import { useSelect } from '@refinedev/antd';
+import { NEW_API_URL } from 'const';
+
+const PHOTO_FIELD = 'photo_local';
 
 export const VolInfoSection = ({
     denyBadgeEdit,
@@ -44,7 +47,9 @@ export const VolInfoSection = ({
         optionValue: 'id'
     });
 
-    const volPhoto = form.getFieldValue('photo');
+    const volPhoto = form.getFieldValue(PHOTO_FIELD);
+
+    const volPhotoUrl = NEW_API_URL + volPhoto;
 
     const badgeColorMap: Record<number, string> = {
         1: '#f5222d',
@@ -82,7 +87,7 @@ export const VolInfoSection = ({
                 <div className={styles.photoWrap}>
                     {volPhoto && !imageError ? (
                         <Image
-                            src={volPhoto}
+                            src={volPhotoUrl}
                             alt="Фото волонтера"
                             width={112}
                             height={112}
@@ -97,7 +102,7 @@ export const VolInfoSection = ({
                     )}
                 </div>
                 <div>
-                    <Form.Item name="photo" shouldUpdate>
+                    <Form.Item name={PHOTO_FIELD} shouldUpdate>
                         <Input type="hidden" />
                     </Form.Item>
                 </div>
