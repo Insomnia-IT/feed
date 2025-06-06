@@ -12,6 +12,7 @@ export const GroupBadgeFrame: React.FC<{
 }> = ({ selectedVolunteers, doChange }) => {
     const [selectedBadge, setSelectedBadge] = useState<GroupBadgeEntity | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
     const { open = () => {} } = useNotification();
 
     const closeModal = () => {
@@ -72,6 +73,11 @@ export const GroupBadgeFrame: React.FC<{
         return undefined;
     };
 
+    const confirmClear = (): void => {
+        setIsClearModalOpen(false);
+        doChange({ fieldName: 'group_badge', fieldValue: null });
+    };
+
     const volunteerCount = selectedVolunteers?.length ?? 0;
 
     return (
@@ -93,9 +99,29 @@ export const GroupBadgeFrame: React.FC<{
                 />
             </Form.Item>
 
+            <Button
+                style={{ width: '100%' }}
+                onClick={() => {
+                    setIsClearModalOpen(true);
+                }}
+            >
+                Очистить поле
+            </Button>
+
             <Button type={'primary'} style={{ width: '100%' }} onClick={openModal} disabled={!selectedBadge}>
                 Подтвердить
             </Button>
+
+            <ConfirmModal
+                isOpen={isClearModalOpen}
+                closeModal={(): void => {
+                    setIsClearModalOpen(false);
+                }}
+                title={'Очистить поле?'}
+                description={`${getVolunteerCountText(selectedVolunteers.length)} и очищаете поле "Групповой бейдж"!`}
+                onConfirm={confirmClear}
+            />
+
             <ConfirmModal
                 isOpen={isModalOpen}
                 closeModal={closeModal}

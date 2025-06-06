@@ -123,6 +123,7 @@ export const ArrivalsFrame: React.FC<{
                     title={targetField.title}
                     selectedVolunteers={selectedVolunteers}
                     resource={targetField.resource}
+                    hideClearButton
                 />
             ) : null}
         </>
