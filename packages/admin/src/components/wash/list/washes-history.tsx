@@ -34,6 +34,10 @@ export const WashesHistory = () => {
             dataIndex: 'washDate',
             render: (washDate: Dayjs) => washDate.format('DD/MM/YY HH:mm:ss')
         },
+        {
+            title: 'Номер стирки',
+            dataIndex: 'washCount'
+        },
         { title: 'Позывной совы', dataIndex: 'owlName' }
     ];
 

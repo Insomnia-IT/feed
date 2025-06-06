@@ -8,6 +8,7 @@ export interface WashToShow {
     directions?: string[];
     washDate: Dayjs;
     daysOnField: string;
+    washCount: number;
     owlName: string;
 }
 
@@ -34,6 +35,7 @@ export const transformWashesForShow = (wash: WashEntity): WashToShow => {
         directions: directions?.map((direction) => direction.name),
         washDate: dayjs(wash.created_at),
         daysOnField: getDaysOnFieldText({ volunteer: wash.volunteer, washDate: dayjs(wash.created_at) }),
+        washCount: wash.wash_count ?? 0,
         owlName
     };
 };

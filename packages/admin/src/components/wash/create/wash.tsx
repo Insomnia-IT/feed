@@ -6,7 +6,9 @@ import { PostScan } from '../components/post-scan';
 import { useScannerController } from 'components/qr-scanner-component/hooks/useScannerController';
 
 export const Wash: FC = () => {
-    const [scannedVolunteerQr, setScannedVolunteerQr] = useState<string | undefined>();
+    const [scannedVolunteerQr, setScannedVolunteerQr] = useState<string | undefined>(
+        '956b0c86d2f44c45aad240f864252d5c'
+    );
 
     const scannerController = useScannerController({
         onScan: async (qr: string, { disableScan }) => {
