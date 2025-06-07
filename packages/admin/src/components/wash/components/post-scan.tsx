@@ -79,7 +79,8 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
         addWash(
             {
                 volunteer: volunteer.id,
-                actor: Number(userData.id)
+                actor: Number(userData.id),
+                wash_count: washesInCurrentArrival.length + 1
             },
             {
                 onSuccess: () => {

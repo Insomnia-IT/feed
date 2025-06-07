@@ -178,4 +178,5 @@ export interface WashEntity {
     updated_at: string;
     volunteer: VolEntity;
     actor: VolEntity;
+    wash_count: number;
 }

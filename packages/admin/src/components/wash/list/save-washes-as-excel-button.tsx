@@ -41,14 +41,24 @@ const saveWashesAsExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Washes');
 
-    const header = ['ID', 'Позывной', 'ФИО', 'Службы/Локации', 'Дней на поле', 'Дата стирки', 'Позывной совы'];
+    const header = [
+        'ID',
+        'Позывной',
+        'ФИО',
+        'Службы/Локации',
+        'Дней на поле',
+        'Дата стирки',
+        'Номер стирки',
+        'Позывной совы'
+    ];
 
     sheet.addRow(header);
 
     data.forEach((washItem) => {
         const itemForSave = transformWashesForShow(washItem);
 
-        const { id, volunteerName, volunteerFullName, daysOnField, directions, washDate, owlName } = itemForSave;
+        const { id, volunteerName, volunteerFullName, daysOnField, directions, washDate, washCount, owlName } =
+            itemForSave;
 
         sheet.addRow([
             id,
@@ -57,6 +67,7 @@ const saveWashesAsExcel = async () => {
             directions?.join(',') ?? '',
             daysOnField,
             dayjs(washDate).format(formDateFormat),
+            washCount,
             owlName
         ]);
     });
