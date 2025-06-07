@@ -13,11 +13,13 @@ export const SingleField: React.FC<{
     title: string;
     selectedVolunteers: VolEntity[];
     resource?: string;
-}> = ({ selectedVolunteers = [], title, type, resource, setter }) => {
+    hideClearButton?: boolean;
+}> = ({ selectedVolunteers = [], title, type, resource, setter, hideClearButton = false }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
     const [currentValue, setCurrentValue] = useState<string | undefined>(undefined);
     const { open = () => {} } = useNotification();
+
     const confirmChange = (): void => {
         setIsModalOpen(false);
 
@@ -67,20 +69,22 @@ export const SingleField: React.FC<{
             >
                 Подтвердить
             </Button>
-            <Button
-                style={{ width: '100%' }}
-                onClick={() => {
-                    setIsClearModalOpen(true);
-                }}
-            >
-                Очистить поле
-            </Button>
+            {hideClearButton ? null : (
+                <Button
+                    style={{ width: '100%' }}
+                    onClick={() => {
+                        setIsClearModalOpen(true);
+                    }}
+                >
+                    Очистить поле
+                </Button>
+            )}
             <ConfirmModal
                 isOpen={isModalOpen}
                 closeModal={(): void => {
                     setIsModalOpen(false);
                 }}
-                title={'Поменять данные заездов?'}
+                title={'Поменять данные?'}
                 description={`${getVolunteerCountText(selectedVolunteers.length)} и меняете поле "${title}".`}
                 onConfirm={confirmChange}
             />
