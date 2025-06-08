@@ -194,8 +194,9 @@ function PublicStatistic() {
                 <Form.Item label="Кухня">
                     <Radio.Group value={kitchenId} onChange={changeKitchenId}>
                         <Radio.Button value="all">Все</Radio.Button>
-                        <Radio.Button value="first">Первая</Radio.Button>
-                        <Radio.Button value="second">Вторая</Radio.Button>
+                        <Radio.Button value="1">№1</Radio.Button>
+                        <Radio.Button value="2">№2</Radio.Button>
+                        <Radio.Button value="3">№3</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item label="Аноним">
