@@ -167,7 +167,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
         new_photo_url = self.initial_data.get("photo")
 
-        if new_photo_url and new_photo_url != old_photo_url:
+        if new_photo_url and new_photo_url != old_photo_url and False:
             photo_path = download_and_save_photo(new_photo_url, instance.id)
             if photo_path:
                 instance.photo_local = photo_path
