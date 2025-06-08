@@ -66,6 +66,10 @@ class NotionSync:
         if not data:
             return
 
+        print('=== sync_to_notion ===')
+        print(dt_start.isoformat(), dt_end.isoformat())
+        print(json.dumps(data))
+
         url = urljoin(settings.SYNCHRONIZATION_URL, "back-sync")
         response = requests.post(
             url=url,
@@ -131,6 +135,9 @@ class NotionSync:
 
         try:
             data = response.json()
+            print('=== sync_from_notion ===')
+            print(params)
+            print(json.dumps(data))
             with transaction.atomic():
                 self.save_data_from_notion(data.get("persons", []), "persons")
                 self.save_data_from_notion(data.get("directions", []), "directions")

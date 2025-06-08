@@ -37,7 +37,7 @@ class VolunteerAdmin(admin.ModelAdmin):
 
 class PersonAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "first_name", "last_name", "name", "nickname", "other_names", "telegram"
+        "id", "is_deleted", "first_name", "last_name", "name", "nickname", "other_names", "telegram"
     )
     search_fields = (
         "id", "first_name", "last_name", "name", "nickname", "other_names", "telegram"
