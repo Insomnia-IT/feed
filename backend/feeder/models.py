@@ -68,7 +68,7 @@ class Gender(TimeMixin):
     name = models.CharField(max_length=255)
 
 
-class Person(TimeMixin, CommentMixin):
+class Person(TimeMixin, CommentMixin, SoftDeleteModelMixin):
     """ Личность """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=255)
