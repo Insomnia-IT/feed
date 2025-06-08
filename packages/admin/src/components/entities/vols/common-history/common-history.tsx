@@ -177,7 +177,7 @@ export const CommonHistory = ({ role }: IProps) => {
                         key === 'value' ? customFields.find((f) => f.id === +item.data.custom_field)?.name : undefined;
                     return (
                         <div key={key} className={styles.itemDescrWrap}>
-                            <span className={styles.itemAction}>{customName ?? FIELD_LABELS[key] ?? key}</span>
+                            <span className={styles.itemAction}>{customName ?? FIELD_LABELS[key] ?? 'кастомное поле удалено'}</span>
                             <br />
                             <span className={styles.itemDrescrOld}>{fieldValue(item.old_data, key) || ''}</span>
                             <span className={styles.itemDrescrNew}>{fieldValue(item.data, key) || '‑'}</span>
