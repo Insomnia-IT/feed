@@ -67,7 +67,7 @@ class NotionSync:
             return
 
         print('=== sync_to_notion ===')
-        print(dt_start, dt_end)
+        print(dt_start.isoformat(), dt_end.isoformat())
         print(json.dumps(data))
 
         url = urljoin(settings.SYNCHRONIZATION_URL, "back-sync")
