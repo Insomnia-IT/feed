@@ -20,5 +20,16 @@
       "pin_code": "2002",
       "comment": null
     }
+  },
+  {
+    "model": "feeder.kitchen",
+    "pk": 3,
+    "fields": {
+      "created_at": "2023-05-03T19:12:22.407Z",
+      "updated_at": "2023-05-03T19:12:22.407Z",
+      "name": "Кухня №3",
+      "pin_code": "3003",
+      "comment": null
+    }
   }
 ]

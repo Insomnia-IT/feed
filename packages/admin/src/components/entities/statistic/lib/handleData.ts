@@ -6,6 +6,7 @@ import type {
     IData,
     IEaterTypeAmount,
     IStatisticResponce,
+    KitchenId,
     KitchenIdExtended,
     MealTime
 } from '../types';
@@ -18,7 +19,7 @@ export function convertResponceToData(res: IStatisticResponce): IData {
     res.forEach((datum) => {
         const { amount, date, is_vegan, kitchen_id, meal_time, type } = datum;
         const eaterType: EaterType = is_vegan ? 'vegan' : 'meatEater';
-        const kitchenId: KitchenIdExtended = kitchen_id == 1 ? 'first' : 'second';
+        const kitchenId: KitchenIdExtended = kitchen_id.toString() as KitchenId;
 
         if (!(date in result[kitchenId])) {
             result[kitchenId][date] = JSON.parse(JSON.stringify(datumInstance));
