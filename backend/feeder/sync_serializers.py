@@ -10,6 +10,7 @@ from history.models import History
 
 from django.conf import settings
 
+
 class SaveSyncSerializerMixin(object):
     class Meta:
         abstract = True
