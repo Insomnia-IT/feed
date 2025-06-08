@@ -127,12 +127,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
         if group_badge is False and (txn.get('group_badge') is not None or (txn.get('reason') and 'Групповое питание' in txn.get('reason'))):
             continue
 
-        state_date = arrow.get(txn['dtime']).to(TZ).shift(hours=-DAY_START_HOUR)
-        adjusted_date = (
-            state_date.shift(days=-1) 
-            if state_date.hour < DAY_START_HOUR and txn['meal_time'] == meal_times[3] # = "night"
-            else state_date
-        )
+        adjusted_date = arrow.get(txn['dtime']).to(TZ).shift(hours=-DAY_START_HOUR)
         append_stat(stat, {
             'date': adjusted_date.format(STAT_DATE_FORMAT),
             'type': StatisticType.FACT.value,
