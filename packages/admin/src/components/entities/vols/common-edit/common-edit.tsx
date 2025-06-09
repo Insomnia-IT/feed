@@ -129,14 +129,9 @@ export const CommonEdit: React.FC = () => {
                 <section id="section1" className={styles.formSection}>
                     <VolInfoSection
                         denyBadgeEdit={denyBadgeEdit}
-                        feedTypeOptions={feedTypeOptions}
-                        kitchenOptions={kitchenOptions}
-                        genderOptions={genderOptions}
-                        denyFeedTypeEdit={denyFeedTypeEdit}
                         canEditGroupBadge={canEditGroupBadge}
                         colorTypeOptions={colorTypeOptions}
                         groupBadgeOptions={groupBadgeOptions}
-                        handleQRChange={handleQRChange}
                         person={person}
                     />
                 </section>

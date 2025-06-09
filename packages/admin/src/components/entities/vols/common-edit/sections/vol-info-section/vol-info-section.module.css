@@ -1,0 +1,110 @@
+.formSection__title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.formSection__title h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgb(0 0 0 / 0.85);
+}
+
+.personalWrap {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.photoWrap {
+    width: 112px;
+    height: 112px;
+    margin-right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 2px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-color: rgb(240 240 240);
+}
+
+@media (width <= 768px) {
+    .photoWrap {
+        position: absolute;
+        margin-right: 0;
+        top: 83px;
+        right: 16px;
+        z-index: 1000;
+    }
+
+    .twoColumnsWrap {
+        display: grid;
+        grid-template-columns: calc(100% - 136px);
+    }
+
+    .twoColumnsWrap > * {
+        margin-bottom: 0;
+    }
+
+    .threeColumnsWrap {
+        grid-template-columns: 100%;
+        margin: 14px 0;
+    }
+
+    .threeColumnsWrap > * {
+        margin-bottom: 0;
+    }
+}
+
+.personalInfoWrap {
+    display: flex;
+    flex-grow: 1;
+    flex-flow: column nowrap;
+}
+
+.twoColumnsWrap {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+}
+
+@media (width <= 576px) {
+    .twoColumnsWrap {
+        display: grid;
+        grid-template-columns: calc(100% - 128px);
+    }
+}
+
+.threeColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.threeColumnsWrap > * {
+    align-self: start;
+}
+
+.inputWithEllips {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.inputWithEllips .ant-select-selection-item {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.inputWithEllips .ant-select-selection-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
