@@ -13,7 +13,7 @@ function findTargetArrival(vol: VolEntity): ArrivalEntity | undefined {
     }
 
     return arrivals.find((item) => {
-        return dayjs(item.departure_date).endOf('day').add(7, 'hours').isAfter(dayjs().startOf('day'));
+        return dayjs(item.departure_date).endOf('day').isAfter(dayjs().startOf('day'));
     });
 }
 
