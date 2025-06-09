@@ -21,8 +21,8 @@ const BADGE_COLOR_MAP: Record<number, ColorDef> = {
     5: '#fa8c16',
     6: '#fadb14',
     7: '#d9d9d9',
-    8: { fill: '#f5222d', border: '#52c41a' },
-    9: { fill: '#f5222d', border: '#1890ff' }
+    8: { border: '#f5222d', fill: '#52c41a' },
+    9: { border: '#f5222d', fill: '#1890ff' }
 };
 
 const ALLOW_EMPTY_DIRECTIONS_ROLES = new Set(['FELLOW', 'ART_FELLOW', 'VIP', 'PRESS', 'CONTRACTOR']);
