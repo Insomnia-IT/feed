@@ -5,6 +5,8 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { SingleField } from './single-field';
 import { useNotification } from '@refinedev/core';
 import { ChangeMassEditField } from './mass-edit-types';
+import { ConfirmModal } from './confirm-modal/confirm-modal';
+import { findTargetArrival } from './utils';
 
 const { Title } = Typography;
 
@@ -46,8 +48,19 @@ export const ArrivalsFrame: React.FC<{
     goBack: () => void;
     doChange: ChangeMassEditField;
 }> = ({ selectedVolunteers, goBack, doChange }) => {
+    const [isWarningModalOpen, setIsWarningModalOpen] = useState<boolean>(false);
     const [currentField, setCurrentField] = useState<ArrivalField | undefined>();
     const { open = () => {} } = useNotification();
+
+    const setFieldWithCheck = (key: ArrivalField) => {
+        if (selectedVolunteers.some((vol) => !findTargetArrival(vol))) {
+            setIsWarningModalOpen(true);
+
+            return;
+        }
+
+        setCurrentField(key);
+    };
 
     const targetField = currentField ? fieldsDictionary[currentField] : undefined;
 
@@ -57,7 +70,7 @@ export const ArrivalsFrame: React.FC<{
                 key={value.title}
                 style={{ width: '100%' }}
                 onClick={() => {
-                    setCurrentField(key as ArrivalField);
+                    setFieldWithCheck(key as ArrivalField);
                 }}
             >
                 {value.title}
@@ -126,6 +139,18 @@ export const ArrivalsFrame: React.FC<{
                     hideClearButton
                 />
             ) : null}
+            <ConfirmModal
+                isOpen={isWarningModalOpen}
+                closeModal={(): void => {
+                    setIsWarningModalOpen(false);
+                }}
+                title={'Волонтеры без заездов'}
+                description={
+                    'Имеются волонтеры с неподходящими для групповой операции заездами. Повторите групповую операцию без них, а потом отредактируйте их через карточку волонтера.'
+                }
+                onConfirm={() => {}}
+                disableOkButton
+            />
         </>
     );
 };

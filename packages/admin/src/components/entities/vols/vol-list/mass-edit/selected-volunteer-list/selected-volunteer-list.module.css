@@ -11,6 +11,12 @@
     column-gap: 8px;
 }
 
+.notArrived {
+    border: solid;
+    border-color: red;
+    border-radius: 5px;
+}
+
 .arrival {
     margin-left: auto;
 }

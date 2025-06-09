@@ -28,6 +28,7 @@ export const MassEdit: React.FC<MassEditProps> = ({
     unselectVolunteer,
     reloadVolunteers
 }) => {
+    const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
     const doChange = useDoChange({ vols: selectedVolunteers, unselectAll, reloadVolunteers });
 
     if (selectedVolunteers.length === 0) {
@@ -42,8 +43,18 @@ export const MassEdit: React.FC<MassEditProps> = ({
                     <span className={styles.counter}> {selectedVolunteers.length}</span>
                 </Title>
             </header>
-            <SelectedVolunteerList unselectVolunteer={unselectVolunteer} selectedVolunteers={selectedVolunteers} />
-            <ActionsSection doChange={doChange} unselectAll={unselectAll} selectedVolunteers={selectedVolunteers} />
+            <SelectedVolunteerList
+                unselectVolunteer={unselectVolunteer}
+                selectedVolunteers={selectedVolunteers}
+                outlineVolunteersWithoutArrival={sectionState === ActionSectionStates.Arrivals}
+            />
+            <ActionsSection
+                setSectionState={setSectionState}
+                sectionState={sectionState}
+                doChange={doChange}
+                unselectAll={unselectAll}
+                selectedVolunteers={selectedVolunteers}
+            />
         </div>
     );
 };
@@ -52,9 +63,9 @@ const ActionsSection: React.FC<{
     unselectAll: () => void;
     selectedVolunteers: VolEntity[];
     doChange: ChangeMassEditField;
-}> = ({ unselectAll, selectedVolunteers, doChange }) => {
-    const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
-
+    sectionState: ActionSectionStates;
+    setSectionState: (state: ActionSectionStates) => void;
+}> = ({ unselectAll, selectedVolunteers, doChange, sectionState, setSectionState }) => {
     return (
         <section className={styles.action}>
             {sectionState === ActionSectionStates.Initial ? (
