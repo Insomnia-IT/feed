@@ -11,6 +11,10 @@
     column-gap: 8px;
 }
 
+.arrival {
+    margin-left: auto;
+}
+
 .bold {
     font-family: Roboto, sans-serif;
     font-style: normal;
