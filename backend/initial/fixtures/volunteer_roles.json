@@ -18,7 +18,7 @@
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
       "name": "Зам. руководителя",
-      "color": "green",
+      "color": "red_green",
       "is_leader": false,
       "is_team": true
     }
@@ -30,7 +30,7 @@
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
       "name": "Бригадир",
-      "color": "green",
+      "color": "red_green",
       "is_leader": false,
       "is_team": true
     }
@@ -66,7 +66,7 @@
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
       "name": "Лидер нефедеральной локации",
-      "color": "blue",
+      "color": "red_blue",
       "is_leader": true,
       "is_team": false
     }
