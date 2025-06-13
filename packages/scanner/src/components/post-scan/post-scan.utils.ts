@@ -34,7 +34,7 @@ export const validateVol = ({
     if (
         vol.kitchen?.toString() !== kitchenId.toString() &&
         // В рамках группового бейжда детей не кормим в долг
-        (isGroupScan || vol.feed_type !== FeedType.Child)
+        (isGroupScan || vol.infant)
     ) {
         msg.push(`Кормится на кухне №${vol.kitchen}`);
 
@@ -65,7 +65,7 @@ export const validateVol = ({
     if (
         volTransactions.some((t) => t.mealTime === mealTime) &&
         // В рамках группового бейжда детей не кормим в долг
-        (isGroupScan || vol.feed_type !== FeedType.Child)
+        (isGroupScan || vol.infant)
     ) {
         msg.push(`Волонтер уже получил ${getMealTimeText(mealTime)}`);
 
@@ -96,7 +96,7 @@ export const validateVol = ({
         // Проверка t.amount > 0 && t.reason означает кормление по желтому экрану
         volTransactions.some((t) => t.amount && t.reason) &&
         // В рамках группового бейжда детей не кормим в долг
-        (isGroupScan || vol.feed_type !== FeedType.Child)
+        (isGroupScan || vol.infant)
     ) {
         msg.push('Волонтер уже питался сегодня в долг');
         isRed = true;

@@ -88,7 +88,6 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     deleted = serializers.SerializerMethodField()
     activated = serializers.SerializerMethodField()
     vegan = serializers.BooleanField(source="is_vegan", required=False)
-    infant = serializers.SerializerMethodField()
     feed = serializers.SerializerMethodField()
     number = serializers.CharField(source="badge_number", required=False, allow_blank=True, allow_null=True)
     batch = serializers.CharField(source="printing_batch", required=False, allow_blank=True, allow_null=True)
@@ -118,12 +117,6 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             volunteer=obj.id
         ).count() > 0
 
-    def get_infant(self, obj):
-        feed = obj.feed_type
-        if feed and feed.name == "ребенок":
-            return True
-        return False
-
     def get_feed(self, obj):
         feed = obj.feed_type
         if not feed or feed.name == "без питания":
@@ -142,11 +135,8 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         return super().to_internal_value(data)
 
     def validate(self, attrs):
-        infant = self.initial_data.get("infant")
         feed = self.initial_data.get("feed", "")
-        if infant:
-            attrs["feed_type"] = FeedType.objects.get(name="ребенок")
-        elif feed == "FREE":
+        if feed == "FREE":
             attrs["feed_type"] = FeedType.objects.get(name="фри")
         elif feed == "PAID":
             attrs["feed_type"] = FeedType.objects.get(name="платно")
