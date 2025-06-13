@@ -20,19 +20,18 @@ export const SelectedVolunteerList: React.FC<{
 
         const currentArrival = findTargetArrival(vol);
 
-        const emptyArrivalText = outlineVolunteersWithoutArrival ? 'заезд не найден' : '';
+        const emptyArrivalText = 'заезд\u00A0не\u00A0найден';
 
         // Показываем фио, прозвище или fallback.
         return (
-            <div
-                key={vol.id}
-                className={[
-                    styles.item,
-                    !currentArrival && outlineVolunteersWithoutArrival ? styles.notArrived : ''
-                ].join(' ')}
-            >
+            <div key={vol.id} className={styles.item}>
                 <span className={styles.bold}>{title?.trim() || fallback}</span>
-                <span className={styles.arrival}>
+                <span
+                    className={[
+                        styles.arrival,
+                        !currentArrival && outlineVolunteersWithoutArrival ? styles.notArrived : ''
+                    ].join(' ')}
+                >
                     {currentArrival
                         ? `${dayjs(currentArrival.arrival_date).format('DD.MM')} - ${dayjs(currentArrival.departure_date).format('DD.MM')}`
                         : emptyArrivalText}
