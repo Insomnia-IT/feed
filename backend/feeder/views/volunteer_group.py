@@ -270,15 +270,15 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     old_data = hist.old_data or {}
                     new_data = hist.data or {}
 
+                    vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
+                    arrivals = Arrival.objects.filter(volunteer=vol)
+
                     arr_id = old_data.get('id')
                     target = arrivals.get(id=arr_id)
 
                     if not target:
                         continue
 
-                    vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
-                    arrivals = Arrival.objects.filter(volunteer=vol)
-                    
                     all_arrivals = []
                     for arr in arrivals:
                         entry = {"id": arr.id}
