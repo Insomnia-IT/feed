@@ -10,7 +10,8 @@ export const ConfirmModal: React.FC<{
     onConfirm: () => void | Promise<void>;
     closeModal: () => void;
     isOpen: boolean;
-}> = ({ title, description, warning, onConfirm, closeModal, isOpen }) => {
+    disableOkButton?: boolean;
+}> = ({ title, description, warning, onConfirm, closeModal, isOpen, disableOkButton = false }) => {
     const onCancel = () => {
         closeModal();
     };
@@ -30,6 +31,7 @@ export const ConfirmModal: React.FC<{
             open={isOpen}
             onCancel={onCancel}
             onOk={onOk}
+            okButtonProps={{ disabled: disableOkButton }}
             okText={'Подтвердить'}
             onClose={onCancel}
             cancelText={'Отменить'}

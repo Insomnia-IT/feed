@@ -11,6 +11,10 @@
     column-gap: 8px;
 }
 
+.notArrived {
+    color: red;
+}
+
 .arrival {
     margin-left: auto;
 }

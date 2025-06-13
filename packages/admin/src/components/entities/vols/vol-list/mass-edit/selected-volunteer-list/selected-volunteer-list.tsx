@@ -1,26 +1,17 @@
 import React from 'react';
-import type { ArrivalEntity, VolEntity } from 'interfaces';
+import type { VolEntity } from 'interfaces';
 import { CloseOutlined } from '@ant-design/icons';
 import styles from './selected-volunteer-list.module.css';
 import { Button } from 'antd';
 import dayjs from 'dayjs';
-
-function findTargetArrival(vol: VolEntity): ArrivalEntity | undefined {
-    const arrivals = vol?.arrivals;
-
-    if (!arrivals) {
-        return undefined;
-    }
-
-    return arrivals.find((item) => {
-        return dayjs(item.departure_date).endOf('day').isAfter(dayjs().startOf('day'));
-    });
-}
+import { findTargetArrival } from '../utils';
 
 export const SelectedVolunteerList: React.FC<{
     selectedVolunteers: VolEntity[];
     unselectVolunteer: (volunteer: VolEntity) => void;
-}> = ({ selectedVolunteers, unselectVolunteer }) => {
+    /** Подсвечивать волонтеров без текущего заезда */
+    outlineVolunteersWithoutArrival?: boolean;
+}> = ({ selectedVolunteers, unselectVolunteer, outlineVolunteersWithoutArrival = false }) => {
     const volunteers = selectedVolunteers.map((vol: VolEntity) => {
         const title = vol.first_name || vol.last_name ? [vol.first_name, vol.last_name].join(' ') : vol.name;
 
@@ -29,14 +20,21 @@ export const SelectedVolunteerList: React.FC<{
 
         const currentArrival = findTargetArrival(vol);
 
+        const emptyArrivalText = 'заезд\u00A0не\u00A0найден';
+
         // Показываем фио, прозвище или fallback.
         return (
             <div key={vol.id} className={styles.item}>
                 <span className={styles.bold}>{title?.trim() || fallback}</span>
-                <span className={styles.arrival}>
+                <span
+                    className={[
+                        styles.arrival,
+                        !currentArrival && outlineVolunteersWithoutArrival ? styles.notArrived : ''
+                    ].join(' ')}
+                >
                     {currentArrival
                         ? `${dayjs(currentArrival.arrival_date).format('DD.MM')} - ${dayjs(currentArrival.departure_date).format('DD.MM')}`
-                        : ''}
+                        : emptyArrivalText}
                 </span>
                 <Button
                     title="Убрать из выбора"
