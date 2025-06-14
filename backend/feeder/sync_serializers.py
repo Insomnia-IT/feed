@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
                            Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen)
-from feeder.utils import download_and_save_photo
 
 from history.models import History
 
@@ -167,11 +166,10 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
         new_photo_url = self.initial_data.get("photo")
 
-        if new_photo_url and new_photo_url != old_photo_url and False:
-            photo_path = download_and_save_photo(new_photo_url, instance.id)
-            if photo_path:
-                instance.photo_local = photo_path
-                instance.save(update_fields=["photo_local"])
+        if new_photo_url:
+            if new_photo_url != old_photo_url or not instance.photo_local:
+                instance.is_photo_updated = True
+                instance.save(update_fields=["is_photo_updated"])
 
         return instance
 
