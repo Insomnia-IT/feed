@@ -10,7 +10,7 @@ class DownloadVolunteerPhotos(APIView):
     permission_classes = [permissions.AllowAny, ]
 
     def post(self, request):
-        limit = getattr(settings, 'PHOTO_DOWNLOAD_LIMIT', 100)
+        limit = int(getattr(settings, 'PHOTO_DOWNLOAD_LIMIT', 100))
         volunteers = Volunteer.objects.filter(is_photo_updated=True)[:limit]
         count = 0
         for vol in volunteers:
