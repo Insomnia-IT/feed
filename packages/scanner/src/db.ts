@@ -36,6 +36,7 @@ export interface TransactionJoined extends Transaction {
 export enum FeedType {
     Free = 1, // бесплатно
     Paid = 2, // платно
+    Child = 3, // ребенок
     NoFeed = 4 // без питания
 }
 

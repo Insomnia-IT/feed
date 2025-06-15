@@ -49,7 +49,7 @@ export const PersonalInfoSection = ({
                     <Checkbox>Веган</Checkbox>
                 </Form.Item>
                 <Form.Item name="infant" valuePropName="checked">
-                    <Checkbox>Это ребенок</Checkbox>
+                    <Checkbox>&lt;18 лет</Checkbox>
                 </Form.Item>
                 <Form.Item name="is_ticket_received" valuePropName="checked">
                     <Checkbox disabled>Выдан билет</Checkbox>

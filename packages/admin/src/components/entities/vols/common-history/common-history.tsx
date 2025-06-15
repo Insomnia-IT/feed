@@ -102,7 +102,7 @@ export const CommonHistory = ({ role }: IProps) => {
     const fieldValue = useCallback(
         (obj: IData, key: string) => {
             if (!obj) return '';
-            if (['vegan', 'is_blocked', 'is_ticket_received'].includes(key)) {
+            if (Object.keys(BOOL_MAP).includes(key)) {
                 return BOOL_MAP[key as keyof typeof BOOL_MAP][Number(obj[key])];
             }
             if (['comment', 'direction_head_comment'].includes(key)) {
@@ -177,7 +177,9 @@ export const CommonHistory = ({ role }: IProps) => {
                         key === 'value' ? customFields.find((f) => f.id === +item.data.custom_field)?.name : undefined;
                     return (
                         <div key={key} className={styles.itemDescrWrap}>
-                            <span className={styles.itemAction}>{customName ?? FIELD_LABELS[key] ?? 'кастомное поле удалено'}</span>
+                            <span className={styles.itemAction}>
+                                {customName ?? FIELD_LABELS[key] ?? 'кастомное поле удалено'}
+                            </span>
                             <br />
                             <span className={styles.itemDrescrOld}>{fieldValue(item.old_data, key) || ''}</span>
                             <span className={styles.itemDrescrNew}>{fieldValue(item.data, key) || '‑'}</span>

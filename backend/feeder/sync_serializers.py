@@ -99,7 +99,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "id", "deleted", "name", "first_name", "last_name", "gender", "phone",
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
-            "direction_head_comment",
+            "direction_head_comment", "infant",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type",
             "activated"
         )
@@ -120,7 +120,9 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         feed = obj.feed_type
         if not feed or feed.name == "без питания":
             return "NO"
-        if feed.name == "ребенок" or feed.name == "фри":
+        if feed.name == "ребенок":
+            return "CHILD"
+        if feed.name == "фри":
             return "FREE"
         return "PAID"
 
@@ -135,7 +137,9 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
     def validate(self, attrs):
         feed = self.initial_data.get("feed", "")
-        if feed == "FREE":
+        if feed == "CHILD":
+            attrs["feed_type"] = FeedType.objects.get(name="ребенок")
+        elif feed == "FREE":
             attrs["feed_type"] = FeedType.objects.get(name="фри")
         elif feed == "PAID":
             attrs["feed_type"] = FeedType.objects.get(name="платно")
