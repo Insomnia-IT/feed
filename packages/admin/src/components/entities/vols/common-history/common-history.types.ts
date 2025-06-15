@@ -27,7 +27,7 @@ export interface IData {
     group_badge: string;
     directions: string[];
     value: string;
-    is_ticket_received: boolean;
+    ticket: boolean;
     [key: string]: any;
 }
 
