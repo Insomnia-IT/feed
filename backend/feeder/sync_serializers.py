@@ -93,6 +93,8 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     batch = serializers.CharField(source="printing_batch", required=False, allow_blank=True, allow_null=True)
     role = serializers.SlugRelatedField(source="main_role", slug_field="id",
                                         queryset=VolunteerRole.objects.all(), required=False)
+    is_ticket_received = serializers.BooleanField(source="ticket", required=False)
+    scanner_comment = serializers.CharField(source="scanner_comment", required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Volunteer
@@ -102,7 +104,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type",
-            "activated"
+            "activated", "is_ticket_received", "scanner_comment"
         )
         uuid_field = "uuid"
 
