@@ -1,6 +1,7 @@
 import { type FC, useState } from 'react';
 
 import type { Volunteer } from '~/db';
+import { FeedType } from '~/db';
 import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Button } from '~/shared/ui/button/button';
 import { Text, Title } from '~/shared/ui/typography';
@@ -15,7 +16,7 @@ export const FeedCard: FC<{
     doFeed: () => void;
     close: () => void;
 }> = ({ close, doFeed, vol }) => {
-    const isChild = vol.infant;
+    const isChild = vol.feed_type === FeedType.Child;
     const [disabled, setDisabled] = useState(false);
 
     const handleFeed = (): void => {
