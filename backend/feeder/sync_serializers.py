@@ -94,7 +94,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     role = serializers.SlugRelatedField(source="main_role", slug_field="id",
                                         queryset=VolunteerRole.objects.all(), required=False)
     is_ticket_received = serializers.BooleanField(source="ticket", required=False)
-    scanner_comment = serializers.CharField(source="scanner_comment", required=False, allow_blank=True, allow_null=True)
+    scanner_comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Volunteer
