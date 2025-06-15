@@ -11,6 +11,7 @@ export const FIELD_LABELS: Record<string, string> = {
     color_type: 'Цвет бейджа',
     first_name: 'Имя',
     gender: 'Пол',
+    infant: '<18 лет',
     last_name: 'Фамилия',
     name: 'Имя на бейдже',
     phone: 'Телефон',
@@ -39,7 +40,8 @@ export const STATUS_MAP: Record<string, string> = {
 export const BOOL_MAP = {
     vegan: ['Мясоед', 'Веган'],
     is_blocked: ['Разблокирован', 'Заблокирован'],
-    is_ticket_received: ['Не выдан', 'Выдан']
+    is_ticket_received: ['Не выдан', 'Выдан'],
+    infant: ['Да', 'Нет']
 };
 
 export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'deleted', 'feed', 'role', 'custom_field']);

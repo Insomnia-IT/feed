@@ -87,7 +87,6 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
     deleted = serializers.SerializerMethodField()
     activated = serializers.SerializerMethodField()
     vegan = serializers.BooleanField(source="is_vegan", required=False)
-    infant = serializers.SerializerMethodField()
     feed = serializers.SerializerMethodField()
     number = serializers.CharField(source="badge_number", required=False, allow_blank=True, allow_null=True)
     batch = serializers.CharField(source="printing_batch", required=False, allow_blank=True, allow_null=True)
@@ -102,7 +101,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "id", "deleted", "name", "first_name", "last_name", "gender", "phone",
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
-            "direction_head_comment",
+            "direction_head_comment", "infant",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type",
             "activated", "is_ticket_received", "scanner_comment"
         )
@@ -119,17 +118,13 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             volunteer=obj.id
         ).count() > 0
 
-    def get_infant(self, obj):
-        feed = obj.feed_type
-        if feed and feed.name == "ребенок":
-            return True
-        return False
-
     def get_feed(self, obj):
         feed = obj.feed_type
         if not feed or feed.name == "без питания":
             return "NO"
-        if feed.name == "ребенок" or feed.name == "фри":
+        if feed.name == "ребенок":
+            return "CHILD"
+        if feed.name == "фри":
             return "FREE"
         return "PAID"
 
@@ -143,9 +138,8 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         return super().to_internal_value(data)
 
     def validate(self, attrs):
-        infant = self.initial_data.get("infant")
         feed = self.initial_data.get("feed", "")
-        if infant:
+        if feed == "CHILD":
             attrs["feed_type"] = FeedType.objects.get(name="ребенок")
         elif feed == "FREE":
             attrs["feed_type"] = FeedType.objects.get(name="фри")

@@ -37,12 +37,6 @@ class StatisticType(Enum):
     PLAN = 'plan'
     FACT = 'fact'
 
-class FeedType(Enum):
-    FREE = 'FT1'
-    PAID = 'FT2'
-    CHILD = 'FT3'
-    NO = 'FT4'
-
 class SendArrivedException(Exception):
     pass
 

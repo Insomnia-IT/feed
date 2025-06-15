@@ -36,7 +36,7 @@ export interface TransactionJoined extends Transaction {
 export enum FeedType {
     Free = 1, // бесплатно
     Paid = 2, // платно
-    Child = 3, // ребенок,
+    Child = 3, // ребенок
     NoFeed = 4 // без питания
 }
 
@@ -56,6 +56,7 @@ export interface Volunteer {
     is_vegan: boolean;
     arrivals: Array<Arrival>;
     feed_type: FeedType;
+    infant: boolean;
     directions: Array<{ name: string }>;
     kitchen: number;
     group_badge: number | null;

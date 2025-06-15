@@ -250,6 +250,7 @@ export const useFilters = ({
             lookup: () => feedTypes?.data ?? []
         }, // feedTypeNameById
         { type: FilterFieldType.Boolean, name: 'is_vegan', title: 'Веган' },
+        { type: FilterFieldType.Boolean, name: 'infant', title: '<18 лет' },
         { type: FilterFieldType.String, name: 'comment', title: 'Комментарий' },
         {
             type: FilterFieldType.Lookup,

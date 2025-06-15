@@ -6,7 +6,7 @@
       "created_at": "2023-05-03T18:52:56.920Z",
       "updated_at": "2023-05-03T18:52:56.920Z",
       "name": "фри",
-      "code": "FT1",
+      "code": "FREE",
       "paid": false,
       "daily_amount": 4,
       "comment": null
@@ -19,7 +19,7 @@
       "created_at": "2023-05-03T18:52:56.931Z",
       "updated_at": "2023-05-03T18:52:56.931Z",
       "name": "платно",
-      "code": "FT2",
+      "code": "PAID",
       "paid": true,
       "daily_amount": 3,
       "comment": null
@@ -32,7 +32,7 @@
       "created_at": "2023-05-03T18:52:56.931Z",
       "updated_at": "2023-05-03T18:52:56.931Z",
       "name": "ребенок",
-      "code": "FT3",
+      "code": "CHILD",
       "paid": false,
       "daily_amount": 3,
       "comment": null
@@ -45,7 +45,7 @@
       "created_at": "2023-05-03T18:52:56.931Z",
       "updated_at": "2023-05-03T18:52:56.931Z",
       "name": "без питания",
-      "code": "FT4",
+      "code": "NO",
       "paid": true,
       "daily_amount": 0,
       "comment": null
