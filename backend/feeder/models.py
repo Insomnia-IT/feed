@@ -149,7 +149,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
         related_name='volunteers',
         verbose_name="Ответственный")
-    is_child = models.BooleanField('IsChild', null=True, blank=True, default=False)
+    infant = models.BooleanField('IsChild', null=True, blank=True, default=False)
 
     class Meta:
         verbose_name = "Волонтёр"
