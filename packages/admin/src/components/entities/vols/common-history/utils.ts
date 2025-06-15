@@ -28,7 +28,7 @@ export const FIELD_LABELS: Record<string, string> = {
     group_badge: 'Групповой бейдж',
     number: 'Номер бейджа',
     batch: 'Партия бейджа',
-    is_ticket_received: 'Билет'
+    ticket: 'Билет'
 };
 
 export const STATUS_MAP: Record<string, string> = {
@@ -40,7 +40,7 @@ export const STATUS_MAP: Record<string, string> = {
 export const BOOL_MAP = {
     vegan: ['Мясоед', 'Веган'],
     is_blocked: ['Разблокирован', 'Заблокирован'],
-    is_ticket_received: ['Не выдан', 'Выдан'],
+    ticket: ['Не выдан', 'Выдан'],
     infant: ['Да', 'Нет']
 };
 
