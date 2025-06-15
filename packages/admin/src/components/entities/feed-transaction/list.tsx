@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { saveXLSX } from 'shared/lib/saveXLSX';
 import { FeedTransactionEntity } from 'interfaces';
-import { mealTimeById, NEW_API_URL } from 'const';
+import { MEAL_MAP, NEW_API_URL } from 'const';
 import { ColumnsType } from 'antd/es/table';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
 import { FilterItem } from '../vols/vol-list/filters/filter-types';
@@ -95,7 +95,7 @@ export const FeedTransactionList: FC = () => {
                     volunteerName: item?.volunteer_name || 'Аноним',
                     volunteerId: item.volunteer,
                     feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
-                    mealType: mealTimeById[item.meal_time],
+                    mealType: MEAL_MAP[item.meal_time],
                     kitchenName: item?.kitchen_name ?? '',
                     amount: item.amount,
                     reason: item?.reason ?? undefined,
@@ -182,7 +182,7 @@ export const FeedTransactionList: FC = () => {
                 tx?.volunteer_name ?? 'Аноним',
                 [tx.volunteer_last_name, tx.volunteer_first_name].filter((item) => !!item).join(' '),
                 tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
-                mealTimeById[tx.meal_time],
+                MEAL_MAP[tx.meal_time],
                 tx?.kitchen_name ?? '',
                 tx.amount,
                 tx?.reason ?? '',

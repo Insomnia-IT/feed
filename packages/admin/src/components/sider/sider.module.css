@@ -14,7 +14,7 @@
     bottom: 0;
     display: flex;
     justify-content: space-around;
-    z-index: 4;
+    z-index: 5;
     background-color: #fff;
 }
 
