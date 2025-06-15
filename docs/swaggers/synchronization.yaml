@@ -195,7 +195,7 @@ components:
           type: string
           enum:
             - PLANNED
-            - CANCELED
+            - CANCELLED
             - PENDING
             - CONFIRMED
             - SKIPPED
@@ -266,7 +266,7 @@ components:
           type: string
           enum:
             - PLANNED
-            - CANCELED
+            - CANCELLED
             - PENDING
             - CONFIRMED
             - SKIPPED
