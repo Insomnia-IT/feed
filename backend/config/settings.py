@@ -213,6 +213,10 @@ PHOTO_STORAGE_PATH = os.getenv("PHOTO_STORAGE_PATH", "../photos")
 
 PHOTO_AUTH_TOKEN = os.environ.get("PHOTO_AUTH_TOKEN", "")
 
+PHOTO_DOWNLOAD_LIMIT = os.environ.get("PHOTO_DOWNLOAD_LIMIT", 100)
+
+PHOTO_SYNC_PERIOD = os.environ.get("PHOTO_SYNC_PERIOD", 5)
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
