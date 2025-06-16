@@ -6,7 +6,9 @@ import { SingleField } from './single-field';
 import { useNotification } from '@refinedev/core';
 import { ChangeMassEditField } from './mass-edit-types';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
-import { findTargetArrival } from './utils';
+import { canBeVolunteerArrivalChanged, findTargetArrival } from './utils';
+import { useArrivalDates } from './arrival-dates-context/arrival-dates-context';
+import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
@@ -49,8 +51,10 @@ export const ArrivalsFrame: React.FC<{
     doChange: ChangeMassEditField;
 }> = ({ selectedVolunteers, goBack, doChange }) => {
     const [isWarningModalOpen, setIsWarningModalOpen] = useState<boolean>(false);
+    const [currentValue, setCurrentValue] = useState<string | undefined>(undefined);
     const [currentField, setCurrentField] = useState<ArrivalField | undefined>();
     const { open = () => {} } = useNotification();
+    const { setDate, clearDate, date, dateType } = useArrivalDates();
 
     const setFieldWithCheck = (key: ArrivalField) => {
         if (selectedVolunteers.some((vol) => !findTargetArrival(vol))) {
@@ -79,6 +83,12 @@ export const ArrivalsFrame: React.FC<{
     });
 
     const valueSetter = (newValue: string | null): void => {
+        if (selectedVolunteers.some((vol) => canBeVolunteerArrivalChanged(vol, date, dateType))) {
+            setIsWarningModalOpen(true);
+
+            return;
+        }
+
         if (!targetField) {
             open({
                 message: 'Ошибка заполнения поля. Изменяемое поле не определено или не выбрано.',
@@ -98,6 +108,7 @@ export const ArrivalsFrame: React.FC<{
             return;
         }
 
+        clearDate();
         doChange({ isArrival: true, fieldValue: newValue, fieldName: targetField.fieldName });
     };
 
@@ -109,6 +120,7 @@ export const ArrivalsFrame: React.FC<{
                         size={'small'}
                         onClick={() => {
                             setCurrentField(undefined);
+                            clearDate();
                         }}
                         type={'text'}
                         icon={<ArrowLeftOutlined />}
@@ -120,6 +132,7 @@ export const ArrivalsFrame: React.FC<{
                     <Button
                         size={'small'}
                         onClick={() => {
+                            clearDate();
                             goBack();
                         }}
                         type={'text'}
@@ -131,6 +144,24 @@ export const ArrivalsFrame: React.FC<{
             {currentField ? null : buttons}
             {targetField ? (
                 <SingleField
+                    currentValue={currentValue}
+                    setCurrentValue={(value: string | undefined) => {
+                        setCurrentValue(value);
+
+                        const dayjsValue = dayjs(value);
+
+                        if (currentField === 'ArrivalDate' && dayjsValue.isValid()) {
+                            setDate(dayjsValue, 'start');
+                        }
+
+                        if (currentField === 'DepartureDate' && dayjsValue.isValid()) {
+                            setDate(dayjsValue, 'end');
+                        }
+
+                        if (!value) {
+                            clearDate();
+                        }
+                    }}
                     type={targetField.type}
                     setter={valueSetter}
                     title={targetField.title}
