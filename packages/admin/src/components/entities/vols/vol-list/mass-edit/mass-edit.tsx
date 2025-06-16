@@ -10,7 +10,7 @@ import { KitchenFrame } from './kitchen-frame';
 import { InitialFrame } from './initial-frame';
 import { ActionSectionStates } from './action-section-states';
 import { CustomFieldsFrame } from './custom-fields-frame';
-import { ChangeMassEditField } from './mass-edit-types';
+import { ChangeMassEditField, VolunteerField } from './mass-edit-types';
 import { useDoChange } from './use-do-change';
 import { ArrivalDatesProvider } from './arrival-dates-context/arrival-dates-context';
 
@@ -53,7 +53,10 @@ export const MassEdit: React.FC<MassEditProps> = ({
                 <ActionsSection
                     setSectionState={setSectionState}
                     sectionState={sectionState}
-                    doChange={doChange}
+                    doChange={async (params: VolunteerField) => {
+                        await doChange(params);
+                        setSectionState(ActionSectionStates.Initial);
+                    }}
                     unselectAll={unselectAll}
                     selectedVolunteers={selectedVolunteers}
                 />
