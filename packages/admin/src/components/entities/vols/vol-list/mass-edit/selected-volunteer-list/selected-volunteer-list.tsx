@@ -4,7 +4,8 @@ import { CloseOutlined } from '@ant-design/icons';
 import styles from './selected-volunteer-list.module.css';
 import { Button } from 'antd';
 import dayjs from 'dayjs';
-import { findTargetArrival } from '../utils';
+import { canBeVolunteerArrivalChanged, findTargetArrival } from '../utils';
+import { useArrivalDates } from '../arrival-dates-context/arrival-dates-context';
 
 export const SelectedVolunteerList: React.FC<{
     selectedVolunteers: VolEntity[];
@@ -12,6 +13,8 @@ export const SelectedVolunteerList: React.FC<{
     /** Подсвечивать волонтеров без текущего заезда */
     outlineVolunteersWithoutArrival?: boolean;
 }> = ({ selectedVolunteers, unselectVolunteer, outlineVolunteersWithoutArrival = false }) => {
+    const { date, dateType } = useArrivalDates();
+
     const volunteers = selectedVolunteers.map((vol: VolEntity) => {
         const title = vol.first_name || vol.last_name ? [vol.first_name, vol.last_name].join(' ') : vol.name;
 
@@ -22,6 +25,8 @@ export const SelectedVolunteerList: React.FC<{
 
         const emptyArrivalText = 'заезд\u00A0не\u00A0найден';
 
+        const isViolatingDates = canBeVolunteerArrivalChanged(vol, date, dateType);
+
         // Показываем фио, прозвище или fallback.
         return (
             <div key={vol.id} className={styles.item}>
@@ -29,7 +34,9 @@ export const SelectedVolunteerList: React.FC<{
                 <span
                     className={[
                         styles.arrival,
-                        !currentArrival && outlineVolunteersWithoutArrival ? styles.notArrived : ''
+                        isViolatingDates || (!currentArrival && outlineVolunteersWithoutArrival)
+                            ? styles.notArrived
+                            : ''
                     ].join(' ')}
                 >
                     {currentArrival
