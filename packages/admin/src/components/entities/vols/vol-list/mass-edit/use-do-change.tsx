@@ -48,11 +48,9 @@ function fillFieldItems({ fieldValue, fieldName, isCustom = false, isArrival = f
 
 export const useDoChange = ({
     vols,
-    unselectAll,
     reloadVolunteers
 }: {
     vols: VolEntity[];
-    unselectAll: () => void;
     reloadVolunteers: () => Promise<void>;
 }): ChangeMassEditField => {
     const apiUrl = useApiUrl();
@@ -75,8 +73,6 @@ export const useDoChange = ({
                 type: 'success',
                 undoableTimeout: 5000
             });
-
-            unselectAll();
 
             await reloadVolunteers();
         } catch (error) {
