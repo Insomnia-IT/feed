@@ -136,7 +136,7 @@ export const VolList: FC = () => {
                         setSearchText={setSearchText}
                     />
                     <Row style={{ padding: '10px 0' }} justify="space-between">
-                        {isDesktop && (
+                        {isDesktop ? (
                             <>
                                 <Row style={{ gap: '24px' }} align="middle">
                                     {/* <b>Сохраненные таблицы:</b>
@@ -167,6 +167,8 @@ export const VolList: FC = () => {
                                     </Row>
                                 </Row>
                             </>
+                        ) : (
+                            <span>Найдено: {volunteersData?.length ?? 0}</span>
                         )}
                     </Row>
 
