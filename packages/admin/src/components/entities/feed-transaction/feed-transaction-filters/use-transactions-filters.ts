@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { FilterFieldType } from '../../vols/vol-list/filters/filter-types';
 import { useList } from '@refinedev/core';
 import { GroupBadgeEntity, KitchenEntity } from 'interfaces';
-import { mealTimeById } from 'const';
+import { MEAL_MAP } from 'const';
 
-const mealTypes = Object.entries(mealTimeById).map(([id, name]) => {
+const mealTypes = Object.entries(MEAL_MAP).map(([id, name]) => {
     return { id, name };
 });
 

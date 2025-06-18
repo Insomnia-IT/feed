@@ -1,11 +1,12 @@
 import { Button, Popover } from 'antd';
 import { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { FilterItemPopup } from './filter-item-popup';
-import styles from 'components/entities/vols/list.module.css';
 import { getFilterValueText } from 'components/entities/vols/vol-list/volunteer-list-utils';
 import { FC } from 'react';
 
 import { DownOutlined } from '@ant-design/icons';
+
+import styles from 'components/entities/vols/list.module.css';
 
 export const FilterItemControl: FC<{
     field: FilterField;
@@ -53,7 +54,7 @@ const FilterItemText: FC<{
         <span className={styles.filterItemActive}>
             <span className={styles.filterItemNameActive}>{field.title}:</span>
             &nbsp;
-            <span>{valueToShow}</span>
+            <span className={styles.filterItemValue}>{valueToShow}</span>
         </span>
     );
 };

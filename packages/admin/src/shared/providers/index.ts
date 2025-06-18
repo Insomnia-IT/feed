@@ -1,1 +1,1 @@
-export { useMedia, MediaProvider } from './media-provider';
+export { useScreen, ScreenProvider } from './screen-provider';

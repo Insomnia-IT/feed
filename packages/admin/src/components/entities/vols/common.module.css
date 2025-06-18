@@ -6,7 +6,6 @@
 .edit__nav {
     max-width: 230px;
     margin-right: 24px;
-    margin-left: -24px;
     background-color: white;
 }
 
@@ -324,19 +323,6 @@
     margin-right: 16px;
 }
 
-.buttonsWrap {
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-}
-
-.resultDescr {
-    margin-right: 16px;
-    font-size: 14px;
-}
-
 .deleteButton {
     margin-top: 7px;
     padding: 0;
@@ -459,6 +445,10 @@
         display: block;
         margin-bottom: 5px;
     }
+
+    .formWrap {
+        height: calc(100vh - 280px);
+    }
 }
 
 .pageTitle {
@@ -479,5 +469,30 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
+    }
+}
+
+:global {
+    @media (width <= 576px) {
+        :where(.ant-page-header-content) {
+            padding: 0 !important;
+        }
+
+        :where(.ant-card-body) {
+            padding: 5px !important;
+        }
+
+        :where(.ant-card-actions) {
+            margin: 11px 5px 56px !important;
+            position: sticky;
+            bottom: 50px;
+        }
+    }
+
+    @media (width >= 577px) {
+        :where(.ant-card-actions) {
+            margin: 0 24px !important;
+            position: static;
+        }
     }
 }

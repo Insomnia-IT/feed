@@ -4,7 +4,7 @@ import { Space, Table, TablePaginationConfig, Tooltip } from 'antd';
 import { useList, useNavigation } from '@refinedev/core';
 
 import type { GroupBadgeEntity } from 'interfaces';
-import { useMedia } from 'shared/providers';
+import { useScreen } from 'shared/providers';
 import { getSorter } from 'utils';
 import useVisibleDirections from '../vols/use-visible-directions';
 
@@ -18,14 +18,14 @@ export const GroupBadgeList: FC = () => {
     const [pageSize, setPageSize] = useState<number>(Number(localStorage.getItem(LS_SIZE_KEY)) || 10);
 
     const visibleDirections = useVisibleDirections();
-    const { isMobile } = useMedia();
+    const { isDesktop } = useScreen();
     const { edit } = useNavigation();
     const { data: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         config: {
             pagination: {
-                current: isMobile ? 1 : page,
-                pageSize: isMobile ? 10000 : pageSize
+                current: isDesktop ? page : 1,
+                pageSize: isDesktop ? pageSize : 10000
             }
         }
     });
@@ -58,7 +58,7 @@ export const GroupBadgeList: FC = () => {
 
     return (
         <List>
-            {isMobile ? (
+            {!isDesktop ? (
                 <div className={styles.mobileList}>
                     {data.map((badge) => (
                         <div

@@ -6,7 +6,7 @@ import { FC, useEffect, useState } from 'react';
 
 import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
-import { useMedia } from 'shared/providers';
+import { useScreen } from 'shared/providers';
 
 import { Filters } from './vol-list/filters/filters';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
@@ -25,7 +25,7 @@ export const VolList: FC = () => {
     const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
     const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
-    const { isDesktop, isMobile } = useMedia();
+    const { isDesktop } = useScreen();
 
     const canListCustomFields = useCanAccess({
         action: 'list',
@@ -64,8 +64,8 @@ export const VolList: FC = () => {
         resource: `volunteers/${filterQueryParams}`,
 
         pagination: {
-            current: isMobile ? 1 : page,
-            pageSize: isMobile ? 10000 : pageSize
+            current: !isDesktop ? 1 : page,
+            pageSize: !isDesktop ? 10000 : pageSize
         }
     });
 
@@ -175,15 +175,14 @@ export const VolList: FC = () => {
                         )}
                     </Row>
 
-                    {isMobile && (
+                    {!isDesktop ? (
                         <VolunteerMobileList
                             statusById={statusById}
                             volList={volunteersData}
                             openVolunteer={openVolunteer}
                             isLoading={volunteersIsLoading}
                         />
-                    )}
-                    {isDesktop && (
+                    ) : (
                         <>
                             {!showPersons && (
                                 <VolunteerDesktopTable

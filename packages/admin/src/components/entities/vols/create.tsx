@@ -4,7 +4,7 @@ import { Form } from 'antd';
 
 import type { VolEntity } from 'interfaces';
 
-import { CreateEdit } from './common';
+import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 import { FC } from 'react';
 
@@ -12,8 +12,8 @@ export const VolCreate: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
-          },
-          warnWhenUnsavedChanges: true
+        },
+        warnWhenUnsavedChanges: true
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
 

@@ -1,25 +1,25 @@
 import { Divider } from 'antd';
 import { FC, useCallback, useEffect, useState } from 'react';
+import { SpinLoading } from 'antd-mobile';
 
+import { useScreen } from 'shared/providers';
 import { QrScannerComponent } from 'components/qr-scanner-component';
 import { PostScan } from '../components/post-scan';
 import { useScannerController } from 'components/qr-scanner-component/hooks/useScannerController';
-import { useIsMobile } from 'shared/hooks';
-import { SpinLoading } from 'antd-mobile';
 
 const SPINNER_TIMEOUT = 3000;
 
 export const Wash: FC = () => {
-    const { isMobile } = useIsMobile();
+    const { isDesktop } = useScreen();
     const [showSpinner, setShowSpinner] = useState(false);
     const [scannedVolunteerQr, setScannedVolunteerQr] = useState<string | undefined>();
 
     useEffect(() => {
-        if (isMobile) {
+        if (!isDesktop) {
             setShowSpinner(true);
             setTimeout(() => setShowSpinner(false), SPINNER_TIMEOUT);
         }
-    }, [isMobile]);
+    }, [isDesktop]);
 
     const scannerController = useScannerController({
         onScan: async (qr: string, { disableScan }) => {
@@ -33,7 +33,7 @@ export const Wash: FC = () => {
         scannerController.enableScan();
     }, [scannerController]);
 
-    if (isMobile && showSpinner) {
+    if (!isDesktop && showSpinner) {
         return (
             <div style={{ display: 'flex', height: '50vh', justifyContent: 'center' }}>
                 <SpinLoading style={{ marginTop: 'auto' }} />

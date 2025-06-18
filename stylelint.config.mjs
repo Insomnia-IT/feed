@@ -14,7 +14,9 @@ export default {
         'property-no-vendor-prefix': null,
         'alpha-value-notation': null,
         'color-hex-length': null,
-        'color-function-alias-notation': null
+        'color-function-alias-notation': null,
+
+        'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }]
     },
 
     ignoreFiles: ['**/node_modules/**', '**/src/common/*.css']
