@@ -27,6 +27,8 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
         sorters: [{ field: 'created_at', order: 'asc' }]
     });
 
+    const targetWashes = volunteer ? (volunteerWashes?.data ?? []) : [];
+
     const currentArrival: ArrivalEntity | undefined = volunteer?.arrivals.find(
         ({ arrival_date, departure_date }: { arrival_date: string; departure_date: string }) =>
             dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
@@ -35,11 +37,11 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
     const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate: dayjs() });
 
     const washesInCurrentArrival =
-        volunteerWashes?.data.filter((washItem) => {
+        targetWashes.filter((washItem) => {
             return (
-                !currentArrival ||
-                (dayjs(currentArrival.arrival_date) < dayjs(washItem.created_at) &&
-                    dayjs(currentArrival.departure_date) > dayjs(washItem.created_at))
+                currentArrival &&
+                dayjs(currentArrival.arrival_date).startOf('day') < dayjs(washItem.created_at) &&
+                dayjs(washItem.created_at) < dayjs(currentArrival.departure_date).endOf('day')
             );
         }) ?? [];
 
@@ -80,18 +82,19 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             {
                 volunteer: volunteer.id,
                 actor: Number(userData.id),
-                wash_count: washesInCurrentArrival.length + 1
+                wash_count: (washesInCurrentArrival?.length ?? 0) + 1
             },
             {
-                onSuccess: () => {
+                onSuccess: (): void => {
                     open({
                         message: 'Стирка успешно добавлена',
                         type: 'success',
                         undoableTimeout: 3000
                     });
+
                     onClose();
                 },
-                onError: (error) => {
+                onError: (error): void => {
                     console.error(error);
 
                     open({

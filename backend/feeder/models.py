@@ -32,6 +32,10 @@ class Arrival(TimeMixin, CommentMixin):
     departure_transport = models.ForeignKey('Transport', on_delete=models.PROTECT, null=True, blank=True, related_name="departures")
     departure_registered = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def activated(self):
+        return self.status in ['ARRIVED', 'STARTED', 'JOINED']
+
 
 class Status(TimeMixin):
     id = models.CharField(max_length=20, verbose_name="Код", primary_key=True)
@@ -161,6 +165,13 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     @property
     def paid(self):
         return self.feed_type != 1
+    
+    @property
+    def activated(self):
+        return Arrival.objects.filter(
+            status__in=['ARRIVED', 'STARTED', 'JOINED'],
+            volunteer=self.id
+        ).count() > 0
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.qr and self.uuid:
