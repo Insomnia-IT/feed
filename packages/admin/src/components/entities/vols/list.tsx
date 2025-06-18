@@ -103,6 +103,9 @@ export const VolList: FC = () => {
 
     useEffect(() => {
         void loadCustomFields();
+
+        const savedPage = parseFloat(localStorage.getItem('volPageIndex') || '') || 1;
+        setPage(savedPage);
     }, []);
 
     const openVolunteer = (id: number): Promise<boolean> => {
