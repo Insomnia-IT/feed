@@ -9,10 +9,10 @@ def get_crontab_tasks():
     frequency = int(os.environ.get("NOTION_SYNC_PERIOD", 5))
     job.minute.every(frequency)
 
-    download_command = "python /app/cron_tasks/download_photos.py"
-    download_job = cron.new(command=download_command)
-    download_frequency = int(os.environ.get("PHOTO_SYNC_PERIOD", 5))
-    download_job.minute.every(download_frequency)
+    # download_command = "python /app/cron_tasks/download_photos.py"
+    # download_job = cron.new(command=download_command)
+    # download_frequency = int(os.environ.get("PHOTO_SYNC_PERIOD", 5))
+    # download_job.minute.every(download_frequency)
     cron.write()
 
 
