@@ -85,13 +85,13 @@ const CommonFood: FC = () => {
             {
                 title: 'Время',
                 dataIndex: 'dtime',
-                render: (d: string) => dayjs(d).format(isMobile ? DATETIME_SHORT : DATETIME_LONG)
+                render: (dtime: string) => dayjs(dtime).format(isMobile ? DATETIME_SHORT : DATETIME_LONG)
             },
             {
                 title: 'Прием пищи',
                 dataIndex: 'meal_time',
                 width: isMobile ? 50 : 'default',
-                render: (m: string) => MEAL_MAP[m] ?? 'дожор'
+                render: (mealTime: string) => MEAL_MAP[mealTime] ?? 'дожор'
             },
             {
                 title: 'Кухня',
@@ -101,7 +101,7 @@ const CommonFood: FC = () => {
                 title: 'Порция выдана',
                 dataIndex: 'amount',
                 width: isMobile ? 60 : 'default',
-                render: (a: number) => (a ? 'Да' : 'Нет')
+                render: (amount: number) => (amount ? 'Да' : 'Нет')
             },
             {
                 title: 'Ошибка',
