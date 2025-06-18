@@ -98,7 +98,8 @@ class VolunteerGroupViewSet(APIView):
         group_operation_uuid = uuid4()
 
         with transaction.atomic():
-            change_id = VolunteerCustomFieldValue.objects.all().order_by("-id")[0].id + 1
+            last_custom_field_value = VolunteerCustomFieldValue.objects.order_by("-id").first()
+            change_id = last_custom_field_value.id + 1 if last_custom_field_value else 1
             for volunteer_id in volunteers_ids:
                 to_update = []
                 to_create = []
