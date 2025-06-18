@@ -39,7 +39,7 @@ const VolunteerMobileCard: FC<{
         [currentArrival]
     );
 
-    const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
+    const name = `${vol.name} ${vol.first_name ?? ''} ${vol.last_name ?? ''}`;
     const comment = vol?.direction_head_comment;
     const isBlocked = vol.is_blocked;
     const currentStatus = currentArrival ? statusById[currentArrival.status] : 'Статус неизвестен';
