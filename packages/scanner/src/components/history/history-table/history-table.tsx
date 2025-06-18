@@ -5,10 +5,11 @@ import { WarningFilled } from '@ant-design/icons';
 import { Text } from '~/shared/ui/typography';
 import type { TransactionJoined } from '~/db';
 import { Cell, HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table';
+import { mealTimes } from '~/shared/lib/utils';
 
 import css from './history-table.module.css';
 
-const formatDate = (ts: number) => {
+const formatDate = (ts: number): string => {
     if (dayjs().startOf('day') > dayjs.unix(ts)) {
         return dayjs.unix(ts).format('dd HH:mm').toString();
     } else {
@@ -31,6 +32,8 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                         <HeadCell className={css.first} scope='col'>
                             Волонтер
                         </HeadCell>
+                        <HeadCell scope='col'>Приём пищи</HeadCell>
+                        <HeadCell scope='col'>Кол-во</HeadCell>
                         <HeadCell scope='col'>Тип</HeadCell>
                         <HeadCell scope='col'>Время</HeadCell>
                     </Row>
@@ -46,6 +49,8 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                                 )}
                                 {transaction.vol ? transaction.vol.name : 'Аноним'}
                             </Cell>
+                            <Cell>{mealTimes[transaction.mealTime]}</Cell>
+                            <Cell>{transaction.amount}</Cell>
                             <Cell>{transaction.is_vegan ? '🥦' : '🥩'}</Cell>
                             <Cell>{formatDate(transaction.ts)}</Cell>
                         </Row>

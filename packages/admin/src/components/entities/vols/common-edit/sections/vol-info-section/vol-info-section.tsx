@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Form, Input, Select, Image } from 'antd';
+import { Form, Input, Select, Image, Tooltip } from 'antd';
 import { useSelect } from '@refinedev/antd';
 
 import { NEW_API_URL } from 'const';
@@ -63,10 +63,12 @@ export const VolInfoSection: React.FC<IProps> = ({
             colorTypeOptions.map(({ label, value }) => ({
                 value,
                 label: (
-                    <span>
-                        <ColorCircle def={BADGE_COLOR_MAP[value as number] || '#d9d9d9'} />
-                        {label}
-                    </span>
+                    <Tooltip title={label}>
+                        <span>
+                            <ColorCircle def={BADGE_COLOR_MAP[value as number] || '#d9d9d9'} />
+                            {label}
+                        </span>
+                    </Tooltip>
                 )
             })),
         [colorTypeOptions]
