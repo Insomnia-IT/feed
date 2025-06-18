@@ -34,7 +34,7 @@ class Arrival(TimeMixin, CommentMixin):
 
     @property
     def activated(self):
-        return self.status in ['ARRIVED', 'STARTED', 'JOINED']
+        return self.status and self.status.id in ['ARRIVED', 'STARTED', 'JOINED']
 
 
 class Status(TimeMixin):
@@ -168,10 +168,13 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     
     @property
     def activated(self):
-        return Arrival.objects.filter(
+        cnt = Arrival.objects.filter(
             status__in=['ARRIVED', 'STARTED', 'JOINED'],
             volunteer=self.id
-        ).count() > 0
+        ).count()
+        print(self.id, ' - ', cnt)
+        return cnt > 0
+
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.qr and self.uuid:
