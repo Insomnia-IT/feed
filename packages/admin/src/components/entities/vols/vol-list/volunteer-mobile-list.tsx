@@ -1,7 +1,7 @@
+import React, { FC, useState, useCallback, useMemo } from 'react';
 import { Spin, Tag, Modal, Typography } from 'antd';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { SwipeAction } from 'antd-mobile';
-import { FC, useState } from 'react';
 import dayjs from 'dayjs';
 import { useDataProvider, useInvalidate } from '@refinedev/core';
 
@@ -10,32 +10,75 @@ import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 
 import styles from '../list.module.css';
 
-const formatDate = (value?: string): string => {
-    if (!value) {
-        return '';
-    }
-
-    return new Date(value).toLocaleString('ru', {
-        day: 'numeric',
-        month: 'long'
-    });
-};
+const formatDate = (value?: string) => (value ? dayjs(value).format('D MMMM') : '');
 
 const checkArrivalStatus = (arrival: ArrivalEntity | null): boolean => {
-    if (!arrival) {
-        return false;
-    }
+    if (!arrival) return false;
 
     const arrivalDate = dayjs(arrival.arrival_date);
     const today = dayjs();
     const yesterday = today.subtract(1, 'day');
 
-    return (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) && 
-           arrival.status !== 'STARTED' && 
-           arrival.status !== 'JOINED';
+    return (
+        (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) &&
+        arrival.status !== 'STARTED' &&
+        arrival.status !== 'JOINED'
+    );
 };
 
-/* Компонент отображающий список волонтеров на телефоне */
+const VolunteerMobileCard: FC<{
+    vol: VolEntity;
+    statusById: Record<string, string>;
+    onStartArrival: (vol: VolEntity) => void;
+    onOpen: (id: number) => void;
+}> = React.memo(({ vol, statusById, onStartArrival, onOpen }) => {
+    const currentArrival = useMemo(() => findClosestArrival(vol.arrivals), [vol.arrivals]);
+
+    const visitDays = useMemo(
+        () => `${formatDate(currentArrival?.arrival_date)} - ${formatDate(currentArrival?.departure_date)}`,
+        [currentArrival]
+    );
+
+    const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
+    const comment = vol?.direction_head_comment;
+    const isBlocked = vol.is_blocked;
+    const currentStatus = currentArrival ? statusById[currentArrival.status] : 'Статус неизвестен';
+
+    const rightActions = useMemo(() => {
+        if (!currentArrival || ['STARTED', 'JOINED'].includes(currentArrival.status)) return [];
+        return [
+            {
+                key: 'edit',
+                text: (
+                    <div className={styles.swipeActionContent}>
+                        <span className={styles.swipeActionIcon}>✓</span>
+                        <span>Приступил</span>
+                    </div>
+                ),
+                color: '#34C759',
+                onClick: () => onStartArrival(vol)
+            }
+        ];
+    }, [currentArrival, onStartArrival, vol]);
+
+    return (
+        <SwipeAction key={vol.id} rightActions={rightActions}>
+            <div className={styles.volCard} onClick={() => onOpen(vol.id)}>
+                <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
+                <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
+                <div>
+                    {isBlocked && <Tag color="red">Заблокирован</Tag>}
+                    <Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>
+                </div>
+                <div className={styles.textRow}>
+                    <span className={styles.bold}>Заметка: </span>
+                    {comment || '-'}
+                </div>
+            </div>
+        </SwipeAction>
+    );
+});
+
 export const VolunteerMobileList: FC<{
     volList: Array<VolEntity>;
     isLoading: boolean;
@@ -47,47 +90,47 @@ export const VolunteerMobileList: FC<{
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
 
-    const handleAction = async (vol: VolEntity) => {
-        const currentArrival = findClosestArrival(vol.arrivals);
+    const handleAction = useCallback(
+        async (vol: VolEntity) => {
+            const currentArrival = findClosestArrival(vol.arrivals);
 
-        if (checkArrivalStatus(currentArrival)) {
-            try {
-                // Обновляем статус заезда на STARTED
-                await dataProvider().update({
-                    resource: 'volunteers',
-                    id: vol.id,
-                    variables: {
-                        arrivals: vol.arrivals.map((arrival) =>
-                            arrival.id === currentArrival?.id ? { ...arrival, status: 'STARTED' } : arrival
-                        )
-                    }
-                });
+            if (checkArrivalStatus(currentArrival)) {
+                try {
+                    // Обновляем статус заезда на STARTED
+                    await dataProvider().update({
+                        resource: 'volunteers',
+                        id: vol.id,
+                        variables: {
+                            arrivals: vol.arrivals.map((arrival) =>
+                                arrival.id === currentArrival?.id ? { ...arrival, status: 'STARTED' } : arrival
+                            )
+                        }
+                    });
 
-                // Обновляем список волонтеров
-                invalidate({
-                    resource: 'volunteers',
-                    invalidates: ['all']
-                });
-            } catch (error) {
-                console.error('Ошибка при обновлении статуса:', error);
+                    // Обновляем список волонтеров
+                    invalidate({ resource: 'volunteers', invalidates: ['all'] });
+                } catch (error) {
+                    console.error('Ошибка при обновлении статуса:', error);
+                }
+            } else {
+                setSelectedVol(vol);
+                setIsModalOpen(true);
             }
-        } else {
-            setSelectedVol(vol);
-            setIsModalOpen(true);
-        }
-    };
+        },
+        [dataProvider, invalidate]
+    );
 
-    const handleModalOk = () => {
+    const handleModalOk = useCallback(() => {
         setIsModalOpen(false);
-        if (selectedVol) {
-            void openVolunteer(selectedVol.id);
-        }
-    };
+        if (selectedVol) openVolunteer(selectedVol.id);
+    }, [openVolunteer, selectedVol]);
 
-    const handleModalCancel = () => {
+    const handleModalCancel = useCallback(() => {
         setIsModalOpen(false);
         setSelectedVol(null);
-    };
+    }, []);
+
+    const handleOpenVolunteer = useCallback((id: number) => openVolunteer(id), [openVolunteer]);
 
     return (
         <>
@@ -95,57 +138,15 @@ export const VolunteerMobileList: FC<{
                 {isLoading ? (
                     <Spin />
                 ) : (
-                    volList.map((vol) => {
-                        const currentArrival = findClosestArrival(vol.arrivals);
-                        const visitDays = `${formatDate(
-                            currentArrival?.arrival_date
-                        )} - ${formatDate(currentArrival?.departure_date)}`;
-                        const name = `${vol.name} ${vol.first_name} ${vol.last_name}`;
-                        const comment = vol?.direction_head_comment;
-                        const isBlocked = vol.is_blocked;
-                        const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
-
-                        return (
-                            <SwipeAction
-                                key={vol.id}
-                                rightActions={
-                                    currentArrival?.status === 'STARTED' || currentArrival?.status === 'JOINED'
-                                        ? []
-                                        : [
-                                              {
-                                                  key: 'edit',
-                                                  text: (
-                                                      <div className={styles.swipeActionContent}>
-                                                          <span className={styles.swipeActionIcon}>✓</span>
-                                                          <span>Приступил</span>
-                                                      </div>
-                                                  ),
-                                                  color: '#34C759',
-                                                  onClick: () => handleAction(vol)
-                                              }
-                                          ]
-                                }
-                            >
-                                <div
-                                    className={styles.volCard}
-                                    onClick={() => {
-                                        void openVolunteer(vol.id);
-                                    }}
-                                >
-                                    <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
-                                    <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
-                                    <div>
-                                        {isBlocked && <Tag color="red">Заблокирован</Tag>}
-                                        <Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>
-                                    </div>
-                                    <div className={styles.textRow}>
-                                        <span className={styles.bold}>Заметка: </span>
-                                        {comment || '-'}
-                                    </div>
-                                </div>
-                            </SwipeAction>
-                        );
-                    })
+                    volList.map((vol) => (
+                        <VolunteerMobileCard
+                            key={vol.id}
+                            vol={vol}
+                            statusById={statusById}
+                            onStartArrival={handleAction}
+                            onOpen={handleOpenVolunteer}
+                        />
+                    ))
                 )}
             </div>
             <Modal
@@ -162,11 +163,9 @@ export const VolunteerMobileList: FC<{
                     </div>
                     <div className={styles.modalTextContent}>
                         <Typography.Title level={5} className={styles.modalTitle}>
-                        Не найден подходящий заезд
+                            Не найден подходящий заезд
                         </Typography.Title>
-                        <p>
-                        Перейдите к карточке волонтера {selectedVol?.name} и поправьте информацию о заезде там
-                        </p>
+                        <p>Перейдите к карточке волонтера {selectedVol?.name} и поправьте информацию о заезде там</p>
                     </div>
                 </div>
             </Modal>
