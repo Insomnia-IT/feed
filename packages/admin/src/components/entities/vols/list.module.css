@@ -13,6 +13,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+
+    @media (width <= 576px) {
+        :global(.ant-btn) {
+            min-height: 32px;
+            height: fit-content;
+        }
+    }
 }
 
 .filterItemButton {
@@ -50,6 +57,17 @@
 
 .filterItemNameActive {
     font-weight: 500;
+    margin-right: 4px;
+
+    @media (width <= 576px) {
+        display: block;
+        margin-right: 0;
+    }
+}
+
+.filterItemValue {
+    overflow-wrap: break-word;
+    white-space: break-spaces;
 }
 
 .filterListItemCount {

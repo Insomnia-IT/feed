@@ -124,7 +124,7 @@ class ArrivalSerializer(serializers.ModelSerializer):
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Arrival
-        fields = ['arrival_date', 'departure_date', 'status', 'arrival_transport', 'departure_transport']
+        fields = ['id', 'arrival_date', 'departure_date', 'status', 'arrival_transport', 'departure_transport']
 
 class SortArrivalsMixin:
     def to_representation(self, instance):

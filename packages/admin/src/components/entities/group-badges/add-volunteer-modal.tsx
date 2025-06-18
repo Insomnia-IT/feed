@@ -4,7 +4,7 @@ import type { TableRowSelection } from 'antd/es/table/interface';
 import { CrudFilters, useInvalidate, useList, useNotification, useUpdateMany } from '@refinedev/core';
 
 import type { VolEntity } from 'interfaces';
-import { useMedia } from 'shared/providers';
+import { useScreen } from 'shared/providers';
 import { useDebouncedCallback } from 'shared/hooks';
 import useVisibleDirections from '../vols/use-visible-directions';
 
@@ -14,7 +14,7 @@ export const AddVolunteerModal: FC<{ groupBadgeId: number }> = ({ groupBadgeId }
     const [selectedIds, setSelectedIds] = useState<React.Key[]>([]);
     const [page, setPage] = useState(1);
 
-    const { isDesktop } = useMedia();
+    const { isDesktop } = useScreen();
     const visibleDirections = useVisibleDirections();
 
     const invalidate = useInvalidate();

@@ -1,5 +1,5 @@
-Django
-django-filter
+Django>=5
+django-filter>=24.3
 django-cors-headers
 djangorestframework
 psycopg2-binary

@@ -30,7 +30,7 @@ export const MassEdit: React.FC<MassEditProps> = ({
     reloadVolunteers
 }) => {
     const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
-    const doChange = useDoChange({ vols: selectedVolunteers, unselectAll, reloadVolunteers });
+    const doChange = useDoChange({ vols: selectedVolunteers, reloadVolunteers });
 
     if (selectedVolunteers.length === 0) {
         return null;

@@ -6,7 +6,7 @@ import { FC, useEffect, useState } from 'react';
 
 import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
-import { useMedia } from 'shared/providers';
+import { useScreen } from 'shared/providers';
 
 import { Filters } from './vol-list/filters/filters';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
@@ -25,7 +25,7 @@ export const VolList: FC = () => {
     const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
     const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
-    const { isDesktop, isMobile } = useMedia();
+    const { isDesktop } = useScreen();
 
     const canListCustomFields = useCanAccess({
         action: 'list',
@@ -64,8 +64,8 @@ export const VolList: FC = () => {
         resource: `volunteers/${filterQueryParams}`,
 
         pagination: {
-            current: isMobile ? 1 : page,
-            pageSize: isMobile ? 10000 : pageSize
+            current: !isDesktop ? 1 : page,
+            pageSize: !isDesktop ? 10000 : pageSize
         }
     });
 
@@ -103,6 +103,9 @@ export const VolList: FC = () => {
 
     useEffect(() => {
         void loadCustomFields();
+
+        const savedPage = parseFloat(localStorage.getItem('volPageIndex') || '') || 1;
+        setPage(savedPage);
     }, []);
 
     const openVolunteer = (id: number): Promise<boolean> => {
@@ -136,7 +139,7 @@ export const VolList: FC = () => {
                         setSearchText={setSearchText}
                     />
                     <Row style={{ padding: '10px 0' }} justify="space-between">
-                        {isDesktop && (
+                        {isDesktop ? (
                             <>
                                 <Row style={{ gap: '24px' }} align="middle">
                                     {/* <b>Сохраненные таблицы:</b>
@@ -167,18 +170,19 @@ export const VolList: FC = () => {
                                     </Row>
                                 </Row>
                             </>
+                        ) : (
+                            <span>Найдено: {volunteersData?.length ?? 0}</span>
                         )}
                     </Row>
 
-                    {isMobile && (
+                    {!isDesktop ? (
                         <VolunteerMobileList
                             statusById={statusById}
                             volList={volunteersData}
                             openVolunteer={openVolunteer}
                             isLoading={volunteersIsLoading}
                         />
-                    )}
-                    {isDesktop && (
+                    ) : (
                         <>
                             {!showPersons && (
                                 <VolunteerDesktopTable

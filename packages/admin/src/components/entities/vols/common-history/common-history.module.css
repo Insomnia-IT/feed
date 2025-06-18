@@ -35,6 +35,9 @@
     padding: 10px 16px;
     display: flex;
     flex-direction: column;
+}
+
+.historyItem:not(:last-child) {
     border-bottom: 1px solid #d9d9d9;
 }
 

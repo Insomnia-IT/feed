@@ -5,7 +5,7 @@ import { useBreadcrumb, type IResourceComponentsProps } from '@refinedev/core';
 import { Form, Breadcrumb } from 'antd';
 
 import type { VolEntity } from 'interfaces';
-import { CreateEdit } from './common';
+import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 
 import styles from './common.module.css';
