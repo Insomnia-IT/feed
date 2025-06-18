@@ -54,7 +54,7 @@ class SaveSyncSerializerMixin(object):
         elif not hasattr(self.Meta, "uuid_field") or self.Meta.uuid_field == "id":
             self.validated_data["id"] = uuid
 
-        if settings.SKIP_BACK_SYNC and hasattr(self, "activated") and not self.activated:
+        if settings.SKIP_BACK_SYNC and hasattr(self.instance, "activated") and self.instance.activated:
             return self.instance
 
         super().save(**kwargs)
@@ -85,7 +85,6 @@ class SaveSyncSerializerMixin(object):
 class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     id = serializers.UUIDField(source="uuid")
     deleted = serializers.SerializerMethodField()
-    activated = serializers.SerializerMethodField()
     vegan = serializers.BooleanField(source="is_vegan", required=False)
     feed = serializers.SerializerMethodField()
     number = serializers.CharField(source="badge_number", required=False, allow_blank=True, allow_null=True)
@@ -103,7 +102,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment", "infant",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type",
-            "activated", "ticket", "scanner_comment"
+            "ticket", "scanner_comment"
         )
         uuid_field = "uuid"
 
@@ -112,12 +111,6 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             return True
         return False
     
-    def get_activated(self, obj):
-        return Arrival.objects.filter(
-            status__in=['ARRIVED', 'STARTED', 'JOINED'],
-            volunteer=obj.id
-        ).count() > 0
-
     def get_feed(self, obj):
         feed = obj.feed_type
         if not feed or feed.name == "без питания":
@@ -172,7 +165,6 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
 class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     deleted = serializers.SerializerMethodField()
-    activated = serializers.SerializerMethodField()
     badge = serializers.SlugRelatedField(source="volunteer", slug_field="uuid", queryset=Volunteer.objects.all())
     status = serializers.SlugRelatedField(slug_field="id", queryset=Status.objects.all())
     arrival_transport = serializers.SlugRelatedField(slug_field="id", queryset=Transport.objects.all())
@@ -182,8 +174,7 @@ class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSer
         model = Arrival
         fields = (
             "id", "deleted", "badge", "status", "arrival_date",
-            "arrival_transport", "departure_date", "departure_transport",
-            "activated"
+            "arrival_transport", "departure_date", "departure_transport"
         )
 
     def get_deleted(self, obj):
@@ -191,9 +182,6 @@ class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSer
             return True
         return False
     
-    def get_activated(self, obj):
-        return obj.status in ['ARRIVED', 'STARTED', 'JOINED']
-
 
 class DirectionHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     type = serializers.SlugRelatedField(slug_field="id", queryset=DirectionType.objects.all())

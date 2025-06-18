@@ -21,7 +21,7 @@ jobs:
       run: |
           docker compose build \
             --build-arg NEW_API_URL=https://redmine.cb27.ru:17444/feedapi/v1 \
-            --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
+            --build-arg SYNC_URL=https://agreemod.insomniafest.ru/api/v1/feeder/ \
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
     - name: stop feed_admin

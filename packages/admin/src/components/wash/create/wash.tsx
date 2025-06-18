@@ -1,18 +1,25 @@
-import { Button, Divider } from 'antd';
-import { FC, useCallback, useState } from 'react';
+import { Divider } from 'antd';
+import { FC, useCallback, useEffect, useState } from 'react';
 
 import { QrScannerComponent } from 'components/qr-scanner-component';
 import { PostScan } from '../components/post-scan';
 import { useScannerController } from 'components/qr-scanner-component/hooks/useScannerController';
 import { useIsMobile } from 'shared/hooks';
+import { SpinLoading } from 'antd-mobile';
 
-// Если не обновлять страницу - должно показать кнопку только один раз
-let showScanner = false;
+const SPINNER_TIMEOUT = 3000;
 
 export const Wash: FC = () => {
     const { isMobile } = useIsMobile();
+    const [showSpinner, setShowSpinner] = useState(false);
     const [scannedVolunteerQr, setScannedVolunteerQr] = useState<string | undefined>();
-    const [showScannerInner, setShowScannerInner] = useState(showScanner);
+
+    useEffect(() => {
+        if (isMobile) {
+            setShowSpinner(true);
+            setTimeout(() => setShowSpinner(false), SPINNER_TIMEOUT);
+        }
+    }, [isMobile]);
 
     const scannerController = useScannerController({
         onScan: async (qr: string, { disableScan }) => {
@@ -26,18 +33,10 @@ export const Wash: FC = () => {
         scannerController.enableScan();
     }, [scannerController]);
 
-    if (isMobile && !showScannerInner) {
+    if (isMobile && showSpinner) {
         return (
             <div style={{ display: 'flex', height: '50vh', justifyContent: 'center' }}>
-                <Button
-                    style={{ marginTop: 'auto' }}
-                    onClick={() => {
-                        setShowScannerInner(true);
-                        showScanner = true;
-                    }}
-                >
-                    Нажми для скана
-                </Button>
+                <SpinLoading style={{ marginTop: 'auto' }} />
             </div>
         );
     }

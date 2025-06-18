@@ -13,11 +13,21 @@ export const SingleField: React.FC<{
     title: string;
     selectedVolunteers: VolEntity[];
     resource?: string;
+    currentValue: string | undefined;
+    setCurrentValue: (value: string | undefined) => void;
     hideClearButton?: boolean;
-}> = ({ selectedVolunteers = [], title, type, resource, setter, hideClearButton = false }) => {
+}> = ({
+    currentValue,
+    setCurrentValue,
+    selectedVolunteers = [],
+    title,
+    type,
+    resource,
+    setter,
+    hideClearButton = false
+}) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
-    const [currentValue, setCurrentValue] = useState<string | undefined>(undefined);
     const { open = () => {} } = useNotification();
 
     const confirmChange = (): void => {

@@ -10,8 +10,9 @@ import { KitchenFrame } from './kitchen-frame';
 import { InitialFrame } from './initial-frame';
 import { ActionSectionStates } from './action-section-states';
 import { CustomFieldsFrame } from './custom-fields-frame';
-import { ChangeMassEditField } from './mass-edit-types';
+import { ChangeMassEditField, VolunteerField } from './mass-edit-types';
 import { useDoChange } from './use-do-change';
+import { ArrivalDatesProvider } from './arrival-dates-context/arrival-dates-context';
 
 const { Title } = Typography;
 
@@ -43,18 +44,23 @@ export const MassEdit: React.FC<MassEditProps> = ({
                     <span className={styles.counter}> {selectedVolunteers.length}</span>
                 </Title>
             </header>
-            <SelectedVolunteerList
-                unselectVolunteer={unselectVolunteer}
-                selectedVolunteers={selectedVolunteers}
-                outlineVolunteersWithoutArrival={sectionState === ActionSectionStates.Arrivals}
-            />
-            <ActionsSection
-                setSectionState={setSectionState}
-                sectionState={sectionState}
-                doChange={doChange}
-                unselectAll={unselectAll}
-                selectedVolunteers={selectedVolunteers}
-            />
+            <ArrivalDatesProvider>
+                <SelectedVolunteerList
+                    unselectVolunteer={unselectVolunteer}
+                    selectedVolunteers={selectedVolunteers}
+                    outlineVolunteersWithoutArrival={sectionState === ActionSectionStates.Arrivals}
+                />
+                <ActionsSection
+                    setSectionState={setSectionState}
+                    sectionState={sectionState}
+                    doChange={async (params: VolunteerField) => {
+                        await doChange(params);
+                        setSectionState(ActionSectionStates.Initial);
+                    }}
+                    unselectAll={unselectAll}
+                    selectedVolunteers={selectedVolunteers}
+                />
+            </ArrivalDatesProvider>
         </div>
     );
 };

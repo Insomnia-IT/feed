@@ -1,7 +1,7 @@
+import { useEffect, useState, type FC } from 'react';
 import { DeleteButton, EditButton, List } from '@refinedev/antd';
 import { Space, Table, TablePaginationConfig, Tooltip } from 'antd';
 import { useList, useNavigation } from '@refinedev/core';
-import { useState, type FC } from 'react';
 
 import type { GroupBadgeEntity } from 'interfaces';
 import { useMedia } from 'shared/providers';
@@ -10,9 +10,12 @@ import useVisibleDirections from '../vols/use-visible-directions';
 
 import styles from './group-badge-list.module.css';
 
+const LS_PAGE_KEY = 'gbPageIndex';
+const LS_SIZE_KEY = 'gbPageSize';
+
 export const GroupBadgeList: FC = () => {
-    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
-    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+    const [page, setPage] = useState<number>(Number(localStorage.getItem(LS_PAGE_KEY)) || 1);
+    const [pageSize, setPageSize] = useState<number>(Number(localStorage.getItem(LS_SIZE_KEY)) || 10);
 
     const visibleDirections = useVisibleDirections();
     const { isMobile } = useMedia();
@@ -27,16 +30,24 @@ export const GroupBadgeList: FC = () => {
         }
     });
 
+    useEffect(() => {
+        // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
+        if (groupBadges?.total && (page - 1) * pageSize >= groupBadges.total) {
+            setPage(1);
+            localStorage.setItem(LS_PAGE_KEY, '1');
+        }
+    }, [groupBadges?.total, page, pageSize]);
+
     const pagination: TablePaginationConfig = {
         total: groupBadges?.total ?? 1,
         showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
         current: page,
         pageSize: pageSize,
-        onChange: (page, pageSize) => {
-            setPage(page);
-            setPageSize(pageSize);
-            localStorage.setItem('volPageIndex', page.toString());
-            localStorage.setItem('volPageSize', pageSize.toString());
+        onChange: (newPage, newPageSize) => {
+            setPage(newPage);
+            setPageSize(newPageSize);
+            localStorage.setItem(LS_PAGE_KEY, String(newPage));
+            localStorage.setItem(LS_SIZE_KEY, String(newPageSize));
         }
     };
 

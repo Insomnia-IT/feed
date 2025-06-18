@@ -13,6 +13,7 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doCh
 }) => {
     const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields', pagination: { pageSize: 0 } });
     const [currentFieldName, setCurrentFieldName] = useState<string | undefined>(undefined);
+    const [currentValue, setCurrentValue] = useState<string | undefined>(undefined);
     const { open = () => {} } = useNotification();
 
     const setFieldValue = ({ id, fieldValue }: { id: number; fieldValue: string | null }) => {
@@ -45,6 +46,8 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doCh
         <Form className={styles.customFields}>
             {currentField ? (
                 <SingleField
+                    currentValue={currentValue}
+                    setCurrentValue={setCurrentValue}
                     type={currentField.type as 'string' | 'boolean'}
                     setter={(value) => setFieldValue({ id: currentField?.id, fieldValue: value })}
                     title={currentField.name}
