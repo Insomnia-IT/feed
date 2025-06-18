@@ -1,17 +1,15 @@
-import { Tabs, Grid } from 'antd';
+import { Tabs } from 'antd';
 import { useMemo, useState, useEffect } from 'react';
 
+import { useScreen } from 'shared/providers';
 import { CommonEdit } from './common-edit/common-edit';
 import CommonFood from './common-food/common-food';
 import { CommonHistory } from './common-history/common-history';
 
-const { useBreakpoint } = Grid;
-
 const CreateEdit = () => {
-    const screens = useBreakpoint();
-    const isMobile = screens.xs;
-
     const [activeKey, setActiveKey] = useState('1');
+
+    const { isMobile } = useScreen();
 
     useEffect(() => {
         document.querySelector('.ant-page-header-heading-extra')?.remove();

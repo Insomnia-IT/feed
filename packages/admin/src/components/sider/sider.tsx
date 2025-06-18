@@ -1,5 +1,5 @@
 import { FC, useEffect, useState, useMemo, useCallback } from 'react';
-import { Layout, Grid, Menu } from 'antd';
+import { Layout, Menu } from 'antd';
 import {
     CanAccess,
     ITreeMenu,
@@ -14,16 +14,17 @@ import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { LogoutOutlined, SmileOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
 
+import { useScreen } from 'shared/providers';
 import { AppRoles, UserData } from 'auth';
 import { authProvider } from 'authProvider';
 import type { AccessRoleEntity } from 'interfaces';
 
 import styles from './sider.module.css';
-import { useIsMobile } from '../../shared/hooks';
 
 const CustomSider: FC = () => {
+    const { breakpoint, isDesktop } = useScreen();
+
     const [collapsed, setCollapsed] = useState(false);
-    const [screenSize, setScreenSize] = useState(window.innerWidth);
     const [user, setUser] = useState<UserData>();
     const [accessRoleName, setAccessRoleName] = useState('');
     const [currentPath, setCurrentPath] = useState('');
@@ -33,9 +34,6 @@ const CustomSider: FC = () => {
     const { mutate: logout } = useLogout();
     const queryClient = useQueryClient();
     const { menuItems, selectedKey } = useMenu();
-    const breakpoint = Grid.useBreakpoint();
-
-    const { isMobile } = useIsMobile();
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
         resource: 'access-roles'
@@ -118,13 +116,11 @@ const CustomSider: FC = () => {
     );
 
     const userMenuItems = useMemo(() => {
-        const items: React.ReactNode[] = [];
-
-        items.push(
+        const items: React.ReactNode[] = [
             <Menu.Item key="user-info" disabled>
                 {accessRoleName ? `${user?.username} (${accessRoleName})` : user?.username || '—'}
             </Menu.Item>
-        );
+        ];
 
         if (menuItems) {
             items.push(...renderMenuItems(menuItems));
@@ -141,72 +137,64 @@ const CustomSider: FC = () => {
         return items;
     }, [accessRoleName, user, menuItems, renderMenuItems, isExistAuthentication, handleLogout]);
 
-    useEffect(() => {
-        const handleResize = () => setScreenSize(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    if (breakpoint.xs) {
+        return (
+            <div className={styles.mobileSider}>
+                {user?.roles[0] === AppRoles.SOVA ? (
+                    <button
+                        className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
+                        onClick={() => push('/wash')}
+                    >
+                        <SmileOutlined style={{ fontSize: 20 }} />
+                        <span className={styles.buttonText}>Стиратель</span>
+                    </button>
+                ) : (
+                    <>
+                        <button
+                            className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
+                            onClick={() => push('/volunteers')}
+                        >
+                            <UserOutlined style={{ fontSize: 20 }} />
+                            <span className={styles.buttonText}>Волонтеры</span>
+                        </button>
+                        <button
+                            className={`${styles.siderButton} ${currentPath === 'gb' ? styles.siderButtonActive : ''}`}
+                            onClick={() => push('/group-badges')}
+                        >
+                            <TeamOutlined style={{ fontSize: 20 }} />
+                            <span className={styles.buttonText}>Группы</span>
+                        </button>
+                    </>
+                )}
+                <button className={styles.siderButton} onClick={handleLogout}>
+                    <LogoutOutlined style={{ fontSize: 20 }} />
+                    <span className={styles.buttonText}>Выход</span>
+                </button>
+            </div>
+        );
+    }
 
     return (
-        <>
-            {screenSize <= 576 ? (
-                <div className={styles.mobileSider}>
-                    {user?.roles[0] === AppRoles.SOVA ? (
-                        <button
-                            className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
-                            onClick={() => push('/wash')}
-                        >
-                            <SmileOutlined style={{ fontSize: '20px' }} />
-                            <span className={styles.buttonText}>Стиратель</span>
-                        </button>
-                    ) : (
-                        <>
-                            <button
-                                className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
-                                onClick={() => push('/volunteers')}
-                            >
-                                <UserOutlined style={{ fontSize: '20px' }} />
-                                <span className={styles.buttonText}>Волонтеры</span>
-                            </button>
-                            <button
-                                className={`${styles.siderButton} ${currentPath === 'gb' ? styles.siderButtonActive : ''}`}
-                                onClick={() => push('/group-badges')}
-                            >
-                                <TeamOutlined style={{ fontSize: '20px' }} />
-                                <span className={styles.buttonText}>Группы</span>
-                            </button>
-                        </>
-                    )}
-                    <button className={styles.siderButton} onClick={handleLogout}>
-                        <LogoutOutlined style={{ fontSize: '20px' }} />
-                        <span className={styles.buttonText}>Выход</span>
-                    </button>
-                </div>
-            ) : (
-                <Layout.Sider
-                    className={isMobile ? styles.antLayoutSiderMobile : styles.antLayoutSider}
-                    collapsible
-                    collapsedWidth={isMobile ? 0 : 80}
-                    collapsed={collapsed}
-                    breakpoint="lg"
-                    onCollapse={(c) => setCollapsed(c)}
-                >
-                    {Title && <Title collapsed={collapsed} />}
-                    <Menu
-                        theme="dark"
-                        mode="inline"
-                        selectedKeys={[selectedKey]}
-                        onClick={() => {
-                            if (!breakpoint.lg) {
-                                setCollapsed(true);
-                            }
-                        }}
-                    >
-                        {userMenuItems}
-                    </Menu>
-                </Layout.Sider>
-            )}
-        </>
+        <Layout.Sider
+            className={!isDesktop ? styles.antLayoutSiderMobile : styles.antLayoutSider}
+            collapsible
+            collapsedWidth={!isDesktop ? 0 : 80}
+            collapsed={collapsed}
+            breakpoint="lg"
+            onCollapse={setCollapsed}
+        >
+            {Title && <Title collapsed={collapsed} />}
+            <Menu
+                theme="dark"
+                mode="inline"
+                selectedKeys={[selectedKey]}
+                onClick={() => {
+                    if (!isDesktop) setCollapsed(true);
+                }}
+            >
+                {userMenuItems}
+            </Menu>
+        </Layout.Sider>
     );
 };
 

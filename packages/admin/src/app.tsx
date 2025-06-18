@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
-import { Authenticated, Refine, useGetIdentity } from '@refinedev/core';
-import { ErrorComponent, ThemedLayoutV2, useNotificationProvider } from '@refinedev/antd';
+import { BrowserRouter } from 'react-router-dom';
+import { Refine, useGetIdentity } from '@refinedev/core';
+import { useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
 import {
@@ -13,44 +13,21 @@ import {
     LineChartOutlined,
     MobileOutlined,
     SyncOutlined,
-    DashboardOutlined
+    DashboardOutlined,
+    ExperimentOutlined
 } from '@ant-design/icons';
 import antdLocale from 'antd/lib/locale/ru_RU';
 import routerProvider from '@refinedev/react-router-v6';
-import {
-    CatchAllNavigate,
-    DocumentTitleHandler,
-    NavigateToResource,
-    UnsavedChangesNotifier
-} from '@refinedev/react-router-v6';
+import { DocumentTitleHandler, NavigateToResource, UnsavedChangesNotifier } from '@refinedev/react-router-v6';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 
 import i18n from './i18n';
 import { ACL } from 'acl';
-import { MediaProvider } from 'shared/providers';
+import { ScreenProvider } from 'shared/providers';
 import { authProvider } from 'authProvider';
-import CustomSider from 'components/sider/sider';
-import { Dashboard } from 'components/dashboard';
 import { dataProvider } from 'dataProvider';
-import { LoginPage } from 'components/login';
-import { DepartmentCreate, DepartmentList, DirectionEdit, DirectionShow } from 'components/entities/directions';
-import { GroupBadgeCreate, GroupBadgeEdit, GroupBadgeList, GroupBadgeShow } from 'components/entities/group-badges';
-import { Sync } from 'components/sync';
-import { Scanner } from 'components/scanner';
-import { VolCreate, VolEdit, VolList, VolShow } from 'components/entities/vols';
-import { FeedTransactionCreate, FeedTransactionList } from 'components/entities/feed-transaction';
-import { PublicStatistic } from 'components/entities/statistic';
-import {
-    VolunteerCustomFieldCreate,
-    VolunteerCustomFieldEdit,
-    VolunteerCustomFieldList,
-    VolunteerCustomFieldShow
-} from 'components/entities/volunteer-custom-fields';
-import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
-import { Wash } from 'components/wash';
-import { WashesHistory } from './components/wash/list/washes-history';
-import { useIsMobile } from './shared/hooks';
 import { AppRoles, UserData } from 'auth';
+import { AppRoutes } from './app-routes';
 
 const InitialNavigation = () => {
     const { data: user } = useGetIdentity<UserData>();
@@ -60,7 +37,6 @@ const InitialNavigation = () => {
 
 const App: React.FC = () => {
     const { t, i18n: i18next } = useTranslation();
-    const { isMobile } = useIsMobile();
 
     const i18nProvider = {
         translate: (key: string, params: Record<string, object>) => t(key, params),
@@ -81,7 +57,7 @@ const App: React.FC = () => {
                         }
                     }}
                 >
-                    <MediaProvider>
+                    <ScreenProvider>
                         <AntdApp>
                             <Refine
                                 routerProvider={routerProvider}
@@ -160,82 +136,13 @@ const App: React.FC = () => {
                                     }
                                 ]}
                             >
-                                <Routes>
-                                    <Route
-                                        element={
-                                            <Authenticated
-                                                key="authenticated-inner"
-                                                fallback={<CatchAllNavigate to="/login" />}
-                                            >
-                                                <ThemedLayoutV2 Sider={() => <CustomSider />}>
-                                                    <Outlet />
-                                                </ThemedLayoutV2>
-                                            </Authenticated>
-                                        }
-                                    >
-                                        <Route index element={<InitialNavigation />} />
-
-                                        <Route path="/dashboard" element={<Dashboard />} />
-
-                                        {isMobile ? (
-                                            <Route path="/wash" element={<Wash />} />
-                                        ) : (
-                                            <Route path="/wash">
-                                                <Route index element={<WashesHistory />} />
-                                                <Route path="create" element={<Wash />} />
-                                            </Route>
-                                        )}
-
-                                        <Route path="/volunteers">
-                                            <Route index element={<VolList />} />
-                                            <Route path="create" element={<VolCreate />} />
-                                            <Route path="edit/:id" element={<VolEdit />} />
-                                            <Route path="show/:id" element={<VolShow />} />
-                                        </Route>
-
-                                        <Route path="/volunteer-custom-fields">
-                                            <Route index element={<VolunteerCustomFieldList />} />
-                                            <Route path="create" element={<VolunteerCustomFieldCreate />} />
-                                            <Route path="edit/:id" element={<VolunteerCustomFieldEdit />} />
-                                            <Route path="show/:id" element={<VolunteerCustomFieldShow />} />
-                                        </Route>
-
-                                        <Route path="/directions">
-                                            <Route index element={<DepartmentList />} />
-                                            <Route path="create" element={<DepartmentCreate />} />
-                                            <Route path="edit/:id" element={<DirectionEdit />} />
-                                            <Route path="show/:id" element={<DirectionShow />} />
-                                        </Route>
-
-                                        <Route path="/group-badges">
-                                            <Route index element={<GroupBadgeList />} />
-                                            <Route path="create" element={<GroupBadgeCreate />} />
-                                            <Route path="edit/:id" element={<GroupBadgeEdit />} />
-                                            <Route path="show/:id" element={<GroupBadgeShow />} />
-                                        </Route>
-
-                                        <Route path="/feed-transaction">
-                                            <Route index element={<FeedTransactionList />} />
-                                            <Route path="create" element={<FeedTransactionCreate />} />
-                                        </Route>
-
-                                        <Route path="/stats" element={<PublicStatistic />} />
-
-                                        <Route path="/scanner-page" element={<Scanner />} />
-
-                                        <Route path="/sync" element={<Sync />} />
-
-                                        <Route path="*" element={<ErrorComponent />} />
-                                    </Route>
-
-                                    <Route path="/login" element={<LoginPage />} />
-                                </Routes>
+                                <AppRoutes initial={<InitialNavigation />} />
 
                                 <UnsavedChangesNotifier />
                                 <DocumentTitleHandler />
                             </Refine>
                         </AntdApp>
-                    </MediaProvider>
+                    </ScreenProvider>
                 </ConfigProvider>
             </I18nextProvider>
         </BrowserRouter>

@@ -1,6 +1,6 @@
 import { FC, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Grid, Space, Table, Tooltip, Typography, type TableProps } from 'antd';
+import { Button, Space, Table, Tooltip, Typography, type TableProps } from 'antd';
 import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { useList, HttpError } from '@refinedev/core';
 import dayjs from 'dayjs';
@@ -8,6 +8,7 @@ import ExcelJS from 'exceljs';
 
 import { DATETIME_LONG, DATETIME_SHORT, MEAL_MAP } from 'const';
 import type { FeedTransactionEntity, KitchenEntity } from 'interfaces';
+import { useScreen } from 'shared/providers';
 import { saveXLSX } from 'shared/lib/saveXLSX';
 import useCanAccess from '../use-can-access';
 
@@ -17,7 +18,7 @@ const CommonFood: FC = () => {
     const { id: volId } = useParams<{ id: string }>();
 
     const navigate = useNavigate();
-    const { xs: isMobile } = Grid.useBreakpoint();
+    const { isMobile } = useScreen();
     const canCreate = useCanAccess({
         action: 'create',
         resource: 'feed-transaction'
