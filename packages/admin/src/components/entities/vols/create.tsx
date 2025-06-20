@@ -1,12 +1,13 @@
+import { FC, useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import type { IResourceComponentsProps } from '@refinedev/core';
 import { Form } from 'antd';
 
 import type { VolEntity } from 'interfaces';
 
+import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
-import { FC } from 'react';
 
 export const VolCreate: FC<IResourceComponentsProps> = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
@@ -17,11 +18,15 @@ export const VolCreate: FC<IResourceComponentsProps> = () => {
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
 
+    const { isDesktop } = useScreen();
+    const [activeKey, setActiveKey] = useState('1');
+
     return (
         <Create
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick
+                onClick,
+                hidden: !isDesktop && activeKey !== '1'
             }}
             contentProps={{
                 style: {
@@ -32,7 +37,7 @@ export const VolCreate: FC<IResourceComponentsProps> = () => {
             }}
         >
             <Form {...formProps} scrollToFirstError layout="vertical">
-                <CreateEdit />
+                <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {renderModal()}
         </Create>
