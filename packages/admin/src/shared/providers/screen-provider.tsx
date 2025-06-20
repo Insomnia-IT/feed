@@ -13,16 +13,12 @@ interface ScreenCtx {
 const ScreenContext = createContext<ScreenCtx | null>(null);
 
 function calcFlags(breakpoint: Partial<Record<Breakpoint, boolean>>): ScreenCtx {
-    const xs = !!breakpoint.xs;
-    const sm = !!breakpoint.sm;
-    const md = !!breakpoint.md;
-    const lg = !!breakpoint.lg;
-    const xl = !!breakpoint.xl;
-    const xxl = !!breakpoint.xxl;
+    const breakpointOrder: Breakpoint[] = ['xxl', 'xl', 'lg', 'md', 'sm', 'xs'];
+    const current = breakpointOrder.find((bp) => breakpoint[bp]) || 'xs';
 
-    const isMobile = xs || sm || !(md || lg || xl || xxl);
-    const isTablet = md && !(lg || xl || xxl);
-    const isDesktop = lg || xl || xxl;
+    const isMobile = current === 'xs' || current === 'sm';
+    const isTablet = current === 'md';
+    const isDesktop = current === 'lg' || current === 'xl' || current === 'xxl';
 
     return { breakpoint, isMobile, isTablet, isDesktop };
 }
