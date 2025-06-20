@@ -26,10 +26,6 @@ RUN echo "npm cache clean --force && node-prune" > /usr/local/bin/node-clean && 
 
 RUN apk add --no-cache build-base
 
-ARG NEW_API_URL
-ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
-ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
-
 COPY ./package.json /app/package.json
 COPY ./package-lock.json /app/package-lock.json
 
@@ -53,6 +49,10 @@ COPY ./tsconfig.paths.json /app/tsconfig.paths.json
 COPY ./typings.d.ts /app/typings.d.ts
 COPY ./types /app/types
 COPY ./packages /app/packages
+
+ARG NEW_API_URL
+ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
+ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/packages/scanner/src/pwa-ver.txt
 
