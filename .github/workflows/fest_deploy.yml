@@ -20,7 +20,7 @@ jobs:
     - name: build admin
       run: |
           docker compose build \
-            --build-arg NEW_API_URL=https://feedapp.insomniafest.ru/feedapi/v1 \
+            --build-arg NEW_API_URL=/feedapi/v1 \
             --build-arg SYNC_URL=https://agreemod.insomniafest.ru/api/v1/feeder/ \
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
