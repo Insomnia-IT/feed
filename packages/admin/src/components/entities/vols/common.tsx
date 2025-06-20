@@ -9,7 +9,7 @@ import { CommonHistory } from './common-history/common-history';
 const CreateEdit = () => {
     const [activeKey, setActiveKey] = useState('1');
 
-    const { isMobile } = useScreen();
+    const { isDesktop } = useScreen();
 
     useEffect(() => {
         document.querySelector('.ant-page-header-heading-extra')?.remove();
@@ -19,7 +19,7 @@ const CreateEdit = () => {
         () => [
             {
                 key: '1',
-                label: isMobile ? 'Инфо' : 'Основное',
+                label: isDesktop ? 'Основное' : 'Инфо',
                 children: <CommonEdit />
             },
             {
@@ -38,15 +38,15 @@ const CreateEdit = () => {
                 children: <CommonHistory role="actor" />
             }
         ],
-        [isMobile]
+        [isDesktop]
     );
 
     return (
         <Tabs
             activeKey={activeKey}
             onChange={setActiveKey}
-            size={isMobile ? 'small' : 'middle'}
-            tabBarGutter={isMobile ? 6 : 16}
+            size={isDesktop ? 'middle' : 'small'}
+            tabBarGutter={isDesktop ? 16 : 6}
             items={items}
         />
     );
