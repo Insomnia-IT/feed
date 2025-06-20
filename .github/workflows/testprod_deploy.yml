@@ -30,9 +30,9 @@ jobs:
       run: |
         DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=True PORT=8888 docker compose up -d --remove-orphans --force-recreate
 # CLEANUP
-    - name: cleanup docker containers
-      run: docker container prune --filter "until=168h" -f
-    - name: cleanup docker images
-      run: docker image prune -a -f --filter "until=168h"
-    - name: cleanup docker build cache
-      run: docker builder prune -a -f --filter "until=168h"
+    # - name: cleanup docker containers
+    #   run: docker container prune --filter "until=168h" -f
+    # - name: cleanup docker images
+    #   run: docker image prune -a -f --filter "until=168h"
+    # - name: cleanup docker build cache
+    #   run: docker builder prune -a -f --filter "until=168h"
