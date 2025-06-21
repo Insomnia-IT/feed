@@ -1,9 +1,15 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Refine, useGetIdentity } from '@refinedev/core';
+import routerProvider, {
+    DocumentTitleHandler,
+    NavigateToResource,
+    UnsavedChangesNotifier
+} from '@refinedev/react-router-v6';
 import { useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
+import antdLocale from 'antd/lib/locale/ru_RU';
 import {
     UserOutlined,
     InsertRowRightOutlined,
@@ -16,12 +22,10 @@ import {
     DashboardOutlined,
     ExperimentOutlined
 } from '@ant-design/icons';
-import antdLocale from 'antd/lib/locale/ru_RU';
-import routerProvider from '@refinedev/react-router-v6';
-import { DocumentTitleHandler, NavigateToResource, UnsavedChangesNotifier } from '@refinedev/react-router-v6';
-import { I18nextProvider, useTranslation } from 'react-i18next';
 
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from './i18n';
+
 import { ACL } from 'acl';
 import { ScreenProvider } from 'shared/providers';
 import { authProvider } from 'authProvider';

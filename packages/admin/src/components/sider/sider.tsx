@@ -21,19 +21,26 @@ import type { AccessRoleEntity } from 'interfaces';
 
 import styles from './sider.module.css';
 
+const MOBILE_PATHS = {
+    wash: '/wash',
+    vol: '/volunteers',
+    gb: '/group-badges'
+};
+
 const CustomSider: FC = () => {
     const { breakpoint, isDesktop } = useScreen();
 
     const [collapsed, setCollapsed] = useState(false);
     const [user, setUser] = useState<UserData>();
     const [accessRoleName, setAccessRoleName] = useState('');
-    const [currentPath, setCurrentPath] = useState('');
 
     const Title = useTitle();
-    const isExistAuthentication = useIsExistAuthentication();
+    const isAuth = useIsExistAuthentication();
     const { mutate: logout } = useLogout();
     const queryClient = useQueryClient();
     const { menuItems, selectedKey } = useMenu();
+    const { push } = useNavigation();
+    const location = useLocation();
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
         resource: 'access-roles'
@@ -42,12 +49,12 @@ const CustomSider: FC = () => {
     useEffect(() => {
         if (!authProvider.getIdentity || accessRolesIsLoading) return;
 
-        void authProvider.getIdentity().then((res) => {
+        authProvider.getIdentity().then((res) => {
             const user = res as UserData;
             if (user) {
                 setUser(user);
-                const roleName = accessRoles?.data.find((role) => role.id === user.roles[0])?.name ?? '';
-                setAccessRoleName(roleName);
+                const role = accessRoles?.data.find((role) => role.id === user.roles[0]);
+                setAccessRoleName(role?.name ?? '');
             }
         });
     }, [accessRolesIsLoading, accessRoles]);
@@ -57,22 +64,6 @@ const CustomSider: FC = () => {
         logout();
     }, [logout, queryClient]);
 
-    const { push } = useNavigation();
-    const location = useLocation();
-    const myPath = location.pathname;
-
-    useEffect(() => {
-        if (myPath.startsWith('/group-badges')) {
-            setCurrentPath('gb');
-        } else if (myPath.startsWith('/volunteers')) {
-            setCurrentPath('vol');
-        } else if (myPath.startsWith('/wash')) {
-            setCurrentPath('wash');
-        } else {
-            setCurrentPath('');
-        }
-    }, [myPath]);
-
     const renderMenuItems = useCallback(
         (tree: ITreeMenu[]): React.ReactNode[] => {
             return tree
@@ -80,16 +71,13 @@ const CustomSider: FC = () => {
                     const { children, icon, label, name, route } = item;
                     const key = route || name;
 
-                    if (children && children.length > 0) {
+                    if (children?.length) {
                         const subItems = renderMenuItems(children);
-                        if (subItems.length === 0) {
-                            return null;
-                        }
-                        return (
+                        return subItems.length ? (
                             <Menu.SubMenu key={key} icon={icon ?? <UnorderedListOutlined />} title={label}>
                                 {subItems}
                             </Menu.SubMenu>
-                        );
+                        ) : null;
                     }
 
                     return (
@@ -122,11 +110,9 @@ const CustomSider: FC = () => {
             </Menu.Item>
         ];
 
-        if (menuItems) {
-            items.push(...renderMenuItems(menuItems));
-        }
+        if (menuItems) items.push(...renderMenuItems(menuItems));
 
-        if (isExistAuthentication) {
+        if (isAuth) {
             items.push(
                 <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
                     Выход
@@ -135,50 +121,48 @@ const CustomSider: FC = () => {
         }
 
         return items;
-    }, [accessRoleName, user, menuItems, renderMenuItems, isExistAuthentication, handleLogout]);
+    }, [accessRoleName, user, menuItems, renderMenuItems, isAuth, handleLogout]);
 
-    if (breakpoint.xs) {
+    const renderMobileButtons = () => {
+        const path = location.pathname;
+
         return (
             <div className={styles.mobileSider}>
                 {user?.roles[0] === AppRoles.SOVA ? (
-                    <button
-                        className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
-                        onClick={() => push('/wash')}
-                    >
-                        <SmileOutlined style={{ fontSize: 20 }} />
-                        <span className={styles.buttonText}>Стиратель</span>
-                    </button>
+                    <MobileButton
+                        active={path.startsWith(MOBILE_PATHS.wash)}
+                        icon={<SmileOutlined />}
+                        text="Стиратель"
+                        onClick={() => push(MOBILE_PATHS.wash)}
+                    />
                 ) : (
                     <>
-                        <button
-                            className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
-                            onClick={() => push('/volunteers')}
-                        >
-                            <UserOutlined style={{ fontSize: 20 }} />
-                            <span className={styles.buttonText}>Волонтеры</span>
-                        </button>
-                        <button
-                            className={`${styles.siderButton} ${currentPath === 'gb' ? styles.siderButtonActive : ''}`}
-                            onClick={() => push('/group-badges')}
-                        >
-                            <TeamOutlined style={{ fontSize: 20 }} />
-                            <span className={styles.buttonText}>Группы</span>
-                        </button>
+                        <MobileButton
+                            active={path.startsWith(MOBILE_PATHS.vol)}
+                            icon={<UserOutlined />}
+                            text="Волонтеры"
+                            onClick={() => push(MOBILE_PATHS.vol)}
+                        />
+                        <MobileButton
+                            active={path.startsWith(MOBILE_PATHS.gb)}
+                            icon={<TeamOutlined />}
+                            text="Группы"
+                            onClick={() => push(MOBILE_PATHS.gb)}
+                        />
                     </>
                 )}
-                <button className={styles.siderButton} onClick={handleLogout}>
-                    <LogoutOutlined style={{ fontSize: 20 }} />
-                    <span className={styles.buttonText}>Выход</span>
-                </button>
+                <MobileButton icon={<LogoutOutlined />} text="Выход" onClick={handleLogout} />
             </div>
         );
-    }
+    };
+
+    if (breakpoint.xs) return renderMobileButtons();
 
     return (
         <Layout.Sider
-            className={!isDesktop ? styles.antLayoutSiderMobile : styles.antLayoutSider}
+            className={isDesktop ? styles.antLayoutSider : styles.antLayoutSiderMobile}
             collapsible
-            collapsedWidth={!isDesktop ? 0 : 80}
+            collapsedWidth={isDesktop ? 80 : 0}
             collapsed={collapsed}
             breakpoint="lg"
             onCollapse={setCollapsed}
@@ -188,14 +172,29 @@ const CustomSider: FC = () => {
                 theme="dark"
                 mode="inline"
                 selectedKeys={[selectedKey]}
-                onClick={() => {
-                    if (!isDesktop) setCollapsed(true);
-                }}
+                onClick={() => !isDesktop && setCollapsed(true)}
             >
                 {userMenuItems}
             </Menu>
         </Layout.Sider>
     );
 };
+
+const MobileButton = ({
+    icon,
+    text,
+    active,
+    onClick
+}: {
+    icon: React.ReactNode;
+    text: string;
+    active?: boolean;
+    onClick: () => void;
+}) => (
+    <button className={`${styles.siderButton} ${active ? styles.siderButtonActive : ''}`} onClick={onClick}>
+        {icon}
+        <span className={styles.buttonText}>{text}</span>
+    </button>
+);
 
 export default CustomSider;

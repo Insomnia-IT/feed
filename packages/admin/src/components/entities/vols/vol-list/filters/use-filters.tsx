@@ -1,4 +1,7 @@
-import {
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { GetListResponse, useList } from '@refinedev/core';
+
+import type {
     AccessRoleEntity,
     CustomFieldEntity,
     DirectionEntity,
@@ -12,20 +15,19 @@ import {
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 import { FilterField, FilterFieldType, FilterItem } from 'components/entities/vols/vol-list/filters/filter-types';
 import { getSorter } from 'utils';
-import { useEffect, useMemo, useState } from 'react';
-import { GetListResponse, useList } from '@refinedev/core';
 
-const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> => {
-    return useMemo(() => {
-        return (list ? list.data : []).reduce(
-            (acc, item) => ({
-                ...acc,
-                [item.id as string]: item[nameField]
-            }),
-            {}
-        );
-    }, [list, nameField]);
-};
+const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> =>
+    useMemo(
+        () =>
+            (list?.data ?? []).reduce(
+                (acc, item) => ({
+                    ...acc,
+                    [item.id as string]: item[nameField]
+                }),
+                {}
+            ),
+        [list, nameField]
+    );
 
 const getDefaultVisibleFilters = (): Array<string> => {
     const volVisibleFiltersStr = localStorage.getItem('volVisibleFilters');
@@ -51,18 +53,14 @@ const getDefaultActiveFilters = (): Array<FilterItem> => {
     return [];
 };
 
-const getDefaultSearchText = (): string => {
-    return localStorage.getItem('volSearchText') || '';
-};
-
 export const useFilters = ({
     customFields,
     setPage
 }: {
-    setPage: (value: number) => void;
-    customFields: Array<CustomFieldEntity>;
+    setPage: (page: number) => void;
+    customFields: CustomFieldEntity[];
 }) => {
-    const [searchText, setSearchText] = useState(getDefaultSearchText);
+    const [searchText, setSearchText] = useState(() => localStorage.getItem('volSearchText') || '');
 
     const { data: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
@@ -74,8 +72,6 @@ export const useFilters = ({
     useEffect(() => {
         localStorage.setItem('volSearchText', searchText);
     }, [searchText]);
-
-    const visibleDirections = useVisibleDirections();
 
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>(getDefaultActiveFilters);
 
@@ -100,22 +96,19 @@ export const useFilters = ({
         }
     });
 
+    const visibleDirections = useVisibleDirections();
+
+    const formatFilter = useCallback((name: string, value: unknown) => {
+        if (name.startsWith('custom_field_values.')) {
+            const customFieldId = name.split('.')[1];
+            return `custom_field_id=${customFieldId}&custom_field_value=${value}`;
+        }
+        return `${name}=${value}`;
+    }, []);
+
     const filterQueryParams = useMemo(() => {
-        const formatFilter = (name: string, value: unknown): string => {
-            if (name.startsWith('custom_field_values.')) {
-                const customFieldId = name.split('.')[1];
-                return `custom_field_id=${customFieldId}&custom_field_value=${value}`;
-            }
-            return `${name}=${value}`;
-        };
-
-        const activeVisibleFilters = activeFilters.filter((filter) => visibleFilters.includes(filter.name));
-
-        if (
-            visibleDirections &&
-            visibleDirections.length &&
-            !activeVisibleFilters.some(({ name }) => name === 'directions')
-        ) {
+        const activeVisibleFilters = activeFilters.filter(({ name }) => visibleFilters.includes(name));
+        if (visibleDirections?.length && !activeVisibleFilters.some(({ name }) => name === 'directions')) {
             activeVisibleFilters.push({
                 name: 'directions',
                 op: 'include',
@@ -123,20 +116,13 @@ export const useFilters = ({
             });
         }
 
-        const queryParams = activeVisibleFilters.flatMap(({ name, value }) => {
-            if (Array.isArray(value)) {
-                return value.map((v) => formatFilter(name, v));
-            }
+        const params = activeVisibleFilters.flatMap(({ name, value }) =>
+            Array.isArray(value) ? value.map((v) => formatFilter(name, v)) : formatFilter(name, value)
+        );
 
-            return formatFilter(name, value);
-        });
-
-        if (searchText) {
-            queryParams.push(`search=${searchText}`);
-        }
-
-        return queryParams.length ? `?${queryParams.join('&')}` : '';
-    }, [activeFilters, visibleFilters, searchText, visibleDirections]);
+        if (searchText) params.push(`search=${searchText}`);
+        return params.length ? `?${params.join('&')}` : '';
+    }, [activeFilters, visibleFilters, searchText, visibleDirections, formatFilter]);
 
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
         resource: 'kitchens',
@@ -276,13 +262,6 @@ export const useFilters = ({
         }))
     );
 
-    const kitchenNameById = useMapFromList(kitchens);
-    const feedTypeNameById = useMapFromList(feedTypes);
-    const accessRoleById = useMapFromList(accessRoles);
-    const volunteerRoleById = useMapFromList(volunteerRoles);
-    const statusById = useMapFromList(statuses);
-    const transportById = useMapFromList(transports);
-
     return {
         isFiltersLoading: kitchensIsLoading || feedTypesIsLoading || accessRolesIsLoading || volunteerRolesIsLoading,
         filterQueryParams,
@@ -293,11 +272,11 @@ export const useFilters = ({
         filterFields,
         activeFilters,
         visibleFilters,
-        kitchenNameById,
-        feedTypeNameById,
-        accessRoleById,
-        volunteerRoleById,
-        statusById,
-        transportById
+        kitchenNameById: useMapFromList(kitchens),
+        feedTypeNameById: useMapFromList(feedTypes),
+        accessRoleById: useMapFromList(accessRoles),
+        volunteerRoleById: useMapFromList(volunteerRoles),
+        statusById: useMapFromList(statuses),
+        transportById: useMapFromList(transports)
     };
 };
