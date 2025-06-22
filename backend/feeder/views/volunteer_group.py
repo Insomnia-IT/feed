@@ -143,16 +143,20 @@ class VolunteerGroupViewSet(APIView):
                         vol = serializer.save()
                         updated_volunteers.append(vol)
 
-                        History.objects.create(
-                            status=History.STATUS_UPDATE,
-                            object_name='volunteer',
-                            actor_badge=get_request_user_id(request.user),
-                            action_at=timezone.now(),
-                            data=new_data,
-                            old_data=original_data[volunteer_id],
-                            volunteer_uuid=str(vol.uuid),
-                            group_operation_uuid=str(group_operation_uuid),
-                        )
+                        if len(new_data.keys()) > 0:
+                            history_data = new_data.copy()
+                            history_data['id'] = str(vol.uuid)
+
+                            History.objects.create(
+                                status=History.STATUS_UPDATE,
+                                object_name='volunteer',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data=history_data,
+                                old_data=original_data[volunteer_id],
+                                volunteer_uuid=str(vol.uuid),
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
 
                     for field_name, value in custom_fields_data.items():
                         key = (volunteer_id, int(field_name))
