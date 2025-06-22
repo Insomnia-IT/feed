@@ -96,6 +96,7 @@ export class MySubClassedDexie extends Dexie {
             })
             .upgrade((trans) => {
                 localStorage.removeItem('lastSyncStart');
+                localStorage.removeItem('lastUpdatedServerTrans');
                 return Promise.all([
                     trans.table('transactions').clear(),
                     trans.table('groupBadges').clear(),
