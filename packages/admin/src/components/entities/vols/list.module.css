@@ -137,4 +137,5 @@
     justify-content: center;
     z-index: 1;
     border-radius: 8px;
+    pointer-events: none;
 }

@@ -111,7 +111,8 @@ export const VolunteerMobileList: FC<{
 
                         return (
                             <SwipeAction
-                                key={vol.id}
+                                // Перемонтирование при изменении карточки с уникальным ключом для сброса состояния свайпа иначе не работает клик
+                                key={`${vol.id}-${currentArrival?.status || 'unknown'}`}
                                 rightActions={
                                     currentArrival?.status === 'STARTED' || currentArrival?.status === 'JOINED'
                                         ? []
