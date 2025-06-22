@@ -5,6 +5,7 @@ import { Button } from '~/shared/ui/button';
 import { useApp } from '~/model/app-provider';
 import { Switcher } from '~/shared/ui/switcher';
 import { AppViews, useView } from '~/model/view-provider';
+import ver from 'pwa-ver.txt';
 
 import css from './settings.module.css';
 const formatDate = (value) => {
@@ -20,11 +21,23 @@ export const Settings = () => {
     const { autoSync, doSync, lastSyncStart, setAuth, setMealTime, setPin, syncFetching, toggleAutoSync } = useApp();
     const { setCurrentView } = useView();
 
-    const logout = () => {
+    const logout = (): void => {
         setAuth(false);
         setMealTime(null);
         setCurrentView(AppViews.MAIN);
         setPin('');
+    };
+
+    const reset = (): void => {
+        if ('serviceWorker' in navigator) {
+            void caches.keys().then(function (cacheNames) {
+                cacheNames.forEach(function (cacheName) {
+                    void caches.delete(cacheName);
+                });
+
+                window.location.reload();
+            });
+        }
     };
 
     return (
@@ -70,9 +83,13 @@ export const Settings = () => {
             >
                 Полное обновление
             </Button>
+            <Button className={css.button} onClick={reset} disabled={syncFetching}>
+                Сбросить кеш
+            </Button>
             <button className={css.leave} onClick={logout}>
                 Выйти из кухни &rarr;
             </button>
+            <div className={css.version}>Версия приложения: {ver.replace('T', ' ')}</div>
         </div>
     );
 };

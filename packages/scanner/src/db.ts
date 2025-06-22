@@ -79,7 +79,7 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 19;
+const DB_VERSION = 20;
 
 export class MySubClassedDexie extends Dexie {
     groupBadges!: Table<GroupBadge>;
@@ -96,7 +96,12 @@ export class MySubClassedDexie extends Dexie {
             })
             .upgrade((trans) => {
                 localStorage.removeItem('lastSyncStart');
-                return trans.table('volunteers').clear();
+                localStorage.removeItem('lastUpdatedServerTrans');
+                return Promise.all([
+                    trans.table('transactions').clear(),
+                    trans.table('groupBadges').clear(),
+                    trans.table('volunteers').clear()
+                ]);
             });
     }
 }
