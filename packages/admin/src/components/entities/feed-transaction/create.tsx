@@ -2,7 +2,7 @@ import { Checkbox, DatePicker, Form, Input, Select } from 'antd';
 import { Create, useForm, useSelect } from '@refinedev/antd';
 import type { IResourceComponentsProps } from '@refinedev/core';
 import { useEffect, useCallback, FC } from 'react';
-import { ulid } from 'ulid';
+import { v4 as uuid } from 'uuid';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { Rules } from 'components/form/rules';
@@ -31,7 +31,16 @@ export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
     }, []);
 
     const onTimeChange = useCallback(
-        (value: Dayjs | null) => form.setFieldValue('ulid', value ? ulid(value.unix()) : undefined),
+        (value: Dayjs | null) => {
+            if (value) {
+                form.setFieldsValue({
+                    ulid: uuid(),
+                    dtime: value
+                });
+            } else {
+                form.setFieldValue('ulid', undefined);
+            }
+        },
         [form]
     );
 
