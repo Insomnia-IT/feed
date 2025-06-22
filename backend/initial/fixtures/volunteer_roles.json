@@ -202,5 +202,29 @@
       "is_leader": false,
       "is_team": false
     }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": "MERCHANT",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Торговец",
+      "color": "orange",
+      "is_leader": false,
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.volunteerrole",
+    "pk": "LOCALS",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Местные",
+      "color": "orange",
+      "is_leader": false,
+      "is_team": false
+    }
   }
 ]

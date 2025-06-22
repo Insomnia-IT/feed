@@ -18,11 +18,18 @@
 
 .leave {
     position: absolute;
-    bottom: 30px;
+    bottom: 50px;
     left: 16px;
     background: none;
     border: none;
     font-weight: 600;
     font-size: 20px;
     color: var(--c-error);
+}
+
+.version {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    text-align: right;
 }
