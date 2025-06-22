@@ -46,12 +46,14 @@ export const VolunteerMobileList: FC<{
     const invalidate = useInvalidate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
+    const [loadingVolId, setLoadingVolId] = useState<number | null>(null);
 
     const handleAction = async (vol: VolEntity) => {
         const currentArrival = findClosestArrival(vol.arrivals);
 
         if (checkArrivalStatus(currentArrival)) {
             try {
+                setLoadingVolId(vol.id);
                 // Обновляем статус заезда на STARTED
                 await dataProvider().update({
                     resource: 'volunteers',
@@ -70,6 +72,8 @@ export const VolunteerMobileList: FC<{
                 });
             } catch (error) {
                 console.error('Ошибка при обновлении статуса:', error);
+            } finally {
+                setLoadingVolId(null);
             }
         } else {
             setSelectedVol(vol);
@@ -132,6 +136,11 @@ export const VolunteerMobileList: FC<{
                                         void openVolunteer(vol.id);
                                     }}
                                 >
+                                    {loadingVolId === vol.id && (
+                                        <div className={styles.loaderOverlay}>
+                                            <Spin size="large" />
+                                        </div>
+                                    )}
                                     <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
                                     <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                                     <div>
