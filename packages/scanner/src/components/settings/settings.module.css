@@ -26,3 +26,10 @@
     font-size: 20px;
     color: var(--c-error);
 }
+
+.version {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    text-align: right;
+}
