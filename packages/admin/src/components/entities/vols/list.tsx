@@ -69,11 +69,11 @@ export const VolList: FC = () => {
         }
     });
 
-    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
-        volunteersData: volunteers?.data ?? [],
-        totalVolunteersCount: volunteers?.total ?? 0,
-        filterQueryParams
-    });
+    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
+        useMassEdit({
+            totalVolunteersCount: volunteers?.total ?? 0,
+            filterQueryParams
+        });
 
     const pagination: TablePaginationConfig = {
         total: volunteers?.total ?? 1,
@@ -203,6 +203,7 @@ export const VolList: FC = () => {
                                     unselectVolunteer={unselectVolunteer}
                                     reloadVolunteers={async () => {
                                         await reloadVolunteers();
+                                        await reloadSelectedVolunteers();
                                     }}
                                 />
                             )}

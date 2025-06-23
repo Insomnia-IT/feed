@@ -1,5 +1,5 @@
 import type { VolEntity } from 'interfaces';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { dataProvider } from 'dataProvider';
@@ -8,10 +8,10 @@ export const useMassEdit = ({
     totalVolunteersCount,
     filterQueryParams
 }: {
-    volunteersData: Array<VolEntity>;
     totalVolunteersCount: number;
     filterQueryParams: string;
 }): {
+    reloadSelectedVolunteers: () => Promise<void>;
     selectedVols: Array<VolEntity>;
     unselectAllSelected: () => void;
     unselectVolunteer: (volunteer: VolEntity) => void;
@@ -78,7 +78,22 @@ export const useMassEdit = ({
         )
     };
 
+    const reloadSelectedVolunteers = useCallback(async () => {
+        const promises = selectedRowKeys.map(async (volId: number) => {
+            return dataProvider.getOne<VolEntity>({ resource: 'volunteers', id: String(volId) });
+        });
+
+        const values = await Promise.allSettled(promises).then((values) =>
+            values
+                .map((value) => (value.status === 'fulfilled' ? value.value.data : undefined))
+                .filter((value) => typeof value !== 'undefined')
+        );
+
+        setSelectedVols(values);
+    }, [selectedRowKeys]);
+
     return {
+        reloadSelectedVolunteers,
         rowSelection,
         selectedVols,
         unselectAllSelected,
