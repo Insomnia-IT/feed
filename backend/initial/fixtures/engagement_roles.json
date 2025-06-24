@@ -51,6 +51,16 @@
   },
   {
     "model": "feeder.engagementrole",
+    "pk": "MEDIC",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Медик",
+      "is_team": true
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
     "pk": "CAMP_GUY",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
@@ -81,11 +91,41 @@
   },
   {
     "model": "feeder.engagementrole",
+    "pk": "ART_FELLOW",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Сопровождающие (участников)",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
+    "pk": "PRESS",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Пресса",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
     "pk": "CONTRACTOR",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
       "name": "Подрядчик",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
+    "pk": "ANIMATOR",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Аниматор",
       "is_team": false
     }
   },
@@ -126,6 +166,26 @@
       "created_at": "2024-03-06T20:13:51.761Z",
       "updated_at": "2024-03-06T20:13:51.761Z",
       "name": "VIP",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
+    "pk": "MERCHANT",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Торговец",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
+    "pk": "LOCALS",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Местные",
       "is_team": false
     }
   }
