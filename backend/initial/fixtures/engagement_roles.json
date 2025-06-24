@@ -111,6 +111,16 @@
   },
   {
     "model": "feeder.engagementrole",
+    "pk": "ARTIST",
+    "fields": {
+      "created_at": "2024-03-06T20:13:51.761Z",
+      "updated_at": "2024-03-06T20:13:51.761Z",
+      "name": "Артист",
+      "is_team": false
+    }
+  },
+  {
+    "model": "feeder.engagementrole",
     "pk": "VIP",
     "fields": {
       "created_at": "2024-03-06T20:13:51.761Z",
