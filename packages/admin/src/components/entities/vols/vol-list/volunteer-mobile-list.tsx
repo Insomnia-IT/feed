@@ -97,8 +97,6 @@ export const VolunteerMobileList: FC<{
             }
         });
 
-    console.log('VolunteerMobileList data:', data);
-
     const list = data?.pages.flatMap((page) => page.data) ?? [];
 
     const [isModalOpen, setIsModalOpen] = useState(false);
