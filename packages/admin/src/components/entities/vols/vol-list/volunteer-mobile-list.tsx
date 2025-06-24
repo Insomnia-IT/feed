@@ -1,9 +1,9 @@
-import { FC, useCallback, useEffect, useState, useMemo, memo } from 'react';
+import { FC, useCallback, useMemo, useState, memo } from 'react';
 import { Spin, Modal, Typography, Tag } from 'antd';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { SwipeAction, InfiniteScroll } from 'antd-mobile';
 import dayjs from 'dayjs';
-import { useDataProvider, useInvalidate } from '@refinedev/core';
+import { useInfiniteList, useDataProvider, useInvalidate } from '@refinedev/core';
 
 import type { VolEntity, ArrivalEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
@@ -89,45 +89,20 @@ export const VolunteerMobileList: FC<{
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
 
-    const [list, setList] = useState<VolEntity[]>([]);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(true);
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
+        useInfiniteList<VolEntity>({
+            resource: `volunteers/${filterQueryParams}`,
+            pagination: {
+                pageSize: PAGE_SIZE
+            }
+        });
+
+    console.log('VolunteerMobileList data:', data);
+
+    const list = data?.pages.flatMap((page) => page.data) ?? [];
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
-
-    const fetchPage = useCallback(
-        async (pageToLoad: number) => {
-            const { data, total } = await dataProvider().getList<VolEntity>({
-                resource: `volunteers/${filterQueryParams}`,
-                pagination: {
-                    current: pageToLoad,
-                    pageSize: PAGE_SIZE,
-                    mode: 'server'
-                }
-            });
-
-            setList((prev) => {
-                const newList = [...prev, ...data];
-                setHasMore(newList.length < total);
-                return newList;
-            });
-            setPage(pageToLoad);
-        },
-        [dataProvider, filterQueryParams]
-    );
-
-    useEffect(() => {
-        setList([]);
-        setPage(1);
-        setHasMore(true);
-        setLoading(true);
-
-        fetchPage(1).finally(() => setLoading(false));
-    }, [fetchPage]);
-
-    const loadMore = () => fetchPage(page + 1);
 
     const handleStartArrival = useCallback(
         async (vol: VolEntity) => {
@@ -169,10 +144,14 @@ export const VolunteerMobileList: FC<{
         setSelectedVol(null);
     }, []);
 
+    const loadMore = useCallback(async () => {
+        await fetchNextPage();
+    }, [fetchNextPage]);
+
     return (
         <>
             <div className={styles.mobileVolList}>
-                {loading ? (
+                {isLoading ? (
                     <Spin />
                 ) : (
                     <>
@@ -182,15 +161,16 @@ export const VolunteerMobileList: FC<{
                                 vol={vol}
                                 statusById={statusById}
                                 onStartArrival={handleStartArrival}
-                                onOpen={(id) => openVolunteer(id)}
+                                onOpen={openVolunteer}
                             />
                         ))}
-                        <InfiniteScroll loadMore={loadMore} hasMore={hasMore} threshold={120}>
+                        <InfiniteScroll loadMore={loadMore} hasMore={!!hasNextPage} threshold={120}>
                             {(hasMore, failed, retry) => {
-                                if (failed) {
+                                if (failed || isError) {
                                     return (
                                         <div style={{ textAlign: 'center' }}>
-                                            Ошибка загрузки. <button onClick={retry}>Повторить</button>
+                                            Ошибка загрузки.{' '}
+                                            <button onClick={() => (retry ?? refetch)()}>Повторить</button>
                                         </div>
                                     );
                                 }
@@ -199,7 +179,11 @@ export const VolunteerMobileList: FC<{
                                         <div style={{ textAlign: 'center', padding: '16px' }}>Больше ничего нет</div>
                                     );
                                 }
-                                return <div style={{ textAlign: 'center', padding: '16px' }}>Загрузка...</div>;
+                                return (
+                                    <div style={{ textAlign: 'center', padding: '16px' }}>
+                                        {isFetchingNextPage ? 'Загрузка...' : null}
+                                    </div>
+                                );
                             }}
                         </InfiniteScroll>
                     </>
