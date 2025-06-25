@@ -64,21 +64,13 @@ export const VolList: FC = () => {
         pagination: isDesktop ? { current: page, pageSize } : undefined
     });
 
-<<<<<<< fix-update-choosen-volunteers-in-mass-operations
+    const volunteersData = volunteers?.data ?? [];
+
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
             totalVolunteersCount: volunteers?.total ?? 0,
             filterQueryParams
         });
-=======
-    const volunteersData = volunteers?.data ?? [];
-
-    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
-        volunteersData,
-        totalVolunteersCount: volunteers?.total ?? 0,
-        filterQueryParams
-    });
->>>>>>> main
 
     const pagination = useMemo(
         () => ({
