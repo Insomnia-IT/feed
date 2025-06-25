@@ -66,11 +66,11 @@ export const VolList: FC = () => {
 
     const volunteersData = volunteers?.data ?? [];
 
-    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
-        volunteersData,
-        totalVolunteersCount: volunteers?.total ?? 0,
-        filterQueryParams
-    });
+    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
+        useMassEdit({
+            totalVolunteersCount: volunteers?.total ?? 0,
+            filterQueryParams
+        });
 
     const pagination = useMemo(
         () => ({
@@ -194,6 +194,7 @@ export const VolList: FC = () => {
                                     unselectVolunteer={unselectVolunteer}
                                     reloadVolunteers={async () => {
                                         await reloadVolunteers();
+                                        await reloadSelectedVolunteers();
                                     }}
                                 />
                             )}
