@@ -28,7 +28,8 @@ export const FIELD_LABELS: Record<string, string> = {
     group_badge: 'Групповой бейдж',
     number: 'Номер бейджа',
     batch: 'Партия бейджа',
-    ticket: 'Билет'
+    ticket: 'Билет',
+    qr: 'QR бейджа'
 };
 
 export const STATUS_MAP: Record<string, string> = {
