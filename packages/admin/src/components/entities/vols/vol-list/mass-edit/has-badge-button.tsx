@@ -62,7 +62,7 @@ export const HasBadgeButton: React.FC<{ selectedVolunteers: VolEntity[]; doChang
         <>
             <Button onClick={() => setIsTicketsModalOpen(true)}>
                 <IdcardOutlined />
-                Выдан бейдж
+                Бейдж у рук-ля
             </Button>
             <ConfirmModal
                 title={'Выдать бейдж?'}

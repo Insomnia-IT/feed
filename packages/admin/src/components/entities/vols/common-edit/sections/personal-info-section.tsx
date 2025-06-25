@@ -62,9 +62,9 @@ export const PersonalInfoSection = ({
                 <Form.Item label="QR бейджа" name="qr" rules={Rules.required}>
                     <Input disabled={denyBadgeEdit} onChange={handleQRChange} />
                 </Form.Item>
-                <Form.Item name="is_badged_leader" valuePropName="checked">
+                {/* <Form.Item name="is_badged_leader" valuePropName="checked">
                     <Checkbox>Бейдж у Руководителя</Checkbox>
-                </Form.Item>
+                </Form.Item> */}
             </div>
         </>
     );
