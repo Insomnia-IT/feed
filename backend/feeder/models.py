@@ -153,7 +153,8 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
         related_name='volunteers',
         verbose_name="Ответственный")
-    infant = models.BooleanField('IsChild', null=True, blank=True, default=False)
+    infant = models.BooleanField('IsChild', null=True, blank=True, default=False)   
+    is_baged_leader = models.BooleanField(default=False, null=True, verbose_name="Бейдж у Руководителя") 
 
     class Meta:
         verbose_name = "Волонтёр"
@@ -197,6 +198,7 @@ class Kitchen(TimeMixin):
 class GroupBadge(TimeMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, verbose_name="QR-код")
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
+    is_baged_leader = models.BooleanField(default=False, null=True, verbose_name="Бейдж у Руководителя") 
 
     def __str__(self):
         return self.name
@@ -306,6 +308,7 @@ class VolunteerGroupOperation(TimeMixin, SoftDeleteModelMixin):
     volunteers_ids = models.JSONField()
     original_data = models.JSONField()
     new_data = models.JSONField()
+    is_baged_leader = models.BooleanField(default=False, null=True, verbose_name="Бейдж у Руководителя") 
 
     def __str__(self):
         return self.group_operation_id
