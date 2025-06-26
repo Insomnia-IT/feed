@@ -33,7 +33,8 @@ const VolunteerMobileCard: FC<{
     statusById: Record<string, string>;
     onStartArrival: (vol: VolEntity) => void;
     onOpen: (id: number) => void;
-}> = memo(({ vol, statusById, onStartArrival, onOpen }) => {
+    loadingVolId: number | null;
+}> = memo(({ vol, statusById, onStartArrival, onOpen, loadingVolId }) => {
     const currentArrival = useMemo(() => findClosestArrival(vol.arrivals), [vol.arrivals]);
 
     const visitDays = useMemo(
@@ -64,8 +65,13 @@ const VolunteerMobileCard: FC<{
     }, [currentArrival, onStartArrival, vol]);
 
     return (
-        <SwipeAction key={vol.id} rightActions={rightActions}>
+        <SwipeAction key={`${vol.id}-${currentArrival?.status || 'unknown'}`} rightActions={rightActions}>
             <div className={styles.volCard} onClick={() => onOpen(vol.id)}>
+                {loadingVolId === vol.id && (
+                    <div className={styles.loaderOverlay}>
+                        <Spin size="large" />
+                    </div>
+                )}
                 <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
                 <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                 <div>
@@ -101,6 +107,7 @@ export const VolunteerMobileList: FC<{
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
+    const [loadingVolId, setLoadingVolId] = useState<number | null>(null);
 
     const handleStartArrival = useCallback(
         async (vol: VolEntity) => {
@@ -108,6 +115,7 @@ export const VolunteerMobileList: FC<{
 
             if (checkArrivalStatus(currentArrival)) {
                 try {
+                    setLoadingVolId(vol.id);
                     // Обновляем статус заезда на STARTED
                     await dataProvider().update({
                         resource: 'volunteers',
@@ -123,6 +131,8 @@ export const VolunteerMobileList: FC<{
                     invalidate({ resource: 'volunteers', invalidates: ['all'] });
                 } catch (error) {
                     console.error('Ошибка при обновлении статуса:', error);
+                } finally {
+                    setLoadingVolId(null);
                 }
             } else {
                 setSelectedVol(vol);
@@ -160,6 +170,7 @@ export const VolunteerMobileList: FC<{
                                 statusById={statusById}
                                 onStartArrival={handleStartArrival}
                                 onOpen={openVolunteer}
+                                loadingVolId={loadingVolId}
                             />
                         ))}
                         <InfiniteScroll loadMore={loadMore} hasMore={!!hasNextPage} threshold={120}>
