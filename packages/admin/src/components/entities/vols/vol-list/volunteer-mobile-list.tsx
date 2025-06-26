@@ -1,9 +1,9 @@
-import { FC, useCallback, useMemo, useState, memo } from 'react';
-import { Spin, Modal, Typography, Tag } from 'antd';
+import React, { FC, useState, useCallback, useMemo } from 'react';
+import { Spin, Tag, Modal, Typography } from 'antd';
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { SwipeAction, InfiniteScroll } from 'antd-mobile';
+import { SwipeAction } from 'antd-mobile';
 import dayjs from 'dayjs';
-import { useInfiniteList, useDataProvider, useInvalidate } from '@refinedev/core';
+import { useDataProvider, useInvalidate } from '@refinedev/core';
 
 import type { VolEntity, ArrivalEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
@@ -26,14 +26,12 @@ const checkArrivalStatus = (arrival: ArrivalEntity | null): boolean => {
     );
 };
 
-const PAGE_SIZE = 30;
-
 const VolunteerMobileCard: FC<{
     vol: VolEntity;
     statusById: Record<string, string>;
     onStartArrival: (vol: VolEntity) => void;
     onOpen: (id: number) => void;
-}> = memo(({ vol, statusById, onStartArrival, onOpen }) => {
+}> = React.memo(({ vol, statusById, onStartArrival, onOpen }) => {
     const currentArrival = useMemo(() => findClosestArrival(vol.arrivals), [vol.arrivals]);
 
     const visitDays = useMemo(
@@ -82,27 +80,17 @@ const VolunteerMobileCard: FC<{
 });
 
 export const VolunteerMobileList: FC<{
-    filterQueryParams: string;
+    volList: Array<VolEntity>;
+    isLoading: boolean;
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
-}> = ({ filterQueryParams, statusById, openVolunteer }) => {
+}> = ({ isLoading, openVolunteer, statusById, volList }) => {
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
-
-    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
-        useInfiniteList<VolEntity>({
-            resource: `volunteers/${filterQueryParams}`,
-            pagination: {
-                pageSize: PAGE_SIZE
-            }
-        });
-
-    const list = data?.pages.flatMap((page) => page.data) ?? [];
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
 
-    const handleStartArrival = useCallback(
+    const handleAction = useCallback(
         async (vol: VolEntity) => {
             const currentArrival = findClosestArrival(vol.arrivals);
 
@@ -142,9 +130,7 @@ export const VolunteerMobileList: FC<{
         setSelectedVol(null);
     }, []);
 
-    const loadMore = useCallback(async () => {
-        await fetchNextPage();
-    }, [fetchNextPage]);
+    const handleOpenVolunteer = useCallback((id: number) => openVolunteer(id), [openVolunteer]);
 
     return (
         <>
@@ -152,39 +138,15 @@ export const VolunteerMobileList: FC<{
                 {isLoading ? (
                     <Spin />
                 ) : (
-                    <>
-                        {list.map((vol) => (
-                            <VolunteerMobileCard
-                                key={vol.id}
-                                vol={vol}
-                                statusById={statusById}
-                                onStartArrival={handleStartArrival}
-                                onOpen={openVolunteer}
-                            />
-                        ))}
-                        <InfiniteScroll loadMore={loadMore} hasMore={!!hasNextPage} threshold={120}>
-                            {(hasMore, failed, retry) => {
-                                if (failed || isError) {
-                                    return (
-                                        <div style={{ textAlign: 'center' }}>
-                                            Ошибка загрузки.{' '}
-                                            <button onClick={() => (retry ?? refetch)()}>Повторить</button>
-                                        </div>
-                                    );
-                                }
-                                if (!hasMore) {
-                                    return (
-                                        <div style={{ textAlign: 'center', padding: '16px' }}>Больше ничего нет</div>
-                                    );
-                                }
-                                return (
-                                    <div style={{ textAlign: 'center', padding: '16px' }}>
-                                        {isFetchingNextPage ? 'Загрузка...' : null}
-                                    </div>
-                                );
-                            }}
-                        </InfiniteScroll>
-                    </>
+                    volList.map((vol) => (
+                        <VolunteerMobileCard
+                            key={vol.id}
+                            vol={vol}
+                            statusById={statusById}
+                            onStartArrival={handleAction}
+                            onOpen={handleOpenVolunteer}
+                        />
+                    ))
                 )}
             </div>
             <Modal
