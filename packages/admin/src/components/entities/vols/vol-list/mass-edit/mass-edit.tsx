@@ -1,7 +1,7 @@
 import styles from './mass-edit.module.css';
 import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { type VolEntity } from 'interfaces';
 import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list';
 import { GroupBadgeFrame } from './group-badge-frame';
@@ -32,9 +32,22 @@ export const MassEdit: React.FC<MassEditProps> = ({
     const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
     const doChange = useDoChange({ vols: selectedVolunteers, reloadVolunteers });
 
+    useEffect(() => {
+        if (selectedVolunteers.length === 0) {
+            setSectionState(ActionSectionStates.Initial);
+        }
+    }, [selectedVolunteers.length]);
+
     if (selectedVolunteers.length === 0) {
         return null;
     }
+
+    const applyChanges = async (params: VolunteerField) => {
+        await doChange(params);
+
+        // После действия возвращаемся на первый шаг
+        setSectionState(ActionSectionStates.Initial);
+    };
 
     return (
         <div className={styles.block}>
@@ -53,10 +66,7 @@ export const MassEdit: React.FC<MassEditProps> = ({
                 <ActionsSection
                     setSectionState={setSectionState}
                     sectionState={sectionState}
-                    doChange={async (params: VolunteerField) => {
-                        await doChange(params);
-                        setSectionState(ActionSectionStates.Initial);
-                    }}
+                    doChange={applyChanges}
                     unselectAll={unselectAll}
                     selectedVolunteers={selectedVolunteers}
                 />
