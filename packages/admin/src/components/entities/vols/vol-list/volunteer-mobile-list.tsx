@@ -1,7 +1,7 @@
-import React, { FC, useState, useCallback, useMemo } from 'react';
-import { Spin, Tag, Modal, Typography } from 'antd';
+import { FC, useCallback, useEffect, useState, useMemo, memo } from 'react';
+import { Spin, Modal, Typography, Tag } from 'antd';
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { SwipeAction } from 'antd-mobile';
+import { SwipeAction, InfiniteScroll } from 'antd-mobile';
 import dayjs from 'dayjs';
 import { useDataProvider, useInvalidate } from '@refinedev/core';
 
@@ -26,12 +26,14 @@ const checkArrivalStatus = (arrival: ArrivalEntity | null): boolean => {
     );
 };
 
+const PAGE_SIZE = 30;
+
 const VolunteerMobileCard: FC<{
     vol: VolEntity;
     statusById: Record<string, string>;
     onStartArrival: (vol: VolEntity) => void;
     onOpen: (id: number) => void;
-}> = React.memo(({ vol, statusById, onStartArrival, onOpen }) => {
+}> = memo(({ vol, statusById, onStartArrival, onOpen }) => {
     const currentArrival = useMemo(() => findClosestArrival(vol.arrivals), [vol.arrivals]);
 
     const visitDays = useMemo(
@@ -80,17 +82,54 @@ const VolunteerMobileCard: FC<{
 });
 
 export const VolunteerMobileList: FC<{
-    volList: Array<VolEntity>;
-    isLoading: boolean;
+    filterQueryParams: string;
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
-}> = ({ isLoading, openVolunteer, statusById, volList }) => {
+}> = ({ filterQueryParams, statusById, openVolunteer }) => {
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
+
+    const [list, setList] = useState<VolEntity[]>([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(true);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
 
-    const handleAction = useCallback(
+    const fetchPage = useCallback(
+        async (pageToLoad: number) => {
+            const { data, total } = await dataProvider().getList<VolEntity>({
+                resource: `volunteers/${filterQueryParams}`,
+                pagination: {
+                    current: pageToLoad,
+                    pageSize: PAGE_SIZE,
+                    mode: 'server'
+                }
+            });
+
+            setList((prev) => {
+                const newList = [...prev, ...data];
+                setHasMore(newList.length < total);
+                return newList;
+            });
+            setPage(pageToLoad);
+        },
+        [dataProvider, filterQueryParams]
+    );
+
+    useEffect(() => {
+        setList([]);
+        setPage(1);
+        setHasMore(true);
+        setLoading(true);
+
+        fetchPage(1).finally(() => setLoading(false));
+    }, [fetchPage]);
+
+    const loadMore = () => fetchPage(page + 1);
+
+    const handleStartArrival = useCallback(
         async (vol: VolEntity) => {
             const currentArrival = findClosestArrival(vol.arrivals);
 
@@ -130,23 +169,40 @@ export const VolunteerMobileList: FC<{
         setSelectedVol(null);
     }, []);
 
-    const handleOpenVolunteer = useCallback((id: number) => openVolunteer(id), [openVolunteer]);
-
     return (
         <>
             <div className={styles.mobileVolList}>
-                {isLoading ? (
+                {loading ? (
                     <Spin />
                 ) : (
-                    volList.map((vol) => (
-                        <VolunteerMobileCard
-                            key={vol.id}
-                            vol={vol}
-                            statusById={statusById}
-                            onStartArrival={handleAction}
-                            onOpen={handleOpenVolunteer}
-                        />
-                    ))
+                    <>
+                        {list.map((vol) => (
+                            <VolunteerMobileCard
+                                key={vol.id}
+                                vol={vol}
+                                statusById={statusById}
+                                onStartArrival={handleStartArrival}
+                                onOpen={(id) => openVolunteer(id)}
+                            />
+                        ))}
+                        <InfiniteScroll loadMore={loadMore} hasMore={hasMore} threshold={120}>
+                            {(hasMore, failed, retry) => {
+                                if (failed) {
+                                    return (
+                                        <div style={{ textAlign: 'center' }}>
+                                            Ошибка загрузки. <button onClick={retry}>Повторить</button>
+                                        </div>
+                                    );
+                                }
+                                if (!hasMore) {
+                                    return (
+                                        <div style={{ textAlign: 'center', padding: '16px' }}>Больше ничего нет</div>
+                                    );
+                                }
+                                return <div style={{ textAlign: 'center', padding: '16px' }}>Загрузка...</div>;
+                            }}
+                        </InfiniteScroll>
+                    </>
                 )}
             </div>
             <Modal

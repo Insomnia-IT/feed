@@ -3,19 +3,17 @@ import { AccessControl } from 'accesscontrol';
 
 import { AppRoles, getUserData } from 'auth';
 
-export const ac = new AccessControl();
+const ac = new AccessControl();
 ac
     // Руководитель локации
     .grant(AppRoles.DIRECTION_HEAD)
     .read(['dashboard', 'volunteers', 'group-badges'])
-    .update(['group-badges'])
-    .update(['volunteers'])
+    .update(['group-badges', 'volunteers'])
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
-    .read(['wash'])
+    .read(['wash', 'directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
     .create(['volunteers'])
-    .read(['directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
     // Старший смены
     .grant(AppRoles.SENIOR)
     .extend(AppRoles.CAT)
@@ -25,57 +23,73 @@ ac
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
-    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction'])
+    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash'])
     .update(['group-badges', 'volunteer-custom-fields'])
     .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers'])
+    // Сова
+    .grant(AppRoles.SOVA)
+    .read('wash')
     .create('wash');
 
-ac.grant(AppRoles.SOVA).read('wash').create('wash');
+type Action =
+    | 'list'
+    | 'show'
+    | 'create'
+    | 'edit'
+    | 'delete'
+    | 'full_list'
+    | 'badge_edit'
+    | 'bulk_edit'
+    | 'feed_type_edit'
+    | 'unban'
+    | 'role_edit'
+    | 'full_edit';
+
+const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
+    switch (action) {
+        case 'full_list':
+        case 'badge_edit':
+        case 'bulk_edit': // массовые изменения
+            return role !== AppRoles.DIRECTION_HEAD;
+        case 'feed_type_edit':
+        case 'unban':
+            return role !== AppRoles.CAT;
+        case 'role_edit':
+            return [AppRoles.ADMIN, AppRoles.SENIOR].includes(role);
+        case 'full_edit':
+            return role === AppRoles.ADMIN;
+        default:
+            return false;
+    }
+};
 
 export const ACL: AccessControlProvider = {
-    can: async ({ action, resource }: { action: string; resource?: string }) => {
-        let can = false;
+    can: async ({ action, resource }) => {
         const user = await getUserData(true);
-        if (user) {
-            const { roles } = user;
 
-            roles.forEach((role: string) => {
-                switch (action) {
-                    case 'list':
-                    case 'show':
-                        can = ac.can(role).read(resource).granted;
-                        break;
-                    case 'create':
-                        can = ac.can(role).create(resource).granted;
-                        break;
-                    case 'edit':
-                        can = ac.can(role).update(resource).granted;
-                        break;
-                    case 'delete':
-                        can = ac.can(role).delete(resource).granted;
-                        break;
-                    case 'full_list':
-                    case 'badge_edit':
-                    case 'bulk_edit': // массовые изменения
-                        can = role !== AppRoles.DIRECTION_HEAD;
-                        break;
-                    case 'feed_type_edit':
-                    case 'unban':
-                        can = role !== AppRoles.CAT;
-                        break;
-                    case 'role_edit':
-                        can = role === AppRoles.ADMIN || role == AppRoles.SENIOR;
-                        break;
-                    case 'full_edit':
-                        can = role === AppRoles.ADMIN;
-                        break;
-                }
-            });
-        } else {
-            if (!window.location.href.endsWith('/login')) {
-                window.location.href = `${window.location.origin}/login`;
+        if (!user) {
+            if (!window.location.pathname.endsWith('/login')) {
+                window.location.replace('/login');
             }
+            return { can: false };
         }
-        return Promise.resolve({ can });
+
+        const granted = user.roles.some((role) => {
+            if (action === 'list' || action === 'show') {
+                return ac.can(role).read(resource).granted;
+            }
+            if (action === 'create') {
+                return ac.can(role).create(resource).granted;
+            }
+            if (action === 'edit') {
+                return ac.can(role).update(resource).granted;
+            }
+            if (action === 'delete') {
+                return ac.can(role).delete(resource).granted;
+            }
+            return checkCustomPermission(role, action as Action);
+        });
+
+        return { can: granted };
     }
 };
