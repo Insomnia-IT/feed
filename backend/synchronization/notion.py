@@ -19,6 +19,8 @@ from synchronization.models import SynchronizationSystemActions as SyncModel
 
 logger = logging.getLogger(__name__)
 
+MAX_DUMP_SIZE = 50000
+
 class NotionSync:
     all_data = False
     error_sync = []
@@ -34,10 +36,11 @@ class NotionSync:
 
     @staticmethod
     def save_sync_info(data, success=True, error=None):
-        if not success:
+
+        if not success or error:
             data.update({
-                "success": False,
-                "error": error
+                "success": success,
+                "error": error[0:MAX_DUMP_SIZE] if len(error) > MAX_DUMP_SIZE else error
             })
         SyncModel.objects.create(**data)
 
@@ -68,7 +71,8 @@ class NotionSync:
 
         print('=== sync_to_notion ===')
         print(dt_start.isoformat(), dt_end.isoformat())
-        print(json.dumps(data))
+        dump = json.dumps(data)
+        print(dump)
 
         url = urljoin(settings.SYNCHRONIZATION_URL, "back-sync")
         response = requests.post(
@@ -85,7 +89,7 @@ class NotionSync:
             self.save_sync_info(sync_data, success=False, error=error)
             raise APIException(f"Sync to notion field with error: {json.dumps(data)}, {error}")
 
-        self.save_sync_info(sync_data)
+        self.save_sync_info(sync_data, success=True, error=dump)
 
     @staticmethod
     def get_serializer(obj_name):
@@ -132,12 +136,15 @@ class NotionSync:
             error = response.text
             self.save_sync_info(sync_data, success=False, error=error)
             raise APIException(f"Sync from notion field with error: {error}")
+        
+        dump = None
 
         try:
             data = response.json()
             print('=== sync_from_notion ===')
             print(params)
-            print(json.dumps(data))
+            dump = json.dumps(data)
+            print(dump)
             with transaction.atomic():
                 self.save_data_from_notion(data.get("persons", []), "persons")
                 self.save_data_from_notion(data.get("directions", []), "directions")
@@ -152,7 +159,7 @@ class NotionSync:
             self.save_sync_info(sync_data, success=False, error=er)
             raise APIException(f"Saving data from notion failed with error: {er}")
 
-        self.save_sync_info(sync_data)
+        self.save_sync_info(sync_data, success=True, error=dump)
 
     def main(self, all_data=False):
         self.all_data = all_data
