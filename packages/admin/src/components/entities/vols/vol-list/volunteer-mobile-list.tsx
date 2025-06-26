@@ -90,7 +90,8 @@ export const VolunteerMobileList: FC<{
     isLoading: boolean;
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
-}> = ({ isLoading, openVolunteer, statusById, volList }) => {
+    refetch: () => Promise<any>;
+}> = ({ isLoading, openVolunteer, statusById, volList, refetch }) => {
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -117,6 +118,9 @@ export const VolunteerMobileList: FC<{
 
                     // Обновляем список волонтеров
                     invalidate({ resource: 'volunteers', invalidates: ['all'] });
+                    
+                    // Ждем завершения всех GET запросов для обновления данных
+                    await refetch();
                 } catch (error) {
                     console.error('Ошибка при обновлении статуса:', error);
                 } finally {
@@ -127,7 +131,7 @@ export const VolunteerMobileList: FC<{
                 setIsModalOpen(true);
             }
         },
-        [dataProvider, invalidate]
+        [dataProvider, invalidate, refetch]
     );
 
     const handleModalOk = useCallback(() => {
