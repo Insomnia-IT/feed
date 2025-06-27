@@ -63,7 +63,7 @@ const VolunteerMobileCard: FC<{
     }, [currentArrival, onStartArrival, vol]);
 
     return (
-        <SwipeAction key={vol.id} rightActions={rightActions}>
+        <SwipeAction key={`${vol.id}-${Date.now()}`} rightActions={rightActions}>
             <div className={styles.volCard} onClick={() => onOpen(vol.id)}>
                 {loadingVolId === vol.id && (
                     <div className={styles.loaderOverlay}>
