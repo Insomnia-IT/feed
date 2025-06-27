@@ -90,7 +90,7 @@ export const VolunteerMobileList: FC<{
     isLoading: boolean;
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
-    refetch: () => Promise<any>;
+    refetch: () => Promise<unknown>;
 }> = ({ isLoading, openVolunteer, statusById, volList, refetch }) => {
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
