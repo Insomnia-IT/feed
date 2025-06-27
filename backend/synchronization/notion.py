@@ -20,6 +20,7 @@ from synchronization.models import SynchronizationSystemActions as SyncModel
 logger = logging.getLogger(__name__)
 
 MAX_DUMP_SIZE = 50000
+BACK_SYNC_ITEMS_LIMIT = 100
 
 class NotionSync:
     all_data = False
@@ -28,11 +29,17 @@ class NotionSync:
     def get_last_sync_time(self, direction):
         if self.all_data:
             return datetime(year=2013, month=6, day=13)
-        sync = SyncModel.objects.filter(direction=direction, success=True).order_by("-date").first()
+        sync = SyncModel.objects.filter(direction=direction, success=True, partial_offset=None).order_by("-date").first()
         if sync:
             return sync.date
         else:
             return datetime(year=2013, month=6, day=13)
+
+    def get_last_sync_partial_offset(self, direction):
+        sync = SyncModel.objects.filter(direction=direction, success=True).order_by("-date").first()
+        if sync:
+            return sync.partial_offset
+        return None
 
     @staticmethod
     def save_sync_info(data, success=True, error=None):
@@ -47,27 +54,39 @@ class NotionSync:
     def sync_to_notion(self):
         direction = SyncModel.DIRECTION_TO_SYSTEM
         dt_start = self.get_last_sync_time(direction)
+        partial_offset = self.get_last_sync_partial_offset(direction) or 0
 
         dt_end = datetime.utcnow()
-
-        sync_data = {
-            "system": SyncModel.SYSTEM_NOTION,
-            "direction": direction,
-            "date": dt_end
-        }
 
         qs = History.objects.filter(action_at__gte=dt_start, action_at__lt=dt_end).exclude(actor_badge=None)
         badges = qs.filter(object_name="volunteer")
         arrivals = qs.filter(object_name="arrival")
         serializer = HistorySyncSerializer
         data = {}
+        new_partial_offset = None
+        print('badges', len(badges))
         if badges:
-            data.update({"badges": serializer(badges, many=True).data})
+            badges_data = serializer(badges, many=True).data
+            data.update({"badges": badges_data[partial_offset:partial_offset + BACK_SYNC_ITEMS_LIMIT]})
+            if len(badges_data) - partial_offset > BACK_SYNC_ITEMS_LIMIT:
+                new_partial_offset = partial_offset + BACK_SYNC_ITEMS_LIMIT
+
         if arrivals:
-            data.update({"arrivals": serializer(arrivals, many=True).data})
+            arrivals_data = serializer(arrivals, many=True).data
+            offset = partial_offset - len(badges)
+            data.update({"arrivals": arrivals_data[max(0, offset):max(0, offset + BACK_SYNC_ITEMS_LIMIT)]})
+            if len(arrivals_data) - offset > BACK_SYNC_ITEMS_LIMIT:
+                new_partial_offset = partial_offset + BACK_SYNC_ITEMS_LIMIT
 
         if not data:
-            return
+            return True
+
+        sync_data = {
+            "system": SyncModel.SYSTEM_NOTION,
+            "direction": direction,
+            "date": dt_end,
+            "partial_offset": new_partial_offset
+        }
 
         print('=== sync_to_notion ===')
         print(dt_start.isoformat(), dt_end.isoformat())
@@ -90,6 +109,7 @@ class NotionSync:
             raise APIException(f"Sync to notion field with error: {json.dumps(data)}, {error}")
 
         self.save_sync_info(sync_data, success=True, error=dump)
+        return new_partial_offset is None
 
     @staticmethod
     def get_serializer(obj_name):
@@ -112,7 +132,7 @@ class NotionSync:
             except Exception as error:
                 self.error_sync.append(f"{obj_name} - {data.get('id')}: {error}")
 
-    def sync_from_notion(self):
+    def sync_from_notion(self):    
         direction = SyncModel.DIRECTION_FROM_SYSTEM
         dt = self.get_last_sync_time(direction)
 
@@ -165,6 +185,7 @@ class NotionSync:
         self.all_data = all_data
 
         if not settings.SKIP_BACK_SYNC:
-            self.sync_to_notion()
-
-        self.sync_from_notion()
+            if self.sync_to_notion():
+                self.sync_from_notion()
+        else:
+            self.sync_from_notion()
