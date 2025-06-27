@@ -203,16 +203,13 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
                 vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
                 vol.feed_type !== FeedType.NoFeed &&
-                vol.arrivals.some(
-                    ({ arrival_date, departure_date, status }) =>
-                        dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
+                vol.arrivals.some(({ arrival_date, departure_date, status }) => {
+                    return (
                         dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
-                        (dayjs(arrival_date).startOf('day').unix() < dayjs(statsDate).unix()
-                            ? isActivatedStatus(status)
-                            : vol.feed_type === FeedType.Paid
-                              ? isActivatedStatus(status)
-                              : true)
-                )
+                        dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
+                        isActivatedStatus(status)
+                    );
+                })
             );
         })
         .toArray();
