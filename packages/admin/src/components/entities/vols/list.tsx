@@ -181,6 +181,7 @@ export const VolList: FC = () => {
                             volList={volunteersData}
                             openVolunteer={openVolunteer}
                             isLoading={volunteersIsLoading}
+                            refetch={reloadVolunteers}
                         />
                     ) : (
                         <>
