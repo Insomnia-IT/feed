@@ -23,7 +23,7 @@ const getStatsByDate = async (statsDate: string): Promise<{ feedCount: FeedStats
             vols = vols.filter((vol) =>
                 vol.arrivals.some(
                     ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() < dayjs(statsDate).unix() &&
+                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
                         dayjs(departure_date).unix() >= dayjs(statsDate).unix()
                 )
             );
@@ -32,7 +32,7 @@ const getStatsByDate = async (statsDate: string): Promise<{ feedCount: FeedStats
             vols = vols.filter((vol) =>
                 vol.arrivals.some(
                     ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() < dayjs(statsDate).unix() &&
+                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
                         dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix()
                 )
             );
@@ -41,7 +41,7 @@ const getStatsByDate = async (statsDate: string): Promise<{ feedCount: FeedStats
             vols = vols.filter((vol) =>
                 vol.arrivals.some(
                     ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() < dayjs(statsDate).unix() &&
+                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
                         dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix() &&
                         vol.feed_type !== FeedType.Paid
                 )
