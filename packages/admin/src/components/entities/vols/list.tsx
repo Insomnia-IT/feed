@@ -1,7 +1,8 @@
 import { useNavigation, useList, CanAccess } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col } from 'antd';
-import { FC, useEffect, useMemo, useState } from 'react';
+import type { TablePaginationConfig } from 'antd';
+import { FC, useEffect, useState } from 'react';
 
 import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
@@ -21,18 +22,18 @@ import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
 
 export const VolList: FC = () => {
-    const { isDesktop } = useScreen();
-    const { edit } = useNavigation();
-
     const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
     const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+    const { isDesktop } = useScreen();
 
     const canListCustomFields = useCanAccess({
         action: 'list',
         resource: 'volunteer-custom-fields'
     });
     const canBulkEdit = useCanAccess({ action: 'bulk_edit', resource: 'volunteers' });
+
+    const { edit } = useNavigation();
 
     const {
         accessRoleById,
@@ -61,10 +62,12 @@ export const VolList: FC = () => {
         refetch: reloadVolunteers
     } = useList<VolEntity>({
         resource: `volunteers/${filterQueryParams}`,
-        pagination: isDesktop ? { current: page, pageSize } : undefined
-    });
 
-    const volunteersData = volunteers?.data ?? [];
+        pagination: {
+            current: !isDesktop ? 1 : page,
+            pageSize: !isDesktop ? 10000 : pageSize
+        }
+    });
 
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
@@ -72,26 +75,23 @@ export const VolList: FC = () => {
             filterQueryParams
         });
 
-    const pagination = useMemo(
-        () => ({
-            total: volunteers?.total ?? 1,
-            showTotal: (total: number) => (
-                <>
-                    <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
-                    <span data-testid="volunteer-count-value">{total}</span>
-                </>
-            ),
-            current: page,
-            pageSize,
-            onChange: (newPage: number, newSize: number) => {
-                setPage(newPage);
-                setPageSize(newSize);
-                localStorage.setItem('volPageIndex', newPage.toString());
-                localStorage.setItem('volPageSize', newSize.toString());
-            }
-        }),
-        [volunteers?.total, page, pageSize]
-    );
+    const pagination: TablePaginationConfig = {
+        total: volunteers?.total ?? 1,
+        showTotal: (total) => (
+            <>
+                <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
+                <span data-testid="volunteer-count-value">{total}</span>
+            </>
+        ),
+        current: page,
+        pageSize: pageSize,
+        onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
+            localStorage.setItem('volPageIndex', page.toString());
+            localStorage.setItem('volPageSize', pageSize.toString());
+        }
+    };
 
     const loadCustomFields = async () => {
         const { data } = await dataProvider.getList<CustomFieldEntity>({
@@ -110,10 +110,13 @@ export const VolList: FC = () => {
 
     const openVolunteer = (id: number): Promise<boolean> => {
         edit('volunteers', id);
+
         return Promise.resolve(true);
     };
 
+    const volunteersData = volunteers?.data ?? [];
     const noActiveFilters = activeFilters.length === 0;
+
     const showPersons = searchText && noActiveFilters && volunteersData.length === 0;
 
     return (
@@ -138,6 +141,11 @@ export const VolList: FC = () => {
                     <Row style={{ padding: '10px 0' }} justify="space-between">
                         {isDesktop ? (
                             <>
+                                <Row style={{ gap: '24px' }} align="middle">
+                                    {/* <b>Сохраненные таблицы:</b>
+
+                                <Select placeholder="Выберите" disabled></Select> */}
+                                </Row>
                                 <Row style={{ gap: '24px' }} align="middle">
                                     <Col>
                                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
@@ -169,9 +177,11 @@ export const VolList: FC = () => {
 
                     {!isDesktop ? (
                         <VolunteerMobileList
-                            filterQueryParams={filterQueryParams}
                             statusById={statusById}
+                            volList={volunteersData}
                             openVolunteer={openVolunteer}
+                            isLoading={volunteersIsLoading}
+                            refetch={reloadVolunteers}
                         />
                     ) : (
                         <>
