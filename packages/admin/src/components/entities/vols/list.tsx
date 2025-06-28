@@ -1,22 +1,22 @@
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useList, CanAccess } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
-import { FC, useEffect, useMemo, useState } from 'react';
 
-import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 import { useScreen } from 'shared/providers';
-
-import { Filters } from './vol-list/filters/filters';
-import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
-import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
-import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
 import useCanAccess from './use-can-access';
 
-import { ChooseColumnsButton } from './vol-list/choose-columns-button';
-import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
+import { CustomFieldEntity, VolEntity } from 'interfaces';
+
+import { Filters } from './vol-list/filters/filters';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
+import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
+import { ChooseColumnsButton } from './vol-list/choose-columns-button';
+import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
+import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
+import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
@@ -164,7 +164,7 @@ export const VolList: FC = () => {
                                 </Row>
                             </>
                         ) : (
-                            <span>Найдено: {volunteersData?.length ?? 0}</span>
+                            <span>Найдено: {volunteers?.total ?? 0}</span>
                         )}
                     </Row>
 
