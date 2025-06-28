@@ -1,8 +1,9 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urljoin
 import json
 import os
+import time
 
 import requests
 from django.conf import settings
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 MAX_DUMP_SIZE = 50000
 BACK_SYNC_ITEMS_LIMIT = 100
+MIN_SYNC_INTERVAL = 60
 
 class NotionSync:
     all_data = False
@@ -64,7 +66,6 @@ class NotionSync:
         serializer = HistorySyncSerializer
         data = {}
         new_partial_offset = None
-        print('badges', len(badges))
         if badges:
             badges_data = serializer(badges, many=True).data
             data.update({"badges": badges_data[partial_offset:partial_offset + BACK_SYNC_ITEMS_LIMIT]})
@@ -136,6 +137,11 @@ class NotionSync:
     def sync_from_notion(self, skip_badges = [], skip_arrivals = []):
         direction = SyncModel.DIRECTION_FROM_SYSTEM
         dt = self.get_last_sync_time(direction)
+
+        last_sync_interval = (datetime.now().replace(tzinfo=timezone.utc) - dt).total_seconds()
+        print('last_sync_interval', last_sync_interval)
+        if (skip_badges or skip_arrivals) and last_sync_interval < MIN_SYNC_INTERVAL:
+            time.sleep(MIN_SYNC_INTERVAL - last_sync_interval)
 
         sync_data = {
             "system": SyncModel.SYSTEM_NOTION,
