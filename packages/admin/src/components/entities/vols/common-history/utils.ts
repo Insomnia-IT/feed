@@ -42,7 +42,7 @@ export const BOOL_MAP = {
     vegan: ['Мясоед', 'Веган'],
     is_blocked: ['Разблокирован', 'Заблокирован'],
     ticket: ['Не выдан', 'Выдан'],
-    infant: ['Да', 'Нет']
+    infant: ['Нет', 'Да']
 };
 
 export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'deleted', 'feed', 'role', 'custom_field']);
