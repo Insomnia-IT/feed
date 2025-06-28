@@ -57,7 +57,7 @@ const VolunteerMobileCard: FC<{
     }, [currentArrival, onStartArrival, vol]);
 
     return (
-        <SwipeAction key={vol.id} rightActions={rightActions}>
+        <SwipeAction key={`${vol.id}-${Date.now()}`} rightActions={rightActions}>
             <div className={styles.volCard} onClick={() => onOpen(vol.id)}>
                 {loadingVolId === vol.id && (
                     <div className={styles.loaderOverlay}>
@@ -113,9 +113,8 @@ export const VolunteerMobileList: FC<{
 
             if (checkArrivalStatus(currentArrival)) {
                 try {
-                    // Обновляем статус заезда на STARTED
                     setLoadingVolId(vol.id);
-
+                    // Обновляем статус заезда на STARTED
                     await dataProvider().update({
                         resource: 'volunteers',
                         id: vol.id,
@@ -131,6 +130,7 @@ export const VolunteerMobileList: FC<{
                         resource: 'volunteers',
                         invalidates: ['all']
                     });
+                    // Ждем завершения всех GET запросов для обновления данных
                     await refetch();
                 } catch (error) {
                     console.error('Ошибка при обновлении статуса:', error);
