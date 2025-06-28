@@ -10,7 +10,7 @@ import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 
 import styles from '../list.module.css';
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 50;
 
 const formatDate = (value?: string) => (value ? dayjs(value).format('D MMMM') : '');
 
