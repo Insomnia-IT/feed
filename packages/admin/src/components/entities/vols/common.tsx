@@ -1,14 +1,17 @@
 import { Tabs } from 'antd';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useEffect, FC } from 'react';
 
 import { useScreen } from 'shared/providers';
 import { CommonEdit } from './common-edit/common-edit';
 import CommonFood from './common-food/common-food';
 import { CommonHistory } from './common-history/common-history';
 
-const CreateEdit = () => {
-    const [activeKey, setActiveKey] = useState('1');
+interface IProps {
+    activeKey: string;
+    setActiveKey: (key: string) => void;
+}
 
+const CreateEdit: FC<IProps> = ({ activeKey, setActiveKey }) => {
     const { isDesktop } = useScreen();
 
     useEffect(() => {

@@ -1,50 +1,43 @@
-import { FC, useCallback, useMemo, useState, memo } from 'react';
-import { Spin, Modal, Typography, Tag } from 'antd';
+import { FC, useCallback, useState, useMemo, memo } from 'react';
+import { Spin, Tag, Modal, Typography } from 'antd';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { SwipeAction, InfiniteScroll } from 'antd-mobile';
 import dayjs from 'dayjs';
-import { useInfiniteList, useDataProvider, useInvalidate } from '@refinedev/core';
+import { useDataProvider, useInvalidate, useInfiniteList } from '@refinedev/core';
 
 import type { VolEntity, ArrivalEntity } from 'interfaces';
 import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 
 import styles from '../list.module.css';
 
+const PAGE_SIZE = 30;
+
 const formatDate = (value?: string) => (value ? dayjs(value).format('D MMMM') : '');
 
-const checkArrivalStatus = (arrival: ArrivalEntity | null): boolean => {
+const checkArrivalStatus = (arrival: ArrivalEntity | null) => {
     if (!arrival) return false;
-
     const arrivalDate = dayjs(arrival.arrival_date);
     const today = dayjs();
     const yesterday = today.subtract(1, 'day');
-
     return (
         (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) &&
-        arrival.status !== 'STARTED' &&
-        arrival.status !== 'JOINED'
+        !['STARTED', 'JOINED'].includes(arrival.status)
     );
 };
-
-const PAGE_SIZE = 30;
 
 const VolunteerMobileCard: FC<{
     vol: VolEntity;
     statusById: Record<string, string>;
     onStartArrival: (vol: VolEntity) => void;
     onOpen: (id: number) => void;
-}> = memo(({ vol, statusById, onStartArrival, onOpen }) => {
+    loadingVolId: number | null;
+}> = memo(({ vol, statusById, onStartArrival, onOpen, loadingVolId }) => {
     const currentArrival = useMemo(() => findClosestArrival(vol.arrivals), [vol.arrivals]);
 
     const visitDays = useMemo(
         () => `${formatDate(currentArrival?.arrival_date)} - ${formatDate(currentArrival?.departure_date)}`,
         [currentArrival]
     );
-
-    const name = `${vol.name} ${vol.first_name ?? ''} ${vol.last_name ?? ''}`;
-    const comment = vol?.direction_head_comment;
-    const isBlocked = vol.is_blocked;
-    const currentStatus = currentArrival ? statusById[currentArrival.status] : 'Статус неизвестен';
 
     const rightActions = useMemo(() => {
         if (!currentArrival || ['STARTED', 'JOINED'].includes(currentArrival.status)) return [];
@@ -66,15 +59,24 @@ const VolunteerMobileCard: FC<{
     return (
         <SwipeAction key={vol.id} rightActions={rightActions}>
             <div className={styles.volCard} onClick={() => onOpen(vol.id)}>
-                <div className={`${styles.textRow} ${styles.bold}`}>{name}</div>
+                {loadingVolId === vol.id && (
+                    <div className={styles.loaderOverlay}>
+                        <Spin size="large" />
+                    </div>
+                )}
+                <div className={`${styles.textRow} ${styles.bold}`}>
+                    {`${vol.name} ${vol.first_name ?? ''} ${vol.last_name ?? ''}`}
+                </div>
                 <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
                 <div>
-                    {isBlocked && <Tag color="red">Заблокирован</Tag>}
-                    <Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>
+                    {vol.is_blocked && <Tag color="red">Заблокирован</Tag>}
+                    <Tag color={getOnFieldColors(vol)}>
+                        {currentArrival ? statusById[currentArrival.status] : 'Статус неизвестен'}
+                    </Tag>
                 </div>
                 <div className={styles.textRow}>
                     <span className={styles.bold}>Заметка: </span>
-                    {comment || '-'}
+                    {vol?.direction_head_comment || '-'}
                 </div>
             </div>
         </SwipeAction>
@@ -92,15 +94,18 @@ export const VolunteerMobileList: FC<{
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
         useInfiniteList<VolEntity>({
             resource: `volunteers/${filterQueryParams}`,
-            pagination: {
-                pageSize: PAGE_SIZE
-            }
+            pagination: { pageSize: PAGE_SIZE }
         });
 
-    const list = data?.pages.flatMap((page) => page.data) ?? [];
+    const list = data?.pages.flatMap((p) => p.data) ?? [];
 
+    const [loadingVolId, setLoadingVolId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVol, setSelectedVol] = useState<VolEntity | null>(null);
+
+    const loadMore = useCallback(async () => {
+        await fetchNextPage();
+    }, [fetchNextPage]);
 
     const handleStartArrival = useCallback(
         async (vol: VolEntity) => {
@@ -109,6 +114,8 @@ export const VolunteerMobileList: FC<{
             if (checkArrivalStatus(currentArrival)) {
                 try {
                     // Обновляем статус заезда на STARTED
+                    setLoadingVolId(vol.id);
+
                     await dataProvider().update({
                         resource: 'volunteers',
                         id: vol.id,
@@ -120,31 +127,23 @@ export const VolunteerMobileList: FC<{
                     });
 
                     // Обновляем список волонтеров
-                    invalidate({ resource: 'volunteers', invalidates: ['all'] });
+                    await invalidate({
+                        resource: 'volunteers',
+                        invalidates: ['all']
+                    });
+                    await refetch();
                 } catch (error) {
                     console.error('Ошибка при обновлении статуса:', error);
+                } finally {
+                    setLoadingVolId(null);
                 }
             } else {
                 setSelectedVol(vol);
                 setIsModalOpen(true);
             }
         },
-        [dataProvider, invalidate]
+        [dataProvider, invalidate, refetch]
     );
-
-    const handleModalOk = useCallback(() => {
-        setIsModalOpen(false);
-        if (selectedVol) openVolunteer(selectedVol.id);
-    }, [openVolunteer, selectedVol]);
-
-    const handleModalCancel = useCallback(() => {
-        setIsModalOpen(false);
-        setSelectedVol(null);
-    }, []);
-
-    const loadMore = useCallback(async () => {
-        await fetchNextPage();
-    }, [fetchNextPage]);
 
     return (
         <>
@@ -160,6 +159,7 @@ export const VolunteerMobileList: FC<{
                                 statusById={statusById}
                                 onStartArrival={handleStartArrival}
                                 onOpen={openVolunteer}
+                                loadingVolId={loadingVolId}
                             />
                         ))}
                         <InfiniteScroll loadMore={loadMore} hasMore={!!hasNextPage} threshold={120}>
@@ -174,11 +174,18 @@ export const VolunteerMobileList: FC<{
                                 }
                                 if (!hasMore) {
                                     return (
-                                        <div style={{ textAlign: 'center', padding: '16px' }}>Больше ничего нет</div>
+                                        <div
+                                            style={{
+                                                textAlign: 'center',
+                                                padding: 16
+                                            }}
+                                        >
+                                            Больше ничего нет
+                                        </div>
                                     );
                                 }
                                 return (
-                                    <div style={{ textAlign: 'center', padding: '16px' }}>
+                                    <div style={{ textAlign: 'center', padding: 16 }}>
                                         {isFetchingNextPage ? 'Загрузка...' : null}
                                     </div>
                                 );
@@ -189,8 +196,14 @@ export const VolunteerMobileList: FC<{
             </div>
             <Modal
                 open={isModalOpen}
-                onOk={handleModalOk}
-                onCancel={handleModalCancel}
+                onOk={() => {
+                    setIsModalOpen(false);
+                    if (selectedVol) openVolunteer(selectedVol.id);
+                }}
+                onCancel={() => {
+                    setIsModalOpen(false);
+                    setSelectedVol(null);
+                }}
                 okText="К карточке"
                 cancelText="Обратно в список"
                 closeIcon={null}
