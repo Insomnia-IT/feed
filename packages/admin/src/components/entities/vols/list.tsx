@@ -21,9 +21,46 @@ import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
 
+const volPageStorageItem = 'volPageIndex';
+const volPageSizeStorageItem = 'volPageSize';
+
+const usePageWithStorage = (): {
+    page: number;
+    setPage: (value: number) => void;
+    pageSize: number;
+    setPageSize: (value: number) => void;
+} => {
+    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem(volPageStorageItem) || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(
+        parseFloat(localStorage.getItem(volPageSizeStorageItem) || '') || 10
+    );
+
+    const setPageWithStorage = (page: number) => {
+        setPage(page);
+        localStorage.setItem(volPageStorageItem, page.toString());
+    };
+
+    const setPageSizeWithStorage = (page: number) => {
+        setPageSize(page);
+        localStorage.setItem(volPageSizeStorageItem, page.toString());
+    };
+
+    useEffect(() => {
+        const savedPage = parseFloat(localStorage.getItem(volPageStorageItem) || '') || 1;
+
+        setPage(savedPage);
+
+        const savedPageSize = parseFloat(localStorage.getItem(volPageSizeStorageItem) || '') || 10;
+
+        setPageSize(savedPageSize);
+    }, []);
+
+    return { page, setPage: setPageWithStorage, pageSize, setPageSize: setPageSizeWithStorage };
+};
+
 export const VolList: FC = () => {
-    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
-    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+    const { page, setPage, pageSize, setPageSize } = usePageWithStorage();
+
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
     const { isDesktop } = useScreen();
 
@@ -65,7 +102,8 @@ export const VolList: FC = () => {
 
         pagination: {
             current: !isDesktop ? 1 : page,
-            pageSize: !isDesktop ? 10000 : pageSize
+            pageSize: !isDesktop ? 10000 : pageSize,
+            mode: 'client'
         }
     });
 
@@ -85,11 +123,9 @@ export const VolList: FC = () => {
         ),
         current: page,
         pageSize: pageSize,
-        onChange: (page, pageSize) => {
+        onChange: (page: number, pageSize: number): void => {
             setPage(page);
             setPageSize(pageSize);
-            localStorage.setItem('volPageIndex', page.toString());
-            localStorage.setItem('volPageSize', pageSize.toString());
         }
     };
 
@@ -103,9 +139,6 @@ export const VolList: FC = () => {
 
     useEffect(() => {
         void loadCustomFields();
-
-        const savedPage = parseFloat(localStorage.getItem('volPageIndex') || '') || 1;
-        setPage(savedPage);
     }, []);
 
     const openVolunteer = (id: number): Promise<boolean> => {
