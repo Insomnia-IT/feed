@@ -1,8 +1,9 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import urljoin
 import json
 import os
+import time
 
 import requests
 from django.conf import settings
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 MAX_DUMP_SIZE = 50000
 BACK_SYNC_ITEMS_LIMIT = 100
+MIN_SYNC_INTERVAL = 60
 
 class NotionSync:
     all_data = False
@@ -47,7 +49,7 @@ class NotionSync:
         if not success or error:
             data.update({
                 "success": success,
-                "error": error[0:MAX_DUMP_SIZE] if len(error) > MAX_DUMP_SIZE else error
+                "error": error[0:MAX_DUMP_SIZE] if error and len(error) > MAX_DUMP_SIZE else error
             })
         SyncModel.objects.create(**data)
 
@@ -64,7 +66,6 @@ class NotionSync:
         serializer = HistorySyncSerializer
         data = {}
         new_partial_offset = None
-        print('badges', len(badges))
         if badges:
             badges_data = serializer(badges, many=True).data
             data.update({"badges": badges_data[partial_offset:partial_offset + BACK_SYNC_ITEMS_LIMIT]})
@@ -79,7 +80,7 @@ class NotionSync:
                 new_partial_offset = partial_offset + BACK_SYNC_ITEMS_LIMIT
 
         if not data:
-            return True
+            return data
 
         sync_data = {
             "system": SyncModel.SYSTEM_NOTION,
@@ -109,7 +110,8 @@ class NotionSync:
             raise APIException(f"Sync to notion field with error: {json.dumps(data)}, {error}")
 
         self.save_sync_info(sync_data, success=True, error=dump)
-        return new_partial_offset is None
+
+        return data
 
     @staticmethod
     def get_serializer(obj_name):
@@ -132,9 +134,14 @@ class NotionSync:
             except Exception as error:
                 self.error_sync.append(f"{obj_name} - {data.get('id')}: {error}")
 
-    def sync_from_notion(self):    
+    def sync_from_notion(self, skip_badges = [], skip_arrivals = []):
         direction = SyncModel.DIRECTION_FROM_SYSTEM
         dt = self.get_last_sync_time(direction)
+
+        last_sync_interval = (datetime.now().replace(tzinfo=timezone.utc) - dt).total_seconds()
+        print('last_sync_interval', last_sync_interval)
+        if (skip_badges or skip_arrivals) and last_sync_interval < MIN_SYNC_INTERVAL:
+            time.sleep(MIN_SYNC_INTERVAL - last_sync_interval)
 
         sync_data = {
             "system": SyncModel.SYSTEM_NOTION,
@@ -157,6 +164,14 @@ class NotionSync:
             self.save_sync_info(sync_data, success=False, error=error)
             raise APIException(f"Sync from notion field with error: {error}")
         
+        skip_badge_by_id = {}
+        for badge in skip_badges:
+            skip_badge_by_id[badge['data']['id']] = True
+
+        skip_arrival_by_id = {}
+        for arrival in skip_arrivals:
+            skip_arrival_by_id[arrival['data']['id']] = True
+
         dump = None
 
         try:
@@ -169,8 +184,8 @@ class NotionSync:
                 self.save_data_from_notion(data.get("persons", []), "persons")
                 self.save_data_from_notion(data.get("directions", []), "directions")
                 self.save_data_from_notion(data.get("engagements", []), "engagements")
-                self.save_data_from_notion(data.get("badges", []), "badges")
-                self.save_data_from_notion(data.get("arrivals", []), "arrivals")
+                self.save_data_from_notion(filter(lambda b: not skip_badge_by_id.get(b['id']), data.get("badges", [])), "badges")
+                self.save_data_from_notion(filter(lambda a: not skip_arrival_by_id.get(a['id']), data.get("arrivals", [])), "arrivals")
 
                 if self.error_sync:
                     raise APIException(self.error_sync)
@@ -185,7 +200,7 @@ class NotionSync:
         self.all_data = all_data
 
         if not settings.SKIP_BACK_SYNC:
-            if self.sync_to_notion():
-                self.sync_from_notion()
+            sync_data = self.sync_to_notion()
+            self.sync_from_notion(sync_data.get('badges', []), sync_data.get('arrivals', []))
         else:
             self.sync_from_notion()
