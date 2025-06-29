@@ -1,6 +1,3 @@
-import json
-
-from django.core.serializers import serialize
 from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions, filters, status
@@ -141,7 +138,7 @@ class VolunteerGroupViewSet(APIView):
                         serializer.is_valid(raise_exception=True)
 
                         vol = serializer.save()
-                        updated_volunteers.append(vol)
+                        updated_volunteers.append(vol.id)
 
                         if len(new_data.keys()) > 0:
                             history_data = new_data.copy()
@@ -257,7 +254,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     serializer.is_valid(raise_exception=True)
 
                     vol = serializer.save()
-                    updated_volunteers.append(vol)
+                    updated_volunteers.append(vol.id)
 
                     History.objects.create(
                         status=History.STATUS_UPDATE,
@@ -354,6 +351,6 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
         return Response(
             {"id": str(group_operation_uuid),
-            "updated": serialize("json", updated_volunteers)},
+            "updated":  updated_volunteers},
             status=status.HTTP_200_OK
         )
