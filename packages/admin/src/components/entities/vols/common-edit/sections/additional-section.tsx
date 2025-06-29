@@ -26,6 +26,8 @@ export const AdditionalSection = ({
 
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
 
+    const canEditBureauComment = useCanAccess({ action: 'bureau_comment_edit', resource: 'volunteers' });
+
     const canAccessBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
 
     const isDirectionHead = !canAccessBadgeEdit;
@@ -56,7 +58,7 @@ export const AdditionalSection = ({
                     }
                     name="comment"
                 >
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canEditBureauComment} />
                 </Form.Item>
 
                 <Form.Item
