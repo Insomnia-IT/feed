@@ -144,7 +144,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                 'arrivals',
                 queryset=models.Arrival.objects.filter(
                     # status__in=['ARRIVED', 'STARTED', 'JOINED'],
-                    arrival_date__lt=stat_date_to.shift(days=1).datetime,
+                    arrival_date__lt=stat_date_to.shift(days=2).datetime,
                     departure_date__gt=stat_date_from.datetime
                 ),
                 to_attr='relevant_arrivals'
