@@ -1,6 +1,6 @@
 import { Form, Input, Select } from 'antd';
 import { useSelect } from '@refinedev/antd';
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 
 import { Rules } from 'components/form/rules';
 import { TextEditor } from 'components/controls/text-editor';
@@ -17,6 +17,21 @@ export const CreateEdit: FC = () => {
     const directions = directionSelectProps.options?.filter(
         ({ value }) => !visibleDirections || visibleDirections.includes(value as string)
     );
+
+    const form = Form.useFormInstance();
+
+    useEffect(() => {
+        function onHardwareScan(e: CustomEvent<{ scanCode: string }>): void {
+            const scanCode = e?.detail?.scanCode;
+            if (scanCode) {
+                form.setFieldValue('qr', scanCode.replace(/[^A-Za-z0-9]/g, ''));
+            }
+        }
+        document.addEventListener('scan', onHardwareScan);
+        return () => {
+            document.removeEventListener('scan', onHardwareScan);
+        };
+    }, [form]);
 
     return (
         <>
