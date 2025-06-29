@@ -66,9 +66,6 @@ export const ACL: AccessControlProvider = {
                     case 'role_edit':
                         can = role === AppRoles.ADMIN || role == AppRoles.SENIOR;
                         break;
-                    case 'bureau_comment_edit':
-                        can = role === AppRoles.ADMIN;
-                        break;
                     case 'full_edit':
                         can = role === AppRoles.ADMIN;
                         break;
