@@ -21,9 +21,12 @@ import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
 
+const LS_PAGE_INDEX = 'volPageIndex';
+const LS_PAGE_SIZE = 'volPageSize';
+
 export const VolList: FC = () => {
-    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
-    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_SIZE) || '') || 10);
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
     const { isDesktop } = useScreen();
 
@@ -69,6 +72,14 @@ export const VolList: FC = () => {
         }
     });
 
+    useEffect(() => {
+        // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
+        if (volunteers?.total && (page - 1) * pageSize >= volunteers.total) {
+            setPage(1);
+            localStorage.setItem(LS_PAGE_INDEX, '1');
+        }
+    }, [volunteers?.total, page, pageSize]);
+
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
             totalVolunteersCount: volunteers?.total ?? 0,
@@ -88,8 +99,8 @@ export const VolList: FC = () => {
         onChange: (page, pageSize) => {
             setPage(page);
             setPageSize(pageSize);
-            localStorage.setItem('volPageIndex', page.toString());
-            localStorage.setItem('volPageSize', pageSize.toString());
+            localStorage.setItem(LS_PAGE_INDEX, page.toString());
+            localStorage.setItem(LS_PAGE_SIZE, pageSize.toString());
         }
     };
 
@@ -104,7 +115,7 @@ export const VolList: FC = () => {
     useEffect(() => {
         void loadCustomFields();
 
-        const savedPage = parseFloat(localStorage.getItem('volPageIndex') || '') || 1;
+        const savedPage = parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1;
         setPage(savedPage);
     }, []);
 
