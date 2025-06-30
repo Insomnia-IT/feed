@@ -1,21 +1,22 @@
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useList, CanAccess } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col } from 'antd';
-import { FC, useEffect, useMemo, useState } from 'react';
+import type { TablePaginationConfig } from 'antd/es/table';
 
-import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 import { useScreen } from 'shared/providers';
-
-import { Filters } from './vol-list/filters/filters';
-import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
-import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
-import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
 import useCanAccess from './use-can-access';
 
-import { ChooseColumnsButton } from './vol-list/choose-columns-button';
-import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
+import { CustomFieldEntity, VolEntity } from 'interfaces';
+
+import { Filters } from './vol-list/filters/filters';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
+import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
+import { ChooseColumnsButton } from './vol-list/choose-columns-button';
+import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
+import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
+import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
@@ -66,16 +67,16 @@ export const VolList: FC = () => {
 
     const volunteersData = volunteers?.data ?? [];
 
-    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection } = useMassEdit({
-        volunteersData,
-        totalVolunteersCount: volunteers?.total ?? 0,
-        filterQueryParams
-    });
+    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
+        useMassEdit({
+            totalVolunteersCount: volunteers?.total ?? 0,
+            filterQueryParams
+        });
 
-    const pagination = useMemo(
+    const pagination = useMemo<TablePaginationConfig>(
         () => ({
             total: volunteers?.total ?? 1,
-            showTotal: (total: number) => (
+            showTotal: (total) => (
                 <>
                     <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
                     <span data-testid="volunteer-count-value">{total}</span>
@@ -83,7 +84,7 @@ export const VolList: FC = () => {
             ),
             current: page,
             pageSize,
-            onChange: (newPage: number, newSize: number) => {
+            onChange: (newPage, newSize) => {
                 setPage(newPage);
                 setPageSize(newSize);
                 localStorage.setItem('volPageIndex', newPage.toString());
@@ -108,13 +109,13 @@ export const VolList: FC = () => {
         setPage(savedPage);
     }, []);
 
-    const openVolunteer = (id: number): Promise<boolean> => {
+    const openVolunteer = (id: number) => {
         edit('volunteers', id);
         return Promise.resolve(true);
     };
 
     const noActiveFilters = activeFilters.length === 0;
-    const showPersons = searchText && noActiveFilters && volunteersData.length === 0;
+    const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
 
     return (
         <List canCreate={noActiveFilters}>
@@ -138,12 +139,12 @@ export const VolList: FC = () => {
                     <Row style={{ padding: '10px 0' }} justify="space-between">
                         {isDesktop ? (
                             <>
-                                <Row style={{ gap: '24px' }} align="middle">
+                                <Row style={{ gap: 24 }} align="middle">
                                     <Col>
                                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
                                         волонтеров
                                     </Col>
-                                    <Row style={{ gap: '12px' }} align="middle">
+                                    <Row style={{ gap: 12 }} align="middle">
                                         <ChooseColumnsButton
                                             canListCustomFields={canListCustomFields}
                                             customFields={customFields}
@@ -163,17 +164,11 @@ export const VolList: FC = () => {
                                 </Row>
                             </>
                         ) : (
-                            <span>Найдено: {volunteersData?.length ?? 0}</span>
+                            <span>Найдено: {volunteers?.total ?? 0}</span>
                         )}
                     </Row>
 
-                    {!isDesktop ? (
-                        <VolunteerMobileList
-                            filterQueryParams={filterQueryParams}
-                            statusById={statusById}
-                            openVolunteer={openVolunteer}
-                        />
-                    ) : (
+                    {isDesktop ? (
                         <>
                             {!showPersons && (
                                 <VolunteerDesktopTable
@@ -194,10 +189,17 @@ export const VolList: FC = () => {
                                     unselectVolunteer={unselectVolunteer}
                                     reloadVolunteers={async () => {
                                         await reloadVolunteers();
+                                        await reloadSelectedVolunteers();
                                     }}
                                 />
                             )}
                         </>
+                    ) : (
+                        <VolunteerMobileList
+                            filterQueryParams={filterQueryParams}
+                            statusById={statusById}
+                            openVolunteer={openVolunteer}
+                        />
                     )}
                 </ActiveColumnsContextProvider>
             </CanAccess>

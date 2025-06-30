@@ -26,7 +26,7 @@ export const PersonalInfoSection = ({
 
             <div className={styles.twoEqualColumnsWrap}>
                 <Form.Item label="Кухня" name="kitchen" rules={Rules.required}>
-                    <Select options={kitchenOptions} />
+                    <Select options={kitchenOptions} disabled={denyBadgeEdit} />
                 </Form.Item>
                 <Form.Item label="Тип питания" name="feed_type" rules={Rules.required}>
                     <Select disabled={denyFeedTypeEdit} options={feedTypeOptions} />
@@ -62,9 +62,9 @@ export const PersonalInfoSection = ({
                 <Form.Item label="QR бейджа" name="qr" rules={Rules.required}>
                     <Input disabled={denyBadgeEdit} onChange={handleQRChange} />
                 </Form.Item>
-                <Form.Item name="is_badged_leader" valuePropName="checked">
+                {/* <Form.Item name="is_badged_leader" valuePropName="checked">
                     <Checkbox>Бейдж у Руководителя</Checkbox>
-                </Form.Item>
+                </Form.Item> */}
             </div>
         </>
     );

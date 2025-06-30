@@ -28,7 +28,8 @@ export const FIELD_LABELS: Record<string, string> = {
     group_badge: 'Групповой бейдж',
     number: 'Номер бейджа',
     batch: 'Партия бейджа',
-    ticket: 'Билет'
+    ticket: 'Билет',
+    qr: 'QR бейджа'
 };
 
 export const STATUS_MAP: Record<string, string> = {
@@ -41,7 +42,7 @@ export const BOOL_MAP = {
     vegan: ['Мясоед', 'Веган'],
     is_blocked: ['Разблокирован', 'Заблокирован'],
     ticket: ['Не выдан', 'Выдан'],
-    infant: ['Да', 'Нет']
+    infant: ['Нет', 'Да']
 };
 
 export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'deleted', 'feed', 'role', 'custom_field']);

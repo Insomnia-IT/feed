@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -6,13 +6,13 @@ import type { VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 
 interface UseMassEditParams {
-    volunteersData: VolEntity[];
     totalVolunteersCount: number;
     filterQueryParams: string;
 }
 
 interface UseMassEditResult {
-    selectedVols: VolEntity[];
+    reloadSelectedVolunteers: () => Promise<void>;
+    selectedVols: Array<VolEntity>;
     unselectAllSelected: () => void;
     unselectVolunteer: (volunteer: VolEntity) => void;
     rowSelection: TableProps<VolEntity>['rowSelection'];
@@ -75,10 +75,25 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
         )
     };
 
+    const reloadSelectedVolunteers = useCallback(async () => {
+        const promises = selectedRowKeys.map(async (volId: number) => {
+            return dataProvider.getOne<VolEntity>({ resource: 'volunteers', id: String(volId) });
+        });
+
+        const values = await Promise.allSettled(promises).then((values) =>
+            values
+                .map((value) => (value.status === 'fulfilled' ? value.value.data : undefined))
+                .filter((value) => typeof value !== 'undefined')
+        );
+
+        setSelectedVols(values);
+    }, [selectedRowKeys]);
+
     return {
+        reloadSelectedVolunteers,
+        rowSelection,
         selectedVols,
         unselectAllSelected,
-        unselectVolunteer: (vol) => onVolunteerSelection(vol, false),
-        rowSelection
+        unselectVolunteer: (vol) => onVolunteerSelection(vol, false)
     };
 };

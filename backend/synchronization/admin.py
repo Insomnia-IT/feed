@@ -6,7 +6,7 @@ from synchronization.models import SynchronizationSystemActions
 
 class SynchronizationAdmin(admin.ModelAdmin):
     list_display = (
-        "success", "date", "system", "direction", "error",
+        "success", "date", "system", "direction", "partial_offset", "error",
     )
     search_fields = (
         "direction", "system"
