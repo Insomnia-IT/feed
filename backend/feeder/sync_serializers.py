@@ -54,7 +54,7 @@ class SaveSyncSerializerMixin(object):
         elif not hasattr(self.Meta, "uuid_field") or self.Meta.uuid_field == "id":
             self.validated_data["id"] = uuid
 
-        if hasattr(self.instance, "activated") and self.instance.activated:
+        if settings.SKIP_BACK_SYNC and hasattr(self.instance, "activated") and self.instance.activated:
             return self.instance
 
         super().save(**kwargs)
