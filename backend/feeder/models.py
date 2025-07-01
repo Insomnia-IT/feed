@@ -2,6 +2,8 @@ from uuid import uuid4
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+
 
 from feeder.mixins import TimeMixin, CommentMixin, NameMixin
 from feeder.soft_delete import SoftDeleteModelMixin
@@ -168,12 +170,12 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     
     @property
     def activated(self):
-        cnt = Arrival.objects.filter(
+        if not settings.SKIP_BACK_SYNC:
+            return False
+        return Arrival.objects.filter(
             status__in=['ARRIVED', 'STARTED', 'JOINED'],
             volunteer=self.id
         ).count()
-        print(self.id, ' - ', cnt)
-        return cnt > 0
 
 
     def save(self, *args, **kwargs):
