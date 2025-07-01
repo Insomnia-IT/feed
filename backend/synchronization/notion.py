@@ -30,12 +30,12 @@ class NotionSync:
 
     def get_last_sync_time(self, direction):
         if self.all_data:
-            return datetime(year=2013, month=6, day=13)
+            return datetime(year=2013, month=6, day=13).replace(tzinfo=timezone.utc)
         sync = SyncModel.objects.filter(direction=direction, success=True, partial_offset=None).order_by("-date").first()
         if sync:
             return sync.date
         else:
-            return datetime(year=2013, month=6, day=13)
+            return datetime(year=2013, month=6, day=13).replace(tzinfo=timezone.utc)
 
     def get_last_sync_partial_offset(self, direction):
         sync = SyncModel.objects.filter(direction=direction, success=True).order_by("-date").first()
