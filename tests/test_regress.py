@@ -54,7 +54,7 @@ def test_create_new_meal(browser):
     first_row_text = page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
-    assert browser.current_url == "https://{host}/feed-transaction?pageSize=10&current=1"
+    assert browser.current_url == f"https://{host}/feed-transaction?pageSize=10&current=1"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
     assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
     print("✅ Запись успешно создана!")
@@ -93,7 +93,7 @@ def test_create_group_badge(browser):
     time.sleep(1)
     b = page.badges_counter()
     print("b =", b)
-    assert browser.current_url == "https://{host}/group-badges"
+    assert browser.current_url == f"https://{host}/group-badges"
     assert a+1 == b
     print("✅ Бейдж успешно создан! Счетчик увеличился на 1!")
 
@@ -205,7 +205,7 @@ def test_add_and_delete_volunteer_from_group_badge(browser):
     page.save_in_group_badge()
     time.sleep(3)
     #в ассертах сверяем возврат на урл групповых бейджей после сохранения и мэтч счётчиков между собой
-    assert browser.current_url == "https://{host}/group-badges"
+    assert browser.current_url == f"https://{host}/group-badges"
     print("До-", count1, "человек в бейдже")
     assert count1==count4
     print("До-", count1, count4, "человек в бейдже")
@@ -233,7 +233,7 @@ def test_create_new_user(browser):
     counter2 = page.receive_volunteers_count()
     page.find_user()
     user_name = page.check_username_after_editing()
-    assert browser.current_url== "https://{host}/volunteers"
+    assert browser.current_url== f"https://{host}/volunteers"
     assert counter1+1 == counter2, "Счетчик не увеличился на 1!!!"
     assert user_name == "Test_name"
 
@@ -257,7 +257,7 @@ def test_edit_new_user(browser):
     page.clear_input_field()
     time.sleep(3)
     counter2 = page.receive_volunteers_count()
-    assert browser.current_url== "https://{host}/volunteers"
+    assert browser.current_url== f"https://{host}/volunteers"
     assert counter1 == counter2, "Счетчик изменился!!!"
     assert user_name == "Test_name_1"
 
@@ -281,7 +281,7 @@ def test_delete_new_user(browser):
     counter2 = page.receive_volunteers_count()
     page.check_username_after_deleting()
     counter3 = page.receive_volunteers_count()
-    assert browser.current_url == "https://{host}/volunteers"
+    assert browser.current_url == f"https://{host}/volunteers"
     assert counter1 == counter2+1, "Счетчик не уменьшился на 1!!!"
     assert counter3 == 0
 
@@ -295,4 +295,4 @@ def test_scan_qr(browser):
     time.sleep(2)
     page.scan_user()
     time.sleep(2)
-    assert browser.current_url == "https://{host}/volunteers"
+    assert browser.current_url == f"https://{host}/volunteers"
