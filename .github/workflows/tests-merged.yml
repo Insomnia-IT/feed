@@ -1,0 +1,71 @@
+name: Tests
+
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches: [main]
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  tests:
+    runs-on: [self-hosted, rumsrv]
+    # container:
+    #   image: ubuntu:latest
+
+    steps:
+      # - name: Checkout
+      #   uses: actions/checkout@v4
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          path: pr
+
+      - name: Merge PR into base
+        run: |
+          git config --global user.email "ci@example.com"
+          git config --global user.name "GitHub Actions"
+          cd base
+          git remote add pr ../pr
+          git fetch pr
+          git merge --no-ff --no-commit FETCH_HEAD
+        continue-on-error: false
+
+      - name: Install Docker plus Compose
+        run: |
+          apt-get update
+          apt-get install -y docker-compose-v2
+
+      - name: Check Docker
+        run: |
+          docker compose version
+          docker version
+          docker info
+        continue-on-error: false
+
+      - name: ⌛ Do Testing
+        run: |
+          cd tests
+          bash run_tests.sh || touch /tmp/testFailed
+
+      - name: 🍏 Shorter Log
+        run: cat /tmp/tests.short.log
+
+      - name: Verdict
+        run: if [ -f /tmp/testFailed ]; then
+          echo "Tests Failed!"; exit 1;
+          else
+          echo "Tests Success!";
+          fi
+
