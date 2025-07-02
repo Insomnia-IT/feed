@@ -25,13 +25,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           path: base
-
+          fetch-depth: 0
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           path: pr
-
+          fetch-depth: 0
       - name: Merge PR into base
         run: |
             git config --global user.email "ci@example.com"
