@@ -9,18 +9,63 @@ services:
     hostname: chrome
     privileged: true
     shm_size: 2g
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+  backend:
+    networks:
+      - tests
+    build:
+      context: ..
+      dockerfile: Dockerfile_backend
+      args:
+        SYNC_URL:
+        SYNC_LOGIN:
+        SYNC_PASSWORD:
+    container_name: feed_backend
+    restart: always
+    environment:
+      # OTEL_ENDPOINT: http://jaeger:4318/v1/traces
+      SKIP_BACK_SYNC: ${SKIP_BACK_SYNC:-False}
+      PHOTO_AUTH_TOKEN: ${PHOTO_AUTH_TOKEN}
+    volumes:
+      - ${DB_DIR:-./db}:/app/db
+      - ${PHOTO_STORAGE_PATH:-./db/photos}:/app/photos
+    # depends_on:
+    #   - jaeger
+
+  front:
+    networks:
+      - tests
+    build:
+      context: ..
+      dockerfile: ./Dockerfile_front
+      args:
+        NEW_API_URL: http://localhost:${PORT:-80}/feedapi/v1
+    container_name: feed_front
+    restart: always
+    ports:
+      - ${PORT:-80}:80
+    depends_on:
+      - backend
   tests:
     networks:
       - tests
     environment:
       WEBDRIVER_REMOTE: true
+      FEED_APP_HOST: ${FEED_APP_HOST:-feed_front}
     build:
       context: .
       network: host
-    # command: bash -c "sleep 10s && python -m pytest test_regress.py"
-    command: bash -c "sleep 10s && python -m pytest --count=$NREPS test_regress.py"
+    command: bash -c "python -m pytest --count=$NREPS test_regress.py"
     depends_on:
-      - chrome
+      chrome:
+        condition: service_healthy
+      front:
+        condition: service_started
   # pinger: # for troubleshoot
   #   build:
   #     context: .

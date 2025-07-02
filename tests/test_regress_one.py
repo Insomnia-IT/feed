@@ -1,3 +1,4 @@
+import os
 import time
 from selenium.webdriver.common.by import By
 from datetime import datetime
@@ -5,9 +6,11 @@ from datetime import datetime
 # from main_page import MainPage
 from base_page import BasePage
 
+host = os.getenv("FEED_APP_HOST", "feedapp-dev.insomniafest.ru")
+
 def test_pagination_in_volunteer_list(browser):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
-    link="https://feedapp-dev.insomniafest.ru/login"
+    link=f"https://{host}/login"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
