@@ -138,36 +138,32 @@ export const VolList: FC = () => {
                         searchText={searchText}
                         setSearchText={setSearchText}
                     />
-                    <Row style={{ padding: '10px 0' }} justify="space-between">
+                    <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
                         {isDesktop ? (
                             <>
-                                <Row style={{ gap: '24px' }} align="middle">
-                                    {/* <b>Сохраненные таблицы:</b>
-
-                                <Select placeholder="Выберите" disabled></Select> */}
-                                </Row>
-                                <Row style={{ gap: '24px' }} align="middle">
-                                    <Col>
+                                <Col style={{ display: 'flex', alignItems: 'center' }}>
+                                    <span>
                                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
                                         волонтеров
-                                    </Col>
-                                    <Row style={{ gap: '12px' }} align="middle">
-                                        <ChooseColumnsButton
-                                            canListCustomFields={canListCustomFields}
-                                            customFields={customFields}
-                                        />
-                                        <SaveAsXlsxButton
-                                            isDisabled={!volunteersData.length || isFiltersLoading}
-                                            filterQueryParams={filterQueryParams}
-                                            customFields={customFields}
-                                            volunteerRoleById={volunteerRoleById}
-                                            statusById={statusById}
-                                            transportById={transportById}
-                                            kitchenNameById={kitchenNameById}
-                                            feedTypeNameById={feedTypeNameById}
-                                            accessRoleById={accessRoleById}
-                                        />
-                                    </Row>
+                                    </span>
+                                </Col>
+
+                                <Row style={{ gap: '12px' }}>
+                                    <ChooseColumnsButton
+                                        canListCustomFields={canListCustomFields}
+                                        customFields={customFields}
+                                    />
+                                    <SaveAsXlsxButton
+                                        isDisabled={!volunteersData.length || isFiltersLoading}
+                                        filterQueryParams={filterQueryParams}
+                                        customFields={customFields}
+                                        volunteerRoleById={volunteerRoleById}
+                                        statusById={statusById}
+                                        transportById={transportById}
+                                        kitchenNameById={kitchenNameById}
+                                        feedTypeNameById={feedTypeNameById}
+                                        accessRoleById={accessRoleById}
+                                    />
                                 </Row>
                             </>
                         ) : (
