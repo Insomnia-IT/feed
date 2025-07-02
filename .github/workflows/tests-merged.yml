@@ -33,7 +33,7 @@ jobs:
           ref: ${{ github.head_ref }}
           path: pr
           fetch-depth: 0
-          
+
       - name: Merge PR into base
         run: |
             git config --global user.email "ci@example.com"
@@ -57,7 +57,7 @@ jobs:
 
       - name: ⌛ Do Testing
         run: |
-          cd tests
+          cd base/tests
           bash run_tests.sh || touch /tmp/testFailed
 
       - name: 🍏 Shorter Log
