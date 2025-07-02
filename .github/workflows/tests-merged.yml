@@ -13,11 +13,8 @@ on:
 jobs:
   tests:
     runs-on: [self-hosted, zhukov]
-    container:
-      image: ubuntu:latest
-
+    
     steps:
-
       - name: Checkout base branch
         uses: actions/checkout@v4
         with:
