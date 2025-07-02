@@ -16,18 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Docker plus Compose
-        run: |
-          apt-get update
-          apt-get install -y docker-compose-v2
-
-      - name: Check Docker
-        run: |
-          docker compose version
-          docker version
-          docker info
-        continue-on-error: true
-
       - name: ⌛ Do Testing
         run: |
           cd tests
