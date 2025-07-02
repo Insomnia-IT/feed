@@ -59,46 +59,24 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     }}
                     type={'number'}
                 />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[0] || ''}
-                    readOnly
-                    focus={focus && (isAllActive || activeIndex === 0)}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[1] || ''}
-                    readOnly
-                    focus={focus && (isAllActive || activeIndex === 1)}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[2] || ''}
-                    readOnly
-                    focus={focus && (isAllActive || activeIndex === 2)}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[3] || ''}
-                    readOnly
-                    focus={focus && (isAllActive || activeIndex === 3)}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
+                {[0, 1, 2, 3].map((idx) => {
+                    // Если все заполнены — подсвечиваем все, иначе только активный
+                    const isAllFilled = pin.length === 4;
+                    const activeIndex = pin.length < 4 ? pin.length : 3;
+                    return (
+                        <Input
+                            key={idx}
+                            tabIndex={-1}
+                            className={css.pinInput}
+                            value={pin?.[idx] || ''}
+                            readOnly
+                            focus={focus && (isAllFilled || activeIndex === idx)}
+                            onFocus={handleFocus}
+                            type='number'
+                            error={!!error}
+                        />
+                    );
+                })}
             </div>
             {!!error && <p className={css.errorText}>{error}</p>}
         </div>
