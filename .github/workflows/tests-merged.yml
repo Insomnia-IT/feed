@@ -42,17 +42,17 @@ jobs:
           git merge --no-ff --no-commit FETCH_HEAD
         continue-on-error: false
 
-      - name: Install Docker plus Compose
-        run: |
-          apt-get update
-          apt-get install -y docker-compose-v2
+    #   - name: Install Docker plus Compose
+    #     run: |
+    #       apt-get update
+    #       apt-get install -y docker-compose-v2
 
-      - name: Check Docker
-        run: |
-          docker compose version
-          docker version
-          docker info
-        continue-on-error: false
+    #   - name: Check Docker
+    #     run: |
+    #       docker compose version
+    #       docker version
+    #       docker info
+    #     continue-on-error: false
 
       - name: ⌛ Do Testing
         run: |
