@@ -31,3 +31,7 @@
     font-size: 20px;
     border: #808080 solid;
 }
+
+.pinInput.focus {
+    border-color: var(--c-blue);
+}

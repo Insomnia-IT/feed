@@ -38,6 +38,10 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
         }
     };
 
+    // определяем индексы активных полей
+    const isAllActive = pin.length === 4;
+    const activeIndex = pin.length < 4 ? pin.length : 3;
+
     return (
         <div className={css.pinInputWrapper}>
             <div className={css.container}>
@@ -60,7 +64,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     className={css.pinInput}
                     value={pin?.[0] || ''}
                     readOnly
-                    focus={focus}
+                    focus={focus && (isAllActive || activeIndex === 0)}
                     onFocus={handleFocus}
                     type='number'
                     error={!!error}
@@ -70,7 +74,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     className={css.pinInput}
                     value={pin?.[1] || ''}
                     readOnly
-                    focus={focus}
+                    focus={focus && (isAllActive || activeIndex === 1)}
                     onFocus={handleFocus}
                     type='number'
                     error={!!error}
@@ -80,7 +84,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     className={css.pinInput}
                     value={pin?.[2] || ''}
                     readOnly
-                    focus={focus}
+                    focus={focus && (isAllActive || activeIndex === 2)}
                     onFocus={handleFocus}
                     type='number'
                     error={!!error}
@@ -90,7 +94,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     className={css.pinInput}
                     value={pin?.[3] || ''}
                     readOnly
-                    focus={focus}
+                    focus={focus && (isAllActive || activeIndex === 3)}
                     onFocus={handleFocus}
                     type='number'
                     error={!!error}
