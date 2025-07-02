@@ -22,4 +22,4 @@ echo -e "\n:VERDICT:"
     { echo "Tests passed!"; } ||
     { echo "Tests failed!" ; (exit 2); }
 
-docker compose down
+docker compose down -v
