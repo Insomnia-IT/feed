@@ -34,12 +34,11 @@ jobs:
 
       - name: Merge PR into base
         run: |
-          git config --global user.email "ci@example.com"
-          git config --global user.name "GitHub Actions"
-          cd base
-          git remote add pr ../pr
-          git fetch pr
-          git merge --no-ff --no-commit FETCH_HEAD
+            git config --global user.email "ci@example.com"
+            git config --global user.name "GitHub Actions"
+            cd base
+            git fetch ../pr HEAD
+            git merge --no-ff --no-commit FETCH_HEAD
         continue-on-error: false
 
     #   - name: Install Docker plus Compose
