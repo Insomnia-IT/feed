@@ -35,9 +35,9 @@ export const CommonHistory = ({ role }: IProps) => {
     const [history, setHistory] = useState<IResult[]>([]);
     const [customFields, setCustomFields] = useState<CustomFieldEntity[]>([]);
 
-    const canCancelGroupOperation = useCanAccess({ 
-        action: 'bulk_edit', 
-        resource: 'volunteers' 
+    const canCancelGroupOperation = useCanAccess({
+        action: 'bulk_edit',
+        resource: 'volunteers'
     });
 
     const { data: kitchens } = useList<KitchenEntity>({ resource: 'kitchens' });
