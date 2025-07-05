@@ -40,16 +40,19 @@ export const CommonHistory = ({ role }: IProps) => {
         resource: 'volunteers'
     });
 
-    const { data: kitchens } = useList<KitchenEntity>({ resource: 'kitchens' });
-    const { data: feedTypes } = useList<FeedTypeEntity>({ resource: 'feed-types' });
-    const { data: colors } = useList<ColorTypeEntity>({ resource: 'colors' });
-    const { data: accessRoles } = useList<AccessRoleEntity>({ resource: 'access-roles' });
-    const { data: volunteerRoles } = useList<VolunteerRoleEntity>({ resource: 'volunteer-roles' });
-    const { data: transports } = useList<TransportEntity>({ resource: 'transports' });
-    const { data: statuses } = useList<StatusEntity>({ resource: 'statuses' });
-    const { data: genders } = useList<AccessRoleEntity>({ resource: 'genders' });
-    const { data: directions } = useList<DirectionEntity>({ resource: 'directions' });
-    const { data: groupBadges } = useList<GroupBadgeEntity>({ resource: 'group-badges' });
+    const { data: kitchens } = useList<KitchenEntity>({ resource: 'kitchens', pagination: { pageSize: 0 } });
+    const { data: feedTypes } = useList<FeedTypeEntity>({ resource: 'feed-types', pagination: { pageSize: 0 } });
+    const { data: colors } = useList<ColorTypeEntity>({ resource: 'colors', pagination: { pageSize: 0 } });
+    const { data: accessRoles } = useList<AccessRoleEntity>({ resource: 'access-roles', pagination: { pageSize: 0 } });
+    const { data: volunteerRoles } = useList<VolunteerRoleEntity>({
+        resource: 'volunteer-roles',
+        pagination: { pageSize: 0 }
+    });
+    const { data: transports } = useList<TransportEntity>({ resource: 'transports', pagination: { pageSize: 0 } });
+    const { data: statuses } = useList<StatusEntity>({ resource: 'statuses', pagination: { pageSize: 0 } });
+    const { data: genders } = useList<AccessRoleEntity>({ resource: 'genders', pagination: { pageSize: 0 } });
+    const { data: directions } = useList<DirectionEntity>({ resource: 'directions', pagination: { pageSize: 0 } });
+    const { data: groupBadges } = useList<GroupBadgeEntity>({ resource: 'group-badges', pagination: { pageSize: 0 } });
 
     const kitchenById = useIdNameMap(kitchens);
     const feedTypeById = useIdNameMap(feedTypes);
