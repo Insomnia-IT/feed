@@ -23,6 +23,8 @@ export const FIELD_LABELS: Record<string, string> = {
     departure_date: 'Дата отъезда',
     arrival_date: 'Дата приезда',
     is_blocked: 'Статус блокировки',
+    person: 'Персона',
+    deleted: 'Удален',
     custom_field: 'Кастомное поле',
     directions: 'Службы/локации',
     group_badge: 'Групповой бейдж',
@@ -41,11 +43,12 @@ export const STATUS_MAP: Record<string, string> = {
 export const BOOL_MAP = {
     vegan: ['Мясоед', 'Веган'],
     is_blocked: ['Разблокирован', 'Заблокирован'],
+    deleted: ['Нет', 'Да'],
     ticket: ['Не выдан', 'Выдан'],
     infant: ['Нет', 'Да']
 };
 
-export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'deleted', 'feed', 'role', 'custom_field']);
+export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'feed', 'role', 'custom_field']);
 
 export function useIdNameMap<T extends { id: number | string }>(list?: GetListResponse<T>, field?: keyof T) {
     return useMemo<Record<string, string>>(
