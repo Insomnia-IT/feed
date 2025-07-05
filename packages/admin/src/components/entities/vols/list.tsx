@@ -1,39 +1,42 @@
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useList, CanAccess } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col } from 'antd';
-import type { TablePaginationConfig } from 'antd';
-import { FC, useEffect, useState } from 'react';
+import type { TablePaginationConfig } from 'antd/es/table';
 
-import { CustomFieldEntity, VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 import { useScreen } from 'shared/providers';
-
-import { Filters } from './vol-list/filters/filters';
-import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
-import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
-import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
 import useCanAccess from './use-can-access';
 
-import { ChooseColumnsButton } from './vol-list/choose-columns-button';
-import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
+import { CustomFieldEntity, VolEntity } from 'interfaces';
+
+import { Filters } from './vol-list/filters/filters';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
+import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
+import { ChooseColumnsButton } from './vol-list/choose-columns-button';
+import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
+import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
+import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
 
+const LS_PAGE_INDEX = 'volPageIndex';
+const LS_PAGE_SIZE = 'volPageSize';
+
 export const VolList: FC = () => {
-    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
-    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
-    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
     const { isDesktop } = useScreen();
+    const { edit } = useNavigation();
+
+    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_SIZE) || '') || 10);
+    const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
     const canListCustomFields = useCanAccess({
         action: 'list',
         resource: 'volunteer-custom-fields'
     });
     const canBulkEdit = useCanAccess({ action: 'bulk_edit', resource: 'volunteers' });
-
-    const { edit } = useNavigation();
 
     const {
         accessRoleById,
@@ -62,12 +65,16 @@ export const VolList: FC = () => {
         refetch: reloadVolunteers
     } = useList<VolEntity>({
         resource: `volunteers/${filterQueryParams}`,
-
-        pagination: {
-            current: !isDesktop ? 1 : page,
-            pageSize: !isDesktop ? 10000 : pageSize
-        }
+        pagination: isDesktop ? { current: page, pageSize } : undefined
     });
+
+    useEffect(() => {
+        // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
+        if (volunteers?.total && (page - 1) * pageSize >= volunteers.total) {
+            setPage(1);
+            localStorage.setItem(LS_PAGE_INDEX, '1');
+        }
+    }, [volunteers?.total, page, pageSize]);
 
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
@@ -75,23 +82,26 @@ export const VolList: FC = () => {
             filterQueryParams
         });
 
-    const pagination: TablePaginationConfig = {
-        total: volunteers?.total ?? 1,
-        showTotal: (total) => (
-            <>
-                <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
-                <span data-testid="volunteer-count-value">{total}</span>
-            </>
-        ),
-        current: page,
-        pageSize: pageSize,
-        onChange: (page, pageSize) => {
-            setPage(page);
-            setPageSize(pageSize);
-            localStorage.setItem('volPageIndex', page.toString());
-            localStorage.setItem('volPageSize', pageSize.toString());
-        }
-    };
+    const pagination = useMemo<TablePaginationConfig>(
+        () => ({
+            total: volunteers?.total ?? 1,
+            showTotal: (total) => (
+                <>
+                    <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
+                    <span data-testid="volunteer-count-value">{total}</span>
+                </>
+            ),
+            current: page,
+            pageSize,
+            onChange: (newPage, newSize) => {
+                setPage(newPage);
+                setPageSize(newSize);
+                localStorage.setItem(LS_PAGE_INDEX, page.toString());
+                localStorage.setItem(LS_PAGE_SIZE, pageSize.toString());
+            }
+        }),
+        [volunteers?.total, page, pageSize]
+    );
 
     const loadCustomFields = async () => {
         const { data } = await dataProvider.getList<CustomFieldEntity>({
@@ -104,20 +114,18 @@ export const VolList: FC = () => {
     useEffect(() => {
         void loadCustomFields();
 
-        const savedPage = parseFloat(localStorage.getItem('volPageIndex') || '') || 1;
+        const savedPage = parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1;
         setPage(savedPage);
     }, []);
 
-    const openVolunteer = (id: number): Promise<boolean> => {
+    const openVolunteer = (id: number) => {
         edit('volunteers', id);
-
         return Promise.resolve(true);
     };
 
-    const volunteersData = volunteers?.data ?? [];
     const noActiveFilters = activeFilters.length === 0;
-
-    const showPersons = searchText && noActiveFilters && volunteersData.length === 0;
+    const volunteersData = volunteers?.data ?? [];
+    const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
 
     return (
         <List canCreate={noActiveFilters}>
@@ -141,17 +149,12 @@ export const VolList: FC = () => {
                     <Row style={{ padding: '10px 0' }} justify="space-between">
                         {isDesktop ? (
                             <>
-                                <Row style={{ gap: '24px' }} align="middle">
-                                    {/* <b>Сохраненные таблицы:</b>
-
-                                <Select placeholder="Выберите" disabled></Select> */}
-                                </Row>
-                                <Row style={{ gap: '24px' }} align="middle">
+                                <Row style={{ gap: 24 }} align="middle">
                                     <Col>
                                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
                                         волонтеров
                                     </Col>
-                                    <Row style={{ gap: '12px' }} align="middle">
+                                    <Row style={{ gap: 12 }} align="middle">
                                         <ChooseColumnsButton
                                             canListCustomFields={canListCustomFields}
                                             customFields={customFields}
@@ -171,19 +174,11 @@ export const VolList: FC = () => {
                                 </Row>
                             </>
                         ) : (
-                            <span>Найдено: {volunteersData?.length ?? 0}</span>
+                            <span>Найдено: {volunteers?.total ?? 0}</span>
                         )}
                     </Row>
 
-                    {!isDesktop ? (
-                        <VolunteerMobileList
-                            statusById={statusById}
-                            volList={volunteersData}
-                            openVolunteer={openVolunteer}
-                            isLoading={volunteersIsLoading}
-                            refetch={reloadVolunteers}
-                        />
-                    ) : (
+                    {isDesktop ? (
                         <>
                             {!showPersons && (
                                 <VolunteerDesktopTable
@@ -209,6 +204,12 @@ export const VolList: FC = () => {
                                 />
                             )}
                         </>
+                    ) : (
+                        <VolunteerMobileList
+                            filterQueryParams={filterQueryParams}
+                            statusById={statusById}
+                            openVolunteer={openVolunteer}
+                        />
                     )}
                 </ActiveColumnsContextProvider>
             </CanAccess>

@@ -141,15 +141,16 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         elif feed == "NO":
             attrs["feed_type"] = FeedType.objects.get(name="без питания")
 
-        kitchen = attrs.get("kitchen")
-        if not kitchen:
-            attrs["kitchen"] = Kitchen.objects.get(name="Кухня №1")
         return super().validate(attrs)
     
     def save(self, **kwargs):
         uuid = self.initial_data.get("id")
         instance = self.get_instance_by_uuid(uuid)
         old_photo_url = getattr(instance, "photo", None) if instance else None
+
+        kitchen = self.initial_data.get("kitchen")
+        if not kitchen and not instance:
+             self.validated_data["kitchen"] = Kitchen.objects.get(name="Кухня №1")
 
         instance = super().save(**kwargs)
 

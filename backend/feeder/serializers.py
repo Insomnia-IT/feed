@@ -88,14 +88,13 @@ class VolunteerCustomFieldValueNestedSerializer(serializers.ModelSerializer):
 
 
 class PersonSerializer(serializers.ModelSerializer):
-    engagements = EngagementSerializer(many=True)
-    # engagements = serializers.SerializerMethodField()
+    engagements = serializers.SerializerMethodField()
 
-    # def get_engagements(self, obj):
-    #     return EngagementSerializer(
-    #         obj.engagements.all().order_by('-year')[:1],
-    #         many=True
-    #     ).data
+    def get_engagements(self, obj):
+        return EngagementSerializer(
+            obj.engagements.all().order_by('-year'),
+            many=True
+        ).data
 
     class Meta:
         model = models.Person
