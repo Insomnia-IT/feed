@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, , useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -22,16 +22,13 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
     const [selectedVols, setSelectedVols] = useState<VolEntity[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const selectedRowKeys = useMemo(() => selectedVols.map((vol) => vol.id), [selectedVols]);
+    const selectedRowKeys = selectedVols.map((vol) => vol.id);
 
-    const isAllSelected = useMemo(
-        () => selectedVols.length > 0 && selectedVols.length === totalVolunteersCount,
-        [selectedVols.length, totalVolunteersCount]
-    );
+    const isAllSelected = selectedVols.length > 0 && selectedVols.length === totalVolunteersCount;
 
-    const unselectAllSelected = useCallback(() => {
+    const unselectAllSelected = () => {
         setSelectedVols([]);
-    }, []);
+    };
 
     const onVolunteerSelection = useCallback((vol: VolEntity, isSelected: boolean) => {
         setSelectedVols((prev) => (isSelected ? [...prev, vol] : prev.filter((v) => v.id !== vol.id)));
