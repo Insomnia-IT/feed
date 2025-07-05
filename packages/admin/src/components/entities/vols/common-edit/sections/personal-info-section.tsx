@@ -41,7 +41,7 @@ export const PersonalInfoSection = ({
                     <Input readOnly={denyBadgeEdit} disabled={true} />
                 </Form.Item>
                 <Form.Item label="Пол волонтера" name="gender">
-                    <Select disabled={denyBadgeEdit} options={genderOptions} />
+                    <Select options={genderOptions} />
                 </Form.Item>
             </div>
             <div className={styles.twoColumnsStartWrap}>

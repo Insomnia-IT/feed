@@ -23,6 +23,7 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
+    const isDeleted = Form.useWatch('deleted_at', form);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
 
@@ -47,6 +48,11 @@ export const VolEdit: FC<IResourceComponentsProps> = () => {
                     {isBlocked && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Заблокирован</span>
+                        </div>
+                    )}
+                    {isDeleted && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Удален</span>
                         </div>
                     )}
                 </div>

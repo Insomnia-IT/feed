@@ -21,12 +21,15 @@ import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
 
+const LS_PAGE_INDEX = 'volPageIndex';
+const LS_PAGE_SIZE = 'volPageSize';
+
 export const VolList: FC = () => {
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
 
-    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem('volPageIndex') || '') || 1);
-    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem('volPageSize') || '') || 10);
+    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_SIZE) || '') || 10);
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
 
     const canListCustomFields = useCanAccess({
@@ -65,7 +68,13 @@ export const VolList: FC = () => {
         pagination: isDesktop ? { current: page, pageSize } : undefined
     });
 
-    const volunteersData = volunteers?.data ?? [];
+    useEffect(() => {
+        // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
+        if (volunteers?.total && (page - 1) * pageSize >= volunteers.total) {
+            setPage(1);
+            localStorage.setItem(LS_PAGE_INDEX, '1');
+        }
+    }, [volunteers?.total, page, pageSize]);
 
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
@@ -87,8 +96,8 @@ export const VolList: FC = () => {
             onChange: (newPage, newSize) => {
                 setPage(newPage);
                 setPageSize(newSize);
-                localStorage.setItem('volPageIndex', newPage.toString());
-                localStorage.setItem('volPageSize', newSize.toString());
+                localStorage.setItem(LS_PAGE_INDEX, page.toString());
+                localStorage.setItem(LS_PAGE_SIZE, pageSize.toString());
             }
         }),
         [volunteers?.total, page, pageSize]
@@ -105,7 +114,7 @@ export const VolList: FC = () => {
     useEffect(() => {
         void loadCustomFields();
 
-        const savedPage = parseFloat(localStorage.getItem('volPageIndex') || '') || 1;
+        const savedPage = parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1;
         setPage(savedPage);
     }, []);
 
@@ -115,6 +124,7 @@ export const VolList: FC = () => {
     };
 
     const noActiveFilters = activeFilters.length === 0;
+    const volunteersData = volunteers?.data ?? [];
     const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
 
     return (
@@ -136,31 +146,32 @@ export const VolList: FC = () => {
                         searchText={searchText}
                         setSearchText={setSearchText}
                     />
-                    <Row style={{ padding: '10px 0' }} justify="space-between">
+                    <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
                         {isDesktop ? (
                             <>
-                                <Row style={{ gap: 24 }} align="middle">
-                                    <Col>
+                                <Col style={{ display: 'flex', alignItems: 'center' }}>
+                                    <span>
                                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
                                         волонтеров
-                                    </Col>
-                                    <Row style={{ gap: 12 }} align="middle">
-                                        <ChooseColumnsButton
-                                            canListCustomFields={canListCustomFields}
-                                            customFields={customFields}
-                                        />
-                                        <SaveAsXlsxButton
-                                            isDisabled={!volunteersData.length || isFiltersLoading}
-                                            filterQueryParams={filterQueryParams}
-                                            customFields={customFields}
-                                            volunteerRoleById={volunteerRoleById}
-                                            statusById={statusById}
-                                            transportById={transportById}
-                                            kitchenNameById={kitchenNameById}
-                                            feedTypeNameById={feedTypeNameById}
-                                            accessRoleById={accessRoleById}
-                                        />
-                                    </Row>
+                                    </span>
+                                </Col>
+
+                                <Row style={{ gap: '12px' }}>
+                                    <ChooseColumnsButton
+                                        canListCustomFields={canListCustomFields}
+                                        customFields={customFields}
+                                    />
+                                    <SaveAsXlsxButton
+                                        isDisabled={!volunteersData.length || isFiltersLoading}
+                                        filterQueryParams={filterQueryParams}
+                                        customFields={customFields}
+                                        volunteerRoleById={volunteerRoleById}
+                                        statusById={statusById}
+                                        transportById={transportById}
+                                        kitchenNameById={kitchenNameById}
+                                        feedTypeNameById={feedTypeNameById}
+                                        accessRoleById={accessRoleById}
+                                    />
                                 </Row>
                             </>
                         ) : (

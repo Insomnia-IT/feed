@@ -217,6 +217,7 @@ export const useFilters = ({
             lookup: () => volunteerRoles?.data ?? []
         },
         { type: FilterFieldType.Boolean, name: 'is_blocked', title: 'Заблокирован' },
+        { type: FilterFieldType.Boolean, name: 'is_deleted', title: 'Удален' },
         {
             type: FilterFieldType.Lookup,
             name: 'kitchen',

@@ -98,9 +98,13 @@ class VolunteerExtraFilterMixin(ModelViewSet):
 
 class SoftDeleteViewSetMixin(ModelViewSet):
     def get_queryset(self):
+        pk = self.kwargs.get("pk", None)
         qs = super().get_queryset()
-        if not self.request.query_params.get("all_qs", None):
-            return qs.filter(deleted_at=None)
+        is_deleted = self.request.query_params.getlist("is_deleted", None)
+        if not is_deleted and not pk or ('false' in is_deleted and not 'true' in is_deleted):
+            qs = qs.filter(deleted_at=None)
+        if 'true' in is_deleted and not 'false' in is_deleted:
+            qs = qs.exclude(deleted_at=None)
         return qs
 
     # @action(methods=["delete"], detail=True, url_path="hard_delete")
