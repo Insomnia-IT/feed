@@ -18,6 +18,7 @@ class SynchronizationSystemActions(models.Model):
     direction = models.CharField(max_length=32, choices=DIRECTION_CHOICES)
     date = models.DateTimeField()
     latest = models.BooleanField(default=False)
+    partial_offset = models.IntegerField(null=True, blank=True)
     success = models.BooleanField(default=True)
     error = models.CharField(max_length=512, null=True, blank=True)
 

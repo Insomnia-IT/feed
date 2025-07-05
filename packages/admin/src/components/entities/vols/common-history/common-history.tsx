@@ -18,6 +18,7 @@ import type {
     VolunteerRoleEntity
 } from 'interfaces';
 import { dataProvider } from 'dataProvider';
+import useCanAccess from '../use-can-access';
 import { IData, IResult } from './common-history.types';
 import { BOOL_MAP, FIELD_LABELS, IGNORE_FIELDS, STATUS_MAP, useIdNameMap } from './utils';
 
@@ -33,6 +34,11 @@ export const CommonHistory = ({ role }: IProps) => {
 
     const [history, setHistory] = useState<IResult[]>([]);
     const [customFields, setCustomFields] = useState<CustomFieldEntity[]>([]);
+
+    const canCancelGroupOperation = useCanAccess({
+        action: 'bulk_edit',
+        resource: 'volunteers'
+    });
 
     const { data: kitchens } = useList<KitchenEntity>({ resource: 'kitchens' });
     const { data: feedTypes } = useList<FeedTypeEntity>({ resource: 'feed-types' });
@@ -227,7 +233,7 @@ export const CommonHistory = ({ role }: IProps) => {
                               )}
                               {historyLayout(it)}
                           </div>
-                          {it.group_operation_uuid && (
+                          {it.group_operation_uuid && canCancelGroupOperation && (
                               <Button
                                   type="link"
                                   danger

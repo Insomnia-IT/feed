@@ -26,7 +26,7 @@ export const PersonalInfoSection = ({
 
             <div className={styles.twoEqualColumnsWrap}>
                 <Form.Item label="Кухня" name="kitchen" rules={Rules.required}>
-                    <Select options={kitchenOptions} />
+                    <Select options={kitchenOptions} disabled={denyBadgeEdit} />
                 </Form.Item>
                 <Form.Item label="Тип питания" name="feed_type" rules={Rules.required}>
                     <Select disabled={denyFeedTypeEdit} options={feedTypeOptions} />

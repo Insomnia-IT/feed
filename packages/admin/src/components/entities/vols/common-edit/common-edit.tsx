@@ -138,7 +138,7 @@ export const CommonEdit: React.FC = () => {
                 <section id="section2" className={styles.formSection}>
                     <ArrivalsSection statusesOptions={statusesOptions} transportsOptions={transportsOptions} />
                 </section>
-                <section id="section3" className={styles.formSection} style={{ display: denyBadgeEdit ? 'none' : '' }}>
+                <section id="section3" className={styles.formSection}>
                     <PersonalInfoSection
                         denyBadgeEdit={denyBadgeEdit}
                         handleQRChange={handleQRChange}
