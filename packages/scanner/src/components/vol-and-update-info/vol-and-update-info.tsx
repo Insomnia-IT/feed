@@ -17,7 +17,11 @@ export const VolAndUpdateInfo = ({ textColor = 'black' }: { textColor?: 'black' 
     const [volsFedAmount, setVolsFedAmount] = useState(0);
     const { lastSyncStart, mealTime } = useApp();
 
-    const volsOnField = useLiveQuery(async () => (await getVolsOnField(getToday())).length, [mealTime], 0);
+    const volsOnField = useLiveQuery(
+        async () => (await getVolsOnField(getToday())).length,
+        [mealTime, lastSyncStart],
+        0
+    );
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime], []) as Array<Transaction>;
 
