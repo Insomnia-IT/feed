@@ -59,13 +59,19 @@ export const GroupBadgeWarningCard: FC<{
     const volsToFeed = [...greens];
 
     const [showOtherCount, setShowOtherCount] = useState(false);
-    const [vegansCount, setVegansCount] = useState(0);
-    const [nonVegansCount, setNonVegansCount] = useState(0);
+    const [vegansCount, setVegansCount] = useState<string | number>('');
+    const [nonVegansCount, setNonVegansCount] = useState<string | number>('');
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const isPartiallyFed = !!alreadyFedTransactions.length;
 
     const handleFeed = (): void => {
+        if (typeof vegansCount === 'string' || typeof nonVegansCount === 'string') {
+            alert('введено некорректное значение');
+
+            return;
+        }
+
         if (showOtherCount) {
             doFeedAnons({ vegansCount, nonVegansCount });
         } else {
@@ -86,7 +92,7 @@ export const GroupBadgeWarningCard: FC<{
     const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedCount, 0);
 
     const amountToFeed = showOtherCount
-        ? vegansCount + nonVegansCount
+        ? Number(vegansCount) + Number(nonVegansCount)
         : Math.max(volsToFeed.length - alreadyFedCount, 0);
 
     return (
