@@ -67,7 +67,7 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
                     title={isLoading ? 'Подождите, информация загружается...' : 'Выбрать всех в списке'}
                     onChange={handleSelectAllToggle}
                 />
-                {isLoading && <LoadingOutlined />}
+                {isLoading ? <LoadingOutlined /> : null}
             </>
         )
     };
