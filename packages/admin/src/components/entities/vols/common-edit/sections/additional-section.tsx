@@ -57,7 +57,7 @@ export const AdditionalSection = ({
                     }
                     name="comment"
                 >
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} />
                 </Form.Item>
 
                 <Form.Item
@@ -85,7 +85,7 @@ export const AdditionalSection = ({
                     }
                     name="scanner_comment"
                 >
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} maxLength={255} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
                 </Form.Item>
             </div>
             <Divider />
