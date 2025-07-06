@@ -68,7 +68,6 @@ export const VolList: FC = () => {
         pagination: isDesktop ? { current: page, pageSize } : undefined
     });
 
-    const volunteersData = volunteers?.data ?? [];
     useEffect(() => {
         // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
         if (volunteers?.total && (page - 1) * pageSize >= volunteers.total) {
@@ -93,10 +92,10 @@ export const VolList: FC = () => {
                 </>
             ),
             current: page,
-            pageSize: pageSize,
-            onChange: (page, pageSize) => {
-                setPage(page);
-                setPageSize(pageSize);
+            pageSize,
+            onChange: (newPage, newSize) => {
+                setPage(newPage);
+                setPageSize(newSize);
                 localStorage.setItem(LS_PAGE_INDEX, page.toString());
                 localStorage.setItem(LS_PAGE_SIZE, pageSize.toString());
             }
@@ -125,6 +124,7 @@ export const VolList: FC = () => {
     };
 
     const noActiveFilters = activeFilters.length === 0;
+    const volunteersData = volunteers?.data ?? [];
     const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
 
     return (
@@ -146,31 +146,32 @@ export const VolList: FC = () => {
                         searchText={searchText}
                         setSearchText={setSearchText}
                     />
-                    <Row style={{ padding: '10px 0' }} justify="space-between">
+                    <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
                         {isDesktop ? (
                             <>
-                                <Row style={{ gap: 24 }} align="middle">
-                                    <Col>
+                                <Col style={{ display: 'flex', alignItems: 'center' }}>
+                                    <span>
                                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
                                         волонтеров
-                                    </Col>
-                                    <Row style={{ gap: 12 }} align="middle">
-                                        <ChooseColumnsButton
-                                            canListCustomFields={canListCustomFields}
-                                            customFields={customFields}
-                                        />
-                                        <SaveAsXlsxButton
-                                            isDisabled={!volunteersData.length || isFiltersLoading}
-                                            filterQueryParams={filterQueryParams}
-                                            customFields={customFields}
-                                            volunteerRoleById={volunteerRoleById}
-                                            statusById={statusById}
-                                            transportById={transportById}
-                                            kitchenNameById={kitchenNameById}
-                                            feedTypeNameById={feedTypeNameById}
-                                            accessRoleById={accessRoleById}
-                                        />
-                                    </Row>
+                                    </span>
+                                </Col>
+
+                                <Row style={{ gap: '12px' }}>
+                                    <ChooseColumnsButton
+                                        canListCustomFields={canListCustomFields}
+                                        customFields={customFields}
+                                    />
+                                    <SaveAsXlsxButton
+                                        isDisabled={!volunteersData.length || isFiltersLoading}
+                                        filterQueryParams={filterQueryParams}
+                                        customFields={customFields}
+                                        volunteerRoleById={volunteerRoleById}
+                                        statusById={statusById}
+                                        transportById={transportById}
+                                        kitchenNameById={kitchenNameById}
+                                        feedTypeNameById={feedTypeNameById}
+                                        accessRoleById={accessRoleById}
+                                    />
                                 </Row>
                             </>
                         ) : (

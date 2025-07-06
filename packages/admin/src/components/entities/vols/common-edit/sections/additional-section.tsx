@@ -31,6 +31,7 @@ export const AdditionalSection = ({
     const isDirectionHead = !canAccessBadgeEdit;
 
     const currentComment = form.getFieldValue('comment') || '';
+    const isDeleted = form.getFieldValue('deleted_at');
 
     const handleBanSuccess = (updatedData: Record<string, unknown>) => {
         form.setFieldsValue(updatedData);
@@ -56,7 +57,7 @@ export const AdditionalSection = ({
                     }
                     name="comment"
                 >
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} />
                 </Form.Item>
 
                 <Form.Item
@@ -109,7 +110,7 @@ export const AdditionalSection = ({
                     onSuccess={handleBanSuccess}
                 />
 
-                {canDelete && (
+                {canDelete && !isDeleted && (
                     <DeleteButton
                         type="primary"
                         icon={false}
@@ -130,6 +131,7 @@ export const AdditionalSection = ({
                 </Form.Item>
                 <Form.Item name="person" hidden />
                 <Form.Item name="person_id" hidden />
+                <Form.Item name="deleted_at" hidden />
             </div>
         </>
     );
