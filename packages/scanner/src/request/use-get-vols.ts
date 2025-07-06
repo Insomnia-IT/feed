@@ -24,7 +24,10 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
-                        params: filters
+                        params: {
+                            ...filters,
+                            is_deleted: 'all'
+                        }
                     })
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
@@ -43,9 +46,16 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         //     }
                         // }
 
-                        const volunteers = (results as Array<Volunteer>).filter(({ qr }) => qr);
+                        const deletedVolunteerIds = (results as Array<Volunteer>)
+                            .filter(({ deleted_at, qr }) => deleted_at || !qr)
+                            .map(({ id }) => id);
+
+                        const volunteers = (results as Array<Volunteer>).filter(
+                            ({ deleted_at, qr }) => qr && !deleted_at
+                        );
 
                         try {
+                            await db.volunteers.bulkDelete(deletedVolunteerIds);
                             await db.volunteers.bulkPut(volunteers);
                         } catch (e) {
                             console.error(e);

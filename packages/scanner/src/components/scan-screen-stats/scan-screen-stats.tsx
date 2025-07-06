@@ -18,7 +18,7 @@ export const ScanScreenStats = () => {
         0
     );
 
-    const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime], []) as Array<Transaction>;
+    const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
     useEffect(() => {
         setVolsFedAmount(() => {
             if (todayTxs.length > 0) {

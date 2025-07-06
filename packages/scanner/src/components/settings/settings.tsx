@@ -78,7 +78,7 @@ export const Settings = () => {
                         await db.groupBadges.clear();
                         localStorage.removeItem('lastSyncStart');
                         localStorage.removeItem('lastUpdatedServerTrans');
-                        location.reload();
+                        void doSync({ full: true });
                     }
                 }}
                 disabled={syncFetching}
