@@ -28,21 +28,20 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                     })
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
-
-                        const qrs = {};
-                        const ids = {};
-                        for (const v of results as Array<Volunteer>) {
-                            if (ids[v.id]) {
-                                console.log(ids[v.id], v);
-                            } else {
-                                ids[v.id] = v;
-                            }
-                            if (qrs[v.qr]) {
-                                console.log(qrs[v.qr], v);
-                            } else {
-                                qrs[v.qr] = v;
-                            }
-                        }
+                        // const qrs = {};
+                        // const ids = {};
+                        // for (const v of results as Array<Volunteer>) {
+                        //     if (ids[v.id]) {
+                        //         console.log(ids[v.id], v);
+                        //     } else {
+                        //         ids[v.id] = v;
+                        //     }
+                        //     if (qrs[v.qr]) {
+                        //         console.log(qrs[v.qr], v);
+                        //     } else {
+                        //         qrs[v.qr] = v;
+                        //     }
+                        // }
 
                         const volunteers = (results as Array<Volunteer>).filter(({ qr }) => qr);
 

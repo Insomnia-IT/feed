@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { db } from '~/db';
 import { Text } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { useApp } from '~/model/app-provider';
@@ -71,8 +72,10 @@ export const Settings = () => {
             </div>
             <Button
                 className={css.button}
-                onClick={() => {
+                onClick={async () => {
                     if (confirm('Полное обновлене занимает много времени.\nВы уверены?')) {
+                        await db.volunteers.clear();
+                        await db.groupBadges.clear();
                         localStorage.removeItem('lastSyncStart');
                         localStorage.removeItem('lastUpdatedServerTrans');
                         location.reload();
