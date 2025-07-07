@@ -10,11 +10,15 @@ import style from './main-screen-stats.module.css';
 
 export const ScanScreenStats = () => {
     const [volsFedAmount, setVolsFedAmount] = useState(0);
-    const { mealTime } = useApp();
+    const { lastSyncStart, mealTime } = useApp();
 
-    const volsOnField = useLiveQuery(async () => (await getVolsOnField(getToday())).length, [mealTime], 0);
+    const volsOnField = useLiveQuery(
+        async () => (await getVolsOnField(getToday())).length,
+        [mealTime, lastSyncStart],
+        0
+    );
 
-    const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime], []) as Array<Transaction>;
+    const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
     useEffect(() => {
         setVolsFedAmount(() => {
             if (todayTxs.length > 0) {

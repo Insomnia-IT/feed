@@ -4,7 +4,7 @@ cd /app/backend
 
 python ./cron_config.py
 
-# /usr/sbin/crond -f -l 8 &
+/usr/sbin/crond -f -l 8 &
 
 ./manage.py migrate
 ./manage.py shell < create_user.py
