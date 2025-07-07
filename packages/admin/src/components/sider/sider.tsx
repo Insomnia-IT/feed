@@ -12,7 +12,14 @@ import {
 } from '@refinedev/core';
 import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { LogoutOutlined, SmileOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
+import {
+    LogoutOutlined,
+    QrcodeOutlined,
+    SmileOutlined,
+    TeamOutlined,
+    UnorderedListOutlined,
+    UserOutlined
+} from '@ant-design/icons';
 
 import { useScreen } from 'shared/providers';
 import { AppRoles, UserData } from 'auth';
@@ -64,7 +71,9 @@ const CustomSider: FC = () => {
     const myPath = location.pathname;
 
     useEffect(() => {
-        if (myPath.startsWith('/group-badges')) {
+        if (myPath.startsWith('/dashboard')) {
+            setCurrentPath('dashboard');
+        } else if (myPath.startsWith('/group-badges')) {
             setCurrentPath('gb');
         } else if (myPath.startsWith('/volunteers')) {
             setCurrentPath('vol');
@@ -152,6 +161,13 @@ const CustomSider: FC = () => {
                     </button>
                 ) : (
                     <>
+                        <button
+                            className={`${styles.siderButton} ${currentPath === 'dashboard' ? styles.siderButtonActive : ''}`}
+                            onClick={() => push('/dashboard')}
+                        >
+                            <QrcodeOutlined style={{ fontSize: 20 }} />
+                            <span className={styles.buttonText}>Сканнер</span>
+                        </button>
                         <button
                             className={`${styles.siderButton} ${currentPath === 'vol' ? styles.siderButtonActive : ''}`}
                             onClick={() => push('/volunteers')}
