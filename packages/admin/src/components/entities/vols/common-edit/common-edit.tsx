@@ -140,6 +140,7 @@ export const CommonEdit: React.FC = () => {
                 </section>
                 <section id="section3" className={styles.formSection}>
                     <PersonalInfoSection
+                        isCreationProcess={isCreationProcess}
                         denyBadgeEdit={denyBadgeEdit}
                         handleQRChange={handleQRChange}
                         feedTypeOptions={feedTypeOptions}
