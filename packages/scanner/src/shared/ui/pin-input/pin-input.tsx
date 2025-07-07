@@ -38,8 +38,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
         }
     };
 
-    // определяем индексы активных полей
-    const isAllActive = pin.length === 4;
+    const isAllFilled = pin.length === 4;
     const activeIndex = pin.length < 4 ? pin.length : 3;
 
     return (
@@ -60,21 +59,21 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     type={'number'}
                 />
                 {[0, 1, 2, 3].map((idx) => {
-                    // Если все заполнены — подсвечиваем все, иначе только активный
-                    const isAllFilled = pin.length === 4;
-                    const activeIndex = pin.length < 4 ? pin.length : 3;
+                    const shouldHighlight = focus && activeIndex === idx && !isAllFilled;
                     return (
-                        <Input
-                            key={idx}
-                            tabIndex={-1}
-                            className={css.pinInput}
-                            value={pin?.[idx] || ''}
-                            readOnly
-                            focus={focus && (isAllFilled || activeIndex === idx)}
-                            onFocus={handleFocus}
-                            type='number'
-                            error={!!error}
-                        />
+                        <div key={idx} style={{ position: 'relative' }}>
+                            <Input
+                                tabIndex={-1}
+                                className={css.pinInput}
+                                value={pin?.[idx] || ''}
+                                readOnly
+                                focus={focus && (isAllFilled || activeIndex === idx)}
+                                onFocus={handleFocus}
+                                type='number'
+                                error={!!error}
+                            />
+                            {shouldHighlight && <div className={css.pinCursor} />}
+                        </div>
                     );
                 })}
             </div>
