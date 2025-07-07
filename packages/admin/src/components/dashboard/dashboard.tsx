@@ -1,5 +1,5 @@
 import { Divider } from 'antd';
-import { FC, useCallback, useEffect, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react';
 
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
