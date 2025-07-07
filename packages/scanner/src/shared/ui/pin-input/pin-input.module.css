@@ -35,3 +35,25 @@
 .pinInput.focus {
     border-color: var(--c-blue);
 }
+
+.pinCursor {
+    position: absolute;
+    top: 50%;
+    right: 17px;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 25px;
+    background-color: #007bff;
+    z-index: 100;
+    animation: blink 1.3s infinite;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    
+    51%, 100% {
+        opacity: 0;
+    }
+}
