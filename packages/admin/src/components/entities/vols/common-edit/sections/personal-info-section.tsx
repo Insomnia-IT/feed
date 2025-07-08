@@ -5,6 +5,7 @@ import { Rules } from 'components/form';
 import styles from '../../common.module.css';
 
 export const PersonalInfoSection = ({
+    isCreationProcess,
     denyBadgeEdit,
     denyFeedTypeEdit,
     feedTypeOptions,
@@ -12,6 +13,7 @@ export const PersonalInfoSection = ({
     genderOptions,
     handleQRChange
 }: {
+    isCreationProcess: boolean;
     denyBadgeEdit: boolean;
     denyFeedTypeEdit: boolean;
     feedTypeOptions: { label: string; value: string | number }[];
@@ -59,7 +61,7 @@ export const PersonalInfoSection = ({
             <Divider style={{ marginTop: '0px' }} />
 
             <div className={styles.badgeInfo}>
-                <Form.Item label="QR бейджа" name="qr" rules={Rules.required}>
+                <Form.Item label="QR бейджа" name="qr" rules={isCreationProcess ? Rules.required : undefined}>
                     <Input disabled={denyBadgeEdit} onChange={handleQRChange} />
                 </Form.Item>
                 {/* <Form.Item name="is_badged_leader" valuePropName="checked">
