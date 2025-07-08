@@ -78,6 +78,8 @@ class SaveSyncSerializerMixin(object):
 
         if self.initial_data.get("deleted", False):
             self.delete_instance()
+        elif self.initial_data.get("deleted") == False and hasattr(self.instance, "undelete"):
+            self.instance.undelete()
 
         return self.instance
 
