@@ -22,7 +22,7 @@ import type { AccessRoleEntity } from 'interfaces';
 import styles from './sider.module.css';
 
 const CustomSider: FC = () => {
-    const { breakpoint, isDesktop } = useScreen();
+    const { isDesktop } = useScreen();
 
     const [collapsed, setCollapsed] = useState(false);
     const [user, setUser] = useState<UserData>();
@@ -34,6 +34,8 @@ const CustomSider: FC = () => {
     const { mutate: logout } = useLogout();
     const queryClient = useQueryClient();
     const { menuItems, selectedKey } = useMenu();
+
+    const role = user?.roles[0];
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
         resource: 'access-roles'
@@ -137,10 +139,10 @@ const CustomSider: FC = () => {
         return items;
     }, [accessRoleName, user, menuItems, renderMenuItems, isExistAuthentication, handleLogout]);
 
-    if (breakpoint.xs) {
+    if (role === AppRoles.DIRECTION_HEAD || role === AppRoles.SOVA) {
         return (
             <div className={styles.mobileSider}>
-                {user?.roles[0] === AppRoles.SOVA ? (
+                {role === AppRoles.SOVA ? (
                     <button
                         className={`${styles.siderButton} ${currentPath === 'wash' ? styles.siderButtonActive : ''}`}
                         onClick={() => push('/wash')}
