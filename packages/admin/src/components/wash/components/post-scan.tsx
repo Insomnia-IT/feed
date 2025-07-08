@@ -8,7 +8,7 @@ import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
 
 import styles from './washes-post-scan.module.css';
-import { getDaysOnFieldText } from '../list/utils';
+import { getDaysOnFieldText, getTotalDaysOnFieldText } from '../list/utils';
 
 export interface PostScanProps {
     volunteerQr?: string;
@@ -34,7 +34,9 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
     );
 
-    const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate: dayjs() });
+    const washDate = dayjs();
+    const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate });
+    const totalDaysOnFieldText = getTotalDaysOnFieldText({ volunteer, washDate });
 
     const washesInCurrentArrival =
         targetWashes.filter((washItem) => {
@@ -126,6 +128,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
                     <ModalItem title="Бан" value={volunteer?.is_blocked ? 'Да' : 'Нет'} />
                     <ModalItem title="Службы" value={directions} />
                     <ModalItem title="Дней проведено на поле" value={daysOnFieldText} />
+                    <ModalItem title="Всего дней в заезде" value={totalDaysOnFieldText} />
                     <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
                     <ModalItem title="Дата последней стирки" value={latestWashDateText} />
 
