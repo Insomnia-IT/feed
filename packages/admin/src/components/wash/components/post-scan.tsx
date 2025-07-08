@@ -120,19 +120,25 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             confirmLoading={isUpdateInProgress}
             loading={isLoading}
         >
-            <ModalItem title="Имя, позывной" value={volunteer?.name} />
+            {volunteer && (
+                <>
+                    <ModalItem title="Имя, позывной" value={volunteer?.name} />
+                    <ModalItem title="Бан" value={volunteer?.is_blocked ? 'Да' : 'Нет'} />
+                    <ModalItem title="Службы" value={directions} />
+                    <ModalItem title="Дней проведено на поле" value={daysOnFieldText} />
+                    <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
+                    <ModalItem title="Дата последней стирки" value={latestWashDateText} />
 
-            <ModalItem title="Службы" value={directions} />
-
-            <ModalItem title="Дней на поле всего" value={daysOnFieldText} />
-
-            <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
-
-            <ModalItem title="Дата последней стирки" value={latestWashDateText} />
-
-            <p className={styles.message}>
-                <b>Вы хотите добавить стирку для волонтера?</b>
-            </p>
+                    <p className={styles.message}>
+                        <b>Вы хотите добавить стирку для волонтера?</b>
+                    </p>
+                </>
+            )}
+            {!volunteer && (
+                <p className={styles.message}>
+                    <b>Бейдж не найден</b>
+                </p>
+            )}
         </Modal>
     );
 };
