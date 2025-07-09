@@ -1,25 +1,20 @@
 import { Text } from '~/shared/ui/typography';
 import { Input } from '~/shared/ui/input';
 
-import css from './feed-other-count.module.css';
-
-const fixNumber = (value?: string): number => {
-    if (typeof value === 'undefined') {
-        return 0;
-    }
-
-    return Number(value?.replaceAll(/\D/g, ''));
-};
-
 export const FeedOtherCount: React.FC<{
     maxCount: number;
-    vegansCount: number | string;
-    setVegansCount: (value: number | string) => void;
-    nonVegansCount: number | string;
-    setNonVegansCount: (value: number | string) => void;
+    vegansCount: number;
+    setVegansCount: (value: number) => void;
+    nonVegansCount: number;
+    setNonVegansCount: (value: number) => void;
 }> = ({ maxCount, nonVegansCount, setNonVegansCount, setVegansCount, vegansCount }) => {
-    const maxVeganCount = maxCount - Number(nonVegansCount);
-    const maxNonVeganCount = maxCount - Number(vegansCount);
+    const fixNumber = (value?: string): number => {
+        if (typeof value === 'undefined') {
+            return 0;
+        }
+
+        return Number(value?.replaceAll(/\D/g, ''));
+    };
 
     return (
         <div style={{ width: '100%' }}>
@@ -34,23 +29,13 @@ export const FeedOtherCount: React.FC<{
                 >
                     <Text>Веганы 🥦</Text>
                     <Input
-                        className={css.otherInput}
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
-                        max={maxVeganCount}
                         value={vegansCount}
                         onChange={(event) => {
-                            const textValue = event?.currentTarget?.value;
-
-                            if (textValue === '' || textValue === undefined) {
-                                setVegansCount('');
-
-                                return;
-                            }
-
-                            const value = fixNumber(textValue);
+                            const maxVeganCount = maxCount - nonVegansCount;
+                            const value = fixNumber(event?.currentTarget?.value);
                             const isMaxCountReached = value >= maxVeganCount;
 
                             setVegansCount(isMaxCountReached ? maxVeganCount : value);
@@ -65,24 +50,13 @@ export const FeedOtherCount: React.FC<{
                     <Text>Мясоеды 🥩</Text>
 
                     <Input
-                        className={css.otherInput}
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
-                        max={maxNonVeganCount}
                         value={nonVegansCount}
                         onChange={(event) => {
-                            const textValue = event?.currentTarget?.value;
-
-                            if (textValue === '' || textValue === undefined) {
-                                setNonVegansCount('');
-
-                                return;
-                            }
-
-                            const value = fixNumber(textValue);
-
+                            const maxNonVeganCount = maxCount - vegansCount;
+                            const value = fixNumber(event?.currentTarget?.value);
                             const isMaxCountReached = value >= maxNonVeganCount;
 
                             setNonVegansCount(isMaxCountReached ? maxNonVeganCount : value);
