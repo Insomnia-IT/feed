@@ -138,9 +138,6 @@ export const VolInfoSection: React.FC<IProps> = ({
                 >
                     <Select mode="multiple" disabled={!allowRoleEdit && !!person} {...directionsSelectProps} />
                 </Form.Item>
-                {/* <Form.Item label="Номер бейджа" name="badge_number">
-                    <Input disabled={denyBadgeEdit} />
-                </Form.Item> */}
                 <Form.Item label="Цвет бейджа" name="color_type" className={styles.inputWithEllips}>
                     <Select disabled options={colorTypeOptionsWithBadges} />
                 </Form.Item>
