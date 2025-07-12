@@ -7,8 +7,9 @@ import { useList, useNotification } from '@refinedev/core';
 import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
 
+
 import styles from './washes-post-scan.module.css';
-import { getDaysOnFieldText, getTotalDaysOnFieldText } from '../list/utils';
+import { getTotalDaysOnFieldText, getCurrentArrivalDateText, getLatestWashDateText } from '../list/utils';
 
 export interface PostScanProps {
     volunteerQr?: string;
@@ -35,11 +36,8 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
     );
 
     const washDate = dayjs();
-    const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate });
     const totalDaysOnFieldText = getTotalDaysOnFieldText({ volunteer, washDate });
-    const dateOfCurrentArrivalAgo = currentArrival
-        ? `${dayjs(currentArrival.arrival_date).format('DD MMM YYYY')} (${daysOnFieldText} дн. назад)`
-        : 'Нет активного заезда';
+    const dateOfCurrentArrivalAgo = getCurrentArrivalDateText({ volunteer, washDate });
 
     const washesInCurrentArrival =
         targetWashes.filter((washItem) => {
@@ -54,7 +52,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
 
     const latestWash = washesInCurrentArrival.length ? washesInCurrentArrival[0] : undefined;
 
-    const latestWashDateAgo = latestWash ? `${dayjs(latestWash.created_at).format('DD MMM YYYY')} (${dayjs(washDate).diff(dayjs(latestWash.created_at), 'day')} дн. назад)` : 'не было';
+    const latestWashDateAgo = getLatestWashDateText({ latestWash, washDate });
 
     const directions = volunteer?.directions?.map(({ name }) => (
         <Tag key={name} color={'default'} icon={false} closable={false}>
