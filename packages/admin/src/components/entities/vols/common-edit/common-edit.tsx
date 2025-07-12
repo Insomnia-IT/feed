@@ -90,8 +90,16 @@ export const CommonEdit: React.FC = () => {
     const { options: statusesOptions } = useSelect<StatusEntity>({ resource: 'statuses', optionLabel: 'name' });
 
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const { qrDuplicateVolunteer, setQrDuplicateVolunteer, handleQRChange, clearDuplicateQR } =
+    const { qrDuplicateVolunteer, setQrDuplicateVolunteer, handleDuplicateQRChange, clearDuplicateQR } =
         useQrDuplicationCheck(form);
+
+    const handleQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        handleDuplicateQRChange(e);
+        const { value } = e.target;
+        if (value === '') {
+            form.setFieldValue('qr', null);
+        }
+    };
     const { activeAnchor } = useAnchorNavigation(containerRef);
 
     const handleClear = () => {
