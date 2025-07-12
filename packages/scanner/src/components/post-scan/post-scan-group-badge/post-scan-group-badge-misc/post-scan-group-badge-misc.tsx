@@ -66,13 +66,13 @@ export const GroupBadgeWarningCard: FC<{
     const isPartiallyFed = !!alreadyFedTransactions.length;
 
     const handleFeed = (): void => {
-        if (typeof vegansCount === 'string' || typeof nonVegansCount === 'string') {
-            alert('введено некорректное значение');
-
-            return;
-        }
-
         if (showOtherCount) {
+            if (typeof vegansCount === 'string' || typeof nonVegansCount === 'string') {
+                alert('введено некорректное значение');
+
+                return;
+            }
+
             doFeedAnons({ vegansCount, nonVegansCount });
         } else {
             if (isPartiallyFed) {
