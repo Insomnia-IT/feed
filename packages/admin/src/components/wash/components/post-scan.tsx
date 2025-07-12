@@ -6,7 +6,6 @@ import { useSearchVolunteer } from '../hooks/useSearchVolunteer';
 import { useList, useNotification } from '@refinedev/core';
 import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
-import { isActivatedStatus } from 'shared/lib';
 
 import styles from './washes-post-scan.module.css';
 import { getDaysOnFieldText, getTotalDaysOnFieldText } from '../list/utils';
@@ -38,7 +37,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
     const washDate = dayjs();
     const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate });
     const totalDaysOnFieldText = getTotalDaysOnFieldText({ volunteer, washDate });
-    const dateOfCurrentArrival = currentArrival
+    const dateOfCurrentArrivalAgo = currentArrival
         ? `${dayjs(currentArrival.arrival_date).format('DD MMM YYYY')} (${daysOnFieldText} дн. назад)`
         : 'Нет активного заезда';
 
@@ -56,6 +55,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
     const latestWash = washesInCurrentArrival.length ? washesInCurrentArrival[0] : undefined;
 
     const latestWashDateText = latestWash ? dayjs(latestWash.created_at).format('DD MMM YYYY') : 'не было';
+    const latestWashDateAgo = latestWash ? `${dayjs(latestWash.created_at).format('DD MMM YYYY')} (${dayjs(washDate).diff(dayjs(latestWash.created_at), 'day')} дн. назад)` : 'не было';
 
     const directions = volunteer?.directions?.map(({ name }) => (
         <Tag key={name} color={'default'} icon={false} closable={false}>
@@ -130,12 +130,11 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
                 <>
                     <ModalItem title="Имя, позывной" value={volunteer?.name} />
                     <ModalItem title="Бан" value={volunteer?.is_blocked ? 'Да' : 'Нет'} />
-                    <ModalItem title="Службы" value={directions} />
-                    <ModalItem title="Дней проведено на поле" value={daysOnFieldText} />
-                    <ModalItem title="Всего дней в заезде" value={totalDaysOnFieldText} />
+                    <ModalItem title="Службы" value={directions} />                 
                     <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
-                    <ModalItem title="Дата последней стирки" value={latestWashDateText} />
-                    <ModalItem title="Дата заезда" value={dateOfCurrentArrival} />
+                    <ModalItem title="Дата заезда" value={dateOfCurrentArrivalAgo} />
+                    <ModalItem title="Всего дней в заезде" value={totalDaysOnFieldText} />
+                    <ModalItem title="Последняя стирка" value={latestWashDateAgo} />
 
                     <p className={styles.message}>
                         <b>Вы хотите добавить стирку для волонтера?</b>
