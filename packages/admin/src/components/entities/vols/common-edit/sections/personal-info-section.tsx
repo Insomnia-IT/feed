@@ -60,9 +60,15 @@ export const PersonalInfoSection = ({
 
             <Divider style={{ marginTop: '0px' }} />
 
-            <div className={styles.badgeInfo}>
+            <div className={styles.threeColumnsWrap}>
                 <Form.Item label="QR бейджа" name="qr" rules={isCreationProcess ? Rules.required : undefined}>
                     <Input disabled={denyBadgeEdit} onChange={handleQRChange} />
+                </Form.Item>
+                <Form.Item label="Номер бейджа" name="badge_number">
+                    <Input disabled={denyBadgeEdit} />
+                </Form.Item>
+                <Form.Item label="Партия бейджа" name="printing_batch">
+                    <Input disabled={denyBadgeEdit} />
                 </Form.Item>
                 {/* <Form.Item name="is_badged_leader" valuePropName="checked">
                     <Checkbox>Бейдж у Руководителя</Checkbox>
