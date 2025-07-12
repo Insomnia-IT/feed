@@ -6,6 +6,7 @@ import { useSearchVolunteer } from '../hooks/useSearchVolunteer';
 import { useList, useNotification } from '@refinedev/core';
 import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
+import { isActivatedStatus } from 'shared/lib';
 
 import styles from './washes-post-scan.module.css';
 import { getDaysOnFieldText, getTotalDaysOnFieldText } from '../list/utils';
@@ -37,6 +38,9 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
     const washDate = dayjs();
     const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate });
     const totalDaysOnFieldText = getTotalDaysOnFieldText({ volunteer, washDate });
+    const dateOfCurrentArrival = currentArrival
+        ? `${dayjs(currentArrival.arrival_date).format('DD MMM YYYY')} (${daysOnFieldText} дн. назад)`
+        : 'Нет активного заезда';
 
     const washesInCurrentArrival =
         targetWashes.filter((washItem) => {
@@ -131,6 +135,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
                     <ModalItem title="Всего дней в заезде" value={totalDaysOnFieldText} />
                     <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
                     <ModalItem title="Дата последней стирки" value={latestWashDateText} />
+                    <ModalItem title="Дата заезда" value={dateOfCurrentArrival} />
 
                     <p className={styles.message}>
                         <b>Вы хотите добавить стирку для волонтера?</b>
