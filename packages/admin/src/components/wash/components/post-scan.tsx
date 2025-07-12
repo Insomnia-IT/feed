@@ -54,7 +54,6 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
 
     const latestWash = washesInCurrentArrival.length ? washesInCurrentArrival[0] : undefined;
 
-    const latestWashDateText = latestWash ? dayjs(latestWash.created_at).format('DD MMM YYYY') : 'не было';
     const latestWashDateAgo = latestWash ? `${dayjs(latestWash.created_at).format('DD MMM YYYY')} (${dayjs(washDate).diff(dayjs(latestWash.created_at), 'day')} дн. назад)` : 'не было';
 
     const directions = volunteer?.directions?.map(({ name }) => (
