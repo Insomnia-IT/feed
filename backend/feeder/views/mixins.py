@@ -32,6 +32,13 @@ class VolunteerExtraFilterMixin(ModelViewSet):
         custom_field_value = self.request.query_params.getlist('custom_field_value')
         feeded_date = self.request.query_params.get('feeded_date')
         non_feeded_date = self.request.query_params.get('non_feeded_date')
+        is_qr_empty = self.request.query_params.getlist('is_qr_empty')
+
+        if len(is_qr_empty) == 1:
+            if is_qr_empty[0] == 'false':
+                qs = qs.exclude(qr__isnull=True).exclude(qr__exact='')
+            elif is_qr_empty[0] == 'true':
+                qs = qs.filter(Q(qr__isnull=True) | Q(qr__exact=''))
 
         if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:  
             arrive_qs = Arrival.objects.all()

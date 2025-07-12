@@ -31,7 +31,7 @@ export const useQrDuplicationCheck = (form: FormInstance) => {
         }
     };
 
-    const handleQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDuplicateQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
         if (value) void checkQRDuplication(value);
     };
@@ -39,7 +39,7 @@ export const useQrDuplicationCheck = (form: FormInstance) => {
     return {
         qrDuplicateVolunteer,
         setQrDuplicateVolunteer,
-        handleQRChange,
+        handleDuplicateQRChange,
         clearDuplicateQR
     };
 };

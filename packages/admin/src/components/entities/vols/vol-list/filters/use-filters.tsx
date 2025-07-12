@@ -253,6 +253,7 @@ export const useFilters = ({
         { type: FilterFieldType.Boolean, name: 'is_vegan', title: 'Веган' },
         { type: FilterFieldType.Boolean, name: 'infant', title: '<18 лет' },
         { type: FilterFieldType.String, name: 'comment', title: 'Комментарий' },
+        { type: FilterFieldType.Boolean, name: 'is_qr_empty', title: 'Пустой QR' },
         {
             type: FilterFieldType.Lookup,
             name: 'access_role',
