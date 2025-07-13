@@ -56,6 +56,30 @@ export const getTotalDaysOnFieldText = ({
         : NO_ACTIVE_ARRIVAL;
 };
 
+export const getCurrentArrivalDateText = ({
+    volunteer,
+    washDate
+}: {
+    volunteer?: VolEntity;
+    washDate: Dayjs;
+}): string => {
+    const currentArrival = getCurrentArrival({ volunteer, washDate });
+
+    return currentArrival && isActivatedStatus(currentArrival.status)
+        ? `${dayjs(currentArrival.arrival_date).format('DD MMM YYYY')} (${dayjs(washDate).diff(currentArrival.arrival_date, 'day')} дн. назад)`
+        : NO_ACTIVE_ARRIVAL;
+};
+
+export const getLatestWashDateText = ({
+    latestWash,
+    washDate
+}: {
+    latestWash?: WashEntity;
+    washDate: Dayjs;
+}): string => {
+    return latestWash ? `${dayjs(latestWash.created_at).format('DD MMM YYYY')} (${dayjs(washDate).diff(dayjs(latestWash.created_at), 'day')} дн. назад)` : '-';
+};
+
 export const transformWashesForShow = (wash: WashEntity): WashToShow => {
     const { name: owlName = 'Анонимная Сова' } = wash.actor;
     const { name = 'Аноним', first_name, last_name, directions } = wash.volunteer;
