@@ -110,6 +110,7 @@ const createAndSaveXLSX = async ({
                 'Партия бейджа',
                 'Тип питания',
                 'Веган/мясоед',
+                'Выдан билет',
                 'Комментарий',
                 'Право доступа',
                 ...(customFields?.map((field): string => field.name) ?? [])
@@ -151,6 +152,7 @@ const createAndSaveXLSX = async ({
                     vol.printing_batch,
                     vol.feed_type ? feedTypeNameById[vol.feed_type] : '',
                     vol.is_vegan ? 'веган' : 'мясоед',
+                    vol.is_ticket_received ? 1 : 0,
                     vol.comment ? vol.comment.replace(/<[^>]*>/g, '') : '',
                     vol.access_role ? accessRoleById[vol.access_role] : '',
                     ...(customFields?.map((field) => {
