@@ -1,8 +1,12 @@
-import { Form, Input, Select, Checkbox, Divider } from 'antd';
+import { Form, Input, Select, Checkbox, Divider, Button } from 'antd';
+
+import { QrcodeOutlined } from '@ant-design/icons';
 
 import { Rules } from 'components/form';
 
 import styles from '../../common.module.css';
+import { useState } from 'react';
+import { QRScannerModal } from './qr-scanner-modal';
 
 export const PersonalInfoSection = ({
     isCreationProcess,
@@ -22,6 +26,8 @@ export const PersonalInfoSection = ({
     genderOptions: { label: string; value: string | number }[];
     handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
+    const [openQrModal, setOpenQrModal] = useState(false);
+
     return (
         <>
             <p className={styles.formSection__title}>Личная информация</p>
@@ -62,7 +68,11 @@ export const PersonalInfoSection = ({
 
             <div className={styles.threeColumnsWrap}>
                 <Form.Item label="QR бейджа" name="qr" rules={isCreationProcess ? Rules.required : undefined}>
-                    <Input disabled={denyBadgeEdit} onChange={handleQRChange} />
+                    <Input.Search
+                        onChange={handleQRChange}
+                        onSearch={() => setOpenQrModal(true)}
+                        enterButton={<Button icon={<QrcodeOutlined />}></Button>}
+                    />
                 </Form.Item>
                 <Form.Item label="Номер бейджа" name="badge_number">
                     <Input disabled={denyBadgeEdit} />
@@ -74,6 +84,7 @@ export const PersonalInfoSection = ({
                     <Checkbox>Бейдж у Руководителя</Checkbox>
                 </Form.Item> */}
             </div>
+            <QRScannerModal open={openQrModal} onClose={() => setOpenQrModal(false)} handleQRChange={handleQRChange} />
         </>
     );
 };
