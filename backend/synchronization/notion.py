@@ -49,7 +49,7 @@ class NotionSync:
         if not success or error:
             data.update({
                 "success": success,
-                "error": error[0:MAX_DUMP_SIZE] if error and len(error) > MAX_DUMP_SIZE else error
+                "error": error[0:MAX_DUMP_SIZE] if type(error) == str and len(error) > MAX_DUMP_SIZE else error
             })
         SyncModel.objects.create(**data)
 
