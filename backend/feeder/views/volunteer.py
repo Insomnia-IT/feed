@@ -29,7 +29,7 @@ class VolunteerFilter(django_filters.FilterSet):
     badge_number = django_filters.CharFilter(field_name="badge_number", lookup_expr='icontains')
     comment = django_filters.CharFilter(field_name="comment", lookup_expr='icontains')
     is_blocked = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
-    is_ticket_received = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
+    is_ticket_received = django_filters.BooleanFilter(method='filter_is_ticket_received')
     is_vegan = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
@@ -39,6 +39,11 @@ class VolunteerFilter(django_filters.FilterSet):
     scanner_comment = django_filters.CharFilter(field_name="scanner_comment", lookup_expr='icontains')
     responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
     infant = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
+
+    def filter_is_ticket_received(self, queryset, name, value):
+        if value:
+            return queryset.filter(is_ticket_received=True)
+        return queryset.exclude(is_ticket_received=True)
 
     class Meta:
         model = models.Volunteer
