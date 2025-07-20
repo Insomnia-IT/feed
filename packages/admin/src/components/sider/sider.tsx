@@ -12,7 +12,14 @@ import {
 } from '@refinedev/core';
 import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { LogoutOutlined, SmileOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
+import {
+    LogoutOutlined,
+    QrcodeOutlined,
+    SmileOutlined,
+    TeamOutlined,
+    UnorderedListOutlined,
+    UserOutlined
+} from '@ant-design/icons';
 
 import { useScreen } from 'shared/providers';
 import { AppRoles, UserData } from 'auth';
@@ -24,7 +31,8 @@ import styles from './sider.module.css';
 const MOBILE_PATHS = {
     wash: '/wash',
     vol: '/volunteers',
-    gb: '/group-badges'
+    gb: '/group-badges',
+    dashboard: '/dashboard'
 };
 
 const CustomSider: FC = () => {
@@ -41,6 +49,8 @@ const CustomSider: FC = () => {
     const { menuItems, selectedKey } = useMenu();
     const { push } = useNavigation();
     const location = useLocation();
+
+    const role = user?.roles[0];
 
     const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
         resource: 'access-roles'
@@ -126,34 +136,42 @@ const CustomSider: FC = () => {
     const renderMobileButtons = () => {
         const path = location.pathname;
 
-        return (
-            <div className={styles.mobileSider}>
-                {user?.roles[0] === AppRoles.SOVA ? (
-                    <MobileButton
-                        active={path.startsWith(MOBILE_PATHS.wash)}
-                        icon={<SmileOutlined />}
-                        text="Стиратель"
-                        onClick={() => push(MOBILE_PATHS.wash)}
-                    />
-                ) : (
-                    <>
+        if (role === AppRoles.DIRECTION_HEAD || role === AppRoles.SOVA) {
+            return (
+                <div className={styles.mobileSider}>
+                    {role === AppRoles.SOVA ? (
                         <MobileButton
-                            active={path.startsWith(MOBILE_PATHS.vol)}
-                            icon={<UserOutlined />}
-                            text="Волонтеры"
-                            onClick={() => push(MOBILE_PATHS.vol)}
+                            active={path.startsWith(MOBILE_PATHS.wash)}
+                            icon={<SmileOutlined />}
+                            text="Стиратель"
+                            onClick={() => push(MOBILE_PATHS.wash)}
                         />
-                        <MobileButton
-                            active={path.startsWith(MOBILE_PATHS.gb)}
-                            icon={<TeamOutlined />}
-                            text="Группы"
-                            onClick={() => push(MOBILE_PATHS.gb)}
-                        />
-                    </>
-                )}
-                <MobileButton icon={<LogoutOutlined />} text="Выход" onClick={handleLogout} />
-            </div>
-        );
+                    ) : (
+                        <>
+                            <MobileButton
+                                active={path.startsWith(MOBILE_PATHS.dashboard)}
+                                icon={<QrcodeOutlined />}
+                                text="Сканнер"
+                                onClick={() => push(MOBILE_PATHS.dashboard)}
+                            />
+                            <MobileButton
+                                active={path.startsWith(MOBILE_PATHS.vol)}
+                                icon={<UserOutlined />}
+                                text="Волонтеры"
+                                onClick={() => push(MOBILE_PATHS.vol)}
+                            />
+                            <MobileButton
+                                active={path.startsWith(MOBILE_PATHS.gb)}
+                                icon={<TeamOutlined />}
+                                text="Группы"
+                                onClick={() => push(MOBILE_PATHS.gb)}
+                            />
+                        </>
+                    )}
+                    <MobileButton icon={<LogoutOutlined />} text="Выход" onClick={handleLogout} />
+                </div>
+            );
+        }
     };
 
     if (breakpoint.xs) return renderMobileButtons();
@@ -180,6 +198,8 @@ const CustomSider: FC = () => {
     );
 };
 
+export default CustomSider;
+
 const MobileButton = ({
     icon,
     text,
@@ -196,5 +216,3 @@ const MobileButton = ({
         <span className={styles.buttonText}>{text}</span>
     </button>
 );
-
-export default CustomSider;

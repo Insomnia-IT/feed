@@ -24,29 +24,38 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
-                        params: filters
+                        params: {
+                            ...filters,
+                            is_deleted: 'all'
+                        }
                     })
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
+                        // const qrs = {};
+                        // const ids = {};
+                        // for (const v of results as Array<Volunteer>) {
+                        //     if (ids[v.id]) {
+                        //         console.log(ids[v.id], v);
+                        //     } else {
+                        //         ids[v.id] = v;
+                        //     }
+                        //     if (qrs[v.qr]) {
+                        //         console.log(qrs[v.qr], v);
+                        //     } else {
+                        //         qrs[v.qr] = v;
+                        //     }
+                        // }
 
-                        const qrs = {};
-                        const ids = {};
-                        for (const v of results as Array<Volunteer>) {
-                            if (ids[v.id]) {
-                                console.log(ids[v.id], v);
-                            } else {
-                                ids[v.id] = v;
-                            }
-                            if (qrs[v.qr]) {
-                                console.log(qrs[v.qr], v);
-                            } else {
-                                qrs[v.qr] = v;
-                            }
-                        }
+                        const deletedVolunteerIds = (results as Array<Volunteer>)
+                            .filter(({ deleted_at, qr }) => deleted_at || !qr)
+                            .map(({ id }) => id);
 
-                        const volunteers = (results as Array<Volunteer>).filter(({ qr }) => qr);
+                        const volunteers = (results as Array<Volunteer>).filter(
+                            ({ deleted_at, qr }) => qr && !deleted_at
+                        );
 
                         try {
+                            await db.volunteers.bulkDelete(deletedVolunteerIds);
                             await db.volunteers.bulkPut(volunteers);
                         } catch (e) {
                             console.error(e);

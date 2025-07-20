@@ -216,7 +216,7 @@ export const useFilters = ({
             single: true,
             lookup: () => volunteerRoles?.data ?? []
         },
-        { type: FilterFieldType.Boolean, name: 'is_blocked', title: 'Заблокирован' },
+        { type: FilterFieldType.Boolean, single: true, name: 'is_blocked', title: 'Заблокирован' },
         { type: FilterFieldType.Boolean, name: 'is_deleted', title: 'Удален' },
         {
             type: FilterFieldType.Lookup,
@@ -236,9 +236,11 @@ export const useFilters = ({
             single: true,
             lookup: () => feedTypes?.data ?? []
         }, // feedTypeNameById
-        { type: FilterFieldType.Boolean, name: 'is_vegan', title: 'Веган' },
-        { type: FilterFieldType.Boolean, name: 'infant', title: '<18 лет' },
+        { type: FilterFieldType.Boolean, single: true, name: 'is_vegan', title: 'Веган' },
+        { type: FilterFieldType.Boolean, single: true, name: 'infant', title: '<18 лет' },
+        { type: FilterFieldType.Boolean, single: true, name: 'is_ticket_received', title: 'Выдан билет' },
         { type: FilterFieldType.String, name: 'comment', title: 'Комментарий' },
+        { type: FilterFieldType.Boolean, single: true, name: 'is_qr_empty', title: 'Пустой QR' },
         {
             type: FilterFieldType.Lookup,
             name: 'access_role',

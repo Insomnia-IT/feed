@@ -54,6 +54,7 @@ export interface Volunteer {
     name: string;
     is_blocked: boolean;
     is_vegan: boolean;
+    deleted_at: string | null;
     arrivals: Array<Arrival>;
     feed_type: FeedType;
     infant: boolean;
@@ -79,8 +80,6 @@ export interface GroupBadge {
     qr: string;
 }
 
-const DB_VERSION = 20;
-
 export class MySubClassedDexie extends Dexie {
     groupBadges!: Table<GroupBadge>;
     transactions!: Table<Transaction>;
@@ -88,7 +87,7 @@ export class MySubClassedDexie extends Dexie {
 
     constructor() {
         super('yclins');
-        this.version(DB_VERSION)
+        this.version(20)
             .stores({
                 transactions: '&&ulid, vol_id, ts',
                 volunteers: '&qr, *id, group_badge, *transactions',
@@ -102,6 +101,25 @@ export class MySubClassedDexie extends Dexie {
                     trans.table('groupBadges').clear(),
                     trans.table('volunteers').clear()
                 ]);
+            });
+        this.version(21).stores({
+            transactions: '&&ulid, vol_id, ts',
+            volunteers: null,
+            groupBadges: 'id, &qr'
+        });
+        this.version(22)
+            .stores({
+                transactions: '&&ulid, vol_id, ts',
+                volunteers: 'id, &qr, group_badge',
+                groupBadges: 'id, &qr'
+            })
+            .upgrade(() => {
+                console.log('upgrade');
+                setTimeout(() => {
+                    console.log('reset and reload');
+                    localStorage.removeItem('lastSyncStart');
+                    window.location.reload();
+                }, 1000);
             });
     }
 }

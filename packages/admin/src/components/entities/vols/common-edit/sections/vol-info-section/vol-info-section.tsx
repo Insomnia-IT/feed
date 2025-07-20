@@ -129,16 +129,14 @@ export const VolInfoSection: React.FC<IProps> = ({
                     </div>
                 </div>
             </div>
-            <div className={styles.threeColumnsWrap}>
+            <div className={styles.twoVariableColumnsWrap}>
                 <Form.Item
                     label="Служба / Локация"
                     name="directions"
                     rules={allowEmptyDirections ? undefined : Rules.required}
+                    className={styles.directionsFormItem}
                 >
                     <Select mode="multiple" disabled={!allowRoleEdit && !!person} {...directionsSelectProps} />
-                </Form.Item>
-                <Form.Item label="Номер бейджа" name="badge_number">
-                    <Input disabled={denyBadgeEdit} />
                 </Form.Item>
                 <Form.Item label="Цвет бейджа" name="color_type" className={styles.inputWithEllips}>
                     <Select disabled options={colorTypeOptionsWithBadges} />

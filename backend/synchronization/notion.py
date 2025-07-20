@@ -49,7 +49,7 @@ class NotionSync:
         if not success or error:
             data.update({
                 "success": success,
-                "error": error[0:MAX_DUMP_SIZE] if error and len(error) > MAX_DUMP_SIZE else error
+                "error": error[0:MAX_DUMP_SIZE] if type(error) == str and len(error) > MAX_DUMP_SIZE else error
             })
         SyncModel.objects.create(**data)
 
@@ -106,7 +106,7 @@ class NotionSync:
         if not response.ok:
             print(json.dumps(data, indent=4))
             error = response.text
-            self.save_sync_info(sync_data, success=False, error=error)
+            self.save_sync_info(sync_data, success=False, error=error + os.linesep + dump)
             raise APIException(f"Sync to notion field with error: {json.dumps(data)}, {error}")
 
         self.save_sync_info(sync_data, success=True, error=dump)
