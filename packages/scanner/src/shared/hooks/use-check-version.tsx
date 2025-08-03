@@ -14,7 +14,7 @@ export const useCheckVersion = () => {
                 .then((remote) => {
                     if (remote.trim() && remote !== ver) {
                         alert('Доступно обновление, приложение перезагрузится');
-                        clearCache(); // почистит sw‑кэш и перезагрузит
+                        clearCache();
                     }
                 })
                 .catch(console.error);
