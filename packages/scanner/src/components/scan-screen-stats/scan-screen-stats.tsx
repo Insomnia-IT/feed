@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import type { Transaction } from '~/db';
-import { getTodayTrans, getVolsOnField } from '~/db';
-import { getToday } from '~/shared/lib/date';
-import { useApp } from '~/model/app-provider';
+import type { Transaction } from 'db';
+import { getTodayTrans, getVolsOnField } from 'db';
+import { getToday } from 'shared/lib/date';
+import { useApp } from 'model/app-provider';
 
 import style from './main-screen-stats.module.css';
 

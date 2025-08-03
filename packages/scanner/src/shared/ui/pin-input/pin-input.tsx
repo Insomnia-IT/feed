@@ -1,12 +1,12 @@
 import React, { memo, useRef, useState } from 'react';
 
-import { Input } from '~/shared/ui/input/input';
-import { removeNonDigits } from '~/shared/lib/utils';
+import { Input } from 'shared/ui/input/input';
+import { removeNonDigits } from 'shared/lib/utils';
 
 import css from './pin-input.module.css';
 
 interface PinInputProps {
-    onChange?: (string) => void;
+    onChange?: (value: string) => void;
     error?: string | null;
 }
 
@@ -18,7 +18,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
 
     const mainInput = useRef<null | HTMLInputElement>(null);
 
-    const handleChangeInput = (e) => {
+    const handleChangeInput = (e: any): void => {
         const value = removeNonDigits(e.currentTarget.value).slice(0, 4);
         setPin(value);
         if (onChange) {
@@ -26,13 +26,13 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
         }
     };
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: any): void => {
         if ([37, 38, 39, 40].includes(e.keyCode)) {
             e.preventDefault();
         }
     };
 
-    const handleFocus = (_e): void => {
+    const handleFocus = (): void => {
         if (mainInput.current instanceof HTMLInputElement) {
             mainInput.current.focus();
         }
@@ -69,7 +69,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                                 readOnly
                                 focus={focus && (isAllFilled || activeIndex === idx)}
                                 onFocus={handleFocus}
-                                type='number'
+                                type="number"
                                 error={!!error}
                             />
                             {shouldHighlight && <div className={css.pinCursor} />}

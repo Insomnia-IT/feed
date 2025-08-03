@@ -10,9 +10,9 @@ function formatTimerNumber(number: number) {
     });
 }
 
-function getTimespan(deadline) {
+const getTimespan = (deadline: number | string | Date) => {
     return +new Date(deadline) - Date.now() > 0 ? +new Date(deadline) - Date.now() : 0;
-}
+};
 
 export function useTimer(deadline: number, interval = SECOND) {
     const [timespan, setTimespan] = useState(() => getTimespan(deadline));

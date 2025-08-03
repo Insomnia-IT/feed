@@ -1,9 +1,5 @@
 import { FC, Suspense, memo, lazy, useCallback, useId } from 'react';
-
-const ReactQuill = lazy(async () => {
-    const [{ default: Quill }] = await Promise.all([import('react-quill'), import('react-quill/dist/quill.snow.css')]);
-    return { default: Quill };
-});
+import 'react-quill/dist/quill.snow.css';
 
 interface IProps {
     value?: string;
@@ -12,10 +8,17 @@ interface IProps {
     readOnly?: boolean;
 }
 
+const ReactQuill = lazy(() => import('react-quill'));
+
 export const TextEditor: FC<IProps> = memo(({ value = '', onChange, theme = 'snow', readOnly = false }) => {
     const editorId = useId();
 
-    const handleChange = useCallback((newValue: string) => onChange?.(newValue), [onChange]);
+    const handleChange = useCallback(
+        (newValue: string) => {
+            onChange?.(newValue);
+        },
+        [onChange]
+    );
 
     return (
         <Suspense

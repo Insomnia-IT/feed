@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { StatsTable } from '~/components/stats/stats-table';
-import { useLocalStats } from '~/request-local-db';
-import { getStatsDates } from '~/shared/lib/date';
-import { Selector } from '~/shared/ui/selector/selector';
+import { StatsTable } from 'components/stats/stats-table';
+import { useLocalStats } from 'request-local-db';
+import { getStatsDates } from 'shared/lib/date';
+import { Selector } from 'shared/ui/selector/selector';
 
 import css from './stats.module.css';
 
@@ -25,7 +25,7 @@ export const Stats = React.memo(function Stats() {
 
     const [tableType, setTableType] = useState<TableType>(TableType.default);
 
-    const updateStats = (statsDate): void => {
+    const updateStats = (statsDate: any): void => {
         if (statsDate === StatsDateEnum.today) {
             setTableType(TableType.default);
             void update(today);
@@ -44,7 +44,7 @@ export const Stats = React.memo(function Stats() {
     }, []);
 
     const handleChangeDate = useCallback(
-        (value) => {
+        (value: any) => {
             setSelected(value);
             updateStats(value);
         },

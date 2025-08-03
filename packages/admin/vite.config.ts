@@ -18,7 +18,25 @@ export default defineConfig({
             assets: path.resolve(__dirname, './src/assets')
         }
     },
-    server: {
-        port: 3002
-    }
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id: string) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('recharts')) {
+                            return 'vendor_recharts';
+                        }
+                        if (id.includes('exceljs')) {
+                            return 'vendor_exceljs';
+                        }
+                        if (id.includes('quill')) {
+                            return 'vendor_quill';
+                        }
+                        return 'vendor_base';
+                    }
+                }
+            }
+        }
+    },
+    server: { port: 3002 }
 });

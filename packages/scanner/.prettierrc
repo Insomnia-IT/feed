@@ -2,10 +2,9 @@
     "semi": true,
     "trailingComma": "none",
     "singleQuote": true,
-    "jsxSingleQuote": true,
+    "jsxSingleQuote": false,
     "printWidth": 120,
     "tabWidth": 4,
     "arrowParens": "always",
     "endOfLine": "lf"
 }
-

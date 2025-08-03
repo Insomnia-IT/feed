@@ -1,9 +1,9 @@
 import type { FC } from 'react';
 
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
-import { Button } from '~/shared/ui/button/button';
-import { Text, Title } from '~/shared/ui/typography';
-import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
+import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { Button } from 'shared/ui/button/button';
+import { Text, Title } from 'shared/ui/typography';
+import { VolAndUpdateInfo } from 'components/vol-and-update-info';
 
 import css from './feed-anon-card.module.css';
 
@@ -28,10 +28,10 @@ export const FeedAnonCard: FC<{
                 <Button className={css.feedVegan} onClick={() => doFeed(true)}>
                     🥦 Вегана
                 </Button>
-                <Button variant='secondary' className={css.feedGroup} onClick={() => onClickFeedGroup()}>
+                <Button variant="secondary" className={css.feedGroup} onClick={() => onClickFeedGroup()}>
                     Покормить группу
                 </Button>
-                <Button variant='secondary' className={css.cancel} onClick={close}>
+                <Button variant="secondary" className={css.cancel} onClick={close}>
                     Отмена
                 </Button>
             </div>

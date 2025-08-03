@@ -2,7 +2,7 @@ import React, { useContext, useMemo, useState } from 'react';
 
 interface IViewContext {
     currentView: AppViews;
-    setCurrentView: (any) => void;
+    setCurrentView: (any: any) => void;
 }
 
 const ViewContext = React.createContext<IViewContext | null>(null);
@@ -14,7 +14,9 @@ export enum AppViews {
     SETTINGS = 'settings'
 }
 
-export const ViewProvider = (props) => {
+export const ViewProvider: React.FC<{
+    children: React.ReactNode;
+}> = (props) => {
     const { children } = props;
 
     const [currentView, setCurrentView] = useState<AppViews>(AppViews.MAIN);

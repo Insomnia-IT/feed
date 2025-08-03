@@ -2,12 +2,12 @@ import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { useApp } from '~/model/app-provider/app-provider';
-import { db, dbIncFeed } from '~/db';
-import type { GroupBadge, MealTime, Transaction, Volunteer, TransactionJoined } from '~/db';
-import { ErrorCard } from '~/components/post-scan/post-scan-cards/error-card/error-card';
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
-import { AlreadyFedModal } from '~/components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
+import { useApp } from 'model/app-provider/app-provider';
+import { db, dbIncFeed } from 'db';
+import type { GroupBadge, MealTime, Transaction, Volunteer, TransactionJoined } from 'db';
+import { ErrorCard } from 'components/post-scan/post-scan-cards/error-card/error-card';
+import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { AlreadyFedModal } from 'components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
 import {
     calculateAlreadyFedCount,
@@ -205,7 +205,7 @@ const ResultScreen: React.FC<{
 }> = ({ alreadyFedTransactions, closeFeed, doFeed, doFeedAnons, name, validationGroups, view }) => {
     switch (view) {
         case Views.LOADING:
-            return <ErrorCard close={closeFeed} title='Загрузка...' msg='' />;
+            return <ErrorCard close={closeFeed} title="Загрузка..." msg="" />;
         case Views.ERROR_EMPTY:
             return <ErrorCard close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />;
         case Views.ERROR_VALIDATION:

@@ -1,13 +1,13 @@
 import { type FC, useState } from 'react';
 
-import type { Volunteer } from '~/db';
-import { FeedType } from '~/db';
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
-import { Button } from '~/shared/ui/button/button';
-import { Text, Title } from '~/shared/ui/typography';
-import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
-import { BureauComment } from '~/components/post-scan/post-scan-cards/ui/bureau-comment/bureau-comment';
-import { CardContent } from '~/components/post-scan/post-scan-cards/ui/card-content/card-content';
+import type { Volunteer } from 'db';
+import { FeedType } from 'db';
+import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { Button } from 'shared/ui/button/button';
+import { Text, Title } from 'shared/ui/typography';
+import { VolAndUpdateInfo } from 'components/vol-and-update-info';
+import { BureauComment } from 'components/post-scan/post-scan-cards/ui/bureau-comment/bureau-comment';
+import { CardContent } from 'components/post-scan/post-scan-cards/ui/card-content/card-content';
 
 import css from './feed-card.module.css';
 
@@ -50,18 +50,18 @@ export const FeedCard: FC<{
                     )}
                 </div>
 
-                {vol?.scanner_comment ? <BureauComment text={vol.scanner_comment} variant='red' /> : null}
+                {vol?.scanner_comment ? <BureauComment text={vol.scanner_comment} variant="red" /> : null}
             </CardContent>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>
-                    <Button variant='secondary' onClick={close}>
+                    <Button variant="secondary" onClick={close}>
                         Отмена
                     </Button>
                     <Button onClick={handleFeed} disabled={disabled}>
                         Кормить
                     </Button>
                 </div>
-                <VolAndUpdateInfo textColor='black' />
+                <VolAndUpdateInfo textColor="black" />
             </div>
         </CardContainer>
     );

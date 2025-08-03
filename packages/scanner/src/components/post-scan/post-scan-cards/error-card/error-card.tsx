@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
-import { Button } from '~/shared/ui/button';
-import { Text, Title } from '~/shared/ui/typography';
+import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { Button } from 'shared/ui/button';
+import { Text, Title } from 'shared/ui/typography';
 
 import css from './error-card.module.css';
 
@@ -18,7 +18,7 @@ export const ErrorCard: FC<{
                 <Text className={css.text}>{msg}</Text>
             </div>
             <div className={css.buttonsBlock}>
-                <Button variant='secondary' onClick={close}>
+                <Button variant="secondary" onClick={close}>
                     Закрыть
                 </Button>
             </div>

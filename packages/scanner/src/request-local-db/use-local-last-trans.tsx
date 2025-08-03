@@ -1,15 +1,15 @@
 import { useCallback, useState } from 'react';
 
-import type { TransactionJoined } from '~/db';
-import { db, getLastTrans } from '~/db';
-import type { LocalLastTransHook } from '~/request-local-db/lib';
+import type { TransactionJoined } from 'db';
+import { db, getLastTrans } from 'db';
+import { LocalLastTransHook } from './lib';
 
 export const useLocalLastTrans = (): LocalLastTransHook => {
     const [error, setError] = useState<any>(null);
     const [transactions, setTransactions] = useState<Array<TransactionJoined>>([]);
     const [progress, setProgress] = useState<boolean>(false);
 
-    const update = useCallback(async (limit) => {
+    const update = useCallback(async (limit: any) => {
         setProgress(true);
         try {
             const txs = await getLastTrans(0, limit);

@@ -2,5 +2,19 @@
     "packages": ["packages/*"],
     "version": "independent",
     "npmClient": "npm",
-    "useNx": true
+    "useNx": true,
+    "nx": {
+        "extends": "nx/presets/npm.json",
+        "tasksRunnerOptions": {
+            "default": {
+                "runner": "nx/tasks-runners/default",
+                "options": {
+                    "cacheableOperations": ["build"],
+                    "parallel": false,
+                    "outputStyle": "static",
+                    "continuousDependencies": {}
+                }
+            }
+        }
+    }
 }

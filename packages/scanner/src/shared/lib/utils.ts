@@ -1,8 +1,7 @@
-import { MealTime } from '~/db';
+import { MealTime } from 'db';
 
 export const rndInt = (min: number, max: number): number => min + Math.round(Math.random() * (max - min));
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 export const nop: () => void = () => {};
 
 export const sliceIntoChunks = <T>(arr: Array<T>, chunkSize: number): Array<Array<T>> => {

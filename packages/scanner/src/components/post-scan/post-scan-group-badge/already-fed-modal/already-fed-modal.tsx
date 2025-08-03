@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { Button } from '~/shared/ui/button';
-import { Modal } from '~/shared/ui/modal';
-import { Text } from '~/shared/ui/typography';
+import { Button } from 'shared/ui/button';
+import { Modal } from 'shared/ui/modal';
+import { Text } from 'shared/ui/typography';
 
 import style from './already-fed-modal.module.css';
 

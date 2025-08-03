@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import React from 'react';
 
-import type { TextColor } from '~/shared/ui/typography/lib';
+import type { TextColor } from 'shared/ui/typography/lib';
 
 import css from './text.module.css';
 

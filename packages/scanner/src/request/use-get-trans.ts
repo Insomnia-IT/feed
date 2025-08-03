@@ -2,10 +2,10 @@ import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-import type { ApiHook } from '~/request/lib';
-import type { ServerTransaction } from '~/db';
-import { db } from '~/db';
-import { useApp } from '~/model/app-provider';
+import type { ApiHook } from 'request/lib';
+import type { ServerTransaction } from 'db';
+import { db } from 'db';
+import { useApp } from 'model/app-provider';
 
 export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const { kitchenId } = useApp();

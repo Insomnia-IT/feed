@@ -3,7 +3,7 @@ import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
 
-import { getToday } from '~/shared/lib/date';
+import { getToday } from 'shared/lib/date';
 
 export interface Transaction {
     ulid: string;

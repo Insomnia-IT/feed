@@ -1,11 +1,10 @@
-import React from 'react';
 import cn from 'classnames';
 
-import { Text } from '~/shared/ui/typography';
-import { TableType } from '~/components/stats';
-import type { FeedStats } from '~/request-local-db';
-import { MEAL_TIME } from '~/request-local-db';
-import { HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table';
+import { Text } from 'shared/ui/typography';
+import { TableType } from 'components/stats';
+import { FeedStats } from 'request-local-db';
+import { MEAL_TIME } from 'request-local-db';
+import { HeadCell, Row, Table, TBody, THead } from 'shared/ui/table';
 
 import css from './stats-table.module.css';
 
@@ -39,7 +38,7 @@ export const StatsTable = ({ progress, stats, tableType }: StatsTableProps) => {
             }
             return (
                 <Row key={MT} className={css.contentRow}>
-                    <HeadCell scope='row'>{formattedMealTime}</HeadCell>
+                    <HeadCell scope="row">{formattedMealTime}</HeadCell>
                     <HeadCell>
                         <Text>{feedCount[MT].total || '-'}</Text>
                         <Text>
@@ -65,8 +64,8 @@ export const StatsTable = ({ progress, stats, tableType }: StatsTableProps) => {
                 <THead>
                     <Row>
                         <HeadCell></HeadCell>
-                        <HeadCell scope='col'>{tableType === TableType.default ? 'Факт' : 'Прогноз'}</HeadCell>
-                        <HeadCell scope='col'>На поле</HeadCell>
+                        <HeadCell scope="col">{tableType === TableType.default ? 'Факт' : 'Прогноз'}</HeadCell>
+                        <HeadCell scope="col">На поле</HeadCell>
                     </Row>
                 </THead>
                 <TBody>

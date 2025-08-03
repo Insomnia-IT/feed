@@ -1,6 +1,6 @@
-import { Button } from '~/shared/ui/button';
-import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
-import { AppViews, useView } from '~/model/view-provider';
+import { Button } from 'shared/ui/button';
+import { VolAndUpdateInfo } from 'components/vol-and-update-info';
+import { AppViews, useView } from 'model/view-provider';
 
 import css from './stats-block.module.css';
 
@@ -9,7 +9,7 @@ export const StatsBlock = () => {
     return (
         <div className={css.statsBlock}>
             <Button
-                variant='secondary'
+                variant="secondary"
                 className={css.statsButton}
                 onClick={() => {
                     setCurrentView(AppViews.STATS);

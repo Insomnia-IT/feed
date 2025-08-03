@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 
-import type { ApiHook } from '~/request/lib';
-import type { GroupBadge } from '~/db';
-import { db } from '~/db';
+import type { ApiHook } from 'request/lib';
+import type { GroupBadge } from 'db';
+import { db } from 'db';
 
 export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<any>(null);
@@ -11,7 +11,7 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
     const [fetching, setFetching] = useState<any>(false);
 
     const send = useCallback(
-        (filters) => {
+        (filters: any) => {
             if (fetching) {
                 return Promise.resolve(false);
             }

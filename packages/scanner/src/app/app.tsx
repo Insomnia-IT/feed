@@ -1,19 +1,21 @@
-import '../wdyr';
-
-import type { FC, ReactElement } from 'react';
+import { type FC } from 'react';
 import type { FallbackProps } from 'react-error-boundary';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import '~/shared/lib/date';
+import 'shared/lib/date';
 
-import { AppProvider } from '~/model/app-provider/app-provider';
-import { useCheckVersion } from '~/shared/hooks/use-check-version';
-import { Screens } from '~/app/screens';
-import { ViewProvider } from '~/model/view-provider';
-import { ScanProvider } from '~/model/scan-provider';
+import { AppProvider } from 'model/app-provider/app-provider';
+import { useCheckVersion } from 'shared/hooks/use-check-version';
+import { ViewProvider } from 'model/view-provider';
+import { ScanProvider } from 'model/scan-provider';
+import { Screens } from './screens';
 
-const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => (
-    <div role='alert'>
+import 'shared/common/colors.css';
+import 'shared/common/media.css';
+import 'shared/common/vars.css';
+
+const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (
+    <div role="alert">
         <p>я сломался</p>
         <pre>{error.message}</pre>
         <button onClick={resetErrorBoundary}>ПЕРЕЗАГРУЗИТЬ</button>
@@ -23,8 +25,7 @@ const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => (
 const App: FC = () => {
     useCheckVersion();
     return (
-        // @ts-ignore
-        <ErrorBoundary fallback={ErrorFallback as ReactElement}>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
             <AppProvider>
                 <ViewProvider>
                     <ScanProvider>
@@ -36,5 +37,4 @@ const App: FC = () => {
     );
 };
 
-// eslint-disable-next-line import/no-default-export
 export default App;

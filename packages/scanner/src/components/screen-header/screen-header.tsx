@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { ChevronLeft } from '~/shared/ui/icons/chevron-left';
-import { Title } from '~/shared/ui/typography';
+import { ChevronLeft } from 'shared/ui/icons/chevron-left';
+import { Title } from 'shared/ui/typography';
 
 import css from './screen-header.module.css';
 

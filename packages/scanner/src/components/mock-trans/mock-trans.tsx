@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 
-import { createMockData } from '~/shared/lib/mock';
-import { db } from '~/db';
-import { useApp } from '~/model/app-provider';
+import { createMockData } from 'shared/lib/mock';
+import { db } from 'db';
+import { useApp } from 'model/app-provider';
 
 import style from './mock-trans.module.css';
 
