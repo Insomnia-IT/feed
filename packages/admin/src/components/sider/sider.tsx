@@ -136,42 +136,40 @@ const CustomSider: FC = () => {
     const renderMobileButtons = () => {
         const path = location.pathname;
 
-        if (role === AppRoles.DIRECTION_HEAD || role === AppRoles.SOVA) {
-            return (
-                <div className={styles.mobileSider}>
-                    {role === AppRoles.SOVA ? (
+        return (
+            <div className={styles.mobileSider}>
+                {role === AppRoles.SOVA ? (
+                    <MobileButton
+                        active={path.startsWith(MOBILE_PATHS.wash)}
+                        icon={<SmileOutlined />}
+                        text="Стиратель"
+                        onClick={() => push(MOBILE_PATHS.wash)}
+                    />
+                ) : (
+                    <>
                         <MobileButton
-                            active={path.startsWith(MOBILE_PATHS.wash)}
-                            icon={<SmileOutlined />}
-                            text="Стиратель"
-                            onClick={() => push(MOBILE_PATHS.wash)}
+                            active={path.startsWith(MOBILE_PATHS.dashboard)}
+                            icon={<QrcodeOutlined />}
+                            text="Сканнер"
+                            onClick={() => push(MOBILE_PATHS.dashboard)}
                         />
-                    ) : (
-                        <>
-                            <MobileButton
-                                active={path.startsWith(MOBILE_PATHS.dashboard)}
-                                icon={<QrcodeOutlined />}
-                                text="Сканнер"
-                                onClick={() => push(MOBILE_PATHS.dashboard)}
-                            />
-                            <MobileButton
-                                active={path.startsWith(MOBILE_PATHS.vol)}
-                                icon={<UserOutlined />}
-                                text="Волонтеры"
-                                onClick={() => push(MOBILE_PATHS.vol)}
-                            />
-                            <MobileButton
-                                active={path.startsWith(MOBILE_PATHS.gb)}
-                                icon={<TeamOutlined />}
-                                text="Группы"
-                                onClick={() => push(MOBILE_PATHS.gb)}
-                            />
-                        </>
-                    )}
-                    <MobileButton icon={<LogoutOutlined />} text="Выход" onClick={handleLogout} />
-                </div>
-            );
-        }
+                        <MobileButton
+                            active={path.startsWith(MOBILE_PATHS.vol)}
+                            icon={<UserOutlined />}
+                            text="Волонтеры"
+                            onClick={() => push(MOBILE_PATHS.vol)}
+                        />
+                        <MobileButton
+                            active={path.startsWith(MOBILE_PATHS.gb)}
+                            icon={<TeamOutlined />}
+                            text="Группы"
+                            onClick={() => push(MOBILE_PATHS.gb)}
+                        />
+                    </>
+                )}
+                <MobileButton icon={<LogoutOutlined />} text="Выход" onClick={handleLogout} />
+            </div>
+        );
     };
 
     if (breakpoint.xs) return renderMobileButtons();
