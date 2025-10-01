@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "license": "MIT",
+    "type": "module",
     "scripts": {
         "bootstrap": "npm ci",
         "build": "lerna run build --stream --scope @feed/admin --scope @feed/scanner",
@@ -30,10 +31,10 @@
         "cross-env": "^10.0.0",
         "husky": "^9.1.7",
         "leasot": "^14.4.0",
-        "lerna": "^8.2.3",
+        "lerna": "^9.0.0",
         "lint-staged": "^16.1.5",
         "npm-run-all": "^4.1.5",
-        "nx": "21.4.0",
+        "nx": "21.6.2",
         "rimraf": "^6.0.1",
         "stylelint": "^16.23.1",
         "stylelint-config-standard": "^39.0.0"
