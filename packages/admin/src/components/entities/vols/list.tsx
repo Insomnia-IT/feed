@@ -93,6 +93,7 @@ export const VolList: FC = () => {
             ),
             current: page,
             pageSize,
+            showSizeChanger: true,
             onChange: (newPage, newSize) => {
                 setPage(newPage);
                 setPageSize(newSize);
