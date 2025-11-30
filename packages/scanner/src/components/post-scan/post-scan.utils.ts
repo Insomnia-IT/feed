@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
-import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from '~/db';
-import { getMealTimeText } from '~/shared/lib/utils';
+import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from 'db';
+import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from 'db';
+import { getMealTimeText } from 'shared/lib/utils';
 
 const isVolExpired = (vol: Volunteer): boolean => {
     return vol.arrivals.every(

@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import cn from 'classnames';
 
-import type { Transaction } from '~/db';
-import { getTodayTrans, getVolsOnField } from '~/db';
-import { getToday } from '~/shared/lib/date';
-import { useApp } from '~/model/app-provider';
+import type { Transaction } from 'db';
+import { getTodayTrans, getVolsOnField } from 'db';
+import { getToday } from 'shared/lib/date';
+import { useApp } from 'model/app-provider';
 
 import css from './vol-and-update-info.module.css';
 
-const formatDate = (value) => {
+const formatDate = (value: number) => {
     return new Date(value).toLocaleString('ru', { day: 'numeric', month: 'long', hour: 'numeric', minute: 'numeric' });
 };
 

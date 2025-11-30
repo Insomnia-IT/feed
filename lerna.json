@@ -2,5 +2,19 @@
     "packages": ["packages/*"],
     "version": "independent",
     "npmClient": "npm",
-    "useNx": true
+    "nx": {
+        "extends": "nx/presets/npm.json",
+        "tasksRunnerOptions": {
+            "default": {
+                "runner": "nx/tasks-runners/default",
+                "options": {
+                    "cacheableOperations": ["build"],
+                    "parallel": false,
+                    "outputStyle": "static",
+                    "continuousDependencies": {}
+                }
+            }
+        }
+    },
+    "$schema": "node_modules/lerna/schemas/lerna-schema.json"
 }

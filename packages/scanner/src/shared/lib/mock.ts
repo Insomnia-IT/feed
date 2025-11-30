@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { ulid } from 'ulid';
 
-import type { MealTime, Transaction } from '~/db';
+import type { MealTime, Transaction } from 'db';
 
 import { rndInt } from './utils';
 

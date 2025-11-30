@@ -20,7 +20,7 @@ export const ScanSimulator: React.FC<{
         <div className={css.scanSimulatorBlock}>
             {withSelection && (
                 <select defaultValue={''} onChange={(e) => setInput(e.target.value)}>
-                    <option hidden value=''>
+                    <option hidden value="">
                         выбери qr...
                     </option>
                     {options.map(({ label, value }, index) => (

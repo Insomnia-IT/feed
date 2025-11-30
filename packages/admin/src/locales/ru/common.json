@@ -1,0 +1,185 @@
+{
+    "pages": {
+        "login": {
+            "signin": "Войти",
+            "signup": "Зарегистрироваться",
+            "username": "Логин",
+            "password": "Пароль",
+            "remember": "Запомнить меня",
+            "forgotPassword": "Забыли пароль?",
+            "title": "Войти в аккаунт",
+            "noAccount": "Нет аккаунта?"
+        },
+        "error": {
+            "info": "You may have forgotten to add the {{action}} component to {{resource}} resource.",
+            "404": "Опс, тут ничего нет!",
+            "resource404": "Are you sure you have created the {{resource}} resource.",
+            "backHome": "Вернуться"
+        }
+    },
+    "actions": {
+        "list": "Список",
+        "create": "Создать",
+        "edit": "Информация о волонтере",
+        "show": "Показать"
+    },
+    "buttons": {
+        "create": "Создать",
+        "save": "Сохранить",
+        "logout": "Выход",
+        "delete": "Удалить",
+        "edit": "Редактировать",
+        "cancel": "Отмена",
+        "confirm": "Уверены?",
+        "filter": "Фильтр",
+        "clear": "Очистить",
+        "refresh": "Обновить",
+        "show": "Показать",
+        "undo": "Вернуть",
+        "import": "Импорт",
+        "clone": "Копия",
+        "notAccessTitle": "Нет доступа"
+    },
+    "warnWhenUnsavedChanges": "Внесенные данные будут утеряны. Вы уверены, что хотите выйти без сохранения?",
+    "notifications": {
+        "success": "Успешно",
+        "error": "Ошибка (status code: {{statusCode}})",
+        "undoable": "{{seconds}} секунд на отмену",
+        "createSuccess": "Создано {{resource}}",
+        "createError": "Ошибка создания {{resource}} (status code: {{statusCode}})",
+        "deleteSuccess": "Successfully deleted {{resource}}",
+        "deleteError": "Ошибка удаления {{resource}} (status code: {{statusCode}})",
+        "editSuccess": "Отредактировано {{resource}}",
+        "editError": "Ошибка редактирования {{resource}} (status code: {{statusCode}})",
+        "importProgress": "Импорт: {{processed}}/{{total}}"
+    },
+    "loading": "Загрузка",
+    "tags": {
+        "clone": "Копия"
+    },
+    "dashboard": {
+        "dashboard": "Регистрация",
+        "titles": {
+            "list": "Регистрация"
+        }
+    },
+    "sync": {
+        "sync": "Синхронизация",
+        "titles": {
+            "list": "Синхронизация"
+        }
+    },
+    "directions": {
+        "directions": "Службы/Локации",
+        "fields": {
+            "id": "Id",
+            "title": "Title",
+            "category": "Category",
+            "status": {
+                "title": "Status",
+                "published": "Published",
+                "draft": "Draft",
+                "rejected": "Rejected"
+            },
+            "content": "Content",
+            "createdAt": "Created At"
+        },
+        "titles": {
+            "create": "Создать службу / локацию",
+            "edit": "Редактировать службу / локацию",
+            "list": "Список служб / локаций",
+            "show": "Показать службу / локацию"
+        }
+    },
+    "stats": {
+        "stats": "Статистика",
+        "list": "Статистика"
+    },
+    "group-badges": {
+        "group-badges": "Групповые бейджи",
+        "fields": {
+            "id": "Id",
+            "title": "Title",
+            "category": "Category",
+            "status": {
+                "title": "Status",
+                "published": "Published",
+                "draft": "Draft",
+                "rejected": "Rejected"
+            },
+            "content": "Content",
+            "createdAt": "Created At"
+        },
+        "titles": {
+            "create": "Создать групповой бейдж",
+            "edit": "Редактирование бейджа",
+            "list": "Список групповых бейджей",
+            "show": "Показать групповой бейдж"
+        }
+    },
+
+    "volunteers": {
+        "volunteers": "Волонтеры",
+        "fields": {
+            "id": "Id",
+            "name": "Имя",
+            "category": "Category",
+            "status": {
+                "title": "Status",
+                "published": "Published",
+                "draft": "Draft",
+                "rejected": "Rejected"
+            },
+            "content": "Content",
+            "createdAt": "Created At"
+        },
+        "titles": {
+            "create": "Создать",
+            "edit": "Информация о волонтере",
+            "list": "Волонтеры",
+            "show": "Показать"
+        }
+    },
+    "volunteer-custom-fields": {
+        "volunteer-custom-fields": "Кастомные поля",
+        "fields": {
+            "id": "Id",
+            "name": "Название"
+        },
+        "titles": {
+            "create": "Создать кастомное поле",
+            "edit": "Редактировать кастомное поле",
+            "list": "Список кастомных полей",
+            "show": "Показать кастомное поле"
+        }
+    },
+    "feed-transaction": {
+        "feed-transaction": "История питания",
+        "fields": {
+            "id": "Id",
+            "dtime": "Время"
+        },
+        "titles": {
+            "create": "Создать",
+            "edit": "Редактировать",
+            "list": "История питания",
+            "show": "Показать"
+        }
+    },
+    "scanner-page": {
+        "scanner-page": "Кормитель",
+        "titles": {
+            "list": "Кормитель"
+        }
+    },
+    "wash": {
+        "wash": "Стирка",
+        "titles": {
+            "create": "Постирать",
+            "list": "История стирок"
+        }
+    },
+    "table": {
+        "actions": "Действия"
+    }
+}

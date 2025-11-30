@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import cn from 'classnames';
 
-import { Text } from '~/shared/ui/typography';
+import { Text } from 'shared/ui/typography';
 
 import css from './switcher.module.css';
 
@@ -19,7 +19,7 @@ export const Switcher = memo(function Switcher(props: InputProps) {
                 name={name}
                 checked={checked}
                 onChange={onChange}
-                type='checkbox'
+                type="checkbox"
                 className={`${css.checkbox}`}
                 {...restProps}
             />

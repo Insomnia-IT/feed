@@ -15,7 +15,7 @@ export const Selector = ({ className = '', onChangeSelected, selectorList, value
     useEffect(() => {
         setSelectedItem(value);
     }, [value]);
-    const handleClickItem = (itemId) => {
+    const handleClickItem = (itemId: string) => {
         setSelectedItem(itemId);
         onChangeSelected(itemId);
     };

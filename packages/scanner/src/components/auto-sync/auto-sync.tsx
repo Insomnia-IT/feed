@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { useApp } from '~/model/app-provider';
-import { Text } from '~/shared/ui/typography';
-import { useTimer } from '~/shared/hooks/useTimer';
+import { useApp } from 'model/app-provider';
+import { Text } from 'shared/ui/typography';
+import { useTimer } from 'shared/hooks/useTimer';
 
 import css from './auto-sync.module.css';
 

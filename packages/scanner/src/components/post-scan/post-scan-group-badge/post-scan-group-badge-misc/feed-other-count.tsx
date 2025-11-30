@@ -1,5 +1,5 @@
-import { Text } from '~/shared/ui/typography';
-import { Input } from '~/shared/ui/input';
+import { Text } from 'shared/ui/typography';
+import { Input } from 'shared/ui/input';
 
 import css from './feed-other-count.module.css';
 
@@ -38,7 +38,7 @@ export const FeedOtherCount: React.FC<{
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
+                        type="number"
                         max={maxVeganCount}
                         value={vegansCount}
                         onChange={(event) => {
@@ -69,7 +69,7 @@ export const FeedOtherCount: React.FC<{
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
+                        type="number"
                         max={maxNonVeganCount}
                         value={nonVegansCount}
                         onChange={(event) => {

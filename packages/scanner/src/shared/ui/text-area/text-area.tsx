@@ -21,7 +21,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         useEffect(() => {
             const textArea = textAreaRef.current;
 
-            const handleInput = (e) => {
+            const handleInput = (e: any) => {
                 e.currentTarget.style.height = '0';
                 const scrollHeight = e.currentTarget.scrollHeight;
 

@@ -29,6 +29,7 @@
     background-color: transparent;
     color: #8d959e;
     font-weight: 400;
+    font-size: 20px;
 }
 
 .buttonText {
@@ -39,5 +40,4 @@
 
 .siderButtonActive {
     color: #1890ff;
-    font-weight: 600;
 }

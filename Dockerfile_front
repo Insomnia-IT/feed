@@ -52,7 +52,6 @@ COPY ./packages /app/packages
 
 ARG NEW_API_URL
 ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
-ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/packages/scanner/src/pwa-ver.txt
 
@@ -72,7 +71,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 ARG NEW_API_URL
 ENV NEW_API_URL_ENV=${NEW_API_URL}
-ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 ARG ADMIN_BASE_PATH
 ENV ADMIN_BASE_PATH_ENV=${ADMIN_BASE_PATH}
 

@@ -28,7 +28,7 @@ export const Modal = (props: ModalProps): React.ReactElement => {
         setIsOpen(false);
     };
 
-    const handlePopupClick = (e): void => {
+    const handlePopupClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         e.stopPropagation();
     };
 
