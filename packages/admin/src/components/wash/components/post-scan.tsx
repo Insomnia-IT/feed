@@ -7,7 +7,6 @@ import { useList, useNotification } from '@refinedev/core';
 import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
 
-
 import styles from './washes-post-scan.module.css';
 import { getTotalDaysOnFieldText, getCurrentArrivalDateText, getLatestWashDateText } from '../list/utils';
 
@@ -127,7 +126,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
                 <>
                     <ModalItem title="Имя, позывной" value={volunteer?.name} />
                     <ModalItem title="Бан" value={volunteer?.is_blocked ? 'Да' : 'Нет'} />
-                    <ModalItem title="Службы" value={directions} />                 
+                    <ModalItem title="Службы" value={directions} />
                     <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
                     <ModalItem title="Дата заезда" value={dateOfCurrentArrivalAgo} />
                     <ModalItem title="Всего дней в заезде" value={totalDaysOnFieldText} />

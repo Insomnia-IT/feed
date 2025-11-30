@@ -1,7 +1,6 @@
 import { Button } from 'antd';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { FC, useState } from 'react';
-import ExcelJS from 'exceljs';
 import dayjs from 'dayjs';
 
 import type { ArrivalEntity, CustomFieldEntity } from 'interfaces';
@@ -80,6 +79,8 @@ const createAndSaveXLSX = async ({
     setIsExporting(true);
 
     try {
+        const ExcelJS = await import('exceljs');
+
         const { data: allPagesData } = await dataProvider.getList({
             resource: `volunteers/${filterQueryParams}`
         });
