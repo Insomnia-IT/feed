@@ -5,8 +5,8 @@ import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
 import { useNavigate } from 'react-router-dom';
 
-import { QrScannerComponent } from 'components/qr-scanner-component';
-import { useScannerController } from 'components/qr-scanner-component/hooks/useScannerController';
+import { QrScannerComponent } from 'shared/components/qr-scanner-component';
+import { useScannerController } from 'shared/components/qr-scanner-component/hooks/useScannerController';
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 import type { VolEntity } from 'interfaces';
 

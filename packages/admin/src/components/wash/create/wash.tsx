@@ -3,9 +3,9 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { SpinLoading } from 'antd-mobile';
 
 import { useScreen } from 'shared/providers';
-import { QrScannerComponent } from 'components/qr-scanner-component';
+import { QrScannerComponent } from 'shared/components/qr-scanner-component';
 import { PostScan } from '../components/post-scan';
-import { useScannerController } from 'components/qr-scanner-component/hooks/useScannerController';
+import { useScannerController } from 'shared/components/qr-scanner-component/hooks/useScannerController';
 
 const SPINNER_TIMEOUT = 3000;
 

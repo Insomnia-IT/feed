@@ -1,7 +1,7 @@
 import { Form, Modal } from 'antd';
 
 import { useState } from 'react';
-import { QrScannerComponent, useScannerController } from 'components/qr-scanner-component';
+import { QrScannerComponent, useScannerController } from '../components/qr-scanner-component';
 
 export const QRScannerModal = ({
     open,
@@ -10,7 +10,7 @@ export const QRScannerModal = ({
 }: {
     open: boolean;
     onClose: () => void;
-    handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleQRChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
     const [isModalOpened, setIsModalOpened] = useState(false);
 
@@ -26,7 +26,7 @@ export const QRScannerModal = ({
             if (qr) {
                 form.setFieldValue('qr', qr.replace(/[^A-Za-z0-9]/g, ''));
                 closeModal();
-                handleQRChange({ target: { value: qr } } as React.ChangeEvent<HTMLInputElement>);
+                handleQRChange?.({ target: { value: qr } } as React.ChangeEvent<HTMLInputElement>);
             }
         }
     });
