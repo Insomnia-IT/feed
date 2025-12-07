@@ -9,6 +9,29 @@ import { formDateFormat } from 'shared/lib';
 
 import styles from '../../common.module.css';
 
+const isInsideOtherArrival = (
+    otherArrival: {
+        arrival_date?: string;
+        departure_date?: string;
+    },
+    currentArrival: {
+        arrival_date?: string;
+        departure_date?: string;
+    }
+) => {
+    const arrival = dayjs(otherArrival.arrival_date);
+    const departure = dayjs(otherArrival.departure_date);
+
+    const targetStart = dayjs(currentArrival.arrival_date);
+    const targetEnd = dayjs(currentArrival.departure_date);
+
+    return (
+        (targetStart.isBefore(departure) && targetStart.isAfter(arrival)) ||
+        (targetEnd.isAfter(arrival) && targetEnd.isBefore(departure)) ||
+        (targetStart.isBefore(arrival) && targetEnd.isAfter(departure))
+    );
+};
+
 export const ArrivalsSection = ({
     statusesOptions,
     transportsOptions
@@ -32,14 +55,26 @@ export const ArrivalsSection = ({
             },
             {
                 validator: async (_: unknown, value: string | number | Date | dayjs.Dayjs | null | undefined) => {
-                    const arrivalDates = form
-                        .getFieldValue('arrivals')
+                    const arrivals = form.getFieldValue('arrivals') as {
+                        arrival_date?: string;
+                        departure_date?: string;
+                    }[];
+
+                    const otherArrivals = arrivals.filter((_, ind) => ind !== index);
+                    const targetArrival = arrivals[index];
+
+                    const arrivalDates = arrivals
                         .slice()
-                        .map((a: { arrival_date: dayjs.Dayjs }) => dayjs(a.arrival_date).format('YYYY-MM-DD'));
+                        .map((arrival) => dayjs(arrival.arrival_date).format('YYYY-MM-DD'));
+
                     arrivalDates.splice(index, 1);
 
                     if (arrivalDates.includes(dayjs(value).format('YYYY-MM-DD'))) {
                         return Promise.reject(new Error('Дата заезда не должна повторяться'));
+                    }
+
+                    if (otherArrivals.some((otherArrival) => isInsideOtherArrival(otherArrival, targetArrival))) {
+                        return Promise.reject(new Error('Даты заездов не должны пересекаться'));
                     }
 
                     return Promise.resolve();
@@ -57,9 +92,23 @@ export const ArrivalsSection = ({
             {
                 validator: async (_: unknown, value: string | number | Date) => {
                     const arrivalDate = form.getFieldValue(['arrivals', index, 'arrival_date']);
+
+                    const arrivals = form.getFieldValue('arrivals') as {
+                        arrival_date?: string;
+                        departure_date?: string;
+                    }[];
+
+                    const otherArrivals = arrivals.filter((_, ind) => ind !== index);
+                    const targetArrival = arrivals[index];
+
+                    if (otherArrivals.some((otherArrival) => isInsideOtherArrival(otherArrival, targetArrival))) {
+                        return Promise.reject(new Error('Даты заездов не должны пересекаться'));
+                    }
+
                     if (dayjs(value) >= dayjs(arrivalDate)) {
                         return Promise.resolve();
                     }
+
                     return Promise.reject(new Error('Дата заезда не может быть раньше Даты отъезда'));
                 }
             }
