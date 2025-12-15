@@ -1,13 +1,12 @@
-import { Button, Col, Input, Row, Checkbox, DatePicker, Radio } from 'antd';
+import { Button, Checkbox, Col, DatePicker, Radio, Row } from 'antd';
 import dayjs from 'dayjs';
-import { useState, FC } from 'react';
+import { FC, useState } from 'react';
 
 import styles from 'components/entities/vols/list.module.css';
 
-import { getFilterValueText } from '../volunteer-list-utils';
-
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { FilterFieldType } from './filter-types';
+import { getFilterListItems } from './get-filter-list-items';
 
 // Ввод значений в фильтр - календарь/ввод текста/один или несколько из списка
 export const FilterItemPopup: FC<{
@@ -49,19 +48,8 @@ const FieldValueControlByType: FC<{
     onOtherValueChange: (filterListItem: FilterListItem) => void;
 }> = ({ field, filterItem, onOtherValueChange, onTextValueChange }) => {
     switch (field.type) {
-        case FilterFieldType.String:
-        case FilterFieldType.Custom:
-            return (
-                <Input
-                    value={filterItem?.value as string | undefined}
-                    onChange={(e) => onTextValueChange(e.target.value)}
-                    placeholder="Введите текст"
-                    allowClear
-                />
-            );
         case FilterFieldType.Date:
             return <DateField onTextValueChange={onTextValueChange} filterItem={filterItem} />;
-        case FilterFieldType.Lookup:
         case FilterFieldType.Boolean:
             return <SeveralValues field={field} filterItem={filterItem} onOtherValueChange={onOtherValueChange} />;
         default:
@@ -149,39 +137,6 @@ const SeveralValues: FC<{
             ))}
         </div>
     );
-};
-
-// Получение возможных значений для выбора из списка
-const getFilterListItems = (field: FilterField, filterItem?: FilterItem): Array<FilterListItem> => {
-    const filterValue = filterItem?.value;
-    const filterValues = Array.isArray(filterValue) ? filterValue : [];
-
-    const lookupItems = field.lookup?.();
-
-    if (lookupItems) {
-        return (field.skipNull ? lookupItems : [{ id: '', name: '(Пусто)' }, ...lookupItems]).map((item) => ({
-            value: item.id,
-            text: item.name,
-            selected: filterValues.includes(item.id),
-            count: 0
-        }));
-    }
-
-    if (field.type === FilterFieldType.Boolean) {
-        return [true, false].map((value) => ({
-            value,
-            text: getFilterValueText(field, value),
-            selected: filterValues.includes(value),
-            count: 0
-        }));
-    }
-
-    return ['', 'notempty'].map((value) => ({
-        value,
-        text: getFilterValueText(field, value),
-        selected: filterValues.includes(value),
-        count: 0
-    }));
 };
 
 // Элемент выпадающего списка значений фильтра
