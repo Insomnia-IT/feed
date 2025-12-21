@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { FC, useState, useMemo, useCallback } from 'react';
 import { Layout, Menu } from 'antd';
 import {
     CanAccess,
@@ -8,7 +8,8 @@ import {
     useLogout,
     useMenu,
     useNavigation,
-    useTitle
+    useTitle,
+    useGetIdentity
 } from '@refinedev/core';
 import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -23,7 +24,6 @@ import {
 
 import { useScreen } from 'shared/providers';
 import { AppRoles, UserData } from 'auth';
-import { authProvider } from 'authProvider';
 import type { AccessRoleEntity } from 'interfaces';
 
 import styles from './sider.module.css';
@@ -39,8 +39,6 @@ const CustomSider: FC = () => {
     const { breakpoint, isDesktop } = useScreen();
 
     const [collapsed, setCollapsed] = useState(false);
-    const [user, setUser] = useState<UserData>();
-    const [accessRoleName, setAccessRoleName] = useState('');
 
     const Title = useTitle();
     const isAuth = useIsExistAuthentication();
@@ -50,24 +48,17 @@ const CustomSider: FC = () => {
     const { push } = useNavigation();
     const location = useLocation();
 
+    const { data: user, isLoading: userLoading } = useGetIdentity<UserData>();
     const role = user?.roles[0];
 
-    const { data: accessRoles, isLoading: accessRolesIsLoading } = useList<AccessRoleEntity>({
+    const { data: accessRoles } = useList<AccessRoleEntity>({
         resource: 'access-roles'
     });
 
-    useEffect(() => {
-        if (!authProvider.getIdentity || accessRolesIsLoading) return;
-
-        authProvider.getIdentity().then((res) => {
-            const user = res as UserData;
-            if (user) {
-                setUser(user);
-                const role = accessRoles?.data.find((role) => role.id === user.roles[0]);
-                setAccessRoleName(role?.name ?? '');
-            }
-        });
-    }, [accessRolesIsLoading, accessRoles]);
+    const accessRoleName = useMemo(() => {
+        if (!accessRoles || !role) return '';
+        return accessRoles.data.find((r) => r.id === role)?.name ?? '';
+    }, [accessRoles, role]);
 
     const handleLogout = useCallback(() => {
         queryClient.clear();
@@ -116,7 +107,11 @@ const CustomSider: FC = () => {
     const userMenuItems = useMemo(() => {
         const items: React.ReactNode[] = [
             <Menu.Item key="user-info" disabled>
-                {accessRoleName ? `${user?.username} (${accessRoleName})` : user?.username || '—'}
+                {userLoading
+                    ? 'Загрузка...'
+                    : accessRoleName
+                      ? `${user?.username} (${accessRoleName})`
+                      : user?.username || '—'}
             </Menu.Item>
         ];
 

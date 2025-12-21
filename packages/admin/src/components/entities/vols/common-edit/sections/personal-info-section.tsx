@@ -6,7 +6,7 @@ import { Rules } from 'components/form';
 
 import styles from '../../common.module.css';
 import { useState } from 'react';
-import { QRScannerModal } from './qr-scanner-modal';
+import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 export const PersonalInfoSection = ({
     isCreationProcess,
