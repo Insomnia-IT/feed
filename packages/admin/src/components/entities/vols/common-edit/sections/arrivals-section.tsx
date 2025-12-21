@@ -171,9 +171,9 @@ function ArrivalItem({
 
     const renderLabel = (props: { label: React.ReactNode; value: string | number }): ReactNode => {
         if (!props.label) {
-            return <>{statusesOptions.find((item) => item.value === props.value)?.label}</>;
+            return statusesOptions.find((item) => item.value === props.value)?.label;
         }
-        return <>{props.label}</>;
+        return props.label;
     };
 
     const filteredStatusesOptions = useMemo(() => {
