@@ -38,6 +38,7 @@ class VolunteerFilter(django_filters.FilterSet):
     directions = django_filters.ModelMultipleChoiceFilter(queryset=models.Direction.objects.all())
     scanner_comment = django_filters.CharFilter(field_name="scanner_comment", lookup_expr='icontains')
     responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
+    supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
     infant = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
 
     def filter_is_ticket_received(self, queryset, name, value):
