@@ -1,11 +1,13 @@
-import { Form, Input, Select } from 'antd';
+import { Button, Form, Input, Select } from 'antd';
+import { QrcodeOutlined } from '@ant-design/icons';
 import { useSelect } from '@refinedev/antd';
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
 import { TextEditor } from 'components/controls/text-editor';
 import type { DirectionEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
+import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 export const CreateEdit: FC = () => {
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
@@ -19,6 +21,7 @@ export const CreateEdit: FC = () => {
     );
 
     const form = Form.useFormInstance();
+    const [openQrModal, setOpenQrModal] = useState(false);
 
     useEffect(() => {
         function onHardwareScan(e: CustomEvent<{ scanCode: string }>): void {
@@ -42,11 +45,15 @@ export const CreateEdit: FC = () => {
                 <Select {...directionSelectProps} options={directions} />
             </Form.Item>
             <Form.Item label="QR" name="qr" rules={Rules.required}>
-                <Input />
+                <Input.Search
+                    onSearch={() => setOpenQrModal(true)}
+                    enterButton={<Button icon={<QrcodeOutlined />}></Button>}
+                />
             </Form.Item>
             <Form.Item label="Комментарий" name="comment">
                 <TextEditor />
             </Form.Item>
+            <QRScannerModal open={openQrModal} onClose={() => setOpenQrModal(false)} />
         </>
     );
 };
