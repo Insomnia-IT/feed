@@ -77,7 +77,9 @@ export const getLatestWashDateText = ({
     latestWash?: WashEntity;
     washDate: Dayjs;
 }): string => {
-    return latestWash ? `${dayjs(latestWash.created_at).format('DD MMM YYYY')} (${dayjs(washDate).diff(dayjs(latestWash.created_at), 'day')} дн. назад)` : '-';
+    return latestWash
+        ? `${dayjs(latestWash.created_at).format('DD MMM YYYY')} (${dayjs(washDate).diff(dayjs(latestWash.created_at), 'day')} дн. назад)`
+        : '-';
 };
 
 export const transformWashesForShow = (wash: WashEntity): WashToShow => {
