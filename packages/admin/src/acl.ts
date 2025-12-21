@@ -59,6 +59,10 @@ export const ACL: AccessControlProvider = {
                     case 'bulk_edit': // массовые изменения
                         can = role !== AppRoles.DIRECTION_HEAD;
                         break;
+                    case 'status_started_assign':
+                    case 'direction_head_comment_edit':
+                        can = role === AppRoles.DIRECTION_HEAD;
+                        break;
                     case 'feed_type_edit':
                     case 'unban':
                         can = role !== AppRoles.CAT;

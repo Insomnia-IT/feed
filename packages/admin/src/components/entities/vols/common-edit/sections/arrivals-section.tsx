@@ -1,13 +1,18 @@
 import { DatePicker, Form, Select, Button } from 'antd';
-import { useCallback } from 'react';
+import { ReactNode, useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
-
 import { Rules } from 'components/form';
 import { formDateFormat } from 'shared/lib';
 
 import styles from '../../common.module.css';
+import useCanAccess from '../../use-can-access';
+
+const COMPLETED_STATUSES = ['ARRIVED', 'STARTED', 'JOINED'];
+const STATUSES_ORDER = ['STARTED', 'ARRIVED', 'SKIPPED', 'LEFT', 'JOINED'];
+
+type StatusItem = { label: React.ReactNode; value: string; disabled?: boolean };
 
 export const ArrivalsSection = ({
     statusesOptions,
@@ -18,12 +23,19 @@ export const ArrivalsSection = ({
 }) => {
     const form = Form.useFormInstance();
 
-    const statusesOptionsNew =
-        statusesOptions?.map((item) =>
-            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
-                ? { ...item, label: `✅ ${item.label}` }
-                : item
-        ) || [];
+    const statusesOptionsNew: StatusItem[] = (statusesOptions || [])
+        .sort((a, b) => {
+            return STATUSES_ORDER.indexOf(a.value) - STATUSES_ORDER.indexOf(b.value);
+        })
+        .map((item) => {
+            if (COMPLETED_STATUSES.includes(item.value as string)) {
+                return { ...item, label: `✅ ${item.label}` };
+            }
+            if (!STATUSES_ORDER.includes(item.value as string)) {
+                return { ...item, disabled: true };
+            }
+            return item;
+        });
 
     const activeFromValidationRules = useCallback(
         (index: number) => [
@@ -125,7 +137,7 @@ function ArrivalItem({
     index: number;
     isSingle: boolean;
     remove: (index: number) => void;
-    statusesOptions: { label: string; value: string }[];
+    statusesOptions: StatusItem[];
     transportsOptions: { label: string; value: string }[];
     activeFromValidationRules: (index: number) => Array<
         | { required: boolean }
@@ -142,6 +154,8 @@ function ArrivalItem({
 }) {
     const form = Form.useFormInstance();
 
+    const canStatusStartedAssign = useCanAccess({ action: 'status_started_assign', resource: 'volunteers' });
+
     const createDateChange = (fieldName: string) => (value: string | number | Date) => {
         const normalizedValue = dayjs.isDayjs(value) ? value.format('YYYY-MM-DD') : value;
         form.setFieldValue(['arrivals', index, fieldName], normalizedValue);
@@ -154,6 +168,17 @@ function ArrivalItem({
     const getDateValue = (value: string | number | Date | dayjs.Dayjs | null | undefined) => ({
         value: value ? dayjs(value) : ''
     });
+
+    const renderLabel = (props: { label: React.ReactNode; value: string | number }): ReactNode => {
+        if (!props.label) {
+            return <>{statusesOptions.find((item) => item.value === props.value)?.label}</>;
+        }
+        return <>{props.label}</>;
+    };
+
+    const filteredStatusesOptions = useMemo(() => {
+        return statusesOptions.filter((item) => !item.disabled && (item.value !== 'STARTED' || canStatusStartedAssign));
+    }, [statusesOptions, canStatusStartedAssign]);
 
     return (
         <>
@@ -176,7 +201,11 @@ function ArrivalItem({
                     </div>
                     <div className={styles.dateInput}>
                         <Form.Item label="Статус заезда" name={[index, 'status']} rules={Rules.required}>
-                            <Select options={statusesOptions} style={{ width: '100%' }} />
+                            <Select
+                                options={filteredStatusesOptions}
+                                style={{ width: '100%' }}
+                                labelRender={renderLabel}
+                            />
                         </Form.Item>
                     </div>
                 </div>
