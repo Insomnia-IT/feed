@@ -1,31 +1,31 @@
+import { FC, useMemo } from 'react';
 import { Button, Popover } from 'antd';
-
-import styles from '../../list.module.css';
-import { FC } from 'react';
-
-import type { FilterField, FilterListItem } from './filter-types';
-import { FilterItem } from './filter-types';
-import { FilterChooser } from './filter-chooser';
-import { FilterItemControl } from './filter-item-control';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 
-export const Filters: FC<{
-    /** Available filer fields */
-    filterFields: Array<FilterField>;
+import { FilterChooser } from './filter-chooser';
+import { FilterItemControl } from './filter-item-control';
+import type { FilterField, FilterItem, FilterListItem } from './filter-types';
+
+import styles from '../../list.module.css';
+
+interface IProps {
+    filterFields: FilterField[];
     searchText?: string;
     setSearchText?: (value: string) => void;
-    visibleFilters: Array<string>;
-    setVisibleFilters: (value: Array<string>) => void;
-    activeFilters: Array<FilterItem>;
-    setActiveFilters: (value: Array<FilterItem>) => void;
-}> = ({
+    visibleFilters: string[];
+    setVisibleFilters: (filters: string[]) => void;
+    activeFilters: FilterItem[];
+    setActiveFilters: (filters: FilterItem[]) => void;
+}
+
+export const Filters: FC<IProps> = ({
     activeFilters,
     filterFields,
     searchText,
-    setActiveFilters,
     setSearchText,
-    setVisibleFilters,
-    visibleFilters
+    setActiveFilters,
+    visibleFilters,
+    setVisibleFilters
 }) => {
     const toggleVisibleFilter = (name: string): void => {
         const visible = visibleFilters.includes(name);
@@ -110,16 +110,24 @@ export const Filters: FC<{
         setActiveFilters(newFilters);
     };
 
-    const visibleFiltersFields = filterFields.filter((field) => visibleFilters.includes(field.name));
+    const visibleFiltersFields = useMemo(
+        () => filterFields.filter((f) => visibleFilters.includes(f.name)),
+        [filterFields, visibleFilters]
+    );
 
-    const filterPairs = visibleFiltersFields.map((filterField) => {
-        const filterItem = activeFilters.find((f) => f.name === filterField.name);
+    const filterPairs = useMemo(
+        () =>
+            visibleFiltersFields.map((field) => ({
+                filterField: field,
+                filterItem: activeFilters.find((f) => f.name === field.name)
+            })),
+        [visibleFiltersFields, activeFilters]
+    );
 
-        return {
-            filterField,
-            filterItem
-        };
-    });
+    const resetFilters = () => {
+        setActiveFilters([]);
+        setSearchText?.('');
+    };
 
     return (
         <div className={styles.filters}>
@@ -136,30 +144,22 @@ export const Filters: FC<{
                 <Popover
                     key="add-filter"
                     placement="bottomLeft"
+                    trigger="click"
                     content={
                         <FilterChooser
                             filterFields={filterFields}
-                            toggleVisibleFilter={toggleVisibleFilter}
                             visibleFilters={visibleFilters}
+                            toggleVisibleFilter={toggleVisibleFilter}
                         />
                     }
-                    trigger="click"
                 >
                     <Button type="link" icon={<PlusOutlined />}>
                         Фильтр
                     </Button>
                 </Popover>
-                {(activeFilters.length || searchText) && (
-                    <Button
-                        type="link"
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                            setActiveFilters([]);
-                            if (setSearchText) {
-                                setSearchText('');
-                            }
-                        }}
-                    >
+
+                {(activeFilters.length > 0 || searchText) && (
+                    <Button type="link" icon={<DeleteOutlined />} onClick={resetFilters}>
                         Сбросить фильтрацию
                     </Button>
                 )}

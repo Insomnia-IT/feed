@@ -4,7 +4,6 @@ import { Button, Space, Table, Tooltip, Typography, type TableProps } from 'antd
 import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { useList, HttpError } from '@refinedev/core';
 import dayjs from 'dayjs';
-import ExcelJS from 'exceljs';
 
 import { DATETIME_LONG, DATETIME_SHORT, MEAL_MAP } from 'const';
 import type { FeedTransactionEntity, KitchenEntity } from 'interfaces';
@@ -48,6 +47,8 @@ const CommonFood: FC = () => {
     );
 
     const exportXLSX = useCallback(async () => {
+        const ExcelJS = await import('exceljs');
+
         const wb = new ExcelJS.Workbook();
         const sh = wb.addWorksheet('Transactions log');
 
