@@ -1,6 +1,7 @@
 import { FC, useMemo } from 'react';
 import { Button, Popover } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Col, Popover, Row } from 'antd';
 
 import { FilterChooser } from './filter-chooser';
 import { FilterItemControl } from './filter-item-control';
@@ -37,6 +38,11 @@ export const Filters: FC<IProps> = ({
         } else {
             setVisibleFilters([...visibleFilters, name]);
         }
+    };
+
+    const removeAllFilters = () => {
+        setVisibleFilters([]);
+        setActiveFilters([]);
     };
 
     const onFilterTextValueChange = (fieldName: string, value?: string): void => {
@@ -132,6 +138,44 @@ export const Filters: FC<IProps> = ({
     return (
         <div className={styles.filters}>
             <div className={styles.filterItems}>
+                <Col style={{ width: '105px' }}>
+                    <Row>
+                        <Popover
+                            key="add-filter"
+                            placement="bottomLeft"
+                            content={
+                                <FilterChooser
+                                    removeAllFilters={removeAllFilters}
+                                    filterFields={filterFields}
+                                    toggleVisibleFilter={toggleVisibleFilter}
+                                    visibleFilters={visibleFilters}
+                                />
+                            }
+                            trigger="click"
+                        >
+                            <Button type="link" size={'small'} icon={<PlusOutlined />}>
+                                Фильтр
+                            </Button>
+                        </Popover>
+                    </Row>
+                    <Row>
+                        {(activeFilters.length || searchText) && (
+                            <Button
+                                type="link"
+                                size={'small'}
+                                icon={<DeleteOutlined />}
+                                onClick={() => {
+                                    setActiveFilters([]);
+                                    if (setSearchText) {
+                                        setSearchText('');
+                                    }
+                                }}
+                            >
+                                Сбросить
+                            </Button>
+                        )}
+                    </Row>
+                </Col>
                 {filterPairs.map(({ filterField, filterItem }) => (
                     <FilterItemControl
                         key={filterField.name}
@@ -141,28 +185,6 @@ export const Filters: FC<IProps> = ({
                         onFilterValueChange={onFilterValueChange}
                     />
                 ))}
-                <Popover
-                    key="add-filter"
-                    placement="bottomLeft"
-                    trigger="click"
-                    content={
-                        <FilterChooser
-                            filterFields={filterFields}
-                            visibleFilters={visibleFilters}
-                            toggleVisibleFilter={toggleVisibleFilter}
-                        />
-                    }
-                >
-                    <Button type="link" icon={<PlusOutlined />}>
-                        Фильтр
-                    </Button>
-                </Popover>
-
-                {(activeFilters.length > 0 || searchText) && (
-                    <Button type="link" icon={<DeleteOutlined />} onClick={resetFilters}>
-                        Сбросить фильтрацию
-                    </Button>
-                )}
             </div>
         </div>
     );
