@@ -1,6 +1,5 @@
 import { FC, useMemo } from 'react';
-import { Button, Popover } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, FilterOutlined } from '@ant-design/icons';
 import { Button, Col, Popover, Row } from 'antd';
 
 import { FilterChooser } from './filter-chooser';
@@ -153,27 +152,8 @@ export const Filters: FC<IProps> = ({
                             }
                             trigger="click"
                         >
-                            <Button type="link" size={'small'} icon={<PlusOutlined />}>
-                                Фильтр
-                            </Button>
+                            <Button icon={<FilterOutlined />}>Фильтры</Button>
                         </Popover>
-                    </Row>
-                    <Row>
-                        {(activeFilters.length || searchText) && (
-                            <Button
-                                type="link"
-                                size={'small'}
-                                icon={<DeleteOutlined />}
-                                onClick={() => {
-                                    setActiveFilters([]);
-                                    if (setSearchText) {
-                                        setSearchText('');
-                                    }
-                                }}
-                            >
-                                Сбросить
-                            </Button>
-                        )}
                     </Row>
                 </Col>
                 {filterPairs.map(({ filterField, filterItem }) => (
@@ -185,6 +165,11 @@ export const Filters: FC<IProps> = ({
                         onFilterValueChange={onFilterValueChange}
                     />
                 ))}
+                {(activeFilters.length || searchText) && (
+                    <Button icon={<DeleteOutlined />} onClick={resetFilters}>
+                        Очистить фильтры
+                    </Button>
+                )}
             </div>
         </div>
     );

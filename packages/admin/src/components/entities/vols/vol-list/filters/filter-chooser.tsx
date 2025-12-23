@@ -29,8 +29,8 @@ export const FilterChooser: React.FC<{
 
     return (
         <Select
+            style={{ minWidth: '200px', maxWidth: '350px' }}
             mode={'multiple'}
-            style={{ width: '200px' }}
             value={visibleFilters}
             autoFocus={true}
             options={options}

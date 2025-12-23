@@ -75,7 +75,7 @@ const App: React.FC = () => {
 
     return (
         <BrowserRouter>
-            <ConfigProvider locale={antdLocale} theme={{ token: { borderRadius: 2 } }}>
+            <ConfigProvider locale={antdLocale} theme={{ token: { borderRadius: 6 } }}>
                 <ScreenProvider>
                     <AntdApp>
                         <Refine

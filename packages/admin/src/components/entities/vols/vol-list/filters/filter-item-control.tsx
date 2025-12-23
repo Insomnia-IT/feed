@@ -1,13 +1,13 @@
 import { FC, useState } from 'react';
 import { Checkbox, Col, DatePicker, Input, Row, Select, Typography } from 'antd';
-import { ColumnWidthOutlined } from '@ant-design/icons';
 import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filter-types';
 
 import { getFilterListItems } from './get-filter-list-items';
 import dayjs from 'dayjs';
 
 const fieldStyle = {
-    minWidth: '110px'
+    minWidth: '110px',
+    gap: '4px'
 };
 
 export const FilterItemControl: FC<{
@@ -68,8 +68,9 @@ const DateField: FC<{
             <Row style={{ justifyContent: 'space-between' }}>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
                 <span>
-                    <ColumnWidthOutlined title={'период'} />
-                    <Checkbox value={showPeriod} onChange={onCheckBoxClick} />
+                    <Checkbox checked={showPeriod} onChange={onCheckBoxClick}>
+                        <Typography.Text type={'secondary'}>Период</Typography.Text>
+                    </Checkbox>
                 </span>
             </Row>
             <Row>
@@ -116,7 +117,7 @@ const FilterInput: FC<{
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
-        <Col>
+        <Col style={fieldStyle}>
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
