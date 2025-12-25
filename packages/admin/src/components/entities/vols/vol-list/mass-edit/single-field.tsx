@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { VolEntity } from 'interfaces';
 import { Button, Checkbox, DatePicker, Input, Select, Typography } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
 import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
 import { useNotification, useSelect } from '@refinedev/core';
+import useCanAccess from '../../use-can-access';
+import {
+    getVolunteerStatusOrder,
+    isVolunteerCompletedStatusValue,
+    isVolunteerStatus
+} from 'shared/constants/volunteer-status';
+
 const { Title } = Typography;
 
 export const SingleField: React.FC<{
@@ -150,21 +157,37 @@ const OptionValueChanger: React.FC<{ resource: string; onChange: (value: string)
 }) => {
     const { options } = useSelect({ resource, optionLabel: 'name' });
 
-    const optionsMapped =
-        options?.map((item) =>
-            // Специальное отображение для поля "статус"
-            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
-                ? { ...item, label: `✅ ${item.label}` }
-                : item
-        ) ?? [];
+    const canStatusArrivedAssign = useCanAccess({ action: 'status_arrived_assign', resource: 'volunteers' });
+    const canStatusStartedAssign = useCanAccess({ action: 'status_started_assign', resource: 'volunteers' });
 
-    return (
-        <Select
-            style={{ width: '100%' }}
-            onSelect={(value) => {
-                onChange(value);
-            }}
-            options={optionsMapped}
-        />
-    );
+    const statusesOrder = useMemo(() => getVolunteerStatusOrder(canStatusArrivedAssign), [canStatusArrivedAssign]);
+
+    const orderIndex = (value: string) => {
+        const idx = statusesOrder.indexOf(value as any);
+        return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
+    };
+
+    const optionsMapped =
+        (options ?? [])
+            .slice()
+            .map((item) => {
+                if (!isVolunteerStatus(item.value)) {
+                    return { ...item, disabled: true };
+                }
+
+                const withCheck = isVolunteerCompletedStatusValue(item.value)
+                    ? { ...item, label: `✅ ${item.label}` }
+                    : item;
+
+                const inOrder = statusesOrder.includes(item.value as any);
+                const allowedByPerm =
+                    (item.value !== 'ARRIVED' || canStatusArrivedAssign) &&
+                    (item.value !== 'STARTED' || canStatusStartedAssign);
+
+                return { ...withCheck, disabled: !(inOrder && allowedByPerm) };
+            })
+            .sort((a, b) => orderIndex(a.value as string) - orderIndex(b.value as string))
+            .filter((x) => !x.disabled) ?? [];
+
+    return <Select style={{ width: '100%' }} onSelect={(value) => onChange(value)} options={optionsMapped} />;
 };

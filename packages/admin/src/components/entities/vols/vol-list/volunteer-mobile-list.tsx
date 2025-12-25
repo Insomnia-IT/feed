@@ -19,10 +19,7 @@ const checkArrivalStatus = (arrival: ArrivalEntity | null) => {
     const arrivalDate = dayjs(arrival.arrival_date);
     const today = dayjs();
     const yesterday = today.subtract(1, 'day');
-    return (
-        (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) &&
-        !['STARTED', 'JOINED'].includes(arrival.status)
-    );
+    return (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) && arrival.status === 'ARRIVED';
 };
 
 const VolunteerMobileCard: FC<{
@@ -40,7 +37,7 @@ const VolunteerMobileCard: FC<{
     );
 
     const rightActions = useMemo(() => {
-        if (!currentArrival || ['STARTED', 'JOINED'].includes(currentArrival.status)) return [];
+        if (!currentArrival || currentArrival.status !== 'ARRIVED') return [];
         return [
             {
                 key: 'edit',
