@@ -72,18 +72,15 @@ const DateField: FC<{
                         panelRender={(panel) => (
                             <>
                                 <Row style={{ justifyContent: 'flex-start', padding: '8px', gap: '8px', width: '50%' }}>
-                                    <Col>
-                                        <Typography.Text>Искать в диапазоне дат</Typography.Text>
-                                    </Col>
-                                    <Col>
-                                        <Switch
-                                            size={'small'}
-                                            value={showPeriod}
-                                            onChange={() => {
-                                                setShowPeriod((prev) => !prev);
-                                            }}
-                                        />
-                                    </Col>
+                                    <Typography.Text>Искать в диапазоне дат</Typography.Text>
+
+                                    <Switch
+                                        size={'small'}
+                                        value={showPeriod}
+                                        onChange={() => {
+                                            setShowPeriod((prev) => !prev);
+                                        }}
+                                    />
                                 </Row>
                                 {panel}
                             </>
@@ -111,18 +108,15 @@ const DateField: FC<{
                         panelRender={(panel) => (
                             <>
                                 <Row style={{ justifyContent: 'flex-start', gap: '8px', padding: '8px' }}>
-                                    <Col>
-                                        <Typography.Text>Искать в диапазоне дат</Typography.Text>
-                                    </Col>
-                                    <Col>
-                                        <Switch
-                                            size={'small'}
-                                            value={showPeriod}
-                                            onChange={() => {
-                                                setShowPeriod((prev) => !prev);
-                                            }}
-                                        />
-                                    </Col>
+                                    <Typography.Text>Искать в диапазоне дат</Typography.Text>
+
+                                    <Switch
+                                        size={'small'}
+                                        value={showPeriod}
+                                        onChange={() => {
+                                            setShowPeriod((prev) => !prev);
+                                        }}
+                                    />
                                 </Row>
                                 {panel}
                             </>
