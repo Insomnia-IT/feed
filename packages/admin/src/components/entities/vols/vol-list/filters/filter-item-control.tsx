@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { Checkbox, Col, DatePicker, Input, Row, Select, Typography } from 'antd';
+import { Col, DatePicker, Input, Row, Select, Typography, Switch } from 'antd';
 import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filter-types';
 
 import { getFilterListItems } from './get-filter-list-items';
@@ -49,60 +49,94 @@ const DateField: FC<{
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
 }> = ({ field, filterItem, onFilterTextValueChange }) => {
-    // Ожидаем значение в формате YYYY-MM-DD:YYYY-MM-DD
+    const [isCalPopOpen, setIsCalPopOpen] = useState<boolean | undefined>(undefined);
+
     const [beforeString, afterString] = ((filterItem?.value as string | undefined) ?? '')?.split(SEPARATOR) ?? [];
 
     const [showPeriod, setShowPeriod] = useState(!!afterString);
 
+    // Ожидаем значение в формате YYYY-MM-DD:YYYY-MM-DD
     const changeValue = (value: string) => onFilterTextValueChange(field.name, value);
-
-    const onCheckBoxClick = (): void => {
-        setShowPeriod(!showPeriod);
-
-        // Отбрасываем второе значение, когда переключаемся между вариантами
-        changeValue(beforeString);
-    };
 
     return (
         <Col style={fieldStyle}>
             <Row style={{ justifyContent: 'space-between' }}>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
-                <span>
-                    <Checkbox checked={showPeriod} onChange={onCheckBoxClick}>
-                        <Typography.Text type={'secondary'}>Период</Typography.Text>
-                    </Checkbox>
-                </span>
             </Row>
             <Row>
-                <DatePicker.RangePicker
-                    placeholder={['пусто', 'пусто']}
-                    allowEmpty={[true, true]}
-                    style={{ width: 300, display: showPeriod ? undefined : 'none' }}
-                    value={[
-                        beforeString ? dayjs(beforeString) : undefined,
-                        afterString ? dayjs(afterString) : undefined
-                    ]}
-                    onChange={(value) => {
-                        // Сохраняем значение в формате YYYY-MM-DD:YYYY-MM-DD
-                        const periodString = (value ?? [])
-                            .filter((e) => !!e)
-                            .map((date) => date?.format('YYYY-MM-DD'))
-                            .join(SEPARATOR);
+                {showPeriod ? (
+                    <DatePicker.RangePicker
+                        open={isCalPopOpen}
+                        onOpenChange={(value) => setIsCalPopOpen(value)}
+                        placeholder={['пусто', 'пусто']}
+                        panelRender={(panel) => (
+                            <>
+                                <Row style={{ justifyContent: 'flex-start', padding: '8px', gap: '8px', width: '50%' }}>
+                                    <Col>
+                                        <Typography.Text>Искать в диапазоне дат</Typography.Text>
+                                    </Col>
+                                    <Col>
+                                        <Switch
+                                            size={'small'}
+                                            value={showPeriod}
+                                            onChange={() => {
+                                                setShowPeriod((prev) => !prev);
+                                            }}
+                                        />
+                                    </Col>
+                                </Row>
+                                {panel}
+                            </>
+                        )}
+                        allowEmpty={[true, true]}
+                        style={{ width: 300, display: showPeriod ? undefined : 'none' }}
+                        value={[
+                            beforeString ? dayjs(beforeString) : undefined,
+                            afterString ? dayjs(afterString) : undefined
+                        ]}
+                        onChange={(value) => {
+                            // Сохраняем значение в формате YYYY-MM-DD:YYYY-MM-DD
+                            const periodString = (value ?? [])
+                                .filter((e) => !!e)
+                                .map((date) => date?.format('YYYY-MM-DD'))
+                                .join(SEPARATOR);
 
-                        changeValue(periodString);
-                    }}
-                />
+                            changeValue(periodString);
+                        }}
+                    />
+                ) : (
+                    <DatePicker
+                        open={isCalPopOpen}
+                        onOpenChange={(value) => setIsCalPopOpen(value)}
+                        panelRender={(panel) => (
+                            <>
+                                <Row style={{ justifyContent: 'flex-start', gap: '8px', padding: '8px' }}>
+                                    <Col>
+                                        <Typography.Text>Искать в диапазоне дат</Typography.Text>
+                                    </Col>
+                                    <Col>
+                                        <Switch
+                                            size={'small'}
+                                            value={showPeriod}
+                                            onChange={() => {
+                                                setShowPeriod((prev) => !prev);
+                                            }}
+                                        />
+                                    </Col>
+                                </Row>
+                                {panel}
+                            </>
+                        )}
+                        value={beforeString ? dayjs(beforeString) : undefined}
+                        style={{ width: 300, display: !showPeriod ? undefined : 'none' }}
+                        onChange={(value) => {
+                            // Сохраняем значение в формате YYYY-MM-DD
+                            const periodString = value?.format('YYYY-MM-DD');
 
-                <DatePicker
-                    value={beforeString ? dayjs(beforeString) : undefined}
-                    style={{ width: 300, display: !showPeriod ? undefined : 'none' }}
-                    onChange={(value) => {
-                        // Сохраняем значение в формате YYYY-MM-DD
-                        const periodString = value?.format('YYYY-MM-DD');
-
-                        changeValue(periodString);
-                    }}
-                />
+                            changeValue(periodString);
+                        }}
+                    />
+                )}
             </Row>
         </Col>
     );
