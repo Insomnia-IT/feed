@@ -340,6 +340,8 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 volunteer_uuid=hist.volunteer_uuid,
                                 group_operation_uuid=str(group_operation_uuid),
                             )
+                    else:
+                        errors.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
