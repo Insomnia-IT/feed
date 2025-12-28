@@ -8,12 +8,12 @@ import { formDateFormat } from 'shared/lib';
 
 import styles from '../../common.module.css';
 import useCanAccess from '../../use-can-access';
+import { VolunteerStatus } from 'shared/constants/volunteer-status';
 import {
-    getVolunteerStatusOrder,
-    isVolunteerCompletedStatusValue,
     isVolunteerStatus,
-    VolunteerStatus
-} from 'shared/constants/volunteer-status';
+    isVolunteerCompletedStatusValue,
+    getVolunteerStatusOrder
+} from 'shared/helpers/volunteer-status';
 
 type StatusItem = { label: React.ReactNode; value: string; disabled?: boolean };
 

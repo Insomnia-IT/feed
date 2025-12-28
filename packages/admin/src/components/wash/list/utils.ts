@@ -1,6 +1,6 @@
 import { type ArrivalEntity, VolEntity, WashEntity } from 'interfaces';
 import dayjs, { Dayjs } from 'dayjs';
-import { isVolunteerActivatedStatusValue } from 'shared/constants/volunteer-status';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 export interface WashToShow {
     id: number;

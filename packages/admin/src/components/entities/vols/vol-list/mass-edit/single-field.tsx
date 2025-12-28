@@ -10,7 +10,7 @@ import {
     getVolunteerStatusOrder,
     isVolunteerCompletedStatusValue,
     isVolunteerStatus
-} from 'shared/constants/volunteer-status';
+} from 'shared/helpers/volunteer-status';
 
 const { Title } = Typography;
 

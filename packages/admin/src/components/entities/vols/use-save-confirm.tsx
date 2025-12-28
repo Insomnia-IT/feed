@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { dataProvider } from 'dataProvider';
 import type { VolCustomFieldValueEntity } from 'interfaces';
-import { isVolunteerActivatedStatusValue } from 'shared/constants/volunteer-status';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 const useSaveConfirm = (
     form: FormInstance,

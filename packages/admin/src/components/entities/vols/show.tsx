@@ -4,7 +4,7 @@ import { Typography, Checkbox } from 'antd';
 import { FC } from 'react';
 
 import type { VolEntity } from 'interfaces';
-import { isVolunteerActivatedStatusValue } from 'shared/constants/volunteer-status';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 const { Text, Title } = Typography;
 

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 import type { ArrivalEntity, VolEntity } from 'interfaces';
-import { isVolunteerActivatedStatusValue } from 'shared/constants/volunteer-status';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 import type { FilterField } from './filters/filter-types';
 

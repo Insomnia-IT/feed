@@ -29,7 +29,7 @@ import styles from '../common.module.css';
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
 import { useLocation } from 'react-router-dom';
-import { isVolunteerActivatedStatusValue } from 'shared/constants/volunteer-status';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 export const CommonEdit: React.FC = () => {
     const form = Form.useFormInstance();
