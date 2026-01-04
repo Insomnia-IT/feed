@@ -1,6 +1,6 @@
 import { type ArrivalEntity, VolEntity, WashEntity } from 'interfaces';
 import dayjs, { Dayjs } from 'dayjs';
-import { isActivatedStatus } from 'shared/lib';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 export interface WashToShow {
     id: number;
@@ -26,7 +26,7 @@ const getCurrentArrival = ({
         ({ arrival_date, departure_date, status }) =>
             dayjs(arrival_date) < dayjs(washDate) &&
             dayjs(departure_date) > washDate.subtract(1, 'day') &&
-            isActivatedStatus(status)
+            isVolunteerActivatedStatusValue(status)
     );
 
     return currentArrival;
@@ -65,7 +65,7 @@ export const getCurrentArrivalDateText = ({
 }): string => {
     const currentArrival = getCurrentArrival({ volunteer, washDate });
 
-    return currentArrival && isActivatedStatus(currentArrival.status)
+    return currentArrival && isVolunteerActivatedStatusValue(currentArrival.status)
         ? `${dayjs(currentArrival.arrival_date).format('DD MMM YYYY')} (${dayjs(washDate).diff(currentArrival.arrival_date, 'day')} дн. назад)`
         : NO_ACTIVE_ARRIVAL;
 };

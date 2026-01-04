@@ -45,6 +45,7 @@ type Action =
     | 'role_edit'
     | 'full_edit'
     | 'status_started_assign'
+    | 'status_arrived_assign'
     | 'direction_head_comment_edit';
 
 const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
@@ -54,9 +55,11 @@ const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
         case 'bulk_edit': // массовые изменения
             return role !== AppRoles.DIRECTION_HEAD;
         case 'status_started_assign':
+            return [AppRoles.DIRECTION_HEAD, AppRoles.CAT, AppRoles.SENIOR, AppRoles.ADMIN].includes(role);
+        case 'status_arrived_assign':
+            return [AppRoles.CAT, AppRoles.SENIOR, AppRoles.ADMIN].includes(role);
         case 'direction_head_comment_edit':
             return role === AppRoles.DIRECTION_HEAD;
-            break;
         case 'feed_type_edit':
         case 'unban':
             return role !== AppRoles.CAT;
