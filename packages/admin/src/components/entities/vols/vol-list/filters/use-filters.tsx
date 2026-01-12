@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { GetListResponse, useList } from '@refinedev/core';
 
 import type {
@@ -16,6 +16,10 @@ import useVisibleDirections from 'components/entities/vols/use-visible-direction
 import { FilterField, FilterFieldType, FilterItem } from 'components/entities/vols/vol-list/filters/filter-types';
 import { getSorter } from 'utils';
 
+const SEARCH_TEXT_STORAGE_ITEM_NAME = 'volSearchText';
+const FILTERS_STORAGE_ITEM_NAME = 'volFilter';
+const VISIBLE_FILTERS_STORAGE_ITEM_NAME = 'volVisibleFilters';
+
 const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> =>
     useMemo(
         () =>
@@ -30,7 +34,7 @@ const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): 
     );
 
 const getDefaultVisibleFilters = (): Array<string> => {
-    const volVisibleFiltersStr = localStorage.getItem('volVisibleFilters');
+    const volVisibleFiltersStr = localStorage.getItem(VISIBLE_FILTERS_STORAGE_ITEM_NAME);
     if (volVisibleFiltersStr) {
         try {
             return JSON.parse(volVisibleFiltersStr) as Array<string>;
@@ -42,7 +46,7 @@ const getDefaultVisibleFilters = (): Array<string> => {
 };
 
 const getDefaultActiveFilters = (): Array<FilterItem> => {
-    const volFilterStr = localStorage.getItem('volFilter');
+    const volFilterStr = localStorage.getItem(FILTERS_STORAGE_ITEM_NAME);
     if (volFilterStr) {
         try {
             return JSON.parse(volFilterStr) as Array<FilterItem>;
@@ -53,6 +57,24 @@ const getDefaultActiveFilters = (): Array<FilterItem> => {
     return [];
 };
 
+const changeStorageAndPageOnlyIfNeeded = ({
+    itemName,
+    value,
+    resetPage
+}: {
+    itemName: string;
+    value: unknown;
+    resetPage: () => void;
+}) => {
+    const currentValue = localStorage.getItem(itemName);
+    const newValue = typeof value === 'string' ? value : JSON.stringify(value);
+
+    if (currentValue !== newValue) {
+        resetPage();
+        localStorage.setItem(itemName, newValue);
+    }
+};
+
 export const useFilters = ({
     customFields,
     setPage
@@ -60,7 +82,7 @@ export const useFilters = ({
     setPage: (page: number) => void;
     customFields: CustomFieldEntity[];
 }) => {
-    const [searchText, setSearchText] = useState(() => localStorage.getItem('volSearchText') || '');
+    const [searchText, setSearchText] = useState(() => localStorage.getItem(SEARCH_TEXT_STORAGE_ITEM_NAME) || '');
 
     const { data: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
@@ -69,25 +91,13 @@ export const useFilters = ({
         }
     });
 
-    useEffect(() => {
-        localStorage.setItem('volSearchText', searchText);
-    }, [searchText]);
+    const resetPage = useCallback(() => {
+        setPage(1);
+    }, []);
 
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>(getDefaultActiveFilters);
 
-    useEffect(() => {
-        localStorage.setItem('volFilter', JSON.stringify(activeFilters));
-    }, [activeFilters]);
-
     const [visibleFilters, setVisibleFilters] = useState<Array<string>>(getDefaultVisibleFilters);
-
-    useEffect(() => {
-        localStorage.setItem('volVisibleFilters', JSON.stringify(visibleFilters));
-    }, [visibleFilters]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [activeFilters, visibleFilters, searchText]);
 
     const { data: directions } = useList<DirectionEntity>({
         resource: 'directions',
@@ -101,8 +111,10 @@ export const useFilters = ({
     const formatFilter = useCallback((name: string, value: unknown) => {
         if (name.startsWith('custom_field_values.')) {
             const customFieldId = name.split('.')[1];
+
             return `custom_field_id=${customFieldId}&custom_field_value=${value}`;
         }
+
         return `${name}=${value}`;
     }, []);
 
@@ -120,7 +132,10 @@ export const useFilters = ({
             Array.isArray(value) ? value.map((v) => formatFilter(name, v)) : formatFilter(name, value)
         );
 
-        if (searchText) params.push(`search=${searchText}`);
+        if (searchText) {
+            params.push(`search=${searchText}`);
+        }
+
         return params.length ? `?${params.join('&')}` : '';
     }, [activeFilters, visibleFilters, searchText, visibleDirections, formatFilter]);
 
@@ -269,9 +284,18 @@ export const useFilters = ({
         isFiltersLoading: kitchensIsLoading || feedTypesIsLoading || accessRolesIsLoading || volunteerRolesIsLoading,
         filterQueryParams,
         searchText,
-        setSearchText,
-        setVisibleFilters,
-        setActiveFilters,
+        setSearchText: (value: string) => {
+            setSearchText(value);
+            changeStorageAndPageOnlyIfNeeded({ itemName: SEARCH_TEXT_STORAGE_ITEM_NAME, value, resetPage });
+        },
+        setVisibleFilters: (value: string[]) => {
+            setVisibleFilters(value);
+            changeStorageAndPageOnlyIfNeeded({ itemName: FILTERS_STORAGE_ITEM_NAME, value, resetPage });
+        },
+        setActiveFilters: (value: FilterItem[]) => {
+            setActiveFilters(value);
+            changeStorageAndPageOnlyIfNeeded({ itemName: FILTERS_STORAGE_ITEM_NAME, value, resetPage });
+        },
         filterFields,
         activeFilters,
         visibleFilters,
