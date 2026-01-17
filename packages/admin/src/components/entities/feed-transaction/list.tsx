@@ -1,7 +1,7 @@
-import { DeleteButton, List, useTable } from '@refinedev/antd';
+import { List, useTable } from '@refinedev/antd';
 import { Button, DatePicker, Form, Input, Space, Table, Tag } from 'antd';
 import { CrudFilter, HttpError } from '@refinedev/core';
-import { FC, ReactNode, useCallback, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -130,14 +130,6 @@ export const FeedTransactionList: FC = () => {
                     </Tag>
                 ));
             }
-        },
-        {
-            title: 'Действия',
-            render: (_: unknown, record: TransformedTransaction): ReactNode => (
-                <Space>
-                    <DeleteButton hideText size="small" recordItemId={record.ulid} />
-                </Space>
-            )
         }
     ];
 
