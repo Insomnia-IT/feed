@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
-import { Button } from '~/shared/ui/button';
-import type { ValidatedVol } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
-import { Modal } from '~/shared/ui/modal';
-import { Text } from '~/shared/ui/typography';
+import { Button } from 'shared/ui/button';
+import type { ValidatedVol } from 'components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
+import { Modal } from 'shared/ui/modal';
+import { Text } from 'shared/ui/typography';
 
 import styles from './not-feed-list-modal.module.css';
 

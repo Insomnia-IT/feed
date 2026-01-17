@@ -9,7 +9,7 @@ import {
     Legend,
     Line,
     ComposedChart,
-    LabelProps
+    LabelListProps
 } from 'recharts';
 import { Spin } from 'antd';
 
@@ -21,7 +21,7 @@ interface IProps {
     loading?: boolean;
 }
 
-const labelProps: LabelProps = { stroke: '#333', fill: '#333', position: 'top' };
+const labelProps: LabelListProps = { position: 'top', fill: '#333' };
 
 const ColumnChartByMealTime: FC<IProps> = ({ data, loading }) => {
     const chartData = useMemo(() => {

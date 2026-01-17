@@ -1,12 +1,12 @@
-import type { TransactionJoined } from '~/db';
-import type { FeedStats } from '~/request-local-db/use-local-stats';
+import type { TransactionJoined } from 'db';
+import { FeedStats } from './use-local-stats';
 
 export interface LocalStatsHook {
     error: any;
     progress: boolean;
     updated: boolean;
     stats: FeedStats | null;
-    update: (string, boolean?) => Promise<any>;
+    update: (string: string, boolean?: boolean) => Promise<any>;
 }
 
 export interface LocalLastTransHook {

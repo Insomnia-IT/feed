@@ -3,15 +3,26 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
-export default tseslint.config(
-    { ignores: ['dist'] },
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const r = (...p) => path.resolve(__dirname, ...p);
+
+export default [
+    { ignores: ['**/dist', '**/dev-dist', '**/build', '**/.nx', '**/.turbo', '**/node_modules'] },
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
     {
-        extends: [js.configs.recommended, ...tseslint.configs.recommended],
-        files: ['**/*.{ts,tsx}'],
+        files: ['packages/*/src/**/*.{ts,tsx}'],
         languageOptions: {
-            ecmaVersion: 2020,
-            globals: globals.browser
+            ecmaVersion: 2023,
+            sourceType: 'module',
+            globals: globals.browser,
+            parserOptions: {
+                tsconfigRootDir: __dirname,
+                project: [r('tsconfig.eslint.json')]
+            }
         },
         plugins: {
             'react-hooks': reactHooks,
@@ -27,4 +38,4 @@ export default tseslint.config(
             'react-refresh/only-export-components': ['warn', { allowConstantExport: true }]
         }
     }
-);
+];

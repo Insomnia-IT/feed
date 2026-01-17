@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import dayjs from 'dayjs';
 
-import type { Arrival, Volunteer } from '~/db';
-import { Text } from '~/shared/ui/typography';
+import type { Arrival, Volunteer } from 'db';
+import { Text } from 'shared/ui/typography';
 
 import css from './vol-info.module.css';
 

@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
 
-import { PinInput } from '~/shared/ui/pin-input/pin-input';
-import { Button } from '~/shared/ui/button/button';
-import { useCheckAuth } from '~/request';
-import { API_DOMAIN } from '~/config';
-import { useApp } from '~/model/app-provider';
-import { ScreenWrapper } from '~/shared/ui/screen-wrapper';
+import { PinInput } from 'shared/ui/pin-input/pin-input';
+import { Button } from 'shared/ui/button/button';
+import { API_DOMAIN } from 'config';
+import { useCheckAuth } from 'request';
+import { useApp } from 'model/app-provider';
+import { ScreenWrapper } from 'shared/ui/screen-wrapper';
 
 import css from './pin-screen.module.css';
 
@@ -16,7 +16,7 @@ export const PinScreen = (): React.ReactElement => {
 
     const storedPin = localStorage.getItem('pin');
 
-    const handleChangeInput = useCallback((value) => {
+    const handleChangeInput = useCallback((value: string) => {
         setPin(value);
     }, []);
 
@@ -26,7 +26,7 @@ export const PinScreen = (): React.ReactElement => {
         setError(null);
         const enteredPin = pin || '';
         checkAuth(enteredPin)
-            .then((user) => {
+            .then((user: any) => {
                 localStorage.setItem('pin', enteredPin);
                 localStorage.setItem('kitchenId', user.data.id);
                 setAuth(true);
@@ -34,10 +34,10 @@ export const PinScreen = (): React.ReactElement => {
                 setKitchenId(Number(user.data.id));
                 return user;
             })
-            .then((user) => {
+            .then((user: any) => {
                 return doSync({ kitchenId: Number(user.data.id) });
             })
-            .catch((e) => {
+            .catch((e: any) => {
                 if (!e.response && enteredPin && enteredPin === storedPin) {
                     setAuth(true);
                 } else {

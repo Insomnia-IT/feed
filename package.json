@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "license": "MIT",
+    "type": "module",
     "scripts": {
         "bootstrap": "npm ci",
         "build": "lerna run build --stream --scope @feed/admin --scope @feed/scanner",
@@ -17,7 +18,7 @@
         "lint": "npm-run-all -s lint:*",
         "lint-fix": "npm-run-all -s lint-fix:*",
         "tc": "lerna run tc",
-        "todo": "leasot -x --reporter markdown \"packages/**/*.ts\" \"packages/**/*.tsx\" > TODO.md",
+        "todo": "leasot -i \"**/node_modules/**\" --reporter markdown \"packages/**/*.ts\" \"packages/**/*.tsx\" > TODO.md",
         "madge": "npx madge",
         "stat": "tokei",
         "prepare": "husky"
@@ -26,17 +27,17 @@
         "packages/*"
     ],
     "devDependencies": {
-        "@stylistic/stylelint-plugin": "^3.1.2",
-        "cross-env": "^7.0.3",
+        "@stylistic/stylelint-plugin": "^4.0.0",
+        "cross-env": "^10.0.0",
         "husky": "^9.1.7",
         "leasot": "^14.4.0",
-        "lerna": "^8.2.2",
-        "lint-staged": "^15.5.1",
+        "lerna": "^9.0.0",
+        "lint-staged": "^16.1.5",
         "npm-run-all": "^4.1.5",
-        "nx": "20.8.1",
+        "nx": "21.6.2",
         "rimraf": "^6.0.1",
-        "stylelint": "^16.19.1",
-        "stylelint-config-standard": "^38.0.0"
+        "stylelint": "^16.23.1",
+        "stylelint-config-standard": "^39.0.0"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx}": "prettier --write",

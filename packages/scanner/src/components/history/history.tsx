@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import { HistoryTable } from '~/components/history/history-table';
-import { useLocalLastTrans } from '~/request-local-db/use-local-last-trans';
-import { AppViews, useView } from '~/model/view-provider/view-provider';
-import { StatsBlock } from '~/components/history/stats-block/stats-block';
+import { HistoryTable } from 'components/history/history-table';
+import { useLocalLastTrans } from 'request-local-db/use-local-last-trans';
+import { AppViews, useView } from 'model/view-provider/view-provider';
+import { StatsBlock } from 'components/history/stats-block/stats-block';
 
 import css from './history.module.css';
 

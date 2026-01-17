@@ -1,8 +1,7 @@
 import type { FC } from 'react';
-import React from 'react';
 import cn from 'classnames';
 
-import { Text } from '~/shared/ui/typography';
+import { Text } from 'shared/ui/typography';
 
 import css from './scanner-comment.module.css';
 
