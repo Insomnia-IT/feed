@@ -11,7 +11,6 @@ import type {
     StatusEntity,
     TransportEntity
 } from 'interfaces';
-import { isActivatedStatus } from 'shared/lib';
 import useCanAccess from '../use-can-access';
 import { useAnchorNavigation, useQrDuplicationCheck } from './hooks';
 import {
@@ -30,6 +29,7 @@ import styles from '../common.module.css';
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
 import { useLocation } from 'react-router-dom';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 export const CommonEdit: React.FC = () => {
     const form = Form.useFormInstance();
@@ -180,7 +180,7 @@ export const CommonEdit: React.FC = () => {
                 title="Дублирование QR"
                 open={
                     qrDuplicateVolunteer !== null &&
-                    !qrDuplicateVolunteer?.arrivals?.some(({ status }) => isActivatedStatus(status))
+                    !qrDuplicateVolunteer?.arrivals?.some(({ status }) => isVolunteerActivatedStatusValue(status))
                 }
                 onOk={handleClear}
                 onCancel={handleCancel}
@@ -194,7 +194,7 @@ export const CommonEdit: React.FC = () => {
                 title="Дублирование QR"
                 open={
                     qrDuplicateVolunteer !== null &&
-                    qrDuplicateVolunteer?.arrivals?.some(({ status }) => isActivatedStatus(status))
+                    qrDuplicateVolunteer?.arrivals?.some(({ status }) => isVolunteerActivatedStatusValue(status))
                 }
                 onOk={handleOpenVolunteer}
                 onCancel={handleCancel}

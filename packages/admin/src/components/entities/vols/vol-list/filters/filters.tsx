@@ -131,7 +131,10 @@ export const Filters: FC<IProps> = ({
 
     const resetFilters = () => {
         setActiveFilters([]);
-        setSearchText?.('');
+
+        if (setSearchText) {
+            setSearchText('');
+        }
     };
 
     return (

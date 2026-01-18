@@ -31,7 +31,8 @@ export const FIELD_LABELS: Record<string, string> = {
     number: 'Номер бейджа',
     batch: 'Партия бейджа',
     ticket: 'Билет',
-    qr: 'QR бейджа'
+    qr: 'QR бейджа',
+    supervisor_id: 'Бригадир'
 };
 
 export const STATUS_MAP: Record<string, string> = {
