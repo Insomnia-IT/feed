@@ -45,7 +45,7 @@ export const FeedOtherCount: React.FC<{
                             const textValue = event?.currentTarget?.value;
 
                             if (textValue === '' || textValue === undefined) {
-                                setVegansCount('');
+                                setVegansCount(0);
 
                                 return;
                             }
@@ -76,7 +76,7 @@ export const FeedOtherCount: React.FC<{
                             const textValue = event?.currentTarget?.value;
 
                             if (textValue === '' || textValue === undefined) {
-                                setNonVegansCount('');
+                                setNonVegansCount(0);
 
                                 return;
                             }
