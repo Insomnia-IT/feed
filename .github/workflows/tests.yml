@@ -18,7 +18,7 @@ jobs:
 
       - name: ⌛ Do Testing
         env:
-          FEED_APP_HOST: feedapp-dev.insomniafest.ru 
+          FEED_APP_HOST: https://feedapp-dev.insomniafest.ru 
         run: |
           cd tests
           bash run_tests.sh || touch /tmp/testFailed

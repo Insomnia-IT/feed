@@ -57,7 +57,7 @@ services:
       - tests
     environment:
       WEBDRIVER_REMOTE: true
-      FEED_APP_HOST: ${FEED_APP_HOST:-feedtests_front}
+      FEED_APP_HOST: ${FEED_APP_HOST:-http://feedtests_front}
     build:
       context: .
       network: host
