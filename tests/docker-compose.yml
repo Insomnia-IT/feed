@@ -2,7 +2,7 @@
 
 services:
   chrome:
-    container_name: feedtests_chrome
+    # container_name: feedtests_chrome
     networks:
       - tests
     # image: selenium/standalone-chromium:latest
