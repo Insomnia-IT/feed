@@ -12,7 +12,7 @@ on:
 
 jobs:
   tests:
-    runs-on: [self-hosted, zhukov]
+    runs-on: [self-hosted, rumsrv]
 
     steps:
       - name: Checkout base branch
