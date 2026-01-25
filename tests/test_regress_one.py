@@ -10,7 +10,7 @@ host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
 
 def test_pagination_in_volunteer_list(browser):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
-    link=f"https://{host}/login"
+    link=f"{host}/login"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
