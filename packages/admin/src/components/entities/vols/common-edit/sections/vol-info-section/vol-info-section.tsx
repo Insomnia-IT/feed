@@ -1,12 +1,14 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Form, Input, Select, Image, Tooltip } from 'antd';
+import { useList } from '@refinedev/core';
 import { useSelect } from '@refinedev/antd';
 
 import { NEW_API_URL } from 'const';
 import HorseIcon from 'assets/icons/horse-icon';
 import { Rules } from 'components/form';
 import useCanAccess from 'components/entities/vols/use-can-access';
-import type { DirectionEntity, PersonEntity } from 'interfaces';
+import type { DirectionEntity, PersonEntity, VolEntity, VolunteerRoleEntity } from 'interfaces';
+import { useDebouncedCallback } from 'shared/hooks';
 import { ColorCircle, ColorDef } from './color-circle/color-circle';
 
 import styles from './vol-info-section.module.css';
@@ -48,6 +50,12 @@ export const VolInfoSection: React.FC<IProps> = ({
     const mainRole = Form.useWatch('main_role', form);
     const allowEmptyDirections = ALLOW_EMPTY_DIRECTIONS_ROLES.has(mainRole);
     const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
+    const canEditBrigadier = useCanAccess({ action: 'brigadier_edit', resource: 'volunteers' });
+
+    const supervisorId = Form.useWatch('supervisor_id', form);
+    const supervisor = Form.useWatch('supervisor', form) as { id: number; name: string } | null;
+    const [brigadierSearch, setBrigadierSearch] = useState('');
+    const debouncedBrigadierSearch = useDebouncedCallback((value: string) => setBrigadierSearch(value));
 
     const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
@@ -55,8 +63,64 @@ export const VolInfoSection: React.FC<IProps> = ({
         optionValue: 'id'
     });
 
+    const { data: volunteerRoles } = useList<VolunteerRoleEntity>({
+        resource: 'volunteer-roles',
+        pagination: { pageSize: 10000 }
+    });
+
+    const leaderRoleIds = useMemo(
+        () => new Set((volunteerRoles?.data ?? []).filter((role) => role.is_leader).map((role) => role.id)),
+        [volunteerRoles]
+    );
+
+    const { data: supervisorsData, isLoading: supervisorsLoading } = useList<VolEntity>({
+        resource: 'volunteers',
+        filters: brigadierSearch
+            ? [
+                  {
+                      field: 'search',
+                      operator: 'eq',
+                      value: brigadierSearch
+                  }
+              ]
+            : [],
+        pagination: {
+            pageSize: 50
+        }
+    });
+
     const volPhoto = form.getFieldValue(PHOTO_FIELD) as string | undefined;
     const volPhotoUrl = useMemo(() => (volPhoto ? NEW_API_URL + volPhoto : ''), [volPhoto]);
+
+    const formatVolunteerLabel = useCallback((volunteer: VolEntity): string => {
+        const fullName = [volunteer.last_name, volunteer.first_name].filter(Boolean).join(' ');
+        const badgeLabel = volunteer.name;
+        if (fullName) {
+            return badgeLabel ? `${fullName} (${badgeLabel})` : fullName;
+        }
+        return badgeLabel || `ID ${volunteer.id}`;
+    }, []);
+
+    // TODO: попросить у бэков фильтр для лидеров
+    const supervisorOptions = useMemo(() => {
+        const leaders = (supervisorsData?.data ?? []).filter((volunteer) =>
+            leaderRoleIds.size ? leaderRoleIds.has(volunteer.main_role ?? '') : false
+        );
+
+        const options = leaders.map((volunteer) => ({
+            value: volunteer.id,
+            label: formatVolunteerLabel(volunteer)
+        }));
+
+        if (supervisorId && !options.some((option) => option.value === supervisorId)) {
+            options.unshift({
+                value: supervisorId,
+                label: supervisor?.name || `ID ${supervisorId}`
+            });
+        }
+
+        return options;
+    }, [formatVolunteerLabel, leaderRoleIds, supervisor, supervisorId, supervisorsData]);
 
     const colorTypeOptionsWithBadges = useMemo(
         () =>
@@ -127,6 +191,18 @@ export const VolInfoSection: React.FC<IProps> = ({
                             <Input readOnly={denyBadgeEdit} disabled />
                         </Form.Item>
                     </div>
+                    <Form.Item label="Бригадир" name="supervisor_id">
+                        <Select
+                            allowClear
+                            showSearch
+                            placeholder="Найти бригадира"
+                            filterOption={false}
+                            onSearch={debouncedBrigadierSearch}
+                            options={supervisorOptions}
+                            loading={supervisorsLoading}
+                            disabled={!canEditBrigadier}
+                        />
+                    </Form.Item>
                 </div>
             </div>
             <div className={styles.twoVariableColumnsWrap}>
@@ -138,7 +214,7 @@ export const VolInfoSection: React.FC<IProps> = ({
                 >
                     <Select mode="multiple" disabled={!allowRoleEdit && !!person} {...directionsSelectProps} />
                 </Form.Item>
-                <Form.Item label="Цвет бейджа" name="color_type" className={styles.inputWithEllips}>
+                <Form.Item label="Цвет бейджа" name="color_type">
                     <Select disabled options={colorTypeOptionsWithBadges} />
                 </Form.Item>
             </div>

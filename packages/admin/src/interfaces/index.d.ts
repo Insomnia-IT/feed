@@ -27,6 +27,8 @@ export interface VolEntity {
     arrivals: Array<ArrivalEntity>;
     direction_head_comment?: string;
     is_ticket_received?: boolean;
+    supervisor_id?: number | null;
+    supervisor?: { id: number; name: string } | null;
 }
 
 export interface KitchenEntity {
