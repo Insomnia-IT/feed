@@ -1,6 +1,5 @@
 import type { CrudFilter, DataProvider, LogicalFilter } from '@refinedev/core';
 import type { AxiosInstance } from 'axios';
-import stringify from 'query-string';
 
 import { NEW_API_URL } from 'const';
 import { axios } from 'authProvider';
@@ -49,10 +48,7 @@ export const crudDataProvider = (
         const { headers, method } = meta ?? {};
         const requestMethod = (method as MethodTypes) ?? 'get';
 
-        const { data } = await httpClient[requestMethod](
-            `${apiUrl}/${resource}?${stringify.stringify({ id__in: ids }, { arrayFormat: 'comma' })}`,
-            { headers }
-        );
+        const { data } = await httpClient[requestMethod](`${apiUrl}/${resource}?id__in=${ids.join(',')}`, { headers });
 
         return {
             data: data.results

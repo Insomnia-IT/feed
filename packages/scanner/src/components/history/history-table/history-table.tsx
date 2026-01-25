@@ -33,8 +33,7 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                             Волонтер
                         </HeadCell>
                         <HeadCell scope='col'>Приём пищи</HeadCell>
-                        <HeadCell scope='col'>Кол-во</HeadCell>
-                        <HeadCell scope='col'>Тип</HeadCell>
+                        <HeadCell scope='col'>Тип и кол-во</HeadCell>
                         <HeadCell scope='col'>Время</HeadCell>
                     </Row>
                 </THead>
@@ -50,8 +49,10 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
                                 {transaction.vol ? transaction.vol.name : 'Аноним'}
                             </Cell>
                             <Cell>{mealTimes[transaction.mealTime]}</Cell>
-                            <Cell>{transaction.amount}</Cell>
-                            <Cell>{transaction.is_vegan ? '🥦' : '🥩'}</Cell>
+                            <Cell>
+                                {transaction.amount + 'x'}&nbsp;
+                                {transaction.is_vegan ? '🥦' : '🥩'}
+                            </Cell>
                             <Cell>{formatDate(transaction.ts)}</Cell>
                         </Row>
                     ))}

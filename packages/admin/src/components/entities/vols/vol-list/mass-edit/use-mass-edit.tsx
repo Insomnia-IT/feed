@@ -1,79 +1,73 @@
-import type { VolEntity } from 'interfaces';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Checkbox, TableProps } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
+
+import type { VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 
-export const useMassEdit = ({
-    totalVolunteersCount,
-    filterQueryParams
-}: {
+interface UseMassEditParams {
     totalVolunteersCount: number;
     filterQueryParams: string;
-}): {
+}
+
+interface UseMassEditResult {
     reloadSelectedVolunteers: () => Promise<void>;
     selectedVols: Array<VolEntity>;
     unselectAllSelected: () => void;
     unselectVolunteer: (volunteer: VolEntity) => void;
     rowSelection: TableProps<VolEntity>['rowSelection'];
-} => {
+}
+
+export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMassEditParams): UseMassEditResult => {
     const [selectedVols, setSelectedVols] = useState<VolEntity[]>([]);
-    const [isSelectAllLoading, setIsSelectAllLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const selectedRowKeys = selectedVols.map((vol) => vol.id);
+
+    const isAllSelected = selectedVols.length > 0 && selectedVols.length === totalVolunteersCount;
 
     const unselectAllSelected = () => {
         setSelectedVols([]);
     };
 
-    const isAllCurrentSelected = totalVolunteersCount === selectedVols.length;
+    const onVolunteerSelection = useCallback((vol: VolEntity, isSelected: boolean) => {
+        setSelectedVols((prev) => (isSelected ? [...prev, vol] : prev.filter((v) => v.id !== vol.id)));
+    }, []);
 
-    const selectedRowKeys = useMemo(() => {
-        return selectedVols.map((vol) => vol.id);
-    }, [selectedVols]);
-
-    const onVolunteerSelection = (volunteer: VolEntity, isSelected: boolean) => {
-        if (isSelected) {
-            setSelectedVols((prev) => [...prev, volunteer]);
-        } else {
-            setSelectedVols((prev) => prev.filter((storedVol) => storedVol.id !== volunteer.id));
+    const handleSelectAllToggle = useCallback(async () => {
+        if (isAllSelected) {
+            setSelectedVols([]);
+            return;
         }
-    };
+
+        setIsLoading(true);
+        try {
+            const { data } = await dataProvider.getList<VolEntity>({
+                resource: `volunteers/${filterQueryParams}`,
+                pagination: { current: 1, pageSize: 0 }
+            });
+
+            setSelectedVols(data);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isAllSelected, filterQueryParams]);
 
     const rowSelection: TableProps<VolEntity>['rowSelection'] = {
         onSelect: onVolunteerSelection,
-        selectedRowKeys: selectedRowKeys,
-        getCheckboxProps: (record: VolEntity) => ({
-            name: record.name
-        }),
+        selectedRowKeys,
+        getCheckboxProps: (record) => ({ name: record.name }),
         columnTitle: (
             <>
                 <Checkbox
-                    style={isSelectAllLoading ? { display: 'none' } : undefined}
-                    checked={selectedVols.length > 0 && totalVolunteersCount === selectedVols.length}
-                    disabled={isSelectAllLoading || totalVolunteersCount === 0}
-                    title={isSelectAllLoading ? 'Подождите, информация загружается...' : 'Выбрать всех в списке'}
-                    indeterminate={!!selectedVols.length && !(totalVolunteersCount === selectedVols.length)}
-                    onChange={async () => {
-                        if (isAllCurrentSelected) {
-                            setSelectedVols([]);
-                        } else {
-                            setIsSelectAllLoading(true);
-                            try {
-                                const { data: volunteersData } = await dataProvider.getList<VolEntity>({
-                                    resource: `volunteers/${filterQueryParams}`,
-                                    pagination: {
-                                        current: 1,
-                                        pageSize: 0
-                                    }
-                                });
-
-                                setSelectedVols(volunteersData);
-                            } finally {
-                                setIsSelectAllLoading(false);
-                            }
-                        }
-                    }}
+                    style={isLoading ? { display: 'none' } : undefined}
+                    checked={isAllSelected}
+                    indeterminate={selectedVols.length > 0 && !isAllSelected}
+                    disabled={isLoading || totalVolunteersCount === 0}
+                    title={isLoading ? 'Подождите, информация загружается...' : 'Выбрать всех в списке'}
+                    onChange={handleSelectAllToggle}
                 />
-                {isSelectAllLoading ? <LoadingOutlined /> : null}
+                {isLoading ? <LoadingOutlined /> : null}
             </>
         )
     };
@@ -97,8 +91,6 @@ export const useMassEdit = ({
         rowSelection,
         selectedVols,
         unselectAllSelected,
-        unselectVolunteer: (volunteer: VolEntity) => {
-            onVolunteerSelection(volunteer, false);
-        }
+        unselectVolunteer: (vol) => onVolunteerSelection(vol, false)
     };
 };

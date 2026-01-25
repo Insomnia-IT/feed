@@ -8,7 +8,7 @@ import { type ArrivalEntity, WashEntity } from 'interfaces';
 import dayjs from 'dayjs';
 
 import styles from './washes-post-scan.module.css';
-import { getDaysOnFieldText } from '../list/utils';
+import { getTotalDaysOnFieldText, getCurrentArrivalDateText, getLatestWashDateText } from '../list/utils';
 
 export interface PostScanProps {
     volunteerQr?: string;
@@ -34,7 +34,9 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             dayjs(arrival_date) < dayjs() && dayjs(departure_date) > dayjs().subtract(1, 'day')
     );
 
-    const daysOnFieldText = getDaysOnFieldText({ volunteer, washDate: dayjs() });
+    const washDate = dayjs();
+    const totalDaysOnFieldText = getTotalDaysOnFieldText({ volunteer, washDate });
+    const dateOfCurrentArrivalAgo = getCurrentArrivalDateText({ volunteer, washDate });
 
     const washesInCurrentArrival =
         targetWashes.filter((washItem) => {
@@ -49,7 +51,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
 
     const latestWash = washesInCurrentArrival.length ? washesInCurrentArrival[0] : undefined;
 
-    const latestWashDateText = latestWash ? dayjs(latestWash.created_at).format('DD MMM YYYY') : 'не было';
+    const latestWashDateAgo = getLatestWashDateText({ latestWash, washDate });
 
     const directions = volunteer?.directions?.map(({ name }) => (
         <Tag key={name} color={'default'} icon={false} closable={false}>
@@ -120,19 +122,26 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             confirmLoading={isUpdateInProgress}
             loading={isLoading}
         >
-            <ModalItem title="Имя, позывной" value={volunteer?.name} />
+            {volunteer && (
+                <>
+                    <ModalItem title="Имя, позывной" value={volunteer?.name} />
+                    <ModalItem title="Бан" value={volunteer?.is_blocked ? 'Да' : 'Нет'} />
+                    <ModalItem title="Службы" value={directions} />
+                    <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
+                    <ModalItem title="Дата заезда" value={dateOfCurrentArrivalAgo} />
+                    <ModalItem title="Всего дней в заезде" value={totalDaysOnFieldText} />
+                    <ModalItem title="Последняя стирка" value={latestWashDateAgo} />
 
-            <ModalItem title="Службы" value={directions} />
-
-            <ModalItem title="Дней на поле всего" value={daysOnFieldText} />
-
-            <ModalItem title="Сколько раз стирался уже" value={washesInCurrentArrival.length} />
-
-            <ModalItem title="Дата последней стирки" value={latestWashDateText} />
-
-            <p className={styles.message}>
-                <b>Вы хотите добавить стирку для волонтера?</b>
-            </p>
+                    <p className={styles.message}>
+                        <b>Вы хотите добавить стирку для волонтера?</b>
+                    </p>
+                </>
+            )}
+            {!volunteer && (
+                <p className={styles.message}>
+                    <b>Бейдж не найден</b>
+                </p>
+            )}
         </Modal>
     );
 };

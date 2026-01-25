@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, DatePicker, Form, Radio, RadioChangeEvent, Space, Tooltip } from 'antd';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, DatePicker, Form, Radio, RadioChangeEvent, Space, Spin, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -22,177 +22,167 @@ import {
     handleDataForTable
 } from '../lib/handleData';
 
-import type { ITableStatData } from './table-stats';
 import TableStats from './table-stats';
-import LinearChart from './linear-chart';
-import ColumnChart from './column-chart';
 
 import styles from './public-statistic.module.css';
 
 type StatisticViewType = 'date' | 'range';
-
 const { RangePicker } = DatePicker;
 
-function convertDateToStringForApi(date: dayjsExt.Dayjs | null | undefined) {
-    if (!date) {
-        return dayjsExt().format('YYYY-MM-DD');
-    }
-    return date.format('YYYY-MM-DD');
-}
+const ColumnChart = lazy(() => import('./column-chart'));
+const LinearChart = lazy(() => import('./linear-chart'));
 
-function sordResponceByDate(a: IStatisticApi, b: IStatisticApi): 1 | -1 | 0 {
-    if (dayjsExt(a.date).isAfter(b.date)) return 1;
-    else return -1;
-}
+const convertDateToStringForApi = (date: dayjsExt.Dayjs | null = dayjsExt()) => date?.format('YYYY-MM-DD') || '';
 
-function PublicStatistic() {
+const sortByDate = (a: IStatisticApi, b: IStatisticApi): 1 | -1 => (dayjsExt(a.date).isAfter(b.date) ? 1 : -1);
+
+export function PublicStatistic() {
     const [loading, setLoading] = useState(false);
-    // Выбор отображения (таблица / графики)
-    const [statisticViewType, setViewType] = useState<StatisticViewType>('date');
-    const changeStatisticViewType = (e: RadioChangeEvent) => setViewType(e.target?.value);
-    // Фильтр типа питания
-    const [typeOfEater, setTypeOfEater] = useState<EaterTypeExtended>('all');
-    const changeTypeOfEater = (e: RadioChangeEvent) => setTypeOfEater(e.target?.value);
-
-    // Фильтр кухни
-    const [kitchenId, setKitchenId] = useState<KitchenIdExtended>('all');
-    const [anonymous, setAnonymous] = useState<BooleanExtended>('all');
-    const [groupBadge, setGroupBadge] = useState<BooleanExtended>('all');
-    const [predictionAlg, setPredictionAlg] = useState<PredictionAlg>('1');
-    const [applyHistory, setApplyHistory] = useState<BooleanExtended>('false');
-
-    const changeKitchenId = (e: RadioChangeEvent) => setKitchenId(e.target?.value);
-    const changeAnonymous = (e: RadioChangeEvent) => setAnonymous(e.target?.value);
-    const changeGroupBadge = (e: RadioChangeEvent) => setGroupBadge(e.target?.value);
-    const changePredictionAlg = (e: RadioChangeEvent) => setPredictionAlg(e.target?.value);
-    const changeApplyHistory = (e: RadioChangeEvent) => setApplyHistory(e.target?.value);
-
-    const [selectedMealTime, setSelectedMealTime] = useState<MealTime>('breakfast');
-    const onChangeMealTime = (e: RadioChangeEvent) => {
-        setSelectedMealTime(e.target.value as MealTime);
-    };
-
-    // Данные для дальнейшей обработки и отображения
     const [responce, setResponce] = useState<IStatisticResponce>([]);
-    const data = convertResponceToData(responce);
 
-    // Для выбора даты
-    const [date, setDate] = useState<dayjsExt.Dayjs | null>(dayjsExt().startOf('date'));
-    const changeDate = (value: dayjsExt.Dayjs | null) => {
-        if (!value) {
-            return setDate(dayjsExt());
-        }
-        setDate(value);
-    };
-    const changeDateByOneDay = useCallback((date: dayjsExt.Dayjs | null, direction: 'increment' | 'decrement') => {
-        if (!date) {
-            const today = dayjsExt();
-            setDate(today);
-        } else if (direction === 'increment') {
-            setDate(date.add(1, 'day'));
-        } else if (direction === 'decrement') {
-            setDate(date.add(-1, 'day'));
-        }
-    }, []);
-    const dateStr = convertDateToStringForApi(date);
-    const prevDateStr = convertDateToStringForApi(date?.add(-1, 'day'));
-    const nextDateStr = convertDateToStringForApi(date?.add(1, 'day'));
+    const [filters, setFilters] = useState({
+        typeOfEater: 'all' as EaterTypeExtended,
+        kitchenId: 'all' as KitchenIdExtended,
+        anonymous: 'all' as BooleanExtended,
+        groupBadge: 'all' as BooleanExtended,
+        predictionAlg: '1' as PredictionAlg,
+        applyHistory: 'false' as BooleanExtended,
+        selectedMealTime: 'breakfast' as MealTime
+    });
 
-    // Для выбора диапазона дат для линейчатого графика
-    const [timePeriod, setTimePeriod] = useState([
+    const [statisticViewType, setStatisticViewType] = useState<StatisticViewType>('date');
+    const [date, setDate] = useState<dayjsExt.Dayjs>(dayjsExt().startOf('date'));
+    const [timePeriod, setTimePeriod] = useState<[dayjsExt.Dayjs | null, dayjsExt.Dayjs | null]>([
         dayjsExt().add(-1, 'day').startOf('date'),
         dayjsExt().add(1, 'day').startOf('date')
     ]);
-    const changeTimePeriod = useCallback((range: Array<dayjsExt.Dayjs> | null) => {
-        if (!range) return;
-        setTimePeriod([dayjsExt(range[0]), dayjsExt(range[1])]);
-    }, []);
-    const startDatePeriodStr = convertDateToStringForApi(timePeriod[0]);
-    const endDatePeriodStr = convertDateToStringForApi(timePeriod[1]);
 
-    // Запрос данных с сервера
-    let statsUrl = `${NEW_API_URL}/statistics/?date_from=${prevDateStr}&date_to=${nextDateStr}`;
-    if (statisticViewType === 'range') {
-        statsUrl = `${NEW_API_URL}/statistics/?date_from=${startDatePeriodStr}&date_to=${endDatePeriodStr}`;
-    }
+    const handleFilterChange = useCallback(
+        (key: keyof typeof filters) => (e: RadioChangeEvent) => {
+            setFilters((prev) => ({ ...prev, [key]: e.target.value }));
+        },
+        []
+    );
 
-    const loadStats = async (
-        url: string,
-        anonymous: BooleanExtended,
-        groupBadge: BooleanExtended,
-        predictionAlg: PredictionAlg,
-        applyHistory: BooleanExtended
-    ) => {
+    const { dateStr, prevDateStr, nextDateStr } = useMemo(() => {
+        const dateStr = convertDateToStringForApi(date);
+        return {
+            dateStr,
+            prevDateStr: convertDateToStringForApi(date.add(-1, 'day')),
+            nextDateStr: convertDateToStringForApi(date.add(1, 'day'))
+        };
+    }, [date]);
+
+    const { startDateStr, endDateStr } = useMemo(
+        () => ({
+            startDateStr: convertDateToStringForApi(timePeriod[0]),
+            endDateStr: convertDateToStringForApi(timePeriod[1])
+        }),
+        [timePeriod]
+    );
+
+    const loadStats = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axios.get(url, {
+            const date_from = statisticViewType === 'range' ? startDateStr : prevDateStr;
+            const date_to = statisticViewType === 'range' ? endDateStr : nextDateStr;
+
+            const res = await axios.get(`${NEW_API_URL}/statistics/`, {
                 params: {
-                    anonymous: anonymous === 'all' ? undefined : anonymous,
-                    group_badge: groupBadge === 'all' ? undefined : groupBadge,
-                    prediction_alg: predictionAlg,
-                    apply_history: applyHistory
+                    date_from,
+                    date_to,
+                    anonymous: filters.anonymous !== 'all' ? filters.anonymous : undefined,
+                    group_badge: filters.groupBadge !== 'all' ? filters.groupBadge : undefined,
+                    prediction_alg: filters.predictionAlg,
+                    apply_history: filters.applyHistory
                 }
             });
-            const sortedResponce = res.data.sort(sordResponceByDate);
-            setResponce(sortedResponce);
+
+            setResponce(res.data.sort(sortByDate));
         } catch (error) {
-            console.log('stat, plan:', `logging failed - ${error}`);
+            console.error('Failed to load stats:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [
+        statisticViewType,
+        prevDateStr,
+        nextDateStr,
+        startDateStr,
+        endDateStr,
+        filters.anonymous,
+        filters.groupBadge,
+        filters.predictionAlg,
+        filters.applyHistory
+    ]);
 
     useEffect(() => {
-        void loadStats(statsUrl, anonymous, groupBadge, predictionAlg, applyHistory);
-    }, [statsUrl, anonymous, groupBadge, predictionAlg, applyHistory]);
-    // Преобразование данных с сервера для таблицы и графиков
-    const dataForTable: Array<ITableStatData> = useMemo(
-        () => handleDataForTable(data, dateStr, typeOfEater, kitchenId),
-        [data, dateStr, typeOfEater, kitchenId]
+        loadStats();
+    }, [loadStats]);
+
+    const data = useMemo(() => convertResponceToData(responce), [responce]);
+    const dataForTable = useMemo(
+        () => handleDataForTable(data, dateStr, filters.typeOfEater, filters.kitchenId),
+        [data, dateStr, filters.typeOfEater, filters.kitchenId]
     );
     const dataForColumnChart = useMemo(
-        () => handleDataForColumnChart(data, typeOfEater, kitchenId, selectedMealTime),
-        [data, typeOfEater, kitchenId, selectedMealTime]
+        () => handleDataForColumnChart(data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime),
+        [data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime]
     );
     const dataForLinearChart = useMemo(
-        () => handleDataForLinearChart(data, typeOfEater, kitchenId, selectedMealTime),
-        [data, typeOfEater, kitchenId, selectedMealTime]
+        () => handleDataForLinearChart(data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime),
+        [data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime]
+    );
+
+    const changeDateByOneDay = useCallback(
+        (direction: 'increment' | 'decrement') =>
+            setDate((d) => (direction === 'increment' ? d.add(1, 'day') : d.add(-1, 'day'))),
+        []
     );
 
     return (
         <Form layout="vertical" className={styles.layout}>
             <Form layout="inline">
                 <Form.Item>
-                    <Radio.Group value={statisticViewType} onChange={changeStatisticViewType}>
+                    <Radio.Group
+                        value={statisticViewType}
+                        onChange={(e) => setStatisticViewType(e.target.value as StatisticViewType)}
+                    >
                         <Radio.Button value="date">На дату</Radio.Button>
                         <Radio.Button value="range">Диапазон дат</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item>
                     {statisticViewType === 'date' ? (
-                        <Space size={'small'}>
-                            <Button onClick={() => changeDateByOneDay(date, 'decrement')}>{'<'}</Button>
-                            <DatePicker value={date} onChange={changeDate} format={formDateFormat} allowClear={false} />
-                            <Button onClick={() => changeDateByOneDay(date, 'increment')}>{'>'}</Button>
+                        <Space size="small">
+                            <Button onClick={() => changeDateByOneDay('decrement')}>{'<'}</Button>
+                            <DatePicker
+                                value={date}
+                                onChange={(d) => d && setDate(d)}
+                                format={formDateFormat}
+                                allowClear={false}
+                            />
+                            <Button onClick={() => changeDateByOneDay('increment')}>{'>'}</Button>
                         </Space>
                     ) : (
                         <RangePicker
+                            value={timePeriod}
+                            onChange={(val) => val && setTimePeriod([val[0], val[1]])}
                             format={formDateFormat}
-                            onChange={(range) => changeTimePeriod(range as Array<dayjsExt.Dayjs>)}
                         />
                     )}
                 </Form.Item>
             </Form>
             <Form layout="inline">
                 <Form.Item label="Тип людей по питанию">
-                    <Radio.Group value={typeOfEater} onChange={changeTypeOfEater}>
+                    <Radio.Group value={filters.typeOfEater} onChange={handleFilterChange('typeOfEater')}>
                         <Radio.Button value="all">Все</Radio.Button>
                         <Radio.Button value="meatEater">Мясоеды</Radio.Button>
                         <Radio.Button value="vegan">Вегетарианцы</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item label="Кухня">
-                    <Radio.Group value={kitchenId} onChange={changeKitchenId}>
+                    <Radio.Group value={filters.kitchenId} onChange={handleFilterChange('kitchenId')}>
                         <Radio.Button value="all">Все</Radio.Button>
                         <Radio.Button value="1">№1</Radio.Button>
                         <Radio.Button value="2">№2</Radio.Button>
@@ -200,27 +190,28 @@ function PublicStatistic() {
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item label="Аноним">
-                    <Radio.Group value={anonymous} onChange={changeAnonymous}>
+                    <Radio.Group value={filters.anonymous} onChange={handleFilterChange('anonymous')}>
                         <Radio.Button value="all">Все</Radio.Button>
                         <Radio.Button value="true">Да</Radio.Button>
                         <Radio.Button value="false">Нет</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
+
                 <Form.Item label="Групповой бейдж">
-                    <Radio.Group value={groupBadge} onChange={changeGroupBadge}>
+                    <Radio.Group value={filters.groupBadge} onChange={handleFilterChange('groupBadge')}>
                         <Radio.Button value="all">Все</Radio.Button>
                         <Radio.Button value="true">Да</Radio.Button>
                         <Radio.Button value="false">Нет</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item label="Алгоритм прогноза">
-                    <Radio.Group value={predictionAlg} onChange={changePredictionAlg}>
+                    <Radio.Group value={filters.predictionAlg} onChange={handleFilterChange('predictionAlg')}>
                         <Radio.Button value="1">
                             Первый{' '}
                             <Tooltip
                                 title={() => (
                                     <>
-                                        ФАКТ(вчера или позавчера) / SQRT(НА_ПОЛЕ(вчера или позавчера)) *
+                                        ФАКТ(вчера или позавчера) / SQRT(НА_ПОЛЕ(вчера или позавчера)) *<br />
                                         SQRT(НА_ПОЛЕ(сегодня))
                                         <br />
                                         выбирается позавчера, если НА_ПОЛЕ растет, а ФАКТ падает
@@ -262,16 +253,17 @@ function PublicStatistic() {
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item label="Применить историю">
-                    <Radio.Group value={applyHistory} onChange={changeApplyHistory}>
+                    <Radio.Group value={filters.applyHistory} onChange={handleFilterChange('applyHistory')}>
                         <Radio.Button value="true">Да</Radio.Button>
                         <Radio.Button value="false">Нет</Radio.Button>
                     </Radio.Group>
                 </Form.Item>
             </Form>
+
             {statisticViewType === 'date' && <TableStats data={dataForTable} loading={loading} />}
             <Form layout="inline" style={{ marginBottom: 16 }}>
                 <Form.Item label="Выберите приём пищи:">
-                    <Radio.Group value={selectedMealTime} onChange={onChangeMealTime}>
+                    <Radio.Group value={filters.selectedMealTime} onChange={handleFilterChange('selectedMealTime')}>
                         <Radio.Button value="breakfast">Завтрак</Radio.Button>
                         <Radio.Button value="lunch">Обед</Radio.Button>
                         <Radio.Button value="dinner">Ужин</Radio.Button>
@@ -280,13 +272,13 @@ function PublicStatistic() {
                 </Form.Item>
             </Form>
 
-            {statisticViewType === 'date' ? (
-                <ColumnChart data={dataForColumnChart} mealTime={selectedMealTime} />
-            ) : (
-                <LinearChart data={dataForLinearChart} />
-            )}
+            <Suspense fallback={<Spin style={{ display: 'block', margin: '20px auto' }} />}>
+                {statisticViewType === 'date' ? (
+                    <ColumnChart data={dataForColumnChart} mealTime={filters.selectedMealTime} />
+                ) : (
+                    <LinearChart data={dataForLinearChart} />
+                )}
+            </Suspense>
         </Form>
     );
 }
-
-export { PublicStatistic };

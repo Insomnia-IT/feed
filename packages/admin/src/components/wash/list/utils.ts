@@ -1,5 +1,6 @@
 import { type ArrivalEntity, VolEntity, WashEntity } from 'interfaces';
 import dayjs, { Dayjs } from 'dayjs';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 export interface WashToShow {
     id: number;
@@ -12,16 +13,73 @@ export interface WashToShow {
     owlName: string;
 }
 
-export const getDaysOnFieldText = ({ volunteer, washDate }: { volunteer?: VolEntity; washDate: Dayjs }): string => {
+const NO_ACTIVE_ARRIVAL = 'У волонтера нет активного заезда';
+
+const getCurrentArrival = ({
+    volunteer,
+    washDate
+}: {
+    volunteer?: VolEntity;
+    washDate: Dayjs;
+}): ArrivalEntity | undefined => {
     const currentArrival: ArrivalEntity | undefined = volunteer?.arrivals.find(
-        ({ arrival_date, departure_date }: { arrival_date: string; departure_date: string }) =>
-            dayjs(arrival_date) < dayjs(washDate) && dayjs(departure_date) > washDate.subtract(1, 'day')
+        ({ arrival_date, departure_date, status }) =>
+            dayjs(arrival_date) < dayjs(washDate) &&
+            dayjs(departure_date) > washDate.subtract(1, 'day') &&
+            isVolunteerActivatedStatusValue(status)
     );
+
+    return currentArrival;
+};
+
+export const getDaysOnFieldText = ({ volunteer, washDate }: { volunteer?: VolEntity; washDate: Dayjs }): string => {
+    const currentArrival = getCurrentArrival({ volunteer, washDate });
+
+    return currentArrival
+        ? // Количество дней в заездах = разница между washDate и датой заезда
+          String(Math.abs(dayjs(currentArrival.arrival_date).diff(dayjs(washDate), 'day')))
+        : NO_ACTIVE_ARRIVAL;
+};
+
+export const getTotalDaysOnFieldText = ({
+    volunteer,
+    washDate
+}: {
+    volunteer?: VolEntity;
+    washDate: Dayjs;
+}): string => {
+    const currentArrival = getCurrentArrival({ volunteer, washDate });
 
     return currentArrival
         ? // Количество дней в заездах = разница между датами + один день
           String(Math.abs(dayjs(currentArrival.arrival_date).diff(dayjs(currentArrival.departure_date), 'day')) + 1)
-        : 'У волонтера нет активного заезда';
+        : NO_ACTIVE_ARRIVAL;
+};
+
+export const getCurrentArrivalDateText = ({
+    volunteer,
+    washDate
+}: {
+    volunteer?: VolEntity;
+    washDate: Dayjs;
+}): string => {
+    const currentArrival = getCurrentArrival({ volunteer, washDate });
+
+    return currentArrival && isVolunteerActivatedStatusValue(currentArrival.status)
+        ? `${dayjs(currentArrival.arrival_date).format('DD MMM YYYY')} (${dayjs(washDate).diff(currentArrival.arrival_date, 'day')} дн. назад)`
+        : NO_ACTIVE_ARRIVAL;
+};
+
+export const getLatestWashDateText = ({
+    latestWash,
+    washDate
+}: {
+    latestWash?: WashEntity;
+    washDate: Dayjs;
+}): string => {
+    return latestWash
+        ? `${dayjs(latestWash.created_at).format('DD MMM YYYY')} (${dayjs(washDate).diff(dayjs(latestWash.created_at), 'day')} дн. назад)`
+        : '-';
 };
 
 export const transformWashesForShow = (wash: WashEntity): WashToShow => {

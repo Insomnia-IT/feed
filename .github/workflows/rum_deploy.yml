@@ -3,7 +3,7 @@ name: Deploy to rumsrv
 on:
   workflow_dispatch:
   push:
-   branches: [ test ]
+   branches: [ main ]
 # workflow_dispatch:
 
 jobs:

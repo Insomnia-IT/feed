@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { dataProvider } from 'dataProvider';
 import type { VolCustomFieldValueEntity } from 'interfaces';
-import { isActivatedStatus } from 'shared/lib';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 const useSaveConfirm = (
     form: FormInstance,
@@ -33,7 +33,7 @@ const useSaveConfirm = (
         onClick: () => {
             const arrivals = form.getFieldValue('arrivals') ?? [];
             const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
-            if (!arrivals.some(({ status }: { status: string }) => isActivatedStatus(status))) {
+            if (!arrivals.some(({ status }: { status: string }) => isVolunteerActivatedStatusValue(status))) {
                 setShowConfirmationModalReason('is_active');
             } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
                 setShowConfirmationModalReason('active_from');

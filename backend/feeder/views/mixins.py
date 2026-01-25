@@ -32,6 +32,13 @@ class VolunteerExtraFilterMixin(ModelViewSet):
         custom_field_value = self.request.query_params.getlist('custom_field_value')
         feeded_date = self.request.query_params.get('feeded_date')
         non_feeded_date = self.request.query_params.get('non_feeded_date')
+        is_qr_empty = self.request.query_params.getlist('is_qr_empty')
+
+        if len(is_qr_empty) == 1:
+            if is_qr_empty[0] == 'false':
+                qs = qs.exclude(qr__isnull=True).exclude(qr__exact='')
+            elif is_qr_empty[0] == 'true':
+                qs = qs.filter(Q(qr__isnull=True) | Q(qr__exact=''))
 
         if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:  
             arrive_qs = Arrival.objects.all()
@@ -69,10 +76,19 @@ class VolunteerExtraFilterMixin(ModelViewSet):
                 start_date_feed, end_date_feed = (feeded_date or non_feeded_date).split(':')
                 start_datetime_feed = arrow.get(start_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
                 end_datetime_feed = arrow.get(end_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR).shift(days=+1)
-                feed_transactions_qs = FeedTransaction.objects.filter(dtime__gte=start_datetime_feed.datetime, dtime__lt=end_datetime_feed.datetime, volunteer_id__isnull=False)
+                feed_transactions_qs = FeedTransaction.objects.filter(
+                    dtime__gte=start_datetime_feed.datetime,
+                    dtime__lt=end_datetime_feed.datetime,
+                    volunteer_id__isnull=False,
+                    amount__gt=0
+                )
             else:
                 feed_datetime = arrow.get(feeded_date or non_feeded_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
-                feed_transactions_qs = FeedTransaction.objects.filter(dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime), volunteer_id__isnull=False)
+                feed_transactions_qs = FeedTransaction.objects.filter(
+                    dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime),
+                    volunteer_id__isnull=False,
+                    amount__gt=0
+                )
             if feeded_date:
                 qs = qs.filter(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
             if non_feeded_date:
@@ -98,9 +114,13 @@ class VolunteerExtraFilterMixin(ModelViewSet):
 
 class SoftDeleteViewSetMixin(ModelViewSet):
     def get_queryset(self):
+        pk = self.kwargs.get("pk", None)
         qs = super().get_queryset()
-        if not self.request.query_params.get("all_qs", None):
-            return qs.filter(deleted_at=None)
+        is_deleted = self.request.query_params.getlist("is_deleted", None)
+        if not is_deleted and not pk or ('false' in is_deleted and not 'true' in is_deleted):
+            qs = qs.filter(deleted_at=None)
+        if 'true' in is_deleted and not 'false' in is_deleted:
+            qs = qs.exclude(deleted_at=None)
         return qs
 
     # @action(methods=["delete"], detail=True, url_path="hard_delete")

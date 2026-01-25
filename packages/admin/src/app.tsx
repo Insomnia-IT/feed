@@ -1,9 +1,18 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { Refine, useGetIdentity } from '@refinedev/core';
+import { Refine, useGetIdentity, I18nProvider } from '@refinedev/core';
+import routerProvider, {
+    DocumentTitleHandler,
+    NavigateToResource,
+    UnsavedChangesNotifier
+} from '@refinedev/react-router-v6';
 import { useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
+
+import antdLocale from 'antd/lib/locale/ru_RU';
+import { ConfigProvider as MobileConfigProvider } from 'antd-mobile';
+import antdLocaleMobile from 'antd-mobile/es/locales/ru-RU';
 import {
     UserOutlined,
     InsertRowRightOutlined,
@@ -16,12 +25,7 @@ import {
     DashboardOutlined,
     ExperimentOutlined
 } from '@ant-design/icons';
-import antdLocale from 'antd/lib/locale/ru_RU';
-import routerProvider from '@refinedev/react-router-v6';
-import { DocumentTitleHandler, NavigateToResource, UnsavedChangesNotifier } from '@refinedev/react-router-v6';
-import { I18nextProvider, useTranslation } from 'react-i18next';
 
-import i18n from './i18n';
 import { ACL } from 'acl';
 import { ScreenProvider } from 'shared/providers';
 import { authProvider } from 'authProvider';
@@ -29,34 +33,53 @@ import { dataProvider } from 'dataProvider';
 import { AppRoles, UserData } from 'auth';
 import { AppRoutes } from './app-routes';
 
-const InitialNavigation = () => {
-    const { data: user } = useGetIdentity<UserData>();
+import common from './locales/ru/common.json';
 
-    return user ? <NavigateToResource resource={user.roles[0] === AppRoles.SOVA ? 'wash' : 'volunteers'} /> : null;
+type SupportedLocale = 'ru';
+const messages: Record<SupportedLocale, any> = { ru: common };
+let currentLocale: SupportedLocale = 'ru';
+
+function getByPath(obj: any, path: string[]): string | undefined {
+    return path.reduce((acc, key) => (acc && acc[key] != null ? acc[key] : undefined), obj);
+}
+
+const i18nProvider: I18nProvider = {
+    translate: (key: string, params?: Record<string, any>): string => {
+        const path = key.split('.');
+        let msg = getByPath(messages[currentLocale], path) as string | undefined;
+        if (!msg) {
+            return key;
+        }
+        if (params) {
+            Object.entries(params).forEach(([k, v]) => {
+                msg = msg!.replace(new RegExp(`{{${k}}}`, 'g'), String(v));
+            });
+        }
+        return msg!;
+    },
+    changeLocale: async (locale: string): Promise<void> => {
+        if (locale === 'ru') {
+            currentLocale = 'ru';
+        }
+    },
+    getLocale: (): string => {
+        return currentLocale;
+    }
+};
+
+const InitialNavigation: React.FC = () => {
+    const { data: user } = useGetIdentity<UserData>();
+    if (!user) return null;
+    return <NavigateToResource resource={user.roles[0] === AppRoles.SOVA ? 'wash' : 'volunteers'} />;
 };
 
 const App: React.FC = () => {
-    const { t, i18n: i18next } = useTranslation();
-
-    const i18nProvider = {
-        translate: (key: string, params: Record<string, object>) => t(key, params),
-        changeLocale: (lang: string) => i18next.changeLanguage(lang),
-        getLocale: () => i18next.language
-    };
-
     const notificationProvider = useNotificationProvider();
 
     return (
         <BrowserRouter>
-            <I18nextProvider i18n={i18n}>
-                <ConfigProvider
-                    locale={antdLocale}
-                    theme={{
-                        token: {
-                            borderRadius: 2
-                        }
-                    }}
-                >
+            <MobileConfigProvider locale={antdLocaleMobile}>
+                <ConfigProvider locale={antdLocale} theme={{ token: { borderRadius: 6 } }}>
                     <ScreenProvider>
                         <AntdApp>
                             <Refine
@@ -137,14 +160,13 @@ const App: React.FC = () => {
                                 ]}
                             >
                                 <AppRoutes initial={<InitialNavigation />} />
-
                                 <UnsavedChangesNotifier />
                                 <DocumentTitleHandler />
                             </Refine>
                         </AntdApp>
                     </ScreenProvider>
                 </ConfigProvider>
-            </I18nextProvider>
+            </MobileConfigProvider>
         </BrowserRouter>
     );
 };
