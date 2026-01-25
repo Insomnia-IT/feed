@@ -22,8 +22,11 @@ jobs:
           cd tests
           bash run_tests.sh || touch /tmp/testFailed
 
-      - name: 🍏 Shorter Log
+      - name: 🍏 Short Log
         run: cat /tmp/tests.short.log
+
+      - name: Full Log
+        run: cat /tmp/tests.log
 
       - name: Verdict
         run: if [ -f /tmp/testFailed ]; then
