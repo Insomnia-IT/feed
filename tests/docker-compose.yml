@@ -2,6 +2,7 @@
 
 services:
   chrome:
+    container_name: feedtests_chrome
     networks:
       - tests
     # image: selenium/standalone-chromium:latest
@@ -25,7 +26,7 @@ services:
         SYNC_URL:
         SYNC_LOGIN:
         SYNC_PASSWORD:
-    container_name: feed_backend
+    container_name: feedtests_backend
     restart: always
     environment:
       # OTEL_ENDPOINT: http://jaeger:4318/v1/traces
@@ -45,7 +46,7 @@ services:
       dockerfile: ./Dockerfile_front
       args:
         NEW_API_URL: http://localhost:${PORT:-80}/feedapi/v1
-    container_name: feed_front
+    container_name: feedtests_front
     restart: always
     ports:
       - ${PORT:-80}:80
@@ -56,7 +57,7 @@ services:
       - tests
     environment:
       WEBDRIVER_REMOTE: true
-      FEED_APP_HOST: ${FEED_APP_HOST:-feed_front}
+      FEED_APP_HOST: ${FEED_APP_HOST:-feedtests_front}
     build:
       context: .
       network: host
