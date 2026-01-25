@@ -6,7 +6,7 @@ services:
     networks:
       - tests
     # image: selenium/standalone-chromium:latest
-    image: selenium/standalone-chromium:135.0
+    image: selenium/standalone-chromium:143.0
     hostname: chrome
     privileged: true
     shm_size: 2g
