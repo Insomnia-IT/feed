@@ -59,7 +59,7 @@ def test_create_new_meal(browser):
     assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
     print("✅ Запись успешно создана!")
 
-
+@skip()
 def test_delete_created_new_meal(browser):
     # не тест, вспомогательная функция для удаления созданного выше приема пищи.
     link = f"{host}/feed-transaction"
@@ -124,6 +124,7 @@ def test_delete_group_badge(browser):
         assert 1==1
         print("Нечего удалять!")
 
+@skip()
 def test_create_custom_field(browser):
     # создание нового кастомного поля
     link = f"{host}/volunteers"

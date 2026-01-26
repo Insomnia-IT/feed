@@ -55,7 +55,7 @@ class BasePage:
 
     def login_admin(self):
         login = "admin"
-        password = "Feedsomnia51"
+        password = "Kolombina25"
         login_input = self.browser.find_element(*registration.LOGIN)
         password_input = self.browser.find_element(*registration.PASSWORD)
         login_input.send_keys(login)
