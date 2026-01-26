@@ -45,7 +45,7 @@ services:
       context: ..
       dockerfile: ./Dockerfile_front
       args:
-        NEW_API_URL: http://localhost:${PORT:-80}/feedapi/v1
+        NEW_API_URL: /feedapi/v1
     container_name: feedtests_front
     restart: always
     ports:
