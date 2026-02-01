@@ -11,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, rumsrv]
+    environment:
+      name: PR-${{ github.event.number }}
+      url: ${{ steps.create-link.outputs.app_url }}
     env:
       PROJECT_NAME: feed-pr-${{ github.event.number }}
       DB_DIR: /var/feed_db
@@ -39,21 +42,19 @@ jobs:
     - name: Create app link
       id: create-link
       run: echo "::set-output name=app_url::http://9${{ github.event.number }}.agreetesting.rumyantsev.com"
-    - name: Add link to PR comment
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const appUrl = process.env.APP_URL; // Access URL from environment variable/output
-          github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 The app has been built and deployed to: [View App](${appUrl})`
-          });
-      env:
-        APP_URL: ${{ steps.create-link.outputs.app_url }}
-        url: ${{ steps.create-link.outputs.app_url }}
-        name: PR-${{ github.event.number }}
+    # - name: Add link to PR comment
+    #   uses: actions/github-script@v6
+    #   with:
+    #     script: |
+    #       const appUrl = process.env.APP_URL; // Access URL from environment variable/output
+    #       github.rest.issues.createComment({
+    #           issue_number: context.issue.number,
+    #           owner: context.repo.owner,
+    #           repo: context.repo.repo,
+    #           body: `🚀 The app has been built and deployed to: [View App](${appUrl})`
+    #       });
+    #   env:
+    #     APP_URL: ${{ steps.create-link.outputs.app_url }}
 
 # CLEANUP
     - name: cleanup docker containers
