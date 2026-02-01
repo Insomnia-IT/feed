@@ -31,7 +31,7 @@ jobs:
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
     - name: stop feed_admin
-      run: docker compose down -p $PROJECT_NAME
+      run: docker compose -p $PROJECT_NAME down
     - name: run admin
       if: github.event.action != 'closed'
       run: |
