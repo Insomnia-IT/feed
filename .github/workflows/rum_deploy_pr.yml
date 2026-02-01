@@ -16,7 +16,6 @@ jobs:
       DB_DIR: /var/feed_db
       PHOTO_STORAGE_PATH: /var/feed_db/photos/
       PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
-      url: ${{ steps.deploy-step.outputs.app_url }}
     steps:
     - uses: actions/checkout@v3
 # DB
@@ -38,8 +37,22 @@ jobs:
       run: |
         DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -f docker-compose.pr.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
     - name: Create app link
-      id: deploy-step
+      id: create-link
       run: echo "::set-output name=app_url::http://9${{ github.event.number }}.agreetesting.rumyantsev.com"
+    - name: Add link to PR comment
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const appUrl = process.env.APP_URL; // Access URL from environment variable/output
+          github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 The app has been built and deployed to: [View App](${appUrl})`
+          });
+      env:
+        APP_URL: ${{ steps.create-link.outputs.app_url }}
+
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f
