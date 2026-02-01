@@ -155,7 +155,7 @@ export const Filters: FC<IProps> = ({
                             }
                             trigger="click"
                         >
-                            <Button icon={<FilterOutlined />}>Фильтры</Button>
+                            <Button icon={<FilterOutlined />}>Фильтры тест</Button>
                         </Popover>
                     </Row>
                 </Col>
