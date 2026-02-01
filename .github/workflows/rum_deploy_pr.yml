@@ -17,18 +17,20 @@ jobs:
     env:
       PROJECT_NAME: feed-pr-${{ github.event.number }}
       DB_DIR: /tmp/feed_db_pr_${{ github.event.number }}
-      PHOTO_STORAGE_PATH: /tmp/feed_db_pr_${{ github.event.number }}/photos/
-      PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
+      PHOTO_STORAGE_PATH: /var/feed_db/photos/
+    #   PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
     steps:
     - uses: actions/checkout@v3
 # DB
     - name: setup db dir
-      run: mkdir -p ${DB_DIR}
+      run: |
+        mkdir -p ${DB_DIR}
+        cp -n /var/feed_db/feed_db.sqlite3 ${DB_DIR}/feed_db.sqlite3
 # ADMIN
     - name: build admin
       if: github.event.action != 'closed'
       run: |
-          docker compose -f docker-compose.pr.yml build \
+          docker compose -f docker-compose.pr.yml -p $PROJECT_NAME build \
             --build-arg NEW_API_URL=/feedapi/v1 \
             --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
