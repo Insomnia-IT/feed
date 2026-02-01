@@ -4,7 +4,7 @@ import { WashEntity } from 'interfaces';
 import { useNavigate } from 'react-router-dom';
 import { transformWashesForShow, WashToShow } from './utils';
 import { SaveWashesAsExcelButton } from './save-washes-as-excel-button';
-import { ExperimentOutlined } from '@ant-design/icons/lib/icons';
+import { ExperimentOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 
 export const WashesHistory = () => {
