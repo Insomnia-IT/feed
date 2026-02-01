@@ -3,7 +3,8 @@ from datetime import datetime
 from rest_framework import serializers
 
 from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
-                           Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen)
+                           Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen, 
+                           AccessRole)
 
 from history.models import History
 
@@ -175,6 +176,9 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
         instance = super().save(**kwargs)
 
+        if not self.initial_data.get("deleted"):
+            self._assign_location_head_access_role(instance)
+
         new_photo_url = self.initial_data.get("photo")
 
         if new_photo_url:
@@ -183,6 +187,23 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
                 instance.save(update_fields=["is_photo_updated"])
 
         return instance
+
+    def _assign_location_head_access_role(self, instance):
+        if not instance:
+            return
+
+        access_role = AccessRole.objects.filter(pk="DIRECTION_HEAD").first()
+        if not access_role:
+            return
+
+        if not instance.access_role and Volunteer.objects.filter(supervisor_id=instance).exists():
+            instance.access_role = access_role
+            instance.save(update_fields=["access_role"])
+
+        supervisor = instance.supervisor_id
+        if supervisor and not supervisor.access_role:
+            supervisor.access_role = access_role
+            supervisor.save(update_fields=["access_role"])
 
 
 class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
