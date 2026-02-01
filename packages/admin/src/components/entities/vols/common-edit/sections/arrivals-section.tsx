@@ -51,10 +51,12 @@ export const ArrivalsSection = ({
 
     const canArrivedAssign = useCanAccess({ action: 'status_arrived_assign', resource: 'volunteers' });
     const canStartedAssign = useCanAccess({ action: 'status_started_assign', resource: 'volunteers' });
+    const accessRole = Form.useWatch('access_role', form);
+    const canArrivedAssignForRole = canArrivedAssign && accessRole !== 'DIRECTION_HEAD';
 
     const statusesOrder = useMemo<ReadonlyArray<VolunteerStatus>>(
-        () => getVolunteerStatusOrder(canArrivedAssign),
-        [canArrivedAssign]
+        () => getVolunteerStatusOrder(canArrivedAssignForRole),
+        [canArrivedAssignForRole]
     );
 
     const statusesOptionsNew: StatusItem[] = (statusesOptions ?? [])
@@ -69,7 +71,7 @@ export const ArrivalsSection = ({
 
             const inOrder = statusesOrder.includes(item.value);
             const allowedByPerm =
-                (item.value !== 'ARRIVED' || canArrivedAssign) && (item.value !== 'STARTED' || canStartedAssign);
+                (item.value !== 'ARRIVED' || canArrivedAssignForRole) && (item.value !== 'STARTED' || canStartedAssign);
 
             const disabled = !(inOrder && allowedByPerm);
 
