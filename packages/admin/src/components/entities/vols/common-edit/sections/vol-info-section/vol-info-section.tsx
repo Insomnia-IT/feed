@@ -1,13 +1,15 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Form, Input, Select, Image, Tooltip } from 'antd';
 import { useList } from '@refinedev/core';
+import type { CrudFilters } from '@refinedev/core';
 import { useSelect } from '@refinedev/antd';
 
 import { NEW_API_URL } from 'const';
 import HorseIcon from 'assets/icons/horse-icon';
 import { Rules } from 'components/form';
+import { AppRoles } from 'auth';
 import useCanAccess from 'components/entities/vols/use-can-access';
-import type { DirectionEntity, PersonEntity, VolEntity, VolunteerRoleEntity } from 'interfaces';
+import type { DirectionEntity, PersonEntity, VolEntity } from 'interfaces';
 import { useDebouncedCallback } from 'shared/hooks';
 import { ColorCircle, ColorDef } from './color-circle/color-circle';
 
@@ -63,27 +65,29 @@ export const VolInfoSection: React.FC<IProps> = ({
         optionValue: 'id'
     });
 
-    const { data: volunteerRoles } = useList<VolunteerRoleEntity>({
-        resource: 'volunteer-roles',
-        pagination: { pageSize: 10000 }
-    });
-
-    const leaderRoleIds = useMemo(
-        () => new Set((volunteerRoles?.data ?? []).filter((role) => role.is_leader).map((role) => role.id)),
-        [volunteerRoles]
+    const supervisorFilters = useMemo<CrudFilters>(
+        () => [
+            {
+                field: 'access_role',
+                operator: 'eq' as const,
+                value: AppRoles.DIRECTION_HEAD
+            },
+            ...(brigadierSearch
+                ? [
+                      {
+                          field: 'search',
+                          operator: 'eq' as const,
+                          value: brigadierSearch
+                      }
+                  ]
+                : [])
+        ],
+        [brigadierSearch]
     );
 
     const { data: supervisorsData, isLoading: supervisorsLoading } = useList<VolEntity>({
         resource: 'volunteers',
-        filters: brigadierSearch
-            ? [
-                  {
-                      field: 'search',
-                      operator: 'eq',
-                      value: brigadierSearch
-                  }
-              ]
-            : [],
+        filters: supervisorFilters,
         pagination: {
             pageSize: 50
         }
@@ -101,13 +105,9 @@ export const VolInfoSection: React.FC<IProps> = ({
         return badgeLabel || `ID ${volunteer.id}`;
     }, []);
 
-    // TODO: попросить у бэков фильтр для лидеров
     const supervisorOptions = useMemo(() => {
-        const leaders = (supervisorsData?.data ?? []).filter((volunteer) =>
-            leaderRoleIds.size ? leaderRoleIds.has(volunteer.main_role ?? '') : false
-        );
-
-        const options = leaders.map((volunteer) => ({
+        const supervisors = (supervisorsData?.data ?? []) as VolEntity[];
+        const options = supervisors.map((volunteer) => ({
             value: volunteer.id,
             label: formatVolunteerLabel(volunteer)
         }));
@@ -120,7 +120,7 @@ export const VolInfoSection: React.FC<IProps> = ({
         }
 
         return options;
-    }, [formatVolunteerLabel, leaderRoleIds, supervisor, supervisorId, supervisorsData]);
+    }, [formatVolunteerLabel, supervisor, supervisorId, supervisorsData]);
 
     const colorTypeOptionsWithBadges = useMemo(
         () =>
