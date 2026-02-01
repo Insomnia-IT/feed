@@ -16,6 +16,7 @@ jobs:
       DB_DIR: /var/feed_db
       PHOTO_STORAGE_PATH: /var/feed_db/photos/
       PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
+      url: ${{ steps.deploy-step.outputs.app_url }}
     steps:
     - uses: actions/checkout@v3
 # DB
@@ -36,23 +37,9 @@ jobs:
       if: github.event.action != 'closed'
       run: |
         DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -f docker-compose.pr.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
-    - name: Create a custom check with a link
-      uses: actions/github-script@v7
-      with:
-        script: |
-          github.rest.checks.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            name: 'App for testing',
-            head_sha: context.sha,
-            status: 'completed',
-            conclusion: 'success',
-            details_url: 'http://9${{ github.event.number }}.agreetesting.rumyantsev.com/',
-            output: {
-              title: 'Link to app for testing',
-              summary: 'Link to app for testing'
-            }
-          });
+    - name: Create app link
+      id: deploy-step
+      run: echo "::set-output name=app_url::http://9${{ github.event.number }}.agreetesting.rumyantsev.com"
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f
