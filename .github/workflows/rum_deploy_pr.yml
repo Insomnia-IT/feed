@@ -52,6 +52,8 @@ jobs:
           });
       env:
         APP_URL: ${{ steps.create-link.outputs.app_url }}
+        url: ${{ steps.create-link.outputs.app_url }}
+        name: PR-${{ github.event.number }}
 
 # CLEANUP
     - name: cleanup docker containers
