@@ -4,6 +4,7 @@ import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filt
 
 import { getFilterListItems } from './get-filter-list-items';
 import dayjs from 'dayjs';
+import AdaptiveDatePicker from 'components/controls/adaptiveDatePicker/adaptive-date-picker';
 
 const fieldStyle = {
     minWidth: '110px',
@@ -56,7 +57,7 @@ const DateField: FC<{
     const [showPeriod, setShowPeriod] = useState(!!afterString);
 
     // Ожидаем значение в формате YYYY-MM-DD:YYYY-MM-DD
-    const changeValue = (value: string) => onFilterTextValueChange(field.name, value);
+    const changeValue = (value: string | undefined) => onFilterTextValueChange(field.name, value);
 
     return (
         <Col style={fieldStyle}>
@@ -102,7 +103,7 @@ const DateField: FC<{
                         }}
                     />
                 ) : (
-                    <DatePicker
+                    <AdaptiveDatePicker
                         open={isCalPopOpen}
                         onOpenChange={(value) => setIsCalPopOpen(value)}
                         panelRender={(panel) => (
@@ -122,7 +123,7 @@ const DateField: FC<{
                             </>
                         )}
                         value={beforeString ? dayjs(beforeString) : undefined}
-                        style={{ width: 300, display: !showPeriod ? undefined : 'none' }}
+                        style={{ width: 300, display: showPeriod ? 'none' : undefined }}
                         onChange={(value) => {
                             // Сохраняем значение в формате YYYY-MM-DD
                             const periodString = value?.format('YYYY-MM-DD');
