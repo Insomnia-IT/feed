@@ -196,10 +196,6 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
         if not access_role:
             return
 
-        if not instance.access_role and Volunteer.objects.filter(supervisor_id=instance).exists():
-            instance.access_role = access_role
-            instance.save(update_fields=["access_role"])
-
         supervisor = instance.supervisor_id
         if supervisor and not supervisor.access_role:
             supervisor.access_role = access_role
