@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { VolEntity } from 'interfaces';
-import { Button, Checkbox, DatePicker, Input, Select, Typography } from 'antd';
+import { Button, Checkbox, Input, Select, Typography } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
 import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
@@ -11,6 +11,7 @@ import {
     isVolunteerCompletedStatusValue,
     isVolunteerStatus
 } from 'shared/helpers/volunteer-status';
+import AdaptiveDatePicker from '../../../../controls/adaptiveDatePicker/adaptive-date-picker';
 
 const { Title } = Typography;
 
@@ -120,7 +121,7 @@ export const SingleField: React.FC<{
 
 const DateValueChanger: React.FC<{ onChange: (value: string) => void }> = ({ onChange }) => {
     return (
-        <DatePicker
+        <AdaptiveDatePicker
             style={{ width: '100%' }}
             onChange={(_date, dateString): void => {
                 onChange(dateString as string);
