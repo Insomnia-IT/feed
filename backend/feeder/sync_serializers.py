@@ -10,6 +10,24 @@ from history.models import History
 from django.conf import settings
 
 
+class SupervisorIdField(serializers.Field):
+    def to_representation(self, value):
+        if not value:
+            return None
+        return str(value.uuid)
+
+    def to_internal_value(self, data):
+        if data in (None, ""):
+            return None
+        try:
+            return Volunteer.objects.get(uuid=data)
+        except (Volunteer.DoesNotExist, ValueError, TypeError):
+            try:
+                return Volunteer.objects.get(pk=data)
+            except (Volunteer.DoesNotExist, ValueError, TypeError):
+                raise serializers.ValidationError("Volunteer not found for supervisor_id")
+
+
 class SaveSyncSerializerMixin(object):
     class Meta:
         abstract = True
@@ -95,8 +113,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
                                         queryset=VolunteerRole.objects.all(), required=False)
     ticket = serializers.BooleanField(source="is_ticket_received", required=False, allow_null=True)
     scanner_comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    supervisor_id = serializers.SlugRelatedField(slug_field="id",
-                                                 queryset=Volunteer.objects.all(), required=False, allow_null=True)
+    supervisor_id = SupervisorIdField(required=False, allow_null=True)
 
     class Meta:
         model = Volunteer
