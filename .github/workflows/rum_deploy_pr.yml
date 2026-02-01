@@ -1,0 +1,60 @@
+name: Deploy to rumsrv on PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+jobs:
+  build:
+    runs-on: [self-hosted, rumsrv]
+    environment:
+      name: PR-${{ github.event.number }}
+      url: ${{ steps.create-link.outputs.app_url }}
+    env:
+      PROJECT_NAME: feed-pr-${{ github.event.number }}
+      DB_DIR: /tmp/feed_db_pr_${{ github.event.number }}
+      PHOTO_STORAGE_PATH: /var/feed_db/photos/
+    #   PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v3
+# DB
+    - name: setup db dir
+      if: github.event.action != 'closed'
+      run: |
+        mkdir -p ${DB_DIR}
+        cp -n /var/feed_db/feed_db.sqlite3 ${DB_DIR}/feed_db.sqlite3
+# ADMIN
+    - name: build admin
+      if: github.event.action != 'closed'
+      run: |
+          docker compose -f docker-compose.pr.yml -p $PROJECT_NAME build \
+            --build-arg NEW_API_URL=/feedapi/v1 \
+            --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
+            --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
+            --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
+    - name: stop feed_admin
+      run: docker compose -f docker-compose.pr.yml -p $PROJECT_NAME down
+    - name: run admin
+      if: github.event.action != 'closed'
+      run: |
+        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -f docker-compose.pr.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
+    - name: Create app link
+      if: github.event.action != 'closed'
+      id: create-link
+      run: echo "::set-output name=app_url::http://9${{ github.event.number }}.agreetesting.rumyantsev.com"
+    - name: remove db dir
+      if: github.event.action == 'closed'
+      run: |
+        rm -r ${DB_DIR}
+
+# CLEANUP
+    - name: cleanup docker containers
+      run: docker container prune --filter "until=168h" -f
+    - name: cleanup docker images
+      run: docker image prune -a -f --filter "until=168h"
+    - name: cleanup docker build cache
+      run: docker builder prune -a -f --filter "until=168h"
