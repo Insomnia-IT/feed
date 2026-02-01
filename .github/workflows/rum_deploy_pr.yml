@@ -31,11 +31,11 @@ jobs:
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
     - name: stop feed_admin
-      run: docker compose -p $PROJECT_NAME down
+      run: docker compose -f docker-compose.pr.yml -p $PROJECT_NAME down
     - name: run admin
       if: github.event.action != 'closed'
       run: |
-        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -p $PROJECT_NAME up -d --remove-orphans --force-recreate
+        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -f docker-compose.pr.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f
