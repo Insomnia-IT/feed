@@ -1,0 +1,45 @@
+name: Deploy to rumsrv on PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+jobs:
+  build:
+    runs-on: [self-hosted, rumsrv]
+    env:
+      PROJECT_NAME: feed-pr-${{ github.event.number }}
+      DB_DIR: /var/feed_db
+      PHOTO_STORAGE_PATH: /var/feed_db/photos/
+      PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v3
+# DB
+    - name: setup db dir
+      run: mkdir -p ${DB_DIR}
+# ADMIN
+    - name: build admin
+      if: github.event.action != 'closed'
+      run: |
+          docker compose -f docker-compose.pr.yml build \
+            --build-arg NEW_API_URL=/feedapi/v1 \
+            --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
+            --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
+            --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
+    - name: stop feed_admin
+      run: docker compose down -p $PROJECT_NAME
+    - name: run admin
+      if: github.event.action != 'closed'
+      run: |
+        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -p $PROJECT_NAME up -d --remove-orphans --force-recreate
+# CLEANUP
+    - name: cleanup docker containers
+      run: docker container prune --filter "until=168h" -f
+    - name: cleanup docker images
+      run: docker image prune -a -f --filter "until=168h"
+    - name: cleanup docker build cache
+      run: docker builder prune -a -f --filter "until=168h"
