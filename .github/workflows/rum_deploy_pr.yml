@@ -23,6 +23,7 @@ jobs:
     - uses: actions/checkout@v3
 # DB
     - name: setup db dir
+      if: github.event.action != 'closed'
       run: |
         mkdir -p ${DB_DIR}
         cp -n /var/feed_db/feed_db.sqlite3 ${DB_DIR}/feed_db.sqlite3
@@ -45,6 +46,10 @@ jobs:
       if: github.event.action != 'closed'
       id: create-link
       run: echo "::set-output name=app_url::http://9${{ github.event.number }}.agreetesting.rumyantsev.com"
+    - name: remove db dir
+      if: github.event.action == 'closed'
+      run: |
+        rm -r ${DB_DIR}
 
 # CLEANUP
     - name: cleanup docker containers
