@@ -49,7 +49,8 @@ jobs:
             conclusion: 'success',
             details_url: 'http://9${{ github.event.number }}.agreetesting.rumyantsev.com/',
             output: {
-              title: 'Link to app for testing'
+              title: 'Link to app for testing',
+              summary: 'Link to app for testing'
             }
           });
 # CLEANUP
