@@ -16,8 +16,8 @@ jobs:
       url: ${{ steps.create-link.outputs.app_url }}
     env:
       PROJECT_NAME: feed-pr-${{ github.event.number }}
-      DB_DIR: /var/feed_db
-      PHOTO_STORAGE_PATH: /var/feed_db/photos/
+      DB_DIR: /var/feed_db_pr_${{ github.event.number }}
+      PHOTO_STORAGE_PATH: /var/feed_db_pr_${{ github.event.number }}/photos/
       PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
     steps:
     - uses: actions/checkout@v3
