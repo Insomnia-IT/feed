@@ -1,11 +1,11 @@
 import cn from 'classnames';
-import React from 'react';
+import { type HTMLAttributes } from 'react';
 
 import css from './card-container.module.css';
 
 type CardColors = 'red' | 'white' | 'blue';
 
-interface CardContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardContainerProps extends HTMLAttributes<HTMLDivElement> {
     cardColor?: CardColors;
 }
 

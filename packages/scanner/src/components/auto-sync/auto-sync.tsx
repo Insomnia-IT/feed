@@ -7,11 +7,12 @@ import { useTimer } from 'shared/hooks/useTimer';
 import css from './auto-sync.module.css';
 
 const SYNC_INTERVAL = 2 * 60 * 1000;
+const INITIAL_SYNC_TIME = Date.now() + SYNC_INTERVAL;
 
 export const AutoSync = () => {
     const { doSync, syncError, syncFetching } = useApp();
 
-    const [nextSyncTime, setNextSyncTime] = useState<number>(Date.now() + SYNC_INTERVAL);
+    const [nextSyncTime, setNextSyncTime] = useState<number>(INITIAL_SYNC_TIME);
 
     const isSyncFetchingRef = useRef(syncFetching);
     const syncSendRef = useRef(doSync);

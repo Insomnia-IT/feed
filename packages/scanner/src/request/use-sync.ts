@@ -78,7 +78,7 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
         [volsFetching, syncTransactionsFetching, groupBadgesFetching, volsSend, groupBadgesSend, syncTransactionsSend]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             updated,
@@ -86,5 +86,5 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };

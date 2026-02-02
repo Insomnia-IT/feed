@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Form, Input, Select, Image, Tooltip } from 'antd';
 import { useSelect } from '@refinedev/antd';
 
@@ -7,7 +7,7 @@ import HorseIcon from 'assets/icons/horse-icon';
 import { Rules } from 'components/form';
 import useCanAccess from 'components/entities/vols/use-can-access';
 import type { DirectionEntity, PersonEntity } from 'interfaces';
-import { ColorCircle, ColorDef } from './color-circle/color-circle';
+import { ColorCircle, type ColorDef } from './color-circle/color-circle';
 
 import styles from './vol-info-section.module.css';
 
@@ -35,13 +35,13 @@ interface IProps {
     person: PersonEntity | null;
 }
 
-export const VolInfoSection: React.FC<IProps> = ({
+export const VolInfoSection = ({
     denyBadgeEdit,
     canEditGroupBadge,
     colorTypeOptions,
     groupBadgeOptions,
     person
-}) => {
+}: IProps) => {
     const form = Form.useFormInstance();
     const [imageError, setImageError] = useState(false);
 

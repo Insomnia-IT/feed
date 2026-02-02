@@ -1,23 +1,13 @@
 import { Button } from 'antd';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import dayjs from 'dayjs';
 
 import type { ArrivalEntity, CustomFieldEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 import { formDateFormat, saveXLSX } from 'shared/lib';
 
-export const SaveAsXlsxButton: FC<{
-    isDisabled: boolean;
-    customFields?: Array<CustomFieldEntity>;
-    filterQueryParams: string;
-    volunteerRoleById: Record<string, string>;
-    statusById: Record<string, string>;
-    transportById: Record<string, string>;
-    kitchenNameById: Record<string, string>;
-    feedTypeNameById: Record<string, string>;
-    accessRoleById: Record<string, string>;
-}> = ({
+export const SaveAsXlsxButton = ({
     accessRoleById,
     customFields,
     feedTypeNameById,
@@ -27,6 +17,16 @@ export const SaveAsXlsxButton: FC<{
     statusById,
     transportById,
     volunteerRoleById
+}: {
+    isDisabled: boolean;
+    customFields?: Array<CustomFieldEntity>;
+    filterQueryParams: string;
+    volunteerRoleById: Record<string, string>;
+    statusById: Record<string, string>;
+    transportById: Record<string, string>;
+    kitchenNameById: Record<string, string>;
+    feedTypeNameById: Record<string, string>;
+    accessRoleById: Record<string, string>;
 }) => {
     const [isExporting, setIsExporting] = useState(false);
 

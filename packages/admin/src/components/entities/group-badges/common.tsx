@@ -1,7 +1,7 @@
 import { Button, Form, Input, Select } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
 import { useSelect } from '@refinedev/antd';
-import { FC, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
 import { TextEditor } from 'components/controls/text-editor';
@@ -9,7 +9,7 @@ import type { DirectionEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
-export const CreateEdit: FC = () => {
+export const CreateEdit = () => {
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name'

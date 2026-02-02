@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 
 import { PostScan } from 'components/post-scan';
 import { db } from 'db';
@@ -9,7 +9,7 @@ import { PostScanGroupBadge } from 'components/post-scan/post-scan-group-badge';
 import { ErrorCard } from 'components/post-scan/post-scan-cards';
 import { ScreenWrapper } from 'shared/ui/screen-wrapper';
 
-export const MainScreen = React.memo(function MainScreen() {
+export const MainScreen = memo(function MainScreen() {
     const { setVolCount } = useApp();
     const { errorMessage, groupBadge, handleCloseCard, view } = useScan();
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import type { Transaction } from 'db';
@@ -9,7 +9,6 @@ import { useApp } from 'model/app-provider';
 import style from './main-screen-stats.module.css';
 
 export const ScanScreenStats = () => {
-    const [volsFedAmount, setVolsFedAmount] = useState(0);
     const { lastSyncStart, mealTime } = useApp();
 
     const volsOnField = useLiveQuery(
@@ -19,18 +18,16 @@ export const ScanScreenStats = () => {
     );
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
-    useEffect(() => {
-        setVolsFedAmount(() => {
-            if (todayTxs.length > 0) {
-                return todayTxs.reduce((acc, curr) => {
-                    if (curr.mealTime === mealTime) {
-                        return acc + curr.amount;
-                    }
-                    return acc;
-                }, 0);
-            }
-            return 0;
-        });
+    const volsFedAmount = useMemo(() => {
+        if (todayTxs.length > 0) {
+            return todayTxs.reduce((acc, curr) => {
+                if (curr.mealTime === mealTime) {
+                    return acc + curr.amount;
+                }
+                return acc;
+            }, 0);
+        }
+        return 0;
     }, [mealTime, todayTxs]);
 
     return (

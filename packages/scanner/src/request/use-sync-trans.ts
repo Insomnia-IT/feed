@@ -70,7 +70,7 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
         [baseUrl, error, fetching, pin, setAuth]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -78,7 +78,7 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };
 
 const getNewClientTransactions = async (): Promise<Array<Transaction>> => {

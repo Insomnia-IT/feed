@@ -1,6 +1,6 @@
 import { Form, Modal } from 'antd';
 import { useSelect } from '@refinedev/core';
-import React, { useEffect, useRef } from 'react';
+import { type ChangeEvent, useEffect, useRef } from 'react';
 
 import type {
     AccessRoleEntity,
@@ -28,10 +28,10 @@ import {
 import styles from '../common.module.css';
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
-export const CommonEdit: React.FC = () => {
+export const CommonEdit = () => {
     const form = Form.useFormInstance();
 
     const person = Form.useWatch('person', form);
@@ -93,7 +93,7 @@ export const CommonEdit: React.FC = () => {
     const { qrDuplicateVolunteer, setQrDuplicateVolunteer, handleDuplicateQRChange, clearDuplicateQR } =
         useQrDuplicationCheck(form);
 
-    const handleQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleQRChange = (e: ChangeEvent<HTMLInputElement>) => {
         handleDuplicateQRChange(e);
         const { value } = e.target;
         if (value === '') {

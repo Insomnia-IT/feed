@@ -1,5 +1,3 @@
-import type { FC } from 'react';
-
 import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Button } from 'shared/ui/button/button';
 import { Text, Title } from 'shared/ui/typography';
@@ -11,12 +9,17 @@ import { BureauComment } from 'components/post-scan/post-scan-cards/ui/bureau-co
 
 import css from './feed-error-card.module.css';
 
-export const FeedErrorCard: FC<{
+export const FeedErrorCard = ({
+    close,
+    doNotFeed,
+    msg,
+    vol
+}: {
     msg: Array<string>;
     doNotFeed?: (reason: string) => void;
     close: () => void;
     vol: Volunteer;
-}> = ({ close, doNotFeed, msg, vol }) => {
+}) => {
     const handleClose = (): void => {
         if (doNotFeed) {
             doNotFeed(msg.join(', '));

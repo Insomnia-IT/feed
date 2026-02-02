@@ -1,17 +1,17 @@
-import { FC, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Input, Modal, Table } from 'antd';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import { CrudFilters, useInvalidate, useList, useNotification, useUpdateMany } from '@refinedev/core';
+import { type CrudFilters, useInvalidate, useList, useNotification, useUpdateMany } from '@refinedev/core';
 
 import type { VolEntity } from 'interfaces';
 import { useScreen } from 'shared/providers';
 import { useDebouncedCallback } from 'shared/hooks';
 import useVisibleDirections from '../vols/use-visible-directions';
 
-export const AddVolunteerModal: FC<{ groupBadgeId: number }> = ({ groupBadgeId }) => {
+export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) => {
     const [isOpenModal, setOpenModal] = useState(false);
     const [search, setSearch] = useState('');
-    const [selectedIds, setSelectedIds] = useState<React.Key[]>([]);
+    const [selectedIds, setSelectedIds] = useState<(string | number | bigint)[]>([]);
     const [page, setPage] = useState(1);
 
     const { isDesktop } = useScreen();
@@ -23,35 +23,47 @@ export const AddVolunteerModal: FC<{ groupBadgeId: number }> = ({ groupBadgeId }
 
     const pageSize = isDesktop ? 10 : 5;
 
-    const serverFilters: CrudFilters = [];
-    if (search) {
-        serverFilters.push({
-            field: 'search',
-            operator: 'eq',
-            value: search
-        });
-    }
+    const serverFilters: CrudFilters = useMemo(() => {
+        const filters: CrudFilters = [];
+        if (search) {
+            filters.push({
+                field: 'search',
+                operator: 'eq',
+                value: search
+            });
+        }
+        return filters;
+    }, [search]);
 
-    const { data, isLoading } = useList<VolEntity>({
+    const { result, query } = useList<VolEntity>({
         resource: 'volunteers',
         filters: serverFilters,
         pagination: {
             mode: 'server',
-            current: page,
+            currentPage: page,
             pageSize
         }
     });
 
-    const volunteersRaw = data?.data ?? [];
-    const total = data?.total ?? 0;
+    const volunteersRaw = result.data ?? [];
+    const total = result.total ?? 0;
+    const isLoading = query.isLoading;
 
-    const volunteers = volunteersRaw.filter((v) =>
-        visibleDirections ? v.directions?.some(({ id }) => visibleDirections.includes(id)) : true
-    );
+    const visibleDirectionsSet = useMemo(() => {
+        return visibleDirections ? new Set(visibleDirections.map(String)) : null;
+    }, [visibleDirections]);
+
+    const volunteers = useMemo(() => {
+        if (!visibleDirectionsSet) return volunteersRaw;
+
+        return volunteersRaw.filter((v: VolEntity) =>
+            v.directions?.some((d) => visibleDirectionsSet.has(String(d.id)))
+        );
+    }, [volunteersRaw, visibleDirectionsSet]);
 
     const rowSelection: TableRowSelection<VolEntity> = {
         selectedRowKeys: selectedIds,
-        onChange: setSelectedIds,
+        onChange: (keys) => setSelectedIds(keys),
         preserveSelectedRowKeys: true
     };
 

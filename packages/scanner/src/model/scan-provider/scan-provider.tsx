@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 import type { GroupBadge, Transaction, Volunteer } from 'db';
 import { db } from 'db';
@@ -18,13 +18,11 @@ interface IScanContext {
 type MainViewTypes = 'scan' | 'loading' | 'error' | 'post-scan' | 'post-scan-group-badge';
 export const postScanStatuses = ['anon', 'vol-warning', 'vol-error', 'child', 'group-badge'];
 
-const ScanContext = React.createContext<IScanContext | null>(null);
+const ScanContext = createContext<IScanContext | null>(null);
 
 const DOUBLE_SCAN_TIMEOUT = 5000;
 
-export const ScanProvider: React.FC<{
-    children: React.ReactNode;
-}> = ({ children }) => {
+export const ScanProvider = ({ children }: { children: ReactNode }) => {
     /** View */
     const [view, setView] = useState<MainViewTypes>('scan');
 

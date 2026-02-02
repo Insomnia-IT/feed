@@ -1,5 +1,3 @@
-import type { FC } from 'react';
-
 import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Button } from 'shared/ui/button/button';
 import { Text, Title } from 'shared/ui/typography';
@@ -7,11 +5,15 @@ import { VolAndUpdateInfo } from 'components/vol-and-update-info';
 
 import css from './feed-anon-card.module.css';
 
-export const FeedAnonCard: FC<{
+export const FeedAnonCard = ({
+    close,
+    doFeed,
+    onClickFeedGroup
+}: {
     close: () => void;
     doFeed: (isVegan?: boolean) => void;
     onClickFeedGroup: () => void;
-}> = ({ close, doFeed, onClickFeedGroup }) => (
+}) => (
     <CardContainer className={css.cardContainer}>
         <div className={css.head}>
             <Title>Покормить без бейджа?</Title>

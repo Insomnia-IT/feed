@@ -1,5 +1,5 @@
 import type { TransactionJoined } from 'db';
-import { FeedStats } from './use-local-stats';
+import type { FeedStats } from './use-local-stats';
 
 export interface LocalStatsHook {
     error: any;

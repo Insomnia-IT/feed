@@ -9,13 +9,19 @@ import { calculateAlreadyFedCount } from 'components/post-scan/post-scan.utils';
 import style from './warning-partially-fed-modal.module.css';
 
 // Уже покормленные волонтеры
-const WarningPartiallyFedModal: React.FC<{
+const WarningPartiallyFedModal = ({
+    alreadyFedTransactions,
+    doFeedAnons,
+    greenVols,
+    setShowModal,
+    showModal
+}: {
     showModal: boolean;
     setShowModal: (isShown: boolean) => void;
     greenVols: Array<ValidatedVol>;
     alreadyFedTransactions: Array<TransactionJoined>;
     doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
-}> = ({ alreadyFedTransactions, doFeedAnons, greenVols, setShowModal, showModal }) => {
+}) => {
     const onClose = (): void => {
         setShowModal(false);
     };

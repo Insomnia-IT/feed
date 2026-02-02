@@ -1,4 +1,3 @@
-import type { FC } from 'react';
 import { useState } from 'react';
 import cn from 'classnames';
 
@@ -16,10 +15,7 @@ import { NotFeedListModalTrigger } from '../not-feed-list-modal/not-feed-list-mo
 
 import css from './post-scan-group-badge-misc.module.css';
 
-export const GroupBadgeInfo: FC<{
-    name: string;
-    volsToFeed: Array<Volunteer>;
-}> = ({ name, volsToFeed }) => {
+export const GroupBadgeInfo = ({ name, volsToFeed }: { name: string; volsToFeed: Array<Volunteer> }) => {
     const totalVegs = volsToFeed.filter((vol) => vol.is_vegan).length;
     const totalMeats = volsToFeed.filter((vol) => !vol.is_vegan).length;
 
@@ -47,14 +43,21 @@ export const GroupBadgeInfo: FC<{
     );
 };
 
-export const GroupBadgeWarningCard: FC<{
+export const GroupBadgeWarningCard = ({
+    alreadyFedTransactions,
+    close,
+    doFeed,
+    doFeedAnons,
+    name,
+    validationGroups
+}: {
     alreadyFedTransactions: Array<TransactionJoined>;
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
     doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
     close: () => void;
-}> = ({ alreadyFedTransactions, close, doFeed, doFeedAnons, name, validationGroups }) => {
+}) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
@@ -136,13 +139,19 @@ export const GroupBadgeWarningCard: FC<{
     );
 };
 
-const BottomBlock: React.FC<{
+const BottomBlock = ({
+    alternativeText,
+    amountToFeed,
+    handleAlternativeAction,
+    handleCancel,
+    handlePrimaryAction
+}: {
     handleCancel: () => void;
     handlePrimaryAction: () => void;
     handleAlternativeAction?: () => void;
     alternativeText?: string;
     amountToFeed: number;
-}> = ({ alternativeText, amountToFeed, handleAlternativeAction, handleCancel, handlePrimaryAction }) => {
+}) => {
     return (
         <div className={css.bottomBLock}>
             <div className={css.buttonsBlock}>

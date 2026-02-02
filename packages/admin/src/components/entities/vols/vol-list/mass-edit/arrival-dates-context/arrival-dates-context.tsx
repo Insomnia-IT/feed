@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, PropsWithChildren } from 'react';
+import { createContext, useContext, useState, useCallback, type PropsWithChildren } from 'react';
 import { Dayjs } from 'dayjs';
 
 type Context = {
@@ -10,7 +10,7 @@ type Context = {
 
 const ArrivalDates = createContext<Context | null>(null);
 
-export const ArrivalDatesProvider: React.FC<PropsWithChildren> = ({ children }) => {
+export const ArrivalDatesProvider = ({ children }: PropsWithChildren) => {
     const [date, setDate] = useState<Dayjs | undefined>(undefined);
     const [dateType, setDateType] = useState<'start' | 'end' | undefined>(undefined);
 

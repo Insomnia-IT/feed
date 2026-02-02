@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { FeedType, getFeedStats, getVolsOnField, MealTime } from 'db';
 import { DATE_FORMAT } from 'shared/lib/date';
-import { LocalStatsHook } from './lib';
+import type { LocalStatsHook } from './lib';
 
 export const MEAL_TIME = [MealTime.breakfast, MealTime.lunch, MealTime.dinner, MealTime.night] as const;
 

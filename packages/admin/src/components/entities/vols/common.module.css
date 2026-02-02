@@ -472,27 +472,25 @@
     }
 }
 
-:global {
-    @media (width <= 576px) {
-        :where(.ant-page-header-content) {
-            padding: 0 !important;
-        }
-
-        :where(.ant-card-body) {
-            padding: 5px !important;
-        }
-
-        :where(.ant-card-actions) {
-            margin: 11px 5px 56px !important;
-            position: sticky;
-            bottom: 50px;
-        }
+@media (width <= 576px) {
+    :global(.ant-page-header-content) {
+        padding: 0 !important;
     }
 
-    @media (width >= 577px) {
-        :where(.ant-card-actions) {
-            margin: 0 24px !important;
-            position: static;
-        }
+    :global(.ant-card-body) {
+        padding: 5px !important;
+    }
+
+    :global(.ant-card-actions) {
+        margin: 11px 5px 56px !important;
+        position: sticky;
+        bottom: 50px;
+    }
+}
+
+@media (width >= 577px) {
+    :global(.ant-card-actions) {
+        margin: 0 24px !important;
+        position: static;
     }
 }

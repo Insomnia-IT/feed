@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import cn from 'classnames';
 
@@ -14,7 +14,6 @@ const formatDate = (value: number) => {
 };
 
 export const VolAndUpdateInfo = ({ textColor = 'black' }: { textColor?: 'black' | 'white' }) => {
-    const [volsFedAmount, setVolsFedAmount] = useState(0);
     const { lastSyncStart, mealTime } = useApp();
 
     const volsOnField = useLiveQuery(
@@ -25,18 +24,16 @@ export const VolAndUpdateInfo = ({ textColor = 'black' }: { textColor?: 'black' 
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime], []) as Array<Transaction>;
 
-    useEffect(() => {
-        setVolsFedAmount(() => {
-            if (todayTxs.length > 0) {
-                return todayTxs.reduce((acc, curr) => {
-                    if (curr.mealTime === mealTime) {
-                        return acc + curr.amount;
-                    }
-                    return acc;
-                }, 0);
-            }
-            return 0;
-        });
+    const volsFedAmount = useMemo(() => {
+        if (todayTxs.length > 0) {
+            return todayTxs.reduce((acc, curr) => {
+                if (curr.mealTime === mealTime) {
+                    return acc + curr.amount;
+                }
+                return acc;
+            }, 0);
+        }
+        return 0;
     }, [mealTime, todayTxs]);
     return (
         <div className={cn(css.postScanStats, { [css[textColor]]: textColor })}>

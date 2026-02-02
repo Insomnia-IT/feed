@@ -1,11 +1,11 @@
-import React, { memo } from 'react';
+import { type ComponentProps, memo } from 'react';
 import cn from 'classnames';
 
 import { Text } from 'shared/ui/typography';
 
 import css from './switcher.module.css';
 
-interface InputProps extends React.ComponentProps<'input'> {
+interface InputProps extends ComponentProps<'input'> {
     text?: string;
 }
 export const Switcher = memo(function Switcher(props: InputProps) {

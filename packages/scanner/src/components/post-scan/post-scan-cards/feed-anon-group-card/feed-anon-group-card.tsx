@@ -1,4 +1,3 @@
-import type { FC } from 'react';
 import cn from 'classnames';
 import { useState } from 'react';
 
@@ -21,9 +20,7 @@ export type Form = {
     comment: string;
 };
 
-export const FeedAnonGroupCard: FC<{
-    close: () => void;
-}> = ({ close }) => {
+export const FeedAnonGroupCard = ({ close }: { close: () => void }) => {
     const { kitchenId, mealTime } = useApp();
     const [form, setForm] = useState<Form>({
         meat: '',

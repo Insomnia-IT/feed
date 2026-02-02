@@ -8,11 +8,13 @@
             "default": {
                 "runner": "nx/tasks-runners/default",
                 "options": {
-                    "cacheableOperations": ["build"],
-                    "parallel": false,
-                    "outputStyle": "static",
-                    "continuousDependencies": {}
+                    "parallel": false
                 }
+            }
+        },
+        "targetDefaults": {
+            "build": {
+                "cache": true
             }
         }
     },

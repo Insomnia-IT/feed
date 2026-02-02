@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import css from './qr-scan-simulator.module.css';
 
@@ -10,10 +10,13 @@ const options = [
     { label: 'Кухня', value: '220778a084424fe7937bf51f9f84426e' }
 ];
 
-export const ScanSimulator: React.FC<{
+export const ScanSimulator = ({
+    setScanResult,
+    withSelection = false
+}: {
     withSelection?: boolean;
     setScanResult: (scanResult: string) => void;
-}> = ({ setScanResult, withSelection = false }) => {
+}) => {
     const [input, setInput] = useState('e4baa6e988b140c2be74797727be7180');
 
     return (

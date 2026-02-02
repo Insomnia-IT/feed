@@ -6,7 +6,11 @@ import path from 'path';
 
 export default defineConfig({
     plugins: [
-        react(),
+        react({
+            babel: {
+                plugins: [['babel-plugin-react-compiler']]
+            }
+        }),
         // visualizer({ open: true }), // Uncomment to visualize bundle size
         VitePWA({
             registerType: 'autoUpdate',

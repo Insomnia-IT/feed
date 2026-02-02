@@ -1,4 +1,4 @@
-import React, { memo, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 
 import { Input } from 'shared/ui/input/input';
 import { removeNonDigits } from 'shared/lib/utils';
@@ -10,7 +10,7 @@ interface PinInputProps {
     error?: string | null;
 }
 
-export const PinInput = memo(function PinInput(props: PinInputProps): React.ReactElement {
+export const PinInput = memo(function PinInput(props: PinInputProps) {
     const { error, onChange } = props;
 
     const [pin, setPin] = useState('');

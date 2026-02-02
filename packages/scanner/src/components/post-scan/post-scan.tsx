@@ -1,5 +1,4 @@
-import type { FC } from 'react';
-import { memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { useScan } from 'model/scan-provider/scan-provider';
 import { FeedAnonCard, FeedCard, FeedWarningCard } from 'components/post-scan/post-scan-cards';
@@ -9,13 +8,15 @@ import { useApp } from 'model/app-provider';
 import { FeedAnonGroupCard } from 'components/post-scan/post-scan-cards/feed-anon-group-card/feed-anon-group-card';
 import { MealTime } from 'db';
 
-enum AvailViews {
-    SingleVolunteerError = 'vol-error',
-    SingleVolunteerWarning = 'vol-warning',
-    SingleVolunteerFeed = 'vol-feed',
-    SingleVolunteerAnon = 'anon',
-    VolunteerAnonGroup = 'anon-group'
-}
+export const AvailViews = {
+    SingleVolunteerError: 'vol-error',
+    SingleVolunteerWarning: 'vol-warning',
+    SingleVolunteerFeed: 'vol-feed',
+    SingleVolunteerAnon: 'anon',
+    VolunteerAnonGroup: 'anon-group'
+} as const;
+
+export type AvailViews = (typeof AvailViews)[keyof typeof AvailViews];
 
 /**
  * Функция возвращает тип экрана для отрисовки и список ошибок в случае ошибочного экрана
@@ -35,7 +36,7 @@ const getInitialScreenState = ({
     vol,
     volTransactions
 }: InitialScreenStateParams): { view: AvailViews; errors: Array<string> } => {
-    let view = AvailViews.SingleVolunteerAnon;
+    let view: AvailViews = AvailViews.SingleVolunteerAnon;
     let errors: Array<string> = [];
 
     if (qrcode === 'anon') {
@@ -56,39 +57,57 @@ const getInitialScreenState = ({
     return { view, errors };
 };
 
-export const PostScan: FC = memo(() => {
+const PostScanInner = () => {
     const { kitchenId, mealTime } = useApp();
     const { handleCloseCard, qrcode, vol, volTransactions } = useScan();
 
-    const { errors, view } = getInitialScreenState({ kitchenId, mealTime, qrcode, vol, volTransactions });
+    const initial = useMemo(
+        () => getInitialScreenState({ kitchenId, mealTime, qrcode, vol, volTransactions }),
+        [kitchenId, mealTime, qrcode, vol, volTransactions]
+    );
 
-    const [postScanView, setPostScanView] = useState<AvailViews>(view);
+    const [overrideView, setOverrideView] = useState<AvailViews | null>(null);
+
+    const currentView = overrideView ?? initial.view;
 
     const { doFeed, doNotFeed } = useFeedVol(vol, mealTime, handleCloseCard, kitchenId);
 
     return (
         <>
-            {postScanView === AvailViews.SingleVolunteerAnon && (
+            {currentView === AvailViews.SingleVolunteerAnon && (
                 <FeedAnonCard
                     close={handleCloseCard}
                     doFeed={doFeed}
-                    onClickFeedGroup={() => {
-                        setPostScanView(AvailViews.VolunteerAnonGroup);
-                    }}
+                    onClickFeedGroup={() => setOverrideView(AvailViews.VolunteerAnonGroup)}
                 />
             )}
-            {postScanView === AvailViews.VolunteerAnonGroup && <FeedAnonGroupCard close={handleCloseCard} />}
-            {postScanView === AvailViews.SingleVolunteerFeed && vol && (
+
+            {currentView === AvailViews.VolunteerAnonGroup && <FeedAnonGroupCard close={handleCloseCard} />}
+
+            {currentView === AvailViews.SingleVolunteerFeed && vol && (
                 <FeedCard doFeed={doFeed} close={handleCloseCard} vol={vol} />
             )}
-            {postScanView === AvailViews.SingleVolunteerWarning && vol && (
-                <FeedWarningCard close={handleCloseCard} doFeed={doFeed} doNotFeed={doNotFeed} vol={vol} msg={errors} />
+
+            {currentView === AvailViews.SingleVolunteerWarning && vol && (
+                <FeedWarningCard
+                    close={handleCloseCard}
+                    doFeed={doFeed}
+                    doNotFeed={doNotFeed}
+                    vol={vol}
+                    msg={initial.errors}
+                />
             )}
-            {postScanView === AvailViews.SingleVolunteerError && vol && (
-                <FeedErrorCard close={handleCloseCard} doNotFeed={doNotFeed} msg={errors} vol={vol} />
+
+            {currentView === AvailViews.SingleVolunteerError && vol && (
+                <FeedErrorCard close={handleCloseCard} doNotFeed={doNotFeed} msg={initial.errors} vol={vol} />
             )}
         </>
     );
+};
+
+export const PostScan = memo(() => {
+    const { qrcode } = useScan();
+    return <PostScanInner key={qrcode} />;
 });
 
 PostScan.displayName = 'PostScan';

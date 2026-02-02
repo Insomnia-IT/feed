@@ -7,7 +7,7 @@ import { Text } from 'shared/ui/typography';
 
 import styles from './not-feed-list-modal.module.css';
 
-export const NotFeedListModalTrigger: React.FC<{ doNotFeedVols: Array<ValidatedVol> }> = ({ doNotFeedVols }) => {
+export const NotFeedListModalTrigger = ({ doNotFeedVols }: { doNotFeedVols: Array<ValidatedVol> }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -20,10 +20,14 @@ export const NotFeedListModalTrigger: React.FC<{ doNotFeedVols: Array<ValidatedV
     );
 };
 
-const NoFeedListModal: React.FC<{ isOpen: boolean; onClose: () => void; doNotFeedVols: Array<ValidatedVol> }> = ({
+const NoFeedListModal = ({
     doNotFeedVols,
     isOpen,
     onClose
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    doNotFeedVols: Array<ValidatedVol>;
 }) => {
     return (
         <Modal active={isOpen} onClose={onClose} title={'Они не едят:'} classModal={styles.modal}>

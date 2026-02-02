@@ -1,12 +1,11 @@
 import { Form, Input, Select, Checkbox, Divider, Button } from 'antd';
-
+import { type ChangeEvent, useState } from 'react';
 import { QrcodeOutlined } from '@ant-design/icons';
 
 import { Rules } from 'components/form';
+import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 import styles from '../../common.module.css';
-import { useState } from 'react';
-import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 export const PersonalInfoSection = ({
     isCreationProcess,
@@ -24,7 +23,7 @@ export const PersonalInfoSection = ({
 
     kitchenOptions: { label: string; value: string | number }[];
     genderOptions: { label: string; value: string | number }[];
-    handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleQRChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }) => {
     const [openQrModal, setOpenQrModal] = useState(false);
 

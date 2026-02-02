@@ -1,7 +1,7 @@
-import { FC, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { Edit, useForm } from '@refinedev/antd';
-import { useBreadcrumb, type IResourceComponentsProps } from '@refinedev/core';
+import { useBreadcrumb } from '@refinedev/core';
 import { Form, Breadcrumb } from 'antd';
 
 import { useScreen } from 'shared/providers';
@@ -11,7 +11,7 @@ import useSaveConfirm from './use-save-confirm';
 
 import styles from './common.module.css';
 
-export const VolEdit: FC<IResourceComponentsProps> = () => {
+export const VolEdit = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => onMutationSuccess(e),
         warnWhenUnsavedChanges: true

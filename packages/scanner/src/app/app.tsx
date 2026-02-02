@@ -1,4 +1,3 @@
-import { type FC } from 'react';
 import type { FallbackProps } from 'react-error-boundary';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -14,15 +13,18 @@ import 'shared/common/colors.css';
 import 'shared/common/media.css';
 import 'shared/common/vars.css';
 
-const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (
-    <div role="alert">
-        <p>я сломался</p>
-        <pre>{error.message}</pre>
-        <button onClick={resetErrorBoundary}>ПЕРЕЗАГРУЗИТЬ</button>
-    </div>
-);
+const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
+    const message = error instanceof Error ? error.message : String(error);
+    return (
+        <div role="alert">
+            <p>я сломался</p>
+            <pre>{message}</pre>
+            <button onClick={resetErrorBoundary}>ПЕРЕЗАГРУЗИТЬ</button>
+        </div>
+    );
+};
 
-const App: FC = () => {
+const App = () => {
     useCheckVersion();
     return (
         <ErrorBoundary FallbackComponent={ErrorFallback}>

@@ -7,10 +7,13 @@ import { Text } from 'shared/ui/typography';
 import style from './already-fed-modal.module.css';
 
 // Уже покормленные волонтеры
-const AlreadyFedModal: React.FC<{
-    leftToFeedCount: number;
+const AlreadyFedModal = ({
+    alreadyFedVolsCount = 0,
+    leftToFeedCount
+}: {
     alreadyFedVolsCount?: number;
-}> = ({ alreadyFedVolsCount = 0, leftToFeedCount }) => {
+    leftToFeedCount: number;
+}) => {
     const [modalWasShown, setModalWasShown] = useState<boolean>(false);
 
     const shouldShowModal = !modalWasShown && alreadyFedVolsCount > 0;

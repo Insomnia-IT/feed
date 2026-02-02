@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { PinInput } from 'shared/ui/pin-input/pin-input';
 import { Button } from 'shared/ui/button/button';
@@ -9,16 +9,19 @@ import { ScreenWrapper } from 'shared/ui/screen-wrapper';
 
 import css from './pin-screen.module.css';
 
-export const PinScreen = (): React.ReactElement => {
+export const PinScreen = () => {
     const [error, setError] = useState<null | string>(null);
 
     const { doSync, pin, setAuth, setKitchenId, setPin } = useApp();
 
     const storedPin = localStorage.getItem('pin');
 
-    const handleChangeInput = useCallback((value: string) => {
-        setPin(value);
-    }, []);
+    const handleChangeInput = useCallback(
+        (value: string) => {
+            setPin(value);
+        },
+        [setPin]
+    );
 
     const checkAuth = useCheckAuth(API_DOMAIN, setAuth);
 
@@ -45,7 +48,7 @@ export const PinScreen = (): React.ReactElement => {
                     setError('Пин-код неверный, попробуйте еще раз');
                 }
             });
-    }, [pin, checkAuth, setAuth, setPin, setKitchenId, storedPin]);
+    }, [pin, checkAuth, setAuth, setPin, setKitchenId, storedPin, doSync]);
 
     return (
         <ScreenWrapper className={css.screenWrapper}>

@@ -1,10 +1,10 @@
-import React, { createContext, FC, useCallback, useMemo, useState } from 'react';
+import { createContext, type PropsWithChildren, useCallback, useMemo, useState } from 'react';
 
 import {
-    VolunteerFieldExtended,
+    type VolunteerFieldExtended,
     volunteerTableCommonFields
 } from 'components/entities/vols/vol-list/volunteer-table-common-fields';
-import { CustomFieldEntity } from 'interfaces';
+import type { CustomFieldEntity } from 'interfaces';
 
 export const ActiveColumnsContext = createContext<{
     toggleOne: (name: string) => void;
@@ -27,10 +27,10 @@ const getSavedColumns = (): Array<string> => {
     return volunteerTableCommonFields.filter((item) => item.isDefault).map((item) => item.fieldName);
 };
 
-export const ActiveColumnsContextProvider: FC<React.PropsWithChildren & { customFields: Array<CustomFieldEntity> }> = ({
+export const ActiveColumnsContextProvider = ({
     children,
     customFields
-}) => {
+}: PropsWithChildren & { customFields: Array<CustomFieldEntity> }) => {
     const [checked, setChecked] = useState<Array<string>>(getSavedColumns());
     const setCheckedWithStorage = useCallback((value: Array<string>): void => {
         setChecked(value);

@@ -1,4 +1,3 @@
-import type { FC } from 'react';
 import cn from 'classnames';
 
 import { Text } from 'shared/ui/typography';
@@ -10,7 +9,7 @@ interface ScannerCommentProps {
     variant?: 'white' | 'red';
 }
 
-export const ScannerComment: FC<ScannerCommentProps> = ({ text, variant = 'red' }) => (
+export const ScannerComment = ({ text, variant = 'red' }: ScannerCommentProps) => (
     <div className={cn(css.scannerComment, css[variant])}>
         <Text className={css.text}>
             <span className={css.exclamation}>!</span>

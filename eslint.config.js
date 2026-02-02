@@ -1,36 +1,26 @@
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactRefresh from 'eslint-plugin-react-refresh';
+import { reactRefresh } from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const r = (...p) => path.resolve(__dirname, ...p);
-
-export default [
-    { ignores: ['**/dist', '**/dev-dist', '**/build', '**/.nx', '**/.turbo', '**/node_modules'] },
-    js.configs.recommended,
-    ...tseslint.configs.recommended,
+export default defineConfig([
+    globalIgnores(['**/dist', '**/dev-dist', '**/build', '**/.nx', '**/.turbo', '**/node_modules']),
     {
-        files: ['packages/*/src/**/*.{ts,tsx}'],
+        files: ['**/*.{ts,tsx}'],
+        extends: [
+            js.configs.recommended,
+            tseslint.configs.recommended,
+            reactHooks.configs.flat.recommended,
+            reactRefresh.configs.vite()
+        ],
         languageOptions: {
             ecmaVersion: 2023,
-            sourceType: 'module',
-            globals: globals.browser,
-            parserOptions: {
-                tsconfigRootDir: __dirname,
-                project: [r('tsconfig.eslint.json')]
-            }
-        },
-        plugins: {
-            'react-hooks': reactHooks,
-            'react-refresh': reactRefresh
+            globals: globals.browser
         },
         rules: {
-            ...reactHooks.configs.recommended.rules,
-            'no-tabs': ['error'],
+            'no-tabs': 'error',
             quotes: ['error', 'single'],
             'jsx-quotes': ['error', 'prefer-double'],
             'comma-dangle': ['error', 'never'],
@@ -38,4 +28,4 @@ export default [
             'react-refresh/only-export-components': ['warn', { allowConstantExport: true }]
         }
     }
-];
+]);

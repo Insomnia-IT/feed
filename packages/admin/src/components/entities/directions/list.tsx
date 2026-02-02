@@ -1,30 +1,33 @@
-import { FC, ReactNode } from 'react';
 import { List, ShowButton, TextField } from '@refinedev/antd';
 import { Space, Table } from 'antd';
-import { IResourceComponentsProps } from '@refinedev/core';
 import { useList } from '@refinedev/core';
 
 import type { DirectionEntity } from 'interfaces';
 import { getSorter } from 'utils';
 
-export const DepartmentList: FC<IResourceComponentsProps> = () => {
-    const { data: directions } = useList<DirectionEntity>({ pagination: { pageSize: 0 } });
+export const DepartmentList = () => {
+    const { result, query } = useList<DirectionEntity>({
+        resource: 'directions',
+        pagination: { mode: 'off' }
+    });
+
+    const directions = result.data ?? [];
 
     return (
         <List>
-            <Table rowKey="id" dataSource={directions?.data}>
+            <Table rowKey="id" dataSource={directions} loading={query.isLoading}>
                 <Table.Column
                     dataIndex="name"
                     title="Название"
-                    render={(value: string): ReactNode => <TextField value={value} />}
+                    render={(value) => <TextField value={value} />}
                     sorter={getSorter('name')}
                 />
                 <Table.Column
                     dataIndex={['type', 'name']}
                     title="Тип"
-                    render={(value: string): ReactNode => <TextField value={value} />}
+                    render={(value) => <TextField value={value} />}
                 />
-                <Table.Column<DirectionEntity>
+                <Table.Column
                     title="Действия"
                     dataIndex="actions"
                     render={(_, record) => (

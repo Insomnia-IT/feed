@@ -1,9 +1,16 @@
-import React from 'react';
 import { Modal } from 'antd';
 import styles from './confirm-modal.module.css';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-export const ConfirmModal: React.FC<{
+export const ConfirmModal = ({
+    title,
+    description,
+    warning,
+    onConfirm,
+    closeModal,
+    isOpen,
+    disableOkButton = false
+}: {
     title: string;
     description: string;
     warning?: string;
@@ -11,7 +18,7 @@ export const ConfirmModal: React.FC<{
     closeModal: () => void;
     isOpen: boolean;
     disableOkButton?: boolean;
-}> = ({ title, description, warning, onConfirm, closeModal, isOpen, disableOkButton = false }) => {
+}) => {
     const onCancel = () => {
         closeModal();
     };

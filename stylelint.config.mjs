@@ -1,9 +1,7 @@
-import stylistic from '@stylistic/stylelint-plugin';
-
 export default {
     root: true,
 
-    plugins: [stylistic],
+    plugins: ['@stylistic/stylelint-plugin'],
     extends: ['stylelint-config-standard'],
 
     rules: {

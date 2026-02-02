@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { createMockData } from 'shared/lib/mock';
 import { db } from 'db';
@@ -6,7 +6,7 @@ import { useApp } from 'model/app-provider';
 
 import style from './mock-trans.module.css';
 
-export const MockTrans: React.FC = () => {
+export const MockTrans = () => {
     const [count, setCount] = useState<number>(1);
     const { mealTime } = useApp();
     const addTestTrans = (count: number, type: 'now' | 'rnd') => {

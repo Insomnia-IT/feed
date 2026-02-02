@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
@@ -10,87 +10,71 @@ import { useApp } from 'model/app-provider';
 export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const { kitchenId } = useApp();
 
+    const [data, setData] = useState<ServerTransaction[] | null>(null);
     const [error, setError] = useState<any>(null);
     const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [fetching, setFetching] = useState(false);
 
-    const send = useCallback(() => {
-        if (fetching) {
-            return Promise.resolve(false);
-        }
+    const inFlightRef = useRef(false);
 
+    const send = useCallback(async () => {
+        if (inFlightRef.current) return false;
+
+        inFlightRef.current = true;
         setFetching(true);
 
-        return new Promise((res, rej) => {
+        try {
             const yesterday = dayjs().startOf('day').subtract(1, 'day').add(7, 'hours').toISOString();
 
-            axios
-                .get(`${baseUrl}/feed-transaction/`, {
-                    params: {
-                        limit: 100000,
-                        kitchen: kitchenId,
-                        dtime_from: yesterday
-                    },
-                    headers: {
-                        Authorization: `K-PIN-CODE ${pin}`
-                    }
+            const { data: resp } = await axios.get(`${baseUrl}/feed-transaction/`, {
+                params: { limit: 100000, kitchen: kitchenId, dtime_from: yesterday },
+                headers: { Authorization: `K-PIN-CODE ${pin}` }
+            });
+
+            const serverTransactions = resp.results as ServerTransaction[];
+            setData(serverTransactions);
+
+            await db.transactions.clear();
+
+            const transactions = serverTransactions.map(
+                ({ amount, dtime, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
+                    vol_id: volunteer,
+                    is_vegan,
+                    mealTime: meal_time,
+                    ulid,
+                    amount,
+                    ts: Math.floor(new Date(dtime).valueOf() / 1000),
+                    is_new: false,
+                    kitchen
                 })
-                .then(async ({ data: { results } }) => {
-                    setFetching(false);
+            );
 
-                    try {
-                        await db.transactions.clear();
-                    } catch (e) {
-                        rej(e);
-                        return false;
-                    }
+            await db.transactions.bulkAdd(transactions);
 
-                    try {
-                        const serverTransactions = results as Array<ServerTransaction>;
-                        const transactions = serverTransactions.map(
-                            ({ amount, dtime, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
-                                vol_id: volunteer,
-                                is_vegan,
-                                mealTime: meal_time,
-                                ulid,
-                                amount,
-                                ts: Math.floor(new Date(dtime).valueOf() / 1000),
-                                is_new: false,
-                                kitchen
-                            })
-                        );
+            setError(null);
+            setUpdated(Date.now());
+            return true;
+        } catch (e: any) {
+            if (e?.response?.status === 401) {
+                setAuth(false);
+                return false;
+            }
+            setError(e);
+            throw e;
+        } finally {
+            inFlightRef.current = false;
+            setFetching(false);
+        }
+    }, [baseUrl, pin, setAuth, kitchenId]);
 
-                        await db.transactions.bulkAdd(transactions);
-                    } catch (e) {
-                        console.error(e);
-                        rej(e);
-                        return false;
-                    }
-                    setUpdated(+new Date());
-                    res(true);
-                    return true;
-                })
-                .catch((e) => {
-                    setFetching(false);
-                    if (e?.response?.status === 401) {
-                        rej(false);
-                        setAuth(false);
-                        return false;
-                    }
-                    setError(e);
-                    rej(e);
-                    return e;
-                });
-        });
-    }, [baseUrl, error, fetching, pin, setAuth]);
-
-    return <ApiHook>useMemo(
+    return useMemo<ApiHook>(
         () => ({
+            data,
             fetching,
             error,
             updated,
             send
         }),
-        [error, fetching, send, updated]
+        [data, error, fetching, send, updated]
     );
 };

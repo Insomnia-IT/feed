@@ -1,19 +1,22 @@
-import React from 'react';
 import type { VolEntity } from 'interfaces';
 import styles from './mass-edit.module.css';
 import { Button, Typography } from 'antd';
 import { CalendarOutlined, CoffeeOutlined, MoreOutlined, TeamOutlined } from '@ant-design/icons';
 import { HasBadgeButton } from './has-badge-button';
-import { ActionSectionStates } from './action-section-states';
-import { ChangeMassEditField } from './mass-edit-types';
+import { ActionSectionStates, type ActionSectionState } from './action-section-states';
+import type { ChangeMassEditField } from './mass-edit-types';
 
 const { Title } = Typography;
 
-export const InitialFrame: React.FC<{
-    setSectionState: (state: ActionSectionStates) => void;
+export const InitialFrame = ({
+    setSectionState,
+    selectedVolunteers,
+    doChange
+}: {
+    setSectionState: (state: ActionSectionState) => void;
     selectedVolunteers: VolEntity[];
     doChange: ChangeMassEditField;
-}> = ({ setSectionState, selectedVolunteers, doChange }) => {
+}) => {
     return (
         <>
             <header>

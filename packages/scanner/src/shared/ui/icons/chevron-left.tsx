@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { IconContainer } from 'shared/ui/icon-container/icon-container';
 
 interface ChevronDownProps {
@@ -7,7 +5,7 @@ interface ChevronDownProps {
     className?: string;
 }
 
-export const ChevronLeft = (props: ChevronDownProps): React.ReactElement => {
+export const ChevronLeft = (props: ChevronDownProps) => {
     const { className, color = 'black' } = props;
 
     return (

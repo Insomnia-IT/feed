@@ -67,7 +67,7 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
         });
     }, [baseUrl, error, fetching, pin, setAuth, trans]);
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -75,5 +75,5 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };

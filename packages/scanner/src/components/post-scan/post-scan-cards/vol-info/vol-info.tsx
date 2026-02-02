@@ -1,4 +1,3 @@
-import type { FC } from 'react';
 import dayjs from 'dayjs';
 
 import type { Arrival, Volunteer } from 'db';
@@ -53,9 +52,7 @@ const calculateTargetArrivalDatesText = (arrivals: Array<Arrival>): string => {
     return `(${targetDates.start.format('DD MMMM')} - ${targetDates.end.format('DD MMMM')})`;
 };
 
-export const VolInfo: FC<{
-    vol: Volunteer;
-}> = ({ vol }) => {
+export const VolInfo = ({ vol }: { vol: Volunteer }) => {
     const { arrivals, directions, first_name, name } = vol;
 
     const feedTypeText = vol.is_vegan ? 'Веган🥦' : 'Мясоед🥩';

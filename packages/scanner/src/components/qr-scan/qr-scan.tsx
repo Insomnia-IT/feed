@@ -1,5 +1,5 @@
-import type { CSSProperties, FC } from 'react';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 import sas from 'onscan.js';
 
@@ -15,18 +15,13 @@ sas.attachTo(document, {
     keyCodeMapper: (e: KeyboardEvent) => String.fromCharCode(e.keyCode).toLowerCase()
 });
 
-const Video1: React.FC<{
-    setRef: (ref: HTMLVideoElement) => void;
-}> = memo(
-    ({ setRef }) => <video className={css.qrScanVideo} ref={setRef} />,
+const Video1 = memo(
+    ({ setRef }: { setRef: (ref: HTMLVideoElement) => void }) => <video className={css.qrScanVideo} ref={setRef} />,
     () => true
 );
 Video1.displayName = 'Video1';
 
-export const QrScan: FC<{
-    style?: CSSProperties;
-    onScan: (v: string) => void;
-}> = memo(({ onScan, style }) => {
+export const QrScan = memo(({ onScan, style }: { onScan: (v: string) => void; style?: CSSProperties }) => {
     const scanner = useRef<QrScanner | null>(null);
     const video = useRef<HTMLVideoElement | null>(null);
 

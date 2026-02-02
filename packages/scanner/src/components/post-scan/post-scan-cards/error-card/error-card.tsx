@@ -1,16 +1,18 @@
-import type { FC } from 'react';
-
 import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Button } from 'shared/ui/button';
 import { Text, Title } from 'shared/ui/typography';
 
 import css from './error-card.module.css';
 
-export const ErrorCard: FC<{
-    title?: string;
-    msg: string;
+export const ErrorCard = ({
+    close,
+    msg = 'Бейдж не найден',
+    title = 'Ошибка сканирования'
+}: {
     close: () => void;
-}> = ({ close, msg = 'Бейдж не найден', title = 'Ошибка сканирования' }) => {
+    msg: string;
+    title?: string;
+}) => {
     return (
         <CardContainer className={css.errorCard}>
             <div className={css.info}>

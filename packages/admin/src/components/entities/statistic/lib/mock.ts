@@ -1,6 +1,6 @@
-import type { IStatisticResponce } from '../types';
+import type { IStatisticResponse } from '../types';
 
-export const mock: IStatisticResponce = [
+export const mock: IStatisticResponse = [
     {
         date: '2023-05-25',
         type: 'plan',

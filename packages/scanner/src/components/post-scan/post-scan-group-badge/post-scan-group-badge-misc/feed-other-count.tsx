@@ -11,13 +11,19 @@ const fixNumber = (value?: string): number => {
     return Number(value?.replaceAll(/\D/g, ''));
 };
 
-export const FeedOtherCount: React.FC<{
+export const FeedOtherCount = ({
+    maxCount,
+    nonVegansCount,
+    setNonVegansCount,
+    setVegansCount,
+    vegansCount
+}: {
     maxCount: number;
     vegansCount: number | string;
     setVegansCount: (value: number | string) => void;
     nonVegansCount: number | string;
     setNonVegansCount: (value: number | string) => void;
-}> = ({ maxCount, nonVegansCount, setNonVegansCount, setVegansCount, vegansCount }) => {
+}) => {
     const maxVeganCount = maxCount - Number(nonVegansCount);
     const maxNonVeganCount = maxCount - Number(vegansCount);
 

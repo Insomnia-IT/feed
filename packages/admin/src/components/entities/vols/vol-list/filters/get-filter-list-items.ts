@@ -1,4 +1,5 @@
-import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filter-types';
+import { FilterFieldType } from './filter-types';
+import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { getFilterValueText } from '../volunteer-list-utils';
 
 // Получение возможных значений для выбора из списка

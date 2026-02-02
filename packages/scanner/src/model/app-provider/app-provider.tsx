@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import type { MealTime } from 'db';
 import { useSync } from 'request';
@@ -29,7 +29,7 @@ interface IAppContext {
     toggleAutoSync: () => void;
     doSync: (override?: { full?: boolean; kitchenId?: number }) => Promise<void>;
 }
-const AppContext = React.createContext<IAppContext | null>(null);
+const AppContext = createContext<IAppContext | null>(null);
 
 const isDev = import.meta.env.DEV;
 
@@ -40,11 +40,7 @@ const debugModeLS = localStorage.getItem('debug');
 const deoptimizedSyncLS = localStorage.getItem('katya_testiruet');
 const autoSyncLS = localStorage.getItem('autoSync');
 
-export const AppProvider: React.FC<{
-    children: React.ReactNode;
-}> = (props) => {
-    const { children } = props;
-
+export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [appError, setAppError] = useState<string | null>(null);
     const [mealTime, setMealTime] = useState<MealTime | null>(null);
     const [pin, setPin] = useState<string | null>('');
@@ -92,12 +88,20 @@ export const AppProvider: React.FC<{
     );
 
     useEffect(() => {
+        let updateTimer: ReturnType<typeof setTimeout> | undefined;
         if (updated && !syncFetching) {
-            saveLastSyncStart(updated);
+            updateTimer = setTimeout(() => {
+                saveLastSyncStart(updated);
+            }, 0);
             void db.volunteers.count().then((c: number) => {
                 setVolCount(c);
             });
         }
+        return () => {
+            if (updateTimer) {
+                clearTimeout(updateTimer);
+            }
+        };
     }, [syncFetching, saveLastSyncStart, setLastSyncStart, setVolCount, updated]);
 
     const contextValue: IAppContext = useMemo(

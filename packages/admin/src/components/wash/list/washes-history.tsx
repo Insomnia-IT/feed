@@ -1,15 +1,18 @@
 import { List, useTable } from '@refinedev/antd';
 import { Button, Col, Row, Table, Tag } from 'antd';
-import { WashEntity } from 'interfaces';
-import { useNavigate } from 'react-router-dom';
-import { transformWashesForShow, WashToShow } from './utils';
+import type { WashEntity } from 'interfaces';
+import { useNavigate } from 'react-router';
+import { transformWashesForShow } from './utils';
 import { SaveWashesAsExcelButton } from './save-washes-as-excel-button';
 import { ExperimentOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 
 export const WashesHistory = () => {
     const navigate = useNavigate();
-    const { tableProps, setCurrent, setPageSize } = useTable<WashEntity>({ resource: 'washes' });
+
+    const { tableProps, setCurrentPage, setPageSize } = useTable<WashEntity>({
+        resource: 'washes'
+    });
 
     const columns = [
         {
@@ -20,13 +23,12 @@ export const WashesHistory = () => {
         {
             dataIndex: 'directions',
             title: 'Службы',
-            render: (value: string[]) => {
-                return value.map((name) => (
-                    <Tag key={name} color={'default'} icon={false} closable={false}>
+            render: (value: string[]) =>
+                value.map((name) => (
+                    <Tag key={name} color="default" icon={false} closable={false}>
                         {name}
                     </Tag>
-                ));
-            }
+                ))
         },
         { title: 'Дней на поле', dataIndex: 'daysOnField' },
         {
@@ -45,13 +47,7 @@ export const WashesHistory = () => {
         <List>
             <Row>
                 <Col style={{ width: '50%' }}>
-                    <Button
-                        type={'primary'}
-                        icon={<ExperimentOutlined />}
-                        onClick={() => {
-                            navigate('/wash/create');
-                        }}
-                    >
+                    <Button type="primary" icon={<ExperimentOutlined />} onClick={() => navigate('/wash/create')}>
                         Постирать
                     </Button>
                 </Col>
@@ -59,11 +55,11 @@ export const WashesHistory = () => {
                     <SaveWashesAsExcelButton />
                 </Col>
             </Row>
-            <Table<WashToShow>
+            <Table
                 pagination={{
                     ...tableProps.pagination,
                     onChange: (page, size) => {
-                        setCurrent(page);
+                        setCurrentPage(page);
 
                         if (typeof size === 'number') {
                             setPageSize(size);

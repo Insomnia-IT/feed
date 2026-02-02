@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-
 import type { TransactionJoined } from 'db';
 import { db, getLastTrans } from 'db';
-import { LocalLastTransHook } from './lib';
+
+import type { LocalLastTransHook } from './lib';
 
 export const useLocalLastTrans = (): LocalLastTransHook => {
     const [error, setError] = useState<any>(null);

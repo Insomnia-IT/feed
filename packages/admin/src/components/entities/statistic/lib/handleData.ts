@@ -5,7 +5,7 @@ import type {
     IColumnChartData,
     IData,
     IEaterTypeAmount,
-    IStatisticResponce,
+    IStatisticResponse,
     KitchenId,
     KitchenIdExtended,
     MealTime
@@ -13,7 +13,7 @@ import type {
 import { dataEmpty, datumInstance, mealTimeArr } from '../types';
 import type { ITableStatData } from '../ui/table-stats';
 
-export function convertResponceToData(res: IStatisticResponce): IData {
+export function convertResponceToData(res: IStatisticResponse): IData {
     const result: IData = JSON.parse(JSON.stringify(dataEmpty));
 
     res.forEach((datum) => {

@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react';
+import { useState } from 'react';
 
 import type { Volunteer } from 'db';
 import { FeedType } from 'db';
@@ -11,11 +11,7 @@ import { CardContent } from 'components/post-scan/post-scan-cards/ui/card-conten
 
 import css from './feed-card.module.css';
 
-export const FeedCard: FC<{
-    vol: Volunteer;
-    doFeed: () => void;
-    close: () => void;
-}> = ({ close, doFeed, vol }) => {
+export const FeedCard = ({ close, doFeed, vol }: { vol: Volunteer; doFeed: () => void; close: () => void }) => {
     const isChild = vol.feed_type === FeedType.Child;
     const [disabled, setDisabled] = useState(false);
 

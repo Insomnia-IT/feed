@@ -3,20 +3,22 @@ import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
 
-export enum AppRoles {
-    ADMIN = 'ADMIN',
-    SENIOR = 'SENIOR',
-    CAT = 'CAT',
-    SOVA = 'SOVA',
-    DIRECTION_HEAD = 'DIRECTION_HEAD'
-}
+export const AppRoles = {
+    ADMIN: 'ADMIN',
+    SENIOR: 'SENIOR',
+    CAT: 'CAT',
+    SOVA: 'SOVA',
+    DIRECTION_HEAD: 'DIRECTION_HEAD'
+} as const;
+
+export type AppRole = (typeof AppRoles)[keyof typeof AppRoles];
 
 export interface UserData {
     id?: number | string;
     exp: number;
     iat: number;
-    roles: Array<AppRoles.ADMIN | AppRoles.SENIOR | AppRoles.CAT | AppRoles.DIRECTION_HEAD | AppRoles.SOVA>;
-    directions?: Array<string>;
+    roles: AppRole[];
+    directions?: string[];
     username: string;
 }
 

@@ -1,14 +1,14 @@
-import React from 'react';
+import type { ComponentProps } from 'react';
 import cn from 'classnames';
 
 import css from './button.module.css';
 
 type ButtonVariant = 'main' | 'secondary' | 'alternative';
-interface ButtonProps extends React.ComponentProps<'button'> {
+interface ButtonProps extends ComponentProps<'button'> {
     variant?: ButtonVariant;
 }
 
-export const Button = (props: ButtonProps): React.ReactElement => {
+export const Button = (props: ButtonProps) => {
     const { children, className = '', variant = 'main', ...restProps } = props;
 
     const mods = {

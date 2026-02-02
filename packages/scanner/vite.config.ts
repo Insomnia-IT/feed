@@ -6,7 +6,11 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
     plugins: [
-        react(),
+        react({
+            babel: {
+                plugins: [['babel-plugin-react-compiler']]
+            }
+        }),
 
         VitePWA({
             registerType: 'autoUpdate',

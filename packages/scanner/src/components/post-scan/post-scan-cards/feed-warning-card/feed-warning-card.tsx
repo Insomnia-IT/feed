@@ -1,5 +1,3 @@
-import type { FC } from 'react';
-
 import type { Volunteer } from 'db';
 import { VolInfo } from 'components/post-scan/post-scan-cards/vol-info/vol-info';
 import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
@@ -11,13 +9,19 @@ import { BureauComment } from 'components/post-scan/post-scan-cards/ui/bureau-co
 
 import css from './feed-warning-card.module.css';
 
-export const FeedWarningCard: FC<{
+export const FeedWarningCard = ({
+    close,
+    doFeed,
+    doNotFeed,
+    msg,
+    vol
+}: {
     vol: Volunteer;
     doFeed: (isVegan?: boolean, reason?: string) => void;
     doNotFeed: (reason: string) => void;
     close: () => void;
     msg: Array<string>;
-}> = ({ close, doFeed, doNotFeed, msg, vol }) => {
+}) => {
     const handleClose = (): void => {
         if (doNotFeed) {
             doNotFeed(msg.join(', '));
