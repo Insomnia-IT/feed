@@ -29,9 +29,9 @@ export const useValid = (form: Form) => {
     }, [form, mode]);
 
     useEffect(() => {
-        if (mode === 'onChange') {
-            validate();
-        }
+        if (mode !== 'onChange') return;
+        const id = setTimeout(() => validate(), 0);
+        return () => clearTimeout(id);
     }, [form, mode, validate]);
 
     return { valid, errors, validate };

@@ -1,18 +1,19 @@
-import styles from './mass-edit.module.css';
+import { useState } from 'react';
 import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import React, { useEffect, useState } from 'react';
-import { type VolEntity } from 'interfaces';
+import type { VolEntity } from 'interfaces';
 import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list';
 import { GroupBadgeFrame } from './group-badge-frame';
 import { ArrivalsFrame } from './arrivals-frame';
 import { KitchenFrame } from './kitchen-frame';
 import { InitialFrame } from './initial-frame';
-import { ActionSectionStates } from './action-section-states';
+import { ActionSectionStates, type ActionSectionState } from './action-section-states';
 import { CustomFieldsFrame } from './custom-fields-frame';
-import { ChangeMassEditField, VolunteerField } from './mass-edit-types';
+import type { ChangeMassEditField, VolunteerField } from './mass-edit-types';
 import { useDoChange } from './use-do-change';
 import { ArrivalDatesProvider } from './arrival-dates-context/arrival-dates-context';
+
+import styles from './mass-edit.module.css';
 
 const { Title } = Typography;
 
@@ -23,20 +24,14 @@ interface MassEditProps {
     reloadVolunteers: () => Promise<void>;
 }
 
-export const MassEdit: React.FC<MassEditProps> = ({
+export const MassEdit = ({
     selectedVolunteers = [],
     unselectAll,
     unselectVolunteer,
     reloadVolunteers
-}) => {
-    const [sectionState, setSectionState] = useState<ActionSectionStates>(ActionSectionStates.Initial);
+}: MassEditProps) => {
+    const [sectionState, setSectionState] = useState<ActionSectionState>(ActionSectionStates.Initial);
     const doChange = useDoChange({ vols: selectedVolunteers, reloadVolunteers });
-
-    useEffect(() => {
-        if (selectedVolunteers.length === 0) {
-            setSectionState(ActionSectionStates.Initial);
-        }
-    }, [selectedVolunteers.length]);
 
     if (selectedVolunteers.length === 0) {
         return null;
@@ -75,13 +70,19 @@ export const MassEdit: React.FC<MassEditProps> = ({
     );
 };
 
-const ActionsSection: React.FC<{
+const ActionsSection = ({
+    unselectAll,
+    selectedVolunteers,
+    doChange,
+    sectionState,
+    setSectionState
+}: {
     unselectAll: () => void;
     selectedVolunteers: VolEntity[];
     doChange: ChangeMassEditField;
-    sectionState: ActionSectionStates;
-    setSectionState: (state: ActionSectionStates) => void;
-}> = ({ unselectAll, selectedVolunteers, doChange, sectionState, setSectionState }) => {
+    sectionState: ActionSectionState;
+    setSectionState: (state: ActionSectionState) => void;
+}) => {
     return (
         <section className={styles.action}>
             {sectionState === ActionSectionStates.Initial ? (
@@ -91,14 +92,12 @@ const ActionsSection: React.FC<{
                     doChange={doChange}
                 />
             ) : null}
-            {![ActionSectionStates.Initial, ActionSectionStates.Arrivals].includes(sectionState) ? (
+            {sectionState !== ActionSectionStates.Initial && sectionState !== ActionSectionStates.Arrivals ? (
                 <header>
                     <Button
-                        size={'small'}
-                        onClick={() => {
-                            setSectionState(ActionSectionStates.Initial);
-                        }}
-                        type={'text'}
+                        size="small"
+                        onClick={() => setSectionState(ActionSectionStates.Initial)}
+                        type="text"
                         icon={<ArrowLeftOutlined />}
                     />
                     <Title level={5}>К выбору действий</Title>

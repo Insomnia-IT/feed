@@ -2,8 +2,8 @@ import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import type { ApiHook } from '~/request/lib';
-import { db } from '~/db';
+import type { ApiHook } from 'request/lib';
+import { db } from 'db';
 
 export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const trans = useLiveQuery(async () => await db.transactions.toArray());
@@ -67,7 +67,7 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
         });
     }, [baseUrl, error, fetching, pin, setAuth, trans]);
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -75,5 +75,5 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };

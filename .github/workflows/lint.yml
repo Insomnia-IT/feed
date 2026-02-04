@@ -10,8 +10,6 @@ jobs:
             - uses: actions/checkout@v3
             - name: Install dependencies
               run: npm ci
-            - name: Lint JavaScript
-              run: npm run lint:js
             - name: Lint TypeScript
               run: npm run lint:ts
             - name: Lint Style

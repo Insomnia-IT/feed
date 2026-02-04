@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import type { VolEntity } from 'interfaces';
+import { useMemo, useState } from 'react';
 import { Button, Checkbox, DatePicker, Input, Select, Typography } from 'antd';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
+import { useNotification, useSelect } from '@refinedev/core';
+
+import type { VolEntity } from 'interfaces';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
-import { CheckboxChangeEvent } from 'antd/es/checkbox/Checkbox';
-import { useNotification, useSelect } from '@refinedev/core';
 import useCanAccess from '../../use-can-access';
 import {
     getVolunteerStatusOrder,
@@ -14,16 +15,7 @@ import {
 
 const { Title } = Typography;
 
-export const SingleField: React.FC<{
-    type: 'date' | 'select' | 'string' | 'boolean';
-    setter: (value: string | null) => void;
-    title: string;
-    selectedVolunteers: VolEntity[];
-    resource?: string;
-    currentValue: string | undefined;
-    setCurrentValue: (value: string | undefined) => void;
-    hideClearButton?: boolean;
-}> = ({
+export const SingleField = ({
     currentValue,
     setCurrentValue,
     selectedVolunteers = [],
@@ -32,6 +24,15 @@ export const SingleField: React.FC<{
     resource,
     setter,
     hideClearButton = false
+}: {
+    type: 'date' | 'select' | 'string' | 'boolean';
+    setter: (value: string | null) => void;
+    title: string;
+    selectedVolunteers: VolEntity[];
+    resource?: string;
+    currentValue: string | undefined;
+    setCurrentValue: (value: string | undefined) => void;
+    hideClearButton?: boolean;
 }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
@@ -76,41 +77,34 @@ export const SingleField: React.FC<{
             ) : null}
             {type === 'string' ? <StringValueChanger onChange={setCurrentValue} /> : null}
             {type === 'boolean' ? <BooleanValueChanger onChange={setCurrentValue} /> : null}
+
             <Button
                 disabled={!currentValue}
-                type={'primary'}
+                type="primary"
                 style={{ width: '100%' }}
-                onClick={() => {
-                    setIsModalOpen(true);
-                }}
+                onClick={() => setIsModalOpen(true)}
             >
                 Подтвердить
             </Button>
+
             {hideClearButton ? null : (
-                <Button
-                    style={{ width: '100%' }}
-                    onClick={() => {
-                        setIsClearModalOpen(true);
-                    }}
-                >
+                <Button style={{ width: '100%' }} onClick={() => setIsClearModalOpen(true)}>
                     Очистить поле
                 </Button>
             )}
+
             <ConfirmModal
                 isOpen={isModalOpen}
-                closeModal={(): void => {
-                    setIsModalOpen(false);
-                }}
-                title={'Поменять данные?'}
+                closeModal={() => setIsModalOpen(false)}
+                title="Поменять данные?"
                 description={`${getVolunteerCountText(selectedVolunteers.length)} и меняете поле "${title}".`}
                 onConfirm={confirmChange}
             />
+
             <ConfirmModal
                 isOpen={isClearModalOpen}
-                closeModal={(): void => {
-                    setIsClearModalOpen(false);
-                }}
-                title={'Очистить поле?'}
+                closeModal={() => setIsClearModalOpen(false)}
+                title="Очистить поле?"
                 description={`${getVolunteerCountText(selectedVolunteers.length)} и очищаете поле "${title}"!`}
                 onConfirm={confirmClear}
             />
@@ -118,42 +112,45 @@ export const SingleField: React.FC<{
     );
 };
 
-const DateValueChanger: React.FC<{ onChange: (value: string) => void }> = ({ onChange }) => {
+const DateValueChanger = ({ onChange }: { onChange: (value: string) => void }) => {
     return (
         <DatePicker
             style={{ width: '100%' }}
-            onChange={(_date, dateString): void => {
+            onChange={(_date, dateString) => {
                 onChange(dateString as string);
             }}
         />
     );
 };
 
-const StringValueChanger: React.FC<{ onChange: (value: string) => void }> = ({ onChange }) => {
+const StringValueChanger = ({ onChange }: { onChange: (value: string) => void }) => {
     return (
         <Input.TextArea
             style={{ width: '100%' }}
-            onChange={(event): void => {
+            onChange={(event) => {
                 onChange(event.target.value);
             }}
         />
     );
 };
 
-const BooleanValueChanger: React.FC<{ onChange: (value: string) => void }> = ({ onChange }) => {
+const BooleanValueChanger = ({ onChange }: { onChange: (value: string) => void }) => {
     return (
         <Checkbox
             style={{ width: '100%' }}
-            onChange={(event: CheckboxChangeEvent): void => {
+            onChange={(event: CheckboxChangeEvent) => {
                 onChange(String(event.target.checked));
             }}
         />
     );
 };
 
-const OptionValueChanger: React.FC<{ resource: string; onChange: (value: string) => void }> = ({
+const OptionValueChanger = ({
     resource,
     onChange
+}: {
+    resource: string;
+    onChange: (value: string | undefined) => void;
 }) => {
     const { options } = useSelect({ resource, optionLabel: 'name' });
 

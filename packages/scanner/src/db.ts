@@ -3,7 +3,7 @@ import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
 
-import { getToday } from '~/shared/lib/date';
+import { getToday } from 'shared/lib/date';
 
 export interface Transaction {
     ulid: string;
@@ -33,19 +33,23 @@ export interface TransactionJoined extends Transaction {
     vol?: Volunteer;
 }
 
-export enum FeedType {
-    Free = 1, // бесплатно
-    Paid = 2, // платно
-    Child = 3, // ребенок
-    NoFeed = 4 // без питания
-}
+export const FeedType = {
+    Free: 1, // бесплатно
+    Paid: 2, // платно
+    Child: 3, // ребенок
+    NoFeed: 4 // без питания
+} as const;
 
-export enum MealTime {
-    breakfast = 'breakfast',
-    lunch = 'lunch',
-    dinner = 'dinner',
-    night = 'night'
-}
+export type FeedType = (typeof FeedType)[keyof typeof FeedType];
+
+export const MealTime = {
+    breakfast: 'breakfast',
+    lunch: 'lunch',
+    dinner: 'dinner',
+    night: 'night'
+} as const;
+
+export type MealTime = (typeof MealTime)[keyof typeof MealTime];
 
 export interface Volunteer {
     qr: string;
