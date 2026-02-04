@@ -10,9 +10,12 @@ import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 export const CreateEdit = () => {
+    const form = Form.useFormInstance();
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        optionValue: 'id',
+        pagination: { mode: 'off' }
     });
 
     const visibleDirections = useVisibleDirections();
@@ -20,7 +23,9 @@ export const CreateEdit = () => {
         ({ value }) => !visibleDirections || visibleDirections.includes(value as string)
     );
 
-    const form = Form.useFormInstance();
+    const directionValue = Form.useWatch('direction', form);
+    const shouldHideDirectionValue = directionValue != null && (directionSelectProps.options?.length ?? 0) === 0;
+
     const [openQrModal, setOpenQrModal] = useState(false);
 
     useEffect(() => {
@@ -42,7 +47,13 @@ export const CreateEdit = () => {
                 <Input />
             </Form.Item>
             <Form.Item label="Служба/Направление" name="direction" rules={Rules.required}>
-                <Select {...directionSelectProps} options={directions} />
+                <Select
+                    {...directionSelectProps}
+                    options={directions}
+                    loading={shouldHideDirectionValue || directionSelectProps.loading}
+                    value={shouldHideDirectionValue ? undefined : directionSelectProps.value}
+                    placeholder={shouldHideDirectionValue ? 'Загрузка...' : undefined}
+                />
             </Form.Item>
             <Form.Item label="QR" name="qr" rules={Rules.required}>
                 <Input.Search
