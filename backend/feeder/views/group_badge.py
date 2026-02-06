@@ -3,14 +3,14 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder import serializers, models
-from feeder.views.mixins import MultiSerializerViewSetMixin
+from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin
 
 
 class GroupBadgeFilter(django_filters.FilterSet):
     created_at__from = django_filters.IsoDateTimeFilter(field_name="created_at", lookup_expr='gte')
 
 
-class GroupBadgeViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
+class GroupBadgeViewSet(MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.GroupBadge.objects.all()
     serializer_class = serializers.GroupBadgeSerializer
