@@ -203,6 +203,10 @@ class GroupBadge(TimeMixin, SoftDeleteModelMixin, CommentMixin, NameMixin):
 
     def __str__(self):
         return self.name
+    
+    def delete(self, *args, **kwargs):
+        self.volunteers.update(group_badge=None)
+        return super().delete(*args, **kwargs)
 
     class Meta:
         verbose_name = "Групповой бейдж"
