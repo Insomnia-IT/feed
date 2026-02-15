@@ -45,7 +45,7 @@ jobs:
             - name: Create app link
               if: github.event.action != 'closed'
               id: create-link
-              run: echo "::set-output name=app_url::https://9${{ github.event.number }}.agreetesting.rumyantsev.com"
+              run: echo "app_url=https://9${{ github.event.number }}.agreetesting.rumyantsev.com" >> "$GITHUB_OUTPUT"
             - name: remove db dir
               if: github.event.action == 'closed'
               run: |
