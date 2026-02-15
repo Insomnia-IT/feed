@@ -40,8 +40,15 @@ class VolunteerFilter(django_filters.FilterSet):
     scanner_comment = django_filters.CharFilter(field_name="scanner_comment", lookup_expr='icontains')
     responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
     supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
+    has_supervisor = django_filters.BooleanFilter(method='filter_has_supervisor')
     is_supervisor = django_filters.BooleanFilter(method='filter_is_supervisor')
     infant = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
+
+    def filter_has_supervisor(self, queryset, name, value):
+        if value is None:
+            return queryset
+
+        return queryset.filter(supervisor_id__isnull=not value)
 
     def filter_is_supervisor(self, queryset, name, value):
         if value is None:
