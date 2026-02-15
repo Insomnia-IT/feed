@@ -1,3 +1,4 @@
+import os
 import time
 import pytest
 from selenium.webdriver.common.by import By
@@ -8,9 +9,11 @@ from base_page import BasePage
 
 skip = pytest.mark.skip
 
+host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
+
 def test_pagination_in_volunteer_list(browser):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
-    link="https://feedapp-dev.insomniafest.ru/login"
+    link = f"{host}/login"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
@@ -25,7 +28,7 @@ def test_pagination_in_volunteer_list(browser):
 
 def test_pagination_in_feed_history(browser):
     #переход с 1 на 2 страницу пагинации в истории питания.
-    link = "https://feedapp-dev.insomniafest.ru/feed-transaction"
+    link = f"{host}/feed-transaction"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
@@ -40,7 +43,7 @@ def test_pagination_in_feed_history(browser):
 
 def test_create_new_meal(browser):
     # создаем прием пищи, сверяем редирект на урл после сохранения и что дата крайней записи - сегодня
-    link = "https://feedapp-dev.insomniafest.ru/feed-transaction"
+    link = f"{host}/feed-transaction"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
@@ -51,15 +54,15 @@ def test_create_new_meal(browser):
     first_row_text = page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
-    assert browser.current_url == "https://feedapp-dev.insomniafest.ru/feed-transaction?pageSize=10&current=1"
+    assert browser.current_url == f"{host}/feed-transaction?pageSize=10&current=1"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
     assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
     print("✅ Запись успешно создана!")
 
-
+@skip()
 def test_delete_created_new_meal(browser):
     # не тест, вспомогательная функция для удаления созданного выше приема пищи.
-    link = "https://feedapp-dev.insomniafest.ru/feed-transaction"
+    link = f"{host}/feed-transaction"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
@@ -74,7 +77,7 @@ def test_delete_created_new_meal(browser):
 @skip()
 def test_create_group_badge(browser):
     # создаем вручную групповой бейдж и проверяем счетчик бейджей
-    link = "https://feedapp-dev.insomniafest.ru/group-badges"
+    link = f"{host}/group-badges"
     page = BasePage(browser, link)
     page.open()
     time.sleep(1)
@@ -90,14 +93,14 @@ def test_create_group_badge(browser):
     time.sleep(1)
     b = page.badges_counter()
     print("b =", b)
-    assert browser.current_url == "https://feedapp-dev.insomniafest.ru/group-badges"
+    assert browser.current_url == f"{host}/group-badges"
     assert a+1 == b
     print("✅ Бейдж успешно создан! Счетчик увеличился на 1!")
 
 @skip()
 def test_delete_group_badge(browser):
     # не тест, вспомогательная функция для удаления созданного выше приема пищи.
-    link = "https://feedapp-dev.insomniafest.ru/group-badges"
+    link = f"{host}/group-badges"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
@@ -121,9 +124,10 @@ def test_delete_group_badge(browser):
         assert 1==1
         print("Нечего удалять!")
 
+@skip()
 def test_create_custom_field(browser):
     # создание нового кастомного поля
-    link = "https://feedapp-dev.insomniafest.ru/volunteers"
+    link = f"{host}/volunteers"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
@@ -150,7 +154,7 @@ def test_create_custom_field(browser):
     #в выпадашке списка колонок 5 неподходящих элементов. Вычесть 4 - получим исходный список + 1 созданный
 
 def test_delete_created_custom_field(browser):
-    link = "https://feedapp-dev.insomniafest.ru/volunteer-custom-fields?sorters[0][field]=id&sorters[0][order]=asc"
+    link = f"{host}/volunteer-custom-fields?sorters[0][field]=id&sorters[0][order]=asc"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
@@ -171,7 +175,7 @@ def test_delete_created_custom_field(browser):
 @skip()
 def test_add_and_delete_volunteer_from_group_badge(browser):
     #добавить, а затем удалить волонтера из группового бейджа
-    link = "https://feedapp-dev.insomniafest.ru/group-badges"
+    link = f"{host}/group-badges"
     page = BasePage(browser, link)
     page.open()
     time.sleep(1)
@@ -202,7 +206,7 @@ def test_add_and_delete_volunteer_from_group_badge(browser):
     page.save_in_group_badge()
     time.sleep(3)
     #в ассертах сверяем возврат на урл групповых бейджей после сохранения и мэтч счётчиков между собой
-    assert browser.current_url == "https://feedapp-dev.insomniafest.ru/group-badges"
+    assert browser.current_url == f"{host}/group-badges"
     print("До-", count1, "человек в бейдже")
     assert count1==count4
     print("До-", count1, count4, "человек в бейдже")
@@ -212,7 +216,7 @@ def test_add_and_delete_volunteer_from_group_badge(browser):
 @skip()
 def test_create_new_user(browser):
     #создать нового юзера
-    link = "https://feedapp-dev.insomniafest.ru/volunteers"
+    link = f"{host}/volunteers"
     page = BasePage(browser, link)
     page.open()
     time.sleep(1)
@@ -230,14 +234,14 @@ def test_create_new_user(browser):
     counter2 = page.receive_volunteers_count()
     page.find_user()
     user_name = page.check_username_after_editing()
-    assert browser.current_url== "https://feedapp-dev.insomniafest.ru/volunteers"
+    assert browser.current_url== f"{host}/volunteers"
     assert counter1+1 == counter2, "Счетчик не увеличился на 1!!!"
     assert user_name == "Test_name"
 
 @skip()
 def test_edit_new_user(browser):
     # найти созданного юзера и отредактировать его
-    link = "https://feedapp-dev.insomniafest.ru/volunteers"
+    link = f"{host}/volunteers"
     page = BasePage(browser, link)
     page.open()
     time.sleep(1)
@@ -254,14 +258,14 @@ def test_edit_new_user(browser):
     page.clear_input_field()
     time.sleep(3)
     counter2 = page.receive_volunteers_count()
-    assert browser.current_url== "https://feedapp-dev.insomniafest.ru/volunteers"
+    assert browser.current_url== f"{host}/volunteers"
     assert counter1 == counter2, "Счетчик изменился!!!"
     assert user_name == "Test_name_1"
 
 @skip()
 def test_delete_new_user(browser):
     # найти созданного юзера и отредактировать его
-    link = "https://feedapp-dev.insomniafest.ru/volunteers"
+    link = f"{host}/volunteers"
     page = BasePage(browser, link)
     page.open()
     time.sleep(1)
@@ -278,13 +282,13 @@ def test_delete_new_user(browser):
     counter2 = page.receive_volunteers_count()
     page.check_username_after_deleting()
     counter3 = page.receive_volunteers_count()
-    assert browser.current_url == "https://feedapp-dev.insomniafest.ru/volunteers"
+    assert browser.current_url == f"{host}/volunteers"
     assert counter1 == counter2+1, "Счетчик не уменьшился на 1!!!"
     assert counter3 == 0
 
 @skip()
 def test_scan_qr(browser):
-    link = "https://feedapp-dev.insomniafest.ru/volunteers"
+    link = f"{host}/volunteers"
     page = BasePage(browser, link)
     page.open()
     time.sleep(2)
@@ -292,4 +296,4 @@ def test_scan_qr(browser):
     time.sleep(2)
     page.scan_user()
     time.sleep(2)
-    assert browser.current_url == "https://feedapp-dev.insomniafest.ru/volunteers"
+    assert browser.current_url == f"{host}/volunteers"
