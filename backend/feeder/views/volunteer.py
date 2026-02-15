@@ -40,17 +40,17 @@ class VolunteerFilter(django_filters.FilterSet):
     scanner_comment = django_filters.CharFilter(field_name="scanner_comment", lookup_expr='icontains')
     responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
     supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
-    has_supervisees = django_filters.BooleanFilter(method='filter_has_supervisees')
+    is_supervisor = django_filters.BooleanFilter(method='filter_is_supervisor')
     infant = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
 
-    def filter_has_supervisees(self, queryset, name, value):
+    def filter_is_supervisor(self, queryset, name, value):
         if value is None:
             return queryset
 
         supervisees_qs = models.Volunteer.objects.filter(supervisor_id=OuterRef('pk'))
-        queryset = queryset.annotate(has_supervisees=Exists(supervisees_qs))
+        queryset = queryset.annotate(is_supervisor=Exists(supervisees_qs))
 
-        return queryset.filter(has_supervisees=value)
+        return queryset.filter(is_supervisor=value)
 
     def filter_is_ticket_received(self, queryset, name, value):
         if value:
