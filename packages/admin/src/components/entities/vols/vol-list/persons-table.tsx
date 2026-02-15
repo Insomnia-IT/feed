@@ -2,13 +2,10 @@ import { CreateButton, useTable } from '@refinedev/antd';
 import { Space, Table } from 'antd';
 import type { TableProps } from 'antd';
 import type { PersonEntity } from 'interfaces';
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from 'react-router';
 
 export const PersonsTable = ({ searchText }: { searchText: string }) => {
-    const {
-        tableProps
-    } = useTable<PersonEntity>({
+    const { tableProps } = useTable<PersonEntity>({
         resource: `persons/?search=${searchText}`,
         pagination: {
             // pageSize: 0
@@ -50,19 +47,16 @@ export const PersonsTable = ({ searchText }: { searchText: string }) => {
             width: 100,
             render: (_, record) => (
                 <Space>
-                    <CreateButton resource="volunteers" onClick={() => {
-                        navigate('/volunteers/create?person_id=' + record.id)
-                    }} />
+                    <CreateButton
+                        resource="volunteers"
+                        onClick={() => {
+                            navigate('/volunteers/create?person_id=' + record.id);
+                        }}
+                    />
                 </Space>
             )
         }
     ];
 
-
-    return <Table<PersonEntity>
-        {...tableProps}
-        scroll={{ x: '100%' }}
-        rowKey="id"
-        columns={columns}
-    />
-}
+    return <Table {...tableProps} scroll={{ x: '100%' }} rowKey="id" columns={columns} />;
+};

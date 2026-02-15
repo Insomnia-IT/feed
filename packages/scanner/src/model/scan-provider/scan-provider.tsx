@@ -1,8 +1,8 @@
-import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
-import type { GroupBadge, Transaction, Volunteer } from '~/db';
-import { db } from '~/db';
-import { getTodayStart, getVolTransactionsAsync } from '~/components/post-scan/post-scan.utils';
+import type { GroupBadge, Transaction, Volunteer } from 'db';
+import { db } from 'db';
+import { getTodayStart, getVolTransactionsAsync } from 'components/post-scan/post-scan.utils';
 
 interface IScanContext {
     qrcode: string;
@@ -18,11 +18,11 @@ interface IScanContext {
 type MainViewTypes = 'scan' | 'loading' | 'error' | 'post-scan' | 'post-scan-group-badge';
 export const postScanStatuses = ['anon', 'vol-warning', 'vol-error', 'child', 'group-badge'];
 
-const ScanContext = React.createContext<IScanContext | null>(null);
+const ScanContext = createContext<IScanContext | null>(null);
 
 const DOUBLE_SCAN_TIMEOUT = 5000;
 
-export const ScanProvider = ({ children }) => {
+export const ScanProvider = ({ children }: { children: ReactNode }) => {
     /** View */
     const [view, setView] = useState<MainViewTypes>('scan');
 

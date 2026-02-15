@@ -1,17 +1,16 @@
-import type { FC } from 'react';
 import cn from 'classnames';
 import { useState } from 'react';
 
-import { CardContainer } from '~/components/post-scan/post-scan-cards/ui/card-container/card-container';
-import { Button } from '~/shared/ui/button/button';
-import { Text, Title } from '~/shared/ui/typography';
-import { VolAndUpdateInfo } from '~/components/vol-and-update-info';
-import { TextArea } from '~/shared/ui/text-area';
-import { Input } from '~/shared/ui/input';
-import { removeNonDigits } from '~/shared/lib/utils';
-import { useValid } from '~/components/post-scan/post-scan-cards/feed-anon-group-card/utils/useValid';
-import { massFeedAnons } from '~/components/post-scan/post-scan.utils';
-import { useApp } from '~/model/app-provider';
+import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
+import { Button } from 'shared/ui/button/button';
+import { Text, Title } from 'shared/ui/typography';
+import { VolAndUpdateInfo } from 'components/vol-and-update-info';
+import { TextArea } from 'shared/ui/text-area';
+import { Input } from 'shared/ui/input';
+import { removeNonDigits } from 'shared/lib/utils';
+import { useValid } from 'components/post-scan/post-scan-cards/feed-anon-group-card/utils/useValid';
+import { massFeedAnons } from 'components/post-scan/post-scan.utils';
+import { useApp } from 'model/app-provider';
 
 import css from './feed-anon-group-card.module.css';
 
@@ -21,9 +20,7 @@ export type Form = {
     comment: string;
 };
 
-export const FeedAnonGroupCard: FC<{
-    close: () => void;
-}> = ({ close }) => {
+export const FeedAnonGroupCard = ({ close }: { close: () => void }) => {
     const { kitchenId, mealTime } = useApp();
     const [form, setForm] = useState<Form>({
         meat: '',
@@ -33,7 +30,7 @@ export const FeedAnonGroupCard: FC<{
 
     const { errors, validate } = useValid(form);
 
-    const changeForm = (change): void => {
+    const changeForm = (change: any): void => {
         setForm((prev) => ({ ...prev, ...change }));
     };
 
@@ -48,7 +45,7 @@ export const FeedAnonGroupCard: FC<{
         close();
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: any) => {
         e.preventDefault();
         const { valid } = validate();
         if (valid) {
@@ -64,18 +61,18 @@ export const FeedAnonGroupCard: FC<{
                 </Text>
             </div>
             <div className={css.content}>
-                <form className={css.form} id='anon-group' onSubmit={handleSubmit}>
+                <form className={css.form} id="anon-group" onSubmit={handleSubmit}>
                     <div className={css.counts}>
                         <div className={css.inputs}>
                             <div className={css.formItem}>
                                 <Input
                                     className={css.numberInput}
-                                    type='number'
+                                    type="number"
                                     value={form.meat}
                                     onChange={(e) =>
                                         changeForm({ meat: removeNonDigits(e.currentTarget.value).slice(0, 3) })
                                     }
-                                    placeholder='0'
+                                    placeholder="0"
                                     error={!!errors?.['counts']}
                                 ></Input>
                                 <label className={css.formLabel}>🥩 Мясоед</label>
@@ -83,12 +80,12 @@ export const FeedAnonGroupCard: FC<{
                             <div className={css.formItem}>
                                 <Input
                                     className={css.numberInput}
-                                    type='number'
+                                    type="number"
                                     value={form.vegan}
                                     onChange={(e) =>
                                         changeForm({ vegan: removeNonDigits(e.currentTarget.value).slice(0, 3) })
                                     }
-                                    placeholder='0'
+                                    placeholder="0"
                                     error={!!errors?.['counts']}
                                 ></Input>
                                 <label className={css.formLabel}>🥦 Веган</label>
@@ -108,10 +105,10 @@ export const FeedAnonGroupCard: FC<{
             </div>
             <div className={css.bottomBLock}>
                 <div className={css.buttonsBlock}>
-                    <Button variant='secondary' className={css.button} onClick={close}>
+                    <Button variant="secondary" className={css.button} onClick={close}>
                         Отмена
                     </Button>
-                    <Button className={css.button} form='anon-group'>
+                    <Button className={css.button} form="anon-group">
                         Покормить группу
                     </Button>
                 </div>

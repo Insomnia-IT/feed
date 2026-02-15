@@ -1,6 +1,7 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import { Col, DatePicker, Input, Row, Select, Typography, Switch } from 'antd';
-import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filter-types';
+import { FilterFieldType } from './filter-types';
+import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 
 import { getFilterListItems } from './get-filter-list-items';
 import dayjs from 'dayjs';
@@ -10,12 +11,17 @@ const fieldStyle = {
     gap: '4px'
 };
 
-export const FilterItemControl: FC<{
+export const FilterItemControl = ({
+    field,
+    filterItem,
+    onFilterTextValueChange,
+    onFilterValueChange
+}: {
     field: FilterField;
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}> = ({ field, filterItem, onFilterTextValueChange, onFilterValueChange }) => {
+}) => {
     if (field.type === FilterFieldType.Lookup || field.type === FilterFieldType.Boolean) {
         return (
             <FilterSelect
@@ -32,23 +38,20 @@ export const FilterItemControl: FC<{
         return <DateField field={field} filterItem={filterItem} onFilterTextValueChange={onFilterTextValueChange} />;
     }
 
-    return (
-        <FilterInput
-            field={field}
-            filterItem={filterItem}
-            onFilterTextValueChange={onFilterTextValueChange}
-            onFilterValueChange={onFilterValueChange}
-        />
-    );
+    return <FilterInput field={field} filterItem={filterItem} onFilterTextValueChange={onFilterTextValueChange} />;
 };
 
 const SEPARATOR = ':';
 
-const DateField: FC<{
+const DateField = ({
+    field,
+    filterItem,
+    onFilterTextValueChange
+}: {
     field: FilterField;
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}> = ({ field, filterItem, onFilterTextValueChange }) => {
+}) => {
     const [isCalPopOpen, setIsCalPopOpen] = useState<boolean | undefined>(undefined);
 
     const [beforeString, afterString] = ((filterItem?.value as string | undefined) ?? '')?.split(SEPARATOR) ?? [];
@@ -136,12 +139,15 @@ const DateField: FC<{
     );
 };
 
-const FilterInput: FC<{
+const FilterInput = ({
+    field,
+    filterItem,
+    onFilterTextValueChange
+}: {
     field: FilterField;
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-    onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}> = ({ field, filterItem, onFilterTextValueChange }) => {
+}) => {
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
@@ -164,13 +170,19 @@ const FilterInput: FC<{
     );
 };
 
-const FilterSelect: FC<{
+const FilterSelect = ({
+    field,
+    isMultiple,
+    filterItem,
+    onFilterValueChange,
+    onFilterTextValueChange
+}: {
     field: FilterField;
     isMultiple?: boolean;
     filterItem?: FilterItem;
-    onFilterTextValueChange: (fieldName: string, value?: string) => void;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}> = ({ field, isMultiple, filterItem, onFilterValueChange, onFilterTextValueChange }) => {
+    onFilterTextValueChange: (fieldName: string, value?: string) => void;
+}) => {
     const values = getFilterListItems(field, filterItem);
 
     const onChange = (_id: string, value: FilterListItem) => onFilterValueChange(field.name, value, field.single);

@@ -22,7 +22,7 @@ export interface IStatisticApi {
     amount: number;
     kitchen_id: number;
 }
-export type IStatisticResponce = Array<IStatisticApi>;
+export type IStatisticResponse = Array<IStatisticApi>;
 
 export type DataType = {
     [type in StatisticType]: {

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { GetListResponse } from '@refinedev/core';
+import type { GetListResponse } from '@refinedev/core';
 
 export const FIELD_LABELS: Record<string, string> = {
     comment: 'Комментарий',

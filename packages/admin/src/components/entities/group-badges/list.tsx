@@ -1,6 +1,6 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useState, startTransition } from 'react';
 import { DeleteButton, EditButton, List } from '@refinedev/antd';
-import { Space, Table, TablePaginationConfig, Tooltip } from 'antd';
+import { Space, Table, type TablePaginationConfig, Tooltip } from 'antd';
 import { useList, useNavigation } from '@refinedev/core';
 
 import type { GroupBadgeEntity } from 'interfaces';
@@ -13,36 +13,39 @@ import styles from './group-badge-list.module.css';
 const LS_PAGE_KEY = 'gbPageIndex';
 const LS_SIZE_KEY = 'gbPageSize';
 
-export const GroupBadgeList: FC = () => {
+export const GroupBadgeList = () => {
     const [page, setPage] = useState<number>(Number(localStorage.getItem(LS_PAGE_KEY)) || 1);
     const [pageSize, setPageSize] = useState<number>(Number(localStorage.getItem(LS_SIZE_KEY)) || 10);
 
     const visibleDirections = useVisibleDirections();
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
+    const { result: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
-        config: {
-            pagination: {
-                current: isDesktop ? page : 1,
-                pageSize: isDesktop ? pageSize : 10000
-            }
+        pagination: {
+            currentPage: isDesktop ? page : 1,
+            pageSize: isDesktop ? pageSize : 10000
         }
     });
 
     useEffect(() => {
+        if (!isDesktop) return;
+
+        const total = groupBadges?.total;
+        if (!total) return;
         // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
-        if (groupBadges?.total && (page - 1) * pageSize >= groupBadges.total) {
-            setPage(1);
+        const maxPage = Math.max(1, Math.ceil(total / pageSize));
+        if (page > maxPage) {
+            startTransition(() => setPage(1));
             localStorage.setItem(LS_PAGE_KEY, '1');
         }
-    }, [groupBadges?.total, page, pageSize]);
+    }, [isDesktop, groupBadges?.total, page, pageSize]);
 
     const pagination: TablePaginationConfig = {
         total: groupBadges?.total ?? 1,
         showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
         current: page,
-        pageSize: pageSize,
+        pageSize,
         onChange: (newPage, newPageSize) => {
             setPage(newPage);
             setPageSize(newPageSize);

@@ -1,9 +1,7 @@
-import stylistic from '@stylistic/stylelint-plugin';
-
 export default {
     root: true,
 
-    plugins: [stylistic],
+    plugins: ['@stylistic/stylelint-plugin'],
     extends: ['stylelint-config-standard'],
 
     rules: {
@@ -19,5 +17,5 @@ export default {
         'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }]
     },
 
-    ignoreFiles: ['**/node_modules/**', '**/src/common/*.css']
+    ignoreFiles: ['**/node_modules/**', '**/src/common/*.css', 'packages/admin/dist/**', 'packages/scanner/dist/**']
 };

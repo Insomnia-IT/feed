@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Form, Input, Select, Image, Tooltip } from 'antd';
 import { useSelect } from '@refinedev/antd';
 
@@ -6,8 +6,9 @@ import { NEW_API_URL } from 'const';
 import HorseIcon from 'assets/icons/horse-icon';
 import { Rules } from 'components/form';
 import useCanAccess from 'components/entities/vols/use-can-access';
+import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 import type { DirectionEntity, PersonEntity } from 'interfaces';
-import { ColorCircle, ColorDef } from './color-circle/color-circle';
+import { ColorCircle, type ColorDef } from './color-circle/color-circle';
 
 import styles from './vol-info-section.module.css';
 
@@ -35,25 +36,39 @@ interface IProps {
     person: PersonEntity | null;
 }
 
-export const VolInfoSection: React.FC<IProps> = ({
+export const VolInfoSection = ({
     denyBadgeEdit,
     canEditGroupBadge,
     colorTypeOptions,
     groupBadgeOptions,
     person
-}) => {
+}: IProps) => {
     const form = Form.useFormInstance();
     const [imageError, setImageError] = useState(false);
 
     const mainRole = Form.useWatch('main_role', form);
+    const directionsValue = Form.useWatch('directions', form);
     const allowEmptyDirections = ALLOW_EMPTY_DIRECTIONS_ROLES.has(mainRole);
     const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
+    const visibleDirections = useVisibleDirections();
 
     const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name',
-        optionValue: 'id'
+        optionValue: 'id',
+        pagination: { mode: 'off' },
+        filters: visibleDirections?.length
+            ? [
+                  {
+                      field: 'id',
+                      operator: 'in',
+                      value: visibleDirections
+                  }
+              ]
+            : []
     });
+    const shouldHideDirectionTags =
+        (directionsValue?.length ?? 0) > 0 && (directionsSelectProps.options?.length ?? 0) === 0;
 
     const volPhoto = form.getFieldValue(PHOTO_FIELD) as string | undefined;
     const volPhotoUrl = useMemo(() => (volPhoto ? NEW_API_URL + volPhoto : ''), [volPhoto]);
@@ -136,7 +151,14 @@ export const VolInfoSection: React.FC<IProps> = ({
                     rules={allowEmptyDirections ? undefined : Rules.required}
                     className={styles.directionsFormItem}
                 >
-                    <Select mode="multiple" disabled={!allowRoleEdit && !!person} {...directionsSelectProps} />
+                    <Select
+                        mode="multiple"
+                        disabled={!allowRoleEdit && !!person}
+                        {...directionsSelectProps}
+                        loading={shouldHideDirectionTags || directionsSelectProps.loading}
+                        maxTagCount={shouldHideDirectionTags ? 0 : undefined}
+                        maxTagPlaceholder={shouldHideDirectionTags ? 'Загрузка...' : undefined}
+                    />
                 </Form.Item>
                 <Form.Item label="Цвет бейджа" name="color_type" className={styles.inputWithEllips}>
                     <Select disabled options={colorTypeOptionsWithBadges} />

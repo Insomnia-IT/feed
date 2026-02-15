@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { Button, Modal, message } from 'antd';
-import { useList } from '@refinedev/core';
+import { useList, type HttpError } from '@refinedev/core';
 import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
@@ -19,7 +19,7 @@ import type {
 } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 import useCanAccess from '../use-can-access';
-import { IData, IResult } from './common-history.types';
+import type { IData, IResult } from './common-history.types';
 import { BOOL_MAP, FIELD_LABELS, IGNORE_FIELDS, STATUS_MAP, useIdNameMap } from './utils';
 
 import styles from './common-history.module.css';
@@ -40,23 +40,39 @@ export const CommonHistory = ({ role }: IProps) => {
         resource: 'volunteers'
     });
 
-    const { data: kitchens } = useList<KitchenEntity>({ resource: 'kitchens', pagination: { pageSize: 0 } });
-    const { data: feedTypes } = useList<FeedTypeEntity>({ resource: 'feed-types', pagination: { pageSize: 0 } });
-    const { data: colors } = useList<ColorTypeEntity>({ resource: 'colors', pagination: { pageSize: 0 } });
-    const { data: accessRoles } = useList<AccessRoleEntity>({ resource: 'access-roles', pagination: { pageSize: 0 } });
-    const { data: volunteerRoles } = useList<VolunteerRoleEntity>({
-        resource: 'volunteer-roles',
-        pagination: { pageSize: 0 }
+    const kitchensList = useList<KitchenEntity, HttpError>({ resource: 'kitchens', pagination: { mode: 'off' } });
+    const feedTypesList = useList<FeedTypeEntity, HttpError>({ resource: 'feed-types', pagination: { mode: 'off' } });
+    const colorsList = useList<ColorTypeEntity, HttpError>({ resource: 'colors', pagination: { mode: 'off' } });
+    const accessRolesList = useList<AccessRoleEntity, HttpError>({
+        resource: 'access-roles',
+        pagination: { mode: 'off' }
     });
-    const { data: transports } = useList<TransportEntity>({ resource: 'transports', pagination: { pageSize: 0 } });
-    const { data: statuses } = useList<StatusEntity>({ resource: 'statuses', pagination: { pageSize: 0 } });
-    const { data: genders } = useList<AccessRoleEntity>({ resource: 'genders', pagination: { pageSize: 0 } });
-    const { data: directions } = useList<DirectionEntity>({ resource: 'directions', pagination: { pageSize: 0 } });
-    const { data: groupBadges } = useList<GroupBadgeEntity>({ resource: 'group-badges', pagination: { pageSize: 0 } });
+    const volunteerRolesList = useList<VolunteerRoleEntity, HttpError>({
+        resource: 'volunteer-roles',
+        pagination: { mode: 'off' }
+    });
+    const transportsList = useList<TransportEntity, HttpError>({ resource: 'transports', pagination: { mode: 'off' } });
+    const statusesList = useList<StatusEntity, HttpError>({ resource: 'statuses', pagination: { mode: 'off' } });
+    const gendersList = useList<AccessRoleEntity, HttpError>({ resource: 'genders', pagination: { mode: 'off' } });
+    const directionsList = useList<DirectionEntity, HttpError>({ resource: 'directions', pagination: { mode: 'off' } });
+    const groupBadgesList = useList<GroupBadgeEntity, HttpError>({
+        resource: 'group-badges',
+        pagination: { mode: 'off' }
+    });
+
+    const kitchens = kitchensList.query.data;
+    const feedTypes = feedTypesList.query.data;
+    const colors = colorsList.query.data;
+    const accessRoles = accessRolesList.query.data;
+    const volunteerRoles = volunteerRolesList.query.data;
+    const transports = transportsList.query.data;
+    const statuses = statusesList.query.data;
+    const genders = gendersList.query.data;
+    const directions = directionsList.query.data;
+    const groupBadges = groupBadgesList.query.data;
 
     const kitchenById = useIdNameMap(kitchens);
     const feedTypeById = useIdNameMap(feedTypes);
-    const colorById = useIdNameMap(colors, 'description');
     const accessRoleById = useIdNameMap(accessRoles);
     const volunteerRoleById = useIdNameMap(volunteerRoles);
     const transportById = useIdNameMap(transports);
@@ -64,6 +80,11 @@ export const CommonHistory = ({ role }: IProps) => {
     const genderById = useIdNameMap(genders);
     const directionById = useIdNameMap(directions);
     const groupBadgeById = useIdNameMap(groupBadges);
+
+    const colorById = useMemo<Record<string | number, string>>(
+        () => Object.fromEntries((colors?.data ?? []).map(({ id, description }) => [id, description ?? ''])),
+        [colors?.data]
+    );
 
     useEffect(() => {
         if (!volunteerId) return;
@@ -117,7 +138,7 @@ export const CommonHistory = ({ role }: IProps) => {
             if (['comment', 'direction_head_comment'].includes(key)) {
                 return (obj[key] || '').replace(/<\/?[^>]+(>|$)/g, '');
             }
-            const maps: Record<string, Record<any, string>> = {
+            const maps: Record<string, Record<string | number, string>> = {
                 kitchen: kitchenById,
                 main_role: volunteerRoleById,
                 access_role: accessRoleById,
@@ -133,12 +154,17 @@ export const CommonHistory = ({ role }: IProps) => {
                 return maps[key][obj[key]];
             }
             if (key === 'directions') {
-                return obj[key]?.map((id: string | number) => directionById[id]).join(', ');
+                const arr = obj[key] as unknown as Array<string | number> | undefined;
+                return (arr ?? [])
+                    .map((id) => directionById[id])
+                    .filter(Boolean)
+                    .join(', ');
             }
             if (key === 'value') {
-                return obj[key] === 'true' ? 'Да' : obj[key] === 'false' ? 'Нет' : obj[key];
+                const v = String(obj[key] ?? '');
+                return v === 'true' ? 'Да' : v === 'false' ? 'Нет' : v;
             }
-            return obj[key];
+            return obj[key] as unknown as string;
         },
         [
             accessRoleById,
