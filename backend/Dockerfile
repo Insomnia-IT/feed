@@ -1,5 +1,4 @@
-FROM python:3.9.9-slim
-
+FROM python:3.10.11-slim
 
 RUN apt-get update && apt-get install gnupg2 curl -y
 
