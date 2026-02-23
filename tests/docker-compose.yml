@@ -70,7 +70,7 @@ services:
     build:
       context: .
       network: host
-    command: bash -c 'python -m pytest --count=$NREPS test_regress_one.py'
+    command: bash -c 'python -m pytest --count=$NREPS test_regress.py'
     # command: bash -c 'sleep 3600'
     depends_on:
       chrome:
