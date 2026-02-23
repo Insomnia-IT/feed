@@ -1,44 +1,29 @@
-name: Tests Merged
 
-# on:
-#   workflow_dispatch:
+
+
+name: Tests
+
+on:
+  workflow_dispatch:
 #   push:
 #     branches: [main]
 
-on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, edited]
-
 jobs:
   tests:
-    runs-on: [self-hosted, zhukov]
+    runs-on: ubuntu-latest
 
+    container:
+      image: ubuntu:latest
+      
     steps:
-      - name: Checkout base branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
-          path: base
-          fetch-depth: 0
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          path: pr
-          fetch-depth: 0
-
-      - name: Merge PR into base
-        run: |
-          cd base
-          git fetch ../pr HEAD
-          git merge --no-ff --no-commit FETCH_HEAD
-        continue-on-error: false
 
       - name: ⌛ Do Testing
+        env:
+          FEED_APP_HOST: https://feedapp-dev.insomniafest.ru 
         run: |
-          cd base/tests
+          cd tests
           bash run_tests.sh || touch /tmp/testFailed
 
       - name: 🍏 Shorter Log
