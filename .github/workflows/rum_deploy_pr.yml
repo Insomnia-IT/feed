@@ -46,7 +46,7 @@ jobs:
       if: github.event.action != 'closed'
       id: create-link
       run: |
-        echo "::set-output name=app_url::https://9${{ github.event.number }}.${{ env.DEV_HOST }}"
+        echo "::set-output name=app_url::https://9${{ github.event.number }}.${{ vars.DEV_HOST }}"
     - name: remove db dir
       if: github.event.action == 'closed'
       run: |
