@@ -16,8 +16,7 @@ jobs:
     runs-on: [self-hosted, rumsrv]
     environment:
       name: PR-${{ github.event.number }}
-    #   url: ${{ steps.create-link.outputs.app_url }}
-      url: https://${{ github.event.number }}.feedapp-dev.insomniafest.ru/
+      url: ${{ steps.create-link.outputs.app_url }}
     env:
       PROJECT_NAME: feed-pr-${{ github.event.number }}
       DB_DIR: /tmp/feed_db_pr_${{ github.event.number }}
@@ -49,7 +48,10 @@ jobs:
     - name: Create app link
       if: github.event.action != 'closed'
       id: create-link
-      run: echo "::set-output name=app_url::http://9${{ github.event.number }}.${{ env.MAIN_HOST }}"
+      run: |
+        APP_URL=https://9${{ github.event.number }}.insomniafest.ru
+        echo "::add-mask::$APP_URL"
+        echo "::set-output name=app_url::$APP_URL"
     - name: remove db dir
       if: github.event.action == 'closed'
       run: |
