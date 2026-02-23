@@ -15,30 +15,31 @@ jobs:
     runs-on: [self-hosted, zhukov]
 
     steps:
-      - name: Checkout base branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
-          path: base
-          fetch-depth: 0
+      - uses: actions/checkout@v3
+#       - name: Checkout base branch
+#         uses: actions/checkout@v4
+#         with:
+#           ref: ${{ github.event.pull_request.base.ref }}
+#           path: base
+#           fetch-depth: 0
 
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          path: pr
-          fetch-depth: 0
+#       - name: Checkout PR branch
+#         uses: actions/checkout@v4
+#         with:
+#           ref: ${{ github.head_ref }}
+#           path: pr
+#           fetch-depth: 0
 
-      - name: Merge PR into base
-        run: |
-          cd base
-          git fetch ../pr HEAD
-          git merge --no-ff --no-commit FETCH_HEAD
-        continue-on-error: false
+#       - name: Merge PR into base
+#         run: |
+#           cd base
+#           git fetch ../pr HEAD
+#           git merge --no-ff --no-commit FETCH_HEAD
+#         continue-on-error: false
 
       - name: ⌛ Do Testing
         run: |
-          cd base/tests
+          cd tests
           bash run_tests.sh || touch /tmp/testFailed
 
       - name: 🍏 Shorter Log
