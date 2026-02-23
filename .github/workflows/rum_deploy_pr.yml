@@ -8,9 +8,6 @@ on:
       - reopened
       - closed
 
-env:
-  MAIN_HOST: insomniafest.ru
-
 jobs:
   build:
     runs-on: [self-hosted, rumsrv]
@@ -49,9 +46,7 @@ jobs:
       if: github.event.action != 'closed'
       id: create-link
       run: |
-        APP_URL=https://9${{ github.event.number }}.insomniafest.ru
-        echo "::add-mask::$APP_URL"
-        echo "::set-output name=app_url::$APP_URL"
+        echo "::set-output name=app_url::https://9${{ github.event.number }}.${{ env.DEV_HOST }}"
     - name: remove db dir
       if: github.event.action == 'closed'
       run: |
