@@ -13,7 +13,7 @@ jobs:
     runs-on: [self-hosted, rumsrv]
     environment:
       name: PR-${{ github.event.number }}
-      url: https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru
+      url: http://9${{ github.event.number }}.agreetesting.rumyantsev.com
     env:
       PROJECT_NAME: feed-pr-${{ github.event.number }}
       DB_DIR: /tmp/feed_db_pr_${{ github.event.number }}
