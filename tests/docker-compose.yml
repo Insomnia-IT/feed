@@ -2,6 +2,8 @@
 
 services:
   chrome:
+    ports:
+      - 0.0.0.0:4444:4444
     # container_name: feedtests_chrome
     networks:
       - tests
@@ -49,9 +51,15 @@ services:
   #  container_name: feedtests_front
     restart: always
     ports:
-      - ${PORT:-80}:80
+      - 0.0.0.0:8080:80
     depends_on:
       - backend
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+    #   interval: 15s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 1s
   tests:
     networks:
       - tests
@@ -61,7 +69,8 @@ services:
     build:
       context: .
       network: host
-    command: bash -c "python -m pytest --count=$NREPS test_regress_one.py"
+    command: bash -c 'python -m pytest --count=$NREPS test_regress_one.py'
+    # command: bash -c 'sleep 3600'
     depends_on:
       chrome:
         condition: service_healthy

@@ -38,8 +38,11 @@ jobs:
 #         continue-on-error: false
 
       - name: ⌛ Do Testing
+        env:
+          FEED_APP_HOST: http://9${{ github.event.pull_request.number }}.agreetesting.rumyantsev.com
         run: |
           cd tests
+          echo $FEED_APP_HOST
           bash run_tests.sh || touch /tmp/testFailed
 
       - name: 🍏 Shorter Log

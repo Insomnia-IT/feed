@@ -8,20 +8,18 @@ from base_page import BasePage
 
 host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
 
-print("Host: " + host)
-
 def test_pagination_in_volunteer_list(browser):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
     link=f"{host}/login"
     page = BasePage(browser, link)
     page.open()
     page.first_window()
-    time.sleep(1)
+    time.sleep(100)
     page.login_admin()
-    time.sleep(1)
+    time.sleep(100)
     page.pagination()
     active_page = browser.find_element(By.CLASS_NAME, "ant-pagination-item-active")
-    time.sleep(1)
+    time.sleep(100)
     # проверяем что активная страница имеет 2 в наименовании
     assert "2" in active_page.text, "Ошибка: Страница 2 не активна или текст отсутствует!"
 
