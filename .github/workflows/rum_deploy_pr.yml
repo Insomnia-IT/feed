@@ -16,7 +16,8 @@ jobs:
     runs-on: [self-hosted, rumsrv]
     environment:
       name: PR-${{ github.event.number }}
-      url: ${{ steps.create-link.outputs.app_url }}
+    #   url: ${{ steps.create-link.outputs.app_url }}
+      url: https://www.google.com/
     env:
       PROJECT_NAME: feed-pr-${{ github.event.number }}
       DB_DIR: /tmp/feed_db_pr_${{ github.event.number }}
