@@ -8,6 +8,8 @@ from base_page import BasePage
 
 host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
 
+print("Host: " + host)
+
 def test_pagination_in_volunteer_list(browser):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
     link=f"{host}/login"

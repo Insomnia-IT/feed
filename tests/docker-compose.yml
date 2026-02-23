@@ -61,7 +61,7 @@ services:
     build:
       context: .
       network: host
-    command: bash -c "echo $FEED_APP_HOST && python -m pytest --count=$NREPS test_regress_one.py"
+    command: bash -c "python -m pytest --count=$NREPS test_regress_one.py"
     depends_on:
       chrome:
         condition: service_healthy
