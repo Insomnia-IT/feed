@@ -46,7 +46,7 @@ services:
       dockerfile: ./Dockerfile_front
       args:
         NEW_API_URL: /feedapi/v1
-    container_name: feedtests_front
+  #  container_name: feedtests_front
     restart: always
     ports:
       - ${PORT:-80}:80
@@ -57,11 +57,11 @@ services:
       - tests
     environment:
       WEBDRIVER_REMOTE: true
-      FEED_APP_HOST: ${FEED_APP_HOST:-http://feedtests_front}
+      FEED_APP_HOST: ${FEED_APP_HOST:-http://front}
     build:
       context: .
       network: host
-    command: bash -c "python -m pytest --count=$NREPS test_regress_one.py"
+    command: bash -c "echo $FEED_APP_HOST && python -m pytest --count=$NREPS test_regress_one.py"
     depends_on:
       chrome:
         condition: service_healthy
