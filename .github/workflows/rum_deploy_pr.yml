@@ -49,7 +49,8 @@ jobs:
         APP_HOST=feedapp-dev.insomniafest.ru
         APP_HOST1=feedapp-dev.inso
         APP_HOST2=mniafest.ru
-        echo "::set-output name=app_url::https://9${{ github.event.number }}.$APP_HOST1$APP_HOST2"
+        APP_HOST3=${APP_HOST1}${APP_HOST2}
+        echo "::set-output name=app_url::https://9${{ github.event.number }}.${APP_HOST1}${APP_HOST2}"
     - name: remove db dir
       if: github.event.action == 'closed'
       run: |
