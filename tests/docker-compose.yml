@@ -31,6 +31,7 @@ services:
     container_name: feedtests_backend
     restart: always
     environment:
+      ALLOWED_HOSTS: front, localhost
       # OTEL_ENDPOINT: http://jaeger:4318/v1/traces
       SKIP_BACK_SYNC: ${SKIP_BACK_SYNC:-False}
       PHOTO_AUTH_TOKEN: ${PHOTO_AUTH_TOKEN}
