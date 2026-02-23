@@ -10,10 +10,10 @@ on:
     workflows: ["Deploy to rumsrv on PR"]
     types: [completed]
 
-on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, edited]
+# on:
+#   pull_request:
+#     branches: [main]
+#     types: [opened, synchronize, reopened, edited]
 
 jobs:
   tests:
