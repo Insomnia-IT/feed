@@ -45,6 +45,7 @@ jobs:
 #           git merge --no-ff --no-commit FETCH_HEAD
 #         continue-on-error: false
 
+
       - name: ⌛ Do Testing
         env:
           FEED_APP_HOST: https://9${{ github.event.workflow_run.pull_requests[0].number }}.feedapp-dev.insomniafest.ru
