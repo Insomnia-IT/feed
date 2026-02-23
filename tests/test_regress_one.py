@@ -14,12 +14,12 @@ def test_pagination_in_volunteer_list(browser):
     page = BasePage(browser, link)
     page.open()
     page.first_window()
-    time.sleep(100)
+    time.sleep(1)
     page.login_admin()
-    time.sleep(100)
+    time.sleep(1)
     page.pagination()
     active_page = browser.find_element(By.CLASS_NAME, "ant-pagination-item-active")
-    time.sleep(100)
+    time.sleep(1)
     # проверяем что активная страница имеет 2 в наименовании
     assert "2" in active_page.text, "Ошибка: Страница 2 не активна или текст отсутствует!"
 
