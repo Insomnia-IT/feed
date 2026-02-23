@@ -23,7 +23,7 @@ def browser(language):
     options.add_experimental_option('prefs', {'intl.accept_languages': language})
     options.add_argument("--start-fullscreen")
     if os.environ.get('WEBDRIVER_REMOTE'):
-        browser = webdriver.Remote(command_executor='http://localhost:4444/wd/hub', options=options)
+        browser = webdriver.Remote(command_executor='http://chrome:4444/wd/hub', options=options)
     else:
         browser = webdriver.Chrome(options=options)
 
