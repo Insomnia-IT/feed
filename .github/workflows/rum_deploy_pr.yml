@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: [self-hosted, rumsrv]
     environment:
-      name: https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru
+      name: PR-${{ github.event.number }}
       url: ${{ steps.create-link.outputs.app_url }}
     env:
       PROJECT_NAME: feed-pr-${{ github.event.number }}
