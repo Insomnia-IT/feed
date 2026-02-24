@@ -8,6 +8,7 @@ import type { DirectionEntity, GroupBadgeEntity, VolEntity } from 'interfaces';
 import { useDebouncedCallback } from 'shared/hooks';
 import { CreateEdit } from './common';
 import { AddVolunteerModal } from './add-volunteer-modal';
+import { GroupMealPlan } from './group-meal-plan';
 
 const { Title, Text } = Typography;
 
@@ -112,6 +113,10 @@ export const GroupBadgeEdit: FC = () => {
                     )}
                 />
             </Table>
+
+            <Divider />
+
+            <GroupMealPlan />
         </Edit>
     );
 };
