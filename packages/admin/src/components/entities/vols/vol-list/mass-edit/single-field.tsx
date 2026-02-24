@@ -122,8 +122,7 @@ export const SingleField: React.FC<{
 const DateValueChanger: React.FC<{ onChange: (value: string) => void }> = ({ onChange }) => {
     return (
         <AdaptiveDatePicker
-            style={{ width: '100%' }}
-            onChange={(_date, dateString): void => {
+            onChange={(dateString): void => {
                 onChange(dateString as string);
             }}
         />
