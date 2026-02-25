@@ -10,7 +10,7 @@ export interface MealPlanRow {
     amount_vegan: number | null;
 }
 
-const MESSAGES = {
+export const MESSAGES = {
     PAST_DATE: 'Нельзя редактировать прошедшие даты',
     AFTER_21: 'После 21:00 следующий день можно редактировать только через бюро',
     DEFAULT: 'Редактирование недоступно'
@@ -23,14 +23,14 @@ const JULY_MONTH_INDEX = 6;
 
 export type MealTypeKey = 'breakfast' | 'lunch' | 'dinner';
 
-type MealAmounts = { amount_meat: number | null; amount_vegan: number | null } | null;
+export type MealAmounts = { amount_meat: number | null; amount_vegan: number | null } | null;
 
-interface EditabilityResult {
+export interface EditabilityResult {
     editable: boolean;
     message?: string;
 }
 
-const createDateHelpers = () => {
+export const createDateHelpers = () => {
     const today = dayjs();
     return {
         yesterday: today.subtract(1, 'day'),
@@ -40,7 +40,7 @@ const createDateHelpers = () => {
     };
 };
 
-const checkDateEditability = (date: Dayjs, role?: AppRoles): EditabilityResult => {
+export const checkDateEditability = (date: Dayjs, role?: AppRoles): EditabilityResult => {
     const { yesterday, today, tomorrow, currentHour } = createDateHelpers();
 
     if (date.isSame(yesterday, 'day') || date.isBefore(yesterday, 'day')) {
@@ -107,7 +107,7 @@ const generateMockData = (): MealPlanRow[] => {
     return rows;
 };
 
-const groupByDate = (data: MealPlanRow[]): Map<string, MealPlanRow[]> => {
+export const groupByDate = (data: MealPlanRow[]): Map<string, MealPlanRow[]> => {
     const grouped = new Map<string, MealPlanRow[]>();
 
     for (const row of data) {
@@ -119,7 +119,7 @@ const groupByDate = (data: MealPlanRow[]): Map<string, MealPlanRow[]> => {
     return grouped;
 };
 
-const forwardFillMeals = ({
+export const forwardFillMeals = ({
     grouped,
     firstDate,
     lastDate,
@@ -190,7 +190,7 @@ const forwardFillMeals = ({
     return result;
 };
 
-const transformToRenderData = (data: MealPlanRow[], role?: AppRoles): MealPlanRowRender[] => {
+export const transformToRenderData = (data: MealPlanRow[], role?: AppRoles): MealPlanRowRender[] => {
     const grouped = groupByDate(data);
     const dates = Array.from(grouped.keys()).sort();
 
@@ -204,7 +204,7 @@ const transformToRenderData = (data: MealPlanRow[], role?: AppRoles): MealPlanRo
     return forwardFillMeals({ grouped, firstDate, lastDate, role });
 };
 
-const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): MealPlanRowRender[] => {
+export const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): MealPlanRowRender[] => {
     if (data.length === 0) return data;
 
     const lastDayOfJuly = dayjs().month(JULY_MONTH_INDEX).date(31);
