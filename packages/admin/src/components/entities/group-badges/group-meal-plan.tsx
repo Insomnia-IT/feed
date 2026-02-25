@@ -130,6 +130,7 @@ export const GroupMealPlan: React.FC = () => {
                             onChange={(v) => setEditMeat(v)}
                             addonAfter={
                                 <Button
+                                    title="Очистить"
                                     type="text"
                                     size="small"
                                     icon={<CloseOutlined />}
@@ -145,6 +146,7 @@ export const GroupMealPlan: React.FC = () => {
                             onChange={(v) => setEditVegan(v)}
                             addonAfter={
                                 <Button
+                                    title="Очистить"
                                     type="text"
                                     size="small"
                                     icon={<CloseOutlined />}
