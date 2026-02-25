@@ -136,10 +136,17 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     directions = DirectionSerializer(many=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
     arrivals = VolunteerListArrivalSerializer(many=True)
+    supervisor = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Volunteer
         fields = '__all__'
+    
+    def get_supervisor(self, volunteer):
+        supervisor = getattr(volunteer, "supervisor_id", None)
+        if supervisor:
+            return {"id": supervisor.id, "name": supervisor.name}
+        return None
 
 class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -147,6 +154,8 @@ class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer
     arrivals = ArrivalSerializer(many=True)
     person = PersonSerializer(required=False, allow_null=True)
     color_type = serializers.SerializerMethodField(read_only=True)
+    supervisor = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Volunteer
         fields = '__all__'
@@ -158,6 +167,12 @@ class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer
                 return models.Color.objects.get(name = main_role.color).id
             except models.Color.DoesNotExist:
                 return None
+    
+    def get_supervisor(self, volunteer):
+        supervisor = getattr(volunteer, "supervisor_id", None)
+        if supervisor:
+            return {"id": supervisor.id, "name": supervisor.name}
+        return None
 
 class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     arrivals = ArrivalSerializer(many=True, required=False)
@@ -169,6 +184,11 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         source='person', 
         queryset=models.Person.objects.all(),
         required=False
+    )
+    supervisor_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Volunteer.objects.all(),
+        required=False,
+        allow_null=True
     )
 
     class Meta:

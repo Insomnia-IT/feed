@@ -1,6 +1,5 @@
 import { WashEntity } from 'interfaces';
 import { dataProvider } from '../../../dataProvider';
-import ExcelJS from 'exceljs';
 import { transformWashesForShow } from './utils';
 import dayjs from 'dayjs';
 import { formDateFormat, saveXLSX } from 'shared/lib';
@@ -37,6 +36,8 @@ const saveWashesAsExcel = async () => {
     const { data = [] } = await dataProvider.getList<WashEntity>({
         resource: 'washes'
     });
+
+    const ExcelJS = await import('exceljs');
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Washes');

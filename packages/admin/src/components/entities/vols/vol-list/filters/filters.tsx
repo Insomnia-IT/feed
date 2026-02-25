@@ -1,31 +1,31 @@
-import { Button, Popover } from 'antd';
+import { FC, useMemo } from 'react';
+import { DeleteOutlined, FilterOutlined } from '@ant-design/icons';
+import { Button, Col, Popover, Row } from 'antd';
 
-import styles from '../../list.module.css';
-import { FC } from 'react';
-
-import type { FilterField, FilterListItem } from './filter-types';
-import { FilterItem } from './filter-types';
 import { FilterChooser } from './filter-chooser';
 import { FilterItemControl } from './filter-item-control';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 
-export const Filters: FC<{
-    /** Available filer fields */
-    filterFields: Array<FilterField>;
+import styles from '../../list.module.css';
+
+interface IProps {
+    filterFields: FilterField[];
     searchText?: string;
     setSearchText?: (value: string) => void;
-    visibleFilters: Array<string>;
-    setVisibleFilters: (value: Array<string>) => void;
-    activeFilters: Array<FilterItem>;
-    setActiveFilters: (value: Array<FilterItem>) => void;
-}> = ({
+    visibleFilters: string[];
+    setVisibleFilters: (filters: string[]) => void;
+    activeFilters: FilterItem[];
+    setActiveFilters: (filters: FilterItem[]) => void;
+}
+
+export const Filters: FC<IProps> = ({
     activeFilters,
     filterFields,
     searchText,
-    setActiveFilters,
     setSearchText,
-    setVisibleFilters,
-    visibleFilters
+    setActiveFilters,
+    visibleFilters,
+    setVisibleFilters
 }) => {
     const toggleVisibleFilter = (name: string): void => {
         const visible = visibleFilters.includes(name);
@@ -37,6 +37,11 @@ export const Filters: FC<{
         } else {
             setVisibleFilters([...visibleFilters, name]);
         }
+    };
+
+    const removeAllFilters = () => {
+        setVisibleFilters([]);
+        setActiveFilters([]);
     };
 
     const onFilterTextValueChange = (fieldName: string, value?: string): void => {
@@ -110,20 +115,50 @@ export const Filters: FC<{
         setActiveFilters(newFilters);
     };
 
-    const visibleFiltersFields = filterFields.filter((field) => visibleFilters.includes(field.name));
+    const visibleFiltersFields = useMemo(
+        () => filterFields.filter((f) => visibleFilters.includes(f.name)),
+        [filterFields, visibleFilters]
+    );
 
-    const filterPairs = visibleFiltersFields.map((filterField) => {
-        const filterItem = activeFilters.find((f) => f.name === filterField.name);
+    const filterPairs = useMemo(
+        () =>
+            visibleFiltersFields.map((field) => ({
+                filterField: field,
+                filterItem: activeFilters.find((f) => f.name === field.name)
+            })),
+        [visibleFiltersFields, activeFilters]
+    );
 
-        return {
-            filterField,
-            filterItem
-        };
-    });
+    const resetFilters = () => {
+        setActiveFilters([]);
+
+        if (setSearchText) {
+            setSearchText('');
+        }
+    };
 
     return (
         <div className={styles.filters}>
             <div className={styles.filterItems}>
+                <Col style={{ width: '105px' }}>
+                    <Row>
+                        <Popover
+                            key="add-filter"
+                            placement="bottomLeft"
+                            content={
+                                <FilterChooser
+                                    removeAllFilters={removeAllFilters}
+                                    filterFields={filterFields}
+                                    toggleVisibleFilter={toggleVisibleFilter}
+                                    visibleFilters={visibleFilters}
+                                />
+                            }
+                            trigger="click"
+                        >
+                            <Button icon={<FilterOutlined />}>Фильтры</Button>
+                        </Popover>
+                    </Row>
+                </Col>
                 {filterPairs.map(({ filterField, filterItem }) => (
                     <FilterItemControl
                         key={filterField.name}
@@ -133,34 +168,9 @@ export const Filters: FC<{
                         onFilterValueChange={onFilterValueChange}
                     />
                 ))}
-                <Popover
-                    key="add-filter"
-                    placement="bottomLeft"
-                    content={
-                        <FilterChooser
-                            filterFields={filterFields}
-                            toggleVisibleFilter={toggleVisibleFilter}
-                            visibleFilters={visibleFilters}
-                        />
-                    }
-                    trigger="click"
-                >
-                    <Button type="link" icon={<PlusOutlined />}>
-                        Фильтр
-                    </Button>
-                </Popover>
                 {(activeFilters.length || searchText) && (
-                    <Button
-                        type="link"
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                            setActiveFilters([]);
-                            if (setSearchText) {
-                                setSearchText('');
-                            }
-                        }}
-                    >
-                        Сбросить фильтрацию
+                    <Button icon={<DeleteOutlined />} onClick={resetFilters}>
+                        Очистить фильтры
                     </Button>
                 )}
             </div>

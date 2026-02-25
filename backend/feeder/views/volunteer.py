@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions, filters
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django import forms
+from django.db.models import Exists, OuterRef
 from distutils.util import strtobool
 
 
@@ -38,7 +39,25 @@ class VolunteerFilter(django_filters.FilterSet):
     directions = django_filters.ModelMultipleChoiceFilter(queryset=models.Direction.objects.all())
     scanner_comment = django_filters.CharFilter(field_name="scanner_comment", lookup_expr='icontains')
     responsible_id = django_filters.CharFilter(field_name="responsible_id", lookup_expr='exact')
+    supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
+    has_supervisor = django_filters.BooleanFilter(method='filter_has_supervisor')
+    is_supervisor = django_filters.BooleanFilter(method='filter_is_supervisor')
     infant = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
+
+    def filter_has_supervisor(self, queryset, name, value):
+        if value is None:
+            return queryset
+
+        return queryset.filter(supervisor_id__isnull=not value)
+
+    def filter_is_supervisor(self, queryset, name, value):
+        if value is None:
+            return queryset
+
+        supervisees_qs = models.Volunteer.objects.filter(supervisor_id=OuterRef('pk'))
+        queryset = queryset.annotate(is_supervisor=Exists(supervisees_qs))
+
+        return queryset.filter(is_supervisor=value)
 
     def filter_is_ticket_received(self, queryset, name, value):
         if value:
