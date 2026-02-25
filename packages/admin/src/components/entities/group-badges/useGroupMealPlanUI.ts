@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
 import dayjs, { type Dayjs } from 'dayjs';
+import { type MealTypeKey } from './useGroupMealPlanData';
 
 interface SelectedCell {
     date: Dayjs;
     dateStr: string;
     mealType: string;
-    mealTypeKey: 'breakfast' | 'lunch' | 'dinner';
+    mealTypeKey: MealTypeKey;
     amount_meat: number | null;
     amount_vegan: number | null;
 }
@@ -13,14 +14,18 @@ interface SelectedCell {
 interface UseGroupMealPlanUIReturn {
     today: Dayjs;
     modalOpen: boolean;
+    modalType: 'edit' | 'readonly';
     selectedCell: SelectedCell | null;
     editMeat: number | null;
     editVegan: number | null;
+    readonlyMessage: string;
     handleCellClick: (
         date: Dayjs,
         mealType: string,
-        mealTypeKey: 'breakfast' | 'lunch' | 'dinner',
-        meals: { amount_meat: number | null; amount_vegan: number | null }
+        mealTypeKey: MealTypeKey,
+        meals: { amount_meat: number | null; amount_vegan: number | null },
+        editable: boolean,
+        message?: string
     ) => void;
     handleModalClose: () => void;
     handleSave: () => void;
@@ -30,26 +35,27 @@ interface UseGroupMealPlanUIReturn {
     setSelectedCell: (cell: SelectedCell | null) => void;
 }
 
+const DEFAULT_READONLY_MESSAGE = 'Редактирование недоступно';
+
 export const useGroupMealPlanUI = (
-    onSave: (
-        date: Dayjs,
-        mealTypeKey: 'breakfast' | 'lunch' | 'dinner',
-        editMeat: number | null,
-        editaVegan: number | null
-    ) => void
+    onSave: (date: Dayjs, mealTypeKey: MealTypeKey, editMeat: number | null, editaVegan: number | null) => void
 ): UseGroupMealPlanUIReturn => {
     const today = dayjs();
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalType, setModalType] = useState<'edit' | 'readonly'>('edit');
     const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
     const [editMeat, setEditMeat] = useState<number | null>(null);
     const [editVegan, setEditVegan] = useState<number | null>(null);
+    const [readonlyMessage, setReadonlyMessage] = useState<string>('');
 
     const handleCellClick = useCallback(
         (
             date: Dayjs,
             mealType: string,
-            mealTypeKey: 'breakfast' | 'lunch' | 'dinner',
-            meals: { amount_meat: number | null; amount_vegan: number | null }
+            mealTypeKey: MealTypeKey,
+            meals: { amount_meat: number | null; amount_vegan: number | null },
+            editable: boolean,
+            message?: string
         ) => {
             setSelectedCell({
                 date,
@@ -61,6 +67,15 @@ export const useGroupMealPlanUI = (
             });
             setEditMeat(meals.amount_meat);
             setEditVegan(meals.amount_vegan);
+
+            if (editable) {
+                setModalType('edit');
+                setReadonlyMessage('');
+            } else {
+                setModalType('readonly');
+                setReadonlyMessage(message || DEFAULT_READONLY_MESSAGE);
+            }
+
             setModalOpen(true);
         },
         []
@@ -69,6 +84,7 @@ export const useGroupMealPlanUI = (
     const handleModalClose = useCallback(() => {
         setModalOpen(false);
         setSelectedCell(null);
+        setReadonlyMessage('');
     }, []);
 
     const handleSave = useCallback(() => {
@@ -82,9 +98,11 @@ export const useGroupMealPlanUI = (
     return {
         today,
         modalOpen,
+        modalType,
         selectedCell,
         editMeat,
         editVegan,
+        readonlyMessage,
         handleCellClick,
         handleModalClose,
         setEditMeat,

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Button, InputNumber, Modal, Table, Tag } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { Button, Table, Tag } from 'antd';
 import dayjs from 'dayjs';
 
 import styles from './group-meal-plan.module.css';
 import { useGroupMealPlanData, type MealPlanRowRender } from './useGroupMealPlanData';
 import { useGroupMealPlanUI } from './useGroupMealPlanUI';
+import { MealPlanEditModal } from './MealPlanEditModal';
+import { MealPlanReadonlyModal } from './MealPlanReadonlyModal';
 
 const formatMeals = (meals: { amount_meat: number | null; amount_vegan: number | null }) => {
     if (meals.amount_meat === null && meals.amount_vegan === null) {
@@ -22,17 +23,17 @@ export const GroupMealPlan: React.FC = () => {
     const {
         today,
         modalOpen,
+        modalType,
         selectedCell,
         editMeat,
         editVegan,
+        readonlyMessage,
         handleCellClick,
         handleModalClose,
         handleSave,
         setEditMeat,
         setEditVegan
     } = useGroupMealPlanUI(saveToData);
-
-    const isValid = (editMeat !== null && editMeat < 0) || (editVegan !== null && editVegan < 0);
 
     const rowClassName = (record: MealPlanRowRender) => {
         return record.date.isSame(today, 'day') ? styles.todayRow : '';
@@ -75,7 +76,16 @@ export const GroupMealPlan: React.FC = () => {
                     ) => (
                         <Tag
                             className={styles.mealCell}
-                            onClick={() => handleCellClick(record.date, 'Завтрак', 'breakfast', value)}
+                            onClick={() =>
+                                handleCellClick(
+                                    record.date,
+                                    'Завтрак',
+                                    'breakfast',
+                                    value,
+                                    record.editable,
+                                    record.readonlyMessage
+                                )
+                            }
                         >
                             {formatMeals(value)}
                         </Tag>
@@ -91,7 +101,16 @@ export const GroupMealPlan: React.FC = () => {
                     ) => (
                         <Tag
                             className={styles.mealCell}
-                            onClick={() => handleCellClick(record.date, 'Обед', 'lunch', value)}
+                            onClick={() =>
+                                handleCellClick(
+                                    record.date,
+                                    'Обед',
+                                    'lunch',
+                                    value,
+                                    record.editable,
+                                    record.readonlyMessage
+                                )
+                            }
                         >
                             {formatMeals(value)}
                         </Tag>
@@ -107,7 +126,16 @@ export const GroupMealPlan: React.FC = () => {
                     ) => (
                         <Tag
                             className={styles.mealCell}
-                            onClick={() => handleCellClick(record.date, 'Ужин', 'dinner', value)}
+                            onClick={() =>
+                                handleCellClick(
+                                    record.date,
+                                    'Ужин',
+                                    'dinner',
+                                    value,
+                                    record.editable,
+                                    record.readonlyMessage
+                                )
+                            }
                         >
                             {formatMeals(value)}
                         </Tag>
@@ -115,54 +143,29 @@ export const GroupMealPlan: React.FC = () => {
                 />
             </Table>
 
-            <Modal
-                title={`Редактирование: ${selectedCell?.mealType || ''} - ${selectedCell?.dateStr || ''}`}
-                open={modalOpen}
-                onCancel={handleModalClose}
-                footer={null}
-                width={400}
-            >
-                <div className={styles.modalContent}>
-                    <div className={styles.inputRow}>
-                        <label className={styles.meat}>🥩 Мясоеды:</label>
-                        <InputNumber
-                            value={editMeat}
-                            onChange={(v) => setEditMeat(v)}
-                            addonAfter={
-                                <Button
-                                    title="Очистить"
-                                    type="text"
-                                    size="small"
-                                    icon={<CloseOutlined />}
-                                    onClick={() => setEditMeat(null)}
-                                />
-                            }
-                        />
-                    </div>
-                    <div className={styles.inputRow}>
-                        <label className={styles.vegan}>🥦 Веганы:</label>
-                        <InputNumber
-                            value={editVegan}
-                            onChange={(v) => setEditVegan(v)}
-                            addonAfter={
-                                <Button
-                                    title="Очистить"
-                                    type="text"
-                                    size="small"
-                                    icon={<CloseOutlined />}
-                                    onClick={() => setEditVegan(null)}
-                                />
-                            }
-                        />
-                    </div>
-                    <div className={styles.modalButtons}>
-                        <Button onClick={handleModalClose}>Отмена</Button>
-                        <Button type="primary" onClick={handleSave} disabled={isValid}>
-                            Сохранить
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
+            {modalType === 'edit' && (
+                <MealPlanEditModal
+                    open={modalOpen}
+                    title={`Редактирование: ${selectedCell?.mealType || ''}`}
+                    dateStr={selectedCell?.dateStr || ''}
+                    editMeat={editMeat}
+                    editVegan={editVegan}
+                    onMeatChange={setEditMeat}
+                    onVeganChange={setEditVegan}
+                    onSave={handleSave}
+                    onCancel={handleModalClose}
+                />
+            )}
+
+            {modalType === 'readonly' && (
+                <MealPlanReadonlyModal
+                    open={modalOpen}
+                    title={`Просмотр: ${selectedCell?.mealType || ''}`}
+                    dateStr={selectedCell?.dateStr || ''}
+                    message={readonlyMessage}
+                    onClose={handleModalClose}
+                />
+            )}
         </div>
     );
 };
