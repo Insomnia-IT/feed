@@ -7,14 +7,22 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
-    command: bash -c "python manage.py migrate && python manage.py shell < ./create_user.py && python manage.py loaddata colors feed_types kitchens access_roles volunteer_roles engagement_roles transports departments genders statuses direction_types && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    entrypoint: ["/bin/bash", "/tmp/entrypoint.sh"]
     container_name: feed_backend
     ports:
       - 8000:8000
+      - 5678:5678
     env_file:
       - ../backend/.env.sample
+    #volumes:
+    #  - ../db/:/db
     volumes:
       - ../db/:/db
+      - ../backend/:/app
+    #  - /usr/local/lib/python3.10/site-packages
+      - ./entrypoint.sh:/tmp/entrypoint.sh:ro
+    stdin_open: true
+    tty: true
   admin:
     platform: linux/amd64
     build:
