@@ -41,11 +41,11 @@ jobs:
     - name: run admin
       if: github.event.action != 'closed'
       run: |
-        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -f docker-compose.pr.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
+        ALLOWED_HOSTS=9${{ github.event.number }}.feedapp-dev.insomniafest.ru,localhost DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=9${{ github.event.number }} docker compose -f docker-compose.pr.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
     - name: Create app link
       if: github.event.action != 'closed'
       id: create-link
-      run: echo "::set-output name=app_url::http://9${{ github.event.number }}.agreetesting.rumyantsev.com"
+      run: echo "::set-output name=app_url::https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru"
     - name: remove db dir
       if: github.event.action == 'closed'
       run: |
@@ -58,3 +58,48 @@ jobs:
       run: docker image prune -a -f --filter "until=168h"
     - name: cleanup docker build cache
       run: docker builder prune -a -f --filter "until=168h"
+
+  tests:
+    needs: build
+    if: github.event.action != 'closed'
+    runs-on: [self-hosted, rumsrv]
+    steps:
+      - uses: actions/checkout@v3
+#       - name: Checkout base branch
+#         uses: actions/checkout@v4
+#         with:
+#           ref: ${{ github.event.pull_request.base.ref }}
+#           path: base
+#           fetch-depth: 0
+
+#       - name: Checkout PR branch
+#         uses: actions/checkout@v4
+#         with:
+#           ref: ${{ github.head_ref }}
+#           path: pr
+#           fetch-depth: 0
+
+#       - name: Merge PR into base
+#         run: |
+#           cd base
+#           git fetch ../pr HEAD
+#           git merge --no-ff --no-commit FETCH_HEAD
+#         continue-on-error: false
+
+      - name: ⌛ Do Testing
+        env:
+          FEED_APP_HOST: https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru
+        run: |
+          cd tests
+          echo $FEED_APP_HOST
+          bash run_tests.sh || touch /tmp/testFailed
+
+      - name: 🍏 Shorter Log
+        run: cat /tmp/tests.short.log
+
+      - name: Verdict
+        run: if [ -f /tmp/testFailed ]; then
+          echo "Tests Failed!"; exit 1;
+          else
+          echo "Tests Success!";
+          fi
