@@ -88,8 +88,13 @@ export const useGroupMealPlanUI = (
     }, []);
 
     const handleSave = useCallback(() => {
-        if (!selectedCell) return;
-        if ((editMeat !== null && editMeat < 0) || (editVegan !== null && editVegan < 0)) return;
+        if (!selectedCell) {
+            return;
+        }
+
+        if ((editMeat !== null && editMeat < 0) || (editVegan !== null && editVegan < 0)) {
+            return;
+        }
 
         onSave(selectedCell.date, selectedCell.mealTypeKey, editMeat, editVegan);
         handleModalClose();
