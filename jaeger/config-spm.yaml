@@ -38,30 +38,30 @@ extensions:
           server_urls: ["http://opensearch:9200/"]
           auth:
             basic:
-              username: admin
-              password: qaZxsWedC1323
+              username: ${env:OPEN_SEARCH_USER_NAME}
+              password: ${env:OPEN_SEARCH_PASSWORD}
           indices:
             index_prefix: "jaeger-main"
             spans:
-              date_layout: "2006-01-02"
-              rollover_frequency: "day"
-              shards: 5
-              replicas: 1
+              date_layout: "2006-01-02-15-04"
+              rollover_frequency: "minute"
+              shards: 1
+              replicas: 0
             services:
-              date_layout: "2006-01-02"
-              rollover_frequency: "day"
-              shards: 5
-              replicas: 1
+              date_layout: "2006-01-02-15-04"
+              rollover_frequency: "minute"
+              shards: 1
+              replicas: 0
             dependencies:
-              date_layout: "2006-01-02"
-              rollover_frequency: "day"
-              shards: 5
-              replicas: 1
+              date_layout: "2006-01-02-15-04"
+              rollover_frequency: "minute"
+              shards: 1
+              replicas: 0
             sampling:
-              date_layout: "2006-01-02"
-              rollover_frequency: "day"
-              shards: 5
-              replicas: 1
+              date_layout: "2006-01-02-15-04"
+              rollover_frequency: "minute"
+              shards: 1
+              replicas: 0
       another_storage:
         elasticsearch:
           tls:
@@ -70,8 +70,8 @@ extensions:
           server_urls: ["http://opensearch:9200/"]
           auth:
             basic:
-              username: admin
-              password: qaZxsWedC1323
+              username: ${env:OPEN_SEARCH_USER_NAME}
+              password: ${env:OPEN_SEARCH_PASSWORD}
           indices:
             index_prefix: "jaeger-archive"
 
