@@ -11,24 +11,14 @@ jobs:
 
     container:
       image: ubuntu:latest
-
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Docker plus Compose
-        run: |
-          apt-get update
-          apt-get install -y docker-compose-v2
-
-      - name: Check Docker
-        run: |
-          docker compose version
-          docker version
-          docker info
-        continue-on-error: true
-
       - name: ⌛ Do Testing
+        env:
+          FEED_APP_HOST: https://feedapp-dev.insomniafest.ru 
         run: |
           cd tests
           bash run_tests.sh || touch /tmp/testFailed
@@ -42,4 +32,3 @@ jobs:
           else
           echo "Tests Success!";
           fi
-
