@@ -46,7 +46,8 @@ type Action =
     | 'full_edit'
     | 'status_started_assign'
     | 'status_arrived_assign'
-    | 'direction_head_comment_edit';
+    | 'direction_head_comment_edit'
+    | 'brigadier_edit';
 
 const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
     switch (action) {
@@ -60,6 +61,8 @@ const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
             return [AppRoles.CAT, AppRoles.SENIOR, AppRoles.ADMIN].includes(role);
         case 'direction_head_comment_edit':
             return role === AppRoles.DIRECTION_HEAD;
+        case 'brigadier_edit':
+            return role !== AppRoles.SOVA;
         case 'feed_type_edit':
         case 'unban':
             return role !== AppRoles.CAT;
