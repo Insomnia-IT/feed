@@ -19,14 +19,14 @@ interface UseGroupMealPlanUIReturn {
     editMeat: number | null;
     editVegan: number | null;
     readonlyMessage: string;
-    handleCellClick: (
-        date: Dayjs,
-        mealType: string,
-        mealTypeKey: MealTypeKey,
-        meals: { amount_meat: number | null; amount_vegan: number | null },
-        editable: boolean,
-        message?: string
-    ) => void;
+    handleCellClick: (params: {
+        date: Dayjs;
+        mealType: string;
+        mealTypeKey: MealTypeKey;
+        meals: { amount_meat: number | null; amount_vegan: number | null };
+        editable: boolean;
+        message?: string;
+    }) => void;
     handleModalClose: () => void;
     handleSave: () => void;
     setEditMeat: (value: number | null) => void;
@@ -38,7 +38,12 @@ interface UseGroupMealPlanUIReturn {
 const DEFAULT_READONLY_MESSAGE = 'Редактирование недоступно';
 
 export const useGroupMealPlanUI = (
-    onSave: (date: Dayjs, mealTypeKey: MealTypeKey, editMeat: number | null, editaVegan: number | null) => void
+    onSave: (params: {
+        date: Dayjs;
+        mealTypeKey: MealTypeKey;
+        editMeat: number | null;
+        editaVegan: number | null;
+    }) => void
 ): UseGroupMealPlanUIReturn => {
     const today = dayjs();
     const [modalOpen, setModalOpen] = useState(false);
@@ -49,14 +54,21 @@ export const useGroupMealPlanUI = (
     const [readonlyMessage, setReadonlyMessage] = useState<string>('');
 
     const handleCellClick = useCallback(
-        (
-            date: Dayjs,
-            mealType: string,
-            mealTypeKey: MealTypeKey,
-            meals: { amount_meat: number | null; amount_vegan: number | null },
-            editable: boolean,
-            message?: string
-        ) => {
+        ({
+            date,
+            mealType,
+            mealTypeKey,
+            meals,
+            editable,
+            message
+        }: {
+            date: Dayjs;
+            mealType: string;
+            mealTypeKey: MealTypeKey;
+            meals: { amount_meat: number | null; amount_vegan: number | null };
+            editable: boolean;
+            message?: string;
+        }) => {
             setSelectedCell({
                 date,
                 dateStr: date.format('DD.MM.YYYY'),
@@ -96,7 +108,7 @@ export const useGroupMealPlanUI = (
             return;
         }
 
-        onSave(selectedCell.date, selectedCell.mealTypeKey, editMeat, editVegan);
+        onSave({ date: selectedCell.date, mealTypeKey: selectedCell.mealTypeKey, editMeat, editaVegan: editVegan });
         handleModalClose();
     }, [selectedCell, editMeat, editVegan, onSave, handleModalClose]);
 

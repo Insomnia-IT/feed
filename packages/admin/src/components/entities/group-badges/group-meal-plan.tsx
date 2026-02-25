@@ -77,14 +77,14 @@ export const GroupMealPlan: React.FC = () => {
                         <Tag
                             className={styles.mealCell}
                             onClick={() =>
-                                handleCellClick(
-                                    record.date,
-                                    'Завтрак',
-                                    'breakfast',
-                                    value,
-                                    record.editable,
-                                    record.readonlyMessage
-                                )
+                                handleCellClick({
+                                    date: record.date,
+                                    mealType: 'Завтрак',
+                                    mealTypeKey: 'breakfast',
+                                    meals: value,
+                                    editable: record.editable,
+                                    message: record.readonlyMessage
+                                })
                             }
                         >
                             {formatMeals(value)}
@@ -102,14 +102,14 @@ export const GroupMealPlan: React.FC = () => {
                         <Tag
                             className={styles.mealCell}
                             onClick={() =>
-                                handleCellClick(
-                                    record.date,
-                                    'Обед',
-                                    'lunch',
-                                    value,
-                                    record.editable,
-                                    record.readonlyMessage
-                                )
+                                handleCellClick({
+                                    date: record.date,
+                                    mealType: 'Обед',
+                                    mealTypeKey: 'lunch',
+                                    meals: value,
+                                    editable: record.editable,
+                                    message: record.readonlyMessage
+                                })
                             }
                         >
                             {formatMeals(value)}
@@ -127,14 +127,14 @@ export const GroupMealPlan: React.FC = () => {
                         <Tag
                             className={styles.mealCell}
                             onClick={() =>
-                                handleCellClick(
-                                    record.date,
-                                    'Ужин',
-                                    'dinner',
-                                    value,
-                                    record.editable,
-                                    record.readonlyMessage
-                                )
+                                handleCellClick({
+                                    date: record.date,
+                                    mealType: 'Ужин',
+                                    mealTypeKey: 'dinner',
+                                    meals: value,
+                                    editable: record.editable,
+                                    message: record.readonlyMessage
+                                })
                             }
                         >
                             {formatMeals(value)}
