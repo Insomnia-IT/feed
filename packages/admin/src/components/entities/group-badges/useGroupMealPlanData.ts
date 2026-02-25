@@ -1,5 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useGetIdentity } from '@refinedev/core';
 import dayjs, { type Dayjs } from 'dayjs';
+import { AppRoles, type UserData } from 'auth';
 
 export interface MealPlanRow {
     date: string;
@@ -7,6 +9,41 @@ export interface MealPlanRow {
     amount_meat: number | null;
     amount_vegan: number | null;
 }
+
+const MESSAGES = {
+    PAST_DATE: 'Нельзя редактировать прошедшие даты',
+    AFTER_21: 'После 21:00 следующий день можно редактировать только через бюро',
+    DEFAULT: 'Редактирование недоступно'
+} as const;
+
+export type MealTypeKey = 'breakfast' | 'lunch' | 'dinner';
+
+interface EditabilityResult {
+    editable: boolean;
+    message?: string;
+}
+
+const checkDateEditability = (date: Dayjs, role?: AppRoles): EditabilityResult => {
+    const yesterday = dayjs().subtract(1, 'day');
+    const today = dayjs();
+    const tomorrow = dayjs().add(1, 'day');
+    const currentHour = today.hour();
+
+    if (date.isSame(yesterday, 'day') || date.isBefore(yesterday, 'day')) {
+        return { editable: false, message: MESSAGES.PAST_DATE };
+    }
+
+    if (role === AppRoles.DIRECTION_HEAD) {
+        if (date.isSame(today, 'day')) {
+            return { editable: true };
+        }
+        if (date.isSame(tomorrow, 'day') && currentHour >= 21) {
+            return { editable: false, message: MESSAGES.AFTER_21 };
+        }
+    }
+
+    return { editable: true };
+};
 
 // TODO:
 //  3. Для роли руководитель локации можно редактировать следующий день только до 21:00 текущего. Если кликнут позже 21, то появляется модальное окно с сообщеним
@@ -19,6 +56,8 @@ export interface MealPlanRowRender {
     breakfast?: { amount_meat: number | null; amount_vegan: number | null };
     lunch?: { amount_meat: number | null; amount_vegan: number | null };
     dinner?: { amount_meat: number | null; amount_vegan: number | null };
+    editable: boolean;
+    readonlyMessage?: string;
 }
 
 const generateMockData = (): MealPlanRow[] => {
@@ -59,7 +98,7 @@ const generateMockData = (): MealPlanRow[] => {
     return rows;
 };
 
-const transformToRenderData = (data: MealPlanRow[]): MealPlanRowRender[] => {
+const transformToRenderData = (data: MealPlanRow[], role?: AppRoles): MealPlanRowRender[] => {
     const grouped = new Map<string, MealPlanRow[]>();
 
     for (const row of data) {
@@ -106,12 +145,16 @@ const transformToRenderData = (data: MealPlanRow[]): MealPlanRowRender[] => {
                 ? { amount_meat: dinner.amount_meat, amount_vegan: dinner.amount_vegan }
                 : lastMealValues.dinner;
 
+        const editability = checkDateEditability(currentDate, role);
+
         result.push({
             id: dateStr,
             date: currentDate,
             breakfast: filledBreakfast || undefined,
             lunch: filledLunch || undefined,
-            dinner: filledDinner || undefined
+            dinner: filledDinner || undefined,
+            editable: editability.editable,
+            readonlyMessage: editability.message
         });
 
         if (filledBreakfast) {
@@ -132,12 +175,15 @@ const transformToRenderData = (data: MealPlanRow[]): MealPlanRowRender[] => {
     return result;
 };
 
-const fillMissingDates = (data: MealPlanRowRender[]): MealPlanRowRender[] => {
-    if (data.length === 0) return data;
+const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): MealPlanRowRender[] => {
+    if (data.length === 0) {
+        return data;
+    }
 
     const lastDayOfJuly = dayjs().month(6).date(31);
 
     let lastRealRow: MealPlanRowRender | undefined;
+
     for (let i = data.length - 1; i >= 0; i--) {
         const row = data[i];
         if (row.breakfast || row.lunch || row.dinner) {
@@ -153,12 +199,15 @@ const fillMissingDates = (data: MealPlanRowRender[]): MealPlanRowRender[] => {
         let currentDate = lastDate.add(1, 'day');
 
         while (!currentDate.isAfter(lastDayOfJuly, 'day')) {
+            const editability = checkDateEditability(currentDate, role);
             result.push({
                 id: currentDate.format('YYYY-MM-DD'),
                 date: currentDate,
                 breakfast: lastRealRow.breakfast ? { ...lastRealRow.breakfast } : undefined,
                 lunch: lastRealRow.lunch ? { ...lastRealRow.lunch } : undefined,
-                dinner: lastRealRow.dinner ? { ...lastRealRow.dinner } : undefined
+                dinner: lastRealRow.dinner ? { ...lastRealRow.dinner } : undefined,
+                editable: editability.editable,
+                readonlyMessage: editability.message
             });
             currentDate = currentDate.add(1, 'day');
         }
@@ -175,19 +224,18 @@ interface UseGroupMealPlanDataReturn {
     renderData: MealPlanRowRender[];
     displayData: MealPlanRowRender[];
     setShowAll: (showAll: boolean) => void;
-    handleSave: (
-        date: Dayjs,
-        mealTypeKey: 'breakfast' | 'lunch' | 'dinner',
-        editMeat: number | null,
-        editaVegan: number | null
-    ) => void;
+    getCellEditability: (date: Dayjs) => EditabilityResult;
+    handleSave: (date: Dayjs, mealTypeKey: MealTypeKey, editMeat: number | null, editaVegan: number | null) => void;
 }
 
 export const useGroupMealPlanData = (): UseGroupMealPlanDataReturn => {
+    const { data: user } = useGetIdentity<UserData>();
+    const role = user?.roles?.[0];
+
     const [data, setData] = useState<MealPlanRow[]>(generateMockData());
     const [showAll, setShowAll] = useState(false);
 
-    const renderData = useMemo(() => fillMissingDates(transformToRenderData(data)), [data]);
+    const renderData = useMemo(() => fillMissingDates(transformToRenderData(data), role), [data, role]);
 
     const displayData = useMemo(() => {
         if (showAll) return renderData;
@@ -201,13 +249,10 @@ export const useGroupMealPlanData = (): UseGroupMealPlanDataReturn => {
         );
     }, [renderData, showAll]);
 
+    const getCellEditability = useCallback((date: Dayjs) => checkDateEditability(date, role), [role]);
+
     const handleSave = useCallback(
-        (
-            date: Dayjs,
-            mealTypeKey: 'breakfast' | 'lunch' | 'dinner',
-            editMeat: number | null,
-            editaVegan: number | null
-        ) => {
+        (date: Dayjs, mealTypeKey: MealTypeKey, editMeat: number | null, editaVegan: number | null) => {
             const dateStr = date.format('YYYY-MM-DD');
 
             setData((prev) =>
@@ -232,6 +277,7 @@ export const useGroupMealPlanData = (): UseGroupMealPlanDataReturn => {
         renderData,
         displayData,
         setShowAll,
+        getCellEditability,
         handleSave
     };
 };
