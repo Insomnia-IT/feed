@@ -24,15 +24,15 @@ export const GroupMealPlan: React.FC = () => {
         modalOpen,
         selectedCell,
         editMeat,
-        editaVegan,
+        editVegan,
         handleCellClick,
         handleModalClose,
         handleSave,
         setEditMeat,
-        setEditaVegan
+        setEditVegan
     } = useGroupMealPlanUI(saveToData);
 
-    const isValid = (editMeat !== null && editMeat < 0) || (editaVegan !== null && editaVegan < 0);
+    const isValid = (editMeat !== null && editMeat < 0) || (editVegan !== null && editVegan < 0);
 
     const rowClassName = (record: MealPlanRowRender) => {
         return record.date.isSame(today, 'day') ? styles.todayRow : '';
@@ -141,14 +141,14 @@ export const GroupMealPlan: React.FC = () => {
                     <div className={styles.inputRow}>
                         <label className={styles.vegan}>🥦 Веганы:</label>
                         <InputNumber
-                            value={editaVegan}
-                            onChange={(v) => setEditaVegan(v)}
+                            value={editVegan}
+                            onChange={(v) => setEditVegan(v)}
                             addonAfter={
                                 <Button
                                     type="text"
                                     size="small"
                                     icon={<CloseOutlined />}
-                                    onClick={() => setEditaVegan(null)}
+                                    onClick={() => setEditVegan(null)}
                                 />
                             }
                         />

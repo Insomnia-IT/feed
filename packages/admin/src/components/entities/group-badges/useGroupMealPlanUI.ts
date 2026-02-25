@@ -15,7 +15,7 @@ interface UseGroupMealPlanUIReturn {
     modalOpen: boolean;
     selectedCell: SelectedCell | null;
     editMeat: number | null;
-    editaVegan: number | null;
+    editVegan: number | null;
     handleCellClick: (
         date: Dayjs,
         mealType: string,
@@ -25,7 +25,7 @@ interface UseGroupMealPlanUIReturn {
     handleModalClose: () => void;
     handleSave: () => void;
     setEditMeat: (value: number | null) => void;
-    setEditaVegan: (value: number | null) => void;
+    setEditVegan: (value: number | null) => void;
     setModalOpen: (open: boolean) => void;
     setSelectedCell: (cell: SelectedCell | null) => void;
 }
@@ -42,7 +42,7 @@ export const useGroupMealPlanUI = (
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
     const [editMeat, setEditMeat] = useState<number | null>(null);
-    const [editaVegan, setEditaVegan] = useState<number | null>(null);
+    const [editVegan, setEditVegan] = useState<number | null>(null);
 
     const handleCellClick = useCallback(
         (
@@ -60,7 +60,7 @@ export const useGroupMealPlanUI = (
                 amount_vegan: meals.amount_vegan
             });
             setEditMeat(meals.amount_meat);
-            setEditaVegan(meals.amount_vegan);
+            setEditVegan(meals.amount_vegan);
             setModalOpen(true);
         },
         []
@@ -73,22 +73,22 @@ export const useGroupMealPlanUI = (
 
     const handleSave = useCallback(() => {
         if (!selectedCell) return;
-        if ((editMeat !== null && editMeat < 0) || (editaVegan !== null && editaVegan < 0)) return;
+        if ((editMeat !== null && editMeat < 0) || (editVegan !== null && editVegan < 0)) return;
 
-        onSave(selectedCell.date, selectedCell.mealTypeKey, editMeat, editaVegan);
+        onSave(selectedCell.date, selectedCell.mealTypeKey, editMeat, editVegan);
         handleModalClose();
-    }, [selectedCell, editMeat, editaVegan, onSave, handleModalClose]);
+    }, [selectedCell, editMeat, editVegan, onSave, handleModalClose]);
 
     return {
         today,
         modalOpen,
         selectedCell,
         editMeat,
-        editaVegan,
+        editVegan,
         handleCellClick,
         handleModalClose,
         setEditMeat,
-        setEditaVegan,
+        setEditVegan,
         handleSave,
         setModalOpen,
         setSelectedCell
