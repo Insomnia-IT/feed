@@ -16,6 +16,7 @@ services:
     environment:
       SKIP_BACK_SYNC: ${SKIP_BACK_SYNC:-False}
       PHOTO_AUTH_TOKEN: ${PHOTO_AUTH_TOKEN}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
     volumes:
       - ${DB_DIR:-./db}:/app/db
       - ${PHOTO_STORAGE_PATH:-./db/photos}:/app/photos
