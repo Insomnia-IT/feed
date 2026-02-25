@@ -18,49 +18,49 @@ services:
       timeout: 10s
       retries: 5
       start_period: 15s
-  backend:
-    networks:
-      - tests
-    build:
-      context: ..
-      dockerfile: Dockerfile_backend
-      args:
-        SYNC_URL:
-        SYNC_LOGIN:
-        SYNC_PASSWORD:
-    container_name: feedtests_backend
-    restart: always
-    environment:
-      ALLOWED_HOSTS: front, localhost
-      # OTEL_ENDPOINT: http://jaeger:4318/v1/traces
-      SKIP_BACK_SYNC: ${SKIP_BACK_SYNC:-False}
-      PHOTO_AUTH_TOKEN: ${PHOTO_AUTH_TOKEN}
-    volumes:
-      - db:/app/db
-      - photos:/app/photos
-    # depends_on:
-    #   - jaeger
+  # backend:
+  #   networks:
+  #     - tests
+  #   build:
+  #     context: ..
+  #     dockerfile: Dockerfile_backend
+  #     args:
+  #       SYNC_URL:
+  #       SYNC_LOGIN:
+  #       SYNC_PASSWORD:
+  #   container_name: feedtests_backend
+  #   restart: always
+  #   environment:
+  #     ALLOWED_HOSTS: front, localhost
+  #     # OTEL_ENDPOINT: http://jaeger:4318/v1/traces
+  #     SKIP_BACK_SYNC: ${SKIP_BACK_SYNC:-False}
+  #     PHOTO_AUTH_TOKEN: ${PHOTO_AUTH_TOKEN}
+  #   volumes:
+  #     - db:/app/db
+  #     - photos:/app/photos
+  #   # depends_on:
+  #   #   - jaeger
 
-  front:
-    networks:
-      - tests
-    build:
-      context: ..
-      dockerfile: ./Dockerfile_front
-      args:
-        NEW_API_URL: /feedapi/v1
-  #  container_name: feedtests_front
-    restart: always
-    ports:
-      - 0.0.0.0:8080:80
-    depends_on:
-      - backend
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
-    #   interval: 15s
-    #   timeout: 10s
-    #   retries: 5
-    #   start_period: 1s
+  # front:
+  #   networks:
+  #     - tests
+  #   build:
+  #     context: ..
+  #     dockerfile: ./Dockerfile_front
+  #     args:
+  #       NEW_API_URL: /feedapi/v1
+  # #  container_name: feedtests_front
+  #   restart: always
+  #   ports:
+  #     - 0.0.0.0:8080:80
+  #   depends_on:
+  #     - backend
+  #   # healthcheck:
+  #   #   test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+  #   #   interval: 15s
+  #   #   timeout: 10s
+  #   #   retries: 5
+  #   #   start_period: 1s
   tests:
     networks:
       - tests
@@ -75,8 +75,6 @@ services:
     depends_on:
       chrome:
         condition: service_healthy
-      front:
-        condition: service_started
   # pinger: # for troubleshoot
   #   build:
   #     context: .
