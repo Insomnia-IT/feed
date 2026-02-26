@@ -1,4 +1,4 @@
-from rest_framework import routers, serializers, viewsets
+from rest_framework import serializers
 
 from django.db import transaction
 from django.utils import timezone
@@ -345,9 +345,28 @@ class VolunteerRoleSerializer(serializers.ModelSerializer):
         model = models.VolunteerRole
         fields = '__all__'
 
+class GroupBadgePlanningCellsSerializer(serializers.ModelSerializer):
+    feed_type_name = serializers.CharField(source='feed_type.name', read_only=True)
+    group_badge_name = serializers.CharField(source='group_badge.name', read_only=True)
+    
+    class Meta:
+        model = models.GroupBadgePlanningCells
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=models.GroupBadgePlanningCells.objects.all(),
+                fields=['group_badge', 'feed_type', 'date'],
+                message="Ячейка с такой комбинацией дата/групповой бейдж/тип питания уже существует."
+            ),
+        ]
 
 class GroupBadgeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    planning_cells = GroupBadgePlanningCellsSerializer(
+        many=True, 
+        read_only=True,
+        source='group_badge_planning_cells'
+    )
 
     class Meta:
         model = models.GroupBadge
@@ -357,6 +376,11 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     direction = DirectionSerializer(required=False)
+    planning_cells = GroupBadgePlanningCellsSerializer(
+        many=True, 
+        read_only=True,
+        source='group_badge_planning_cells'
+    )
     volunteer_count = serializers.IntegerField(
         source='volunteers.count',
         read_only=True
