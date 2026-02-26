@@ -3,20 +3,14 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django import forms
 from django.db.models import Exists, OuterRef
-from distutils.util import strtobool
-
 
 from feeder import serializers, models
 from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \
-    SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin
+    SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin, auto_tag_viewset
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
-
-
-class TypedChoiceFilter(django_filters.Filter):
-    field_class = forms.TypedChoiceField
 
 class VolunteerFilter(django_filters.FilterSet):
     id__in = NumberInFilter(field_name='id', lookup_expr='in')
@@ -29,9 +23,9 @@ class VolunteerFilter(django_filters.FilterSet):
     printing_batch = django_filters.CharFilter(field_name="printing_batch", lookup_expr='iexact')
     badge_number = django_filters.CharFilter(field_name="badge_number", lookup_expr='icontains')
     comment = django_filters.CharFilter(field_name="comment", lookup_expr='icontains')
-    is_blocked = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
+    is_blocked = django_filters.BooleanFilter(field_name='is_blocked')
     is_ticket_received = django_filters.BooleanFilter(method='filter_is_ticket_received')
-    is_vegan = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
+    is_vegan = django_filters.BooleanFilter(field_name='is_vegan')
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
     direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
@@ -42,7 +36,7 @@ class VolunteerFilter(django_filters.FilterSet):
     supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
     has_supervisor = django_filters.BooleanFilter(method='filter_has_supervisor')
     is_supervisor = django_filters.BooleanFilter(method='filter_is_supervisor')
-    infant = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
+    infant = django_filters.BooleanFilter(field_name='infant')
 
     def filter_has_supervisor(self, queryset, name, value):
         if value is None:
@@ -76,7 +70,7 @@ class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
         model = models.VolunteerCustomFieldValue
         fields = ['custom_field', 'volunteer']
 
-
+@auto_tag_viewset("Volunteer")
 class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                        MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
