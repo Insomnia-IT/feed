@@ -86,7 +86,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
     filterset_class = VolunteerFilter
 
 
-
+@auto_tag_viewset("Volunteer Custom Field")
 class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerCustomField.objects.all()
@@ -94,7 +94,7 @@ class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
 
-
+@auto_tag_viewset("Volunteer Custom Field Value")
 class VolunteerCustomFieldValueViewSet(SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerCustomFieldValue.objects.all()
@@ -102,7 +102,7 @@ class VolunteerCustomFieldValueViewSet(SaveHistoryDataViewSetMixin, viewsets.Mod
     filter_backends = [DjangoFilterBackend]
     filterset_class = VolunteerCustomFieldValueFilter
 
-
+@auto_tag_viewset("Volunteer Role")
 class VolunteerRoleViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerRole.objects.all()
@@ -110,6 +110,7 @@ class VolunteerRoleViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
 
+@auto_tag_viewset("Access Role")
 class AccessRoleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.AccessRole.objects.all()
