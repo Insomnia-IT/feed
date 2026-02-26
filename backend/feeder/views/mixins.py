@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
 from feeder.sync_serializers import get_history_serializer
 from history.models import History
@@ -265,4 +266,14 @@ class MultiSerializerViewSetMixin(object):
             return self.serializer_action_classes[self.action]
         except (KeyError, AttributeError):
             return super(MultiSerializerViewSetMixin, self).get_serializer_class()
+        
+def auto_tag_viewset(tag_name: str):
+    return extend_schema_view(
+        list=extend_schema(tags=[tag_name]),
+        create=extend_schema(tags=[tag_name]),
+        retrieve=extend_schema(tags=[tag_name]),
+        update=extend_schema(tags=[tag_name]),
+        partial_update=extend_schema(tags=[tag_name]),
+        destroy=extend_schema(tags=[tag_name]),
+    )
 
