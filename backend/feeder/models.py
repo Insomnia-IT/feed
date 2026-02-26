@@ -327,3 +327,19 @@ class Wash(TimeMixin):
     class Meta:
         verbose_name = "Стирка"
         verbose_name_plural = "Стирки"
+
+class GroupBadgePlanningCells(TimeMixin):
+    """ Ячейки планирования питания групповых бейджей """
+    id = models.AutoField(primary_key=True)
+    group_badge = models.ForeignKey(GroupBadge, on_delete=models.CASCADE, related_name="group_badge_planning_cells")
+    feed_type = models.ForeignKey(FeedType, on_delete=models.CASCADE, verbose_name="Тип питания", related_name="group_badge_planning_cells")
+    date = models.DateField(verbose_name="Дата")
+    amount_meat = models.SmallIntegerField(verbose_name="Количество мясоедов")
+    amount_vegan = models.SmallIntegerField(verbose_name="Количество вегетарианцев")
+
+    class Meta:
+        verbose_name = "Ячейка планирования питания группового бейджа"
+        verbose_name_plural = "Ячейки планирования питания групповых бейджей"
+        constraints = [
+            models.UniqueConstraint(fields=['group_badge', 'feed_type', 'date'], name='unique planning cell')
+        ]
