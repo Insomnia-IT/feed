@@ -334,8 +334,8 @@ class GroupBadgePlanningCells(TimeMixin):
     group_badge = models.ForeignKey(GroupBadge, on_delete=models.CASCADE, related_name="group_badge_planning_cells")
     feed_type = models.ForeignKey(FeedType, on_delete=models.CASCADE, verbose_name="Тип питания", related_name="group_badge_planning_cells")
     date = models.DateField(verbose_name="Дата")
-    amount_meat = models.SmallIntegerField(verbose_name="Количество мясоедов")
-    amount_vegan = models.SmallIntegerField(verbose_name="Количество вегетарианцев")
+    amount_meat = models.SmallIntegerField(null=True, verbose_name="Количество мясоедов")
+    amount_vegan = models.SmallIntegerField(null=True, verbose_name="Количество вегетарианцев")
 
     class Meta:
         verbose_name = "Ячейка планирования питания группового бейджа"
