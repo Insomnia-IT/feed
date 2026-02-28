@@ -44,7 +44,8 @@
       "name": "Волонтёр",
       "color": "green",
       "is_leader": false,
-      "is_team": true
+      "is_team": true,
+      "is_group_badge": true
     }
   },
   {
@@ -80,7 +81,8 @@
       "name": "Волонтёр нефедеральной локации",
       "color": "blue",
       "is_leader": false,
-      "is_team": false
+      "is_team": false,
+      "is_group_badge": true
     }
   },
   {
@@ -92,7 +94,8 @@
       "name": "Аниматор",
       "color": "orange",
       "is_leader": false,
-      "is_team": false
+      "is_team": false,
+      "is_group_badge": true
     }
   },
   {
@@ -128,7 +131,8 @@
       "name": "Артист",
       "color": "orange",
       "is_leader": false,
-      "is_team": false
+      "is_team": false,
+      "is_group_badge": true
     }
   },
   {
@@ -188,7 +192,8 @@
       "name": "Подрядчик",
       "color": "grey",
       "is_leader": false,
-      "is_team": false
+      "is_team": false,
+      "is_group_badge": true
     }
   },
   {

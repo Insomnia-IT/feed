@@ -57,6 +57,7 @@ class VolunteerRole(TimeMixin):
     color = models.CharField(max_length=6)
     is_leader = models.BooleanField(default=False)
     is_team = models.BooleanField(default=False)
+    is_group_badge = models.BooleanField(default=False)
 
 
 class DirectionType(TimeMixin):
