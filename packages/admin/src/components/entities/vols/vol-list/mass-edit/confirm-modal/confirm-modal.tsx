@@ -33,7 +33,6 @@ export const ConfirmModal: React.FC<{
             onOk={onOk}
             okButtonProps={{ disabled: disableOkButton }}
             okText={'Подтвердить'}
-            onClose={onCancel}
             cancelText={'Отменить'}
         >
             <div className={styles.text}>
