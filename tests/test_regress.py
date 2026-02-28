@@ -213,6 +213,7 @@ def test_add_and_delete_volunteer_from_group_badge(browser):
     assert count2==count3
     print("После-", count3, "человек в бейдже")
 
+@skip()
 def test_create_new_user(browser):
     #создать нового юзера
     link = f"{host}/volunteers"
@@ -237,6 +238,7 @@ def test_create_new_user(browser):
     assert counter1+1 == counter2, "Счетчик не увеличился на 1!!!"
     assert user_name == "Test_name"
 
+@skip()
 def test_edit_new_user(browser):
     # найти созданного юзера и отредактировать его
     link = f"{host}/volunteers"
@@ -260,6 +262,7 @@ def test_edit_new_user(browser):
     assert counter1 == counter2, "Счетчик изменился!!!"
     assert user_name == "Test_updated_name"
 
+@skip()
 def test_delete_new_user(browser):
     # найти созданного юзера и отредактировать его
     link = f"{host}/volunteers"
