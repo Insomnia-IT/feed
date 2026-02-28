@@ -1,14 +1,19 @@
 from rest_framework import viewsets, permissions, filters
+from rest_framework.decorators import action
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django import forms
 from django.db.models import Exists, OuterRef
+from django.utils import timezone
+from datetime import timedelta
+import re
 from distutils.util import strtobool
 
 
 from feeder import serializers, models
 from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \
     SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin
+from feeder.views.xlsx import build_xlsx_response
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
@@ -90,6 +95,116 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
     search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid',
                      'person__name', 'person__last_name', 'person__first_name', 'person__nickname', 'person__other_names', 'person__telegram']
     filterset_class = VolunteerFilter
+
+    @action(detail=False, methods=['get'], url_path='export-xlsx')
+    def export_xlsx(self, request):
+        queryset = (
+            self.filter_queryset(self.get_queryset())
+            .select_related("main_role", "kitchen", "feed_type", "access_role")
+            .prefetch_related(
+                "directions",
+                "arrivals__status",
+                "arrivals__arrival_transport",
+                "arrivals__departure_transport",
+                "custom_field_values__custom_field",
+            )
+        )
+
+        custom_fields = list(models.VolunteerCustomField.objects.order_by("id").values("id", "name", "type"))
+        today = timezone.localdate()
+        active_statuses = {"ARRIVED", "STARTED", "JOINED"}
+
+        rows = []
+
+        for volunteer in queryset.iterator():
+            arrivals = sorted(list(volunteer.arrivals.all()), key=lambda arrival: arrival.arrival_date)
+
+            current_arrival = next(
+                (
+                    arrival
+                    for arrival in arrivals
+                    if arrival.status_id in active_statuses
+                    and arrival.arrival_date < today
+                    and arrival.departure_date > (today - timedelta(days=1))
+                ),
+                None,
+            )
+            future_arrival = next((arrival for arrival in arrivals if arrival.arrival_date > today), None)
+
+            custom_values_by_field_id = {
+                field_value.custom_field_id: field_value.value for field_value in volunteer.custom_field_values.all()
+            }
+
+            custom_values = []
+            for custom_field in custom_fields:
+                value = custom_values_by_field_id.get(custom_field["id"], "")
+                if custom_field["type"] == "boolean":
+                    custom_values.append(1 if value == "true" else 0)
+                else:
+                    custom_values.append(value)
+
+            rows.append(
+                [
+                    volunteer.id,
+                    volunteer.name or "",
+                    volunteer.first_name or "",
+                    volunteer.last_name or "",
+                    ", ".join(direction.name for direction in volunteer.directions.all()),
+                    volunteer.main_role.name if volunteer.main_role else "",
+                    current_arrival.status.name if current_arrival and current_arrival.status else "",
+                    current_arrival.arrival_date.strftime("%d.%m.%Y") if current_arrival else "",
+                    current_arrival.arrival_transport.name if current_arrival and current_arrival.arrival_transport else "",
+                    current_arrival.departure_date.strftime("%d.%m.%Y") if current_arrival else "",
+                    current_arrival.departure_transport.name if current_arrival and current_arrival.departure_transport else "",
+                    future_arrival.status.name if future_arrival and future_arrival.status else "",
+                    future_arrival.arrival_date.strftime("%d.%m.%Y") if future_arrival else "",
+                    future_arrival.arrival_transport.name if future_arrival and future_arrival.arrival_transport else "",
+                    future_arrival.departure_date.strftime("%d.%m.%Y") if future_arrival else "",
+                    future_arrival.departure_transport.name if future_arrival and future_arrival.departure_transport else "",
+                    1 if volunteer.is_blocked else 0,
+                    volunteer.kitchen.name if volunteer.kitchen else "",
+                    volunteer.printing_batch or "",
+                    volunteer.feed_type.name if volunteer.feed_type else "",
+                    "vegan" if volunteer.is_vegan else "meat",
+                    1 if volunteer.is_ticket_received else 0,
+                    re.sub(r"<[^>]*>", "", volunteer.comment or ""),
+                    volunteer.access_role.name if volunteer.access_role else "",
+                    *custom_values,
+                ]
+            )
+
+        return build_xlsx_response(
+            filename="volunteers",
+            worksheet_name="Volunteers",
+            header=[
+                "ID",
+                "Call Sign",
+                "First Name",
+                "Last Name",
+                "Directions",
+                "Role",
+                "Current Arrival Status",
+                "Current Arrival Date",
+                "Current Arrival Transport",
+                "Current Departure Date",
+                "Current Departure Transport",
+                "Future Arrival Status",
+                "Future Arrival Date",
+                "Future Arrival Transport",
+                "Future Departure Date",
+                "Future Departure Transport",
+                "Blocked",
+                "Kitchen",
+                "Badge Batch",
+                "Food Type",
+                "Vegan/Meat",
+                "Ticket Received",
+                "Comment",
+                "Access Role",
+                *[field["name"] for field in custom_fields],
+            ],
+            rows=rows,
+        )
 
 
 

@@ -1,5 +1,7 @@
 
+from django.utils import timezone
 from rest_framework import serializers, viewsets, permissions, filters
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
@@ -7,6 +9,7 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder import serializers, models
+from feeder.views.xlsx import build_xlsx_response
 
 
 #@extend_schema(tags=['feed', ])
@@ -55,6 +58,69 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
         if self.action in ['create', ]:
             return serializers.FeedTransactionSerializer
         return serializers.FeedTransactionDisplaySerializer
+
+    @action(detail=False, methods=['get'], url_path='export-xlsx')
+    def export_xlsx(self, request):
+        meal_map = {
+            "breakfast": "Breakfast",
+            "lunch": "Lunch",
+            "dinner": "Dinner",
+            "night": "Night"
+        }
+
+        queryset = (
+            self.filter_queryset(self.get_queryset())
+            .select_related("volunteer", "kitchen", "group_badge")
+            .prefetch_related("volunteer__directions")
+        )
+
+        rows = []
+
+        for tx in queryset.iterator():
+            local_dtime = timezone.localtime(tx.dtime) if tx.dtime else None
+            volunteer_full_name = " ".join(
+                [name for name in [getattr(tx.volunteer, "last_name", None), getattr(tx.volunteer, "first_name", None)] if name]
+            )
+            directions = ""
+            if tx.volunteer_id:
+                directions = ",".join(direction.name for direction in tx.volunteer.directions.all())
+
+            rows.append(
+                [
+                    local_dtime.strftime("%d.%m.%Y") if local_dtime else "",
+                    local_dtime.strftime("%H:%M:%S") if local_dtime else "",
+                    tx.volunteer_id or "",
+                    getattr(tx.volunteer, "name", None) or "Anonymous",
+                    volunteer_full_name,
+                    "" if tx.is_vegan is None else ("Vegan" if tx.is_vegan else "Meat"),
+                    meal_map.get(tx.meal_time, tx.meal_time),
+                    getattr(tx.kitchen, "name", None) or "",
+                    tx.amount,
+                    tx.reason or "",
+                    getattr(tx.group_badge, "name", None) or "",
+                    directions,
+                ]
+            )
+
+        return build_xlsx_response(
+            filename="feed-transactions",
+            worksheet_name="Transactions log",
+            header=[
+                "Date",
+                "Time",
+                "Volunteer ID",
+                "Call Sign",
+                "Name",
+                "Food Type",
+                "Meal",
+                "Kitchen",
+                "Amount",
+                "Reason",
+                "Group Badge",
+                "Directions",
+            ],
+            rows=rows,
+        )
 
 
 #@extend_schema(tags=['feed', ], summary="Массовое добавление приёмов пищи")

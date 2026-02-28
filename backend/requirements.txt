@@ -13,6 +13,7 @@ drf-spectacular
 python-dotenv
 dj-rest-auth
 pillow
+openpyxl
 python-crontab
 opentelemetry-instrumentation-django
 opentelemetry-instrumentation-requests

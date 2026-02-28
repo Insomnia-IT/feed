@@ -53,22 +53,17 @@ export const VolList: FC = () => {
     const canBulkEdit = useCanAccess({ action: 'bulk_edit', resource: 'volunteers' });
 
     const {
-        accessRoleById,
         activeFilters,
-        feedTypeNameById,
         filterFields,
         filterQueryParams,
         filterQueryParamsWithoutDefaultDirections,
         isFiltersLoading,
-        kitchenNameById,
         searchText,
         setActiveFilters,
         setSearchText,
         setVisibleFilters,
         statusById,
-        transportById,
-        visibleFilters,
-        volunteerRoleById
+        visibleFilters
     } = useFilters({
         setPage: setPageWithStorage,
         customFields
@@ -237,13 +232,6 @@ export const VolList: FC = () => {
                                     <SaveAsXlsxButton
                                         isDisabled={!volunteersData.length || isFiltersLoading}
                                         filterQueryParams={effectiveFilterQueryParams}
-                                        customFields={customFields}
-                                        volunteerRoleById={volunteerRoleById}
-                                        statusById={statusById}
-                                        transportById={transportById}
-                                        kitchenNameById={kitchenNameById}
-                                        feedTypeNameById={feedTypeNameById}
-                                        accessRoleById={accessRoleById}
                                     />
                                 </Row>
                             </>
