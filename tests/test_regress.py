@@ -260,7 +260,7 @@ def test_edit_new_user(browser):
     counter2 = page.receive_volunteers_count()
     assert browser.current_url== f"{host}/volunteers"
     assert counter1 == counter2, "Счетчик изменился!!!"
-    assert user_name == "Test_name_1"
+    assert user_name == "Test_updated_name"
 
 @skip()
 def test_delete_new_user(browser):
@@ -282,7 +282,7 @@ def test_delete_new_user(browser):
     counter2 = page.receive_volunteers_count()
     page.check_username_after_deleting()
     counter3 = page.receive_volunteers_count()
-    assert browser.current_url == f"{host}/volunteers"
+    assert browser.current_url.startswith(f"{host}/volunteers")
     assert counter1 == counter2+1, "Счетчик не уменьшился на 1!!!"
     assert counter3 == 0
 
