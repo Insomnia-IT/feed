@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigation, useList, CanAccess } from '@refinedev/core';
+import { useNavigation, useList, CanAccess, useGetIdentity } from '@refinedev/core';
 import { List } from '@refinedev/antd';
-import { Input, Row, Col } from 'antd';
+import { Input, Row, Col, Segmented } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
 
 import { dataProvider } from 'dataProvider';
 import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
+import type { UserData } from 'auth';
 
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 
@@ -29,6 +30,7 @@ const isBrowser = () => typeof window !== 'undefined';
 export const VolList = () => {
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
+    const { data: user } = useGetIdentity<UserData>();
 
     const [page, setPage] = useState<number>(() => {
         if (!isBrowser()) return 1;
@@ -41,6 +43,8 @@ export const VolList = () => {
     });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+    const [hasMyBrigade, setHasMyBrigade] = useState(false);
+    const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
 
     const setPageWithStorage = useCallback((value: number): void => {
         setPage(value);
@@ -66,6 +70,7 @@ export const VolList = () => {
         feedTypeNameById,
         filterFields,
         filterQueryParams,
+        filterQueryParamsWithoutDefaultDirections,
         isFiltersLoading,
         kitchenNameById,
         searchText,
@@ -81,19 +86,62 @@ export const VolList = () => {
         customFields
     });
 
-    const { query: volunteersQuery, result: volunteersResult } = useList<VolEntity>({
-        resource: `volunteers/${filterQueryParams}`,
-        pagination: isDesktop
-            ? {
-                  currentPage: page,
-                  pageSize
-              }
-            : undefined
-    });
+    const userId = user?.id;
 
-    const volunteers = volunteersResult;
-    const volunteersIsLoading = volunteersQuery.isLoading;
-    const reloadVolunteers = volunteersQuery.refetch;
+    useEffect(() => {
+        if (isDesktop || !userId) {
+            setHasMyBrigade(false);
+            setBrigadeScope('all');
+            return;
+        }
+
+        let alive = true;
+
+        void dataProvider
+            .getList<VolEntity>({
+                resource: `volunteers/?supervisor_id=${userId}`,
+                pagination: { current: 1, pageSize: 1 }
+            })
+            .then(({ total }) => {
+                if (!alive) return;
+
+                const hasBrigade = total > 0;
+                setHasMyBrigade(hasBrigade);
+                setBrigadeScope(hasBrigade ? 'my' : 'all');
+            })
+            .catch(() => {
+                if (!alive) return;
+
+                setHasMyBrigade(false);
+                setBrigadeScope('all');
+            });
+
+        return () => {
+            alive = false;
+        };
+    }, [isDesktop, userId]);
+
+    const mobileFilterQueryParams = useMemo(() => {
+        if (!hasMyBrigade || brigadeScope !== 'my' || !userId) {
+            return filterQueryParams;
+        }
+
+        const baseParams = filterQueryParamsWithoutDefaultDirections;
+        const separator = baseParams ? '&' : '?';
+
+        return `${baseParams}${separator}supervisor_id=${encodeURIComponent(String(userId))}`;
+    }, [brigadeScope, filterQueryParams, filterQueryParamsWithoutDefaultDirections, hasMyBrigade, userId]);
+
+    const effectiveFilterQueryParams = isDesktop ? filterQueryParams : mobileFilterQueryParams;
+
+    const {
+        data: volunteers,
+        isLoading: volunteersIsLoading,
+        refetch: reloadVolunteers
+    } = useList<VolEntity>({
+        resource: `volunteers/${effectiveFilterQueryParams}`,
+        pagination: isDesktop ? { current: page, pageSize } : undefined
+    });
 
     useEffect(() => {
         // Если текущая страница выходит за пределы общего количества, сбрасываем на 1
@@ -128,7 +176,7 @@ export const VolList = () => {
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
             totalVolunteersCount: volunteers?.total ?? 0,
-            filterQueryParams
+            filterQueryParams: effectiveFilterQueryParams
         });
 
     const pagination = useMemo<TablePaginationConfig>(
@@ -180,6 +228,17 @@ export const VolList = () => {
                         searchText={searchText}
                         setSearchText={setSearchText}
                     />
+                    {!isDesktop && hasMyBrigade && (
+                        <Segmented
+                            block
+                            options={[
+                                { label: 'Моя бригада', value: 'my' },
+                                { label: 'Все', value: 'all' }
+                            ]}
+                            value={brigadeScope}
+                            onChange={(value) => setBrigadeScope(value as 'my' | 'all')}
+                        />
+                    )}
                     <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
                         {isDesktop ? (
                             <>
@@ -194,7 +253,7 @@ export const VolList = () => {
                                     <ChooseColumnsButton canListCustomFields={canListCustomFields} />
                                     <SaveAsXlsxButton
                                         isDisabled={!volunteersData.length || isFiltersLoading}
-                                        filterQueryParams={filterQueryParams}
+                                        filterQueryParams={effectiveFilterQueryParams}
                                         customFields={customFields}
                                         volunteerRoleById={volunteerRoleById}
                                         statusById={statusById}
@@ -238,7 +297,7 @@ export const VolList = () => {
                         </>
                     ) : (
                         <VolunteerMobileList
-                            filterQueryParams={filterQueryParams}
+                            filterQueryParams={effectiveFilterQueryParams}
                             statusById={statusById}
                             openVolunteer={openVolunteer}
                         />

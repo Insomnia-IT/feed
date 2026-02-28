@@ -110,24 +110,3 @@
 .threeColumnsWrap > * {
     align-self: start;
 }
-
-.inputWithEllips {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-.inputWithEllips .ant-select-selection-item {
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-}
-
-.inputWithEllips .ant-select-selection-item span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}

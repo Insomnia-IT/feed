@@ -31,6 +31,9 @@ export const VolShow = () => {
 
             <Title level={5}>Должность</Title>
             <Text>{record?.position || 'Не указана'}</Text>
+
+            <Title level={5}>Бригадир</Title>
+            <Text>{record?.supervisor?.name || 'Не указан'}</Text>
         </Show>
     );
 };
