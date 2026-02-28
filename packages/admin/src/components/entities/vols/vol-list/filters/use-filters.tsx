@@ -118,26 +118,39 @@ export const useFilters = ({
         return `${name}=${value}`;
     }, []);
 
-    const filterQueryParams = useMemo(() => {
-        const activeVisibleFilters = activeFilters.filter(({ name }) => visibleFilters.includes(name));
-        if (visibleDirections?.length && !activeVisibleFilters.some(({ name }) => name === 'directions')) {
-            activeVisibleFilters.push({
-                name: 'directions',
-                op: 'include',
-                value: visibleDirections
-            });
-        }
+    const buildFilterQueryParams = useCallback(
+        (enforceVisibleDirections: boolean): string => {
+            const activeVisibleFilters = activeFilters.filter(({ name }) => visibleFilters.includes(name));
+            if (
+                enforceVisibleDirections &&
+                visibleDirections?.length &&
+                !activeVisibleFilters.some(({ name }) => name === 'directions')
+            ) {
+                activeVisibleFilters.push({
+                    name: 'directions',
+                    op: 'include',
+                    value: visibleDirections
+                });
+            }
 
-        const params = activeVisibleFilters.flatMap(({ name, value }) =>
-            Array.isArray(value) ? value.map((v) => formatFilter(name, v)) : formatFilter(name, value)
-        );
+            const params = activeVisibleFilters.flatMap(({ name, value }) =>
+                Array.isArray(value) ? value.map((v) => formatFilter(name, v)) : formatFilter(name, value)
+            );
 
-        if (searchText) {
-            params.push(`search=${searchText}`);
-        }
+            if (searchText) {
+                params.push(`search=${searchText}`);
+            }
 
-        return params.length ? `?${params.join('&')}` : '';
-    }, [activeFilters, visibleFilters, searchText, visibleDirections, formatFilter]);
+            return params.length ? `?${params.join('&')}` : '';
+        },
+        [activeFilters, visibleFilters, searchText, visibleDirections, formatFilter]
+    );
+
+    const filterQueryParams = useMemo(() => buildFilterQueryParams(true), [buildFilterQueryParams]);
+    const filterQueryParamsWithoutDefaultDirections = useMemo(
+        () => buildFilterQueryParams(false),
+        [buildFilterQueryParams]
+    );
 
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
         resource: 'kitchens',
@@ -283,6 +296,7 @@ export const useFilters = ({
     return {
         isFiltersLoading: kitchensIsLoading || feedTypesIsLoading || accessRolesIsLoading || volunteerRolesIsLoading,
         filterQueryParams,
+        filterQueryParamsWithoutDefaultDirections,
         searchText,
         setSearchText: (value: string) => {
             setSearchText(value);
