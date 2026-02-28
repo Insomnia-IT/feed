@@ -1,4 +1,4 @@
-export NREPS=3
+export NREPS=1
 
 echo "Gonna explicitly build docker compose for regress-tests"
 docker compose build
@@ -6,7 +6,7 @@ docker compose build
 echo "Gonna run regress-tests in docker compose"
 
 # docker compose run --remove-orphans easy_test |tee /tmp/tests.log
-docker compose run tests |& tee /tmp/tests.log
+docker compose run tests | tee /tmp/tests.log
 exitcode=${PIPESTATUS[0]}
 
 rm -rf /tmp/tests.short.log

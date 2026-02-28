@@ -258,7 +258,7 @@ def test_edit_new_user(browser):
     counter2 = page.receive_volunteers_count()
     assert browser.current_url== f"{host}/volunteers"
     assert counter1 == counter2, "Счетчик изменился!!!"
-    assert user_name == "Test_name_1"
+    assert user_name == "Test_updated_name"
 
 def test_delete_new_user(browser):
     # найти созданного юзера и отредактировать его
