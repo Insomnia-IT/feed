@@ -7,21 +7,15 @@ from django.db.models import Exists, OuterRef
 from django.utils import timezone
 from datetime import timedelta
 import re
-from distutils.util import strtobool
-
 
 from feeder import serializers, models
 from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \
-    SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin
+    SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin, auto_tag_viewset
 from feeder.views.xlsx import build_xlsx_response
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
-
-
-class TypedChoiceFilter(django_filters.Filter):
-    field_class = forms.TypedChoiceField
 
 class VolunteerFilter(django_filters.FilterSet):
     id__in = NumberInFilter(field_name='id', lookup_expr='in')
@@ -34,9 +28,9 @@ class VolunteerFilter(django_filters.FilterSet):
     printing_batch = django_filters.CharFilter(field_name="printing_batch", lookup_expr='iexact')
     badge_number = django_filters.CharFilter(field_name="badge_number", lookup_expr='icontains')
     comment = django_filters.CharFilter(field_name="comment", lookup_expr='icontains')
-    is_blocked = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
+    is_blocked = django_filters.BooleanFilter(field_name='is_blocked')
     is_ticket_received = django_filters.BooleanFilter(method='filter_is_ticket_received')
-    is_vegan = TypedChoiceFilter(choices=[('true','true'),('false','false')], coerce=strtobool)
+    is_vegan = django_filters.BooleanFilter(field_name='is_vegan')
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
     direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
@@ -47,7 +41,7 @@ class VolunteerFilter(django_filters.FilterSet):
     supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
     has_supervisor = django_filters.BooleanFilter(method='filter_has_supervisor')
     is_supervisor = django_filters.BooleanFilter(method='filter_is_supervisor')
-    infant = TypedChoiceFilter(choices=[('true', 'true'), ('false', 'false')], coerce=strtobool)
+    infant = django_filters.BooleanFilter(field_name='infant')
 
     def filter_has_supervisor(self, queryset, name, value):
         if value is None:
@@ -88,6 +82,7 @@ class VolunteerRoleFilter(django_filters.FilterSet):
         fields = ['is_group_badge']
 
 
+@auto_tag_viewset("Volunteer")
 class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                        MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
@@ -213,7 +208,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
         )
 
 
-
+@auto_tag_viewset("Volunteer Custom Field")
 class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerCustomField.objects.all()
@@ -221,7 +216,7 @@ class VolunteerCustomFieldViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
 
-
+@auto_tag_viewset("Volunteer Custom Field Value")
 class VolunteerCustomFieldValueViewSet(SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerCustomFieldValue.objects.all()
@@ -229,7 +224,7 @@ class VolunteerCustomFieldValueViewSet(SaveHistoryDataViewSetMixin, viewsets.Mod
     filter_backends = [DjangoFilterBackend]
     filterset_class = VolunteerCustomFieldValueFilter
 
-
+@auto_tag_viewset("Volunteer Role")
 class VolunteerRoleViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.VolunteerRole.objects.all()
@@ -238,7 +233,7 @@ class VolunteerRoleViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     filterset_class = VolunteerRoleFilter
     search_fields = ['name', ]
 
-
+@auto_tag_viewset("Access Role")
 class AccessRoleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.AccessRole.objects.all()

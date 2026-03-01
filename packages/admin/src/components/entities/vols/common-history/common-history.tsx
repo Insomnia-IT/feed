@@ -151,6 +151,20 @@ export const CommonHistory = ({ role }: IProps) => {
                 arrival_transport: transportById,
                 departure_transport: transportById
             };
+            if (key === 'supervisor') {
+                const { id, name } = obj[key] ?? {};
+
+                return id ? (
+                    <span
+                        className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
+                        onClick={() => (window.location.href = `/volunteers/edit/${id}`)}
+                    >
+                        {name}
+                    </span>
+                ) : (
+                    '-'
+                );
+            }
             if (maps[key]) {
                 return maps[key][obj[key]];
             }
@@ -165,7 +179,7 @@ export const CommonHistory = ({ role }: IProps) => {
                 const v = String(obj[key] ?? '');
                 return v === 'true' ? 'Да' : v === 'false' ? 'Нет' : v;
             }
-            return obj[key] as unknown as string;
+            return obj[key];
         },
         [
             accessRoleById,

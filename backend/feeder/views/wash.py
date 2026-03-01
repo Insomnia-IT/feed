@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from feeder.models import Wash
 from feeder.serializers import WashSerializer, WashListSerializer
+from feeder.views.mixins import auto_tag_viewset
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from feeder.views.xlsx import build_xlsx_response
@@ -17,6 +18,7 @@ class WashFilter(django_filters.FilterSet):
         model = Wash
         fields = ["volunteer", "actor"]
 
+@auto_tag_viewset("Wash")
 class WashViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Wash.objects.all()
