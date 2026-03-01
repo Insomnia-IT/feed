@@ -1,4 +1,4 @@
-export NREPS=3
+export NREPS=2
 
 echo "Gonna explicitly build docker compose for regress-tests"
 docker compose build
@@ -6,8 +6,7 @@ docker compose build
 echo "Gonna run regress-tests in docker compose"
 
 # docker compose run --remove-orphans easy_test |tee /tmp/tests.log
-export PORT=11832
-docker compose run --remove-orphans tests | tee /tmp/tests.log
+docker compose run tests | tee /tmp/tests.log
 exitcode=${PIPESTATUS[0]}
 
 rm -rf /tmp/tests.short.log
@@ -23,4 +22,4 @@ echo -e "\n:VERDICT:"
     { echo "Tests passed!"; } ||
     { echo "Tests failed!" ; (exit 2); }
 
-docker compose down -v
+exit "$exitcode"

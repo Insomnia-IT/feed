@@ -70,7 +70,7 @@ class create_user():
     BAN_BUTTON = (By.XPATH, "//button[span[text()='Заблокировать Волонтера']]")
     BAN_REASON = (By.CSS_SELECTOR, "#form-block_reason")
 
-    FIND_INPUT = (By.CSS_SELECTOR, "input.ant-input.css-sphnl3")
+    FIND_INPUT = (By.CSS_SELECTOR, "input[placeholder='Поиск по волонтерам, датам, службам']")
     FIND_TESTNAME = (By.CSS_SELECTOR, "ant-input.css-sphnl3")
 
     DELETE_USER_BUTTON = (By.XPATH, "//button[span[text()='Удалить волонтера']]")

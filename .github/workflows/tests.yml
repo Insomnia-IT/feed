@@ -21,14 +21,8 @@ jobs:
           FEED_APP_HOST: https://feedapp-dev.insomniafest.ru 
         run: |
           cd tests
-          bash run_tests.sh || touch /tmp/testFailed
+          bash run_tests.sh
 
       - name: 🍏 Shorter Log
+        if: always()
         run: cat /tmp/tests.short.log
-
-      - name: Verdict
-        run: if [ -f /tmp/testFailed ]; then
-          echo "Tests Failed!"; exit 1;
-          else
-          echo "Tests Success!";
-          fi

@@ -1,12 +1,13 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigation, useList, CanAccess } from '@refinedev/core';
+import { useNavigation, useList, CanAccess, useGetIdentity } from '@refinedev/core';
 import { List } from '@refinedev/antd';
-import { Input, Row, Col } from 'antd';
+import { Input, Row, Col, Segmented } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
 
 import { dataProvider } from 'dataProvider';
 import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
+import type { UserData } from 'auth';
 
 import { CustomFieldEntity, VolEntity } from 'interfaces';
 
@@ -27,10 +28,13 @@ const LS_PAGE_SIZE = 'volPageSize';
 export const VolList: FC = () => {
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
+    const { data: user } = useGetIdentity<UserData>();
 
     const [page, setPage] = useState<number>(parseInt(localStorage.getItem(LS_PAGE_INDEX) || '') || 1);
     const [pageSize, setPageSize] = useState<number>(parseInt(localStorage.getItem(LS_PAGE_SIZE) || '') || 10);
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+    const [hasMyBrigade, setHasMyBrigade] = useState(false);
+    const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
 
     const setPageWithStorage = useCallback((value: number): void => {
         setPage(value);
@@ -54,6 +58,7 @@ export const VolList: FC = () => {
         feedTypeNameById,
         filterFields,
         filterQueryParams,
+        filterQueryParamsWithoutDefaultDirections,
         isFiltersLoading,
         kitchenNameById,
         searchText,
@@ -69,12 +74,60 @@ export const VolList: FC = () => {
         customFields
     });
 
+    const userId = user?.id;
+
+    useEffect(() => {
+        if (isDesktop || !userId) {
+            setHasMyBrigade(false);
+            setBrigadeScope('all');
+            return;
+        }
+
+        let alive = true;
+
+        void dataProvider
+            .getList<VolEntity>({
+                resource: `volunteers/?supervisor_id=${userId}`,
+                pagination: { current: 1, pageSize: 1 }
+            })
+            .then(({ total }) => {
+                if (!alive) return;
+
+                const hasBrigade = total > 0;
+                setHasMyBrigade(hasBrigade);
+                setBrigadeScope(hasBrigade ? 'my' : 'all');
+            })
+            .catch(() => {
+                if (!alive) return;
+
+                setHasMyBrigade(false);
+                setBrigadeScope('all');
+            });
+
+        return () => {
+            alive = false;
+        };
+    }, [isDesktop, userId]);
+
+    const mobileFilterQueryParams = useMemo(() => {
+        if (!hasMyBrigade || brigadeScope !== 'my' || !userId) {
+            return filterQueryParams;
+        }
+
+        const baseParams = filterQueryParamsWithoutDefaultDirections;
+        const separator = baseParams ? '&' : '?';
+
+        return `${baseParams}${separator}supervisor_id=${encodeURIComponent(String(userId))}`;
+    }, [brigadeScope, filterQueryParams, filterQueryParamsWithoutDefaultDirections, hasMyBrigade, userId]);
+
+    const effectiveFilterQueryParams = isDesktop ? filterQueryParams : mobileFilterQueryParams;
+
     const {
         data: volunteers,
         isLoading: volunteersIsLoading,
         refetch: reloadVolunteers
     } = useList<VolEntity>({
-        resource: `volunteers/${filterQueryParams}`,
+        resource: `volunteers/${effectiveFilterQueryParams}`,
         pagination: isDesktop ? { current: page, pageSize } : undefined
     });
 
@@ -88,7 +141,7 @@ export const VolList: FC = () => {
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
             totalVolunteersCount: volunteers?.total ?? 0,
-            filterQueryParams
+            filterQueryParams: effectiveFilterQueryParams
         });
 
     const pagination = useMemo<TablePaginationConfig>(
@@ -155,6 +208,17 @@ export const VolList: FC = () => {
                         searchText={searchText}
                         setSearchText={setSearchText}
                     />
+                    {!isDesktop && hasMyBrigade && (
+                        <Segmented
+                            block
+                            options={[
+                                { label: 'Моя бригада', value: 'my' },
+                                { label: 'Все', value: 'all' }
+                            ]}
+                            value={brigadeScope}
+                            onChange={(value) => setBrigadeScope(value as 'my' | 'all')}
+                        />
+                    )}
                     <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
                         {isDesktop ? (
                             <>
@@ -172,7 +236,7 @@ export const VolList: FC = () => {
                                     />
                                     <SaveAsXlsxButton
                                         isDisabled={!volunteersData.length || isFiltersLoading}
-                                        filterQueryParams={filterQueryParams}
+                                        filterQueryParams={effectiveFilterQueryParams}
                                         customFields={customFields}
                                         volunteerRoleById={volunteerRoleById}
                                         statusById={statusById}
@@ -216,7 +280,7 @@ export const VolList: FC = () => {
                         </>
                     ) : (
                         <VolunteerMobileList
-                            filterQueryParams={filterQueryParams}
+                            filterQueryParams={effectiveFilterQueryParams}
                             statusById={statusById}
                             openVolunteer={openVolunteer}
                         />

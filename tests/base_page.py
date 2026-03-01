@@ -304,7 +304,7 @@ class BasePage:
 
     def check_username_after_deleting(self):
         find = self.browser.find_element(*create_user.FIND_INPUT)
-        find.send_keys("Test_name_1")
+        find.send_keys("Test_updated_name")
         time.sleep(1)
 
 

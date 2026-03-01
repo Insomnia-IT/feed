@@ -70,6 +70,13 @@ class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
         model = models.VolunteerCustomFieldValue
         fields = ['custom_field', 'volunteer']
 
+
+class VolunteerRoleFilter(django_filters.FilterSet):
+    class Meta:
+        model = models.VolunteerRole
+        fields = ['is_group_badge']
+
+
 @auto_tag_viewset("Volunteer")
 class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                        MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
@@ -108,6 +115,7 @@ class VolunteerRoleViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     queryset = models.VolunteerRole.objects.all()
     serializer_class = serializers.VolunteerRoleSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = VolunteerRoleFilter
     search_fields = ['name', ]
 
 @auto_tag_viewset("Access Role")

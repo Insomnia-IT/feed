@@ -26,6 +26,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
     group_badge = django_filters.NumberFilter(field_name="group_badge")
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
     is_group_badge = django_filters.BooleanFilter(method="filter_is_group_badge")
+    is_anomaly = django_filters.BooleanFilter(field_name="is_anomaly")
 
     def filter_anonymous(self, queryset, name, value):
         if value:
@@ -39,7 +40,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.FeedTransaction
-        fields = ['kitchen', 'volunteer']
+        fields = ['kitchen', 'volunteer', 'is_anomaly']
 
 @auto_tag_viewset("Feed Transaction")
 class FeedTransactionViewSet(viewsets.ModelViewSet):
