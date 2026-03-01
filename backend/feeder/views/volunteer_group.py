@@ -353,7 +353,8 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         if errors:
             return Response(
                 {"updated": updated_volunteers,
-                "errors": errors},
+                "errors": errors,
+                "warnings": warnings},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
