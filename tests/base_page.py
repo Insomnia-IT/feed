@@ -41,14 +41,8 @@ class BasePage:
         first_button.click()
 
     def first_window_qr(self):
-        try:
-            first_button = WebDriverWait(self.browser, 10).until(
-                EC.element_to_be_clickable(registration.CHOOSE_QR_TYPE)
-            )
-            first_button.click()
-            return
-        except TimeoutException:
-            self.browser.find_element(By.TAG_NAME, "video")
+        first_button = self.browser.find_element(*registration.CHOOSE_QR_TYPE)
+        first_button.click()
 
     def scan_user(self):
         self.driver.execute_script("""
@@ -331,6 +325,7 @@ class BasePage:
         find.send_keys(Keys.END)  # Перемещаем курсор в конец строки
         for _ in range(len(find.get_attribute("value"))):
             find.send_keys(Keys.BACKSPACE)  # Удаляем символы один за другим
+            
 
 
 
