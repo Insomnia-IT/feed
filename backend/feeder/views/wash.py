@@ -41,7 +41,7 @@ class WashViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
 
         rows = []
 
-        for wash in queryset.iterator():
+        for wash in queryset.iterator(chunk_size=2000):
             wash_date = timezone.localtime(wash.created_at).date()
             current_arrival = next(
                 (

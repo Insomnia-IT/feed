@@ -76,7 +76,7 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
 
         rows = []
 
-        for tx in queryset.iterator():
+        for tx in queryset.iterator(chunk_size=2000):
             local_dtime = timezone.localtime(tx.dtime) if tx.dtime else None
             volunteer_full_name = " ".join(
                 [name for name in [getattr(tx.volunteer, "last_name", None), getattr(tx.volunteer, "first_name", None)] if name]

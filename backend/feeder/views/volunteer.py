@@ -116,7 +116,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
 
         rows = []
 
-        for volunteer in queryset.iterator():
+        for volunteer in queryset.iterator(chunk_size=2000):
             arrivals = sorted(list(volunteer.arrivals.all()), key=lambda arrival: arrival.arrival_date)
 
             current_arrival = next(
