@@ -139,8 +139,21 @@ class BasePage:
         confirm_button.click()
 
     def meal_history_pagination(self):
-        next_page = self.browser.find_element(*feed_history_pagination.NEXT_PAGE)
-        next_page.click()
+        page_locators = [
+            (By.CSS_SELECTOR, "li.ant-pagination-item-2"),
+            (By.CSS_SELECTOR, "li.ant-pagination-next:not(.ant-pagination-disabled) button"),
+            (By.CSS_SELECTOR, "li.ant-pagination-next:not(.ant-pagination-disabled)")
+        ]
+
+        for locator in page_locators:
+            try:
+                next_page = WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable(locator))
+                next_page.click()
+                return
+            except TimeoutException:
+                continue
+
+        raise NoSuchElementException("Could not find an enabled pagination control for page 2")
 
     def go_to_custom_field_creating(self):
         time.sleep(3)
@@ -337,7 +350,6 @@ class BasePage:
         find.send_keys(Keys.END)  # Перемещаем курсор в конец строки
         for _ in range(len(find.get_attribute("value"))):
             find.send_keys(Keys.BACKSPACE)  # Удаляем символы один за другим
-
 
 
 

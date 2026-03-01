@@ -3,6 +3,7 @@ import time
 import pytest
 from selenium.webdriver.common.by import By
 from datetime import datetime
+from urllib.parse import parse_qs, urlparse
 
 # from main_page import MainPage
 from base_page import BasePage
@@ -54,7 +55,13 @@ def test_create_new_meal(browser):
     first_row_text = page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
-    assert browser.current_url == f"{host}/feed-transaction?pageSize=10&current=1"
+    parsed_url = urlparse(browser.current_url)
+    query_params = parse_qs(parsed_url.query)
+    current_page = query_params.get("currentPage", query_params.get("current", [""]))[0]
+
+    assert parsed_url.path.endswith("/feed-transaction"), f"Unexpected path: {parsed_url.path}"
+    assert query_params.get("pageSize", [""])[0] == "10", f"Unexpected pageSize: {query_params.get('pageSize')}"
+    assert current_page == "1", f"Unexpected current page: {current_page}"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
     assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
     print("✅ Запись успешно создана!")
