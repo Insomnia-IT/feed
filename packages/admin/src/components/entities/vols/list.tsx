@@ -89,18 +89,14 @@ export const VolList = () => {
     const userId = user?.id;
 
     useEffect(() => {
-        if (isDesktop || !userId) {
-            setHasMyBrigade(false);
-            setBrigadeScope('all');
-            return;
-        }
+        if (isDesktop || !userId) return;
 
         let alive = true;
 
         void dataProvider
             .getList<VolEntity>({
                 resource: `volunteers/?supervisor_id=${userId}`,
-                pagination: { current: 1, pageSize: 1 }
+                pagination: { currentPage: 1, pageSize: 1 }
             })
             .then(({ total }) => {
                 if (!alive) return;
@@ -121,8 +117,11 @@ export const VolList = () => {
         };
     }, [isDesktop, userId]);
 
+    const isMyBrigadeAvailable = !isDesktop && Boolean(userId) && hasMyBrigade;
+    const effectiveBrigadeScope: 'my' | 'all' = isMyBrigadeAvailable ? brigadeScope : 'all';
+
     const mobileFilterQueryParams = useMemo(() => {
-        if (!hasMyBrigade || brigadeScope !== 'my' || !userId) {
+        if (!isMyBrigadeAvailable || effectiveBrigadeScope !== 'my' || !userId) {
             return filterQueryParams;
         }
 
@@ -130,18 +129,29 @@ export const VolList = () => {
         const separator = baseParams ? '&' : '?';
 
         return `${baseParams}${separator}supervisor_id=${encodeURIComponent(String(userId))}`;
-    }, [brigadeScope, filterQueryParams, filterQueryParamsWithoutDefaultDirections, hasMyBrigade, userId]);
+    }, [
+        effectiveBrigadeScope,
+        filterQueryParams,
+        filterQueryParamsWithoutDefaultDirections,
+        isMyBrigadeAvailable,
+        userId
+    ]);
 
     const effectiveFilterQueryParams = isDesktop ? filterQueryParams : mobileFilterQueryParams;
 
-    const {
-        data: volunteers,
-        isLoading: volunteersIsLoading,
-        refetch: reloadVolunteers
-    } = useList<VolEntity>({
+    const { result: volunteersResult, query: volunteersQuery } = useList<VolEntity>({
         resource: `volunteers/${effectiveFilterQueryParams}`,
-        pagination: isDesktop ? { current: page, pageSize } : undefined
+        pagination: isDesktop
+            ? {
+                  mode: 'server',
+                  currentPage: page,
+                  pageSize
+              }
+            : undefined
     });
+    const volunteers = volunteersResult;
+    const volunteersIsLoading = volunteersQuery.isLoading;
+    const reloadVolunteers = volunteersQuery.refetch;
 
     useEffect(() => {
         // Если текущая страница выходит за пределы общего количества, сбрасываем на 1
@@ -228,14 +238,14 @@ export const VolList = () => {
                         searchText={searchText}
                         setSearchText={setSearchText}
                     />
-                    {!isDesktop && hasMyBrigade && (
+                    {isMyBrigadeAvailable && (
                         <Segmented
                             block
                             options={[
                                 { label: 'Моя бригада', value: 'my' },
                                 { label: 'Все', value: 'all' }
                             ]}
-                            value={brigadeScope}
+                            value={effectiveBrigadeScope}
                             onChange={(value) => setBrigadeScope(value as 'my' | 'all')}
                         />
                     )}

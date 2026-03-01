@@ -100,13 +100,17 @@ export const VolInfoSection = ({
         [brigadierSearch]
     );
 
-    const { data: supervisorsData, isLoading: supervisorsLoading } = useList<VolEntity>({
+    const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity>({
         resource: 'volunteers',
         filters: supervisorFilters,
         pagination: {
+            mode: 'server',
+            currentPage: 1,
             pageSize: 50
         }
     });
+    const supervisorsData = supervisorsResult.data ?? [];
+    const supervisorsLoading = supervisorsQuery.isLoading;
 
     const volPhoto = form.getFieldValue(PHOTO_FIELD) as string | undefined;
     const volPhotoUrl = useMemo(() => (volPhoto ? NEW_API_URL + volPhoto : ''), [volPhoto]);
@@ -121,8 +125,7 @@ export const VolInfoSection = ({
     }, []);
 
     const supervisorOptions = useMemo(() => {
-        const supervisors = (supervisorsData?.data ?? []) as VolEntity[];
-        const options = supervisors.map((volunteer) => ({
+        const options = supervisorsData.map((volunteer) => ({
             value: volunteer.id,
             label: formatVolunteerLabel(volunteer)
         }));

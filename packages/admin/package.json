@@ -38,7 +38,7 @@
     "devDependencies": {
         "@types/js-cookie": "^3.0.6",
         "@types/onscan.js": "^1.5.6",
-        "rollup-plugin-visualizer": "^6.0.3",
+        "rollup-plugin-visualizer": "^7.0.0",
         "vite-plugin-pwa": "^1.0.2"
     }
 }
