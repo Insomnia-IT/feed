@@ -52,7 +52,11 @@ export const CommonHistory = ({ role }: IProps) => {
     const { data: statuses } = useList<StatusEntity>({ resource: 'statuses', pagination: { pageSize: 0 } });
     const { data: genders } = useList<AccessRoleEntity>({ resource: 'genders', pagination: { pageSize: 0 } });
     const { data: directions } = useList<DirectionEntity>({ resource: 'directions', pagination: { pageSize: 0 } });
-    const { data: groupBadges } = useList<GroupBadgeEntity>({ resource: 'group-badges', pagination: { pageSize: 0 } });
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges',
+        filters: [{ field: 'is_deleted', operator: 'eq', value: 'all' }],
+        pagination: { pageSize: 0 }
+    });
 
     const kitchenById = useIdNameMap(kitchens);
     const feedTypeById = useIdNameMap(feedTypes);
