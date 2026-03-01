@@ -28,6 +28,11 @@ export interface IData {
     directions: string[];
     value: string;
     ticket: boolean;
+    supervisor_id: string;
+    supervisor: {
+        id: number;
+        name: string;
+    };
     [key: string]: any;
 }
 

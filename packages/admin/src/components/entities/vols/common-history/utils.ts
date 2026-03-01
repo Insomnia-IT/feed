@@ -32,7 +32,7 @@ export const FIELD_LABELS: Record<string, string> = {
     batch: 'Партия бейджа',
     ticket: 'Билет',
     qr: 'QR бейджа',
-    supervisor_id: 'Бригадир'
+    supervisor: 'Бригадир'
 };
 
 export const STATUS_MAP: Record<string, string> = {
@@ -49,7 +49,7 @@ export const BOOL_MAP = {
     infant: ['Нет', 'Да']
 };
 
-export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'feed', 'role', 'custom_field']);
+export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'feed', 'role', 'custom_field', 'supervisor_id']);
 
 export function useIdNameMap<T extends { id: number | string }>(list?: GetListResponse<T>, field?: keyof T) {
     return useMemo<Record<string, string>>(

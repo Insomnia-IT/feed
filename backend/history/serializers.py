@@ -8,6 +8,7 @@ class HistorySerializer(serializers.ModelSerializer):
     actor = serializers.SerializerMethodField()
     volunteer = serializers.SerializerMethodField()
     by_sync = serializers.SerializerMethodField()
+    data = serializers.SerializerMethodField()
 
     class Meta:
         model = History
@@ -34,6 +35,20 @@ class HistorySerializer(serializers.ModelSerializer):
             return None
     def get_by_sync(self, obj):
         return not obj.actor_badge
+    
+    def get_data(self, obj):
+        extendedData = {}
+        supervisor_id = obj.data.get("supervisor_id")
+        if supervisor_id:
+            try:
+                volunteer = Volunteer.objects.get(uuid=supervisor_id)
+                extendedData['supervisor'] = {
+                    "id": volunteer.pk,
+                    "name": volunteer.name
+                }
+            except Exception:
+                pass
+        return dict(obj.data, **extendedData)
 
 
 class HistorySyncSerializer(serializers.ModelSerializer):
