@@ -20,13 +20,13 @@ class Migration(migrations.Migration):
                 ('date', models.DateField(verbose_name='Дата')),
                 ('amount_meat', models.SmallIntegerField(null=True, verbose_name='Количество мясоедов')),
                 ('amount_vegan', models.SmallIntegerField(null=True, verbose_name='Количество вегетарианцев')),
-                ('feed_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_badge_planning_cells', to='feeder.feedtype', verbose_name='Тип питания')),
+                ('meal_time', models.CharField(max_length=10, verbose_name='Время питания')),
                 ('group_badge', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_badge_planning_cells', to='feeder.groupbadge')),
             ],
             options={
                 'verbose_name': 'Ячейка планирования питания группового бейджа',
                 'verbose_name_plural': 'Ячейки планирования питания групповых бейджей',
-                'constraints': [models.UniqueConstraint(fields=('group_badge', 'feed_type', 'date'), name='unique planning cell')],
+                'constraints': [models.UniqueConstraint(fields=('group_badge', 'meal_time', 'date'), name='unique planning cell')],
             },
         ),
     ]

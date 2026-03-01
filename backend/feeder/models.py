@@ -287,6 +287,12 @@ def validate_meal_time(value):
             params={"value": value, "meal_times": ", ".join(meal_times)},
         )
 
+class MealTime(models.TextChoices):
+    """ Время приема пищи """
+    BREAKFAST = 'breakfast', 'breakfast'
+    LUNCH = 'lunch', 'lunch'
+    DINNER = 'dinner', 'dinner'
+    NIGHT = 'night', 'night'
 
 class FeedTransaction(TimeMixin):
     ulid = models.CharField(max_length=255, primary_key=True)
@@ -332,7 +338,7 @@ class GroupBadgePlanningCells(TimeMixin):
     """ Ячейки планирования питания групповых бейджей """
     id = models.AutoField(primary_key=True)
     group_badge = models.ForeignKey(GroupBadge, on_delete=models.CASCADE, related_name="group_badge_planning_cells")
-    feed_type = models.ForeignKey(FeedType, on_delete=models.CASCADE, verbose_name="Тип питания", related_name="group_badge_planning_cells")
+    meal_time = models.CharField(max_length=10, choices=MealTime.choices, verbose_name="Время питания")
     date = models.DateField(verbose_name="Дата")
     amount_meat = models.SmallIntegerField(null=True, verbose_name="Количество мясоедов")
     amount_vegan = models.SmallIntegerField(null=True, verbose_name="Количество вегетарианцев")
@@ -341,5 +347,5 @@ class GroupBadgePlanningCells(TimeMixin):
         verbose_name = "Ячейка планирования питания группового бейджа"
         verbose_name_plural = "Ячейки планирования питания групповых бейджей"
         constraints = [
-            models.UniqueConstraint(fields=['group_badge', 'feed_type', 'date'], name='unique planning cell')
+            models.UniqueConstraint(fields=['group_badge', 'meal_time', 'date'], name='unique planning cell')
         ]

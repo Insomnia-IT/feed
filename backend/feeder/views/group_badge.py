@@ -25,6 +25,6 @@ class GroupBadgeViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
 @auto_tag_viewset("GroupBadgePlanningCells")
 class GroupBadgePlanningCellsViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
-    queryset = models.GroupBadgePlanningCells.objects.select_related('group_badge', 'feed_type')
+    queryset = models.GroupBadgePlanningCells.objects.select_related('group_badge')
     serializer_class = serializers.GroupBadgePlanningCellsSerializer
     http_method_names = ['post', 'patch', 'delete', 'head', 'options']

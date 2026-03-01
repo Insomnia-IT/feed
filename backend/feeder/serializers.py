@@ -346,7 +346,6 @@ class VolunteerRoleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class GroupBadgePlanningCellsSerializer(serializers.ModelSerializer):
-    feed_type_name = serializers.CharField(source='feed_type.name', read_only=True)
     group_badge_name = serializers.CharField(source='group_badge.name', read_only=True)
     
     class Meta:
@@ -355,7 +354,7 @@ class GroupBadgePlanningCellsSerializer(serializers.ModelSerializer):
         validators = [
             serializers.UniqueTogetherValidator(
                 queryset=models.GroupBadgePlanningCells.objects.all(),
-                fields=['group_badge', 'feed_type', 'date'],
+                fields=['group_badge', 'meal_time', 'date'],
                 message="Ячейка с такой комбинацией дата/групповой бейдж/тип питания уже существует."
             ),
         ]
