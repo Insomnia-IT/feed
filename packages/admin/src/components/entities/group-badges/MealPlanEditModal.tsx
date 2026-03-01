@@ -2,6 +2,7 @@ import { Button, InputNumber, Modal } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
 import styles from './group-meal-plan.module.css';
+import { useScreen } from '../../../shared/providers';
 
 interface MealPlanEditModalProps {
     open: boolean;
@@ -27,9 +28,18 @@ export const MealPlanEditModal: React.FC<MealPlanEditModalProps> = ({
     onCancel
 }) => {
     const isValid = (editMeat !== null && editMeat < 0) || (editVegan !== null && editVegan < 0);
+    const { isMobile } = useScreen();
 
     return (
-        <Modal title={`${title} - ${dateStr}`} open={open} onCancel={onCancel} footer={null} width={400}>
+        <Modal
+            title={`${title} - ${dateStr}`}
+            open={open}
+            onCancel={onCancel}
+            footer={null}
+            height={400}
+            width={isMobile ? undefined : 400}
+            style={{ top: 'calc(100% - 450px)' }}
+        >
             <div className={styles.modalContent}>
                 <div className={styles.inputRow}>
                     <label className={styles.meat}>🥩 Мясоеды:</label>
