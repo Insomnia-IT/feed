@@ -3,7 +3,7 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder import serializers, models
-from feeder.views.mixins import MultiSerializerViewSetMixin, auto_tag_viewset
+from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, auto_tag_viewset
 
 
 class GroupBadgeFilter(django_filters.FilterSet):
@@ -11,7 +11,7 @@ class GroupBadgeFilter(django_filters.FilterSet):
 
 
 @auto_tag_viewset("GroupBadges")
-class GroupBadgeViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
+class GroupBadgeViewSet(MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.GroupBadge.objects.prefetch_related('group_badge_planning_cells').all()
     serializer_class = serializers.GroupBadgeSerializer
