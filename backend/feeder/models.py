@@ -197,12 +197,16 @@ class Kitchen(TimeMixin):
         verbose_name_plural = "Кухни"
 
 
-class GroupBadge(TimeMixin, CommentMixin, NameMixin):
-    qr = models.TextField(unique=True, verbose_name="QR-код")
+class GroupBadge(TimeMixin, SoftDeleteModelMixin, CommentMixin, NameMixin):
+    qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.name
+    
+    def delete(self, *args, **kwargs):
+        self.volunteers.update(group_badge=None)
+        return super().delete(*args, **kwargs)
 
     class Meta:
         verbose_name = "Групповой бейдж"
