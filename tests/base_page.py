@@ -325,7 +325,7 @@ class BasePage:
         find.send_keys(Keys.END)  # Перемещаем курсор в конец строки
         for _ in range(len(find.get_attribute("value"))):
             find.send_keys(Keys.BACKSPACE)  # Удаляем символы один за другим
-            
+
 
 
 
