@@ -6,6 +6,10 @@ on:
    branches: [ main ]
 # workflow_dispatch:
 
+concurrency:
+  group: rum-deploy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: [self-hosted, rumsrv]
@@ -17,7 +21,7 @@ jobs:
       OPEN_SEARCH_PASSWORD: ${{ secrets.OPEN_SEARCH_PASSWORD }}
       OPEN_SEARCH_USER_NAME: ${{ secrets.OPEN_SEARCH_USER_NAME }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 # DB
     - name: setup db dir
       run: mkdir -p ${DB_DIR}
