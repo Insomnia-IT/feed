@@ -57,6 +57,7 @@ class VolunteerRole(TimeMixin):
     color = models.CharField(max_length=6)
     is_leader = models.BooleanField(default=False)
     is_team = models.BooleanField(default=False)
+    is_group_badge = models.BooleanField(default=False)
 
 
 class DirectionType(TimeMixin):
@@ -200,6 +201,7 @@ class Kitchen(TimeMixin):
 class GroupBadge(TimeMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, verbose_name="QR-код")
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
+    role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -293,6 +295,7 @@ class FeedTransaction(TimeMixin):
     volunteer = models.ForeignKey(Volunteer, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Волонтёр")
     group_badge = models.ForeignKey(GroupBadge, null=True, blank=True, on_delete=models.SET_NULL, related_name='feed_transactions', verbose_name="Групповой бейдж")
     is_vegan = models.BooleanField(null=True, verbose_name="Вегетарианец?")
+    is_anomaly = models.BooleanField(default=False, verbose_name="Аномалия?")
     kitchen = models.ForeignKey(Kitchen, on_delete=models.PROTECT, verbose_name="Кухня")
     amount = models.IntegerField(default=0, verbose_name="Количество")
     reason = models.CharField(max_length=255, null=True, blank=True, verbose_name="Причина")

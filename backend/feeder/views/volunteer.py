@@ -82,6 +82,12 @@ class VolunteerCustomFieldValueFilter(django_filters.FilterSet):
         fields = ['custom_field', 'volunteer']
 
 
+class VolunteerRoleFilter(django_filters.FilterSet):
+    class Meta:
+        model = models.VolunteerRole
+        fields = ['is_group_badge']
+
+
 class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                        MultiSerializerViewSetMixin, SaveHistoryDataViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
@@ -229,7 +235,9 @@ class VolunteerRoleViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     queryset = models.VolunteerRole.objects.all()
     serializer_class = serializers.VolunteerRoleSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = VolunteerRoleFilter
     search_fields = ['name', ]
+
 
 class AccessRoleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
