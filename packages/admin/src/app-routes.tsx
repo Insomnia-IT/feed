@@ -1,8 +1,8 @@
-import React from 'react';
-import { Route, Routes, Outlet } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { Route, Routes, Outlet } from 'react-router';
 import { Authenticated } from '@refinedev/core';
-import { ThemedLayoutV2, ErrorComponent } from '@refinedev/antd';
-import { CatchAllNavigate } from '@refinedev/react-router-v6';
+import { ThemedLayout, ErrorComponent } from '@refinedev/antd';
+import { CatchAllNavigate } from '@refinedev/react-router';
 
 import { useScreen } from 'shared/providers';
 import CustomSider from 'components/sider/sider';
@@ -25,10 +25,10 @@ import { Wash } from 'components/wash';
 import { WashesHistory } from 'components/wash/list/washes-history';
 
 interface IProps {
-    initial: React.ReactNode;
+    initial: ReactNode;
 }
 
-export const AppRoutes: React.FC<IProps> = ({ initial }) => {
+export const AppRoutes = ({ initial }: IProps) => {
     const { isDesktop } = useScreen();
 
     return (
@@ -36,9 +36,9 @@ export const AppRoutes: React.FC<IProps> = ({ initial }) => {
             <Route
                 element={
                     <Authenticated key="authenticated-inner" fallback={<CatchAllNavigate to="/login" />}>
-                        <ThemedLayoutV2 Sider={() => <CustomSider />}>
+                        <ThemedLayout Sider={() => <CustomSider />}>
                             <Outlet />
-                        </ThemedLayoutV2>
+                        </ThemedLayout>
                     </Authenticated>
                 }
             >

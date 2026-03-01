@@ -1,25 +1,21 @@
-import type { FC } from 'react';
 import { useState } from 'react';
 import cn from 'classnames';
 
-import type { TransactionJoined, Volunteer } from '~/db';
-import { Text, Title } from '~/shared/ui/typography';
-import { Button } from '~/shared/ui/button';
-import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
-import { getPlural } from '~/shared/lib/utils';
-import { FeedOtherCount } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
-import { WarningPartiallyFedModal } from '~/components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
-import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
+import type { TransactionJoined, Volunteer } from 'db';
+import { Text, Title } from 'shared/ui/typography';
+import { Button } from 'shared/ui/button';
+import { VolAndUpdateInfo } from 'components/vol-and-update-info';
+import { getPlural } from 'shared/lib/utils';
+import { FeedOtherCount } from 'components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
+import { WarningPartiallyFedModal } from 'components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
+import { calculateAlreadyFedCount } from 'components/post-scan/post-scan.utils';
 
 import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 import { NotFeedListModalTrigger } from '../not-feed-list-modal/not-feed-list-modal';
 
 import css from './post-scan-group-badge-misc.module.css';
 
-export const GroupBadgeInfo: FC<{
-    name: string;
-    volsToFeed: Array<Volunteer>;
-}> = ({ name, volsToFeed }) => {
+export const GroupBadgeInfo = ({ name, volsToFeed }: { name: string; volsToFeed: Array<Volunteer> }) => {
     const totalVegs = volsToFeed.filter((vol) => vol.is_vegan).length;
     const totalMeats = volsToFeed.filter((vol) => !vol.is_vegan).length;
 
@@ -47,14 +43,21 @@ export const GroupBadgeInfo: FC<{
     );
 };
 
-export const GroupBadgeWarningCard: FC<{
+export const GroupBadgeWarningCard = ({
+    alreadyFedTransactions,
+    close,
+    doFeed,
+    doFeedAnons,
+    name,
+    validationGroups
+}: {
     alreadyFedTransactions: Array<TransactionJoined>;
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
     doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
     close: () => void;
-}> = ({ alreadyFedTransactions, close, doFeed, doFeedAnons, name, validationGroups }) => {
+}) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
@@ -136,17 +139,23 @@ export const GroupBadgeWarningCard: FC<{
     );
 };
 
-const BottomBlock: React.FC<{
+const BottomBlock = ({
+    alternativeText,
+    amountToFeed,
+    handleAlternativeAction,
+    handleCancel,
+    handlePrimaryAction
+}: {
     handleCancel: () => void;
     handlePrimaryAction: () => void;
     handleAlternativeAction?: () => void;
     alternativeText?: string;
     amountToFeed: number;
-}> = ({ alternativeText, amountToFeed, handleAlternativeAction, handleCancel, handlePrimaryAction }) => {
+}) => {
     return (
         <div className={css.bottomBLock}>
             <div className={css.buttonsBlock}>
-                <Button variant='secondary' onClick={handleCancel}>
+                <Button variant="secondary" onClick={handleCancel}>
                     Отмена
                 </Button>
                 <Button disabled={amountToFeed <= 0} onClick={handlePrimaryAction}>
@@ -154,11 +163,11 @@ const BottomBlock: React.FC<{
                 </Button>
             </div>
             {alternativeText ? (
-                <Button onClick={handleAlternativeAction} variant='secondary'>
+                <Button onClick={handleAlternativeAction} variant="secondary">
                     {alternativeText}
                 </Button>
             ) : null}
-            <VolAndUpdateInfo textColor='black' />
+            <VolAndUpdateInfo textColor="black" />
         </div>
     );
 };

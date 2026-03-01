@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { type ComponentProps, type MouseEvent as ReactMouseEvent, useEffect, useState } from 'react';
 import cn from 'classnames';
 
 import css from './modal.module.css';
 
-interface ModalProps extends React.ComponentProps<'div'> {
+interface ModalProps extends ComponentProps<'div'> {
     active?: boolean;
     classModal?: string;
     classTitle?: string;
@@ -12,13 +12,14 @@ interface ModalProps extends React.ComponentProps<'div'> {
     noClose?: boolean;
 }
 
-export const Modal = (props: ModalProps): React.ReactElement => {
+export const Modal = (props: ModalProps) => {
     const { active, children, classModal, classTitle, onClose, title } = props;
 
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        setIsOpen(!!active);
+        const id = setTimeout(() => setIsOpen(!!active), 0);
+        return () => clearTimeout(id);
     }, [active]);
 
     const handleClose = (): void => {
@@ -28,7 +29,7 @@ export const Modal = (props: ModalProps): React.ReactElement => {
         setIsOpen(false);
     };
 
-    const handlePopupClick = (e): void => {
+    const handlePopupClick = (e: ReactMouseEvent<HTMLDivElement, MouseEvent>): void => {
         e.stopPropagation();
     };
 

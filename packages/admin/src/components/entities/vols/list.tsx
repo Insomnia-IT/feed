@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useList, CanAccess, useGetIdentity } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col, Segmented } from 'antd';
@@ -9,7 +9,7 @@ import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
 import type { UserData } from 'auth';
 
-import { CustomFieldEntity, VolEntity } from 'interfaces';
+import type { CustomFieldEntity, VolEntity } from 'interfaces';
 
 import { Filters } from './vol-list/filters/filters';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
@@ -25,24 +25,36 @@ import { PersonsTable } from './vol-list/persons-table';
 const LS_PAGE_INDEX = 'volPageIndex';
 const LS_PAGE_SIZE = 'volPageSize';
 
-export const VolList: FC = () => {
+const isBrowser = () => typeof window !== 'undefined';
+
+export const VolList = () => {
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
     const { data: user } = useGetIdentity<UserData>();
 
-    const [page, setPage] = useState<number>(parseInt(localStorage.getItem(LS_PAGE_INDEX) || '') || 1);
-    const [pageSize, setPageSize] = useState<number>(parseInt(localStorage.getItem(LS_PAGE_SIZE) || '') || 10);
+    const [page, setPage] = useState<number>(() => {
+        if (!isBrowser()) return 1;
+        return Number(localStorage.getItem(LS_PAGE_INDEX)) || 1;
+    });
+
+    const [pageSize, setPageSize] = useState<number>(() => {
+        if (!isBrowser()) return 10;
+        return Number(localStorage.getItem(LS_PAGE_SIZE)) || 10;
+    });
+
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
     const [hasMyBrigade, setHasMyBrigade] = useState(false);
     const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
 
     const setPageWithStorage = useCallback((value: number): void => {
         setPage(value);
+        if (!isBrowser()) return;
         localStorage.setItem(LS_PAGE_INDEX, String(value));
     }, []);
 
     const setPageSizeWithStorage = useCallback((value: number): void => {
         setPageSize(value);
+        if (!isBrowser()) return;
         localStorage.setItem(LS_PAGE_SIZE, String(value));
     }, []);
 
@@ -77,18 +89,14 @@ export const VolList: FC = () => {
     const userId = user?.id;
 
     useEffect(() => {
-        if (isDesktop || !userId) {
-            setHasMyBrigade(false);
-            setBrigadeScope('all');
-            return;
-        }
+        if (isDesktop || !userId) return;
 
         let alive = true;
 
         void dataProvider
             .getList<VolEntity>({
                 resource: `volunteers/?supervisor_id=${userId}`,
-                pagination: { current: 1, pageSize: 1 }
+                pagination: { currentPage: 1, pageSize: 1 }
             })
             .then(({ total }) => {
                 if (!alive) return;
@@ -109,8 +117,11 @@ export const VolList: FC = () => {
         };
     }, [isDesktop, userId]);
 
+    const isMyBrigadeAvailable = !isDesktop && Boolean(userId) && hasMyBrigade;
+    const effectiveBrigadeScope: 'my' | 'all' = isMyBrigadeAvailable ? brigadeScope : 'all';
+
     const mobileFilterQueryParams = useMemo(() => {
-        if (!hasMyBrigade || brigadeScope !== 'my' || !userId) {
+        if (!isMyBrigadeAvailable || effectiveBrigadeScope !== 'my' || !userId) {
             return filterQueryParams;
         }
 
@@ -118,25 +129,59 @@ export const VolList: FC = () => {
         const separator = baseParams ? '&' : '?';
 
         return `${baseParams}${separator}supervisor_id=${encodeURIComponent(String(userId))}`;
-    }, [brigadeScope, filterQueryParams, filterQueryParamsWithoutDefaultDirections, hasMyBrigade, userId]);
+    }, [
+        effectiveBrigadeScope,
+        filterQueryParams,
+        filterQueryParamsWithoutDefaultDirections,
+        isMyBrigadeAvailable,
+        userId
+    ]);
 
     const effectiveFilterQueryParams = isDesktop ? filterQueryParams : mobileFilterQueryParams;
 
-    const {
-        data: volunteers,
-        isLoading: volunteersIsLoading,
-        refetch: reloadVolunteers
-    } = useList<VolEntity>({
+    const { result: volunteersResult, query: volunteersQuery } = useList<VolEntity>({
         resource: `volunteers/${effectiveFilterQueryParams}`,
-        pagination: isDesktop ? { current: page, pageSize } : undefined
+        pagination: isDesktop
+            ? {
+                  mode: 'server',
+                  currentPage: page,
+                  pageSize
+              }
+            : undefined
     });
+    const volunteers = volunteersResult;
+    const volunteersIsLoading = volunteersQuery.isLoading;
+    const reloadVolunteers = volunteersQuery.refetch;
 
     useEffect(() => {
-        // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
-        if (volunteers?.total && (page - 1) * pageSize >= volunteers.total) {
-            setPageWithStorage(1);
-        }
+        // Если текущая страница выходит за пределы общего количества, сбрасываем на 1
+        const total = volunteers?.total;
+        if (!total) return;
+
+        const outOfRange = (page - 1) * pageSize >= total;
+        if (!outOfRange) return;
+
+        // Через setTimeout(0), чтобы не спорить с обновлениями стейта/запроса в том же тике
+        const id = setTimeout(() => setPageWithStorage(1), 0);
+
+        return () => {
+            clearTimeout(id);
+        };
     }, [volunteers?.total, page, pageSize, setPageWithStorage]);
+
+    useEffect(() => {
+        if (!canListCustomFields) return;
+
+        let cancelled = false;
+
+        dataProvider.getList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' }).then(({ data }) => {
+            if (!cancelled) setCustomFields(data);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [canListCustomFields]);
 
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
@@ -164,21 +209,6 @@ export const VolList: FC = () => {
         }),
         [volunteers?.total, page, pageSize, setPageWithStorage, setPageSizeWithStorage]
     );
-
-    const loadCustomFields = async () => {
-        const { data } = await dataProvider.getList<CustomFieldEntity>({
-            resource: 'volunteer-custom-fields'
-        });
-
-        setCustomFields(data);
-    };
-
-    useEffect(() => {
-        void loadCustomFields();
-
-        const savedPage = parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1;
-        setPage(savedPage);
-    }, []);
 
     const openVolunteer = (id: number) => {
         edit('volunteers', id);
@@ -208,14 +238,14 @@ export const VolList: FC = () => {
                         searchText={searchText}
                         setSearchText={setSearchText}
                     />
-                    {!isDesktop && hasMyBrigade && (
+                    {isMyBrigadeAvailable && (
                         <Segmented
                             block
                             options={[
                                 { label: 'Моя бригада', value: 'my' },
                                 { label: 'Все', value: 'all' }
                             ]}
-                            value={brigadeScope}
+                            value={effectiveBrigadeScope}
                             onChange={(value) => setBrigadeScope(value as 'my' | 'all')}
                         />
                     )}
@@ -230,10 +260,7 @@ export const VolList: FC = () => {
                                 </Col>
 
                                 <Row style={{ gap: '12px' }}>
-                                    <ChooseColumnsButton
-                                        canListCustomFields={canListCustomFields}
-                                        customFields={customFields}
-                                    />
+                                    <ChooseColumnsButton canListCustomFields={canListCustomFields} />
                                     <SaveAsXlsxButton
                                         isDisabled={!volunteersData.length || isFiltersLoading}
                                         filterQueryParams={effectiveFilterQueryParams}

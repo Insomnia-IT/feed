@@ -1,13 +1,11 @@
-import { FC } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { Form } from 'antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
 
 import type { GroupBadgeEntity } from 'interfaces';
 
 import { CreateEdit } from './common';
 
-export const GroupBadgeCreate: FC<IResourceComponentsProps> = () => {
+export const GroupBadgeCreate = () => {
     const { formProps, saveButtonProps } = useForm<GroupBadgeEntity>();
 
     return (

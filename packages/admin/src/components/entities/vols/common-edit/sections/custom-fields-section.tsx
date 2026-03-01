@@ -1,66 +1,92 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Form, Input, Checkbox } from 'antd';
 import { useList, useOne } from '@refinedev/core';
 
-import { CustomFieldEntity, VolEntity } from 'interfaces';
-
+import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import styles from '../../common.module.css';
 
-export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: { canBadgeEdit: boolean; volunteerId: string }) => {
+interface IProps {
+    canBadgeEdit: boolean;
+    volunteerId: string;
+}
+
+interface ICustomFieldValue {
+    value?: string;
+    custom_field: number | { id: number };
+}
+
+export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: IProps) => {
     const form = Form.useFormInstance();
 
-    const { data: customFieldsData } = useList<CustomFieldEntity>({
+    const { result: customFieldsResult, query: customFieldsQuery } = useList<CustomFieldEntity>({
         resource: 'volunteer-custom-fields',
         pagination: { pageSize: 0 }
     });
 
-    const { data: volunteerData } = useOne<VolEntity>({
+    const { result: volunteer, query: volunteerQuery } = useOne<VolEntity>({
         resource: 'volunteers',
         id: volunteerId
     });
 
-    const customFieldValues = volunteerData?.data?.custom_field_values;
+    const customFields = customFieldsResult.data ?? [];
+
+    const customFieldValues = (volunteer as unknown as { custom_field_values?: ICustomFieldValue[] })
+        ?.custom_field_values;
 
     const customFieldValuesById = useMemo(() => {
-        const result = new Map();
+        const map = new Map<number, string | undefined>();
+
         customFieldValues?.forEach(({ value, custom_field }) => {
-            result.set(custom_field, value);
+            const id = typeof custom_field === 'number' ? custom_field : custom_field.id;
+            map.set(id, value);
         });
 
-        return result;
+        return map;
     }, [customFieldValues]);
+
+    const isLoading = customFieldsQuery.isFetching || volunteerQuery.isFetching;
 
     return (
         <>
             <p className={styles.formSection__title}>Кастомные Поля</p>
-            {customFieldsData?.data
-                ?.filter((item) => item.mobile || canBadgeEdit)
-                .map(({ id, name, type }) => {
-                    const fieldName = ['updated_custom_fields', id.toString()];
 
-                    // Для случая стирания поля, чтобы старое значение не "мигало"
-                    const isFieldTouched = form.isFieldTouched(fieldName);
+            {isLoading ? null : (
+                <>
+                    {customFields
+                        .filter((item) => item.mobile || canBadgeEdit)
+                        .map((item) => {
+                            const fieldName = ['updated_custom_fields', item.id.toString()];
 
-                    const valueFromAPI = isFieldTouched ? undefined : customFieldValuesById.get(id);
+                            // Для случая стирания поля, чтобы старое значение не "мигало"
+                            const isFieldTouched = form.isFieldTouched(fieldName);
+                            const valueFromAPI = isFieldTouched ? undefined : customFieldValuesById.get(item.id);
 
-                    // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
-                    return (
-                        <Form.Item key={name} label={name} name={fieldName}>
-                            <CustomFieldValueHandler type={type} valueFromAPI={valueFromAPI} />
-                        </Form.Item>
-                    );
-                })}
+                            // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
+                            return (
+                                <Form.Item key={item.id} label={item.name} name={fieldName}>
+                                    <CustomFieldValueHandler type={item.type} valueFromAPI={valueFromAPI} />
+                                </Form.Item>
+                            );
+                        })}
+                </>
+            )}
         </>
     );
 };
 
-const CustomFieldValueHandler: React.FC<{
+const CustomFieldValueHandler = ({
+    id,
+    value,
+    valueFromAPI,
+    onChange = () => {},
+    type
+}: {
     id?: string;
     value?: string;
     valueFromAPI?: string;
     onChange?: (value: string) => void;
     type: string;
-}> = ({ id, value, valueFromAPI, onChange = () => {}, type }) => {
+}) => {
     const targetValue = value ?? valueFromAPI;
 
     if (type === 'boolean') {
@@ -75,7 +101,7 @@ const CustomFieldValueHandler: React.FC<{
         <Input
             id={id}
             value={targetValue}
-            onChange={(e): void => {
+            onChange={(e) => {
                 onChange(e.target.value);
             }}
         />

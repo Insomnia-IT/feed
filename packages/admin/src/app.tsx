@@ -1,18 +1,15 @@
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { Refine, useGetIdentity, I18nProvider } from '@refinedev/core';
+import { BrowserRouter } from 'react-router';
+import { Refine, useGetIdentity, type I18nProvider } from '@refinedev/core';
 import routerProvider, {
     DocumentTitleHandler,
     NavigateToResource,
     UnsavedChangesNotifier
-} from '@refinedev/react-router-v6';
+} from '@refinedev/react-router';
 import { useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
 
 import antdLocale from 'antd/lib/locale/ru_RU';
-import { ConfigProvider as MobileConfigProvider } from 'antd-mobile';
-import antdLocaleMobile from 'antd-mobile/es/locales/ru-RU';
 import {
     UserOutlined,
     InsertRowRightOutlined,
@@ -30,7 +27,7 @@ import { ACL } from 'acl';
 import { ScreenProvider } from 'shared/providers';
 import { authProvider } from 'authProvider';
 import { dataProvider } from 'dataProvider';
-import { AppRoles, UserData } from 'auth';
+import { AppRoles, type UserData } from 'auth';
 import { AppRoutes } from './app-routes';
 
 import common from './locales/ru/common.json';
@@ -47,9 +44,8 @@ const i18nProvider: I18nProvider = {
     translate: (key: string, params?: Record<string, any>): string => {
         const path = key.split('.');
         let msg = getByPath(messages[currentLocale], path) as string | undefined;
-        if (!msg) {
-            return key;
-        }
+        if (!msg) return key;
+
         if (params) {
             Object.entries(params).forEach(([k, v]) => {
                 msg = msg!.replace(new RegExp(`{{${k}}}`, 'g'), String(v));
@@ -58,115 +54,107 @@ const i18nProvider: I18nProvider = {
         return msg!;
     },
     changeLocale: async (locale: string): Promise<void> => {
-        if (locale === 'ru') {
-            currentLocale = 'ru';
-        }
+        if (locale === 'ru') currentLocale = 'ru';
     },
-    getLocale: (): string => {
-        return currentLocale;
-    }
+    getLocale: (): string => currentLocale
 };
 
-const InitialNavigation: React.FC = () => {
+const InitialNavigation = () => {
     const { data: user } = useGetIdentity<UserData>();
     if (!user) return null;
     return <NavigateToResource resource={user.roles[0] === AppRoles.SOVA ? 'wash' : 'volunteers'} />;
 };
 
-const App: React.FC = () => {
-    const notificationProvider = useNotificationProvider();
-
+const App = () => {
     return (
         <BrowserRouter>
-            <MobileConfigProvider locale={antdLocaleMobile}>
-                <ConfigProvider locale={antdLocale} theme={{ token: { borderRadius: 6 } }}>
-                    <ScreenProvider>
-                        <AntdApp>
-                            <Refine
-                                routerProvider={routerProvider}
-                                notificationProvider={notificationProvider}
-                                dataProvider={dataProvider}
-                                i18nProvider={i18nProvider}
-                                authProvider={authProvider}
-                                accessControlProvider={ACL}
-                                options={{ syncWithLocation: true, disableTelemetry: true }}
-                                resources={[
-                                    {
-                                        name: 'dashboard',
-                                        list: '/dashboard',
-                                        icon: <DashboardOutlined />
-                                    },
-                                    {
-                                        name: 'volunteers',
-                                        list: '/volunteers',
-                                        create: '/volunteers/create',
-                                        edit: '/volunteers/edit/:id',
-                                        show: '/volunteers/show/:id',
-                                        icon: <UserOutlined />
-                                    },
-                                    {
-                                        name: 'volunteer-custom-fields',
-                                        list: '/volunteer-custom-fields',
-                                        create: '/volunteer-custom-fields/create',
-                                        edit: '/volunteer-custom-fields/edit/:id',
-                                        show: '/volunteer-custom-fields/show/:id',
+            <ConfigProvider locale={antdLocale} theme={{ token: { borderRadius: 6 } }}>
+                <ScreenProvider>
+                    <AntdApp>
+                        <Refine
+                            routerProvider={routerProvider}
+                            notificationProvider={useNotificationProvider}
+                            dataProvider={dataProvider}
+                            i18nProvider={i18nProvider}
+                            authProvider={authProvider}
+                            accessControlProvider={ACL}
+                            options={{ syncWithLocation: true, disableTelemetry: true }}
+                            resources={[
+                                {
+                                    name: 'dashboard',
+                                    list: '/dashboard',
+                                    meta: { icon: <DashboardOutlined /> }
+                                },
+                                {
+                                    name: 'volunteers',
+                                    list: '/volunteers',
+                                    create: '/volunteers/create',
+                                    edit: '/volunteers/edit/:id',
+                                    show: '/volunteers/show/:id',
+                                    meta: { icon: <UserOutlined /> }
+                                },
+                                {
+                                    name: 'volunteer-custom-fields',
+                                    list: '/volunteer-custom-fields',
+                                    create: '/volunteer-custom-fields/create',
+                                    edit: '/volunteer-custom-fields/edit/:id',
+                                    show: '/volunteer-custom-fields/show/:id',
+                                    meta: {
                                         icon: <InsertRowRightOutlined />,
-                                        meta: {
-                                            hide: true
-                                        }
-                                    },
-                                    {
-                                        name: 'directions',
-                                        list: '/directions',
-                                        create: '/directions/create',
-                                        edit: '/directions/edit/:id',
-                                        show: '/directions/show/:id',
-                                        icon: <FormatPainterOutlined />
-                                    },
-                                    {
-                                        name: 'group-badges',
-                                        list: '/group-badges',
-                                        create: '/group-badges/create',
-                                        edit: '/group-badges/edit/:id',
-                                        show: '/group-badges/show/:id',
-                                        icon: <ProfileOutlined />
-                                    },
-                                    {
-                                        name: 'feed-transaction',
-                                        list: '/feed-transaction',
-                                        create: '/feed-transaction/create',
-                                        icon: <HistoryOutlined />
-                                    },
-                                    {
-                                        name: 'stats',
-                                        list: '/stats',
-                                        icon: <LineChartOutlined />
-                                    },
-                                    {
-                                        name: 'scanner-page',
-                                        list: '/scanner-page',
-                                        icon: <MobileOutlined />
-                                    },
-                                    {
-                                        name: 'wash',
-                                        list: '/wash',
-                                        icon: <ExperimentOutlined />
-                                    },
-                                    {
-                                        name: 'sync',
-                                        list: '/sync',
-                                        icon: <SyncOutlined />
+                                        hide: true
                                     }
-                                ]}
-                            >
-                                <AppRoutes initial={<InitialNavigation />} />
-                                <UnsavedChangesNotifier />
-                                <DocumentTitleHandler />
-                            </Refine>
-                        </AntdApp>
-                    </ScreenProvider>
-                </ConfigProvider>
-            </MobileConfigProvider>
+                                },
+                                {
+                                    name: 'directions',
+                                    list: '/directions',
+                                    create: '/directions/create',
+                                    edit: '/directions/edit/:id',
+                                    show: '/directions/show/:id',
+                                    meta: { icon: <FormatPainterOutlined /> }
+                                },
+                                {
+                                    name: 'group-badges',
+                                    list: '/group-badges',
+                                    create: '/group-badges/create',
+                                    edit: '/group-badges/edit/:id',
+                                    show: '/group-badges/show/:id',
+                                    meta: { icon: <ProfileOutlined /> }
+                                },
+                                {
+                                    name: 'feed-transaction',
+                                    list: '/feed-transaction',
+                                    create: '/feed-transaction/create',
+                                    meta: { icon: <HistoryOutlined /> }
+                                },
+                                {
+                                    name: 'stats',
+                                    list: '/stats',
+                                    meta: { icon: <LineChartOutlined /> }
+                                },
+                                {
+                                    name: 'scanner-page',
+                                    list: '/scanner-page',
+                                    meta: { icon: <MobileOutlined /> }
+                                },
+                                {
+                                    name: 'wash',
+                                    list: '/wash',
+                                    meta: { icon: <ExperimentOutlined /> }
+                                },
+                                {
+                                    name: 'sync',
+                                    list: '/sync',
+                                    meta: { icon: <SyncOutlined /> }
+                                }
+                            ]}
+                        >
+                            <AppRoutes initial={<InitialNavigation />} />
+                            <UnsavedChangesNotifier />
+                            <DocumentTitleHandler />
+                        </Refine>
+                    </AntdApp>
+                </ScreenProvider>
+            </ConfigProvider>
         </BrowserRouter>
     );
 };

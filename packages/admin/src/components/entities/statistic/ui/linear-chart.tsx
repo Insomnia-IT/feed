@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Brush } from 'recharts';
 
 interface IProps {
@@ -10,7 +9,7 @@ interface IProps {
     }[];
 }
 
-const LinearChart: FC<IProps> = ({ data }) => {
+const LinearChart = ({ data }: IProps) => {
     return (
         <div style={{ width: '100%', height: 600, marginTop: 40 }}>
             <ResponsiveContainer>

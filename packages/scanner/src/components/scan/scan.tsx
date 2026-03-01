@@ -1,16 +1,14 @@
-import React from 'react';
-
-import { IconButton } from '~/shared/ui/icon-button/icon-button';
-import { Clock } from '~/shared/ui/icons/clock';
-import { mealTimes } from '~/shared/lib/utils';
-import { GearAlt } from '~/shared/ui/icons/gear-alt';
-import { Button } from '~/shared/ui/button/button';
-import { QrScan } from '~/components/qr-scan';
-import { ScanScreenStats } from '~/components/scan-screen-stats';
-import { useApp } from '~/model/app-provider';
-import { ScanSimulator } from '~/components/qr-scan-simulator';
-import { AppViews, useView } from '~/model/view-provider';
-import { useScan } from '~/model/scan-provider/scan-provider';
+import { IconButton } from 'shared/ui/icon-button/icon-button';
+import { Clock } from 'shared/ui/icons/clock';
+import { mealTimes } from 'shared/lib/utils';
+import { GearAlt } from 'shared/ui/icons/gear-alt';
+import { Button } from 'shared/ui/button/button';
+import { QrScan } from 'components/qr-scan';
+import { ScanScreenStats } from 'components/scan-screen-stats';
+import { useApp } from 'model/app-provider';
+import { ScanSimulator } from 'components/qr-scan-simulator';
+import { AppViews, useView } from 'model/view-provider';
+import { useScan } from 'model/scan-provider/scan-provider';
 
 import css from './scan.module.css';
 
@@ -34,11 +32,11 @@ export const Scan = () => {
         <>
             <div className={css.head}>
                 <IconButton onClick={handleHistoryClick}>
-                    <Clock color='white' />
+                    <Clock color="white" />
                 </IconButton>
                 <p className={css.mealTimeText}>{mealTime ? mealTimes[mealTime] : ''}</p>
                 <IconButton onClick={handleOptionsClick}>
-                    <GearAlt color='white' />
+                    <GearAlt color="white" />
                 </IconButton>
             </div>
             <div className={css.bottomBlock}>

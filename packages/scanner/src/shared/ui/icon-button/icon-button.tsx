@@ -1,13 +1,13 @@
-import React from 'react';
+import type { ComponentProps } from 'react';
 import cn from 'classnames';
 
 import styles from './icon-button.module.css';
 
-interface IconButtonProps extends React.ComponentProps<'button'> {
+interface IconButtonProps extends ComponentProps<'button'> {
     classIcon?: string;
 }
 
-export const IconButton = (props: IconButtonProps): React.ReactElement => {
+export const IconButton = (props: IconButtonProps) => {
     const { children, className = '', ...otherProps } = props;
 
     return (

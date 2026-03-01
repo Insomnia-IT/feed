@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:experimental
 
-FROM node:18-alpine as base
+FROM node:20-alpine as base
 
 # ENV NODE_ENV=development
 ENV husky_skip_init="1"
+ENV HUSKY="0"
 ENV HUSKY_DEBUG="1"
 #ENV NODE_OPTIONS="--max_old_space_size=4000 --openssl-legacy-provider"
 ENV NODE_OPTIONS="--max_old_space_size=4000"
@@ -35,24 +36,15 @@ COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm ci
 
-COPY ./.eslintignore /app/.eslintignore
-COPY ./.eslintrc /app/.eslintrc
-COPY ./.eslintrc.js /app/.eslintrc.js
-COPY ./env.d.ts /app/env.d.ts
+COPY ./eslint.config.js /app/eslint.config.js
 COPY ./lerna.json /app/lerna.json
-COPY ./nx.json /app/nx.json
-COPY ./postcss.config.js /app/postcss.config.js
 COPY ./stylelint.config.mjs /app/stylelint.config.mjs
 COPY ./tsconfig.eslint.json /app/tsconfig.eslint.json
 COPY ./tsconfig.json /app/tsconfig.json
-COPY ./tsconfig.paths.json /app/tsconfig.paths.json
-COPY ./typings.d.ts /app/typings.d.ts
-COPY ./types /app/types
 COPY ./packages /app/packages
 
 ARG NEW_API_URL
 ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
-ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 
 RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/packages/scanner/src/pwa-ver.txt
 
@@ -72,18 +64,15 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 ARG NEW_API_URL
 ENV NEW_API_URL_ENV=${NEW_API_URL}
-ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
 ARG ADMIN_BASE_PATH
 ENV ADMIN_BASE_PATH_ENV=${ADMIN_BASE_PATH}
 
-COPY --from=builder /app/postcss.config.js /app/
 COPY --from=builder /app/tsconfig.json /app/
-COPY --from=builder /app/tsconfig.paths.json /app/
 COPY --from=builder /app/package.json /app/
 
 COPY --from=builder /app/packages/admin/dist/ /app/packages/admin/dist/
 
 COPY --from=builder /app/packages/scanner/package.json /app/packages/scanner/
-COPY --from=builder /app/packages/scanner/build/ /app/packages/scanner/build/
+COPY --from=builder /app/packages/scanner/dist/ /app/packages/scanner/dist/
 
 CMD nginx

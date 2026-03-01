@@ -1,6 +1,6 @@
 import { useLogin } from '@refinedev/core';
 import { Button, Card, Checkbox, Col, Form, Input, Layout, Row, Segmented, Typography } from 'antd';
-import { useCallback, useEffect, useRef, useState, FC } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
 
 import logo from '../../assets/images/logo.svg';
@@ -30,33 +30,34 @@ const rowStyle = {
 
 type OptionValue = 'qr' | 'login';
 
-export const LoginPage: FC = () => {
+export const LoginPage = () => {
     const [form] = Form.useForm<ILoginForm>();
     const [selectedOption, setSelectedOption] = useState<OptionValue>('qr');
 
-    const { isLoading, mutate: login } = useLogin<ILoginForm>();
+    const { isPending, mutate: login } = useLogin<ILoginForm>();
     const scanner = useRef<QrScanner | null>(null);
     const video = useRef<HTMLVideoElement | null>(null);
 
     const loadingRef = useRef(false);
 
-    const onScan = useCallback((qr: string) => {
-        if (loadingRef.current) {
-            return;
-        }
+    const onScan = useCallback(
+        (qr: string) => {
+            if (loadingRef.current) return;
 
-        loadingRef.current = true;
-        login({
-            username: qr,
-            password: '',
-            isQR: true,
-            remember: false
-        });
+            loadingRef.current = true;
+            login({
+                username: qr,
+                password: '',
+                isQR: true,
+                remember: false
+            });
 
-        setTimeout(() => {
-            loadingRef.current = false;
-        }, 1000);
-    }, []);
+            setTimeout(() => {
+                loadingRef.current = false;
+            }, 1000);
+        },
+        [login]
+    );
 
     useEffect(() => {
         if (selectedOption !== 'qr' || !video.current) return;
@@ -81,6 +82,7 @@ export const LoginPage: FC = () => {
 
         return () => {
             s.destroy();
+            scanner.current = null;
         };
     }, [onScan, selectedOption]);
 
@@ -89,21 +91,22 @@ export const LoginPage: FC = () => {
     };
 
     useEffect(() => {
-        function onHardwareScan({ detail: { scanCode } }: { detail: { scanCode: string } }): void {
+        function onHardwareScan(e: Event): void {
+            const { scanCode } = (e as CustomEvent<{ scanCode: string }>).detail;
             void onScan(scanCode.replace(/[^A-Za-z0-9]/g, ''));
         }
 
-        document.addEventListener('scan', onHardwareScan);
+        document.addEventListener('scan', onHardwareScan as EventListener);
 
         return (): void => {
-            document.removeEventListener('scan', onHardwareScan);
+            document.removeEventListener('scan', onHardwareScan as EventListener);
         };
     }, [onScan]);
 
     const loginForm = (
         <div style={loginFormStyles}>
             <Card>
-                <Form<ILoginForm>
+                <Form
                     layout="vertical"
                     form={form}
                     onFinish={(values) => login(values)}
@@ -137,7 +140,7 @@ export const LoginPage: FC = () => {
                             <Checkbox style={{ fontSize: '14px' }}>Запомнить меня</Checkbox>
                         </Form.Item>
                     </div>
-                    <Button type="primary" size="large" htmlType="submit" loading={isLoading} block>
+                    <Button type="primary" size="large" htmlType="submit" loading={isPending} block>
                         Войти
                     </Button>
                 </Form>
@@ -174,14 +177,8 @@ export const LoginPage: FC = () => {
 
                     <Segmented
                         options={[
-                            {
-                                label: renderOptionLabel('Сканировать QR-код'),
-                                value: 'qr'
-                            },
-                            {
-                                label: renderOptionLabel('Логин и пароль'),
-                                value: 'login'
-                            }
+                            { label: renderOptionLabel('Сканировать QR-код'), value: 'qr' },
+                            { label: renderOptionLabel('Логин и пароль'), value: 'login' }
                         ]}
                         block
                         onChange={(value) => setSelectedOption(value as OptionValue)}

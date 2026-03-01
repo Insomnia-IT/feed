@@ -1,29 +1,27 @@
 import { useMemo, useState } from 'react';
-import { FilterFieldType } from '../../vols/vol-list/filters/filter-types';
 import { useList } from '@refinedev/core';
-import { GroupBadgeEntity, KitchenEntity } from 'interfaces';
+
+import { FilterFieldType } from '../../vols/vol-list/filters/filter-types';
+import type { GroupBadgeEntity, KitchenEntity } from 'interfaces';
 import { MEAL_MAP } from 'const';
 
-const mealTypes = Object.entries(MEAL_MAP).map(([id, name]) => {
-    return { id, name };
-});
+const mealTypes = Object.entries(MEAL_MAP).map(([id, name]) => ({ id, name }));
 
 export const useTransactionsFilters = () => {
-    const [visibleFilters, setVisibleFilters] = useState<Array<string>>([]);
+    const [visibleFilters, setVisibleFilters] = useState<string[]>([]);
 
-    const { data: kitchens } = useList<KitchenEntity>({
+    const { result: kitchensResult } = useList<KitchenEntity>({
         resource: 'kitchens',
-        pagination: {
-            pageSize: 0
-        }
+        pagination: { pageSize: 0 }
     });
 
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
+    const { result: groupBadgesResult } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
-        pagination: {
-            pageSize: 0
-        }
+        pagination: { pageSize: 0 }
     });
+
+    const kitchens = kitchensResult?.data ?? [];
+    const groupBadges = groupBadgesResult?.data ?? [];
 
     const filterFields = useMemo(() => {
         return [
@@ -45,7 +43,7 @@ export const useTransactionsFilters = () => {
                 title: 'Кухня',
                 skipNull: true,
                 single: true,
-                lookup: () => kitchens?.data ?? []
+                lookup: () => kitchens
             },
             {
                 type: FilterFieldType.Lookup,
@@ -61,10 +59,10 @@ export const useTransactionsFilters = () => {
                 title: 'Групповой бейдж',
                 skipNull: true,
                 single: true,
-                lookup: () => groupBadges?.data ?? []
+                lookup: () => groupBadges
             }
         ];
-    }, [kitchens?.data, groupBadges?.data]);
+    }, [kitchens, groupBadges]);
 
     return { filterFields, visibleFilters, setVisibleFilters };
 };

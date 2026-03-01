@@ -1,5 +1,5 @@
 import { Tabs } from 'antd';
-import { useMemo, useEffect, FC } from 'react';
+import { useMemo, useEffect } from 'react';
 
 import { useScreen } from 'shared/providers';
 import { CommonEdit } from './common-edit/common-edit';
@@ -11,7 +11,7 @@ interface IProps {
     setActiveKey: (key: string) => void;
 }
 
-const CreateEdit: FC<IProps> = ({ activeKey, setActiveKey }) => {
+const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     const { isDesktop } = useScreen();
 
     useEffect(() => {

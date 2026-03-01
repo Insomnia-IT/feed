@@ -93,6 +93,7 @@
     padding: 12px;
     background: #fff;
     min-width: 0;
+    position: relative;
 
     .textRow {
         white-space: nowrap;
@@ -131,6 +132,34 @@
 
 .modalTitle {
     margin-bottom: 16px;
+}
+
+.swipeContainer {
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+.swipeActions {
+    position: absolute;
+    inset: 0 0 0 auto;
+    display: flex;
+    height: 100%;
+}
+
+.swipeAction {
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.swipeContent {
+    position: relative;
+    z-index: 1;
+    will-change: transform;
 }
 
 .swipeActionContent {

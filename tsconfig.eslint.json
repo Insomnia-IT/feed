@@ -1,12 +1,13 @@
 {
-    "extends": "./tsconfig.json",
-    "include": [
-        "./typings.d.ts",
-        ".eslintrc",
-        ".eslintrc.js",
-        "./babel.config.js",
-        "./src/**/*.ts",
-        "./src/**/*.tsx",
-        "env.d.ts"
-    ]
+    "compilerOptions": {
+        "noEmit": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2020",
+        "module": "ESNext",
+        "jsx": "react-jsx",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"]
+    },
+    "include": ["packages/admin/src/**/*", "packages/scanner/src/**/*"],
+    "exclude": ["**/dist", "**/build", "**/node_modules"]
 }

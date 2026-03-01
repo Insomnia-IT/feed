@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
-import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from '~/db';
-import { getMealTimeText } from '~/shared/lib/utils';
+import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from 'db';
+import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from 'db';
+import { getMealTimeText } from 'shared/lib/utils';
 
 const isVolExpired = (vol: Volunteer): boolean => {
     return vol.arrivals.every(
@@ -71,15 +71,12 @@ export const validateVol = ({
 
         if (vol.group_badge && !isGroupScan) {
             // Считаем, что волонтер имеет долг, если его кормили за один приём пищи больше, чем один раз
-            const hasDebt = Object.values(
-                volTransactions.reduce(
-                    (acc, { mealTime }) => ({
-                        ...acc,
-                        [mealTime]: (acc[mealTime] || 0) + 1
-                    }),
-                    <Record<string, number>>{}
-                )
-            ).some((count) => count > 1);
+            const counts: Record<string, number> = {};
+            for (const t of volTransactions) {
+                const key = t.mealTime;
+                counts[key] = (counts[key] ?? 0) + 1;
+            }
+            const hasDebt = Object.values(counts).some((count) => count > 1);
 
             if (hasDebt) {
                 isRed = true;
@@ -202,7 +199,7 @@ export const useFeedVol = (
     );
 
     const doFeed = (isVegan?: boolean, reason?: string): void => {
-        let log;
+        let log: { error: boolean; reason: string } | undefined;
 
         if (reason) {
             log = { error: false, reason };

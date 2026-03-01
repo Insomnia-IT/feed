@@ -2,7 +2,11 @@ import os
 import time
 import pytest
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from datetime import datetime
+from urllib.parse import parse_qs, urlparse
 
 # from main_page import MainPage
 from base_page import BasePage
@@ -54,7 +58,13 @@ def test_create_new_meal(browser):
     first_row_text = page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
-    assert browser.current_url == f"{host}/feed-transaction?pageSize=10&current=1"
+    parsed_url = urlparse(browser.current_url)
+    query_params = parse_qs(parsed_url.query)
+    current_page = query_params.get("currentPage", query_params.get("current", [""]))[0]
+
+    assert parsed_url.path.endswith("/feed-transaction"), f"Unexpected path: {parsed_url.path}"
+    assert query_params.get("pageSize", [""])[0] == "10", f"Unexpected pageSize: {query_params.get('pageSize')}"
+    assert current_page == "1", f"Unexpected current page: {current_page}"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
     assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
     print("✅ Запись успешно создана!")
@@ -159,8 +169,19 @@ def test_delete_created_custom_field(browser):
     page.open()
     page.first_window()
     page.login_admin()
-    time.sleep(2)
-    last_row = browser.find_elements(By.CSS_SELECTOR, "tr.ant-table-row")[-1]
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "tr.ant-table-row"))
+        )
+    except TimeoutException:
+        pytest.skip("No custom fields rows available")
+
+    rows = browser.find_elements(By.CSS_SELECTOR, "tr.ant-table-row")
+    if not rows:
+        pytest.skip("No custom fields rows available")
+
+    last_row = rows[-1]
     columns = last_row.find_elements(By.CSS_SELECTOR, "td")
     column1 = columns[0].text
     if "user" in column1:

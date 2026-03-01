@@ -2,8 +2,14 @@ import time
 from selenium.webdriver.common.by import By
 
 class registration():
-    CHOOSE_LOGIN_TYPE = (By.CSS_SELECTOR, "label.ant-segmented-item .ant-segmented-item-label[aria-selected='false']")
-    CHOOSE_QR_TYPE = (By.CSS_SELECTOR, "label.ant-segmented-item .ant-segmented-item-label[aria-selected='true']")
+    CHOOSE_LOGIN_TYPE = (
+        By.XPATH,
+        "//label[contains(@class,'ant-segmented-item')][.//*[contains(normalize-space(),'Логин')]]"
+    )
+    CHOOSE_QR_TYPE = (
+        By.XPATH,
+        "//label[contains(@class,'ant-segmented-item')][.//*[contains(normalize-space(),'Сканировать QR-код')]]"
+    )
     LOGIN = (By.ID, "username")
     PASSWORD = (By.ID, "password")
     BUTTONREG = (By.XPATH, "//button[span[text()='Войти']]")

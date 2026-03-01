@@ -1,19 +1,27 @@
+import { useMemo } from 'react';
 import { Show, TextField } from '@refinedev/antd';
-import { Table, Typography } from 'antd';
 import { useShow, useTable } from '@refinedev/core';
-import { FC } from 'react';
+import { Table, Typography } from 'antd';
 
 import type { GroupBadgeEntity, VolEntity } from 'interfaces';
 import { TextEditor } from 'components/controls/text-editor';
 
 const { Text, Title } = Typography;
 
-export const GroupBadgeShow: FC = () => {
-    const { queryResult, showId } = useShow<GroupBadgeEntity>();
-    const { data, isLoading } = queryResult;
-    const record = data?.data;
+type DirectionLike = { name: string };
+type VolWithDirections = VolEntity & { directions?: DirectionLike[] };
 
-    const { tableQuery, current, pageSize } = useTable<VolEntity>({
+export const GroupBadgeShow = () => {
+    const { query, result: record, showId } = useShow<GroupBadgeEntity>();
+
+    const {
+        tableQuery,
+        result: tableResult,
+        currentPage,
+        pageSize,
+        setCurrentPage,
+        setPageSize
+    } = useTable<VolWithDirections>({
         resource: 'volunteers',
         filters: {
             initial: [
@@ -25,20 +33,17 @@ export const GroupBadgeShow: FC = () => {
             ]
         },
         sorters: {
-            initial: [
-                {
-                    field: 'id',
-                    order: 'desc'
-                }
-            ]
+            initial: [{ field: 'id', order: 'desc' }]
         }
     });
 
-    const tableRows = tableQuery.data?.data || [];
-    const isTableLoading = tableQuery.isFetching;
+    const tableRows = useMemo(() => tableResult.data ?? [], [tableResult.data]);
+
+    const isShowLoading = query.isLoading || query.isFetching;
+    const isTableLoading = tableQuery.isLoading || tableQuery.isFetching;
 
     return (
-        <Show isLoading={isLoading || isTableLoading}>
+        <Show isLoading={isShowLoading || isTableLoading}>
             <Title level={5}>Название</Title>
             <Text>{record?.name}</Text>
 
@@ -46,16 +51,20 @@ export const GroupBadgeShow: FC = () => {
             <Text>{record?.qr}</Text>
 
             <Title level={5}>Комментарий</Title>
-
-            <TextEditor theme="bubble" readOnly value={record?.comment} />
+            <TextEditor theme="bubble" readOnly value={record?.comment ?? ''} />
 
             <Title level={5}>Волонтеры</Title>
             <Table
                 dataSource={tableRows}
                 rowKey="id"
+                loading={isTableLoading}
                 pagination={{
-                    current,
-                    pageSize
+                    current: currentPage,
+                    pageSize,
+                    onChange: (nextPage, nextSize) => {
+                        setCurrentPage(nextPage);
+                        if (nextSize) setPageSize(nextSize);
+                    }
                 }}
             >
                 <Table.Column
@@ -80,7 +89,9 @@ export const GroupBadgeShow: FC = () => {
                     dataIndex="directions"
                     key="directions"
                     title="Службы"
-                    render={(value) => <TextField value={value.map(({ name }: { name: string }) => name).join(', ')} />}
+                    render={(value?: DirectionLike[]) => (
+                        <TextField value={(value ?? []).map((d) => d.name).join(', ')} />
+                    )}
                 />
             </Table>
         </Show>

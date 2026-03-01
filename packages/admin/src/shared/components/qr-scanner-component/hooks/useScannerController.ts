@@ -1,6 +1,6 @@
 import QrScanner from 'qr-scanner';
 import { useCallback, useRef, useState } from 'react';
-import { ScannerControllerProps } from '../types';
+import type { ScannerControllerProps } from '../types';
 
 export const useScannerController = ({ onScan }: ScannerControllerProps) => {
     const [scannerInstance, setScannerInstance] = useState<QrScanner | null>(null);

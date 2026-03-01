@@ -1,4 +1,3 @@
-// @ts-ignore
 export type Colors = {
     red: '#ff0000';
     green: '#00ff00';

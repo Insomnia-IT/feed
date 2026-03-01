@@ -1,11 +1,12 @@
-import { WashEntity } from 'interfaces';
-import { dataProvider } from '../../../dataProvider';
-import { transformWashesForShow } from './utils';
-import dayjs from 'dayjs';
-import { formDateFormat, saveXLSX } from 'shared/lib';
 import { useState } from 'react';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
+import dayjs from 'dayjs';
+
+import type { WashEntity } from 'interfaces';
+import { dataProvider } from '../../../dataProvider';
+import { transformWashesForShow } from './utils';
+import { formDateFormat, saveXLSX } from 'shared/lib';
 
 export const SaveWashesAsExcelButton = () => {
     const [isExporting, setIsExporting] = useState(false);

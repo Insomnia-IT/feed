@@ -1,7 +1,7 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-import { ChevronLeft } from '~/shared/ui/icons/chevron-left';
-import { Title } from '~/shared/ui/typography';
+import { ChevronLeft } from 'shared/ui/icons/chevron-left';
+import { Title } from 'shared/ui/typography';
 
 import css from './screen-header.module.css';
 
@@ -9,9 +9,9 @@ interface ScreenHeaderProps {
     title: string;
     onClickBack: () => void;
     hintText?: string;
-    children?: React.ReactNode;
+    children?: ReactNode;
 }
-export function ScreenHeader({ children, onClickBack, title }: ScreenHeaderProps): JSX.Element {
+export function ScreenHeader({ children, onClickBack, title }: ScreenHeaderProps) {
     const handleClickBack = () => {
         onClickBack();
     };

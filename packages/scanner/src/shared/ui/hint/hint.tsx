@@ -1,12 +1,12 @@
-import { memo, useState } from 'react';
+import { memo, type ReactNode, useState } from 'react';
 import cn from 'classnames';
 
-import { CircleQuestion } from '~/shared/ui/icons/circle-question';
+import { CircleQuestion } from 'shared/ui/icons/circle-question';
 
 import css from './hint.module.css';
 
 interface HintProps {
-    children?: React.ReactNode;
+    children?: ReactNode;
     styleBox?: string;
     styleIcon?: string;
 }

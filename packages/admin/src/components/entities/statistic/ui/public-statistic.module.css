@@ -3,3 +3,42 @@
     flex-direction: column;
     gap: 10px;
 }
+
+.row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filtersGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.cardLabel {
+    display: block;
+}
+
+.inlineLabel {
+    white-space: nowrap;
+}
+
+.loading {
+    display: block;
+    margin: 20px auto;
+}
+
+.tooltip {
+    max-width: 420px;
+    white-space: normal;
+}

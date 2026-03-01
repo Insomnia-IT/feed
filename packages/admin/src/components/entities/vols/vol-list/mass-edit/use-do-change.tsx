@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useApiUrl, useNotification } from '@refinedev/core';
 import type { VolEntity } from 'interfaces';
-import { ChangeMassEditField, VolunteerField } from './mass-edit-types';
+import type { ChangeMassEditField, VolunteerField } from './mass-edit-types';
 
 interface FieldItem {
     field: string;

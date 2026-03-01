@@ -1,34 +1,38 @@
-import React, { useState } from 'react';
-import { KitchenEntity, VolEntity } from 'interfaces';
+import { useMemo, useState } from 'react';
+import type { KitchenEntity, VolEntity } from 'interfaces';
 import { useList, useNotification } from '@refinedev/core';
 import { Button, Form } from 'antd';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { getVolunteerCountText } from './get-volunteer-count-text';
-import { ChangeMassEditField } from './mass-edit-types';
+import type { ChangeMassEditField } from './mass-edit-types';
 
-export const KitchenFrame: React.FC<{
+export const KitchenFrame = ({
+    selectedVolunteers,
+    doChange
+}: {
     selectedVolunteers: VolEntity[];
     doChange: ChangeMassEditField;
-}> = ({ selectedVolunteers, doChange }) => {
+}) => {
     const [selectedKitchenName, setSelectedKitchenName] = useState<string | undefined>();
     const { open = () => {} } = useNotification();
 
-    const { data: kitchensData } = useList<KitchenEntity>({
+    const { result: kitchensResult } = useList<KitchenEntity>({
         resource: 'kitchens',
-        pagination: {
-            pageSize: 10000
-        }
+        pagination: { pageSize: 10000 }
     });
 
-    const kitchens = kitchensData?.data ?? [];
+    const kitchens = kitchensResult?.data ?? [];
+
+    const currentKitchen = useMemo(() => {
+        if (!selectedKitchenName) return undefined;
+        return kitchens.find((kitchen: KitchenEntity) => kitchen.name === selectedKitchenName);
+    }, [kitchens, selectedKitchenName]);
 
     const closeModal = () => {
         setSelectedKitchenName(undefined);
     };
 
     const confirmChange = () => {
-        const currentKitchen = kitchens.find((kitchen) => kitchen.name === selectedKitchenName);
-
         if (!currentKitchen?.id) {
             open({
                 message: 'Некорректная кухня!',
@@ -40,13 +44,14 @@ export const KitchenFrame: React.FC<{
             console.error('<KitchenFrame/> error: Выбранная кухня не существует, либо не заполнен id', {
                 currentKitchen,
                 selectedVolunteers,
-                kitchensData
+                kitchensResult
             });
 
             return;
         }
 
         doChange({ fieldName: 'kitchen', fieldValue: String(currentKitchen.id) });
+        closeModal();
     };
 
     return (
@@ -59,14 +64,12 @@ export const KitchenFrame: React.FC<{
                 rules={[{ required: true }]}
             >
                 <div style={{ display: 'flex', columnGap: '8px' }}>
-                    {kitchens.map((kitchen) => {
+                    {kitchens.map((kitchen: KitchenEntity) => {
                         return (
                             <Button
                                 style={{ width: '50%' }}
-                                key={kitchen.name}
-                                onClick={() => {
-                                    setSelectedKitchenName(kitchen.name);
-                                }}
+                                key={kitchen.id ?? kitchen.name}
+                                onClick={() => setSelectedKitchenName(kitchen.name)}
                             >
                                 {kitchen.name}
                             </Button>
@@ -77,7 +80,7 @@ export const KitchenFrame: React.FC<{
             <ConfirmModal
                 title={'Поменять кухню?'}
                 description={`${getVolunteerCountText(selectedVolunteers?.length ?? 0)} и привязываете их к ${
-                    selectedKitchenName
+                    selectedKitchenName ?? ''
                 }`}
                 onConfirm={confirmChange}
                 closeModal={closeModal}

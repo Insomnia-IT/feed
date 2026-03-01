@@ -1,5 +1,5 @@
 import { DatePicker, Form, Select, Button } from 'antd';
-import { ReactNode, useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
@@ -8,14 +8,14 @@ import { formDateFormat } from 'shared/lib';
 
 import styles from '../../common.module.css';
 import useCanAccess from '../../use-can-access';
-import { VolunteerStatus } from 'shared/constants/volunteer-status';
+import type { VolunteerStatus } from 'shared/constants/volunteer-status';
 import {
     isVolunteerStatus,
     isVolunteerCompletedStatusValue,
     getVolunteerStatusOrder
 } from 'shared/helpers/volunteer-status';
 
-type StatusItem = { label: React.ReactNode; value: string; disabled?: boolean };
+type StatusItem = { label: ReactNode; value: string; disabled?: boolean };
 
 const isInsideOtherArrival = (
     otherArrival: {
@@ -234,7 +234,7 @@ function ArrivalItem({
         value: value ? dayjs(value) : undefined
     });
 
-    const renderLabel = (props: { label: React.ReactNode; value: string | number }): ReactNode => {
+    const renderLabel = (props: { label: ReactNode; value: string | number }): ReactNode => {
         if (!props.label) {
             return statusesOptions.find((item) => item.value === props.value)?.label;
         }

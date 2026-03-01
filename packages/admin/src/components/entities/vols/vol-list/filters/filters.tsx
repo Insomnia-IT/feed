@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { useMemo } from 'react';
 import { DeleteOutlined, FilterOutlined } from '@ant-design/icons';
 import { Button, Col, Popover, Row } from 'antd';
 
@@ -18,7 +18,7 @@ interface IProps {
     setActiveFilters: (filters: FilterItem[]) => void;
 }
 
-export const Filters: FC<IProps> = ({
+export const Filters = ({
     activeFilters,
     filterFields,
     searchText,
@@ -26,7 +26,7 @@ export const Filters: FC<IProps> = ({
     setActiveFilters,
     visibleFilters,
     setVisibleFilters
-}) => {
+}: IProps) => {
     const toggleVisibleFilter = (name: string): void => {
         const visible = visibleFilters.includes(name);
         if (visible) {

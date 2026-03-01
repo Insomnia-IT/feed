@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 
-import type { ApiHook } from '~/request/lib';
-import type { Volunteer } from '~/db';
-import { db } from '~/db';
+import type { ApiHook } from 'request/lib';
+import type { Volunteer } from 'db';
+import { db } from 'db';
 
 export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<any>(null);
@@ -11,7 +11,7 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
     const [fetching, setFetching] = useState<any>(false);
 
     const send = useCallback(
-        (filters) => {
+        (filters: any) => {
             if (fetching) {
                 return Promise.resolve(false);
             }
@@ -82,7 +82,7 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
         [baseUrl, error, fetching, pin, setAuth]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -90,5 +90,5 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };
