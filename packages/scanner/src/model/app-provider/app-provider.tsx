@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
 import type { MealTime } from 'db';
 import { useSync } from 'request';
@@ -49,7 +49,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);
     const [volCount, setVolCount] = useState<number>(0);
     const [autoSync, setAutoSync] = useState<boolean>(autoSyncLS ? autoSyncLS === '1' : true);
-    const { error: syncError, fetching: syncFetching, send: syncSend, updated } = useSync(API_DOMAIN, pin, setAuth);
+    const { error: syncError, fetching: syncFetching, send: syncSend } = useSync(API_DOMAIN, pin, setAuth);
     const toggleAutoSync = useCallback((): void => {
         setAutoSync((prev) => {
             localStorage.setItem('autoSync', !prev ? '1' : '0');
@@ -75,34 +75,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             if (navigator.onLine && !syncFetching) {
                 console.log('online, updating...');
                 try {
-                    return await syncSend({
+                    const updatedAt = await syncSend({
                         lastSyncStart: full ? null : lastSyncStart,
                         kitchenId: kitchenIdOverride || kitchenId
                     });
+                    if (typeof updatedAt === 'number') {
+                        saveLastSyncStart(updatedAt);
+                        const count = await db.volunteers.count();
+                        setVolCount(count);
+                    }
+                    return;
                 } catch (e) {
                     console.log(e);
                 }
             }
         },
-        [kitchenId, lastSyncStart, syncFetching, syncSend]
+        [kitchenId, lastSyncStart, saveLastSyncStart, syncFetching, syncSend]
     );
-
-    useEffect(() => {
-        let updateTimer: ReturnType<typeof setTimeout> | undefined;
-        if (updated && !syncFetching) {
-            updateTimer = setTimeout(() => {
-                saveLastSyncStart(updated);
-            }, 0);
-            void db.volunteers.count().then((c: number) => {
-                setVolCount(c);
-            });
-        }
-        return () => {
-            if (updateTimer) {
-                clearTimeout(updateTimer);
-            }
-        };
-    }, [syncFetching, saveLastSyncStart, setLastSyncStart, setVolCount, updated]);
 
     const contextValue: IAppContext = useMemo(
         () => ({

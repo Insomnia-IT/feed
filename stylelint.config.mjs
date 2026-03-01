@@ -17,5 +17,12 @@ export default {
         'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }]
     },
 
-    ignoreFiles: ['**/node_modules/**', '**/src/common/*.css', 'packages/admin/dist/**', 'packages/scanner/dist/**']
+    ignoreFiles: [
+        '**/node_modules/**',
+        '**/src/common/*.css',
+        'packages/admin/dist/**',
+        'packages/scanner/dist/**',
+        'packages/admin/build/**',
+        'packages/scanner/build/**'
+    ]
 };

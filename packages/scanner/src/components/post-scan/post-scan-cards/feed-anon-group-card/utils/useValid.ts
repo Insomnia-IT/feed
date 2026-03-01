@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { Form } from '../feed-anon-group-card';
 
 type ErrorRecord = Record<string, string>;
 
 export const useValid = (form: Form) => {
-    const [valid, setValid] = useState(true);
-    const [errors, setErrors] = useState<ErrorRecord>({});
     const [mode, setMode] = useState<'onChange' | 'manual'>('manual');
 
-    const validate = useCallback(() => {
+    const validationResult = useMemo(() => {
         let valid = true;
         const errors: ErrorRecord = {};
 
@@ -18,21 +16,18 @@ export const useValid = (form: Form) => {
             errors.counts = 'Запишите количество порций (>1)';
         }
 
-        setValid(valid);
-        setErrors(errors);
+        return { valid, errors };
+    }, [form]);
 
+    const validate = useCallback(() => {
         if (mode === 'manual') {
             setMode('onChange');
         }
 
-        return { valid, errors };
-    }, [form, mode]);
+        return validationResult;
+    }, [mode, validationResult]);
 
-    useEffect(() => {
-        if (mode !== 'onChange') return;
-        const id = setTimeout(() => validate(), 0);
-        return () => clearTimeout(id);
-    }, [form, mode, validate]);
-
+    const valid = validationResult.valid;
+    const errors = mode === 'onChange' ? validationResult.errors : {};
     return { valid, errors, validate };
 };

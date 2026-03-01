@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useList, CanAccess, useGetIdentity } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col, Segmented } from 'antd';
@@ -156,12 +156,8 @@ export const VolList = () => {
         const outOfRange = (page - 1) * pageSize >= total;
         if (!outOfRange) return;
 
-        // Через setTimeout(0), чтобы не спорить с обновлениями стейта/запроса в том же тике
-        const id = setTimeout(() => setPageWithStorage(1), 0);
-
-        return () => {
-            clearTimeout(id);
-        };
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPageWithStorage(1);
     }, [volunteers?.total, page, pageSize, setPageWithStorage]);
 
     useEffect(() => {

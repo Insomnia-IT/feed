@@ -37,7 +37,7 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                     setFetching(false);
                     setError(null);
                     setUpdated(updateTimeStart);
-                    res(true);
+                    res(updateTimeStart);
                     return;
                 };
 

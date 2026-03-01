@@ -1,4 +1,4 @@
-import { type ComponentProps, type MouseEvent as ReactMouseEvent, useEffect, useState } from 'react';
+import { type ComponentProps, type MouseEvent as ReactMouseEvent } from 'react';
 import cn from 'classnames';
 
 import css from './modal.module.css';
@@ -14,19 +14,12 @@ interface ModalProps extends ComponentProps<'div'> {
 
 export const Modal = (props: ModalProps) => {
     const { active, children, classModal, classTitle, onClose, title } = props;
-
-    const [isOpen, setIsOpen] = useState(false);
-
-    useEffect(() => {
-        const id = setTimeout(() => setIsOpen(!!active), 0);
-        return () => clearTimeout(id);
-    }, [active]);
+    const isOpen = !!active;
 
     const handleClose = (): void => {
         if (onClose) {
             onClose();
         }
-        setIsOpen(false);
     };
 
     const handlePopupClick = (e: ReactMouseEvent<HTMLDivElement, MouseEvent>): void => {
