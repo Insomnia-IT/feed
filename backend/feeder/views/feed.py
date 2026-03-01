@@ -5,11 +5,12 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from feeder.views.mixins import auto_tag_viewset
 
 from feeder import serializers, models
 
 
-#@extend_schema(tags=['feed', ])
+@auto_tag_viewset("Feed Type")
 class FeedTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.FeedType.objects.all()
@@ -41,8 +42,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
         model = models.FeedTransaction
         fields = ['kitchen', 'volunteer', 'is_anomaly']
 
-
-#@extend_schema(tags=['feed', ])
+@auto_tag_viewset("Feed Transaction")
 class FeedTransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.FeedTransaction.objects.all()
