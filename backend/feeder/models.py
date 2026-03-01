@@ -57,6 +57,7 @@ class VolunteerRole(TimeMixin):
     color = models.CharField(max_length=6)
     is_leader = models.BooleanField(default=False)
     is_team = models.BooleanField(default=False)
+    is_group_badge = models.BooleanField(default=False)
 
 
 class DirectionType(TimeMixin):
@@ -200,6 +201,7 @@ class Kitchen(TimeMixin):
 class GroupBadge(TimeMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, verbose_name="QR-код")
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
+    role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.name
