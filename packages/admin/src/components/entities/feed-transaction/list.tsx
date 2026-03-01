@@ -7,7 +7,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
-import { saveXLSX } from 'shared/lib/saveXLSX';
+import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
 import { FeedTransactionEntity } from 'interfaces';
 import { MEAL_MAP, NEW_API_URL } from 'const';
 import { ColumnsType } from 'antd/es/table';
@@ -134,57 +134,19 @@ export const FeedTransactionList: FC = () => {
     ];
 
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
-        const ExcelJS = await import('exceljs');
-
-        let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
+        let url = `${NEW_API_URL}/feed-transaction/export-xlsx/?limit=100000`;
 
         if (filters) {
             filters.forEach((filter: CrudFilter) => {
                 if (filter.value && 'field' in filter) {
-                    url = url.concat(`&${filter?.field}=${filter.value}`);
+                    url = url.concat(`&${filter?.field}=${encodeURIComponent(String(filter.value))}`);
                 }
             });
         }
 
-        const { data } = await axios.get(url);
-        const transactions = data.results as Array<FeedTransactionEntity>;
-        const workbook = new ExcelJS.Workbook();
-        const sheet = workbook.addWorksheet('Transactions log');
-
-        const header = [
-            'Дата',
-            'Время',
-            'ID волонтера',
-            'Позывной',
-            'Фамилия Имя',
-            'Тип питания',
-            'Прием пищи',
-            'Кухня',
-            'Кол-во',
-            'Причина',
-            'Групповой бейдж',
-            'Службы'
-        ];
-        sheet.addRow(header);
-
-        transactions?.forEach((tx) => {
-            sheet.addRow([
-                dayjs(tx.dtime).format('DD.MM.YYYY'),
-                dayjs(tx.dtime).format('HH:mm:ss'),
-                tx.volunteer,
-                tx?.volunteer_name ?? 'Аноним',
-                [tx.volunteer_last_name, tx.volunteer_first_name].filter((item) => !!item).join(' '),
-                tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
-                MEAL_MAP[tx.meal_time],
-                tx?.kitchen_name ?? '',
-                tx.amount,
-                tx?.reason ?? '',
-                tx?.group_badge_name ?? '',
-                (tx?.volunteer_directions ?? []).join(',')
-            ]);
-        });
-
-        void saveXLSX(workbook, 'feed-transactions');
+        const { data, headers } = await axios.get<Blob>(url, { responseType: 'blob' });
+        const filename = getFilenameFromContentDisposition(headers['content-disposition'], 'feed-transactions.xlsx');
+        downloadBlob(data, filename);
     }, [filters]);
 
     const handleClickDownload = useCallback((): void => {
