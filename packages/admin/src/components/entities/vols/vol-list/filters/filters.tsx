@@ -84,10 +84,15 @@ export const Filters: FC<IProps> = ({
         const filterItem = activeFilters.find((f) => f.name === fieldName);
 
         if (filterItem && Array.isArray(filterItem.value)) {
-            let newValues = single ? [filterListItem.value] : [...filterItem.value, filterListItem.value];
+            let newValues: unknown[];
 
-            if (filterListItem.selected && !single) {
+            if (filterListItem.selected) {
+                // Снятие выбора (клик по крестику): удаляем значение
                 newValues = filterItem.value.filter((value) => value !== filterListItem.value);
+            } else if (single) {
+                newValues = [filterListItem.value];
+            } else {
+                newValues = [...filterItem.value, filterListItem.value];
             }
 
             const newFilters = activeFilters
