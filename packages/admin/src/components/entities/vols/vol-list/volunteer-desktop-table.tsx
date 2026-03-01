@@ -1,4 +1,4 @@
-import { useMemo, useContext } from 'react';
+import { useMemo, useContext, type MouseEvent as ReactMouseEvent } from 'react';
 import { Table, Tag } from 'antd';
 import type { TablePaginationConfig, TableProps } from 'antd';
 import { CheckOutlined, StopOutlined } from '@ant-design/icons';
@@ -51,12 +51,14 @@ export const VolunteerDesktopTable = ({
 }) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
 
-    const getCellAction: (id: number) => { onClick: (event: any) => void } = (
+    const getCellAction: (id: number) => { onClick: (event: ReactMouseEvent<HTMLElement>) => void } = (
         id: number
-    ): { onClick: (event: any) => void } => {
+    ): { onClick: (event: ReactMouseEvent<HTMLElement>) => void } => {
         return {
             onClick: (event): void => {
-                if (!(event.target.closest('button') || event.target.querySelector('input'))) {
+                const target = event.target;
+                if (!(target instanceof Element)) return;
+                if (!(target.closest('button') || target.closest('input'))) {
                     openVolunteer(id);
                 }
             }

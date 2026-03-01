@@ -157,10 +157,16 @@ const OptionValueChanger = ({
     const canStatusArrivedAssign = useCanAccess({ action: 'status_arrived_assign', resource: 'volunteers' });
     const canStatusStartedAssign = useCanAccess({ action: 'status_started_assign', resource: 'volunteers' });
 
-    const statusesOrder = useMemo(() => getVolunteerStatusOrder(canStatusArrivedAssign), [canStatusArrivedAssign]);
+    const statusesOrder = useMemo<readonly string[]>(
+        () => getVolunteerStatusOrder(canStatusArrivedAssign),
+        [canStatusArrivedAssign]
+    );
 
     const orderIndex = (value: string) => {
-        const idx = statusesOrder.indexOf(value as any);
+        if (!isVolunteerStatus(value)) {
+            return Number.MAX_SAFE_INTEGER;
+        }
+        const idx = statusesOrder.indexOf(value);
         return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
     };
 
@@ -176,7 +182,7 @@ const OptionValueChanger = ({
                     ? { ...item, label: `✅ ${item.label}` }
                     : item;
 
-                const inOrder = statusesOrder.includes(item.value as any);
+                const inOrder = isVolunteerStatus(item.value) && statusesOrder.includes(item.value);
                 const allowedByPerm =
                     (item.value !== 'ARRIVED' || canStatusArrivedAssign) &&
                     (item.value !== 'STARTED' || canStatusStartedAssign);

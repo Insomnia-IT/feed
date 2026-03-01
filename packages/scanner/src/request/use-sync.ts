@@ -7,9 +7,9 @@ import { useGetGroupBadges } from './use-get-group-badges';
 import type { ApiHook } from './lib';
 
 export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const { fetching: volsFetching, send: volsSend } = useGetVols(baseUrl, pin, setAuth);
 
@@ -41,7 +41,7 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                     return;
                 };
 
-                const error = (err: any): void => {
+                const error = (err: unknown): void => {
                     setError(err);
                     setFetching(false);
                     rej(err);

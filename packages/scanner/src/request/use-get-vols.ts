@@ -6,12 +6,12 @@ import type { Volunteer } from 'db';
 import { db } from 'db';
 
 export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const send = useCallback(
-        (filters: any) => {
+        (filters: Record<string, string | number | boolean>) => {
             if (fetching) {
                 return Promise.resolve(false);
             }
@@ -66,9 +66,9 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         res(true);
                         return true;
                     })
-                    .catch((e) => {
+                    .catch((e: unknown) => {
                         setFetching(false);
-                        if (e?.response?.status === 401) {
+                        if (axios.isAxiosError(e) && e.response?.status === 401) {
                             rej(false);
                             setAuth(false);
                             return false;

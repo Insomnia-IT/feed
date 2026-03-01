@@ -11,8 +11,8 @@ export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth:
     const { kitchenId } = useApp();
 
     const [data, setData] = useState<ServerTransaction[] | null>(null);
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
     const [fetching, setFetching] = useState(false);
 
     const inFlightRef = useRef(false);
@@ -54,8 +54,8 @@ export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth:
             setError(null);
             setUpdated(Date.now());
             return true;
-        } catch (e: any) {
-            if (e?.response?.status === 401) {
+        } catch (e: unknown) {
+            if (axios.isAxiosError(e) && e.response?.status === 401) {
                 setAuth(false);
                 return false;
             }

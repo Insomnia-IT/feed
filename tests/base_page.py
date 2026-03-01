@@ -37,14 +37,8 @@ class BasePage:
         return False
 
     def first_window(self):
-        try:
-            first_button = WebDriverWait(self.browser, 10).until(
-                EC.element_to_be_clickable(registration.CHOOSE_LOGIN_TYPE)
-            )
-            first_button.click()
-            return
-        except TimeoutException:
-            self.browser.find_element(*registration.LOGIN)
+        first_button = self.browser.find_element(*registration.CHOOSE_LOGIN_TYPE)
+        first_button.click()
 
     def first_window_qr(self):
         try:

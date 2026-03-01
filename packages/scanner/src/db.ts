@@ -149,7 +149,7 @@ export const addTransaction = async ({
     };
     group_badge?: number | null;
     amount?: number;
-}): Promise<any> => {
+}): Promise<void> => {
     const ts = dayjs().unix();
     let amountInner = amount ?? 1;
     let reason: string | null = null;
@@ -194,8 +194,8 @@ export const dbIncFeed = async ({
         reason: string;
     };
     kitchenId: number;
-}): Promise<any> => {
-    return await addTransaction({ amount, group_badge, vol, mealTime, isVegan, log, kitchenId });
+}): Promise<void> => {
+    await addTransaction({ amount, group_badge, vol, mealTime, isVegan, log, kitchenId });
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {

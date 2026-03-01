@@ -8,9 +8,9 @@ import { db } from 'db';
 import type { ServerTransaction, Transaction } from 'db';
 
 export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const send = useCallback(
         async ({ kitchenId }: { kitchenId: number }) => {
@@ -101,17 +101,16 @@ const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
     }));
 };
 
-const markTransactionsAsUpdated = async (trans: any): Promise<IndexableType> => {
+const markTransactionsAsUpdated = async (trans: Array<Transaction>): Promise<IndexableType> => {
     return db.transactions.bulkPut(
-        trans.map((transaction: any) => ({
+        trans.map((transaction) => ({
             ...transaction,
             is_new: false
         }))
     );
 };
 
-const putNewServerTransactions = async (data: any): Promise<IndexableType> => {
-    const serverTransactions = data as Array<ServerTransaction>;
+const putNewServerTransactions = async (serverTransactions: Array<ServerTransaction>): Promise<IndexableType> => {
     const transactions = serverTransactions.map(
         ({ amount, dtime, group_badge, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
             vol_id: volunteer,

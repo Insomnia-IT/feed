@@ -137,7 +137,8 @@ export const CommonHistory = ({ role }: IProps) => {
                 return BOOL_MAP[key as keyof typeof BOOL_MAP][Number(obj[key])];
             }
             if (['comment', 'direction_head_comment'].includes(key)) {
-                return (obj[key] || '').replace(/<\/?[^>]+(>|$)/g, '');
+                const value = obj[key];
+                return typeof value === 'string' ? value.replace(/<\/?[^>]+(>|$)/g, '') : '';
             }
             const maps: Record<string, Record<string | number, string>> = {
                 kitchen: kitchenById,
@@ -166,7 +167,11 @@ export const CommonHistory = ({ role }: IProps) => {
                 );
             }
             if (maps[key]) {
-                return maps[key][obj[key]];
+                const value = obj[key];
+                if (typeof value === 'string' || typeof value === 'number') {
+                    return maps[key][value];
+                }
+                return '';
             }
             if (key === 'directions') {
                 const arr = obj[key] as unknown as Array<string | number> | undefined;
@@ -179,7 +184,20 @@ export const CommonHistory = ({ role }: IProps) => {
                 const v = String(obj[key] ?? '');
                 return v === 'true' ? 'Да' : v === 'false' ? 'Нет' : v;
             }
-            return obj[key];
+            const value = obj[key];
+            if (typeof value === 'string' || typeof value === 'number') {
+                return value;
+            }
+            if (typeof value === 'boolean') {
+                return value ? '��' : '���';
+            }
+            if (Array.isArray(value)) {
+                return value.join(', ');
+            }
+            if (value && typeof value === 'object' && 'name' in value && typeof value.name === 'string') {
+                return value.name;
+            }
+            return '';
         },
         [
             accessRoleById,

@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from 'react';
+import { memo, type ChangeEvent, type KeyboardEvent, useRef, useState } from 'react';
 
 import { Input } from 'shared/ui/input/input';
 import { removeNonDigits } from 'shared/lib/utils';
@@ -18,7 +18,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps) {
 
     const mainInput = useRef<null | HTMLInputElement>(null);
 
-    const handleChangeInput = (e: any): void => {
+    const handleChangeInput = (e: ChangeEvent<HTMLInputElement>): void => {
         const value = removeNonDigits(e.currentTarget.value).slice(0, 4);
         setPin(value);
         if (onChange) {
@@ -26,7 +26,7 @@ export const PinInput = memo(function PinInput(props: PinInputProps) {
         }
     };
 
-    const handleKeyDown = (e: any): void => {
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
         if ([37, 38, 39, 40].includes(e.keyCode)) {
             e.preventDefault();
         }

@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { useState } from 'react';
+import { type SubmitEvent, useState } from 'react';
 
 import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { Button } from 'shared/ui/button/button';
@@ -30,7 +30,7 @@ export const FeedAnonGroupCard = ({ close }: { close: () => void }) => {
 
     const { errors, validate } = useValid(form);
 
-    const changeForm = (change: any): void => {
+    const changeForm = (change: Partial<Form>): void => {
         setForm((prev) => ({ ...prev, ...change }));
     };
 
@@ -45,7 +45,7 @@ export const FeedAnonGroupCard = ({ close }: { close: () => void }) => {
         close();
     };
 
-    const handleSubmit = (e: any) => {
+    const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const { valid } = validate();
         if (valid) {

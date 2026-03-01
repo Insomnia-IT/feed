@@ -6,7 +6,7 @@ import { FeedErrorCard } from 'components/post-scan/post-scan-cards/feed-error-c
 import { useFeedVol, validateVol } from 'components/post-scan/post-scan.utils';
 import { useApp } from 'model/app-provider';
 import { FeedAnonGroupCard } from 'components/post-scan/post-scan-cards/feed-anon-group-card/feed-anon-group-card';
-import { MealTime } from 'db';
+import { MealTime, type Transaction, type Volunteer } from 'db';
 
 export const AvailViews = {
     SingleVolunteerError: 'vol-error',
@@ -25,8 +25,8 @@ type InitialScreenStateParams = {
     kitchenId: number;
     mealTime: MealTime | null;
     qrcode: string;
-    vol?: any;
-    volTransactions?: any;
+    vol?: Volunteer | null;
+    volTransactions?: Array<Transaction> | null;
 };
 
 const getInitialScreenState = ({

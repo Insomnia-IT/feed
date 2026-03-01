@@ -16,6 +16,13 @@ type StatsByNutritionType = {
 type FeedStatsRecord = Record<MealTime, StatsByNutritionType>;
 export type FeedStats = { onField: FeedStatsRecord; feedCount: FeedStatsRecord };
 
+const createEmptyFeedStatsRecord = (): FeedStatsRecord => ({
+    [MealTime.breakfast]: { NT1: 0, NT2: 0, total: 0 },
+    [MealTime.lunch]: { NT1: 0, NT2: 0, total: 0 },
+    [MealTime.dinner]: { NT1: 0, NT2: 0, total: 0 },
+    [MealTime.night]: { NT1: 0, NT2: 0, total: 0 }
+});
+
 const getStatsByDate = async (statsDate: string): Promise<FeedStats> => {
     const onFieldArr = await Promise.all(
         MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
@@ -91,10 +98,10 @@ const getStatsByDate = async (statsDate: string): Promise<FeedStats> => {
         })
     );
 
-    const onField: FeedStatsRecord = {} as any;
+    const onField: FeedStatsRecord = createEmptyFeedStatsRecord();
     Object.assign(onField, ...onFieldArr);
 
-    const feedCount: FeedStatsRecord = {} as any;
+    const feedCount: FeedStatsRecord = createEmptyFeedStatsRecord();
     Object.assign(feedCount, ...feedCountArr);
 
     return { onField, feedCount };
@@ -123,7 +130,7 @@ const calcPredict = async (statsDate: string): Promise<FeedStats> => {
 };
 
 export const useLocalStats = (): LocalStatsHook => {
-    const [error, setError] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState<FeedStats | null>(null);
     const [progress, setProgress] = useState<boolean>(true);
     const [updated, setUpdated] = useState<boolean>(false);
@@ -136,9 +143,9 @@ export const useLocalStats = (): LocalStatsHook => {
             const result = predict ? await calcPredict(statsDate) : await getStatsByDate(statsDate);
             setStats(result);
             setUpdated(true);
-        } catch (e) {
+        } catch (e: unknown) {
             console.error(e);
-            setError(e);
+            setError(e instanceof Error ? e.message : 'Unknown error');
         } finally {
             setProgress(false);
         }

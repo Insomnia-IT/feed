@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useCallback, useState } from 'react';
 
 import { PinInput } from 'shared/ui/pin-input/pin-input';
@@ -29,19 +30,20 @@ export const PinScreen = () => {
         setError(null);
         const enteredPin = pin || '';
         checkAuth(enteredPin)
-            .then((user: any) => {
+            .then((user) => {
+                const kitchenId = Number(user.data.id);
                 localStorage.setItem('pin', enteredPin);
-                localStorage.setItem('kitchenId', user.data.id);
+                localStorage.setItem('kitchenId', String(kitchenId));
                 setAuth(true);
                 setPin(enteredPin);
-                setKitchenId(Number(user.data.id));
-                return user;
+                setKitchenId(kitchenId);
+                return kitchenId;
             })
-            .then((user: any) => {
-                return doSync({ kitchenId: Number(user.data.id) });
+            .then((kitchenId) => {
+                return doSync({ kitchenId });
             })
-            .catch((e: any) => {
-                if (!e.response && enteredPin && enteredPin === storedPin) {
+            .catch((e: unknown) => {
+                if ((!axios.isAxiosError(e) || !e.response) && enteredPin && enteredPin === storedPin) {
                     setAuth(true);
                 } else {
                     setAuth(false);

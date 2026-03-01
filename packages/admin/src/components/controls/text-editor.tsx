@@ -3,7 +3,23 @@ import { memo, useEffect, useId, useRef } from 'react';
 import 'quill/dist/quill.snow.css';
 import 'quill/dist/quill.bubble.css';
 
-type QuillInstance = any;
+type QuillSelection = { index: number; length: number };
+type QuillDelta = unknown;
+type QuillToolbar = unknown[];
+
+interface QuillInstance {
+    root: { innerHTML: string };
+    clipboard: { convert: (html: string) => QuillDelta };
+    setContents: (delta: QuillDelta, source?: string) => void;
+    on: (eventName: string, handler: () => void) => void;
+    off: (eventName: string, handler: () => void) => void;
+    getSelection: () => QuillSelection | null;
+    setSelection: (range: QuillSelection) => void;
+}
+
+interface QuillModule {
+    default?: new (host: string | HTMLElement, options?: unknown) => QuillInstance;
+}
 
 interface IProps {
     value?: string;
@@ -14,7 +30,7 @@ interface IProps {
     className?: string;
 }
 
-const TOOLBAR: any = [
+const TOOLBAR: QuillToolbar = [
     [{ header: [1, 2, 3, false] }],
     ['bold', 'italic', 'underline', 'strike'],
     [{ list: 'ordered' }, { list: 'bullet' }],
@@ -55,8 +71,9 @@ export const TextEditor = memo(function TextEditor({
             const host = document.createElement('div');
             container.appendChild(host);
 
-            const quillMod: any = await import('quill');
-            const QuillCtor = quillMod.default ?? quillMod;
+            const quillMod = (await import('quill')) as unknown as QuillModule;
+            const QuillCtor = quillMod.default;
+            if (!QuillCtor) return;
 
             if (disposed) return;
 

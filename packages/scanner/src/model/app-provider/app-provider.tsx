@@ -115,7 +115,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             debugMode: debugModeLS,
             deoptimizedSync: deoptimizedSyncLS,
             syncFetching,
-            syncError,
+            syncError: Boolean(syncError),
             doSync
         }),
         [pin, auth, appError, lastSyncStart, volCount, autoSync, mealTime, kitchenId, syncFetching, doSync, syncError]

@@ -1,8 +1,16 @@
-import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
+import {
+    createContext,
+    type Dispatch,
+    type ReactNode,
+    type SetStateAction,
+    useContext,
+    useMemo,
+    useState
+} from 'react';
 
 interface IViewContext {
     currentView: AppViews;
-    setCurrentView: (any: any) => void;
+    setCurrentView: Dispatch<SetStateAction<AppViews>>;
 }
 
 const ViewContext = createContext<IViewContext | null>(null);

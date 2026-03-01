@@ -20,11 +20,14 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
     useEffect(() => {
         const textArea = textAreaRef.current;
 
-        const handleInput = (e: any) => {
-            e.currentTarget.style.height = '0';
-            const scrollHeight = e.currentTarget.scrollHeight;
+        const handleInput = (e: Event) => {
+            const target = e.currentTarget;
+            if (!(target instanceof HTMLTextAreaElement)) return;
 
-            e.currentTarget.style.height = scrollHeight < 76 ? scrollHeight + 'px' : 76 + 'px';
+            target.style.height = '0';
+            const scrollHeight = target.scrollHeight;
+
+            target.style.height = scrollHeight < 76 ? scrollHeight + 'px' : 76 + 'px';
         };
         const handleFocus = () => {
             setIsFocus(true);
