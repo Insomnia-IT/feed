@@ -57,6 +57,7 @@ export const CommonHistory = ({ role }: IProps) => {
     const directionsList = useList<DirectionEntity, HttpError>({ resource: 'directions', pagination: { mode: 'off' } });
     const groupBadgesList = useList<GroupBadgeEntity, HttpError>({
         resource: 'group-badges',
+        filters: [{ field: 'is_deleted', operator: 'eq', value: 'all' }],
         pagination: { mode: 'off' }
     });
 
