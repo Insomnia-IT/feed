@@ -62,12 +62,14 @@ export const checkDateEditability = (date: Dayjs, role?: AppRoles): EditabilityR
 export interface MealPlanRowRender {
     id: string;
     date: Dayjs;
-    breakfast?: { amount_meat: number | null; amount_vegan: number | null };
-    lunch?: { amount_meat: number | null; amount_vegan: number | null };
-    dinner?: { amount_meat: number | null; amount_vegan: number | null };
+    breakfast: { amount_meat: number | null; amount_vegan: number | null };
+    lunch: { amount_meat: number | null; amount_vegan: number | null };
+    dinner: { amount_meat: number | null; amount_vegan: number | null };
     editable: boolean;
     readonlyMessage?: string;
 }
+
+const getDefaultMealValue = () => ({ amount_meat: null, amount_vegan: null });
 
 const generateMockData = (): MealPlanRow[] => {
     const startDate = dayjs().subtract(MOCK_DATA_DAYS_BACK, 'day');
@@ -131,9 +133,9 @@ export const forwardFillMeals = ({
     role?: AppRoles;
 }): MealPlanRowRender[] => {
     const lastMealValues: Record<MealTypeKey, MealAmounts> = {
-        breakfast: null,
-        lunch: null,
-        dinner: null
+        breakfast: getDefaultMealValue(),
+        lunch: getDefaultMealValue(),
+        dinner: getDefaultMealValue()
     };
 
     const result: MealPlanRowRender[] = [];
@@ -147,29 +149,26 @@ export const forwardFillMeals = ({
         const lunch = existingRows.find((row) => row.feed_type === 'lunch');
         const dinner = existingRows.find((row) => row.feed_type === 'dinner');
 
-        const filledBreakfast: MealAmounts =
-            breakfast && breakfast.amount_meat !== null
-                ? { amount_meat: breakfast.amount_meat, amount_vegan: breakfast.amount_vegan }
-                : lastMealValues.breakfast;
+        const filledBreakfast = breakfast
+            ? { amount_meat: breakfast.amount_meat, amount_vegan: breakfast.amount_vegan }
+            : lastMealValues.breakfast;
 
-        const filledLunch: MealAmounts =
-            lunch && lunch.amount_meat !== null
-                ? { amount_meat: lunch.amount_meat, amount_vegan: lunch.amount_vegan }
-                : lastMealValues.lunch;
+        const filledLunch = lunch
+            ? { amount_meat: lunch.amount_meat, amount_vegan: lunch.amount_vegan }
+            : lastMealValues.lunch;
 
-        const filledDinner: MealAmounts =
-            dinner && dinner.amount_meat !== null
-                ? { amount_meat: dinner.amount_meat, amount_vegan: dinner.amount_vegan }
-                : lastMealValues.dinner;
+        const filledDinner = dinner
+            ? { amount_meat: dinner.amount_meat, amount_vegan: dinner.amount_vegan }
+            : lastMealValues.dinner;
 
         const editability = checkDateEditability(currentDate, role);
 
         result.push({
             id: dateStr,
             date: currentDate,
-            breakfast: filledBreakfast || undefined,
-            lunch: filledLunch || undefined,
-            dinner: filledDinner || undefined,
+            breakfast: filledBreakfast ?? getDefaultMealValue(),
+            lunch: filledLunch ?? getDefaultMealValue(),
+            dinner: filledDinner ?? getDefaultMealValue(),
             editable: editability.editable,
             readonlyMessage: editability.message
         });
@@ -232,9 +231,9 @@ export const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): Me
         result.push({
             id: currentDate.format('YYYY-MM-DD'),
             date: currentDate,
-            breakfast: lastRealRow.breakfast ? { ...lastRealRow.breakfast } : undefined,
-            lunch: lastRealRow.lunch ? { ...lastRealRow.lunch } : undefined,
-            dinner: lastRealRow.dinner ? { ...lastRealRow.dinner } : undefined,
+            breakfast: lastRealRow.breakfast ? { ...lastRealRow.breakfast } : getDefaultMealValue(),
+            lunch: lastRealRow.lunch ? { ...lastRealRow.lunch } : getDefaultMealValue(),
+            dinner: lastRealRow.dinner ? { ...lastRealRow.dinner } : getDefaultMealValue(),
             editable: editability.editable,
             readonlyMessage: editability.message
         });

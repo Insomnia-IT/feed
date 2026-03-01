@@ -10,11 +10,13 @@ import { useScreen } from '../../../shared/providers';
 import cn from 'classnames';
 
 const formatMeals = (meals: { amount_meat: number | null; amount_vegan: number | null }, isMobile: boolean = false) => {
-    if (meals.amount_meat === null && meals.amount_vegan === null) {
+    if (meals?.amount_meat === null && meals?.amount_vegan === null) {
         return '-/-';
     }
-    const meat = meals.amount_meat ?? '-';
-    const vegan = meals.amount_vegan ?? '-';
+
+    const meat = meals?.amount_meat ?? '-';
+    const vegan = meals?.amount_vegan ?? '-';
+
     return isMobile ? `${meat}/${vegan}` : `🥩 ${meat}/${vegan} 🥦`;
 };
 

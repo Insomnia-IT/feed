@@ -44,9 +44,9 @@ const createRenderRow = (params: {
 }): MealPlanRowRender => ({
     id: params.date,
     date: dayjs(params.date),
-    breakfast: params.breakfast,
-    lunch: params.lunch,
-    dinner: params.dinner,
+    breakfast: params.breakfast ?? { amount_meat: null, amount_vegan: null },
+    lunch: params.lunch ?? { amount_meat: null, amount_vegan: null },
+    dinner: params.dinner ?? { amount_meat: null, amount_vegan: null },
     editable: params.editable ?? true
 });
 
@@ -108,21 +108,21 @@ describe('forwardFillMeals', () => {
         expect(result).toHaveLength(3);
 
         expect(result[0]).toMatchObject({
-            breakfast: { amount_meat: 10 },
-            lunch: { amount_meat: 20 },
-            dinner: { amount_meat: 30 }
+            breakfast: { amount_meat: 10, amount_vegan: 2 },
+            lunch: { amount_meat: 20, amount_vegan: 3 },
+            dinner: { amount_meat: 30, amount_vegan: 4 }
         });
 
         expect(result[1]).toMatchObject({
-            breakfast: { amount_meat: 15 },
-            lunch: { amount_meat: 20 },
-            dinner: { amount_meat: 30 }
+            breakfast: { amount_meat: 15, amount_vegan: 5 },
+            lunch: { amount_meat: 20, amount_vegan: 3 },
+            dinner: { amount_meat: 30, amount_vegan: 4 }
         });
 
         expect(result[2]).toMatchObject({
-            breakfast: { amount_meat: 15 },
-            lunch: { amount_meat: 20 },
-            dinner: { amount_meat: 30 }
+            breakfast: { amount_meat: 15, amount_vegan: 5 },
+            lunch: { amount_meat: 20, amount_vegan: 3 },
+            dinner: { amount_meat: 30, amount_vegan: 4 }
         });
     });
 
@@ -139,13 +139,13 @@ describe('forwardFillMeals', () => {
         const result = forwardFillMeals({ grouped, firstDate, lastDate: dayjs(TEST_DATES.MIDDLE) });
 
         expect(result[0]).toMatchObject({
-            breakfast: { amount_meat: 10 },
-            lunch: undefined
+            breakfast: { amount_meat: 10, amount_vegan: 2 },
+            lunch: { amount_meat: null, amount_vegan: null }
         });
 
         expect(result[1]).toMatchObject({
-            breakfast: { amount_meat: 10 },
-            lunch: { amount_meat: 20 }
+            breakfast: { amount_meat: 10, amount_vegan: 2 },
+            lunch: { amount_meat: 20, amount_vegan: 3 }
         });
     });
 
@@ -160,12 +160,15 @@ describe('forwardFillMeals', () => {
 
         expect(result).toHaveLength(1);
         expect(result[0].breakfast?.amount_meat).toBe(10);
+        expect(result[0].breakfast?.amount_vegan).toBe(1);
         expect(result[0].lunch?.amount_meat).toBe(20);
+        expect(result[0].lunch?.amount_vegan).toBe(2);
         expect(result[0].dinner?.amount_meat).toBe(30);
+        expect(result[0].dinner?.amount_vegan).toBe(3);
     });
 
     describe('null edge cases', () => {
-        it('should handle all null values on a date', () => {
+        it('should use row values when row exists (including nulls)', () => {
             const grouped = createGroupedData({
                 [TEST_DATES.EARLY]: [
                     createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 })
@@ -182,10 +185,10 @@ describe('forwardFillMeals', () => {
             });
 
             expect(result[0].breakfast?.amount_meat).toBe(10);
-            expect(result[1].breakfast?.amount_meat).toBe(10);
+            expect(result[1].breakfast?.amount_meat).toBeNull();
         });
 
-        it('should handle first date with null values', () => {
+        it('should use row values when first date has null values', () => {
             const grouped = createGroupedData({
                 [TEST_DATES.EARLY]: [
                     { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: null, amount_vegan: null }
@@ -201,11 +204,13 @@ describe('forwardFillMeals', () => {
                 lastDate: dayjs(TEST_DATES.MIDDLE)
             });
 
-            expect(result[0].breakfast).toBeUndefined();
+            expect(result[0].breakfast?.amount_meat).toBeNull();
             expect(result[1].breakfast?.amount_meat).toBe(20);
+            expect(result[0].breakfast?.amount_vegan).toBeNull();
+            expect(result[1].breakfast?.amount_vegan).toBe(5);
         });
 
-        it('should propagate null values when no previous value exists', () => {
+        it('should use row values when only row exists', () => {
             const grouped = createGroupedData({
                 [TEST_DATES.EARLY]: [
                     { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: null, amount_vegan: null }
@@ -218,7 +223,28 @@ describe('forwardFillMeals', () => {
                 lastDate: dayjs(TEST_DATES.EARLY)
             });
 
-            expect(result[0].breakfast).toBeUndefined();
+            expect(result[0].breakfast?.amount_meat).toBeNull();
+            expect(result[0].breakfast?.amount_vegan).toBeNull();
+        });
+
+        it('should use last saved value when row does not exist', () => {
+            const grouped = createGroupedData({
+                [TEST_DATES.EARLY]: [
+                    createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 })
+                ],
+                [TEST_DATES.MIDDLE]: []
+            });
+
+            const result = forwardFillMeals({
+                grouped,
+                firstDate: dayjs(TEST_DATES.EARLY),
+                lastDate: dayjs(TEST_DATES.MIDDLE)
+            });
+
+            expect(result[0].breakfast?.amount_meat).toBe(10);
+            expect(result[0].breakfast?.amount_vegan).toBe(2);
+            expect(result[1].breakfast?.amount_meat).toBe(10);
+            expect(result[1].breakfast?.amount_vegan).toBe(2);
         });
     });
 });
@@ -254,7 +280,7 @@ describe('transformToRenderData', () => {
         ]);
     });
 
-    it('should forward-fill missing meal types', () => {
+    it('should use row values (including nulls) when row exists', () => {
         const data: MealPlanRow[] = [
             createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 }),
             { date: TEST_DATES.MIDDLE, feed_type: 'breakfast', amount_meat: null, amount_vegan: null }
@@ -262,7 +288,7 @@ describe('transformToRenderData', () => {
 
         const result = transformToRenderData(data);
 
-        expect(result[1].breakfast?.amount_meat).toBe(10);
+        expect(result[1].breakfast?.amount_meat).toBeNull();
     });
 
     it('should include editable field based on date', () => {
@@ -288,7 +314,7 @@ describe('transformToRenderData', () => {
     });
 
     describe('null edge cases', () => {
-        it('should handle data with all null values', () => {
+        it('should use row values when all null values', () => {
             const data: MealPlanRow[] = [
                 { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: null, amount_vegan: null },
                 { date: TEST_DATES.EARLY, feed_type: 'lunch', amount_meat: null, amount_vegan: null },
@@ -298,12 +324,12 @@ describe('transformToRenderData', () => {
             const result = transformToRenderData(data);
 
             expect(result).toHaveLength(1);
-            expect(result[0].breakfast).toBeUndefined();
-            expect(result[0].lunch).toBeUndefined();
-            expect(result[0].dinner).toBeUndefined();
+            expect(result[0].breakfast?.amount_meat).toBeNull();
+            expect(result[0].lunch?.amount_meat).toBeNull();
+            expect(result[0].dinner?.amount_meat).toBeNull();
         });
 
-        it('should handle mixed null and non-null across dates', () => {
+        it('should use row values (including nulls) across dates', () => {
             const data: MealPlanRow[] = [
                 createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 }),
                 { date: TEST_DATES.EARLY, feed_type: 'lunch', amount_meat: null, amount_vegan: null },
@@ -314,9 +340,9 @@ describe('transformToRenderData', () => {
             const result = transformToRenderData(data);
 
             expect(result[0].breakfast?.amount_meat).toBe(10);
-            expect(result[0].lunch).toBeUndefined();
+            expect(result[0].lunch?.amount_meat).toBeNull();
 
-            expect(result[1].breakfast?.amount_meat).toBe(10);
+            expect(result[1].breakfast?.amount_meat).toBeNull();
             expect(result[1].lunch?.amount_meat).toBe(20);
         });
     });
@@ -391,7 +417,7 @@ describe('fillMissingDates', () => {
     });
 
     describe('null edge cases', () => {
-        it('should handle when last real row has null values', () => {
+        it('should copy meal when last real row has null values', () => {
             const data = [
                 createRenderRow({
                     date: TEST_DATES.EARLY,
@@ -405,7 +431,7 @@ describe('fillMissingDates', () => {
 
             expect(result[1].breakfast).toEqual({ amount_meat: null, amount_vegan: null });
             expect(result[1].lunch?.amount_meat).toBe(20);
-            expect(result[1].dinner).toBeUndefined();
+            expect(result[1].dinner).toEqual({ amount_meat: null, amount_vegan: null });
         });
 
         it('should handle row with all undefined meals', () => {
@@ -420,7 +446,7 @@ describe('fillMissingDates', () => {
 
             const result = fillMissingDates(data);
 
-            expect(result[0].breakfast).toBeUndefined();
+            expect(result[0].breakfast).toEqual({ amount_meat: null, amount_vegan: null });
         });
     });
 });
