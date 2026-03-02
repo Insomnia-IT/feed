@@ -7,12 +7,12 @@ import {
     fillMissingDates,
     checkDateEditability,
     createDateHelpers,
-    type MealPlanRow,
     type MealPlanRowRender,
     type MealTypeKey,
     MESSAGES
 } from './useGroupMealPlanData';
 import { AppRoles } from 'auth';
+import { MealPlanCell } from '../../../interfaces';
 
 const TEST_DATES = {
     EARLY: '2026-02-20',
@@ -26,14 +26,15 @@ const MEAL_TYPES = ['breakfast', 'lunch', 'dinner'] as const;
 const createMealRow = (params: {
     date: string;
     feedType: MealTypeKey;
-    amountMeat: number;
-    amountVegan: number;
-}): MealPlanRow => ({
-    date: params.date,
-    feed_type: params.feedType,
-    amount_meat: params.amountMeat,
-    amount_vegan: params.amountVegan
-});
+    amountMeat: number | null;
+    amountVegan: number | null;
+}): MealPlanCell =>
+    ({
+        date: params.date,
+        meal_time: params.feedType,
+        amount_meat: params.amountMeat,
+        amount_vegan: params.amountVegan
+    }) as MealPlanCell;
 
 const createRenderRow = (params: {
     date: string;
@@ -50,8 +51,8 @@ const createRenderRow = (params: {
     editable: params.editable ?? true
 });
 
-const createGroupedData = (data: Record<string, MealPlanRow[]>): Map<string, MealPlanRow[]> => {
-    const grouped = new Map<string, MealPlanRow[]>();
+const createGroupedData = (data: Record<string, MealPlanCell[]>): Map<string, MealPlanCell[]> => {
+    const grouped = new Map<string, MealPlanCell[]>();
     for (const [date, rows] of Object.entries(data)) {
         grouped.set(date, rows);
     }
@@ -60,7 +61,7 @@ const createGroupedData = (data: Record<string, MealPlanRow[]>): Map<string, Mea
 
 describe('groupByDate', () => {
     it('should group rows by date', () => {
-        const data: MealPlanRow[] = [
+        const data: MealPlanCell[] = [
             createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 }),
             createMealRow({ date: TEST_DATES.EARLY, feedType: 'lunch', amountMeat: 20, amountVegan: 3 }),
             createMealRow({ date: TEST_DATES.MIDDLE, feedType: 'breakfast', amountMeat: 15, amountVegan: 4 })
@@ -174,7 +175,12 @@ describe('forwardFillMeals', () => {
                     createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 })
                 ],
                 [TEST_DATES.MIDDLE]: [
-                    { date: TEST_DATES.MIDDLE, feed_type: 'breakfast', amount_meat: null, amount_vegan: null }
+                    createMealRow({
+                        date: TEST_DATES.MIDDLE,
+                        feedType: 'breakfast',
+                        amountMeat: null,
+                        amountVegan: null
+                    })
                 ]
             });
 
@@ -191,7 +197,12 @@ describe('forwardFillMeals', () => {
         it('should use row values when first date has null values', () => {
             const grouped = createGroupedData({
                 [TEST_DATES.EARLY]: [
-                    { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: null, amount_vegan: null }
+                    createMealRow({
+                        date: TEST_DATES.EARLY,
+                        feedType: 'breakfast',
+                        amountMeat: null,
+                        amountVegan: null
+                    })
                 ],
                 [TEST_DATES.MIDDLE]: [
                     createMealRow({ date: TEST_DATES.MIDDLE, feedType: 'breakfast', amountMeat: 20, amountVegan: 5 })
@@ -213,7 +224,12 @@ describe('forwardFillMeals', () => {
         it('should use row values when only row exists', () => {
             const grouped = createGroupedData({
                 [TEST_DATES.EARLY]: [
-                    { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: null, amount_vegan: null }
+                    createMealRow({
+                        date: TEST_DATES.EARLY,
+                        feedType: 'breakfast',
+                        amountMeat: null,
+                        amountVegan: null
+                    })
                 ]
             });
 
@@ -251,7 +267,7 @@ describe('forwardFillMeals', () => {
 
 describe('transformToRenderData', () => {
     it('should transform raw data to render format', () => {
-        const data: MealPlanRow[] = MEAL_TYPES.map((ft, i) =>
+        const data: MealPlanCell[] = MEAL_TYPES.map((ft, i) =>
             createMealRow({ date: TEST_DATES.EARLY, feedType: ft, amountMeat: (i + 1) * 10, amountVegan: i + 1 })
         );
 
@@ -265,7 +281,7 @@ describe('transformToRenderData', () => {
     });
 
     it('should fill missing dates in sequence', () => {
-        const data: MealPlanRow[] = [
+        const data: MealPlanCell[] = [
             createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 }),
             createMealRow({ date: TEST_DATES.LATE, feedType: 'breakfast', amountMeat: 15, amountVegan: 3 })
         ];
@@ -281,9 +297,14 @@ describe('transformToRenderData', () => {
     });
 
     it('should use row values (including nulls) when row exists', () => {
-        const data: MealPlanRow[] = [
+        const data: MealPlanCell[] = [
             createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 }),
-            { date: TEST_DATES.MIDDLE, feed_type: 'breakfast', amount_meat: null, amount_vegan: null }
+            createMealRow({
+                date: TEST_DATES.MIDDLE,
+                feedType: 'breakfast',
+                amountMeat: null,
+                amountVegan: null
+            })
         ];
 
         const result = transformToRenderData(data);
@@ -292,7 +313,7 @@ describe('transformToRenderData', () => {
     });
 
     it('should include editable field based on date', () => {
-        const data: MealPlanRow[] = [
+        const data: MealPlanCell[] = [
             createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 })
         ];
 
@@ -315,10 +336,25 @@ describe('transformToRenderData', () => {
 
     describe('null edge cases', () => {
         it('should use row values when all null values', () => {
-            const data: MealPlanRow[] = [
-                { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: null, amount_vegan: null },
-                { date: TEST_DATES.EARLY, feed_type: 'lunch', amount_meat: null, amount_vegan: null },
-                { date: TEST_DATES.EARLY, feed_type: 'dinner', amount_meat: null, amount_vegan: null }
+            const data: MealPlanCell[] = [
+                createMealRow({
+                    date: TEST_DATES.EARLY,
+                    feedType: 'breakfast',
+                    amountMeat: null,
+                    amountVegan: null
+                }),
+                createMealRow({
+                    date: TEST_DATES.EARLY,
+                    feedType: 'lunch',
+                    amountMeat: null,
+                    amountVegan: null
+                }),
+                createMealRow({
+                    date: TEST_DATES.EARLY,
+                    feedType: 'dinner',
+                    amountMeat: null,
+                    amountVegan: null
+                })
             ];
 
             const result = transformToRenderData(data);
@@ -330,10 +366,20 @@ describe('transformToRenderData', () => {
         });
 
         it('should use row values (including nulls) across dates', () => {
-            const data: MealPlanRow[] = [
+            const data: MealPlanCell[] = [
                 createMealRow({ date: TEST_DATES.EARLY, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 }),
-                { date: TEST_DATES.EARLY, feed_type: 'lunch', amount_meat: null, amount_vegan: null },
-                { date: TEST_DATES.MIDDLE, feed_type: 'breakfast', amount_meat: null, amount_vegan: null },
+                createMealRow({
+                    date: TEST_DATES.EARLY,
+                    feedType: 'lunch',
+                    amountMeat: null,
+                    amountVegan: null
+                }),
+                createMealRow({
+                    date: TEST_DATES.MIDDLE,
+                    feedType: 'breakfast',
+                    amountMeat: null,
+                    amountVegan: null
+                }),
                 createMealRow({ date: TEST_DATES.MIDDLE, feedType: 'lunch', amountMeat: 20, amountVegan: 4 })
             ];
 
@@ -536,7 +582,12 @@ describe('NaN handling', () => {
     it('should handle NaN values in forwardFillMeals', () => {
         const grouped = createGroupedData({
             [TEST_DATES.EARLY]: [
-                { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: NaN, amount_vegan: NaN }
+                createMealRow({
+                    date: TEST_DATES.EARLY,
+                    feedType: 'breakfast',
+                    amountMeat: NaN,
+                    amountVegan: NaN
+                })
             ],
             [TEST_DATES.MIDDLE]: [
                 createMealRow({ date: TEST_DATES.MIDDLE, feedType: 'breakfast', amountMeat: 10, amountVegan: 2 })
@@ -553,8 +604,8 @@ describe('NaN handling', () => {
     });
 
     it('should handle NaN values in transformToRenderData', () => {
-        const data: MealPlanRow[] = [
-            { date: TEST_DATES.EARLY, feed_type: 'breakfast', amount_meat: NaN, amount_vegan: NaN }
+        const data: MealPlanCell[] = [
+            { date: TEST_DATES.EARLY, meal_time: 'breakfast', amount_meat: NaN, amount_vegan: NaN } as MealPlanCell
         ];
 
         const result = transformToRenderData(data);
