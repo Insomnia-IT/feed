@@ -1,14 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useGetIdentity } from '@refinedev/core';
+import { useCallback, useMemo, useState } from 'react';
+import { BaseKey, useGetIdentity, useOne, useUpdate, useCreate } from '@refinedev/core';
 import dayjs, { type Dayjs } from 'dayjs';
 import { AppRoles, type UserData } from 'auth';
-
-export interface MealPlanRow {
-    date: string;
-    feed_type: string;
-    amount_meat: number | null;
-    amount_vegan: number | null;
-}
+import { type GroupBadgeEntity, MealPlanCell } from '../../../interfaces';
 
 export const MESSAGES = {
     PAST_DATE: 'Нельзя редактировать прошедшие даты',
@@ -16,8 +10,6 @@ export const MESSAGES = {
     DEFAULT: 'Редактирование недоступно'
 } as const;
 
-const MOCK_DATA_DAYS_BACK = 5;
-const MOCK_DATA_DAYS_COUNT = 11;
 const DISPLAY_END_DAYS_AHEAD = 3;
 const JULY_MONTH_INDEX = 6;
 
@@ -29,6 +21,8 @@ export interface EditabilityResult {
     editable: boolean;
     message?: string;
 }
+
+type SimpleMealPlanCell = Pick<MealPlanCell, 'meal_time' | 'date' | 'amount_meat' | 'amount_vegan'>;
 
 export const createDateHelpers = () => {
     const today = dayjs();
@@ -71,46 +65,8 @@ export interface MealPlanRowRender {
 
 const getDefaultMealValue = () => ({ amount_meat: null, amount_vegan: null });
 
-const generateMockData = (): MealPlanRow[] => {
-    const startDate = dayjs().subtract(MOCK_DATA_DAYS_BACK, 'day');
-    const feedTypes = ['breakfast', 'lunch', 'dinner'] as const;
-    const rows: MealPlanRow[] = [];
-
-    const skipDates = [3, 7];
-    const missingMeals: Record<number, string[]> = {
-        2: ['breakfast'],
-        5: ['dinner']
-    };
-
-    for (let i = 0; i < MOCK_DATA_DAYS_COUNT; i++) {
-        if (skipDates.includes(i)) continue;
-
-        const date = startDate.add(i, 'day').format('YYYY-MM-DD');
-        const missingForDay = missingMeals[i] || [];
-
-        for (const feedType of feedTypes) {
-            if (missingForDay.includes(feedType)) {
-                rows.push({
-                    date,
-                    feed_type: feedType,
-                    amount_meat: null,
-                    amount_vegan: null
-                });
-            } else {
-                rows.push({
-                    date,
-                    feed_type: feedType,
-                    amount_meat: Math.floor(Math.random() * 50) + 10,
-                    amount_vegan: Math.floor(Math.random() * 10) + 2
-                });
-            }
-        }
-    }
-    return rows;
-};
-
-export const groupByDate = (data: MealPlanRow[]): Map<string, MealPlanRow[]> => {
-    const grouped = new Map<string, MealPlanRow[]>();
+export const groupByDate = (data: SimpleMealPlanCell[]): Map<string, SimpleMealPlanCell[]> => {
+    const grouped = new Map<string, SimpleMealPlanCell[]>();
 
     for (const row of data) {
         const existing = grouped.get(row.date) || [];
@@ -127,7 +83,7 @@ export const forwardFillMeals = ({
     lastDate,
     role
 }: {
-    grouped: Map<string, MealPlanRow[]>;
+    grouped: Map<string, SimpleMealPlanCell[]>;
     firstDate: Dayjs;
     lastDate: Dayjs;
     role?: AppRoles;
@@ -145,9 +101,9 @@ export const forwardFillMeals = ({
         const dateStr = currentDate.format('YYYY-MM-DD');
         const existingRows = grouped.get(dateStr) || [];
 
-        const breakfast = existingRows.find((row) => row.feed_type === 'breakfast');
-        const lunch = existingRows.find((row) => row.feed_type === 'lunch');
-        const dinner = existingRows.find((row) => row.feed_type === 'dinner');
+        const breakfast = existingRows.find((row) => row.meal_time === 'breakfast');
+        const lunch = existingRows.find((row) => row.meal_time === 'lunch');
+        const dinner = existingRows.find((row) => row.meal_time === 'dinner');
 
         const filledBreakfast = breakfast
             ? { amount_meat: breakfast.amount_meat, amount_vegan: breakfast.amount_vegan }
@@ -189,8 +145,14 @@ export const forwardFillMeals = ({
     return result;
 };
 
-export const transformToRenderData = (data: MealPlanRow[], role?: AppRoles): MealPlanRowRender[] => {
-    const grouped = groupByDate(data);
+export const transformToRenderData = (data: SimpleMealPlanCell[], role?: AppRoles): MealPlanRowRender[] => {
+    let tempData = data;
+
+    if (data.length === 0) {
+        tempData = getDefaultCells();
+    }
+
+    const grouped = groupByDate(tempData);
     const dates = Array.from(grouped.keys()).sort();
 
     if (dates.length === 0) {
@@ -204,7 +166,9 @@ export const transformToRenderData = (data: MealPlanRow[], role?: AppRoles): Mea
 };
 
 export const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): MealPlanRowRender[] => {
-    if (data.length === 0) return data;
+    if (data.length === 0) {
+        return data;
+    }
 
     const lastDayOfJuly = dayjs().month(JULY_MONTH_INDEX).date(31);
 
@@ -244,7 +208,6 @@ export const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): Me
 };
 
 interface UseGroupMealPlanDataReturn {
-    data: MealPlanRow[];
     showAll: boolean;
     renderData: MealPlanRowRender[];
     displayData: MealPlanRowRender[];
@@ -254,7 +217,9 @@ interface UseGroupMealPlanDataReturn {
         mealTypeKey: MealTypeKey;
         editMeat: number | null;
         editaVegan: number | null;
-    }) => void;
+    }) => Promise<void>;
+    isLoading?: boolean;
+    isSaving?: boolean;
 }
 
 const filterDisplayData = (data: MealPlanRowRender[], showAll: boolean): MealPlanRowRender[] => {
@@ -270,19 +235,47 @@ const filterDisplayData = (data: MealPlanRowRender[], showAll: boolean): MealPla
     );
 };
 
-export const useGroupMealPlanData = (): UseGroupMealPlanDataReturn => {
+const getDefaultCells = (): SimpleMealPlanCell[] => [
+    {
+        date: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+        meal_time: 'breakfast',
+        amount_meat: null,
+        amount_vegan: null
+    },
+    {
+        date: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+        meal_time: 'lunch',
+        amount_meat: null,
+        amount_vegan: null
+    },
+    {
+        date: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+        meal_time: 'dinner',
+        amount_meat: null,
+        amount_vegan: null
+    }
+];
+
+export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlanDataReturn => {
+    const { data, refetch } = useOne<GroupBadgeEntity>({ resource: 'group-badges', id });
+
+    const { mutateAsync: updateCell, isLoading: isUpdating } = useUpdate();
+    const { mutateAsync: createCell, isLoading: isCreating } = useCreate();
+
     const { data: user } = useGetIdentity<UserData>();
     const role = user?.roles?.[0];
 
-    const [data, setData] = useState<MealPlanRow[]>(generateMockData());
     const [showAll, setShowAll] = useState(false);
 
-    const renderData = useMemo(() => fillMissingDates(transformToRenderData(data), role), [data, role]);
+    const renderData = useMemo(
+        () => fillMissingDates(transformToRenderData(data?.data?.planning_cells ?? []), role),
+        [data, role]
+    );
 
     const displayData = useMemo(() => filterDisplayData(renderData, showAll), [renderData, showAll]);
 
     const handleSave = useCallback(
-        ({
+        async ({
             date,
             mealTypeKey,
             editMeat,
@@ -293,30 +286,56 @@ export const useGroupMealPlanData = (): UseGroupMealPlanDataReturn => {
             editMeat: number | null;
             editaVegan: number | null;
         }) => {
-            const dateStr = date.format('YYYY-MM-DD');
+            if (!id) {
+                return;
+            }
 
-            setData((prev) =>
-                prev.map((row) => {
-                    if (row.date === dateStr && row.feed_type === mealTypeKey) {
-                        return {
-                            ...row,
-                            amount_meat: editMeat,
-                            amount_vegan: editaVegan
-                        };
-                    }
-                    return row;
-                })
-            );
+            const dateStr = date.format('YYYY-MM-DD');
+            const planningCells = data?.data?.planning_cells ?? [];
+
+            // Find existing cell
+            const existingCell = planningCells.find((cell) => cell.date === dateStr && cell.meal_time === mealTypeKey);
+
+            const payload = {
+                group_badge: id as number,
+                date: dateStr,
+                meal_time: mealTypeKey,
+                amount_meat: editMeat,
+                amount_vegan: editaVegan
+            };
+
+            try {
+                if (existingCell) {
+                    // Update existing cell
+                    await updateCell({
+                        resource: 'group-badge-planning-cells',
+                        id: existingCell.id,
+                        values: payload
+                    });
+                } else {
+                    // Create new cell
+                    await createCell({
+                        resource: 'group-badge-planning-cells',
+                        values: payload
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to save meal plan cell:', error);
+                // Could show error notification here
+            } finally {
+                await refetch();
+            }
         },
-        []
+        [id, data?.data?.planning_cells, updateCell, createCell]
     );
 
     return {
-        data,
         showAll,
         renderData,
         displayData,
         setShowAll,
-        handleSave
+        handleSave,
+        isLoading: isCreating || isUpdating,
+        isSaving: isCreating || isUpdating
     };
 };

@@ -116,7 +116,7 @@ export const GroupBadgeEdit: FC = () => {
 
             <Divider />
 
-            <GroupMealPlan />
+            <GroupMealPlan id={id} />
         </Edit>
     );
 };

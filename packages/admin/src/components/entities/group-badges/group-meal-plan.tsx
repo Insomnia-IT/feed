@@ -8,6 +8,7 @@ import { useGroupMealPlanUI } from './useGroupMealPlanUI';
 import { MealPlanEditModal } from './MealPlanEditModal';
 import { useScreen } from '../../../shared/providers';
 import cn from 'classnames';
+import { BaseKey } from '@refinedev/core';
 
 const formatMeals = (meals: { amount_meat: number | null; amount_vegan: number | null }, isMobile: boolean = false) => {
     if (meals?.amount_meat === null && meals?.amount_vegan === null) {
@@ -76,7 +77,7 @@ const MobileDayCard: React.FC<{
             <div className={styles.mobileMealCell}>
                 <span className={styles.mobileMealLabel}>Завтрак</span>
                 <MealCell
-                    value={record.breakfast || { amount_meat: null, amount_vegan: null }}
+                    value={record.breakfast}
                     record={record}
                     mealType="Завтрак"
                     mealTypeKey="breakfast"
@@ -87,7 +88,7 @@ const MobileDayCard: React.FC<{
             <div className={styles.mobileMealCell}>
                 <span className={styles.mobileMealLabel}>Обед</span>
                 <MealCell
-                    value={record.lunch || { amount_meat: null, amount_vegan: null }}
+                    value={record.lunch}
                     record={record}
                     mealType="Обед"
                     mealTypeKey="lunch"
@@ -98,7 +99,7 @@ const MobileDayCard: React.FC<{
             <div className={styles.mobileMealCell}>
                 <span className={styles.mobileMealLabel}>Ужин</span>
                 <MealCell
-                    value={record.dinner || { amount_meat: null, amount_vegan: null }}
+                    value={record.dinner}
                     record={record}
                     mealType="Ужин"
                     mealTypeKey="dinner"
@@ -110,8 +111,8 @@ const MobileDayCard: React.FC<{
     </Card>
 );
 
-export const GroupMealPlan: React.FC = () => {
-    const { displayData, showAll, setShowAll, handleSave: saveToData } = useGroupMealPlanData();
+export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
+    const { displayData, showAll, setShowAll, handleSave: saveToData } = useGroupMealPlanData({ id });
 
     const { isMobile } = useScreen();
 
