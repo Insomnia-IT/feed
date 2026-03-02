@@ -4,6 +4,7 @@ import path from 'path';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+    base: '/scanner/',
     plugins: [
         react({
             babel: {
@@ -26,32 +27,32 @@ export default defineConfig({
                 background_color: '#ffffff',
                 icons: [
                     {
-                        src: '/android-chrome-96x96.png',
+                        src: 'android-chrome-96x96.png',
                         sizes: '96x96',
                         type: 'image/png'
                     },
                     {
-                        src: '/mstile-150x150.png',
+                        src: 'mstile-150x150.png',
                         sizes: '150x150',
                         type: 'image/png'
                     },
                     {
-                        src: '/apple-touch-icon.png',
+                        src: 'apple-touch-icon.png',
                         sizes: '180x180',
                         type: 'image/png'
                     },
                     {
-                        src: '/favicon-32x32.png',
+                        src: 'favicon-32x32.png',
                         sizes: '32x32',
                         type: 'image/png'
                     },
                     {
-                        src: '/favicon-16x16.png',
+                        src: 'favicon-16x16.png',
                         sizes: '16x16',
                         type: 'image/png'
                     },
                     {
-                        src: '/safari-pinned-tab.svg',
+                        src: 'safari-pinned-tab.svg',
                         sizes: 'any',
                         type: 'image/svg+xml',
                         purpose: 'maskable'

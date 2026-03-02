@@ -276,7 +276,7 @@ export const VolList = () => {
                                     rowSelection={canBulkEdit ? rowSelection : undefined}
                                 />
                             )}
-                            {showPersons && <PersonsTable searchText={searchText} />}
+                            {showPersons && <PersonsTable key={searchText} searchText={searchText} />}
                             {canBulkEdit && (
                                 <MassEdit
                                     selectedVolunteers={selectedVols}

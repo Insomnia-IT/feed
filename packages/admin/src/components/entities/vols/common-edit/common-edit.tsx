@@ -84,7 +84,9 @@ export const CommonEdit = () => {
 
     const { options: groupBadgeOptions } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        optionValue: 'id',
+        pagination: { mode: 'off' }
     });
     const { options: transportsOptions } = useSelect<TransportEntity>({ resource: 'transports', optionLabel: 'name' });
     const { options: statusesOptions } = useSelect<StatusEntity>({ resource: 'statuses', optionLabel: 'name' });

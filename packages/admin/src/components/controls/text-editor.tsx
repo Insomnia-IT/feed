@@ -5,7 +5,6 @@ import 'quill/dist/quill.bubble.css';
 
 type QuillSelection = { index: number; length: number };
 type QuillDelta = unknown;
-type QuillToolbar = unknown[];
 
 interface QuillInstance {
     root: { innerHTML: string };
@@ -30,15 +29,6 @@ interface IProps {
     className?: string;
 }
 
-const TOOLBAR: QuillToolbar = [
-    [{ header: [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    ['blockquote', 'code-block'],
-    ['link', 'image'],
-    ['clean']
-];
-
 export const TextEditor = memo(function TextEditor({
     value = '',
     onChange,
@@ -60,16 +50,16 @@ export const TextEditor = memo(function TextEditor({
     const lastHtmlRef = useRef<string>(value ?? '');
 
     useEffect(() => {
+        const mountContainer = containerRef.current;
+        if (!mountContainer) return;
+
         let disposed = false;
 
         const mount = async () => {
-            const container = containerRef.current;
-            if (!container) return;
-
-            container.innerHTML = '';
+            mountContainer.innerHTML = '';
 
             const host = document.createElement('div');
-            container.appendChild(host);
+            mountContainer.appendChild(host);
 
             const quillMod = (await import('quill')) as unknown as QuillModule;
             const QuillCtor = quillMod.default;
@@ -80,8 +70,7 @@ export const TextEditor = memo(function TextEditor({
             const q = new QuillCtor(host, {
                 theme,
                 readOnly,
-                placeholder,
-                modules: { toolbar: TOOLBAR }
+                placeholder
             });
 
             quillRef.current = q;
@@ -119,7 +108,7 @@ export const TextEditor = memo(function TextEditor({
                 detach?.();
             } finally {
                 quillRef.current = null;
-                if (containerRef.current) containerRef.current.innerHTML = '';
+                mountContainer.innerHTML = '';
             }
         };
     }, [theme, placeholder, readOnly]);

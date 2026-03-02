@@ -15,21 +15,19 @@ export const History = () => {
 
     const tableRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
+        const table = tableRef.current;
+        if (!table) return;
+
         const handleScroll = (): void => {
-            if (tableRef.current) {
-                const { clientHeight, scrollHeight, scrollTop } = tableRef.current;
-                if (scrollTop + clientHeight >= scrollHeight - 5 && !loading && !end) {
-                    setLimit((prevLimit) => prevLimit + 20);
-                }
+            const { clientHeight, scrollHeight, scrollTop } = table;
+            if (scrollTop + clientHeight >= scrollHeight - 5 && !loading && !end) {
+                setLimit((prevLimit) => prevLimit + 20);
             }
         };
-        if (tableRef.current) {
-            tableRef.current.addEventListener('scroll', handleScroll);
-        }
+
+        table.addEventListener('scroll', handleScroll);
         return () => {
-            if (tableRef.current) {
-                tableRef.current?.removeEventListener('scroll', handleScroll);
-            }
+            table.removeEventListener('scroll', handleScroll);
         };
     }, [end, loading]);
 

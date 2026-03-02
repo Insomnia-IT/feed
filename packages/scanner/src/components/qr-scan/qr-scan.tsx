@@ -7,13 +7,18 @@ import { useApp } from 'model/app-provider';
 
 import css from './qr-scan.module.css';
 
-sas.attachTo(document, {
-    suffixKeyCodes: [13], // enter-key expected at the end of a scan
-    reactToPaste: false,
-    minLength: 8,
-    captureEvents: true,
-    keyCodeMapper: (e: KeyboardEvent) => String.fromCharCode(e.keyCode).toLowerCase()
-});
+type OnScanApi = {
+    attachTo: (target: Document, options: object) => void;
+    detachFrom?: (target: Document) => void;
+};
+
+const safeDetachOnScan = (api: OnScanApi) => {
+    try {
+        api.detachFrom?.(document);
+    } catch {
+        // onscan.js throws if detachFrom is called before the first attach
+    }
+};
 
 const Video1 = memo(
     ({ setRef }: { setRef: (ref: HTMLVideoElement) => void }) => <video className={css.qrScanVideo} ref={setRef} />,
@@ -39,6 +44,23 @@ export const QrScan = memo(({ onScan, style }: { onScan: (v: string) => void; st
     const onVideoReady = (ref: HTMLVideoElement) => {
         video.current = ref;
     };
+
+    useEffect(() => {
+        const onScanApi = sas as unknown as OnScanApi;
+
+        safeDetachOnScan(onScanApi);
+        onScanApi.attachTo(document, {
+            suffixKeyCodes: [13], // enter-key expected at the end of a scan
+            reactToPaste: false,
+            minLength: 8,
+            captureEvents: true,
+            keyCodeMapper: (e: KeyboardEvent) => String.fromCharCode(e.keyCode).toLowerCase()
+        });
+
+        return () => {
+            safeDetachOnScan(onScanApi);
+        };
+    }, []);
 
     useEffect(() => {
         if (!video.current) return;
