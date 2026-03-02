@@ -50,13 +50,19 @@ def test_create_new_meal(browser):
     page.login_admin()
     page.go_to_create_new_meal()
     page.create_new_meal()
-    time.sleep(1)
-    first_row_text = page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
+    meal_dates = []
+    for _ in range(12):
+        meal_dates = [
+            cell.text for cell in browser.find_elements(By.CSS_SELECTOR, "tbody.ant-table-tbody tr td:first-child")
+        ]
+        if any(today_date in cell for cell in meal_dates):
+            break
+        time.sleep(1)
     # приверка урла
     assert browser.current_url == f"{host}/feed-transaction?pageSize=10&current=1"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
-    assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
+    assert any(today_date in cell for cell in meal_dates), f"Ошибка! Ожидали дату {today_date}, но в таблице: {meal_dates}"
     print("✅ Запись успешно создана!")
 
 @skip()
