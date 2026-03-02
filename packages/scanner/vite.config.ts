@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { VitePWA } from 'vite-plugin-pwa';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
     plugins: [
@@ -14,7 +13,7 @@ export default defineConfig({
 
         VitePWA({
             registerType: 'autoUpdate',
-            injectRegister: 'script',
+            injectRegister: null,
             devOptions: {
                 enabled: true
             },
@@ -58,27 +57,7 @@ export default defineConfig({
                         purpose: 'maskable'
                     }
                 ]
-            },
-            workbox: {
-                runtimeCaching: [
-                    {
-                        urlPattern: /\/feedapi\/v1\//,
-                        handler: 'NetworkFirst',
-                        options: {
-                            cacheName: 'feed-data',
-                            backgroundSync: {
-                                name: 'feed-queue',
-                                options: { maxRetentionTime: 24 * 60 }
-                            },
-                            expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 }
-                        }
-                    }
-                ]
             }
-        }),
-
-        viteStaticCopy({
-            targets: [{ src: 'src/pwa-ver.txt', dest: '' }]
         })
     ],
 
@@ -94,8 +73,6 @@ export default defineConfig({
             'request-local-db': path.resolve(__dirname, './src/request-local-db')
         }
     },
-
-    assetsInclude: ['**/*.txt'],
 
     server: {
         port: 3001

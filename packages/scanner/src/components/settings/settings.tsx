@@ -4,7 +4,6 @@ import { Button } from 'shared/ui/button';
 import { useApp } from 'model/app-provider';
 import { Switcher } from 'shared/ui/switcher';
 import { AppViews, useView } from 'model/view-provider';
-import ver from '../../pwa-ver.txt?raw';
 
 import css from './settings.module.css';
 const formatDate = (value: number) => {
@@ -19,6 +18,7 @@ const formatDate = (value: number) => {
 export const Settings = () => {
     const { autoSync, doSync, lastSyncStart, setAuth, setMealTime, setPin, syncFetching, toggleAutoSync } = useApp();
     const { setCurrentView } = useView();
+    const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
 
     const logout = (): void => {
         setAuth(false);
@@ -90,7 +90,7 @@ export const Settings = () => {
             <button className={css.leave} onClick={logout}>
                 Выйти из кухни &rarr;
             </button>
-            <div className={css.version}>Версия приложения: {ver.replace('T', ' ')}</div>
+            <div className={css.version}>Версия приложения: {appVersion.replace('T', ' ')}</div>
         </div>
     );
 };

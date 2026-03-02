@@ -1,27 +1,17 @@
 import { useEffect } from 'react';
-
-import { clearCache } from 'shared/lib/utils';
-import ver from '../../pwa-ver.txt?raw';
+import { registerSW } from 'virtual:pwa-register';
 
 export const useCheckVersion = () => {
     useEffect(() => {
         if (import.meta.env.DEV) return;
 
-        const checkVer = () => {
-            const hash = Date.now();
-            fetch(`${import.meta.env.BASE_URL}pwa-ver.txt?h=${hash}`)
-                .then((r) => r.text())
-                .then((remote) => {
-                    if (remote.trim() && remote !== ver) {
-                        alert('Доступно обновление, приложение перезагрузится');
-                        clearCache();
-                    }
-                })
-                .catch(console.error);
-        };
-
-        if (navigator.onLine) checkVer();
-        window.addEventListener('online', checkVer);
-        return () => window.removeEventListener('online', checkVer);
+        const updateSW = registerSW({
+            immediate: true,
+            onNeedRefresh() {
+                if (window.confirm('Доступно обновление, приложение перезагрузится')) {
+                    void updateSW?.(true);
+                }
+            }
+        });
     }, []);
 };
