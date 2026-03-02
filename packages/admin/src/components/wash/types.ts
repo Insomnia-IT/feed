@@ -1,4 +1,4 @@
-import { VolEntity } from 'interfaces';
+import type { VolEntity } from 'interfaces';
 
 export interface VolunteersResponse {
     count: number;

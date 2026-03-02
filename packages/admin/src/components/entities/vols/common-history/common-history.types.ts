@@ -33,7 +33,17 @@ export interface IData {
         id: number;
         name: string;
     };
-    [key: string]: any;
+    [key: string]:
+        | string
+        | number
+        | boolean
+        | null
+        | undefined
+        | string[]
+        | {
+              id: number;
+              name: string;
+          };
 }
 
 interface IActor {

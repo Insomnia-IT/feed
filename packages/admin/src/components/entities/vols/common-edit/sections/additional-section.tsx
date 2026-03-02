@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Divider, Form, Input, Button, Checkbox, Tooltip } from 'antd';
 import { FrownOutlined, SmileOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { DeleteButton } from '@refinedev/antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import BanModal from './ban-modal';
 import useCanAccess from '../../use-can-access';
@@ -127,9 +127,6 @@ export const AdditionalSection = ({
                 <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: 0 }}>
                     <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                 </Form.Item>
-                <Form.Item name="person" hidden />
-                <Form.Item name="person_id" hidden />
-                <Form.Item name="deleted_at" hidden />
             </div>
         </>
     );

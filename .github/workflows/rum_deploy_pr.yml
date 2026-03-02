@@ -8,6 +8,10 @@ on:
       - reopened
       - closed
 
+concurrency:
+  group: rum-deploy-pr-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: [self-hosted, rumsrv]
@@ -20,7 +24,7 @@ jobs:
       PHOTO_STORAGE_PATH: /var/feed_db/photos/
     #   PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 # DB
     - name: setup db dir
       if: github.event.action != 'closed'
@@ -45,7 +49,7 @@ jobs:
     - name: Create app link
       if: github.event.action != 'closed'
       id: create-link
-      run: echo "::set-output name=app_url::https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru"
+      run: echo "app_url=https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru" >> "$GITHUB_OUTPUT"
     - name: remove db dir
       if: github.event.action == 'closed'
       run: |
@@ -64,7 +68,7 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: [self-hosted, rumsrv]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 #       - name: Checkout base branch
 #         uses: actions/checkout@v4
 #         with:
@@ -97,4 +101,3 @@ jobs:
       - name: 🍏 Shorter Log
         if: always()
         run: cat /tmp/tests.short.log
-

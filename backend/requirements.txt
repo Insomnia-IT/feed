@@ -13,6 +13,7 @@ drf-spectacular==0.26.2
 python-dotenv
 dj-rest-auth
 pillow
+openpyxl
 python-crontab
 opentelemetry-instrumentation-django
 opentelemetry-instrumentation-requests

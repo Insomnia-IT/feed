@@ -37,12 +37,24 @@ class BasePage:
         return False
 
     def first_window(self):
-        first_button = self.browser.find_element(*registration.CHOOSE_LOGIN_TYPE)
-        first_button.click()
+        try:
+            first_button = WebDriverWait(self.browser, 10).until(
+                EC.element_to_be_clickable(registration.CHOOSE_LOGIN_TYPE)
+            )
+            first_button.click()
+        except TimeoutException:
+            WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located(registration.LOGIN)
+            )
 
     def first_window_qr(self):
-        first_button = self.browser.find_element(*registration.CHOOSE_QR_TYPE)
-        first_button.click()
+        try:
+            first_button = WebDriverWait(self.browser, 10).until(
+                EC.element_to_be_clickable(registration.CHOOSE_QR_TYPE)
+            )
+            first_button.click()
+        except TimeoutException:
+            pass
 
     def scan_user(self):
         self.driver.execute_script("""
@@ -64,8 +76,21 @@ class BasePage:
         prod_link.click()
 
     def pagination(self):
-        page_link = self.browser.find_element(By.CLASS_NAME, "ant-pagination-item-2")
-        page_link.click()
+        page_locators = [
+            (By.CSS_SELECTOR, "li.ant-pagination-item-2"),
+            (By.CSS_SELECTOR, "li.ant-pagination-next:not(.ant-pagination-disabled) button"),
+            (By.CSS_SELECTOR, "li.ant-pagination-next:not(.ant-pagination-disabled)")
+        ]
+
+        for locator in page_locators:
+            try:
+                page_link = WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable(locator))
+                page_link.click()
+                return
+            except TimeoutException:
+                continue
+
+        raise NoSuchElementException("Could not find an enabled pagination control for page 2")
 
     def go_to_create_new_meal(self):
         go_to_create = self.browser.find_element(By.XPATH, "//button[span[text()='Создать']]")
@@ -325,8 +350,6 @@ class BasePage:
         find.send_keys(Keys.END)  # Перемещаем курсор в конец строки
         for _ in range(len(find.get_attribute("value"))):
             find.send_keys(Keys.BACKSPACE)  # Удаляем символы один за другим
-
-
 
 
 

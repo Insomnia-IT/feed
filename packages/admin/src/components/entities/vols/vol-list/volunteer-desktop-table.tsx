@@ -1,7 +1,8 @@
+import { useMemo, useContext, type MouseEvent as ReactMouseEvent } from 'react';
 import { Table, Tag } from 'antd';
 import type { TablePaginationConfig, TableProps } from 'antd';
 import { CheckOutlined, StopOutlined } from '@ant-design/icons';
-import { FC, useMemo, useContext } from 'react';
+import type { TableRowSelection } from 'antd/es/table/interface';
 
 import type { ArrivalEntity, CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
 import { getSorter } from 'utils';
@@ -9,8 +10,6 @@ import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from '../list.module.css';
-
-import { TableRowSelection } from 'antd/es/table/interface';
 
 const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
     const value =
@@ -33,7 +32,15 @@ function getFormattedArrivals(arrivalString: string): string {
 }
 
 /* Компонент отображающий список волонтеров на декстопе */
-export const VolunteerDesktopTable: FC<{
+export const VolunteerDesktopTable = ({
+    customFields,
+    openVolunteer,
+    pagination,
+    statusById,
+    volunteersData,
+    volunteersIsLoading,
+    rowSelection
+}: {
     openVolunteer: (id: number) => Promise<boolean>;
     volunteersData: Array<VolEntity>;
     volunteersIsLoading: boolean;
@@ -41,15 +48,17 @@ export const VolunteerDesktopTable: FC<{
     statusById: Record<string, string>;
     customFields?: Array<CustomFieldEntity>;
     rowSelection?: TableRowSelection<VolEntity> | undefined;
-}> = ({ customFields, openVolunteer, pagination, statusById, volunteersData, volunteersIsLoading, rowSelection }) => {
+}) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
 
-    const getCellAction: (id: number) => { onClick: (event: any) => void } = (
+    const getCellAction: (id: number) => { onClick: (event: ReactMouseEvent<HTMLElement>) => void } = (
         id: number
-    ): { onClick: (event: any) => void } => {
+    ): { onClick: (event: ReactMouseEvent<HTMLElement>) => void } => {
         return {
             onClick: (event): void => {
-                if (!(event.target.closest('button') || event.target.querySelector('input'))) {
+                const target = event.target;
+                if (!(target instanceof Element)) return;
+                if (!(target.closest('button') || target.closest('input'))) {
                     openVolunteer(id);
                 }
             }
@@ -192,9 +201,7 @@ export const VolunteerDesktopTable: FC<{
     );
 };
 
-export const CheckMark: FC<{
-    checked: boolean;
-}> = ({ checked }) => {
+export const CheckMark = ({ checked }: { checked: boolean }) => {
     const style = useMemo(
         () => ({
             color: checked ? 'green' : undefined
@@ -204,9 +211,7 @@ export const CheckMark: FC<{
     return <CheckOutlined style={style} />;
 };
 
-export const StopMark: FC<{
-    checked: boolean;
-}> = ({ checked }) => {
+export const StopMark = ({ checked }: { checked: boolean }) => {
     const style = useMemo(
         () => ({
             color: checked ? 'red' : undefined
@@ -216,14 +221,10 @@ export const StopMark: FC<{
     return <StopOutlined style={style} />;
 };
 
-export const ListBooleanPositive: FC<{
-    value: boolean;
-}> = ({ value }) => {
+export const ListBooleanPositive = ({ value }: { value: boolean }) => {
     return value ? <CheckMark checked={value} /> : null;
 };
 
-export const ListBooleanNegative: FC<{
-    value: boolean;
-}> = ({ value }) => {
+export const ListBooleanNegative = ({ value }: { value: boolean }) => {
     return value ? <StopMark checked={value} /> : null;
 };

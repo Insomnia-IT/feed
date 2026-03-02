@@ -1,47 +1,34 @@
+﻿import { useCallback, useMemo, useState } from 'react';
 import { List, useTable } from '@refinedev/antd';
+import type { CrudFilter, HttpError } from '@refinedev/core';
 import { Button, DatePicker, Form, Input, Space, Table, Tag } from 'antd';
-import { CrudFilter, HttpError } from '@refinedev/core';
-import { FC, useCallback, useState } from 'react';
+import type { ColumnsType } from 'antd/es/table';
 import { DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
-import { saveXLSX } from 'shared/lib/saveXLSX';
-import { FeedTransactionEntity } from 'interfaces';
+import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
+import type { FeedTransactionEntity } from 'interfaces';
 import { MEAL_MAP, NEW_API_URL } from 'const';
-import { ColumnsType } from 'antd/es/table';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
-import { FilterItem } from '../vols/vol-list/filters/filter-types';
+import type { FilterItem } from '../vols/vol-list/filters/filter-types';
 import { Filters } from '../vols/vol-list/filters/filters';
 
 const { RangePicker } = DatePicker;
 
-interface TransformedTransaction {
-    ulid: string;
-    dateTime: string;
-    volunteerName: string;
-    volunteerId: number;
-    feedType: string;
-    mealType: string;
-    kitchenName: string;
-    amount: number;
-    reason?: string;
-    groupBadgeName: string;
-    directions: Array<string>;
-}
+type SearchFormValues = {
+    search?: string;
+    date?: [string, string];
+};
 
-export const FeedTransactionList: FC = () => {
+export const FeedTransactionList = () => {
     const { filterFields, visibleFilters, setVisibleFilters } = useTransactionsFilters();
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
 
-    const { searchFormProps, tableProps, filters, setCurrent, setPageSize } = useTable<
-        FeedTransactionEntity,
-        HttpError,
-        { search?: string; date?: [string, string] }
-    >({
-        defaultSetFilterBehavior: 'replace',
-        onSearch: (values: { search?: string; date?: [string, string] }) => {
+    const { searchFormProps, tableProps, filters } = useTable<FeedTransactionEntity, HttpError, SearchFormValues>({
+        filters: { defaultBehavior: 'replace' },
+        onSearch: (values: SearchFormValues) => {
             const newFilters: Array<CrudFilter> = [];
 
             newFilters.push({
@@ -71,7 +58,7 @@ export const FeedTransactionList: FC = () => {
                 let valueToUse: string = typeof value === 'boolean' ? String(value) : (value as string);
 
                 if (Array.isArray(value)) {
-                    valueToUse = value.length > 1 ? value.join(',') : String(valueToUse[0]);
+                    valueToUse = value.length > 1 ? value.join(',') : String(value[0]);
                 }
 
                 newFilters.push({
@@ -85,106 +72,74 @@ export const FeedTransactionList: FC = () => {
         }
     });
 
-    const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
-        return (
-            transactions?.map<TransformedTransaction>((item: FeedTransactionEntity) => {
-                return {
-                    ulid: item.ulid,
-                    dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
-                    volunteerName: item?.volunteer_name || 'Аноним',
-                    volunteerId: item.volunteer,
-                    feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
-                    mealType: MEAL_MAP[item.meal_time],
-                    kitchenName: item?.kitchen_name ?? '',
-                    amount: item.amount,
-                    reason: item?.reason ?? undefined,
-                    groupBadgeName: item.group_badge_name ?? '',
-                    directions: item?.volunteer_directions ?? []
-                };
-            }) ?? []
-        );
-    };
-
-    const transformedResult = transformResult(tableProps?.dataSource);
-
-    const tableColumns: ColumnsType<TransformedTransaction> = [
-        {
-            dataIndex: 'dateTime',
-            title: 'Время'
-        },
-        { dataIndex: 'volunteerName', title: 'Волонтер' },
-        { dataIndex: 'volunteerId', title: 'ID волонтера' },
-        { dataIndex: 'feedType', title: 'Тип питания' },
-        { dataIndex: 'mealType', title: 'Прием пищи' },
-        { dataIndex: 'kitchenName', title: 'Кухня' },
-        { dataIndex: 'amount', title: 'Кол-во' },
-        { dataIndex: 'reason', title: 'Причина' },
-        { dataIndex: 'groupBadgeName', title: 'Групповой бейдж' },
-        {
-            dataIndex: 'directions',
-            title: 'Службы',
-            render: (value: string[]) => {
-                return value.map((name) => (
-                    <Tag key={name} color={'default'} icon={false} closable={false}>
-                        {name}
-                    </Tag>
-                ));
+    const tableColumns: ColumnsType<FeedTransactionEntity> = useMemo(
+        () => [
+            {
+                key: 'dateTime',
+                title: 'Время',
+                render: (_: unknown, record: FeedTransactionEntity) => dayjs(record.dtime).format('DD/MM/YY HH:mm:ss')
+            },
+            {
+                key: 'volunteerName',
+                title: 'Волонтер',
+                render: (_: unknown, record: FeedTransactionEntity) => record?.volunteer_name || 'Аноним'
+            },
+            { dataIndex: 'volunteer', title: 'ID волонтера' },
+            {
+                key: 'feedType',
+                title: 'Тип питания',
+                render: (_: unknown, record: FeedTransactionEntity) =>
+                    record.is_vegan !== null ? (record.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : ''
+            },
+            {
+                key: 'mealType',
+                title: 'Прием пищи',
+                render: (_: unknown, record: FeedTransactionEntity) => MEAL_MAP[record.meal_time]
+            },
+            {
+                key: 'kitchenName',
+                title: 'Кухня',
+                render: (_: unknown, record: FeedTransactionEntity) => record?.kitchen_name ?? ''
+            },
+            { dataIndex: 'amount', title: 'Кол-во' },
+            {
+                key: 'reason',
+                title: 'Причина',
+                render: (_: unknown, record: FeedTransactionEntity) => record?.reason ?? ''
+            },
+            {
+                key: 'groupBadgeName',
+                title: 'Групповой бейдж',
+                render: (_: unknown, record: FeedTransactionEntity) => record?.group_badge_name ?? ''
+            },
+            {
+                key: 'directions',
+                title: 'Службы',
+                render: (_: unknown, record: FeedTransactionEntity) =>
+                    (record?.volunteer_directions ?? []).map((name) => (
+                        <Tag key={name} color={'default'} icon={false} closable={false}>
+                            {name}
+                        </Tag>
+                    ))
             }
-        }
-    ];
+        ],
+        []
+    );
 
     const createAndSaveXLSX = useCallback(async (): Promise<void> => {
-        const ExcelJS = await import('exceljs');
-
-        let url = `${NEW_API_URL}/feed-transaction/?limit=100000`;
+        let url = `${NEW_API_URL}/feed-transaction/export-xlsx/?limit=100000`;
 
         if (filters) {
             filters.forEach((filter: CrudFilter) => {
                 if (filter.value && 'field' in filter) {
-                    url = url.concat(`&${filter?.field}=${filter.value}`);
+                    url = url.concat(`&${String(filter.field)}=${encodeURIComponent(String(filter.value))}`);
                 }
             });
         }
 
-        const { data } = await axios.get(url);
-        const transactions = data.results as Array<FeedTransactionEntity>;
-        const workbook = new ExcelJS.Workbook();
-        const sheet = workbook.addWorksheet('Transactions log');
-
-        const header = [
-            'Дата',
-            'Время',
-            'ID волонтера',
-            'Позывной',
-            'Фамилия Имя',
-            'Тип питания',
-            'Прием пищи',
-            'Кухня',
-            'Кол-во',
-            'Причина',
-            'Групповой бейдж',
-            'Службы'
-        ];
-        sheet.addRow(header);
-
-        transactions?.forEach((tx) => {
-            sheet.addRow([
-                dayjs(tx.dtime).format('DD.MM.YYYY'),
-                dayjs(tx.dtime).format('HH:mm:ss'),
-                tx.volunteer,
-                tx?.volunteer_name ?? 'Аноним',
-                [tx.volunteer_last_name, tx.volunteer_first_name].filter((item) => !!item).join(' '),
-                tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
-                MEAL_MAP[tx.meal_time],
-                tx?.kitchen_name ?? '',
-                tx.amount,
-                tx?.reason ?? '',
-                tx?.group_badge_name ?? '',
-                (tx?.volunteer_directions ?? []).join(',')
-            ]);
-        });
-
-        void saveXLSX(workbook, 'feed-transactions');
+        const { data, headers } = await axios.get<Blob>(url, { responseType: 'blob' });
+        const filename = getFilenameFromContentDisposition(headers['content-disposition'], 'feed-transactions.xlsx');
+        downloadBlob(data, filename);
     }, [filters]);
 
     const handleClickDownload = useCallback((): void => {
@@ -230,19 +185,11 @@ export const FeedTransactionList: FC = () => {
                     }}
                 />
             </Form>
-            <Table<TransformedTransaction>
+            <Table
+                onChange={tableProps.onChange}
                 loading={tableProps.loading}
-                pagination={{
-                    ...tableProps.pagination,
-                    onChange: (page, size) => {
-                        setCurrent(page);
-
-                        if (typeof size === 'number') {
-                            setPageSize(size);
-                        }
-                    }
-                }}
-                dataSource={transformedResult}
+                pagination={tableProps.pagination}
+                dataSource={tableProps.dataSource}
                 rowKey="ulid"
                 footer={() => (
                     <Button type="primary" onClick={handleClickDownload} icon={<DownloadOutlined />}>
