@@ -240,6 +240,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         group_operation_uuid = uuid4()
         updated_volunteers = []
         errors = []
+        warnings = []
 
         try:
             with transaction.atomic():
@@ -341,7 +342,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 group_operation_uuid=str(group_operation_uuid),
                             )
                     else:
-                        errors.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        warnings.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
