@@ -5,21 +5,52 @@ import React, { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarOutlined } from '@ant-design/icons';
 
-const AdaptiveDatePicker = ({
-    value,
-    onChange,
-    variant
-}: {
-    /** Показывать чек-бокс выбора периода */
-    showModeChanger?: boolean;
-    variant?: 'single' | 'range';
+const SEPARATOR = ':';
+
+interface AdaptiveDatePickerProps {
     value?: string | null;
-    onChange: ((dateString?: string | null) => void) | undefined;
-}) => {
+    onChange: (dateString?: string | null) => void;
+    variant?: 'single' | 'range';
+}
+
+interface DesktopDatePickerProps {
+    useRange: boolean;
+    setUseRange: (value: boolean) => void;
+    value?: string | null;
+    onChange: (dateString?: string) => void;
+}
+
+interface MobileDatePickerProps {
+    value?: string | null;
+    inputStyle?: React.CSSProperties;
+    onChange?: (date?: string | null) => void;
+    useRange: boolean;
+    setUseRange: (value: boolean) => void;
+}
+
+const parseDateValue = (value: string | null | undefined): [string, string] => {
+    const parts = (value ?? '').split(SEPARATOR);
+    return [parts[0] ?? '', parts[1] ?? ''];
+};
+
+const formatDateRange = (dates: (dayjs.Dayjs | null | undefined)[]): string => {
+    return dates
+        .filter((e) => !!e)
+        .map((date) => date?.format('YYYY-MM-DD'))
+        .join(SEPARATOR);
+};
+
+const PANEL_STYLE: React.CSSProperties = {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '8px',
+    padding: '8px'
+};
+
+const AdaptiveDatePicker = ({ value, onChange, variant }: AdaptiveDatePickerProps) => {
     const { isMobile = true } = useScreen();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_beforeString, afterString] = useMemo(() => (value ?? '')?.split(SEPARATOR) ?? [], [value]);
+    const [, afterString] = useMemo(() => parseDateValue(value), [value]);
 
     const [useRange, setUseRange] = useState(variant ? variant === 'range' : !!afterString);
 
@@ -30,38 +61,14 @@ const AdaptiveDatePicker = ({
     return <DesktopDatePicker useRange={useRange} setUseRange={setUseRange} value={value} onChange={onChange} />;
 };
 
-const SEPARATOR = ':';
-
-const DesktopDatePicker = ({
-    value,
-    onChange,
-    useRange,
-    setUseRange
-}: {
-    open?: boolean;
-    /** Показывать чек-бокс выбора периода */
-    showModeChanger?: boolean;
-    useRange: boolean;
-    setUseRange: (value: boolean) => void;
-    value?: string | null;
-    onChange: ((dateString?: string) => void) | undefined;
-}) => {
+const DesktopDatePicker = ({ value, onChange, useRange, setUseRange }: DesktopDatePickerProps) => {
     const [isCalPopOpen, setIsCalPopOpen] = useState<boolean | undefined>(undefined);
-    const [beforeString, afterString] = useMemo(() => (value ?? '')?.split(SEPARATOR) ?? [], [value]);
-
-    const panelStyle = {
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '8px',
-        padding: '8px',
-        width: useRange ? '50%' : undefined
-    };
+    const [beforeString, afterString] = useMemo(() => parseDateValue(value), [value]);
 
     const panelRender = (panel: React.ReactNode) => (
         <>
-            <Row style={panelStyle}>
+            <Row style={{ ...PANEL_STYLE, width: useRange ? '50%' : undefined }}>
                 <Typography.Text>Искать в диапазоне дат</Typography.Text>
-
                 <Switch
                     size={'small'}
                     value={useRange}
@@ -86,15 +93,8 @@ const DesktopDatePicker = ({
                 style={{ width: 300, display: useRange ? undefined : 'none' }}
                 value={[beforeString ? dayjs(beforeString) : undefined, afterString ? dayjs(afterString) : undefined]}
                 onChange={(value) => {
-                    // Сохраняем значение в формате YYYY-MM-DD:YYYY-MM-DD
-                    const periodString = (value ?? [])
-                        .filter((e) => !!e)
-                        .map((date) => date?.format('YYYY-MM-DD'))
-                        .join(SEPARATOR);
-
-                    if (onChange) {
-                        onChange(periodString);
-                    }
+                    const periodString = formatDateRange(value ?? []);
+                    onChange(periodString);
                 }}
             />
         );
@@ -107,27 +107,15 @@ const DesktopDatePicker = ({
             panelRender={panelRender}
             value={beforeString ? dayjs(beforeString) : undefined}
             open={isCalPopOpen}
-            onChange={(value) => (onChange ? onChange(value?.format('YYYY-MM-DD')) : undefined)}
+            onChange={(value) => onChange(value?.format('YYYY-MM-DD'))}
         />
     );
 };
 
-const MobileDatePicker = ({
-    value,
-    inputStyle,
-    onChange,
-    useRange,
-    setUseRange
-}: {
-    value?: string | null;
-    inputStyle?: React.CSSProperties;
-    onChange?: (date?: string | null) => void;
-    useRange: boolean;
-    setUseRange: (value: boolean) => void;
-}) => {
+const MobileDatePicker = ({ value, inputStyle, onChange, useRange, setUseRange }: MobileDatePickerProps) => {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-    const [beforeString, afterString] = useMemo(() => (value ?? '')?.split(SEPARATOR) ?? [], [value]);
+    const [beforeString, afterString] = useMemo(() => parseDateValue(value), [value]);
 
     const getDefaultTempDate = (): Date | [Date, Date] | null => {
         if (!beforeString) {
@@ -146,12 +134,10 @@ const MobileDatePicker = ({
 
         if (Array.isArray(value)) {
             onChange(value.map((valuePart) => dayjs(valuePart)?.format('YYYY-MM-DD')).join(SEPARATOR));
-
             return;
         }
 
         const dateJS = dayjs(value);
-
         onChange(dateJS?.format('YYYY-MM-DD'));
     };
 
@@ -180,7 +166,7 @@ const MobileDatePicker = ({
                 allowClear
                 suffix={value ? null : <CalendarOutlined />}
             />
-            {/* @ts-expect-error: сложный вывод типа */}
+            {/* @ts-expect-error - selectionMode type narrowing issue */}
             <CalendarPicker
                 weekStartsOn="Monday"
                 title={
