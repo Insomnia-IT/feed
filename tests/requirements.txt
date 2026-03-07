@@ -9,4 +9,4 @@ webdriver-manager==4.0.2
 
 selenium==4.31.0
 pytest==8.3.5
-pytest-repeat==0.9.4
+pytest-retry==1.7.0
