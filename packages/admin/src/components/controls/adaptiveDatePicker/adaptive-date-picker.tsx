@@ -5,8 +5,6 @@ import React, { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { CalendarOutlined } from '@ant-design/icons';
 
-// TODO: RANGE WORKING CORRECT
-
 const AdaptiveDatePicker = ({
     value,
     onChange,
@@ -131,33 +129,47 @@ const MobileDatePicker = ({
 
     const [beforeString, afterString] = useMemo(() => (value ?? '')?.split(SEPARATOR) ?? [], [value]);
 
-    const [tempDate, setTempDate] = useState<Date | [Date, Date] | null>(
-        useRange ? [dayjs(beforeString)?.toDate(), dayjs(afterString)?.toDate()] : dayjs(beforeString)?.toDate()
-    );
+    const getDefaultTempDate = (): Date | [Date, Date] | null => {
+        if (!beforeString) {
+            return null;
+        }
+
+        return useRange ? [dayjs(beforeString)?.toDate(), dayjs(afterString)?.toDate()] : dayjs(beforeString)?.toDate();
+    };
+
+    const [tempDate, setTempDate] = useState<Date | [Date, Date] | null>(getDefaultTempDate());
 
     const onChangeInner = (value: Date | [Date, Date] | null) => {
-        if (onChange) {
-            if (Array.isArray(value)) {
-                onChange(value.map((valuePart) => dayjs(valuePart)?.format('YYYY-MM-DD')).join(SEPARATOR));
-
-                return;
-            }
-
-            const dateJS = dayjs(value);
-
-            onChange(dateJS?.format('YYYY-MM-DD'));
+        if (!onChange) {
+            return;
         }
+
+        if (Array.isArray(value)) {
+            onChange(value.map((valuePart) => dayjs(valuePart)?.format('YYYY-MM-DD')).join(SEPARATOR));
+
+            return;
+        }
+
+        const dateJS = dayjs(value);
+
+        onChange(dateJS?.format('YYYY-MM-DD'));
+    };
+
+    const getTextValue = (value: Date | [Date, Date] | null) => {
+        if (!beforeString) {
+            return '';
+        }
+
+        return Array.isArray(value)
+            ? value.map((date) => dayjs(date).format('DD.MM.YYYY')).join(' - ')
+            : dayjs(value)?.format('DD.MM.YYYY');
     };
 
     return (
         <>
             <Input
                 placeholder="Выберите дату"
-                value={
-                    Array.isArray(tempDate)
-                        ? tempDate.map((date) => dayjs(date).format('DD.MM.YYYY')).join(' - ')
-                        : dayjs(tempDate)?.format('DD.MM.YYYY')
-                }
+                value={getTextValue(tempDate)}
                 style={inputStyle}
                 onClick={() => setIsPopupOpen(true)}
                 onClear={() => {
@@ -188,12 +200,12 @@ const MobileDatePicker = ({
                 }
                 selectionMode={useRange ? 'range' : 'single'}
                 visible={isPopupOpen}
-                value={tempDate}
+                value={tempDate ?? dayjs().toDate()}
                 onClose={() => setIsPopupOpen(false)}
                 onChange={setTempDate}
                 onConfirm={onChangeInner}
-                defaultValue={tempDate}
-                min={dayjs(beforeString).subtract(1, 'year').toDate()}
+                defaultValue={tempDate ?? dayjs().toDate()}
+                min={(dayjs(beforeString).isValid() ? dayjs(beforeString) : dayjs()).subtract(1, 'year').toDate()}
                 allowClear
             />
         </>
