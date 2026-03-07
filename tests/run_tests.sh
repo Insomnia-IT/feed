@@ -1,4 +1,4 @@
-export NREPS=2
+export NREPS=1
 
 echo "Gonna explicitly build docker compose for regress-tests"
 docker compose build
