@@ -119,6 +119,10 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
 
         for volunteer in queryset.iterator(chunk_size=2000):
             arrivals = sorted(list(volunteer.arrivals.all()), key=lambda arrival: arrival.arrival_date)
+            if volunteer.supervisor_id:
+                supervisor_name = models.Volunteer.objects.get(pk=volunteer.supervisor_id).values("name")
+            else:
+                supervisor_name = ""
 
             current_arrival = next(
                 (
@@ -170,6 +174,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                     1 if volunteer.is_ticket_received else 0,
                     re.sub(r"<[^>]*>", "", volunteer.comment or ""),
                     volunteer.access_role.name if volunteer.access_role else "",
+                    supervisor_name if supervisor_name else "",
                     *custom_values,
                 ]
             )
@@ -202,6 +207,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                 "Ticket Received",
                 "Comment",
                 "Access Role",
+                "Supervisor name",
                 *[field["name"] for field in custom_fields],
             ],
             rows=rows,
