@@ -76,7 +76,9 @@ class BasePage:
         prod_link.click()
 
     def pagination(self):
-        page_link = self.browser.find_element(By.CLASS_NAME, "ant-pagination-item-2")
+        page_link = WebDriverWait(self.browser, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, ".ant-pagination-item-2"))
+        )
         page_link.click()
 
     def go_to_create_new_meal(self):
@@ -337,7 +339,6 @@ class BasePage:
         find.send_keys(Keys.END)  # Перемещаем курсор в конец строки
         for _ in range(len(find.get_attribute("value"))):
             find.send_keys(Keys.BACKSPACE)  # Удаляем символы один за другим
-
 
 
 
