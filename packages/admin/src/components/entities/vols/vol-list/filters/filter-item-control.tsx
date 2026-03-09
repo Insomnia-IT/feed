@@ -1,27 +1,24 @@
-import { useState } from 'react';
-import { Col, DatePicker, Input, Row, Select, Typography, Switch } from 'antd';
+import { useState, type FC } from 'react';
+import { DownOutlined } from '@ant-design/icons';
+import { Col, DatePicker, Input, Row, Select, Switch, Typography } from 'antd';
+import dayjs from 'dayjs';
+
 import { FilterFieldType } from './filter-types';
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
-
 import { getFilterListItems } from './get-filter-list-items';
-import dayjs from 'dayjs';
+import styles from '../../list.module.css';
 
 const fieldStyle = {
     minWidth: '110px',
     gap: '4px'
 };
 
-export const FilterItemControl = ({
-    field,
-    filterItem,
-    onFilterTextValueChange,
-    onFilterValueChange
-}: {
+export const FilterItemControl: FC<{
     field: FilterField;
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}) => {
+}> = ({ field, filterItem, onFilterTextValueChange, onFilterValueChange }) => {
     if (field.type === FilterFieldType.Lookup || field.type === FilterFieldType.Boolean) {
         return (
             <FilterSelect
@@ -43,22 +40,16 @@ export const FilterItemControl = ({
 
 const SEPARATOR = ':';
 
-const DateField = ({
-    field,
-    filterItem,
-    onFilterTextValueChange
-}: {
+const DateField: FC<{
     field: FilterField;
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}) => {
+}> = ({ field, filterItem, onFilterTextValueChange }) => {
     const [isCalPopOpen, setIsCalPopOpen] = useState<boolean | undefined>(undefined);
 
     const [beforeString, afterString] = ((filterItem?.value as string | undefined) ?? '')?.split(SEPARATOR) ?? [];
-
     const [showPeriod, setShowPeriod] = useState(!!afterString);
 
-    // Ожидаем значение в формате YYYY-MM-DD:YYYY-MM-DD
     const changeValue = (value: string) => onFilterTextValueChange(field.name, value);
 
     return (
@@ -76,7 +67,6 @@ const DateField = ({
                             <>
                                 <Row style={{ justifyContent: 'flex-start', padding: '8px', gap: '8px', width: '50%' }}>
                                     <Typography.Text>Искать в диапазоне дат</Typography.Text>
-
                                     <Switch
                                         size={'small'}
                                         value={showPeriod}
@@ -95,7 +85,6 @@ const DateField = ({
                             afterString ? dayjs(afterString) : undefined
                         ]}
                         onChange={(value) => {
-                            // Сохраняем значение в формате YYYY-MM-DD:YYYY-MM-DD
                             const periodString = (value ?? [])
                                 .filter((e) => !!e)
                                 .map((date) => date?.format('YYYY-MM-DD'))
@@ -112,7 +101,6 @@ const DateField = ({
                             <>
                                 <Row style={{ justifyContent: 'flex-start', gap: '8px', padding: '8px' }}>
                                     <Typography.Text>Искать в диапазоне дат</Typography.Text>
-
                                     <Switch
                                         size={'small'}
                                         value={showPeriod}
@@ -127,10 +115,7 @@ const DateField = ({
                         value={beforeString ? dayjs(beforeString) : undefined}
                         style={{ width: 300, display: !showPeriod ? undefined : 'none' }}
                         onChange={(value) => {
-                            // Сохраняем значение в формате YYYY-MM-DD
-                            const periodString = value?.format('YYYY-MM-DD');
-
-                            changeValue(periodString);
+                            changeValue(value?.format('YYYY-MM-DD') ?? '');
                         }}
                     />
                 )}
@@ -139,15 +124,11 @@ const DateField = ({
     );
 };
 
-const FilterInput = ({
-    field,
-    filterItem,
-    onFilterTextValueChange
-}: {
+const FilterInput: FC<{
     field: FilterField;
     filterItem?: FilterItem;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}) => {
+}> = ({ field, filterItem, onFilterTextValueChange }) => {
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
@@ -155,7 +136,6 @@ const FilterInput = ({
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
-
             <Row>
                 <Input
                     style={fieldStyle}
@@ -170,22 +150,19 @@ const FilterInput = ({
     );
 };
 
-const FilterSelect = ({
-    field,
-    isMultiple,
-    filterItem,
-    onFilterValueChange,
-    onFilterTextValueChange
-}: {
+const FilterSelect: FC<{
     field: FilterField;
     isMultiple?: boolean;
     filterItem?: FilterItem;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}) => {
+}> = ({ field, isMultiple, filterItem, onFilterValueChange, onFilterTextValueChange }) => {
     const values = getFilterListItems(field, filterItem);
 
-    const onChange = (_id: string, value: FilterListItem) => onFilterValueChange(field.name, value, field.single);
+    const onSelect = (_value: string, option: FilterListItem) =>
+        onFilterValueChange(field.name, { ...option, selected: false }, field.single);
+    const onDeselect = (_value: string, option: FilterListItem) =>
+        onFilterValueChange(field.name, { ...option, selected: true }, field.single);
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
@@ -193,21 +170,22 @@ const FilterSelect = ({
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
-
             <Row>
                 <Select
+                    className={styles.filterValueSelect}
                     style={{ width: '100%' }}
                     maxTagCount={1}
                     value={(filterItem?.value ?? []) as string[]}
-                    onSelect={onChange}
-                    onDeselect={onChange}
+                    onSelect={onSelect}
+                    onDeselect={onDeselect}
                     onClear={onClear}
                     options={values}
                     placeholder={'Выбери из списка'}
                     optionFilterProp={'label'}
                     mode={isMultiple ? 'multiple' : undefined}
                     showSearch
-                    allowClear
+                    allowClear={false}
+                    suffixIcon={<DownOutlined />}
                 />
             </Row>
         </Col>

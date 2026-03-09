@@ -1,6 +1,8 @@
+import { DownOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 
 import type { FilterField } from './filter-types';
+import styles from '../../list.module.css';
 
 interface IFilterOption {
     label: string;
@@ -33,6 +35,7 @@ export const FilterChooser = ({
 
     return (
         <Select
+            className={styles.filterChooserSelect}
             style={{ minWidth: '200px', maxWidth: '350px' }}
             mode={'multiple'}
             value={visibleFilters}
@@ -43,7 +46,8 @@ export const FilterChooser = ({
             onDeselect={onChange}
             onClear={removeAllFilters}
             showSearch
-            allowClear
+            allowClear={false}
+            suffixIcon={<DownOutlined />}
         />
     );
 };

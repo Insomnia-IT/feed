@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
-import { useList, type HttpError } from '@refinedev/core';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type HttpError, useList } from '@refinedev/core';
 
 import type {
     AccessRoleEntity,
@@ -10,9 +10,9 @@ import type {
     KitchenEntity,
     StatusEntity,
     TransportEntity,
+    VolEntity,
     VolunteerRoleEntity
 } from 'interfaces';
-
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 import {
     type FilterField,
@@ -46,8 +46,8 @@ const safeSetLS = (key: string, value: string) => {
 };
 
 const getFieldString = (obj: object, key: string): string => {
-    const v = (obj as Record<string, unknown>)[key];
-    return v == null ? '' : String(v);
+    const value = (obj as Record<string, unknown>)[key];
+    return value == null ? '' : String(value);
 };
 
 const useMapFromList = <T extends WithId>(items: T[] | undefined, nameField = 'name'): Record<string, string> =>
@@ -150,6 +150,7 @@ export const useFilters = ({
             const customFieldId = name.split('.')[1];
             return `custom_field_id=${customFieldId}&custom_field_value=${value}`;
         }
+
         return `${name}=${value}`;
     }, []);
 
@@ -217,7 +218,19 @@ export const useFilters = ({
         pagination: { pageSize: 0 }
     });
 
-    const baseFilterFields: FilterField[] = [
+    const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity, HttpError>({
+        resource: 'volunteers',
+        filters: [
+            {
+                field: 'is_supervisor',
+                operator: 'eq',
+                value: true
+            }
+        ],
+        pagination: { pageSize: 0 }
+    });
+
+    const filterFields: FilterField[] = [
         {
             type: FilterFieldType.Lookup,
             name: 'directions',
@@ -307,11 +320,21 @@ export const useFilters = ({
             skipNull: true,
             single: true,
             lookup: () => groupBadgesResult.data ?? []
-        }
-    ];
-
-    const filterFields: FilterField[] = [
-        ...baseFilterFields,
+        },
+        {
+            type: FilterFieldType.Lookup,
+            name: 'supervisor_id',
+            title: 'Бригадир',
+            skipNull: true,
+            single: true,
+            lookup: () =>
+                (supervisorsResult.data ?? []).map((supervisor) => ({
+                    id: supervisor.id,
+                    name: supervisor.name ?? ''
+                }))
+        },
+        { type: FilterFieldType.Boolean, single: true, name: 'is_supervisor', title: 'Является бригадиром' },
+        { type: FilterFieldType.Boolean, single: true, name: 'has_supervisor', title: 'Назначен бригадир' },
         ...customFields.map<FilterField>((customField) => ({
             type: customField.type === 'boolean' ? FilterFieldType.Boolean : FilterFieldType.Custom,
             name: `custom_field_values.${customField.id}`,
@@ -325,8 +348,8 @@ export const useFilters = ({
             kitchensQuery.isLoading ||
             feedTypesQuery.isLoading ||
             accessRolesQuery.isLoading ||
-            volunteerRolesQuery.isLoading,
-
+            volunteerRolesQuery.isLoading ||
+            supervisorsQuery.isLoading,
         filterQueryParams,
         filterQueryParamsWithoutDefaultDirections,
         searchText,
@@ -334,21 +357,17 @@ export const useFilters = ({
             setSearchTextState(value);
             changeStorageAndPageOnlyIfNeeded({ itemName: SEARCH_TEXT_STORAGE_ITEM_NAME, value, resetPage });
         },
-
         setVisibleFilters: (value: string[]) => {
             setVisibleFiltersState(value);
             changeStorageAndPageOnlyIfNeeded({ itemName: VISIBLE_FILTERS_STORAGE_ITEM_NAME, value, resetPage });
         },
-
         setActiveFilters: (value: FilterItem[]) => {
             setActiveFiltersState(value);
             changeStorageAndPageOnlyIfNeeded({ itemName: FILTERS_STORAGE_ITEM_NAME, value, resetPage });
         },
-
         filterFields,
         activeFilters,
         visibleFilters,
-
         kitchenNameById: useMapFromList(kitchensResult.data),
         feedTypeNameById: useMapFromList(feedTypesResult.data),
         accessRoleById: useMapFromList(accessRolesResult.data),

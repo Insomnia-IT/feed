@@ -24,6 +24,20 @@
     }
 }
 
+/* Отступ между плашками фильтров и крестиком очистки в мультиселекте */
+.filterChooserSelect :global(.ant-select-selector) {
+    gap: 20px;
+    padding-right: 40px;
+}
+
+.filterValueSelect :global(.ant-select-selector) {
+    gap: 20px;
+}
+
+.filterChooserSelect :global(.ant-select-selection-overflow-item) {
+    padding-right: 0;
+}
+
 .filterItemButton {
     color: #d9d9d9;
 }
