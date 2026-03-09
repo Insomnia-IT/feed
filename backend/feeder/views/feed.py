@@ -63,10 +63,10 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='export-xlsx')
     def export_xlsx(self, request):
         meal_map = {
-            "breakfast": "Breakfast",
-            "lunch": "Lunch",
-            "dinner": "Dinner",
-            "night": "Night"
+            "breakfast": "Завтрак",
+            "lunch": "Обед",
+            "dinner": "Ужин",
+            "night": "Ночь"
         }
 
         queryset = (
@@ -91,9 +91,9 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
                     local_dtime.strftime("%d.%m.%Y") if local_dtime else "",
                     local_dtime.strftime("%H:%M:%S") if local_dtime else "",
                     tx.volunteer_id or "",
-                    getattr(tx.volunteer, "name", None) or "Anonymous",
+                    getattr(tx.volunteer, "name", None) or "Аноним",
                     volunteer_full_name,
-                    "" if tx.is_vegan is None else ("Vegan" if tx.is_vegan else "Meat"),
+                    "" if tx.is_vegan is None else ("Веган" if tx.is_vegan else "Мясоед"),
                     meal_map.get(tx.meal_time, tx.meal_time),
                     getattr(tx.kitchen, "name", None) or "",
                     tx.amount,
@@ -105,20 +105,20 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
 
         return build_xlsx_response(
             filename="feed-transactions",
-            worksheet_name="Transactions log",
+            worksheet_name="История питания",
             header=[
-                "Date",
-                "Time",
-                "Volunteer ID",
-                "Call Sign",
-                "Name",
-                "Food Type",
-                "Meal",
-                "Kitchen",
-                "Amount",
-                "Reason",
-                "Group Badge",
-                "Directions",
+                "Дата",
+                "Время",
+                "ID волонтера",
+                "Позывной",
+                "Фамилия Имя",
+                "Тип питания",
+                "Прием пищи",
+                "Кухня",
+                "Кол-во",
+                "Причина",
+                "Групповой бейдж",
+                "Службы",
             ],
             rows=rows,
         )

@@ -1,7 +1,9 @@
 import os
 import time
 import pytest
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 from datetime import datetime
 
 # from main_page import MainPage
@@ -52,13 +54,18 @@ def test_create_new_meal(browser):
     page.create_new_meal()
     today_date = datetime.now().strftime("%d/%m/%y")
     meal_dates = []
-    for _ in range(12):
+
+    def meal_with_today_date_present(driver):
+        nonlocal meal_dates
         meal_dates = [
-            cell.text for cell in browser.find_elements(By.CSS_SELECTOR, "tbody.ant-table-tbody tr td:first-child")
+            cell.text for cell in driver.find_elements(By.CSS_SELECTOR, "tbody.ant-table-tbody tr td:first-child")
         ]
-        if any(today_date in cell for cell in meal_dates):
-            break
-        time.sleep(1)
+        return any(today_date in cell for cell in meal_dates)
+
+    try:
+        WebDriverWait(browser, 12).until(meal_with_today_date_present)
+    except TimeoutException:
+        pass
     # приверка урла
     assert browser.current_url == f"{host}/feed-transaction?pageSize=10&current=1"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
