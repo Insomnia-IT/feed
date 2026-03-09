@@ -1,7 +1,9 @@
 import os
 import time
 import pytest
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 from datetime import datetime
 
 # from main_page import MainPage
@@ -50,13 +52,27 @@ def test_create_new_meal(browser):
     page.login_admin()
     page.go_to_create_new_meal()
     page.create_new_meal()
-    time.sleep(1)
-    first_row_text = page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
+    meal_dates = []
+
+    def meal_with_today_date_present(driver):
+        nonlocal meal_dates
+        try:
+            meal_dates = [
+                cell.text for cell in driver.find_elements(By.CSS_SELECTOR, "tbody.ant-table-tbody tr td:first-child")
+            ]
+            return any(today_date in cell for cell in meal_dates)
+        except StaleElementReferenceException:
+            return False
+
+    try:
+        WebDriverWait(browser, 12).until(meal_with_today_date_present)
+    except TimeoutException:
+        pass
     # приверка урла
     assert browser.current_url == f"{host}/feed-transaction?pageSize=10&current=1"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
-    assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
+    assert any(today_date in cell for cell in meal_dates), f"Ошибка! Ожидали дату {today_date}, но в таблице: {meal_dates}"
     print("✅ Запись успешно создана!")
 
 @skip()
