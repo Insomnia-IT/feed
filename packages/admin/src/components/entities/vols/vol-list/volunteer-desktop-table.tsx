@@ -94,6 +94,12 @@ export const VolunteerDesktopTable: FC<{
             }
         },
         {
+            dataIndex: 'supervisor',
+            key: 'supervisor',
+            title: 'Бригадир',
+            render: (supervisor) => supervisor?.name
+        },
+        {
             dataIndex: 'arrivals',
             key: 'arrivals',
             title: 'Даты на поле',

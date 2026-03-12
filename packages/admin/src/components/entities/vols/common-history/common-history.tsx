@@ -52,7 +52,11 @@ export const CommonHistory = ({ role }: IProps) => {
     const { data: statuses } = useList<StatusEntity>({ resource: 'statuses', pagination: { pageSize: 0 } });
     const { data: genders } = useList<AccessRoleEntity>({ resource: 'genders', pagination: { pageSize: 0 } });
     const { data: directions } = useList<DirectionEntity>({ resource: 'directions', pagination: { pageSize: 0 } });
-    const { data: groupBadges } = useList<GroupBadgeEntity>({ resource: 'group-badges', pagination: { pageSize: 0 } });
+    const { data: groupBadges } = useList<GroupBadgeEntity>({
+        resource: 'group-badges',
+        filters: [{ field: 'is_deleted', operator: 'eq', value: 'all' }],
+        pagination: { pageSize: 0 }
+    });
 
     const kitchenById = useIdNameMap(kitchens);
     const feedTypeById = useIdNameMap(feedTypes);
@@ -129,6 +133,20 @@ export const CommonHistory = ({ role }: IProps) => {
                 arrival_transport: transportById,
                 departure_transport: transportById
             };
+            if (key === 'supervisor') {
+                const { id, name } = obj[key] ?? {};
+
+                return id ? (
+                    <span
+                        className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
+                        onClick={() => (window.location.href = `/volunteers/edit/${id}`)}
+                    >
+                        {name}
+                    </span>
+                ) : (
+                    '-'
+                );
+            }
             if (maps[key]) {
                 return maps[key][obj[key]];
             }
@@ -138,6 +156,7 @@ export const CommonHistory = ({ role }: IProps) => {
             if (key === 'value') {
                 return obj[key] === 'true' ? 'Да' : obj[key] === 'false' ? 'Нет' : obj[key];
             }
+
             return obj[key];
         },
         [

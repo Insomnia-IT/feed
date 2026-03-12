@@ -1,8 +1,10 @@
 import { FC, useState } from 'react';
+import { DownOutlined } from '@ant-design/icons';
 import { Col, DatePicker, Input, Row, Select, Typography, Switch } from 'antd';
 import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filter-types';
 
 import { getFilterListItems } from './get-filter-list-items';
+import styles from '../../list.module.css';
 import dayjs from 'dayjs';
 
 const fieldStyle = {
@@ -173,7 +175,10 @@ const FilterSelect: FC<{
 }> = ({ field, isMultiple, filterItem, onFilterValueChange, onFilterTextValueChange }) => {
     const values = getFilterListItems(field, filterItem);
 
-    const onChange = (_id: string, value: FilterListItem) => onFilterValueChange(field.name, value, field.single);
+    const onSelect = (_value: string, option: FilterListItem) =>
+        onFilterValueChange(field.name, { ...option, selected: false }, field.single);
+    const onDeselect = (_value: string, option: FilterListItem) =>
+        onFilterValueChange(field.name, { ...option, selected: true }, field.single);
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
@@ -184,18 +189,20 @@ const FilterSelect: FC<{
 
             <Row>
                 <Select
+                    className={styles.filterValueSelect}
                     style={{ width: '100%' }}
                     maxTagCount={1}
                     value={(filterItem?.value ?? []) as string[]}
-                    onSelect={onChange}
-                    onDeselect={onChange}
+                    onSelect={onSelect}
+                    onDeselect={onDeselect}
                     onClear={onClear}
                     options={values}
                     placeholder={'Выбери из списка'}
                     optionFilterProp={'label'}
                     mode={isMultiple ? 'multiple' : undefined}
                     showSearch
-                    allowClear
+                    allowClear={false}
+                    suffixIcon={<DownOutlined />}
                 />
             </Row>
         </Col>
