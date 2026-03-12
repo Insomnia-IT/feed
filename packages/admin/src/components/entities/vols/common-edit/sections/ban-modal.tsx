@@ -12,7 +12,7 @@ interface IProps {
     volunteerId: string | number;
 }
 
-const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuccess, visible, volunteerId }) => {
+const BanModal = ({ currentComment, isBlocked, onCancel, onSuccess, visible, volunteerId }: IProps) => {
     const [form] = Form.useForm();
 
     const handleFinish = async () => {

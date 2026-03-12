@@ -1,4 +1,3 @@
-import React from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 
@@ -17,12 +16,17 @@ const mapFilterFieldsToOptions = (item: FilterField): IFilterOption => {
     };
 };
 
-export const FilterChooser: React.FC<{
+export const FilterChooser = ({
+    removeAllFilters,
+    filterFields,
+    toggleVisibleFilter,
+    visibleFilters
+}: {
     removeAllFilters: () => void;
     filterFields: Array<FilterField>;
     toggleVisibleFilter: (name: string) => void;
     visibleFilters: Array<string>;
-}> = ({ removeAllFilters, filterFields, toggleVisibleFilter, visibleFilters }) => {
+}) => {
     const options = filterFields.map(mapFilterFieldsToOptions);
 
     const onChange = (_id: string, item: IFilterOption): void => {

@@ -1,7 +1,6 @@
 import { Checkbox, DatePicker, Form, Input, Select } from 'antd';
 import { Create, useForm, useSelect } from '@refinedev/antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
-import { useEffect, useCallback, FC } from 'react';
+import { useEffect, useCallback } from 'react';
 import { ulid } from 'ulid';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
@@ -15,7 +14,7 @@ const mealTimeOptions = [
     { value: 'night', label: 'Дожор' }
 ];
 
-export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
+export const FeedTransactionCreate = () => {
     const { form, formProps, saveButtonProps } = useForm<FeedTransactionEntity>();
     const { selectProps: volSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',

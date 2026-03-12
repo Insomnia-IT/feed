@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import { Button, List } from 'antd';
 
 import { axios } from 'authProvider';
@@ -7,7 +7,7 @@ import useCanAccess from '../entities/vols/use-can-access';
 
 import styles from './sync.module.css';
 
-export const Sync: FC = () => {
+export const Sync = () => {
     const [disabled, setDisabled] = useState(false);
     const canFullEditing = useCanAccess({
         action: 'full_edit',

@@ -1,9 +1,9 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
-import type { MealTime } from '~/db';
-import { useSync } from '~/request';
-import { API_DOMAIN } from '~/config';
-import { db } from '~/db';
+import type { MealTime } from 'db';
+import { useSync } from 'request';
+import { API_DOMAIN } from 'config';
+import { db } from 'db';
 
 interface IAppContext {
     appError: string | null;
@@ -29,9 +29,9 @@ interface IAppContext {
     toggleAutoSync: () => void;
     doSync: (override?: { full?: boolean; kitchenId?: number }) => Promise<void>;
 }
-const AppContext = React.createContext<IAppContext | null>(null);
+const AppContext = createContext<IAppContext | null>(null);
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = import.meta.env.DEV;
 
 const storedKitchenId = Number(localStorage.getItem('kitchenId'));
 const lastSyncStartLS = localStorage.getItem('lastSyncStart');
@@ -40,9 +40,7 @@ const debugModeLS = localStorage.getItem('debug');
 const deoptimizedSyncLS = localStorage.getItem('katya_testiruet');
 const autoSyncLS = localStorage.getItem('autoSync');
 
-export const AppProvider = (props) => {
-    const { children } = props;
-
+export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [appError, setAppError] = useState<string | null>(null);
     const [mealTime, setMealTime] = useState<MealTime | null>(null);
     const [pin, setPin] = useState<string | null>('');
@@ -51,15 +49,15 @@ export const AppProvider = (props) => {
     const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);
     const [volCount, setVolCount] = useState<number>(0);
     const [autoSync, setAutoSync] = useState<boolean>(autoSyncLS ? autoSyncLS === '1' : true);
-    const { error: syncError, fetching: syncFetching, send: syncSend, updated } = useSync(API_DOMAIN, pin, setAuth);
-    const toggleAutoSync = useCallback(() => {
+    const { error: syncError, fetching: syncFetching, send: syncSend } = useSync(API_DOMAIN, pin, setAuth);
+    const toggleAutoSync = useCallback((): void => {
         setAutoSync((prev) => {
             localStorage.setItem('autoSync', !prev ? '1' : '0');
             return !prev;
         });
     }, []);
 
-    const saveLastSyncStart = useCallback((ts) => {
+    const saveLastSyncStart = useCallback((ts: number): void => {
         console.log('localStorage.setItem', String(ts));
 
         localStorage.setItem('lastSyncStart', String(ts));
@@ -67,30 +65,33 @@ export const AppProvider = (props) => {
     }, []);
 
     const doSync = useCallback(
-        async ({ full, kitchenId: kitchenIdOverride }: { full?: boolean; kitchenId?: number } = {}) => {
+        async ({
+            full,
+            kitchenId: kitchenIdOverride
+        }: {
+            full?: boolean;
+            kitchenId?: number;
+        } = {}): Promise<void> => {
             if (navigator.onLine && !syncFetching) {
                 console.log('online, updating...');
                 try {
-                    return await syncSend({
+                    const updatedAt = await syncSend({
                         lastSyncStart: full ? null : lastSyncStart,
                         kitchenId: kitchenIdOverride || kitchenId
                     });
+                    if (typeof updatedAt === 'number') {
+                        saveLastSyncStart(updatedAt);
+                        const count = await db.volunteers.count();
+                        setVolCount(count);
+                    }
+                    return;
                 } catch (e) {
                     console.log(e);
                 }
             }
         },
-        [kitchenId, lastSyncStart, syncFetching, syncSend]
+        [kitchenId, lastSyncStart, saveLastSyncStart, syncFetching, syncSend]
     );
-
-    useEffect(() => {
-        if (updated && !syncFetching) {
-            saveLastSyncStart(updated);
-            void db.volunteers.count().then((c) => {
-                setVolCount(c);
-            });
-        }
-    }, [syncFetching, saveLastSyncStart, setLastSyncStart, setVolCount, updated]);
 
     const contextValue: IAppContext = useMemo(
         () => ({
@@ -114,7 +115,7 @@ export const AppProvider = (props) => {
             debugMode: debugModeLS,
             deoptimizedSync: deoptimizedSyncLS,
             syncFetching,
-            syncError,
+            syncError: Boolean(syncError),
             doSync
         }),
         [pin, auth, appError, lastSyncStart, volCount, autoSync, mealTime, kitchenId, syncFetching, doSync, syncError]

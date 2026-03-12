@@ -1,6 +1,5 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
 import { Form } from 'antd';
 
 import type { VolEntity } from 'interfaces';
@@ -9,7 +8,7 @@ import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 
-export const VolCreate: FC<IResourceComponentsProps> = () => {
+export const VolCreate = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);

@@ -1,11 +1,5 @@
-import { FC, useEffect, useState } from 'react';
-
-export const Scanner: FC = () => {
-    const [origin, setOrigin] = useState('');
-
-    useEffect(() => {
-        setOrigin(window.location.origin);
-    }, []);
+export const Scanner = () => {
+    const origin = typeof window === 'undefined' ? '' : window.location.origin;
 
     return (
         <center>
