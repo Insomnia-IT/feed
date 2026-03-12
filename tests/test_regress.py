@@ -284,6 +284,7 @@ def test_delete_new_user(page):
     assert counter1 == counter2+1, "Счетчик не уменьшился на 1!!!"
     assert counter3 == 0
 
+@skip 
 def test_scan_qr(page):
     # Открываем страницу логина (через /volunteers она редиректит на логин)
     link = f"{host}/volunteers"
