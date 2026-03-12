@@ -26,9 +26,7 @@ export const AdditionalSection = ({
 
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
 
-    const canAccessBadgeEdit = useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
-
-    const isDirectionHead = !canAccessBadgeEdit;
+    const canDirectionHeadCommentEdit = useCanAccess({ action: 'direction_head_comment_edit', resource: 'volunteers' });
 
     const currentComment = form.getFieldValue('comment') || '';
     const isDeleted = form.getFieldValue('deleted_at');
@@ -57,7 +55,7 @@ export const AdditionalSection = ({
                     }
                     name="comment"
                 >
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={isDirectionHead} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={canDirectionHeadCommentEdit} />
                 </Form.Item>
 
                 <Form.Item
@@ -71,7 +69,7 @@ export const AdditionalSection = ({
                     }
                     name="direction_head_comment"
                 >
-                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!isDirectionHead} />
+                    <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canDirectionHeadCommentEdit} />
                 </Form.Item>
 
                 <Form.Item

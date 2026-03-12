@@ -4,7 +4,7 @@ import { Typography, Checkbox } from 'antd';
 import { FC } from 'react';
 
 import type { VolEntity } from 'interfaces';
-import { isActivatedStatus } from 'shared/lib';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 const { Text, Title } = Typography;
 
@@ -16,7 +16,10 @@ export const VolShow: FC = () => {
     return (
         <Show isLoading={isLoading}>
             <Title level={5}>Активирован</Title>
-            <Checkbox checked={record?.arrivals?.some(({ status }) => isActivatedStatus(status))} disabled />
+            <Checkbox
+                checked={record?.arrivals?.some(({ status }) => isVolunteerActivatedStatusValue(status))}
+                disabled
+            />
 
             <Title level={5}>Заблокирован</Title>
             <Checkbox checked={record?.is_blocked} disabled />

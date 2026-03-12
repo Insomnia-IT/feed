@@ -59,8 +59,8 @@ export const GroupBadgeWarningCard: FC<{
     const volsToFeed = [...greens];
 
     const [showOtherCount, setShowOtherCount] = useState(false);
-    const [vegansCount, setVegansCount] = useState<string | number>('');
-    const [nonVegansCount, setNonVegansCount] = useState<string | number>('');
+    const [vegansCount, setVegansCount] = useState<string | number>(0);
+    const [nonVegansCount, setNonVegansCount] = useState<string | number>(0);
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const isPartiallyFed = !!alreadyFedTransactions.length;

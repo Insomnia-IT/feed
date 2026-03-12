@@ -163,7 +163,7 @@ export const addTransaction = async ({
         ts,
         kitchen: kitchenId,
         amount: amountInner,
-        ulid: ulid(ts),
+        ulid: ulid(ts * 1000),
         mealTime: MealTime[mealTime],
         is_new: true,
         reason,

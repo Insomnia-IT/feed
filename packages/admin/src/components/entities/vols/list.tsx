@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useList, CanAccess } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col } from 'antd';
@@ -28,9 +28,19 @@ export const VolList: FC = () => {
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
 
-    const [page, setPage] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_INDEX) || '') || 1);
-    const [pageSize, setPageSize] = useState<number>(parseFloat(localStorage.getItem(LS_PAGE_SIZE) || '') || 10);
+    const [page, setPage] = useState<number>(parseInt(localStorage.getItem(LS_PAGE_INDEX) || '') || 1);
+    const [pageSize, setPageSize] = useState<number>(parseInt(localStorage.getItem(LS_PAGE_SIZE) || '') || 10);
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+
+    const setPageWithStorage = useCallback((value: number): void => {
+        setPage(value);
+        localStorage.setItem(LS_PAGE_INDEX, String(value));
+    }, []);
+
+    const setPageSizeWithStorage = useCallback((value: number): void => {
+        setPageSize(value);
+        localStorage.setItem(LS_PAGE_SIZE, String(value));
+    }, []);
 
     const canListCustomFields = useCanAccess({
         action: 'list',
@@ -55,7 +65,7 @@ export const VolList: FC = () => {
         visibleFilters,
         volunteerRoleById
     } = useFilters({
-        setPage,
+        setPage: setPageWithStorage,
         customFields
     });
 
@@ -71,10 +81,9 @@ export const VolList: FC = () => {
     useEffect(() => {
         // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
         if (volunteers?.total && (page - 1) * pageSize >= volunteers.total) {
-            setPage(1);
-            localStorage.setItem(LS_PAGE_INDEX, '1');
+            setPageWithStorage(1);
         }
-    }, [volunteers?.total, page, pageSize]);
+    }, [volunteers?.total, page, pageSize, setPageWithStorage]);
 
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
@@ -87,21 +96,20 @@ export const VolList: FC = () => {
             total: volunteers?.total ?? 1,
             showTotal: (total) => (
                 <>
-                    <span data-testid="volunteer-count-caption">Волонтеров:</span>{' '}
+                    <span data-testid="volunteer-count-caption">Волонтёров:</span>{' '}
                     <span data-testid="volunteer-count-value">{total}</span>
                 </>
             ),
+            hideOnSinglePage: false,
             current: page,
             pageSize,
             showSizeChanger: true,
             onChange: (newPage, newSize) => {
-                setPage(newPage);
-                setPageSize(newSize);
-                localStorage.setItem(LS_PAGE_INDEX, page.toString());
-                localStorage.setItem(LS_PAGE_SIZE, pageSize.toString());
+                setPageWithStorage(newPage);
+                setPageSizeWithStorage(newSize);
             }
         }),
-        [volunteers?.total, page, pageSize]
+        [volunteers?.total, page, pageSize, setPageWithStorage, setPageSizeWithStorage]
     );
 
     const loadCustomFields = async () => {

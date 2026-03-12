@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 import type { ArrivalEntity, VolEntity } from 'interfaces';
-import { isActivatedStatus } from 'shared/lib';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 import type { FilterField } from './filters/filter-types';
 
@@ -16,7 +16,7 @@ export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | 'orange' | u
     if (
         currentArrivalArray.some(
             ({ arrival_date, departure_date, status }) =>
-                isActivatedStatus(status) &&
+                isVolunteerActivatedStatusValue(status) &&
                 day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         )
@@ -27,7 +27,7 @@ export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | 'orange' | u
     if (
         currentArrivalArray.some(
             ({ arrival_date, departure_date, status }) =>
-                !isActivatedStatus(status) &&
+                !isVolunteerActivatedStatusValue(status) &&
                 day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         )
