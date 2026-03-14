@@ -324,7 +324,6 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 ).update(value = old_data["value"])
                             else:
                                 VolunteerCustomFieldValue.objects.create(
-                                    id = operation_id,
                                     volunteer_id = volunteer_id,
                                     value = old_data["value"],
                                     custom_field_id=custom_field
