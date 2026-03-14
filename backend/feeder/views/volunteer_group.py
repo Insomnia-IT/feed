@@ -348,9 +348,9 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 object_name='volunteercustomfieldvalue',
                                 actor_badge=get_request_user_id(request.user),
                                 action_at=timezone.now(),
-                                data={"value": custom_field_value, "custom_field": custom_field,
+                                data={"value": str(custom_field_value), "custom_field": custom_field,
                                       "id": data["id"]},
-                                old_data={"value": custom_field_value},
+                                old_data={"value": str(custom_field_value)},
                                 volunteer_uuid=hist.volunteer_uuid,
                                 group_operation_uuid=str(group_operation_uuid),
                             )
