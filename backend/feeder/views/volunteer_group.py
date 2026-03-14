@@ -304,11 +304,14 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     data = hist.data
                     old_data = hist.old_data
                     custom_field = data["custom_field"]
-                    custom_field_value = VolunteerCustomFieldValue.objects.get(
+                    try:
+                        custom_field_value = VolunteerCustomFieldValue.objects.get(
                             volunteer_id=volunteer_id,
                             custom_field_id=custom_field,
                         )
-                    if str(custom_field_value) == hist.data["value"]:
+                    except VolunteerCustomFieldValue.DoesNotExist:
+                        custom_field_value = None
+                    if str(custom_field_value) == str(hist.data["value"]):
                         if old_data:
                             VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
