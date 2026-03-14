@@ -313,10 +313,22 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                         custom_field_value = None
                     if str(custom_field_value) == str(hist.data["value"]):
                         if old_data:
-                            VolunteerCustomFieldValue.objects.filter(
+                            existing_data = VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
                                 custom_field_id=custom_field,
-                            ).update(value = old_data["value"])
+                            )
+                            if existing_data:
+                                VolunteerCustomFieldValue.objects.filter(
+                                    volunteer_id=volunteer_id,
+                                    custom_field_id=custom_field,
+                                ).update(value = old_data["value"])
+                            else:
+                                VolunteerCustomFieldValue.objects.create(
+                                    id = operation_id,
+                                    volunteer_id = volunteer_id,
+                                    value = old_data["value"],
+                                    custom_field_id=custom_field
+                                )
                             History.objects.create(
                                 status=History.STATUS_UPDATE,
                                 object_name='volunteercustomfieldvalue',
