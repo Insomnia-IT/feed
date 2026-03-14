@@ -240,6 +240,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         group_operation_uuid = uuid4()
         updated_volunteers = []
         errors = []
+        warnings = []
 
         try:
             with transaction.atomic():
@@ -341,7 +342,18 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 group_operation_uuid=str(group_operation_uuid),
                             )
                     else:
-                        errors.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        warnings.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        History.objects.create(
+                                status=History.STATUS_UPDATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": str(custom_field_value), "custom_field": custom_field,
+                                      "id": data["id"]},
+                                old_data={"value": str(custom_field_value)},
+                                volunteer_uuid=hist.volunteer_uuid,
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
@@ -352,12 +364,14 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         if errors:
             return Response(
                 {"updated": updated_volunteers,
-                "errors": errors},
+                "errors": errors,
+                "warnings": warnings},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         return Response(
             {"id": str(group_operation_uuid),
-            "updated":  updated_volunteers},
+            "updated":  updated_volunteers,
+            "warnings": warnings},
             status=status.HTTP_200_OK
         )
