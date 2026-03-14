@@ -63,6 +63,10 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
         title: 'Партия Бейджа'
     },
     {
+        fieldName: 'supervisor',
+        title: 'Бригадир'
+    },
+    {
         fieldName: 'comment',
         title: 'Комментарий',
         isDefault: true

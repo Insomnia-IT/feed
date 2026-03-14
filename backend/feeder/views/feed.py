@@ -5,11 +5,12 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from feeder.views.mixins import auto_tag_viewset
 
 from feeder import serializers, models
 
 
-#@extend_schema(tags=['feed', ])
+@auto_tag_viewset("Feed Type")
 class FeedTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.FeedType.objects.all()
@@ -25,6 +26,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
     group_badge = django_filters.NumberFilter(field_name="group_badge")
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
     is_group_badge = django_filters.BooleanFilter(method="filter_is_group_badge")
+    is_anomaly = django_filters.BooleanFilter(field_name="is_anomaly")
 
     def filter_anonymous(self, queryset, name, value):
         if value:
@@ -38,10 +40,9 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.FeedTransaction
-        fields = ['kitchen', 'volunteer']
+        fields = ['kitchen', 'volunteer', 'is_anomaly']
 
-
-#@extend_schema(tags=['feed', ])
+@auto_tag_viewset("Feed Transaction")
 class FeedTransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.FeedTransaction.objects.all()

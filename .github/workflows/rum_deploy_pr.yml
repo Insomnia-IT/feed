@@ -92,14 +92,9 @@ jobs:
         run: |
           cd tests
           echo $FEED_APP_HOST
-          bash run_tests.sh || touch /tmp/testFailed
+          bash run_tests.sh
 
       - name: 🍏 Shorter Log
+        if: always()
         run: cat /tmp/tests.short.log
 
-      - name: Verdict
-        run: if [ -f /tmp/testFailed ]; then
-          echo "Tests Failed!"; exit 1;
-          else
-          echo "Tests Success!";
-          fi

@@ -118,26 +118,39 @@ export const useFilters = ({
         return `${name}=${value}`;
     }, []);
 
-    const filterQueryParams = useMemo(() => {
-        const activeVisibleFilters = activeFilters.filter(({ name }) => visibleFilters.includes(name));
-        if (visibleDirections?.length && !activeVisibleFilters.some(({ name }) => name === 'directions')) {
-            activeVisibleFilters.push({
-                name: 'directions',
-                op: 'include',
-                value: visibleDirections
-            });
-        }
+    const buildFilterQueryParams = useCallback(
+        (enforceVisibleDirections: boolean): string => {
+            const activeVisibleFilters = activeFilters.filter(({ name }) => visibleFilters.includes(name));
+            if (
+                enforceVisibleDirections &&
+                visibleDirections?.length &&
+                !activeVisibleFilters.some(({ name }) => name === 'directions')
+            ) {
+                activeVisibleFilters.push({
+                    name: 'directions',
+                    op: 'include',
+                    value: visibleDirections
+                });
+            }
 
-        const params = activeVisibleFilters.flatMap(({ name, value }) =>
-            Array.isArray(value) ? value.map((v) => formatFilter(name, v)) : formatFilter(name, value)
-        );
+            const params = activeVisibleFilters.flatMap(({ name, value }) =>
+                Array.isArray(value) ? value.map((v) => formatFilter(name, v)) : formatFilter(name, value)
+            );
 
-        if (searchText) {
-            params.push(`search=${searchText}`);
-        }
+            if (searchText) {
+                params.push(`search=${searchText}`);
+            }
 
-        return params.length ? `?${params.join('&')}` : '';
-    }, [activeFilters, visibleFilters, searchText, visibleDirections, formatFilter]);
+            return params.length ? `?${params.join('&')}` : '';
+        },
+        [activeFilters, visibleFilters, searchText, visibleDirections, formatFilter]
+    );
+
+    const filterQueryParams = useMemo(() => buildFilterQueryParams(true), [buildFilterQueryParams]);
+    const filterQueryParamsWithoutDefaultDirections = useMemo(
+        () => buildFilterQueryParams(false),
+        [buildFilterQueryParams]
+    );
 
     const { data: kitchens, isLoading: kitchensIsLoading } = useList<KitchenEntity>({
         resource: 'kitchens',
@@ -176,6 +189,20 @@ export const useFilters = ({
 
     const { data: statuses } = useList<StatusEntity>({
         resource: 'statuses',
+        pagination: {
+            pageSize: 0
+        }
+    });
+
+    const { data: supervisors, isLoading: supervisorsIsLoading } = useList<VolunteerRoleEntity>({
+        resource: 'volunteers',
+        filters: [
+            {
+                field: 'is_supervisor',
+                operator: 'eq',
+                value: true
+            }
+        ],
         pagination: {
             pageSize: 0
         }
@@ -271,7 +298,17 @@ export const useFilters = ({
             skipNull: true,
             single: true,
             lookup: () => groupBadges?.data ?? []
-        } // groupBadges
+        }, // groupBadges
+        {
+            type: FilterFieldType.Lookup,
+            name: 'supervisor_id',
+            title: 'Бригадир',
+            skipNull: true,
+            single: true,
+            lookup: () => supervisors?.data ?? []
+        }, // groupBadges
+        { type: FilterFieldType.Boolean, single: true, name: 'is_supervisor', title: 'Является бригадиром' },
+        { type: FilterFieldType.Boolean, single: true, name: 'has_supervisor', title: 'Назначен бригадир' }
     ].concat(
         customFields.map((customField) => ({
             type: customField.type === 'boolean' ? FilterFieldType.Boolean : FilterFieldType.Custom,
@@ -281,8 +318,14 @@ export const useFilters = ({
     );
 
     return {
-        isFiltersLoading: kitchensIsLoading || feedTypesIsLoading || accessRolesIsLoading || volunteerRolesIsLoading,
+        isFiltersLoading:
+            kitchensIsLoading ||
+            feedTypesIsLoading ||
+            accessRolesIsLoading ||
+            volunteerRolesIsLoading ||
+            supervisorsIsLoading,
         filterQueryParams,
+        filterQueryParamsWithoutDefaultDirections,
         searchText,
         setSearchText: (value: string) => {
             setSearchText(value);
