@@ -343,6 +343,17 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                             )
                     else:
                         warnings.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        History.objects.create(
+                                status=History.STATUS_UPDATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": custom_field_value, "custom_field": custom_field,
+                                      "id": data["id"]},
+                                old_data={"value": custom_field_value},
+                                volunteer_uuid=hist.volunteer_uuid,
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
@@ -360,6 +371,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
         return Response(
             {"id": str(group_operation_uuid),
-            "updated":  updated_volunteers},
+            "updated":  updated_volunteers,
+            "warnings": warnings},
             status=status.HTTP_200_OK
         )
