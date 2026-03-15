@@ -3,7 +3,6 @@ import requests
 import math
 import time
 import os
-import re
 
 from enum import Enum
 
@@ -281,11 +280,15 @@ def get_calculated_amount_from_reason(reason):
     if not reason:
         return 0
 
-    match = re.search(r'\d+', reason)
-    if not match:
+    prefix = 'Рассчитанное кол-во:'
+    if not reason.startswith(prefix):
         return 0
 
-    return int(match.group(0))
+    amount = reason[len(prefix):].strip()
+    if not amount.isdigit():
+        return 0
+
+    return int(amount)
 
 
 def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=None):
