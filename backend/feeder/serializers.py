@@ -331,6 +331,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     def _process_paid_arrivals(self, volunteer, paid_arrivals_data, is_create=False):
         current_paid_arrivals = {str(a.id): a for a in volunteer.paid_arrivals.all()}
         processed_ids = set()
+        group_op = self.context['group_op'] if 'group_op' in self.context else None
 
         for paid_arrival_data in paid_arrivals_data:
             paid_arrival_id = paid_arrival_data.get('id')
@@ -341,64 +342,99 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
 
             if paid_arrival_id and str(paid_arrival_id) in current_paid_arrivals:
                 paid_arrival = current_paid_arrivals[str(paid_arrival_id)]
+                old_values = {field.name: getattr(paid_arrival, field.name) for field in models.PaidArrival._meta.fields}
+                changed_data = {
+                    field: value for field, value in prepared_data.items() if getattr(paid_arrival, field) != value
+                }
                 for attr, value in prepared_data.items():
                     setattr(paid_arrival, attr, value)
                 paid_arrival.save()
+
+                if changed_data:
+                    self._log_paid_arrival_change(paid_arrival, volunteer, "UPDATE", old_values, changed_data, group_op)
+
                 processed_ids.add(str(paid_arrival_id))
             else:
                 paid_arrival = models.PaidArrival.objects.create(volunteer=volunteer, **prepared_data)
                 processed_ids.add(str(paid_arrival.id))
+                self._log_paid_arrival_change(paid_arrival, volunteer, "CREATE", {}, prepared_data, group_op)
 
         if not is_create:
             to_delete = [paid_arrival_id for paid_arrival_id in current_paid_arrivals if paid_arrival_id not in processed_ids]
             for paid_arrival_id in to_delete:
-                current_paid_arrivals[paid_arrival_id].delete()
+                paid_arrival = current_paid_arrivals[paid_arrival_id]
+                old_values = {field.name: getattr(paid_arrival, field.name) for field in models.PaidArrival._meta.fields}
+                self._log_paid_arrival_change(paid_arrival, volunteer, "DELETE", old_values, {}, group_op)
+                paid_arrival.delete()
     
     def _log_arrival_change(self, arrival, volunteer, action, old_data=None, new_data=None, group_op=None, group_arr_id=None):
+        self._log_interval_change(
+            item=arrival,
+            volunteer=volunteer,
+            action=action,
+            object_name="arrival",
+            old_data=old_data,
+            new_data=new_data,
+            group_op=group_op,
+            force_full_change=bool(group_op and group_arr_id == arrival.id)
+        )
+
+    def _log_paid_arrival_change(self, paid_arrival, volunteer, action, old_data=None, new_data=None, group_op=None):
+        self._log_interval_change(
+            item=paid_arrival,
+            volunteer=volunteer,
+            action=action,
+            object_name="paidarrival",
+            old_data=old_data,
+            new_data=new_data,
+            group_op=group_op
+        )
+
+    def _log_interval_change(self, item, volunteer, action, object_name, old_data=None, new_data=None, group_op=None, force_full_change=False):
         user_id = get_request_user_id(self.context["request"].user)
 
-        def serialize_value(value):
-            if isinstance(value, models.Status):
-                return str(value.id)
-            if isinstance(value, models.Transport):
-                return str(value.id)
-            if isinstance(value, date):  
-                return value.isoformat()
-            if isinstance(value, UUID):
-                return str(value)
-            return value
+        old_data = {k: self._serialize_history_value(v) for k, v in (old_data or {}).items()}
+        new_data = {k: self._serialize_history_value(v) for k, v in (new_data or {}).items()}
 
-        old_data = {k: serialize_value(v) for k, v in (old_data or {}).items()}
-        new_data = {k: serialize_value(v) for k, v in (new_data or {}).items()}
-
-        if group_op and group_arr_id == arrival.id:
+        if force_full_change:
             changed_data = {k: v for k, v in new_data.items()}
         else:
             changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
         old_changed_data = {k: old_data[k] for k in changed_data.keys() if k in old_data}
 
-        changed_data['id'] = arrival.id
+        changed_data['id'] = item.id
         changed_data['badge'] = volunteer.uuid
 
         history_data = {
             "status": History.STATUS_UPDATE if action == "UPDATE" else History.STATUS_CREATE,
-            "object_name": "arrival",
+            "object_name": object_name,
             "actor_badge": user_id,
             "action_at": timezone.now(),
             "data": changed_data,
             "old_data": old_changed_data,
-            "volunteer_uuid": str(arrival.volunteer.uuid)
+            "volunteer_uuid": str(item.volunteer.uuid)
         }
 
         if action == "DELETE":
             history_data["status"] = History.STATUS_DELETE
-            history_data["data"] = {"id": str(arrival.id), "deleted": True}
+            history_data["data"] = {"id": str(item.id), "deleted": True}
 
         if group_op:
             history_data["group_operation_uuid"] = str(group_op)
 
         if history_data["data"]:
             History.objects.create(**history_data)
+
+    def _serialize_history_value(self, value):
+        if isinstance(value, models.Status):
+            return str(value.id)
+        if isinstance(value, models.Transport):
+            return str(value.id)
+        if isinstance(value, date):
+            return value.isoformat()
+        if isinstance(value, UUID):
+            return str(value)
+        return value
 
 class VolunteerRoleSerializer(serializers.ModelSerializer):
     class Meta:
