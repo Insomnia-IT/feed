@@ -64,7 +64,7 @@ class FeedTransactionAnomalies(APIView):
 
     @extend_schema(
         tags=["Feed Transaction"],
-        request=serializers.FeedTransactionAnomaliesFilterSerializer,
+        parameters=[serializers.FeedTransactionAnomaliesFilterSerializer],
         responses={200: serializers.FeedTransactionAnomalySerializer(many=True)},
     )
     def get(self, request):
