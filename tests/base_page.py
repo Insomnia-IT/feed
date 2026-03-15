@@ -30,8 +30,9 @@ class BasePage:
         if login_input.is_visible():
             return
 
-        first_button = self.page.locator(registration.CHOOSE_LOGIN_TYPE)
-        first_button.click()
+        segmented_items = self.page.locator(registration.SEGMENTED_ITEMS)
+        segmented_items.first.wait_for(state="visible")
+        segmented_items.nth(1).click()
         login_input.wait_for(state="visible")
 
     def first_window_qr(self):
@@ -39,8 +40,9 @@ class BasePage:
         if not login_input.is_visible():
             return
 
-        first_button = self.page.locator(registration.CHOOSE_QR_TYPE)
-        first_button.click()
+        segmented_items = self.page.locator(registration.SEGMENTED_ITEMS)
+        segmented_items.first.wait_for(state="visible")
+        segmented_items.first.click()
         login_input.wait_for(state="hidden")
 
     def scan_user(self, qr_code="20635ffe1ad2496f8cfc5668d7e8b34d"):
