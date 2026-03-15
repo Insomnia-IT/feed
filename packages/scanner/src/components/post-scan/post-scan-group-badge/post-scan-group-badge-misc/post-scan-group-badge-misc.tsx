@@ -18,15 +18,12 @@ import css from './post-scan-group-badge-misc.module.css';
 
 export const GroupBadgeInfo: FC<{
     name: string;
-    volsToFeed: Array<Volunteer>;
-}> = ({ name, volsToFeed }) => {
+}> = ({ name }) => {
     return (
         <div className={css.info}>
             <Title>Групповой бейдж</Title>
             <div className={css.detail}>
-                <Text>
-                    Вы отсканировали групповой бейдж “{name}” ({volsToFeed.length}):
-                </Text>
+                <Text>Вы отсканировали групповой бейдж “{name}”:</Text>
             </div>
         </div>
     );
@@ -83,7 +80,7 @@ export const GroupBadgeWarningCard: FC<{
                 greenVols={validationGroups.greens}
                 showModal={isWarningModalShown}
             />
-            <GroupBadgeInfo name={name} volsToFeed={volsToFeed} />
+            <GroupBadgeInfo name={name} />
 
             {reds.length > 0 && (
                 <div className={css.volunteerList}>
