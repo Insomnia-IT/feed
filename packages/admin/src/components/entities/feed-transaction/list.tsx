@@ -1,10 +1,13 @@
 import { List, useTable } from '@refinedev/antd';
-import { Button, DatePicker, Form, Input, Space, Table, Tag } from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { Button, DatePicker, Form, Input, Modal, Space, Table, Tag, Tooltip } from 'antd';
 import { CrudFilter, HttpError } from '@refinedev/core';
-import { FC, useCallback, useState } from 'react';
-import { DownloadOutlined } from '@ant-design/icons';
+import { FC, useCallback, useMemo, useState } from 'react';
+import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
+
+import type { FeedTransactionAnomaly } from 'interfaces';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { saveXLSX } from 'shared/lib/saveXLSX';
@@ -14,8 +17,32 @@ import { ColumnsType } from 'antd/es/table';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
 import { FilterItem } from '../vols/vol-list/filters/filter-types';
 import { Filters } from '../vols/vol-list/filters/filters';
+import { getMockAnomalies } from './use-anomalies';
 
 const { RangePicker } = DatePicker;
+
+const ANOMALY_TOOLTIPS: Record<string, string> = {
+    'Бейдж брошен':
+        'Бейдж заполнен ненулевыми значениями и 2 из 3 приёмов пищи не был забран',
+    Перекорм: 'Выдали порций больше, чем вообще людей этой службы на поле',
+    'Не скорректирован':
+        'В приёмах пищи подряд выдавали меньше порций, чем существует в бейдже'
+};
+
+/** Тип аномалии из поля problem эндпоинта v1/feed-transaction/anomalies */
+function anomalyTypeFromProblem(problem: string): string {
+    if (!problem) return 'Аномалия';
+    const p = problem.toLowerCase();
+    if (p.includes('перекорм')) return 'Перекорм';
+    if (p.includes('не использовался') || p.includes('бейдж')) return 'Бейдж брошен';
+    if (p.includes('неверный план')) return 'Не скорректирован';
+    return problem;
+}
+
+function tooltipForAnomalyType(problem: string): string {
+    const type = anomalyTypeFromProblem(problem);
+    return ANOMALY_TOOLTIPS[type] ?? problem;
+}
 
 interface TransformedTransaction {
     ulid: string;
@@ -29,11 +56,17 @@ interface TransformedTransaction {
     reason?: string;
     groupBadgeName: string;
     directions: Array<string>;
+    isAnomaly: boolean;
+    anomalyType: string;
+    serviceName: string;
+    /** reason из GET feed-transaction (для тултипа) */
+    problem?: string;
 }
 
 export const FeedTransactionList: FC = () => {
     const { filterFields, visibleFilters, setVisibleFilters } = useTransactionsFilters();
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
+    const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
     const { searchFormProps, tableProps, filters, setCurrent, setPageSize } = useTable<
         FeedTransactionEntity,
@@ -85,9 +118,58 @@ export const FeedTransactionList: FC = () => {
         }
     });
 
-    const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
+    const dtimeFrom = filters?.find((f: CrudFilter): f is CrudFilter & { field: string } => 'field' in f && f.field === 'dtime_from')?.value as
+        | string
+        | undefined;
+    const dtimeTo = filters?.find((f: CrudFilter): f is CrudFilter & { field: string } => 'field' in f && f.field === 'dtime_to')?.value as
+        | string
+        | undefined;
+
+    const anomaliesModalRange = useMemo(() => {
+        if (dtimeFrom && dtimeTo) return { from: dtimeFrom, to: dtimeTo };
+        const yesterday = dayjs().subtract(1, 'day');
+        return {
+            from: yesterday.startOf('day').toISOString(),
+            to: yesterday.endOf('day').toISOString()
+        };
+    }, [dtimeFrom, dtimeTo]);
+
+    const {
+        data: anomaliesModalData = [],
+        isLoading: anomaliesModalLoading,
+        error: anomaliesModalError
+    } = useQuery({
+        queryKey: ['feed-transaction-anomalies-modal', anomaliesModalOpen, anomaliesModalRange.from, anomaliesModalRange.to],
+        enabled: anomaliesModalOpen,
+        queryFn: async (): Promise<FeedTransactionAnomaly[]> => {
+            try {
+                const { data } = await axios.get<FeedTransactionAnomaly[]>(
+                    `${NEW_API_URL}/feed-transaction/anomalies/`,
+                    {
+                        params: {
+                            dtime_from: anomaliesModalRange.from,
+                            dtime_to: anomaliesModalRange.to
+                        }
+                    }
+                );
+                return Array.isArray(data) ? data : [];
+            } catch {
+                return getMockAnomalies(anomaliesModalRange.from, anomaliesModalRange.to);
+            }
+        }
+    });
+
+    const transformResult = (
+        transactions?: Readonly<Array<FeedTransactionEntity>>
+    ): Array<TransformedTransaction> => {
         return (
             transactions?.map<TransformedTransaction>((item: FeedTransactionEntity) => {
+                const isAnomaly = Boolean(item.is_anomaly);
+                const anomalyType = (anomalyTypeFromProblem(item?.reason ?? '') || item?.reason) ?? 'Аномалия';
+                const serviceName =
+                    (item?.group_badge_name?.trim() && item.group_badge_name) ||
+                    item?.kitchen_name ||
+                    '—';
                 return {
                     ulid: item.ulid,
                     dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
@@ -99,7 +181,11 @@ export const FeedTransactionList: FC = () => {
                     amount: item.amount,
                     reason: item?.reason ?? undefined,
                     groupBadgeName: item.group_badge_name ?? '',
-                    directions: item?.volunteer_directions ?? []
+                    directions: item?.volunteer_directions ?? [],
+                    isAnomaly,
+                    anomalyType,
+                    serviceName,
+                    problem: item?.reason ?? undefined
                 };
             }) ?? []
         );
@@ -119,6 +205,22 @@ export const FeedTransactionList: FC = () => {
         { dataIndex: 'kitchenName', title: 'Кухня' },
         { dataIndex: 'amount', title: 'Кол-во' },
         { dataIndex: 'reason', title: 'Причина' },
+        {
+            dataIndex: ['serviceName', 'anomalyType', 'isAnomaly'],
+            title: 'Аномалия',
+            render: (_: unknown, row: TransformedTransaction) => {
+                if (!row.isAnomaly) return '—';
+                const label = `${row.serviceName}: ${row.anomalyType}`;
+                const tooltipText = tooltipForAnomalyType(row.problem ?? row.anomalyType);
+                return (
+                    <Tooltip title={tooltipText}>
+                        <span style={{ cursor: 'help', textDecoration: 'underline dotted' }}>
+                            {label}
+                        </span>
+                    </Tooltip>
+                );
+            }
+        },
         { dataIndex: 'groupBadgeName', title: 'Групповой бейдж' },
         {
             dataIndex: 'directions',
@@ -194,29 +296,38 @@ export const FeedTransactionList: FC = () => {
     return (
         <List>
             <Form {...searchFormProps}>
-                <Space align="start">
-                    <Form.Item name="search">
-                        <Input placeholder="Имя волонтера" allowClear />
-                    </Form.Item>
-                    <Form.Item name="date">
-                        <RangePicker format={formDateFormat} />
-                    </Form.Item>
-                    <Button type="primary" htmlType="submit">
-                        Применить
-                    </Button>
+                <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                    <Space align="start">
+                        <Form.Item name="search">
+                            <Input placeholder="Имя волонтера" allowClear />
+                        </Form.Item>
+                        <Form.Item name="date">
+                            <RangePicker format={formDateFormat} />
+                        </Form.Item>
+                        <Button type="primary" htmlType="submit">
+                            Применить
+                        </Button>
+                        <Button
+                            type="default"
+                            htmlType="reset"
+                            onClick={() => {
+                                setActiveFilters([]);
+                                setVisibleFilters([]);
+                                searchFormProps?.form?.resetFields();
+                                searchFormProps?.form?.submit();
+                            }}
+                        >
+                            Очистить
+                        </Button>
+                    </Space>
                     <Button
                         type="default"
-                        htmlType="reset"
-                        onClick={() => {
-                            setActiveFilters([]);
-                            setVisibleFilters([]);
-                            searchFormProps?.form?.resetFields();
-                            searchFormProps?.form?.submit();
-                        }}
+                        icon={<WarningOutlined />}
+                        onClick={() => setAnomaliesModalOpen(true)}
                     >
-                        Очистить
+                        Аномалии
                     </Button>
-                </Space>
+                </div>
                 <Filters
                     filterFields={filterFields}
                     visibleFilters={visibleFilters}
@@ -251,6 +362,37 @@ export const FeedTransactionList: FC = () => {
                 )}
                 columns={tableColumns}
             />
+            <Modal
+                title="Аномалии"
+                open={anomaliesModalOpen}
+                onCancel={() => setAnomaliesModalOpen(false)}
+                footer={null}
+                width={900}
+            >
+                {anomaliesModalError ? (
+                    <div style={{ color: 'var(--ant-color-error)', marginBottom: 8 }}>
+                        Не удалось загрузить данные. Проверьте, что бэкенд доступен и эндпоинт реализован.
+                    </div>
+                ) : null}
+                <Table<FeedTransactionAnomaly>
+                    loading={anomaliesModalLoading}
+                    dataSource={anomaliesModalData}
+                    rowKey={(r, i) => `anomaly-${i}-${r.direction_name}-${r.group_badge_name}-${r.real_amount}`}
+                    pagination={{ pageSize: 10 }}
+                    columns={[
+                        { dataIndex: 'direction_name', title: 'Служба' },
+                        { dataIndex: 'group_badge_name', title: 'Групповой бейдж', render: (v: string) => v || '—' },
+                        { dataIndex: 'direction_amount', title: 'Размер службы' },
+                        {
+                            dataIndex: 'calculated_amount',
+                            title: 'Ожидаемое кол-во порций',
+                            render: (v: number | null) => (v != null ? v : '—')
+                        },
+                        { dataIndex: 'real_amount', title: 'Выданное кол-во порций' },
+                        { dataIndex: 'problem', title: 'Проблема' }
+                    ]}
+                />
+            </Modal>
         </List>
     );
 };
