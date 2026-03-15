@@ -8,6 +8,7 @@ import type { DirectionEntity, GroupBadgeEntity, VolEntity } from 'interfaces';
 import { useDebouncedCallback } from 'shared/hooks';
 import { CreateEdit } from './common';
 import { AddVolunteerModal } from './add-volunteer-modal';
+import { GroupBadgePlanning } from './planning';
 
 const { Title, Text } = Typography;
 
@@ -53,6 +54,7 @@ export const GroupBadgeEdit: FC = () => {
             </Form>
 
             <Divider />
+            <GroupBadgePlanning groupBadgeId={Number(id)} />
 
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
                 <Col>
@@ -72,7 +74,7 @@ export const GroupBadgeEdit: FC = () => {
                             allowClear
                             onChange={(e) => debouncedSearch(e.target.value)}
                         />
-                        <AddVolunteerModal groupBadgeId={id as number} />
+                        <AddVolunteerModal groupBadgeId={Number(id)} />
                     </Space>
                 </Col>
             </Row>

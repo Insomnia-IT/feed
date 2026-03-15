@@ -88,6 +88,19 @@ export interface GroupBadgeEntity {
     comment?: string;
     /* Количество волонтеров в бейдже */
     volunteer_count: number;
+    planning_cells?: GroupBadgePlanningCellEntity[];
+}
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'night';
+
+export interface GroupBadgePlanningCellEntity {
+    id: number;
+    group_badge: number;
+    group_badge_name?: string | null;
+    meal_time: MealType;
+    date: string;
+    amount_meat: number | null;
+    amount_vegan: number | null;
 }
 
 export interface VolunteerCustomFieldEntity {
