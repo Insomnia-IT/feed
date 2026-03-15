@@ -58,6 +58,23 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
         return serializers.FeedTransactionDisplaySerializer
 
 
+class FeedTransactionAnomalies(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @extend_schema(
+        tags=["Feed Transaction"],
+        request=serializers.FeedTransactionAnomaliesFilterSerializer,
+        responses={200: serializers.FeedTransactionAnomalySerializer(many=True)},
+    )
+    def get(self, request):
+        serializer = serializers.FeedTransactionAnomaliesFilterSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(
+            serializers.FeedTransactionAnomalySerializer([], many=True).data
+        )
+
+
 #@extend_schema(tags=['feed', ], summary="Массовое добавление приёмов пищи")
 class FeedTransactionBulk(APIView):
     """

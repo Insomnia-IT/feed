@@ -510,6 +510,18 @@ class FilterStatisticsSerializer(serializers.Serializer):
     prediction_alg = serializers.CharField(allow_null=True, default=None)
     apply_history = serializers.BooleanField(allow_null=True, default=None)
 
+class FeedTransactionAnomaliesFilterSerializer(serializers.Serializer):
+    dtime_from = serializers.DateTimeField()
+    dtime_to = serializers.DateTimeField()
+
+class FeedTransactionAnomalySerializer(serializers.Serializer):
+    group_badge_name = serializers.CharField(allow_blank=True, allow_null=True)
+    direction_name = serializers.CharField(allow_blank=True, allow_null=True)
+    direction_amount = serializers.IntegerField(allow_null=True)
+    calculated_amount = serializers.IntegerField(allow_null=True)
+    real_amount = serializers.IntegerField(allow_null=True)
+    problem = serializers.CharField()
+
 class StatisticsSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     date = serializers.DateField()
