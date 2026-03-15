@@ -228,6 +228,39 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to):
 
     return result
 
+
+def get_overfeeding_direction_anomalies(dtime_from, dtime_to):
+    current_date = arrow.get(dtime_from).to(TZ).date()
+    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+    directions_by_id = {}
+    direction_ids = set()
+
+    for group_badge in data['group_badges']:
+        if group_badge.direction_id:
+            direction_ids.add(group_badge.direction_id)
+            directions_by_id[group_badge.direction_id] = group_badge.direction
+
+    direction_amount_by_id = get_direction_amount_by_ids(direction_ids, current_date)
+    result = []
+
+    for direction_id, direction in directions_by_id.items():
+        direction_amount = direction_amount_by_id.get(direction_id, 0)
+        real_amount = data['real_amount_by_direction'].get(direction_id, 0)
+
+        if real_amount <= direction_amount:
+            continue
+
+        result.append({
+            'group_badge_name': '',
+            'direction_name': direction and direction.name or None,
+            'direction_amount': direction_amount,
+            'calculated_amount': None,
+            'real_amount': real_amount,
+            'problem': 'Перекорм службы',
+        })
+
+    return result
+
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, prediction_alg='1', apply_history=False):
     start_time = time.time()
     # convert from str to a datetime type (Arrow)

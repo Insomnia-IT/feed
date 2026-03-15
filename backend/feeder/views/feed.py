@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from feeder.views.mixins import auto_tag_viewset
-from feeder.utils import get_abandoned_group_badge_anomalies
+from feeder.utils import get_abandoned_group_badge_anomalies, get_overfeeding_direction_anomalies
 
 from feeder import serializers, models
 
@@ -74,6 +74,10 @@ class FeedTransactionAnomalies(APIView):
             serializer.validated_data['dtime_from'],
             serializer.validated_data['dtime_to'],
         )
+        result.extend(get_overfeeding_direction_anomalies(
+            serializer.validated_data['dtime_from'],
+            serializer.validated_data['dtime_to'],
+        ))
 
         return Response(
             serializers.FeedTransactionAnomalySerializer(result, many=True).data
