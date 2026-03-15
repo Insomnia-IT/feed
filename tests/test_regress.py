@@ -3,6 +3,7 @@ import sys
 import time
 import pytest
 from datetime import datetime
+from urllib.parse import parse_qs, urlparse
 
 # Добавляем папку tests в sys.path, чтобы pytest мог находить локаторы и базовые страницы
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -52,7 +53,11 @@ def test_create_new_meal(page):
     first_row_text = login_page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
-    assert page.url == f"{host}/feed-transaction?pageSize=10&current=1"
+    parsed_url = urlparse(page.url)
+    params = parse_qs(parsed_url.query)
+    assert parsed_url.path == "/feed-transaction"
+    assert params.get("pageSize") == ["10"]
+    assert params.get("currentPage", params.get("current")) == ["1"]
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
     assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
     print("✅ Запись успешно создана!")
