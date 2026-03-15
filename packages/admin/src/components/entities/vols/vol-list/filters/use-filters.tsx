@@ -194,6 +194,20 @@ export const useFilters = ({
         }
     });
 
+    const { data: supervisors, isLoading: supervisorsIsLoading } = useList<VolunteerRoleEntity>({
+        resource: 'volunteers',
+        filters: [
+            {
+                field: 'is_supervisor',
+                operator: 'eq',
+                value: true
+            }
+        ],
+        pagination: {
+            pageSize: 0
+        }
+    });
+
     const filterFields: Array<FilterField> = [
         {
             type: FilterFieldType.Lookup,
@@ -284,7 +298,17 @@ export const useFilters = ({
             skipNull: true,
             single: true,
             lookup: () => groupBadges?.data ?? []
-        } // groupBadges
+        }, // groupBadges
+        {
+            type: FilterFieldType.Lookup,
+            name: 'supervisor_id',
+            title: 'Бригадир',
+            skipNull: true,
+            single: true,
+            lookup: () => supervisors?.data ?? []
+        }, // groupBadges
+        { type: FilterFieldType.Boolean, single: true, name: 'is_supervisor', title: 'Является бригадиром' },
+        { type: FilterFieldType.Boolean, single: true, name: 'has_supervisor', title: 'Назначен бригадир' }
     ].concat(
         customFields.map((customField) => ({
             type: customField.type === 'boolean' ? FilterFieldType.Boolean : FilterFieldType.Custom,
@@ -294,7 +318,12 @@ export const useFilters = ({
     );
 
     return {
-        isFiltersLoading: kitchensIsLoading || feedTypesIsLoading || accessRolesIsLoading || volunteerRolesIsLoading,
+        isFiltersLoading:
+            kitchensIsLoading ||
+            feedTypesIsLoading ||
+            accessRolesIsLoading ||
+            volunteerRolesIsLoading ||
+            supervisorsIsLoading,
         filterQueryParams,
         filterQueryParamsWithoutDefaultDirections,
         searchText,

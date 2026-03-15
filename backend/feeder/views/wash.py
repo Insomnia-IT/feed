@@ -76,16 +76,16 @@ class WashViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
 
         return build_xlsx_response(
             filename="washes",
-            worksheet_name="Washes",
+            worksheet_name="Стирки",
             header=[
                 "ID",
-                "Call Sign",
-                "Full Name",
-                "Directions",
-                "Days On Field",
-                "Wash Date",
-                "Wash Number",
-                "Owl",
+                "Позывной",
+                "ФИО",
+                "Службы/Локации",
+                "Дней на поле",
+                "Дата стирки",
+                "Номер стирки",
+                "Позывной совы",
             ],
             rows=rows,
         )
