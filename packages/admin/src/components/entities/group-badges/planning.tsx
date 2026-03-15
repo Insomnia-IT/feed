@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
-import { Checkbox, Space, Spin, Table, Typography } from 'antd';
+import { Checkbox, Space, Spin, Typography } from 'antd';
 import { useDataProvider, useInvalidate, useNotification, useOne } from '@refinedev/core';
 
 import { MEAL_MAP } from 'const';
@@ -16,20 +16,13 @@ const isPlanningMeal = (meal: MealType): meal is PlanningMealType => PLANNING_ME
 
 const isDisabledMealCell = (cell?: GroupBadgePlanningCellEntity) => cell?.amount_meat === 0 && cell?.amount_vegan === 0;
 
-const formatCellValue = (cell?: GroupBadgePlanningCellEntity) => {
-    if (!cell || (cell.amount_meat === null && cell.amount_vegan === null)) {
-        return '-/-';
-    }
-
-    return `${cell.amount_meat ?? '-'}/${cell.amount_vegan ?? '-'}`;
-};
-
 export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId }) => {
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
     const { open = () => {} } = useNotification();
     const [savingMeal, setSavingMeal] = useState<PlanningMealType | null>(null);
     const tomorrowDate = dayjs().add(1, 'day').format('YYYY-MM-DD');
+    const tomorrowDateLabel = dayjs(tomorrowDate).format('DD.MM.YYYY');
 
     const { data, isLoading } = useOne<GroupBadgeEntity>({
         resource: 'group-badges',
@@ -49,12 +42,6 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
     }, [data?.data?.planning_cells, tomorrowDate]);
 
     const isMealEnabled = (meal: PlanningMealType) => !isDisabledMealCell(tomorrowCellsByMeal.get(meal));
-
-    const tableData = PLANNING_MEALS.map((meal) => ({
-        key: meal,
-        meal,
-        value: formatCellValue(tomorrowCellsByMeal.get(meal))
-    }));
 
     const updatePlanningCell = async (meal: PlanningMealType, nextChecked: boolean) => {
         const cell = tomorrowCellsByMeal.get(meal);
@@ -115,8 +102,8 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
 
     return (
         <div style={{ marginBottom: 24 }}>
-            <Title level={5}>Планирование питания</Title>
-            <Text type="secondary">Завтрашняя дата: {dayjs(tomorrowDate).format('DD.MM.YYYY')}</Text>
+            <Title level={5}>Приемы пищи</Title>
+            <Text type="secondary">Изменение приемов пищи применится с завтрашнего дня {tomorrowDateLabel}</Text>
 
             <Space wrap size="large" style={{ display: 'flex', marginTop: 16, marginBottom: 16 }}>
                 {PLANNING_MEALS.map((meal) => (
@@ -130,26 +117,6 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
                     </Checkbox>
                 ))}
             </Space>
-
-            <Table
-                rowKey="key"
-                size="small"
-                pagination={false}
-                dataSource={tableData}
-                columns={[
-                    {
-                        title: 'Прием пищи',
-                        dataIndex: 'meal',
-                        key: 'meal',
-                        render: (value: PlanningMealType) => MEAL_MAP[value]
-                    },
-                    {
-                        title: dayjs(tomorrowDate).format('DD.MM.YYYY'),
-                        dataIndex: 'value',
-                        key: 'value'
-                    }
-                ]}
-            />
         </div>
     );
 };
