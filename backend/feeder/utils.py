@@ -95,6 +95,7 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         models.GroupBadge.objects
         .filter(deleted_at=None)
         .select_related('direction')
+        .prefetch_related('group_badge_planning_cells')
     )
 
     group_transactions = list(
@@ -148,6 +149,84 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         'real_amount_by_direction': real_amount_by_direction,
         'used_meal_times_by_group_badge': used_meal_times_by_group_badge,
     }
+
+
+def get_direction_amount_by_ids(direction_ids, current_date):
+    direction_amount_by_id = {}
+
+    for direction_id in direction_ids:
+        direction_amount_by_id[direction_id] = (
+            models.Volunteer.objects
+            .filter(
+                deleted_at=None,
+                directions__id=direction_id,
+                arrivals__status__id__in=['ARRIVED', 'STARTED', 'JOINED'],
+                arrivals__arrival_date__lte=current_date,
+                arrivals__departure_date__gte=current_date,
+            )
+            .distinct()
+            .count()
+        )
+
+    return direction_amount_by_id
+
+
+def get_abandoned_group_badge_anomalies(dtime_from, dtime_to):
+    meal_time_names = {
+        'breakfast': 'завтрак',
+        'lunch': 'обед',
+        'dinner': 'ужин',
+        'night': 'дожор',
+    }
+    current_date = arrow.get(dtime_from).to(TZ).date()
+    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+
+    direction_ids = set()
+    for group_badge in data['group_badges']:
+        if group_badge.direction_id:
+            direction_ids.add(group_badge.direction_id)
+    direction_amount_by_id = get_direction_amount_by_ids(direction_ids, current_date)
+
+    result = []
+
+    for group_badge in data['group_badges']:
+        missing_meal_times = []
+        used_meal_times = data['used_meal_times_by_group_badge'].get(group_badge.id, set())
+        planning_cells = list(group_badge.group_badge_planning_cells.all())
+
+        for meal_time in meal_times:
+            if meal_time in used_meal_times:
+                continue
+
+            latest_planning_cell = None
+            for planning_cell in planning_cells:
+                if planning_cell.meal_time != meal_time or planning_cell.date > current_date:
+                    continue
+                if latest_planning_cell is None or planning_cell.date > latest_planning_cell.date:
+                    latest_planning_cell = planning_cell
+
+            if latest_planning_cell is None:
+                continue
+
+            planned_amount = (latest_planning_cell.amount_meat or 0) + (latest_planning_cell.amount_vegan or 0)
+            if planned_amount == 0:
+                continue
+
+            missing_meal_times.append(meal_time_names.get(meal_time, meal_time))
+
+        if not missing_meal_times:
+            continue
+
+        result.append({
+            'group_badge_name': group_badge.name,
+            'direction_name': group_badge.direction and group_badge.direction.name or None,
+            'direction_amount': group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
+            'calculated_amount': None,
+            'real_amount': data['real_amount_by_group_badge'].get(group_badge.id, 0),
+            'problem': 'Бейдж не использовался на {0}'.format('/'.join(missing_meal_times)),
+        })
+
+    return result
 
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, prediction_alg='1', apply_history=False):
     start_time = time.time()
