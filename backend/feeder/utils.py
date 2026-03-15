@@ -89,6 +89,66 @@ def get_kitchen_id_by_history(history_by_volunteer, volunteer_uuid, current_date
             if current_date < item['action_at']:
                 return item['old_data']['kitchen']
 
+
+def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
+    group_badges = list(
+        models.GroupBadge.objects
+        .filter(deleted_at=None)
+        .select_related('direction')
+    )
+
+    group_transactions = list(
+        models.FeedTransaction.objects
+        .filter(
+            dtime__gte=dtime_from,
+            dtime__lte=dtime_to,
+            group_badge__isnull=False,
+        )
+        .select_related('group_badge__direction')
+        .order_by('dtime', 'ulid')
+    )
+
+    transactions_by_group_badge = {}
+    real_amount_by_group_badge = {}
+    real_amount_by_direction = {}
+    used_meal_times_by_group_badge = {}
+    anomaly_transactions = []
+
+    for txn in group_transactions:
+        group_badge = txn.group_badge
+        if group_badge is None:
+            continue
+
+        if group_badge.id not in transactions_by_group_badge:
+            transactions_by_group_badge[group_badge.id] = []
+        transactions_by_group_badge[group_badge.id].append(txn)
+
+        if group_badge.id not in real_amount_by_group_badge:
+            real_amount_by_group_badge[group_badge.id] = 0
+        real_amount_by_group_badge[group_badge.id] += txn.amount
+
+        if group_badge.id not in used_meal_times_by_group_badge:
+            used_meal_times_by_group_badge[group_badge.id] = set()
+        used_meal_times_by_group_badge[group_badge.id].add(txn.meal_time)
+
+        if group_badge.direction_id:
+            if group_badge.direction_id not in real_amount_by_direction:
+                real_amount_by_direction[group_badge.direction_id] = 0
+            real_amount_by_direction[group_badge.direction_id] += txn.amount
+
+        if txn.is_anomaly:
+            anomaly_transactions.append(txn)
+
+    return {
+        'group_badges': group_badges,
+        'group_transactions': group_transactions,
+        'anomaly_transactions': anomaly_transactions,
+        'transactions_by_group_badge': transactions_by_group_badge,
+        'real_amount_by_group_badge': real_amount_by_group_badge,
+        'real_amount_by_direction': real_amount_by_direction,
+        'used_meal_times_by_group_badge': used_meal_times_by_group_badge,
+    }
+
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, prediction_alg='1', apply_history=False):
     start_time = time.time()
     # convert from str to a datetime type (Arrow)
