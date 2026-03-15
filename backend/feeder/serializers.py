@@ -120,22 +120,42 @@ class ArrivalSerializer(serializers.ModelSerializer):
         exclude = ["volunteer"]
 
 
+class PaidArrivalSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+
+    class Meta:
+        model = models.PaidArrival
+        exclude = ["volunteer"]
+
+
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Arrival
         fields = ['id', 'arrival_date', 'departure_date', 'status', 'arrival_transport', 'departure_transport']
 
+
+class VolunteerListPaidArrivalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PaidArrival
+        fields = ['id', 'arrival_date', 'departure_date', 'is_free']
+
+
 class SortArrivalsMixin:
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        response["arrivals"] = sorted(response["arrivals"], key=lambda x: x["arrival_date"])
+        if "arrivals" in response:
+            response["arrivals"] = sorted(response["arrivals"], key=lambda x: x["arrival_date"])
+        if "paid_arrivals" in response:
+            response["paid_arrivals"] = sorted(response["paid_arrivals"], key=lambda x: x["arrival_date"])
         return response
+
 
 class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     directions = DirectionSerializer(many=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
     arrivals = VolunteerListArrivalSerializer(many=True)
+    paid_arrivals = VolunteerListPaidArrivalSerializer(many=True)
     supervisor = serializers.SerializerMethodField()
 
     class Meta:
@@ -152,6 +172,7 @@ class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
     arrivals = ArrivalSerializer(many=True)
+    paid_arrivals = PaidArrivalSerializer(many=True)
     person = PersonSerializer(required=False, allow_null=True)
     color_type = serializers.SerializerMethodField(read_only=True)
     supervisor = serializers.SerializerMethodField()
@@ -176,6 +197,7 @@ class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer
 
 class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     arrivals = ArrivalSerializer(many=True, required=False)
+    paid_arrivals = PaidArrivalSerializer(many=True, required=False)
     directions = serializers.PrimaryKeyRelatedField(
         queryset=models.Direction.objects.all(),
         many=True
