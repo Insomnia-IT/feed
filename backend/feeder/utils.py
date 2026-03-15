@@ -3,6 +3,7 @@ import requests
 import math
 import time
 import os
+import re
 
 from enum import Enum
 
@@ -257,6 +258,59 @@ def get_overfeeding_direction_anomalies(dtime_from, dtime_to):
             'calculated_amount': None,
             'real_amount': real_amount,
             'problem': 'Перекорм службы',
+        })
+
+    return result
+
+
+def get_calculated_amount_from_reason(reason):
+    if not reason:
+        return 0
+
+    match = re.search(r'\d+', reason)
+    if not match:
+        return 0
+
+    return int(match.group(0))
+
+
+def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to):
+    current_date = arrow.get(dtime_from).to(TZ).date()
+    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+    grouped_transactions = {}
+    direction_ids = set()
+
+    for txn in data['anomaly_transactions']:
+        group_badge = txn.group_badge
+        if group_badge is None:
+            continue
+
+        if group_badge.id not in grouped_transactions:
+            grouped_transactions[group_badge.id] = []
+        grouped_transactions[group_badge.id].append(txn)
+
+        if group_badge.direction_id:
+            direction_ids.add(group_badge.direction_id)
+
+    direction_amount_by_id = get_direction_amount_by_ids(direction_ids, current_date)
+    result = []
+
+    for group_badge_id, transactions in grouped_transactions.items():
+        group_badge = transactions[0].group_badge
+        calculated_amount = 0
+        real_amount = 0
+
+        for txn in transactions:
+            calculated_amount += get_calculated_amount_from_reason(txn.reason)
+            real_amount += txn.amount
+
+        result.append({
+            'group_badge_name': group_badge and group_badge.name or None,
+            'direction_name': group_badge and group_badge.direction and group_badge.direction.name or None,
+            'direction_amount': group_badge and group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
+            'calculated_amount': calculated_amount,
+            'real_amount': real_amount,
+            'problem': 'Неверный план',
         })
 
     return result
