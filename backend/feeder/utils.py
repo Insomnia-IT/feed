@@ -172,21 +172,35 @@ def get_direction_amount_by_ids(direction_ids, current_date):
     return direction_amount_by_id
 
 
-def get_abandoned_group_badge_anomalies(dtime_from, dtime_to):
+def get_feed_transaction_anomalies_context(dtime_from, dtime_to):
+    current_date = arrow.get(dtime_from).to(TZ).date()
+    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+    direction_ids = set()
+
+    for group_badge in data['group_badges']:
+        if group_badge.direction_id:
+            direction_ids.add(group_badge.direction_id)
+
+    return {
+        'current_date': current_date,
+        'data': data,
+        'direction_amount_by_id': get_direction_amount_by_ids(direction_ids, current_date),
+    }
+
+
+def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
     meal_time_names = {
         'breakfast': 'завтрак',
         'lunch': 'обед',
         'dinner': 'ужин',
         'night': 'дожор',
     }
-    current_date = arrow.get(dtime_from).to(TZ).date()
-    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+    if context is None:
+        context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
 
-    direction_ids = set()
-    for group_badge in data['group_badges']:
-        if group_badge.direction_id:
-            direction_ids.add(group_badge.direction_id)
-    direction_amount_by_id = get_direction_amount_by_ids(direction_ids, current_date)
+    current_date = context['current_date']
+    data = context['data']
+    direction_amount_by_id = context['direction_amount_by_id']
 
     result = []
 
@@ -230,18 +244,18 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to):
     return result
 
 
-def get_overfeeding_direction_anomalies(dtime_from, dtime_to):
-    current_date = arrow.get(dtime_from).to(TZ).date()
-    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+def get_overfeeding_direction_anomalies(dtime_from, dtime_to, context=None):
+    if context is None:
+        context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
+
+    data = context['data']
+    direction_amount_by_id = context['direction_amount_by_id']
     directions_by_id = {}
-    direction_ids = set()
 
     for group_badge in data['group_badges']:
         if group_badge.direction_id:
-            direction_ids.add(group_badge.direction_id)
             directions_by_id[group_badge.direction_id] = group_badge.direction
 
-    direction_amount_by_id = get_direction_amount_by_ids(direction_ids, current_date)
     result = []
 
     for direction_id, direction in directions_by_id.items():
@@ -274,11 +288,13 @@ def get_calculated_amount_from_reason(reason):
     return int(match.group(0))
 
 
-def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to):
-    current_date = arrow.get(dtime_from).to(TZ).date()
-    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=None):
+    if context is None:
+        context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
+
+    data = context['data']
+    direction_amount_by_id = context['direction_amount_by_id']
     grouped_transactions = {}
-    direction_ids = set()
 
     for txn in data['anomaly_transactions']:
         group_badge = txn.group_badge
@@ -289,10 +305,6 @@ def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to):
             grouped_transactions[group_badge.id] = []
         grouped_transactions[group_badge.id].append(txn)
 
-        if group_badge.direction_id:
-            direction_ids.add(group_badge.direction_id)
-
-    direction_amount_by_id = get_direction_amount_by_ids(direction_ids, current_date)
     result = []
 
     for group_badge_id, transactions in grouped_transactions.items():
@@ -313,6 +325,14 @@ def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to):
             'problem': 'Неверный план',
         })
 
+    return result
+
+
+def get_feed_transaction_anomalies(dtime_from, dtime_to):
+    context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
+    result = get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=context)
+    result.extend(get_overfeeding_direction_anomalies(dtime_from, dtime_to, context=context))
+    result.extend(get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=context))
     return result
 
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, prediction_alg='1', apply_history=False):
