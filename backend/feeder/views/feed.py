@@ -6,6 +6,7 @@ from drf_spectacular.utils import extend_schema
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from feeder.views.mixins import auto_tag_viewset
+from feeder.utils import get_feed_transaction_anomalies
 
 from feeder import serializers, models
 
@@ -56,6 +57,27 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
         if self.action in ['create', ]:
             return serializers.FeedTransactionSerializer
         return serializers.FeedTransactionDisplaySerializer
+
+
+class FeedTransactionAnomalies(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @extend_schema(
+        tags=["Feed Transaction"],
+        parameters=[serializers.FeedTransactionAnomaliesFilterSerializer],
+        responses={200: serializers.FeedTransactionAnomalySerializer(many=True)},
+    )
+    def get(self, request):
+        serializer = serializers.FeedTransactionAnomaliesFilterSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        result = get_feed_transaction_anomalies(
+            serializer.validated_data['dtime_from'],
+            serializer.validated_data['dtime_to'],
+        )
+
+        return Response(
+            serializers.FeedTransactionAnomalySerializer(result, many=True).data
+        )
 
 
 #@extend_schema(tags=['feed', ], summary="Массовое добавление приёмов пищи")
