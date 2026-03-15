@@ -37,6 +37,15 @@ class Arrival(TimeMixin, CommentMixin):
         return self.status and self.status.id in ['ARRIVED', 'STARTED', 'JOINED']
 
 
+class PaidArrival(TimeMixin, CommentMixin):
+    """ Платники """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="paid_arrivals")
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+    is_free = models.BooleanField()
+
+
 class Status(TimeMixin):
     id = models.CharField(max_length=20, verbose_name="Код", primary_key=True)
     name = models.CharField(max_length=255, verbose_name="Наименование")
