@@ -221,6 +221,9 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         arrivals_data = None
         if 'arrivals' in validated_data:
             arrivals_data = validated_data.pop('arrivals')
+        paid_arrivals_data = None
+        if 'paid_arrivals' in validated_data:
+            paid_arrivals_data = validated_data.pop('paid_arrivals')
         directions_data = validated_data.pop('directions', None)
         
         with transaction.atomic():
@@ -231,11 +234,14 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
 
             if arrivals_data is not None:
                 self._process_arrivals(instance, arrivals_data, is_create=False)
+            if paid_arrivals_data is not None:
+                self._process_paid_arrivals(instance, paid_arrivals_data, is_create=False)
 
         return instance
     
     def create(self, validated_data):
         arrivals_data = validated_data.pop('arrivals', [])
+        paid_arrivals_data = validated_data.pop('paid_arrivals', [])
         directions_data = validated_data.pop('directions', [])
         
         with transaction.atomic():
@@ -247,6 +253,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             
             # Создаем связанные заезды
             self._process_arrivals(volunteer, arrivals_data, is_create=True)
+            self._process_paid_arrivals(volunteer, paid_arrivals_data, is_create=True)
             
         return volunteer
     
@@ -309,12 +316,43 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             if field in data and isinstance(data[field], str):
                 data[field] = model.objects.get(id=data[field])
 
+        return self._prepare_interval_data(data)
+
+    def _prepare_interval_data(self, data):
+        data = data.copy()
+
         for date_field in ['arrival_date', 'departure_date']:
             if date_field in data and isinstance(data[date_field], str):
                 dt_moscow = arrow.get(data[date_field]).to(TZ)
                 data[date_field] = dt_moscow.format("YYYY-MM-DD")
         
         return data
+
+    def _process_paid_arrivals(self, volunteer, paid_arrivals_data, is_create=False):
+        current_paid_arrivals = {str(a.id): a for a in volunteer.paid_arrivals.all()}
+        processed_ids = set()
+
+        for paid_arrival_data in paid_arrivals_data:
+            paid_arrival_id = paid_arrival_data.get('id')
+            prepared_data = self._prepare_interval_data(paid_arrival_data)
+
+            if is_create and paid_arrival_id:
+                prepared_data['id'] = paid_arrival_id
+
+            if paid_arrival_id and str(paid_arrival_id) in current_paid_arrivals:
+                paid_arrival = current_paid_arrivals[str(paid_arrival_id)]
+                for attr, value in prepared_data.items():
+                    setattr(paid_arrival, attr, value)
+                paid_arrival.save()
+                processed_ids.add(str(paid_arrival_id))
+            else:
+                paid_arrival = models.PaidArrival.objects.create(volunteer=volunteer, **prepared_data)
+                processed_ids.add(str(paid_arrival.id))
+
+        if not is_create:
+            to_delete = [paid_arrival_id for paid_arrival_id in current_paid_arrivals if paid_arrival_id not in processed_ids]
+            for paid_arrival_id in to_delete:
+                current_paid_arrivals[paid_arrival_id].delete()
     
     def _log_arrival_change(self, arrival, volunteer, action, old_data=None, new_data=None, group_op=None, group_arr_id=None):
         user_id = get_request_user_id(self.context["request"].user)
