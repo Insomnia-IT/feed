@@ -313,18 +313,16 @@ def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=None):
     for group_badge_id, transactions in grouped_transactions.items():
         group_badge = transactions[0].group_badge
         calculated_amount = 0
-        real_amount = 0
 
         for txn in transactions:
             calculated_amount += get_calculated_amount_from_reason(txn.reason)
-            real_amount += txn.amount
 
         result.append({
             'group_badge_name': group_badge and group_badge.name or None,
             'direction_name': group_badge and group_badge.direction and group_badge.direction.name or None,
             'direction_amount': group_badge and group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
             'calculated_amount': calculated_amount,
-            'real_amount': real_amount,
+            'real_amount': data['real_amount_by_group_badge'].get(group_badge_id, 0),
             'problem': 'Неверный план',
         })
 
