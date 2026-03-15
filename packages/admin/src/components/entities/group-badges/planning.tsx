@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { Checkbox, Space, Spin, Table, Typography } from 'antd';
 import { useDataProvider, useInvalidate, useNotification, useOne } from '@refinedev/core';
@@ -11,9 +11,6 @@ const { Text, Title } = Typography;
 type PlanningMealType = Exclude<MealType, 'night'>;
 
 const PLANNING_MEALS: PlanningMealType[] = ['breakfast', 'lunch', 'dinner'];
-
-const getTomorrowDate = () => dayjs().add(1, 'day').format('YYYY-MM-DD');
-const getMillisecondsUntilNextDay = () => dayjs().startOf('day').add(1, 'day').diff(dayjs()) + 1000;
 
 const isPlanningMeal = (meal: MealType): meal is PlanningMealType => PLANNING_MEALS.includes(meal as PlanningMealType);
 
@@ -32,17 +29,7 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
     const invalidate = useInvalidate();
     const { open = () => {} } = useNotification();
     const [savingMeal, setSavingMeal] = useState<PlanningMealType | null>(null);
-    const [tomorrowDate, setTomorrowDate] = useState(getTomorrowDate);
-
-    useEffect(() => {
-        const timeoutId = window.setTimeout(() => {
-            setTomorrowDate(getTomorrowDate());
-        }, getMillisecondsUntilNextDay());
-
-        return () => {
-            window.clearTimeout(timeoutId);
-        };
-    }, [tomorrowDate]);
+    const tomorrowDate = dayjs().add(1, 'day').format('YYYY-MM-DD');
 
     const { data, isLoading } = useOne<GroupBadgeEntity>({
         resource: 'group-badges',
