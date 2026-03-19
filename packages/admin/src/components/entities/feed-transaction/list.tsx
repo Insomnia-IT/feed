@@ -17,7 +17,6 @@ import { ColumnsType } from 'antd/es/table';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
 import { FilterItem } from '../vols/vol-list/filters/filter-types';
 import { Filters } from '../vols/vol-list/filters/filters';
-import { getMockAnomalies } from './use-anomalies';
 
 const { RangePicker } = DatePicker;
 
@@ -142,20 +141,16 @@ export const FeedTransactionList: FC = () => {
         queryKey: ['feed-transaction-anomalies-modal', anomaliesModalOpen, anomaliesModalRange.from, anomaliesModalRange.to],
         enabled: anomaliesModalOpen,
         queryFn: async (): Promise<FeedTransactionAnomaly[]> => {
-            try {
-                const { data } = await axios.get<FeedTransactionAnomaly[]>(
-                    `${NEW_API_URL}/feed-transaction/anomalies/`,
-                    {
-                        params: {
-                            dtime_from: anomaliesModalRange.from,
-                            dtime_to: anomaliesModalRange.to
-                        }
+            const { data } = await axios.get<FeedTransactionAnomaly[]>(
+                `${NEW_API_URL}/feed-transaction/anomalies/`,
+                {
+                    params: {
+                        dtime_from: anomaliesModalRange.from,
+                        dtime_to: anomaliesModalRange.to
                     }
-                );
-                return Array.isArray(data) ? data : [];
-            } catch {
-                return getMockAnomalies(anomaliesModalRange.from, anomaliesModalRange.to);
-            }
+                }
+            );
+            return Array.isArray(data) ? data : [];
         }
     });
 
