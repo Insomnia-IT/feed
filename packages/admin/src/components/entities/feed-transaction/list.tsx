@@ -142,7 +142,7 @@ export const FeedTransactionList: FC = () => {
         enabled: anomaliesModalOpen,
         queryFn: async (): Promise<FeedTransactionAnomaly[]> => {
             const { data } = await axios.get<FeedTransactionAnomaly[]>(
-                `${NEW_API_URL}/feed-transaction/anomalies/`,
+                `${NEW_API_URL}/feed-transaction/anomalies`,
                 {
                     params: {
                         dtime_from: anomaliesModalRange.from,
