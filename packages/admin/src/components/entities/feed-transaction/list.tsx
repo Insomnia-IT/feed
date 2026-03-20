@@ -1,8 +1,22 @@
 import { List, useTable } from '@refinedev/antd';
 import { useQuery } from '@tanstack/react-query';
-import { Button, DatePicker, Form, Input, Modal, Space, Table, Tag, Tooltip } from 'antd';
+import {
+    Button,
+    DatePicker,
+    Empty,
+    Form,
+    Input,
+    Modal,
+    Pagination,
+    Space,
+    Spin,
+    Table,
+    Tag,
+    Tooltip,
+    Typography
+} from 'antd';
 import { CrudFilter, HttpError } from '@refinedev/core';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -41,6 +55,101 @@ function anomalyTypeFromProblem(problem: string): string {
 function tooltipForAnomalyType(problem: string): string {
     const type = anomalyTypeFromProblem(problem);
     return ANOMALY_TOOLTIPS[type] ?? problem;
+}
+
+const ANOMALY_MODAL_PAGE_SIZE = 10;
+
+const anomalyModalColumns: ColumnsType<FeedTransactionAnomaly> = [
+    { dataIndex: 'direction_name', title: 'Служба', ellipsis: true },
+    {
+        dataIndex: 'group_badge_name',
+        title: 'Групповой бейдж',
+        ellipsis: true,
+        render: (v: string) => v || '—'
+    },
+    { dataIndex: 'direction_amount', title: 'Размер службы', width: 120 },
+    {
+        dataIndex: 'calculated_amount',
+        title: 'Ожидаемое кол-во порций',
+        width: 160,
+        render: (v: number | null) => (v != null ? v : '—')
+    },
+    { dataIndex: 'real_amount', title: 'Выданное кол-во порций', width: 160 },
+    { dataIndex: 'problem', title: 'Проблема', ellipsis: true }
+];
+
+function AnomalyMobileCard({ row }: { row: FeedTransactionAnomaly }): React.ReactElement {
+    const type = anomalyTypeFromProblem(row.problem);
+    const tooltip = tooltipForAnomalyType(row.problem);
+    return (
+        <div
+            style={{
+                border: '1px solid var(--ant-color-border-secondary)',
+                borderRadius: 10,
+                padding: 12,
+                background: 'var(--ant-color-fill-quaternary)'
+            }}
+        >
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                    marginBottom: 10
+                }}
+            >
+                <Typography.Text strong style={{ flex: 1, fontSize: 15, wordBreak: 'break-word' }}>
+                    {row.direction_name || '—'}
+                </Typography.Text>
+                <Tooltip title={tooltip}>
+                    <Tag color="warning" style={{ marginInlineEnd: 0, flexShrink: 0 }}>
+                        {type}
+                    </Tag>
+                </Tooltip>
+            </div>
+            <div
+                style={{
+                    display: 'grid',
+                    gap: 8,
+                    fontSize: 13
+                }}
+            >
+                <div>
+                    <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                        Групповой бейдж
+                    </Typography.Text>
+                    {row.group_badge_name || '—'}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div>
+                        <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                            Размер службы
+                        </Typography.Text>
+                        {row.direction_amount}
+                    </div>
+                    <div>
+                        <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                            Ожидаемое
+                        </Typography.Text>
+                        {row.calculated_amount != null ? row.calculated_amount : '—'}
+                    </div>
+                </div>
+                <div>
+                    <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                        Выдано порций
+                    </Typography.Text>
+                    {row.real_amount}
+                </div>
+                <div>
+                    <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                        Проблема
+                    </Typography.Text>
+                    <Typography.Paragraph style={{ marginBottom: 0 }}>{row.problem || '—'}</Typography.Paragraph>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 interface TransformedTransaction {
@@ -159,6 +268,27 @@ export const FeedTransactionList: FC = () => {
             return Array.isArray(data) ? data : [];
         }
     });
+
+    const [anomalyPage, setAnomalyPage] = useState(1);
+    const [isCompactAnomalies, setIsCompactAnomalies] = useState(() =>
+        typeof window !== 'undefined' ? window.matchMedia('(max-width: 991px)').matches : false
+    );
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 991px)');
+        const apply = (): void => setIsCompactAnomalies(mq.matches);
+        mq.addEventListener('change', apply);
+        return () => mq.removeEventListener('change', apply);
+    }, []);
+
+    useEffect(() => {
+        setAnomalyPage(1);
+    }, [anomaliesModalOpen, anomaliesModalDtimeFrom, anomaliesModalDtimeTo]);
+
+    const anomaliesModalPaged = useMemo(() => {
+        const start = (anomalyPage - 1) * ANOMALY_MODAL_PAGE_SIZE;
+        return anomaliesModalData.slice(start, start + ANOMALY_MODAL_PAGE_SIZE);
+    }, [anomaliesModalData, anomalyPage]);
 
     const applyAnomaliesPreset = (preset: 'today' | 'yesterday' | 'beforeYesterday' | 'last3Days'): void => {
         const now = dayjsExtended();
@@ -398,7 +528,12 @@ export const FeedTransactionList: FC = () => {
                 open={anomaliesModalOpen}
                 onCancel={() => setAnomaliesModalOpen(false)}
                 footer={null}
-                width={900}
+                width={isCompactAnomalies ? 'min(calc(100vw - 16px), 900px)' : 900}
+                style={{ maxWidth: '100vw' }}
+                centered
+                styles={{
+                    body: { padding: isCompactAnomalies ? 12 : undefined }
+                }}
             >
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
                     <RangePicker
@@ -432,24 +567,46 @@ export const FeedTransactionList: FC = () => {
                         Не удалось загрузить данные. Проверьте, что бэкенд доступен и эндпоинт реализован.
                     </div>
                 ) : null}
-                <Table<FeedTransactionAnomaly>
-                    loading={anomaliesModalLoading}
-                    dataSource={anomaliesModalData}
-                    rowKey={(r, i) => `anomaly-${i}-${r.direction_name}-${r.group_badge_name}-${r.real_amount}`}
-                    pagination={{ pageSize: 10 }}
-                    columns={[
-                        { dataIndex: 'direction_name', title: 'Служба' },
-                        { dataIndex: 'group_badge_name', title: 'Групповой бейдж', render: (v: string) => v || '—' },
-                        { dataIndex: 'direction_amount', title: 'Размер службы' },
-                        {
-                            dataIndex: 'calculated_amount',
-                            title: 'Ожидаемое кол-во порций',
-                            render: (v: number | null) => (v != null ? v : '—')
-                        },
-                        { dataIndex: 'real_amount', title: 'Выданное кол-во порций' },
-                        { dataIndex: 'problem', title: 'Проблема' }
-                    ]}
-                />
+                <Spin spinning={anomaliesModalLoading}>
+                    {isCompactAnomalies ? (
+                        !anomaliesModalLoading && anomaliesModalData.length === 0 ? (
+                            <Empty description="Нет данных" />
+                        ) : (
+                            <>
+                                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                                    {anomaliesModalPaged.map((row, i) => (
+                                        <AnomalyMobileCard
+                                            key={`anomaly-${anomalyPage}-${i}-${row.direction_name}-${row.group_badge_name}-${row.real_amount}`}
+                                            row={row}
+                                        />
+                                    ))}
+                                </Space>
+                                {anomaliesModalData.length > ANOMALY_MODAL_PAGE_SIZE ? (
+                                    <Pagination
+                                        current={anomalyPage}
+                                        pageSize={ANOMALY_MODAL_PAGE_SIZE}
+                                        total={anomaliesModalData.length}
+                                        onChange={setAnomalyPage}
+                                        size="small"
+                                        showSizeChanger={false}
+                                        style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}
+                                    />
+                                ) : null}
+                            </>
+                        )
+                    ) : (
+                        <Table<FeedTransactionAnomaly>
+                            loading={false}
+                            dataSource={anomaliesModalData}
+                            rowKey={(r, i) =>
+                                `anomaly-${i}-${r.direction_name}-${r.group_badge_name}-${r.real_amount}`
+                            }
+                            pagination={{ pageSize: ANOMALY_MODAL_PAGE_SIZE }}
+                            columns={anomalyModalColumns}
+                            scroll={{ x: 'max-content' }}
+                        />
+                    )}
+                </Spin>
             </Modal>
         </List>
     );
