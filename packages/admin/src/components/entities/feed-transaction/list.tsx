@@ -2,7 +2,7 @@ import { List, useTable } from '@refinedev/antd';
 import { useQuery } from '@tanstack/react-query';
 import { Button, DatePicker, Form, Input, Modal, Space, Table, Tag, Tooltip } from 'antd';
 import { CrudFilter, HttpError } from '@refinedev/core';
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -67,6 +67,12 @@ export const FeedTransactionList: FC = () => {
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
     const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
+    const [anomaliesRange, setAnomaliesRange] = useState<[any, any]>(() => {
+        const to = dayjsExtended();
+        const from = to.subtract(24, 'hour');
+        return [from, to];
+    });
+
     const { searchFormProps, tableProps, filters, setCurrent, setPageSize } = useTable<
         FeedTransactionEntity,
         HttpError,
@@ -117,42 +123,66 @@ export const FeedTransactionList: FC = () => {
         }
     });
 
-    const dtimeFrom = filters?.find((f: CrudFilter): f is CrudFilter & { field: string } => 'field' in f && f.field === 'dtime_from')?.value as
-        | string
-        | undefined;
-    const dtimeTo = filters?.find((f: CrudFilter): f is CrudFilter & { field: string } => 'field' in f && f.field === 'dtime_to')?.value as
-        | string
-        | undefined;
+    useEffect(() => {
+        if (!anomaliesModalOpen) return;
+        // На момент открытия модалки хотим "последние 24 часа"
+        const to = dayjsExtended();
+        const from = to.subtract(24, 'hour');
+        setAnomaliesRange([from, to]);
+    }, [anomaliesModalOpen]);
 
-    const anomaliesModalRange = useMemo(() => {
-        if (dtimeFrom && dtimeTo) return { from: dtimeFrom, to: dtimeTo };
-        const yesterday = dayjs().subtract(1, 'day');
-        return {
-            from: yesterday.startOf('day').toISOString(),
-            to: yesterday.endOf('day').toISOString()
-        };
-    }, [dtimeFrom, dtimeTo]);
+    const anomaliesModalDtimeFrom = useMemo(() => anomaliesRange[0]?.toISOString(), [anomaliesRange]);
+    const anomaliesModalDtimeTo = useMemo(() => anomaliesRange[1]?.toISOString(), [anomaliesRange]);
 
     const {
         data: anomaliesModalData = [],
         isLoading: anomaliesModalLoading,
         error: anomaliesModalError
     } = useQuery({
-        queryKey: ['feed-transaction-anomalies-modal', anomaliesModalOpen, anomaliesModalRange.from, anomaliesModalRange.to],
-        enabled: anomaliesModalOpen,
+        queryKey: [
+            'feed-transaction-anomalies-modal',
+            anomaliesModalOpen,
+            anomaliesModalDtimeFrom,
+            anomaliesModalDtimeTo
+        ],
+        enabled: Boolean(anomaliesModalOpen && anomaliesModalDtimeFrom && anomaliesModalDtimeTo),
         queryFn: async (): Promise<FeedTransactionAnomaly[]> => {
             const { data } = await axios.get<FeedTransactionAnomaly[]>(
                 `${NEW_API_URL}/feed-transaction/anomalies`,
                 {
                     params: {
-                        dtime_from: anomaliesModalRange.from,
-                        dtime_to: anomaliesModalRange.to
+                        dtime_from: anomaliesModalDtimeFrom,
+                        dtime_to: anomaliesModalDtimeTo
                     }
                 }
             );
             return Array.isArray(data) ? data : [];
         }
     });
+
+    const applyAnomaliesPreset = (preset: 'today' | 'yesterday' | 'beforeYesterday' | 'last3Days'): void => {
+        const now = dayjsExtended();
+        if (preset === 'today') {
+            setAnomaliesRange([now.startOf('day'), now.endOf('day')]);
+            return;
+        }
+
+        if (preset === 'yesterday') {
+            const d = now.subtract(1, 'day');
+            setAnomaliesRange([d.startOf('day'), d.endOf('day')]);
+            return;
+        }
+
+        if (preset === 'beforeYesterday') {
+            const d = now.subtract(2, 'day');
+            setAnomaliesRange([d.startOf('day'), d.endOf('day')]);
+            return;
+        }
+
+        // Последние 3 суток: включаем сегодня + 2 предыдущих календарных дня
+        const from = now.subtract(2, 'day').startOf('day');
+        setAnomaliesRange([from, now.endOf('day')]);
+    };
 
     const transformResult = (
         transactions?: Readonly<Array<FeedTransactionEntity>>
@@ -364,6 +394,33 @@ export const FeedTransactionList: FC = () => {
                 footer={null}
                 width={900}
             >
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+                    <RangePicker
+                        value={anomaliesRange as any}
+                        onChange={(values) => {
+                            if (!values) return;
+                            const [from, to] = values;
+                            if (!from || !to) return;
+                            setAnomaliesRange([from, to]);
+                        }}
+                        format={formDateFormat}
+                        allowClear={false}
+                    />
+                    <Space size={8} wrap={true}>
+                        <Button size="small" onClick={() => applyAnomaliesPreset('today')}>
+                            Сегодня
+                        </Button>
+                        <Button size="small" onClick={() => applyAnomaliesPreset('yesterday')}>
+                            Вчера
+                        </Button>
+                        <Button size="small" onClick={() => applyAnomaliesPreset('beforeYesterday')}>
+                            Позавчера
+                        </Button>
+                        <Button size="small" onClick={() => applyAnomaliesPreset('last3Days')}>
+                            Последние 3 суток
+                        </Button>
+                    </Space>
+                </div>
                 {anomaliesModalError ? (
                     <div style={{ color: 'var(--ant-color-error)', marginBottom: 8 }}>
                         Не удалось загрузить данные. Проверьте, что бэкенд доступен и эндпоинт реализован.
