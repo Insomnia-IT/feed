@@ -319,7 +319,20 @@ export const FeedTransactionList: FC = () => {
     }, [createAndSaveXLSX]);
 
     return (
-        <List>
+        <List
+            headerButtons={({ defaultButtons }) => (
+                <>
+                    <Button
+                        type="default"
+                        icon={<WarningOutlined />}
+                        onClick={() => setAnomaliesModalOpen(true)}
+                    >
+                        Аномалии
+                    </Button>
+                    {defaultButtons}
+                </>
+            )}
+        >
             <Form {...searchFormProps}>
                 <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
                     <Space align="start">
@@ -345,13 +358,6 @@ export const FeedTransactionList: FC = () => {
                             Очистить
                         </Button>
                     </Space>
-                    <Button
-                        type="default"
-                        icon={<WarningOutlined />}
-                        onClick={() => setAnomaliesModalOpen(true)}
-                    >
-                        Аномалии
-                    </Button>
                 </div>
                 <Filters
                     filterFields={filterFields}
