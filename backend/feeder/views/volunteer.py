@@ -120,7 +120,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
         for volunteer in queryset.iterator(chunk_size=2000):
             arrivals = sorted(list(volunteer.arrivals.all()), key=lambda arrival: arrival.arrival_date)
             if volunteer.supervisor_id:
-                supervisor_name = models.Volunteer.objects.get(pk=volunteer.supervisor_id).values("name")
+                supervisor_name = volunteer.supervisor_id.values("name")
             else:
                 supervisor_name = ""
 
