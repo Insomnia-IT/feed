@@ -8,7 +8,7 @@ from django.utils import timezone
 
 
 from feeder import serializers
-from feeder.models import Volunteer, VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival, VolunteerCustomField
+from feeder.models import Volunteer, VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival, PaidArrival, VolunteerCustomField
 from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer, ArrivalSerializer
 from feeder.views.mixins import get_request_user_id
 
@@ -276,7 +276,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     arrivals = Arrival.objects.filter(volunteer=vol)
 
                     arr_id = old_data.get('id')
-                    target = arrivals.get(id=arr_id)
+                    target = arrivals.filter(id=arr_id).first()
 
                     if not target:
                         continue
@@ -292,6 +292,37 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     payload['arrivals'] = all_arrivals
 
                     context = {'request': request, 'group_op': group_operation_uuid, 'arr_id': target.id}
+
+                    serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
+                    serializer.is_valid(raise_exception=True)
+
+                    vol = serializer.save()
+                    updated_volunteers.append(vol.id)
+                for hist in histories.filter(object_name='paidarrival'):
+                    volunteer_id = hist.volunteer_uuid
+                    old_data = hist.old_data or {}
+                    new_data = hist.data or {}
+
+                    vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
+                    paid_arrivals = PaidArrival.objects.filter(volunteer=vol)
+
+                    paid_arrival_id = old_data.get('id')
+                    target = paid_arrivals.filter(id=paid_arrival_id).first()
+
+                    if not target:
+                        continue
+
+                    all_paid_arrivals = []
+                    for paid_arrival in paid_arrivals:
+                        entry = {"id": paid_arrival.id}
+                        if target and paid_arrival.id == target.id:
+                            entry.update(old_data)
+                        all_paid_arrivals.append(entry)
+
+                    payload = {}
+                    payload['paid_arrivals'] = all_paid_arrivals
+
+                    context = {'request': request, 'group_op': group_operation_uuid}
 
                     serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
                     serializer.is_valid(raise_exception=True)
