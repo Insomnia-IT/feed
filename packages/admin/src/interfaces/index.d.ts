@@ -182,3 +182,50 @@ export interface WashEntity {
     actor: VolEntity;
     wash_count: number;
 }
+
+export interface StorageEntity {
+    id: number;
+    name: string;
+    description?: string | null;
+}
+
+export interface BinEntity {
+    id: number;
+    storage: number;
+    name: string;
+    capacity?: number | null;
+    description?: string | null;
+}
+
+export interface ItemEntity {
+    id: number;
+    name: string;
+    sku?: string | null;
+    is_unique: boolean;
+    metadata?: Record<string, unknown> | null;
+}
+
+export interface StorageItemPositionEntity {
+    id: number;
+    storage: number;
+    bin: number;
+    item: number;
+    count: number;
+    description?: string | null;
+}
+
+export interface IssuanceEntity {
+    id: number;
+    position: number;
+    volunteer: number;
+    count: number;
+    notes?: string | null;
+}
+
+export interface ReceivingEntity {
+    id: number;
+    position: number;
+    volunteer: number;
+    count: number;
+    notes?: string | null;
+}

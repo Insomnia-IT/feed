@@ -23,7 +23,8 @@ import {
     MobileOutlined,
     SyncOutlined,
     DashboardOutlined,
-    ExperimentOutlined
+    ExperimentOutlined,
+    DatabaseOutlined
 } from '@ant-design/icons';
 
 import { ACL } from 'acl';
@@ -146,6 +147,39 @@ const App: React.FC = () => {
                                         name: 'scanner-page',
                                         list: '/scanner-page',
                                         icon: <MobileOutlined />
+                                    },
+                                    {
+                                        name: 'storages',
+                                        list: '/storages',
+                                        create: '/storages/create',
+                                        edit: '/storages/edit/:id',
+                                        show: '/storages/show/:id',
+                                        icon: <DatabaseOutlined />
+                                    },
+                                    {
+                                        name: 'storage-bins',
+                                        list: '/storages/show/:id?tab=bins',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-items',
+                                        list: '/storages/show/:id?tab=items',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-positions',
+                                        list: '/storages/show/:id?tab=positions',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-issuances',
+                                        list: '/storages/show/:id?tab=issuances',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-receivings',
+                                        list: '/storages/show/:id?tab=receivings',
+                                        meta: { hide: true }
                                     },
                                     {
                                         name: 'wash',

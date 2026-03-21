@@ -18,6 +18,7 @@ import {
 import { DepartmentList, DepartmentCreate, DirectionEdit, DirectionShow } from 'components/entities/directions';
 import { GroupBadgeList, GroupBadgeCreate, GroupBadgeEdit, GroupBadgeShow } from 'components/entities/group-badges';
 import { FeedTransactionList, FeedTransactionCreate } from 'components/entities/feed-transaction';
+import { StorageList, StorageCreate, StorageEdit, StorageShow } from 'components/entities/storage';
 import { PublicStatistic } from 'components/entities/statistic';
 import { Scanner } from 'components/scanner';
 import { Sync } from 'components/sync';
@@ -86,6 +87,13 @@ export const AppRoutes: React.FC<IProps> = ({ initial }) => {
                 <Route path="/feed-transaction">
                     <Route index element={<FeedTransactionList />} />
                     <Route path="create" element={<FeedTransactionCreate />} />
+                </Route>
+
+                <Route path="/storages">
+                    <Route index element={<StorageList />} />
+                    <Route path="create" element={<StorageCreate />} />
+                    <Route path="edit/:id" element={<StorageEdit />} />
+                    <Route path="show/:id" element={<StorageShow />} />
                 </Route>
 
                 <Route path="/stats" element={<PublicStatistic />} />

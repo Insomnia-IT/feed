@@ -12,7 +12,8 @@ ac
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
-    .read(['wash', 'directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
+    .read(['wash', 'directions', 'feed-transaction', 'sync', 'stats', 'scanner-page', 'storages'])
+    .update(['storages'])
     .create(['volunteers'])
     // Старший смены
     .grant(AppRoles.SENIOR)
@@ -23,7 +24,7 @@ ac
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
-    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash'])
+    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash', 'storages'])
     .update(['group-badges', 'volunteer-custom-fields'])
     .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers'])
     // Сова
