@@ -312,7 +312,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     except VolunteerCustomFieldValue.DoesNotExist:
                         custom_field_value = None
                     if str(custom_field_value) == str(hist.data["value"]):
-                        if old_data:
+                        if old_data is not None:
                             existing_data = VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
                                 custom_field_id=custom_field,
@@ -339,7 +339,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 volunteer_uuid=hist.volunteer_uuid,
                                 group_operation_uuid=str(group_operation_uuid),
                             )
-                        elif old_data is None:
+                        else:
                             VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
                                 custom_field_id=custom_field,
