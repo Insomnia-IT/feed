@@ -17,6 +17,7 @@ import {
 } from 'components/entities/volunteer-custom-fields';
 import { DepartmentList, DepartmentCreate, DirectionEdit, DirectionShow } from 'components/entities/directions';
 import { GroupBadgeList, GroupBadgeCreate, GroupBadgeEdit, GroupBadgeShow } from 'components/entities/group-badges';
+import { StorageList, StorageCreate, StorageEdit, StorageShow } from 'components/entities/storage';
 import { FeedTransactionList, FeedTransactionCreate } from 'components/entities/feed-transaction';
 import { PublicStatistic } from 'components/entities/statistic';
 import { Scanner } from 'components/scanner';
@@ -81,6 +82,13 @@ export const AppRoutes: React.FC<IProps> = ({ initial }) => {
                     <Route path="create" element={<GroupBadgeCreate />} />
                     <Route path="edit/:id" element={<GroupBadgeEdit />} />
                     <Route path="show/:id" element={<GroupBadgeShow />} />
+                </Route>
+
+                <Route path="/storages">
+                    <Route index element={<StorageList />} />
+                    <Route path="create" element={<StorageCreate />} />
+                    <Route path="edit/:id" element={<StorageEdit />} />
+                    <Route path="show/:id" element={<StorageShow />} />
                 </Route>
 
                 <Route path="/feed-transaction">

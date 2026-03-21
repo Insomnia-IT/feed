@@ -21,6 +21,7 @@ Add a comprehensive storage management feature to the Insomnia Feed admin applic
   - `name`: CharField(max_length=255)
   - `sku`: CharField(max_length=64, blank=True, null=True)  # optional identifier
   - `is_unique`: BooleanField(default=False)  # true → count always 1
+  - `is_anonymous`: BooleanField(default=False)  # true → volunteer field is optional
   - `metadata`: JSONField(blank=True, null=True)  # optional free-form data
   - Inherit `TimeMixin` and `SoftDeleteModelMixin`
 - **StorageItemPosition**
@@ -34,14 +35,14 @@ Add a comprehensive storage management feature to the Insomnia Feed admin applic
 - **Issuance**
   - `id`: AutoField (PK)
   - `position`: ForeignKey(StorageItemPosition, on_delete=PROTECT, related_name="issuances")
-  - `volunteer`: ForeignKey(Volunteer, on_delete=PROTECT, related_name="issuances")
+  - `volunteer`: ForeignKey(Volunteer, on_delete=PROTECT, related_name="issuances", blank=True, null=True)
   - `count`: IntegerField()  # for non-unique items, always 1 for unique
   - `notes`: TextField(blank=True, null=True)
   - Inherit `TimeMixin` and `SoftDeleteModelMixin`
 - **Receiving**
   - `id`: AutoField (PK)
   - `position`: ForeignKey(StorageItemPosition, on_delete=PROTECT, related_name="receivings")
-  - `volunteer`: ForeignKey(Volunteer, on_delete=PROTECT, related_name="receivings")  # who delivered the items
+  - `volunteer`: ForeignKey(Volunteer, on_delete=PROTECT, related_name="receivings", blank=True, null=True)  # who delivered the items
   - `count`: IntegerField()  # number of items received
   - `notes`: TextField(blank=True, null=True)
   - Inherit `TimeMixin` and `SoftDeleteModelMixin`
@@ -184,6 +185,46 @@ All models use the existing `TimeMixin` (created_at/updated_at) and `SoftDeleteM
 - Bin creation from the storage page was fixed to send `storage` correctly.
 - Position creation from the storage page was fixed to send `storage` correctly.
 - The left menu shows **Склады** for the storage resource.
+
+### Managing Bins
+Bins are managed on the "Bins" tab and represent specific locations within the current storage:
+- **Add Bin**: Create a new bin with a **Name**, **Capacity** (optional limit), and **Description**.
+- **Context**: Bins created on this page are automatically linked to the current storage.
+- **Usage**: Once created, bins appear in the selection dropdown when adding new positions.
+
+### Managing Storage Items
+The "Items" tab provides a global catalog of items available for all storages:
+- **Global Catalog**: Items created here can be used in any storage through the "Positions" tab.
+- **Item Properties**:
+  - **Name**: Main identifier for the item.
+  - **SKU**: Optional secondary identifier.
+  - **Unique**: If checked, each position for this item must have a count of 1.
+  - **Anonymous**: If checked, no volunteer/owner is required when receiving or issuing this item.
+- **Actions**:
+  - **Add Item**: Opens a modal to create a new item globally.
+  - **Edit Item**: Opens a modal to modify an existing item's properties (updates all related positions).
+  - **Delete Item**: Removes the item from the catalog (soft-delete).
+
+### Managing Positions
+Positions (inventory) are managed on the "Positions" tab:
+- **Add Position**: Create a new inventory record. Select a Bin, an Item, and an Owner (volunteer).
+- **Unique Items**: When a unique item is selected, the count is automatically set to 1 and the field is hidden.
+- **Anonymous Items**: When an anonymous item is selected, the Owner field becomes optional.
+- **Receiving/Issuing**: Use the "Receive" and "Issue" buttons on each position row to update quantities and record transactions.
+
+### Anonymous items
+- `Item.is_anonymous=True` allows creating storage positions, receivings, and issuances without a volunteer (owner).
+- In the UI, the volunteer field becomes optional when an anonymous item is selected.
+- When issuing an anonymous item, the `StorageItemPosition` is automatically deleted after creating the `Issuance` record.
+
+### Position merging and history
+- **Merging logic**: When a new storage position is created for a **non-unique** item that already exists in the same storage and bin, the system automatically merges it into the existing position.
+- **Data flow**:
+  1. The existing position's `count` is incremented.
+  2. The new position's `description` is appended to the existing position's description (on a new line).
+  3. A new `Receiving` record is created, linked to the existing position, documenting the transaction.
+- **Unique items**: For items marked as `is_unique=True`, the merging logic is skipped, and separate positions are always created.
+- **Constraints**: The database-level unique constraint on `(storage, bin, item)` was removed to allow this flexible merging logic while still permitting duplicate positions if created through other means (though the standard API now enforces merging).
 
 ### Verification already completed
 - `backend/venv/bin/python backend/manage.py check`

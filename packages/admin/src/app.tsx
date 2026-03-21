@@ -23,7 +23,8 @@ import {
     MobileOutlined,
     SyncOutlined,
     DashboardOutlined,
-    ExperimentOutlined
+    ExperimentOutlined,
+    AuditOutlined
 } from '@ant-design/icons';
 
 import { ACL } from 'acl';
@@ -151,6 +152,37 @@ const App: React.FC = () => {
                                         name: 'wash',
                                         list: '/wash',
                                         icon: <ExperimentOutlined />
+                                    },
+                                    {
+                                        name: 'storages',
+                                        list: '/storages',
+                                        create: '/storages/create',
+                                        edit: '/storages/edit/:id',
+                                        show: '/storages/show/:id',
+                                        icon: <AuditOutlined />,
+                                        meta: {
+                                            label: 'Склады'
+                                        }
+                                    },
+                                    {
+                                        name: 'storage-bins',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-items',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-positions',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-issuances',
+                                        meta: { hide: true }
+                                    },
+                                    {
+                                        name: 'storage-receivings',
+                                        meta: { hide: true }
                                     },
                                     {
                                         name: 'sync',
