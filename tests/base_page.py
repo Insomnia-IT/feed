@@ -124,20 +124,14 @@ class BasePage:
         department_option = department_dropdown.locator(".ant-select-item-option").first
         department_option.wait_for(state="visible")
         department_option.click()
-        self.page.wait_for_function(
-            "() => !!document.querySelector('#direction')?.closest('.ant-select')?.querySelector('.ant-select-selection-item')?.textContent?.trim()",
-            timeout=5000,
-        )
+        department_dropdown.wait_for(state="hidden", timeout=5000)
         role = self.page.locator(badge_create.ROLE_NAME)
         role.click()
         role_dropdown = self.page.locator(".ant-select-dropdown:visible").last
         role_option = role_dropdown.locator(".ant-select-item-option").first
         role_option.wait_for(state="visible")
         role_option.click(force=True)
-        self.page.wait_for_function(
-            "() => !!document.querySelector('#role')?.closest('.ant-select')?.querySelector('.ant-select-selection-item')?.textContent?.trim()",
-            timeout=5000,
-        )
+        role_dropdown.wait_for(state="hidden", timeout=5000)
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         self.page.wait_for_function(
