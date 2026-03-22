@@ -85,7 +85,7 @@ def test_create_group_badge(page):
     login_page.go_to_create_badge()
     login_page.create_badge()
     # Ждем редирект обратно на список бейджей после сохранения
-    page.wait_for_url(f"{host}/group-badges", timeout=10000)
+    page.wait_for_url(f"{host}/group-badges", timeout=5000)
     # Ждем появления счетчика на странице
     page.locator("li.ant-pagination-total-text").wait_for(state="visible")
     b = login_page.badges_counter()
@@ -251,6 +251,7 @@ def test_edit_new_user(page):
     assert counter1 == counter2, "Счетчик изменился!!!"
     assert user_name == updated_name
 
+
 def test_delete_new_user(page):
     # найти созданного юзера и удалить его
     link = f"{host}/volunteers"
@@ -265,7 +266,7 @@ def test_delete_new_user(page):
     login_page.open_user(updated_name)
     login_page.delete_user()
     # Ждем возврата на страницу списка после удаления
-    page.wait_for_url(f"{host}/volunteers", timeout=10000)
+    page.wait_for_url(f"{host}/volunteers", timeout=5000)
     login_page.clear_input_field()
     # Ждем пока счетчик уменьшится, чтобы не читать старое значение
     expected_count = counter1 - 1
@@ -284,7 +285,8 @@ def test_delete_new_user(page):
     assert counter1 == counter2+1, "Счетчик не уменьшился на 1!!!"
     assert counter3 == 0
 
-@skip 
+
+
 def test_scan_qr(page):
     # Открываем страницу логина (через /volunteers она редиректит на логин)
     link = f"{host}/volunteers"
@@ -295,12 +297,48 @@ def test_scan_qr(page):
     # Диспатчим событие сканирования QR-кода
     login_page.scan_user("20635ffe1ad2496f8cfc5668d7e8b34d")
     # Ждем редиректа на основную страницу после входа
-    page.wait_for_url(f"{host}/volunteers", timeout=5000)
+    page.wait_for_url(f"{host}/volunteers", timeout=10000)
     # Ждем появления имени пользователя в меню
-    user_menu = page.locator("span.ant-menu-title-content")
+    user_menu = page.locator("span.ant-menu-title-content").first
     user_menu.wait_for(state="visible")
     # Проверяем что вошли под правильным пользователем (Корица)
     menu_text = user_menu.inner_text()
     assert "Корица" in menu_text, f"Ожидалось 'Корица' в меню, но получили: '{menu_text}'"
     assert page.url == f"{host}/volunteers"
-    print(f"✅ QR-вход выполнен успешно! Пользователь: {menu_text}")
+    print(f"QR-вход выполнен успешно! Пользователь: {menu_text}")
+
+
+def test_teamlead_rights(page):
+    # войти по QR руководителя службы
+    link = f"{host}/volunteers"
+    login_page = BasePage(page, link)
+    login_page.open()
+    login_page.first_window_qr()
+    login_page.scan_user("401d641aa4894a6hf832lsudd1")
+    page.wait_for_url(f"{host}/volunteers", timeout=10000)
+    # открыть любого волонтера
+    login_page.open_user()
+    # проверить, что нет кнопки удаления 
+    assert login_page.is_not_element_present(None, create_user.DELETE_USER_BUTTON), "Ошибка: Кнопка удаления волонтера видна руководителю службы!"
+    # проверить, что поля кухня, право доступа, комментарий бюро - некликабельны
+    assert login_page.is_element_disabled(create_user.KITCHEN_FIELD), "Ошибка: Поле кухня кликабельно для руководителя службы!"
+    assert login_page.is_element_disabled(create_user.RIGHTS_FIELD), "Ошибка: Поле право доступа кликабельно для руководителя службы!"
+    assert login_page.is_element_disabled(create_user.COMMENT_FIELD), "Ошибка: Поле комментарий бюро кликабельно для руководителя службы!"
+    # проверить бан
+    login_page.ban_user()
+    page.wait_for_timeout(5000)
+    # проверить разбана
+    login_page.unban_user()
+    page.wait_for_timeout(5000)
+    #сохранить
+    login_page.save_in_user_page()
+    page.wait_for_url(f"{host}/volunteers", timeout=5000)
+    # открыть того же волонтера
+    login_page.open_user()
+    # проверить две записи в истории действий
+    login_page.check_history_actions()
+    # последняя запись - разбан
+    assert login_page.check_last_action() == "Разблокирован", "Ошибка: Последняя запись в истории действий не разбан!"
+    # предпоследняя запись - бан
+    assert login_page.check_second_last_action() == "Заблокирован", "Ошибка: Предпоследняя запись в истории действий не бан!"
+    print("История действий проверена!")
