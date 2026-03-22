@@ -13,6 +13,13 @@ class BasePage:
     def open(self):
         self.page.goto(self.url)
 
+    def wait_for_path(self, path, timeout=30000):
+        self.page.wait_for_function(
+            "(expectedPath) => window.location.pathname === expectedPath",
+            path,
+            timeout=timeout,
+        )
+
 
     def is_element_present(self, how, what):
         return self.page.locator(what).is_visible()
@@ -417,5 +424,4 @@ class BasePage:
     def check_second_last_action(self):
         # Возвращаем текст предпоследнего действия
         return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
-
 
