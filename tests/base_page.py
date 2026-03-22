@@ -120,11 +120,15 @@ class BasePage:
         department = self.page.locator(badge_create.DEPARTMENT_NAME)
         department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        self.page.locator(".ant-select-dropdown .ant-select-item").first.wait_for(state="visible")
-        department.press("Enter")
-        department.press("Enter")
+        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
+        department_option.wait_for(state="visible")
+        department_option.click()
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
+        self.page.wait_for_function(
+            "() => !document.querySelector('button[type=\"submit\"]')?.disabled",
+            timeout=5000,
+        )
         self.page.locator(badge_create.SUBMIT_BUTTON).click()
 
     def badges_counter(self):
@@ -235,7 +239,21 @@ class BasePage:
 
     def save_in_group_badge(self):
         saving = self.page.locator(group_badges.SAVE_BUTTON)
-        saving.click()
+        self.page.wait_for_function(
+            "() => !Array.from(document.querySelectorAll('button')).filter((button) => button.textContent?.includes('Сохранить')).at(-1)?.disabled",
+            timeout=5000,
+        )
+        saving.first.click()
+        try:
+            confirm = self.page.locator(group_badges.SAVE_BUTTON).nth(1)
+            confirm.wait_for(state="visible", timeout=3000)
+            self.page.wait_for_function(
+                "() => !Array.from(document.querySelectorAll('button')).filter((button) => button.textContent?.includes('Сохранить')).at(-1)?.disabled",
+                timeout=5000,
+            )
+            confirm.click(force=True)
+        except Exception:
+            pass
 
 
     def go_to_create_user(self):
