@@ -1,5 +1,7 @@
 
+from django.utils import timezone
 from rest_framework import serializers, viewsets, permissions, filters
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
@@ -8,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from feeder.views.mixins import auto_tag_viewset
 
 from feeder import serializers, models
+from feeder.views.xlsx import build_xlsx_response
 
 
 @auto_tag_viewset("Feed Type")
@@ -26,6 +29,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
     group_badge = django_filters.NumberFilter(field_name="group_badge")
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
     is_group_badge = django_filters.BooleanFilter(method="filter_is_group_badge")
+    is_paid = django_filters.BooleanFilter(field_name="is_paid")
     is_anomaly = django_filters.BooleanFilter(field_name="is_anomaly")
 
     def filter_anonymous(self, queryset, name, value):
@@ -40,7 +44,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.FeedTransaction
-        fields = ['kitchen', 'volunteer', 'is_anomaly']
+        fields = ['kitchen', 'volunteer', 'is_paid', 'is_anomaly']
 
 @auto_tag_viewset("Feed Transaction")
 class FeedTransactionViewSet(viewsets.ModelViewSet):
@@ -56,6 +60,69 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
         if self.action in ['create', ]:
             return serializers.FeedTransactionSerializer
         return serializers.FeedTransactionDisplaySerializer
+
+    @action(detail=False, methods=['get'], url_path='export-xlsx')
+    def export_xlsx(self, request):
+        meal_map = {
+            "breakfast": "Завтрак",
+            "lunch": "Обед",
+            "dinner": "Ужин",
+            "night": "Ночь"
+        }
+
+        queryset = (
+            self.filter_queryset(self.get_queryset())
+            .select_related("volunteer", "kitchen", "group_badge")
+            .prefetch_related("volunteer__directions")
+        )
+
+        rows = []
+
+        for tx in queryset.iterator(chunk_size=2000):
+            local_dtime = timezone.localtime(tx.dtime) if tx.dtime else None
+            volunteer_full_name = " ".join(
+                [name for name in [getattr(tx.volunteer, "last_name", None), getattr(tx.volunteer, "first_name", None)] if name]
+            )
+            directions = ""
+            if tx.volunteer_id:
+                directions = ",".join(direction.name for direction in tx.volunteer.directions.all())
+
+            rows.append(
+                [
+                    local_dtime.strftime("%d.%m.%Y") if local_dtime else "",
+                    local_dtime.strftime("%H:%M:%S") if local_dtime else "",
+                    tx.volunteer_id or "",
+                    getattr(tx.volunteer, "name", None) or "Аноним",
+                    volunteer_full_name,
+                    "" if tx.is_vegan is None else ("Веган" if tx.is_vegan else "Мясоед"),
+                    meal_map.get(tx.meal_time, tx.meal_time),
+                    getattr(tx.kitchen, "name", None) or "",
+                    tx.amount,
+                    tx.reason or "",
+                    getattr(tx.group_badge, "name", None) or "",
+                    directions,
+                ]
+            )
+
+        return build_xlsx_response(
+            filename="feed-transactions",
+            worksheet_name="История питания",
+            header=[
+                "Дата",
+                "Время",
+                "ID волонтера",
+                "Позывной",
+                "Фамилия Имя",
+                "Тип питания",
+                "Прием пищи",
+                "Кухня",
+                "Кол-во",
+                "Причина",
+                "Групповой бейдж",
+                "Службы",
+            ],
+            rows=rows,
+        )
 
 
 #@extend_schema(tags=['feed', ], summary="Массовое добавление приёмов пищи")
