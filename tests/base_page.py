@@ -123,6 +123,11 @@ class BasePage:
         department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
         department_option.wait_for(state="visible")
         department_option.click()
+        role = self.page.locator(badge_create.ROLE_NAME)
+        role.click()
+        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
+        role_option.wait_for(state="visible")
+        role_option.click()
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         self.page.wait_for_function(
