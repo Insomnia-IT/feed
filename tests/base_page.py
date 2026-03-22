@@ -120,18 +120,12 @@ class BasePage:
         department = self.page.locator(badge_create.DEPARTMENT_NAME)
         department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        department_dropdown = self.page.locator(".ant-select-dropdown:visible").last
-        department_option = department_dropdown.locator(".ant-select-item-option").first
-        department_option.wait_for(state="visible")
-        department_option.click()
-        department_dropdown.wait_for(state="hidden", timeout=5000)
+        department.press("ArrowDown")
+        department.press("Enter")
         role = self.page.locator(badge_create.ROLE_NAME)
         role.click()
-        role_dropdown = self.page.locator(".ant-select-dropdown:visible").last
-        role_option = role_dropdown.locator(".ant-select-item-option").first
-        role_option.wait_for(state="visible")
-        role_option.click(force=True)
-        role_dropdown.wait_for(state="hidden", timeout=5000)
+        role.press("ArrowDown")
+        role.press("Enter")
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         self.page.wait_for_function(
