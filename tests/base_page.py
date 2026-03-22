@@ -136,7 +136,14 @@ class BasePage:
             "() => !document.querySelector('button[type=\"submit\"]')?.disabled",
             timeout=5000,
         )
-        self.page.locator(badge_create.SUBMIT_BUTTON).click()
+        with self.page.expect_response(
+            lambda response: response.request.method == "POST" and "/group-badges" in response.url,
+            timeout=10000,
+        ) as create_response:
+            self.page.locator(badge_create.SUBMIT_BUTTON).click()
+        response = create_response.value
+        if response.status >= 400:
+            raise AssertionError(f"Group badge creation failed with status {response.status}: {response.url}")
 
     def badges_counter(self):
         # Ждем пока счетчик стабилизируется (не меняется 2 итерации подряд)
