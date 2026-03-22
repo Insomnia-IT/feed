@@ -23,6 +23,7 @@ interface TransformedTransaction {
     volunteerName: string;
     volunteerId: number;
     feedType: string;
+    isPaid: string;
     mealType: string;
     kitchenName: string;
     amount: number;
@@ -94,6 +95,7 @@ export const FeedTransactionList: FC = () => {
                     volunteerName: item?.volunteer_name || 'Аноним',
                     volunteerId: item.volunteer,
                     feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
+                    isPaid: item.is_paid !== null ? (item.is_paid ? 'Да' : 'Нет') : '',
                     mealType: MEAL_MAP[item.meal_time],
                     kitchenName: item?.kitchen_name ?? '',
                     amount: item.amount,
@@ -115,6 +117,7 @@ export const FeedTransactionList: FC = () => {
         { dataIndex: 'volunteerName', title: 'Волонтер' },
         { dataIndex: 'volunteerId', title: 'ID волонтера' },
         { dataIndex: 'feedType', title: 'Тип питания' },
+        { dataIndex: 'isPaid', title: 'Платное' },
         { dataIndex: 'mealType', title: 'Прием пищи' },
         { dataIndex: 'kitchenName', title: 'Кухня' },
         { dataIndex: 'amount', title: 'Кол-во' },
@@ -175,6 +178,7 @@ export const FeedTransactionList: FC = () => {
                 tx?.volunteer_name ?? 'Аноним',
                 [tx.volunteer_last_name, tx.volunteer_first_name].filter((item) => !!item).join(' '),
                 tx.is_vegan !== null ? (tx.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
+                tx.is_paid !== null ? (tx.is_paid ? 'Да' : 'Нет') : '',
                 MEAL_MAP[tx.meal_time],
                 tx?.kitchen_name ?? '',
                 tx.amount,
