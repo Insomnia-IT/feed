@@ -97,12 +97,6 @@ export interface VolunteerCustomFieldEntity {
     mobile: boolean;
 }
 
-export interface DirectionEntity {
-    id: string;
-    name: string;
-    type: string;
-}
-
 export interface StorageEntity {
     id: number;
     name: string;
