@@ -124,23 +124,31 @@ class BasePage:
         department_option = department_dropdown.locator(".ant-select-item-option").first
         department_option.wait_for(state="visible")
         department_option.click()
+        self.page.wait_for_function(
+            "() => !!document.querySelector('#direction')?.closest('.ant-select')?.querySelector('.ant-select-selection-item')?.textContent?.trim()",
+            timeout=5000,
+        )
         role = self.page.locator(badge_create.ROLE_NAME)
         role.click()
         role_dropdown = self.page.locator(".ant-select-dropdown:visible").last
         role_option = role_dropdown.locator(".ant-select-item-option").first
         role_option.wait_for(state="visible")
         role_option.click(force=True)
+        self.page.wait_for_function(
+            "() => !!document.querySelector('#role')?.closest('.ant-select')?.querySelector('.ant-select-selection-item')?.textContent?.trim()",
+            timeout=5000,
+        )
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         self.page.wait_for_function(
-            "() => !document.querySelector('button[type=\"submit\"]')?.disabled",
+            "() => document.querySelector('#name')?.value && document.querySelector('#qr')?.value && !document.querySelector('button.refine-save-button')?.disabled",
             timeout=5000,
         )
         with self.page.expect_response(
             lambda response: response.request.method == "POST" and "/group-badges" in response.url,
             timeout=10000,
         ) as create_response:
-            self.page.locator(badge_create.SUBMIT_BUTTON).click()
+            self.page.locator("button.refine-save-button").first.click()
         response = create_response.value
         if response.status >= 400:
             raise AssertionError(f"Group badge creation failed with status {response.status}: {response.url}")
