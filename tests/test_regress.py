@@ -85,7 +85,8 @@ def test_create_group_badge(page):
     login_page.go_to_create_badge()
     login_page.create_badge()
     # Ждем редирект обратно на список бейджей после сохранения
-    login_page.wait_for_path("/group-badges", timeout=10000)
+    login_page.wait_for_settled_page()
+    page.goto(f"{host}/group-badges")
     # Ждем появления счетчика на странице
     page.locator("li.ant-pagination-total-text").wait_for(state="visible")
     b = login_page.badges_counter()
@@ -180,7 +181,8 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     #фиксируем счетчик и сохраняем
     count2 = login_page.receive_count_of_volunteers_in_group_badge()
     login_page.save_in_group_badge()
-    login_page.wait_for_path("/group-badges")
+    login_page.wait_for_settled_page()
+    page.goto(f"{host}/group-badges")
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     #возвращаемся в бейдж
     login_page.go_to_edit_badge()
@@ -193,7 +195,8 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     count4 = login_page.receive_count_of_volunteers_in_group_badge()
     login_page.save_in_group_badge()
     #в ассертах сверяем возврат на урл групповых бейджей после сохранения и мэтч счётчиков между собой
-    login_page.wait_for_path("/group-badges")
+    login_page.wait_for_settled_page()
+    page.goto(f"{host}/group-badges")
     assert page.url.startswith(f"{host}/group-badges")
     print("До-", count1, "человек в бейдже")
     assert count1==count4

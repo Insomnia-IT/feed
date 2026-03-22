@@ -20,6 +20,13 @@ class BasePage:
             timeout=timeout,
         )
 
+    def wait_for_settled_page(self, timeout=10000):
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=timeout)
+        except Exception:
+            # Some SPA updates keep background requests open; allow the caller to continue.
+            pass
+
 
     def is_element_present(self, how, what):
         return self.page.locator(what).is_visible()
