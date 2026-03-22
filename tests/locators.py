@@ -66,8 +66,15 @@ class create_user():
     DATE_FROM = "#arrivals_0_arrival_date"
     DATE_TO = "#arrivals_0_departure_date"
     TODAY = "a.ant-picker-now-btn"
-    BAN_BUTTON = "//button[span[text()='Заблокировать Волонтера']]"
+
+    # Бан/Разбан
+    BAN_BUTTON = "//button[span[text()='Заблокировать волонтера']]"
+    BAN_CONFIRM = "//button[span[text()='Заблокировать Волонтера']]"
     BAN_REASON = "#form-block_reason"
+
+    UNBAN_BUTTON = "//button[span[text()='Разблокировать волонтера']]"
+    UNBAN_CONFIRM = "//button[@type='submit'][span[text()='Разблокировать волонтера']]"
+
 
     FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
@@ -75,3 +82,16 @@ class create_user():
     DELETE_USER_BUTTON = "//button[span[text()='Удалить волонтера']]"
     DELETE_CONFIRM = "//button[span[text()='Да']]"
     USERS_COUNTER = 'span[data-testid="volunteer-count"]'
+
+    INPUT_REASON = "#form-block_reason"
+
+    # Поля для проверки прав доступа (read-only)
+    KITCHEN_FIELD = "#kitchen"
+    RIGHTS_FIELD = "#main_role"
+    COMMENT_FIELD = "#comment"
+
+    # История действий
+    HISTORY_TAB = "//*[text()='История действий']"
+    HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
+
+
