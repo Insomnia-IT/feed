@@ -25,6 +25,11 @@ class BasePage:
         except Exception:
             return True
 
+    def is_element_disabled(self, what):
+        # Проверяем наличие атрибута 'disabled' у элемента
+        return self.page.locator(what).is_disabled()
+
+
     def first_window(self):
         login_input = self.page.locator(registration.LOGIN)
         if login_input.is_visible():
@@ -46,10 +51,14 @@ class BasePage:
         login_input.wait_for(state="hidden")
 
     def scan_user(self, qr_code="20635ffe1ad2496f8cfc5668d7e8b34d"):
-        # Диспатчим событие QR-сканирования точно так же как это делает настоящий сканер
+        # login.tsx вешает слушатель 'scan' на document внутри useEffect.
+        # Даем React время зарегистрировать его после рендера страницы.
+        self.page.wait_for_timeout(500)
+        # Диспатчим в точности так же как onscan.js: с bubbles:true
         self.page.evaluate(f"""
-            document.body.dispatchEvent(new CustomEvent("scan", {{ 
-                detail: {{ scanCode: "{qr_code}" }} 
+            document.dispatchEvent(new CustomEvent("scan", {{
+                bubbles: true,
+                detail: {{ scanCode: "{qr_code}" }}
             }}));
         """)
 
@@ -137,7 +146,6 @@ class BasePage:
         if delete_buttons.count() > 0:
             delete_button = delete_buttons.first
             delete_button.click()
-        time.sleep(1)
         confirm_button = self.page.locator("//button[span[text()='Удалить']]")
         confirm_button.click()
 
@@ -374,3 +382,40 @@ class BasePage:
         val = find.input_value()
         for _ in range(len(val)):
             find.press("Backspace")  # Удаляем символы один за другим
+
+    def ban_user(self):
+        ban = self.page.locator(create_user.BAN_BUTTON)
+        ban.click()
+        reason = self.page.locator(create_user.BAN_REASON)
+        reason.fill("Причина бана")
+        confirm = self.page.locator(create_user.BAN_CONFIRM)
+        confirm.click()
+
+    def unban_user(self):
+        unban = self.page.locator(create_user.UNBAN_BUTTON)
+        unban.wait_for(state="visible", timeout=5000)
+        unban.click()
+        reason = self.page.locator(create_user.BAN_REASON)
+        reason.fill("Причина разбана")
+        confirm = self.page.locator(create_user.UNBAN_CONFIRM)
+        confirm.click()
+
+    def check_history_actions(self):
+        # Кликаем по вкладке "История действий"
+        self.page.locator(create_user.HISTORY_TAB).click()
+        # Даем истории время прогрузиться (асинхронные логи)
+        self.page.wait_for_timeout(1000)
+        # Ждем появления элементов в списке истории
+        self.page.locator(create_user.HISTORY_LOG_ITEM).first.wait_for(state="visible", timeout=5000)
+
+
+
+    def check_last_action(self):
+        # Возвращаем текст последнего действия
+        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(1).inner_text().strip()
+
+    def check_second_last_action(self):
+        # Возвращаем текст предпоследнего действия
+        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
+
+
