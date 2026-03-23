@@ -1,0 +1,29 @@
+name: Measure Front Build
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: measure-front-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  measure-runner:
+    runs-on: [self-hosted, rumsrv]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Measure Admin Build On Runner
+        run: |
+          echo "=== admin build on runner ==="
+          time npm run build --workspace @feed/admin
+      - name: Measure Scanner Build On Runner
+        run: |
+          echo "=== scanner build on runner ==="
+          time npm run build --workspace @feed/scanner

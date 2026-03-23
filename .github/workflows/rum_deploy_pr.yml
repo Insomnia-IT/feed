@@ -25,25 +25,12 @@ jobs:
     #   PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
     steps:
     - uses: actions/checkout@v6
-    - name: Setup Node.js
-      if: github.event.action != 'closed'
-      uses: actions/setup-node@v6
-      with:
-        node-version: 24
-        cache: npm
 # DB
     - name: setup db dir
       if: github.event.action != 'closed'
       run: |
         mkdir -p ${DB_DIR}
         cp -n /var/feed_db/feed_db.sqlite3 ${DB_DIR}/feed_db.sqlite3
-    - name: Measure Node Builds On Runner
-      if: github.event.action != 'closed'
-      run: |
-        echo "=== admin build on runner ==="
-        time npm run build --workspace @feed/admin
-        echo "=== scanner build on runner ==="
-        time npm run build --workspace @feed/scanner
 # ADMIN
     - name: build admin
       if: github.event.action != 'closed'
