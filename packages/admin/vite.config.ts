@@ -1,15 +1,15 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 // import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
     plugins: [
-        react({
-            babel: {
-                plugins: [['babel-plugin-react-compiler']]
-            }
+        react(),
+        babel({
+            presets: [reactCompilerPreset()]
         }),
         // visualizer({ open: true }), // Uncomment to visualize bundle size
         VitePWA({

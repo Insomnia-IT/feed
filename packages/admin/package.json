@@ -17,9 +17,9 @@
     },
     "dependencies": {
         "@refinedev/antd": "^6.0.3",
-        "@refinedev/core": "^5.0.8",
+        "@refinedev/core": "^5.0.11",
         "@refinedev/react-router": "^2.0.3",
-        "@tanstack/react-query": "^5.90.21",
+        "@tanstack/react-query": "^5.95.2",
         "accesscontrol": "^2.2.1",
         "axios": "^1.13.5",
         "dayjs": "^1.11.13",
@@ -29,7 +29,7 @@
         "quill": "^2.0.3",
         "react": "^19.2.3",
         "react-dom": "^19.2.3",
-        "react-router": "^7.12.0",
+        "react-router": "^7.13.2",
         "recharts": "^3.1.2",
         "ulid": "^3.0.2",
         "uuid": "^13.0.0"

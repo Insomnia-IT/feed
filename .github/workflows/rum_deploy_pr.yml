@@ -24,7 +24,7 @@ jobs:
       PHOTO_STORAGE_PATH: /var/feed_db/photos/
     #   PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 # DB
     - name: setup db dir
       if: github.event.action != 'closed'
@@ -68,16 +68,16 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: [self-hosted, rumsrv]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 #       - name: Checkout base branch
-#         uses: actions/checkout@v4
+#         uses: actions/checkout@v6
 #         with:
 #           ref: ${{ github.event.pull_request.base.ref }}
 #           path: base
 #           fetch-depth: 0
 
 #       - name: Checkout PR branch
-#         uses: actions/checkout@v4
+#         uses: actions/checkout@v6
 #         with:
 #           ref: ${{ github.head_ref }}
 #           path: pr
