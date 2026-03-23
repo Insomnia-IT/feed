@@ -2,7 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
+from feeder.models import (Volunteer, Arrival, PaidArrival, Direction, FeedType, DirectionType, Person, Status, Transport,
                            Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen, 
                            AccessRole)
 
@@ -220,6 +220,22 @@ class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSer
         if hasattr(obj, "deleted_at") and obj.deleted_at:
             return True
         return False
+
+
+class PaidArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
+    deleted = serializers.SerializerMethodField()
+    badge = serializers.SlugRelatedField(source="volunteer", slug_field="uuid", queryset=Volunteer.objects.all())
+
+    class Meta:
+        model = PaidArrival
+        fields = (
+            "id", "deleted", "badge", "arrival_date", "departure_date", "is_free"
+        )
+
+    def get_deleted(self, obj):
+        if hasattr(obj, "deleted_at") and obj.deleted_at:
+            return True
+        return False
     
 
 class DirectionHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
@@ -272,6 +288,7 @@ def get_history_serializer(instance_name):
     instance_serializer = {
         "volunteer": VolunteerHistoryDataSerializer,
         "arrival": ArrivalHistoryDataSerializer,
+        "paidarrival": PaidArrivalHistoryDataSerializer,
         "direction": DirectionHistoryDataSerializer,
         "engagement": EngagementHistoryDataSerializer,
         "person": PersonHistoryDataSerializer,
