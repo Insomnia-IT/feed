@@ -302,9 +302,18 @@ def test_scan_qr(page):
     # Диспатчим событие сканирования QR-кода
     login_page.scan_user("20635ffe1ad2496f8cfc5668d7e8b34d")
     # Ждем редиректа на основную страницу после входа
-    page.wait_for_url(f"{host}/volunteers", timeout=10000)
+    page.wait_for_function(
+        """
+        () => {
+            const volunteerCount = document.querySelector('span[data-testid="volunteer-count"]');
+            return window.location.pathname === "/volunteers" && Boolean(volunteerCount);
+        }
+        """,
+        timeout=15000
+    )
+    page.locator('span[data-testid="volunteer-count"]').wait_for(state="visible", timeout=5000)
     # Ждем появления имени пользователя в меню
-    user_menu = page.locator("span.ant-menu-title-content").first
+    user_menu = page.locator('span[data-testid="current-user-name"]')
     user_menu.wait_for(state="visible")
     # Проверяем что вошли под правильным пользователем (Корица)
     menu_text = user_menu.inner_text()
@@ -320,7 +329,16 @@ def test_teamlead_rights(page):
     login_page.open()
     login_page.first_window_qr()
     login_page.scan_user("401d641aa4894a6hf832lsudd1")
-    page.wait_for_url(f"{host}/volunteers", timeout=10000)
+    page.wait_for_function(
+        """
+        () => {
+            const volunteerCount = document.querySelector('span[data-testid="volunteer-count"]');
+            return window.location.pathname === "/volunteers" && Boolean(volunteerCount);
+        }
+        """,
+        timeout=15000
+    )
+    page.locator('span[data-testid="volunteer-count"]').wait_for(state="visible", timeout=5000)
     # открыть любого волонтера
     login_page.open_user()
     # проверить, что нет кнопки удаления 

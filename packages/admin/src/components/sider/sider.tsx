@@ -106,11 +106,15 @@ const CustomSider = () => {
             {
                 key: 'user-info',
                 disabled: true,
-                label: userLoading
-                    ? 'Загрузка...'
-                    : accessRoleName
-                      ? `${user?.username} (${accessRoleName})`
-                      : user?.username || '—'
+                label: (
+                    <span data-testid="current-user-name">
+                        {userLoading
+                            ? 'Загрузка...'
+                            : accessRoleName
+                              ? `${user?.username} (${accessRoleName})`
+                              : user?.username || '—'}
+                    </span>
+                )
             }
         ];
 
