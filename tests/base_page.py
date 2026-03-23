@@ -13,13 +13,6 @@ class BasePage:
     def open(self):
         self.page.goto(self.url)
 
-    def wait_for_path(self, path, timeout=30000):
-        self.page.wait_for_function(
-            "(expectedPath) => window.location.pathname === expectedPath",
-            arg=path,
-            timeout=timeout,
-        )
-
     def wait_for_settled_page(self, timeout=10000):
         try:
             self.page.wait_for_load_state("networkidle", timeout=timeout)
@@ -137,29 +130,12 @@ class BasePage:
             "() => document.querySelector('#name')?.value && document.querySelector('#qr')?.value && !document.querySelector('button.refine-save-button')?.disabled",
             timeout=5000,
         )
-        try:
-            with self.page.expect_response(
-                lambda response: response.request.method == "POST" and "/group-badges" in response.url,
-                timeout=10000,
-            ) as create_response:
-                self.page.locator("button.refine-save-button").first.click()
-            response = create_response.value
-        except Exception as exc:
-            form_state = self.page.evaluate("""
-                () => {
-                    const getSelectText = (id) =>
-                        document.querySelector(`#${id}`)?.closest('.ant-select')?.querySelector('.ant-select-selection-item')?.textContent?.trim() || '';
-                    return {
-                        name: document.querySelector('#name')?.value || '',
-                        qr: document.querySelector('#qr')?.value || '',
-                        direction: getSelectText('direction'),
-                        role: getSelectText('role'),
-                        saveDisabled: !!document.querySelector('button.refine-save-button')?.disabled,
-                        errors: Array.from(document.querySelectorAll('.ant-form-item-explain-error')).map((node) => node.textContent?.trim() || '').filter(Boolean),
-                    };
-                }
-            """)
-            raise AssertionError(f"Group badge create did not submit. State: {form_state}") from exc
+        with self.page.expect_response(
+            lambda response: response.request.method == "POST" and "/group-badges" in response.url,
+            timeout=10000,
+        ) as create_response:
+            self.page.locator("button.refine-save-button").first.click()
+        response = create_response.value
         if response.status >= 400:
             raise AssertionError(f"Group badge creation failed with status {response.status}: {response.url}")
 
