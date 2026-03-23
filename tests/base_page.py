@@ -125,9 +125,10 @@ class BasePage:
         role = self.page.locator(badge_create.ROLE_NAME)
         department.press("Escape")
         department.press("Tab")
-        role.focus()
+        role.click(force=True)
         role.press("ArrowDown")
         role.press("Enter")
+        role.press("Tab")
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         self.page.wait_for_function(
