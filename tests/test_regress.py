@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import pytest
+import requests
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
@@ -15,6 +16,32 @@ skip = pytest.mark.skip
 
 host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
 created_user_name = "Test_name"
+admin_login = "admin"
+admin_password = "Kolombina25"
+
+
+def get_direction_head_qr() -> str:
+    api_url = f"{host}/feedapi/v1"
+    auth_response = requests.post(
+        f"{api_url}/auth/login/",
+        json={"username": admin_login, "password": admin_password},
+        timeout=15,
+    )
+    auth_response.raise_for_status()
+    token = auth_response.json()["key"]
+
+    volunteers_response = requests.get(
+        f"{api_url}/volunteers/?limit=200",
+        headers={"Authorization": f"Token {token}"},
+        timeout=15,
+    )
+    volunteers_response.raise_for_status()
+
+    for volunteer in volunteers_response.json().get("results", []):
+        if volunteer.get("access_role") == "DIRECTION_HEAD" and volunteer.get("qr"):
+            return volunteer["qr"]
+
+    pytest.skip("No volunteer with access_role=DIRECTION_HEAD and QR code was found")
 
 def test_pagination_in_volunteer_list(page):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
@@ -328,7 +355,7 @@ def test_teamlead_rights(page):
     login_page = BasePage(page, link)
     login_page.open()
     login_page.first_window_qr()
-    login_page.scan_user("401d641aa4894a6hf832lsudd1")
+    login_page.scan_user(get_direction_head_qr())
     page.wait_for_function(
         """
         () => {
