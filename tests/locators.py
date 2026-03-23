@@ -2,8 +2,7 @@ import time
 from selenium.webdriver.common.by import By
 
 class registration():
-    CHOOSE_LOGIN_TYPE = "label.ant-segmented-item .ant-segmented-item-label[aria-selected='false']"
-    CHOOSE_QR_TYPE = "label.ant-segmented-item .ant-segmented-item-label[aria-selected='true']"
+    SEGMENTED_ITEMS = "label.ant-segmented-item"
     LOGIN = "#username"
     PASSWORD = "#password"
     BUTTONREG = "//button[span[text()='Войти']]"

@@ -12,7 +12,8 @@ from requests.auth import HTTPBasicAuth
 from rest_framework.exceptions import APIException
 
 from feeder.sync_serializers import (VolunteerHistoryDataSerializer, DirectionHistoryDataSerializer,
-                                     ArrivalHistoryDataSerializer, PersonHistoryDataSerializer,
+                                     ArrivalHistoryDataSerializer, PaidArrivalHistoryDataSerializer,
+                                     PersonHistoryDataSerializer,
                                      EngagementHistoryDataSerializer)
 from history.models import History
 from history.serializers import HistorySyncSerializer
@@ -120,6 +121,7 @@ class NotionSync:
             "directions": DirectionHistoryDataSerializer,
             "persons": PersonHistoryDataSerializer,
             "arrivals": ArrivalHistoryDataSerializer,
+            "paid_arrivals": PaidArrivalHistoryDataSerializer,
             "engagements": EngagementHistoryDataSerializer
         }
         return serializers.get(obj_name)
@@ -186,6 +188,7 @@ class NotionSync:
                 self.save_data_from_notion(data.get("engagements", []), "engagements")
                 self.save_data_from_notion(filter(lambda b: not skip_badge_by_id.get(b['id']), data.get("badges", [])), "badges")
                 self.save_data_from_notion(filter(lambda a: not skip_arrival_by_id.get(a['id']), data.get("arrivals", [])), "arrivals")
+                self.save_data_from_notion(data.get("paid_arrivals", []), "paid_arrivals")
 
                 if self.error_sync:
                     raise APIException(self.error_sync)
