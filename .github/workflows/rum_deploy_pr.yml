@@ -31,6 +31,13 @@ jobs:
       run: |
         mkdir -p ${DB_DIR}
         cp -n /var/feed_db/feed_db.sqlite3 ${DB_DIR}/feed_db.sqlite3
+    - name: Measure Node Builds On Runner
+      if: github.event.action != 'closed'
+      run: |
+        echo "=== admin build on runner ==="
+        time npm run build --workspace @feed/admin
+        echo "=== scanner build on runner ==="
+        time npm run build --workspace @feed/scanner
 # ADMIN
     - name: build admin
       if: github.event.action != 'closed'
