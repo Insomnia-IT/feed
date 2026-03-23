@@ -407,4 +407,37 @@ class BasePage:
         # Возвращаем текст предпоследнего действия
         return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
 
+    def get_current_volunteer_name(self):
+        # Получаем имя из поля #name
+        return self.page.locator(create_user.USER_NAME).input_value()
+
+    def cleanup_volunteer_comment(self, user_name):
+        # Сначала выходим из текущей сессии (руководителя службы)
+        self.logout()
+        
+        # Переключаемся на форму логина/пароля
+        self.first_window()
+        
+        # Логинимся под админом
+        self.login_admin()
+        
+        # Переходим в список волонтеров (используем базовый url из self.url)
+        import re
+        base_match = re.match(r"(https?://[^/]+)", self.page.url)
+        base_url = base_match.group(1) if base_match else self.url
+        
+        self.page.goto(f"{base_url}/volunteers")
+        # Логинимся под админом
+        self.login_admin()
+        # Ищем и открываем пользователя
+        self.find_user(user_name)
+        self.open_user(user_name)
+        # Очищаем комментарий
+        comment = self.page.locator(create_user.COMMENT_FIELD)
+        comment.fill("")
+        # Сохраняем
+        self.save_in_user_page()
+        # Ждем возврата в список волонтеров
+        self.page.wait_for_url(f"{base_url}/volunteers", timeout=5000)
+
 
