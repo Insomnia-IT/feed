@@ -89,6 +89,7 @@ def get_kitchen_id_by_history(history_by_volunteer, volunteer_uuid, current_date
             if current_date < item['action_at']:
                 return item['old_data']['kitchen']
 
+# DEPRECATED. Актуальную версию смотри в calculate_statistic.py
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, prediction_alg='1', apply_history=False):
     start_time = time.time()
     # convert from str to a datetime type (Arrow)
