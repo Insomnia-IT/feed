@@ -120,8 +120,10 @@ class BasePage:
         department = self.page.locator(badge_create.DEPARTMENT_NAME)
         department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        department.press("ArrowDown")
-        department.press("Enter")
+        department_dropdown = self.page.locator(".ant-select-dropdown:visible").last
+        department_option = department_dropdown.locator(".ant-select-item-option").first
+        department_option.wait_for(state="visible")
+        department_option.click(force=True)
         role = self.page.locator(badge_create.ROLE_NAME)
         department.press("Escape")
         department.press("Tab")
