@@ -2,9 +2,7 @@ import os
 import sys
 import time
 import pytest
-import requests
 from datetime import datetime
-from urllib.parse import parse_qs, urlparse
 
 # Добавляем папку tests в sys.path, чтобы pytest мог находить локаторы и базовые страницы
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -16,67 +14,6 @@ skip = pytest.mark.skip
 
 host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
 created_user_name = "Test_name"
-admin_login = "admin"
-admin_password = "Kolombina25"
-
-
-def get_admin_token() -> str:
-    api_url = f"{host}/feedapi/v1"
-    auth_response = requests.post(
-        f"{api_url}/auth/login/",
-        json={"username": admin_login, "password": admin_password},
-        timeout=15,
-    )
-    auth_response.raise_for_status()
-    return auth_response.json()["key"]
-
-
-def get_direction_head_data() -> dict:
-    api_url = f"{host}/feedapi/v1"
-    token = get_admin_token()
-
-    volunteers_response = requests.get(
-        f"{api_url}/volunteers/?limit=200",
-        headers={"Authorization": f"Token {token}"},
-        timeout=15,
-    )
-    volunteers_response.raise_for_status()
-
-    for volunteer in volunteers_response.json().get("results", []):
-        if volunteer.get("access_role") == "DIRECTION_HEAD" and volunteer.get("qr"):
-            return volunteer
-
-    pytest.skip("No volunteer with access_role=DIRECTION_HEAD and QR code was found")
-
-
-def get_direction_head_qr() -> str:
-    return get_direction_head_data()["qr"]
-
-
-def get_direction_head_target_name() -> str:
-    api_url = f"{host}/feedapi/v1"
-    token = get_admin_token()
-    direction_head = get_direction_head_data()
-
-    direction_ids = {str(direction["id"]) for direction in direction_head.get("directions", [])}
-
-    volunteers_response = requests.get(
-        f"{api_url}/volunteers/?limit=200",
-        headers={"Authorization": f"Token {token}"},
-        timeout=15,
-    )
-    volunteers_response.raise_for_status()
-
-    for volunteer in volunteers_response.json().get("results", []):
-        volunteer_direction_ids = {str(direction["id"]) for direction in volunteer.get("directions", [])}
-        if volunteer.get("id") == direction_head.get("id"):
-            continue
-        if not volunteer.get("name"):
-            continue
-        if direction_ids & volunteer_direction_ids:
-            return volunteer["name"]
-
-    pytest.skip("No target volunteer in direction head scope was found")
 
 def test_pagination_in_volunteer_list(page):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
@@ -115,11 +52,7 @@ def test_create_new_meal(page):
     first_row_text = login_page.meal_table()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
-    parsed_url = urlparse(page.url)
-    params = parse_qs(parsed_url.query)
-    assert parsed_url.path == "/feed-transaction"
-    assert params.get("pageSize") == ["10"]
-    assert params.get("currentPage", params.get("current")) == ["1"]
+    assert page.url == f"{host}/feed-transaction?pageSize=10&current=1"
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
     assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
     print("✅ Запись успешно создана!")
@@ -330,10 +263,6 @@ def test_delete_new_user(page):
     global created_user_name
     updated_name = f"{created_user_name}_updated"
     login_page.find_user(updated_name)
-    page.wait_for_timeout(1000)
-    if login_page.receive_volunteers_count() == 0:
-        assert True
-        return
     login_page.open_user(updated_name)
     login_page.delete_user()
     # Ждем возврата на страницу списка после удаления
@@ -368,18 +297,9 @@ def test_scan_qr(page):
     # Диспатчим событие сканирования QR-кода
     login_page.scan_user("20635ffe1ad2496f8cfc5668d7e8b34d")
     # Ждем редиректа на основную страницу после входа
-    page.wait_for_function(
-        """
-        () => {
-            const volunteerCount = document.querySelector('span[data-testid="volunteer-count"]');
-            return window.location.pathname === "/volunteers" && Boolean(volunteerCount);
-        }
-        """,
-        timeout=15000
-    )
-    page.locator('span[data-testid="volunteer-count"]').wait_for(state="visible", timeout=5000)
+    page.wait_for_url(f"{host}/volunteers", timeout=10000)
     # Ждем появления имени пользователя в меню
-    user_menu = page.locator('span[data-testid="current-user-name"]')
+    user_menu = page.locator("span.ant-menu-title-content").first
     user_menu.wait_for(state="visible")
     # Проверяем что вошли под правильным пользователем (Корица)
     menu_text = user_menu.inner_text()
@@ -394,21 +314,10 @@ def test_teamlead_rights(page):
     login_page = BasePage(page, link)
     login_page.open()
     login_page.first_window_qr()
-    login_page.scan_user(get_direction_head_qr())
-    page.wait_for_function(
-        """
-        () => {
-            const volunteerCount = document.querySelector('span[data-testid="volunteer-count"]');
-            return window.location.pathname === "/volunteers" && Boolean(volunteerCount);
-        }
-        """,
-        timeout=15000
-    )
-    page.locator('span[data-testid="volunteer-count"]').wait_for(state="visible", timeout=5000)
-    target_name = get_direction_head_target_name()
-    login_page.find_user(target_name)
+    login_page.scan_user("401d641aa4894a6hf832lsudd1")
+    page.wait_for_url(f"{host}/volunteers", timeout=10000)
     # открыть любого волонтера
-    login_page.open_user(target_name)
+    login_page.open_user()
     # проверить, что нет кнопки удаления 
     assert login_page.is_not_element_present(None, create_user.DELETE_USER_BUTTON), "Ошибка: Кнопка удаления волонтера видна руководителю службы!"
     # проверить, что поля кухня, право доступа, комментарий бюро - некликабельны

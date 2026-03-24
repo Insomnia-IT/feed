@@ -390,17 +390,15 @@ class BasePage:
         reason.fill("Причина бана")
         confirm = self.page.locator(create_user.BAN_CONFIRM)
         confirm.click()
-        self.page.locator(create_user.UNBAN_BUTTON).wait_for(state="visible", timeout=15000)
 
     def unban_user(self):
         unban = self.page.locator(create_user.UNBAN_BUTTON)
-        unban.wait_for(state="visible", timeout=15000)
+        unban.wait_for(state="visible", timeout=5000)
         unban.click()
         reason = self.page.locator(create_user.BAN_REASON)
         reason.fill("Причина разбана")
         confirm = self.page.locator(create_user.UNBAN_CONFIRM)
         confirm.click()
-        self.page.locator(create_user.BAN_BUTTON).wait_for(state="visible", timeout=15000)
 
     def check_history_actions(self):
         # Кликаем по вкладке "История действий"
@@ -419,4 +417,5 @@ class BasePage:
     def check_second_last_action(self):
         # Возвращаем текст предпоследнего действия
         return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
+
 
