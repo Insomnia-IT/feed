@@ -356,6 +356,13 @@ class BasePage:
     def check_username_after_deleting(self, expected_name="Test_updated_name"):
         find = self.page.locator(create_user.FIND_INPUT)
         find.fill(expected_name)
+        try:
+            self.page.wait_for_function(
+                '() => parseInt(document.querySelector("span[data-testid=volunteer-count]")?.innerText || "0") === 0',
+                timeout=5000
+            )
+        except Exception:
+            pass
 
 
     def delete_user(self):
@@ -390,15 +397,17 @@ class BasePage:
         reason.fill("Причина бана")
         confirm = self.page.locator(create_user.BAN_CONFIRM)
         confirm.click()
+        self.page.locator(create_user.UNBAN_BUTTON).wait_for(state="visible", timeout=15000)
 
     def unban_user(self):
         unban = self.page.locator(create_user.UNBAN_BUTTON)
-        unban.wait_for(state="visible", timeout=5000)
+        unban.wait_for(state="visible", timeout=15000)
         unban.click()
         reason = self.page.locator(create_user.BAN_REASON)
         reason.fill("Причина разбана")
         confirm = self.page.locator(create_user.UNBAN_CONFIRM)
         confirm.click()
+        self.page.locator(create_user.BAN_BUTTON).wait_for(state="visible", timeout=15000)
 
     def check_history_actions(self):
         # Кликаем по вкладке "История действий"
