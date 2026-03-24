@@ -1,9 +1,59 @@
 import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
 import type { ApiHook } from '~/request/lib';
-import type { GroupBadge } from '~/db';
+import type { GroupBadge, MealPlanCell } from '~/db';
 import { db } from '~/db';
+
+type MealTime = 'breakfast' | 'lunch' | 'dinner';
+
+const fillMissingTodayCells = (results: GroupBadge[]): GroupBadge[] => {
+    const today = dayjs().format('YYYY-MM-DD');
+    const mealTimes: MealTime[] = ['breakfast', 'lunch', 'dinner'];
+
+    return results.map((groupBadge) => {
+        const cells = [...groupBadge.planning_cells];
+        const todayCells = cells.filter((cell) => cell.date === today);
+
+        const newCells: MealPlanCell[] = [];
+
+        for (const mealTime of mealTimes) {
+            const todayCell = todayCells.find((cell) => cell.meal_time === mealTime);
+
+            if (!todayCell) {
+                const previousCells = cells
+                    .filter((cell) => cell.date < today && cell.meal_time === mealTime)
+                    .sort((a, b) => b.date.localeCompare(a.date));
+
+                const previousCell = previousCells[0];
+
+                if (previousCell) {
+                    newCells.push({
+                        id: -Date.now(),
+                        group_badge: groupBadge.id,
+                        group_badge_name: groupBadge.name,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        date: today,
+                        meal_time: mealTime,
+                        amount_meat: previousCell.amount_meat,
+                        amount_vegan: previousCell.amount_vegan
+                    });
+                }
+            }
+        }
+
+        if (newCells.length > 0) {
+            return {
+                ...groupBadge,
+                planning_cells: [...cells, ...newCells]
+            };
+        }
+
+        return groupBadge;
+    });
+};
 
 export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<any>(null);
@@ -20,7 +70,7 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
 
             return new Promise((res, rej) => {
                 axios
-                    .get(`${baseUrl}/group-badges/`, {
+                    .get<{ results: Array<GroupBadge> }>(`${baseUrl}/group-badges/`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
@@ -29,42 +79,35 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
 
-                        // const qrs = {};
-                        // const ids = {};
-                        // for (const v of results as Array<GroupBadge>) {
-                        //     if (ids[v.id]) {
-                        //         console.log(ids[v.id], v);
-                        //     } else {
-                        //         ids[v.id] = v;
-                        //     }
-                        //     if (qrs[v.qr]) {
-                        //         console.log(qrs[v.qr], v);
-                        //     } else {
-                        //         qrs[v.qr] = v;
-                        //     }
-                        // }
-
                         try {
-                            await db.groupBadges.bulkPut(results as Array<GroupBadge>);
-                        } catch (e) {
-                            console.error(e);
-                            rej(e);
+                            results = fillMissingTodayCells(results);
+                            await db.groupBadges.bulkPut(results);
+                        } catch (error) {
+                            console.error(error);
+                            rej(error);
+
                             return false;
                         }
+
                         setUpdated(+new Date());
                         res(true);
+
                         return true;
                     })
-                    .catch((e) => {
+                    .catch((error) => {
                         setFetching(false);
-                        if (e?.response?.status === 401) {
+
+                        if (error?.response?.status === 401) {
                             rej(false);
                             setAuth(false);
+
                             return false;
                         }
-                        setError(e);
-                        rej(e);
-                        return e;
+
+                        setError(error);
+                        rej(error);
+
+                        return error;
                     });
             });
         },
