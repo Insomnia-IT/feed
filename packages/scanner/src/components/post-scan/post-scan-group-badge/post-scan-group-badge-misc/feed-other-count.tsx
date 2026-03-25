@@ -19,13 +19,13 @@ export const FeedOtherCount = ({
     vegansCount
 }: {
     maxCount: number;
-    vegansCount: number | string;
-    setVegansCount: (value: number | string) => void;
-    nonVegansCount: number | string;
-    setNonVegansCount: (value: number | string) => void;
+    vegansCount: number;
+    setVegansCount: (value: number) => void;
+    nonVegansCount: number;
+    setNonVegansCount: (value: number) => void;
 }) => {
-    const maxVeganCount = maxCount - Number(nonVegansCount);
-    const maxNonVeganCount = maxCount - Number(vegansCount);
+    const maxVeganCount = maxCount - nonVegansCount;
+    const maxNonVeganCount = maxCount - vegansCount;
 
     return (
         <div style={{ width: '100%' }}>
@@ -38,7 +38,7 @@ export const FeedOtherCount = ({
                         width: '50%'
                     }}
                 >
-                    <Text>Веганы 🥦</Text>
+                    <Text className={css.otherLabel}>Веганы 🥦</Text>
                     <Input
                         className={css.otherInput}
                         style={{
@@ -68,8 +68,7 @@ export const FeedOtherCount = ({
                         width: '50%'
                     }}
                 >
-                    <Text>Мясоеды 🥩</Text>
-
+                    <Text className={css.otherLabel}>Мясоеды 🥩</Text>
                     <Input
                         className={css.otherInput}
                         style={{
@@ -83,12 +82,10 @@ export const FeedOtherCount = ({
 
                             if (textValue === '' || textValue === undefined) {
                                 setNonVegansCount(0);
-
                                 return;
                             }
 
                             const value = fixNumber(textValue);
-
                             const isMaxCountReached = value >= maxNonVeganCount;
 
                             setNonVegansCount(isMaxCountReached ? maxNonVeganCount : value);

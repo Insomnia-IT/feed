@@ -62,20 +62,14 @@ export const GroupBadgeWarningCard = ({
     const volsToFeed = [...greens];
 
     const [showOtherCount, setShowOtherCount] = useState(false);
-    const [vegansCount, setVegansCount] = useState<string | number>(0);
-    const [nonVegansCount, setNonVegansCount] = useState<string | number>(0);
+    const [vegansCount, setVegansCount] = useState<number>(0);
+    const [nonVegansCount, setNonVegansCount] = useState<number>(0);
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
-    const isPartiallyFed = !!alreadyFedTransactions.length;
+    const isPartiallyFed = alreadyFedTransactions.length > 0;
 
     const handleFeed = (): void => {
         if (showOtherCount) {
-            if (typeof vegansCount === 'string' || typeof nonVegansCount === 'string') {
-                alert('введено некорректное значение');
-
-                return;
-            }
-
             doFeedAnons({ vegansCount, nonVegansCount });
         } else {
             if (isPartiallyFed) {
@@ -90,12 +84,9 @@ export const GroupBadgeWarningCard = ({
     };
 
     const alreadyFedCount = calculateAlreadyFedCount(alreadyFedTransactions);
-
-    // Максимальное количество = количество людей, прошедших валидацию * 1.5 - количество уже покормленных. Но не меньше нуля!
     const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedCount, 0);
-
     const amountToFeed = showOtherCount
-        ? Number(vegansCount) + Number(nonVegansCount)
+        ? vegansCount + nonVegansCount
         : Math.max(volsToFeed.length - alreadyFedCount, 0);
 
     return (
