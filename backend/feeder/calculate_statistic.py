@@ -182,7 +182,7 @@ def process_plan_day(store, current_day, volunteers, history_by_volunteer, apply
         meal_times = get_meal_times_for_day(vol, current_day)
         
         for meal_time in meal_times:
-            kitchen_date = current_day.shift(days=-1) if meal_time == MealTime.BREAKFAST else current_day
+            kitchen_date = current_day.shift(days=-1) if meal_time == MealTime.BREAKFAST.value else current_day
             kitchen_id = vol['kitchen_id']
             
             if apply_history and vol['uuid'] in history_by_volunteer:
@@ -444,12 +444,12 @@ def get_meal_times_for_day(vol, current_day):
     all_meals = get_meal_times(is_paid)
     
     if vol['active_from'] == current_day and vol['active_to'] != current_day:
-        return [m for m in all_meals if m != MealTime.BREAKFAST]
+        return [m.value for m in all_meals if m != MealTime.BREAKFAST]
     
     if vol['active_from'] != current_day and vol['active_to'] == current_day:
-        return [m for m in all_meals if m in (MealTime.BREAKFAST, MealTime.LUNCH)]
+        return [m.value for m in all_meals if m in (MealTime.BREAKFAST, MealTime.LUNCH)]
     
-    return all_meals
+    return [m.value for m in all_meals]
 
 def get_kitchen_ids():
     """Возвращает список ID всех кухонь."""
