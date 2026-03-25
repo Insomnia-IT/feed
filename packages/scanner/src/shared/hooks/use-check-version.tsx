@@ -6,7 +6,7 @@ export const useCheckVersion = () => {
         if (import.meta.env.DEV) return;
 
         let isReloading = false;
-        let intervalId: number | undefined;
+        let swRegistration: ServiceWorkerRegistration | undefined;
         const updateSW = registerSW({
             immediate: true,
             onNeedRefresh() {
@@ -15,15 +15,16 @@ export const useCheckVersion = () => {
             onRegisteredSW(_swUrl, registration) {
                 if (!registration) return;
 
+                swRegistration = registration;
                 void registration.update();
-                intervalId = window.setInterval(
-                    () => {
-                        void registration.update();
-                    },
-                    5 * 60 * 1000
-                );
             }
         });
+
+        const checkVersion = () => {
+            if (!navigator.onLine || !swRegistration) return;
+
+            void swRegistration.update();
+        };
 
         const reloadPage = () => {
             if (isReloading) return;
@@ -32,12 +33,11 @@ export const useCheckVersion = () => {
         };
 
         navigator.serviceWorker.addEventListener('controllerchange', reloadPage);
+        window.addEventListener('online', checkVersion);
 
         return () => {
-            if (intervalId) {
-                window.clearInterval(intervalId);
-            }
             navigator.serviceWorker.removeEventListener('controllerchange', reloadPage);
+            window.removeEventListener('online', checkVersion);
         };
     }, []);
 };
