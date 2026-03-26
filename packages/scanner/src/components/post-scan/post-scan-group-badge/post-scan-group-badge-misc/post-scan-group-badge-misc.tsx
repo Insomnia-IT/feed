@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 
-import type { TransactionJoined } from '~/db';
+import type { TransactionJoined, GroupBadge, MealTime } from '~/db';
+import dayjs from 'dayjs';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
@@ -27,6 +28,15 @@ export const GroupBadgeInfo: FC<{
     );
 };
 
+const useTodayPlannedValues = (groupBadge: GroupBadge, mealTime: MealTime) => {
+    const today = dayjs().format('YYYY-MM-DD');
+    const cell = groupBadge.planning_cells.find((c) => c.date === today && c.meal_time === mealTime);
+    return {
+        vegansCount: cell?.amount_vegan ?? null,
+        nonVegansCount: cell?.amount_meat ?? null
+    };
+};
+
 export const GroupBadgeWarningCard: FC<{
     alreadyFedTransactions: Array<TransactionJoined>;
     name: string;
@@ -34,9 +44,13 @@ export const GroupBadgeWarningCard: FC<{
     doFeed: (vols: Array<ValidatedVol>) => void;
     doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
     close: () => void;
-}> = ({ alreadyFedTransactions, close, doFeedAnons, name, validationGroups }) => {
+    groupBadge: GroupBadge;
+    mealTime: MealTime;
+}> = ({ alreadyFedTransactions, close, doFeedAnons, groupBadge, mealTime, name, validationGroups }) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
+
+    const planned = useTodayPlannedValues(groupBadge, mealTime);
 
     const calculateDefaultFeedCount = (isVegan: boolean): number => {
         const alreadyFedCount = calculateAlreadyFedCount(
@@ -51,8 +65,16 @@ export const GroupBadgeWarningCard: FC<{
         nonVegans: calculateDefaultFeedCount(false)
     }));
 
-    const [vegansCount, setVegansCount] = useState<number>(initialCalculatedCounts.vegans);
-    const [nonVegansCount, setNonVegansCount] = useState<number>(initialCalculatedCounts.nonVegans);
+    const getDefaultCount = (isVegan: boolean): number => {
+        const plannedCount = isVegan ? planned.vegansCount : planned.nonVegansCount;
+        if (plannedCount !== null) {
+            return plannedCount;
+        }
+        return calculateDefaultFeedCount(isVegan);
+    };
+
+    const [vegansCount, setVegansCount] = useState<number>(() => getDefaultCount(true));
+    const [nonVegansCount, setNonVegansCount] = useState<number>(() => getDefaultCount(false));
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const handleFeed = (): void => {

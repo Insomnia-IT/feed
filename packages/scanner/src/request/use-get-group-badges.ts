@@ -8,39 +8,40 @@ import { db } from '~/db';
 
 type MealTime = 'breakfast' | 'lunch' | 'dinner';
 
-const fillMissingTodayCells = (results: GroupBadge[]): GroupBadge[] => {
+const fillMissingTodayCells = (results: Array<GroupBadge>): Array<GroupBadge> => {
     const today = dayjs().format('YYYY-MM-DD');
-    const mealTimes: MealTime[] = ['breakfast', 'lunch', 'dinner'];
+    const mealTimes: Array<MealTime> = ['breakfast', 'lunch', 'dinner'];
 
     return results.map((groupBadge) => {
         const cells = [...groupBadge.planning_cells];
         const todayCells = cells.filter((cell) => cell.date === today);
 
-        const newCells: MealPlanCell[] = [];
+        const newCells: Array<MealPlanCell> = [];
 
         for (const mealTime of mealTimes) {
             const todayCell = todayCells.find((cell) => cell.meal_time === mealTime);
 
-            if (!todayCell) {
-                const previousCells = cells
-                    .filter((cell) => cell.date < today && cell.meal_time === mealTime)
-                    .sort((a, b) => b.date.localeCompare(a.date));
+            if (todayCell) {
+                continue;
+            }
 
-                const previousCell = previousCells[0];
+            const previousCells = cells
+                .filter((cell) => cell.date < today && cell.meal_time === mealTime)
+                .sort((a, b) => b.date.localeCompare(a.date));
 
-                if (previousCell) {
-                    newCells.push({
-                        id: -Date.now(),
-                        group_badge: groupBadge.id,
-                        group_badge_name: groupBadge.name,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                        date: today,
-                        meal_time: mealTime,
-                        amount_meat: previousCell.amount_meat,
-                        amount_vegan: previousCell.amount_vegan
-                    });
-                }
+            const previousCell = previousCells[0];
+
+            if (previousCell) {
+                newCells.push({
+                    group_badge: groupBadge.id,
+                    group_badge_name: groupBadge.name,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    date: today,
+                    meal_time: mealTime,
+                    amount_meat: previousCell.amount_meat,
+                    amount_vegan: previousCell.amount_vegan
+                });
             }
         }
 
