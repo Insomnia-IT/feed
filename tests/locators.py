@@ -27,7 +27,6 @@ class meal_create():
 class badge_create():
     BADGE_NAME = "#name"
     DEPARTMENT_NAME = "#direction"
-    ROLE_NAME = "#role"
     QR_NAME = "#qr"
     SUBMIT_BUTTON = "button[type='submit']"
     COUNTER = "li.ant-pagination-total-text"
@@ -94,4 +93,5 @@ class create_user():
     # История действий
     HISTORY_TAB = "//*[text()='История действий']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
+
 

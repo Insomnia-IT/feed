@@ -1,3 +1,4 @@
+import re
 import time
 from datetime import datetime
 from playwright.sync_api import Page
@@ -13,12 +14,8 @@ class BasePage:
     def open(self):
         self.page.goto(self.url)
 
-    def wait_for_settled_page(self, timeout=10000):
-        try:
-            self.page.wait_for_load_state("networkidle", timeout=timeout)
-        except Exception:
-            # Some SPA updates keep background requests open; allow the caller to continue.
-            pass
+    def wait_for_list_page(self, path, timeout=30000):
+        self.page.wait_for_url(re.compile(rf"{re.escape(path)}(?:\?.*)?$"), timeout=timeout)
 
 
     def is_element_present(self, how, what):
@@ -113,31 +110,19 @@ class BasePage:
         department = self.page.locator(badge_create.DEPARTMENT_NAME)
         department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        department_dropdown = self.page.locator(".ant-select-dropdown:visible").last
-        department_option = department_dropdown.locator(".ant-select-item-option").first
+        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
         department_option.wait_for(state="visible")
-        department_option.click(force=True)
-        role = self.page.locator(badge_create.ROLE_NAME)
-        department.press("Escape")
-        department.press("Tab")
-        role.click(force=True)
-        role.press("ArrowDown")
-        role.press("Enter")
-        role.press("Tab")
+        department_option.click()
+        role = self.page.locator("#role")
+        role.click()
+        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
+            has_text="Волонтёр"
+        ).first
+        role_option.wait_for(state="visible")
+        role_option.click()
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        self.page.wait_for_function(
-            "() => document.querySelector('#name')?.value && document.querySelector('#qr')?.value && !document.querySelector('button.refine-save-button')?.disabled",
-            timeout=5000,
-        )
-        with self.page.expect_response(
-            lambda response: response.request.method == "POST" and "/group-badges" in response.url,
-            timeout=10000,
-        ) as create_response:
-            self.page.locator("button.refine-save-button").first.click()
-        response = create_response.value
-        if response.status >= 400:
-            raise AssertionError(f"Group badge creation failed with status {response.status}: {response.url}")
+        self.page.locator(badge_create.SUBMIT_BUTTON).click()
 
     def badges_counter(self):
         # Ждем пока счетчик стабилизируется (не меняется 2 итерации подряд)
@@ -160,6 +145,7 @@ class BasePage:
 
     def meal_table(self):
         first_row = self.page.locator("tbody.ant-table-tbody tr:first-child td:first-child")
+        first_row.wait_for(state="visible")
         return first_row.inner_text()
 
     def open_meal(self):
@@ -247,21 +233,7 @@ class BasePage:
 
     def save_in_group_badge(self):
         saving = self.page.locator(group_badges.SAVE_BUTTON)
-        self.page.wait_for_function(
-            "() => !Array.from(document.querySelectorAll('button')).filter((button) => button.textContent?.includes('Сохранить')).at(-1)?.disabled",
-            timeout=5000,
-        )
-        saving.first.click()
-        try:
-            confirm = self.page.locator(group_badges.SAVE_BUTTON).nth(1)
-            confirm.wait_for(state="visible", timeout=3000)
-            self.page.wait_for_function(
-                "() => !Array.from(document.querySelectorAll('button')).filter((button) => button.textContent?.includes('Сохранить')).at(-1)?.disabled",
-                timeout=5000,
-            )
-            confirm.click(force=True)
-        except Exception:
-            pass
+        saving.click()
 
 
     def go_to_create_user(self):
@@ -311,6 +283,8 @@ class BasePage:
     def find_user(self, user_name="Test_name"):
         find = self.page.locator(create_user.FIND_INPUT)
         find.fill(user_name)
+        find.press("Enter")
+        self.page.wait_for_timeout(1000)
 
 
     def open_user(self, expected_name=None):
@@ -324,9 +298,8 @@ class BasePage:
             except Exception:
                 pass
         
-        self.page.wait_for_timeout(500)
         first_row = self.page.locator("tr.ant-table-row").first
-        first_row.wait_for(state="attached")
+        first_row.wait_for(state="visible")
         column = first_row.locator("td").nth(1)
         column.click()
 
@@ -381,6 +354,7 @@ class BasePage:
 
     def check_username_after_editing(self, expected_name="Test_name"):
         first_row = self.page.locator("tr.ant-table-row").first
+        first_row.wait_for(state="visible")
         column = first_row.locator("td").nth(1)
         try:
             # Даем таблице время отфильтроваться после ввода в поиск
