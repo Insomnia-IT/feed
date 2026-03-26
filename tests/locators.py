@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 class registration():
     CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
     CHOOSE_QR_TYPE = ".ant-segmented-item:has-text('QR-код')"
+    SEGMENTED_ITEMS = "label.ant-segmented-item"
     LOGIN = "#username"
     PASSWORD = "#password"
     BUTTONREG = "//button[span[text()='Войти']]"

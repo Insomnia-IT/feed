@@ -421,7 +421,6 @@ class BasePage:
         for _ in range(len(val)):
             find.press("Backspace")  # Удаляем символы один за другим
 
-
     def ban_user(self):
         ban = self.page.locator(create_user.BAN_BUTTON)
         ban.click()
