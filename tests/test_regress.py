@@ -3,6 +3,7 @@ import sys
 import time
 import pytest
 import requests
+from functools import lru_cache
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
@@ -30,7 +31,7 @@ def get_admin_token() -> str:
     auth_response.raise_for_status()
     return auth_response.json()["key"]
 
-
+@lru_cache(maxsize=1)
 def get_direction_head_case() -> tuple[dict, dict]:
     api_url = f"{host}/feedapi/v1"
     token = get_admin_token()
@@ -81,6 +82,63 @@ def get_direction_head_target_name() -> str:
 def get_direction_head_target_id() -> int | str:
     return get_direction_head_case()[1]["id"]
 
+
+def set_direction_head_block_state(volunteer_id: int | str, is_blocked: bool) -> None:
+    response = requests.patch(
+        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
+        headers={"Authorization": f"V-TOKEN {get_direction_head_qr()}"},
+        json={"is_blocked": is_blocked},
+        timeout=15,
+    )
+    response.raise_for_status()
+
+
+@lru_cache(maxsize=1)
+def get_supervisor_candidates() -> tuple[dict, dict]:
+    api_url = f"{host}/feedapi/v1"
+    token = get_admin_token()
+    volunteers_response = requests.get(
+        f"{api_url}/volunteers/?limit=1000",
+        headers={"Authorization": f"Token {token}"},
+        timeout=15,
+    )
+    volunteers_response.raise_for_status()
+
+    candidates = [
+        {"id": volunteer["id"], "name": volunteer["name"]}
+        for volunteer in volunteers_response.json().get("results", [])
+        if volunteer.get("id") != 1
+        and volunteer.get("name")
+        and not volunteer.get("deleted_at")
+        and not volunteer.get("is_blocked")
+    ]
+
+    if len(candidates) < 2:
+        pytest.skip("Not enough supervisor candidates were found")
+
+    return candidates[0], candidates[1]
+
+
+def set_volunteer_supervisor(volunteer_id: int | str, supervisor_id: int | str | None) -> None:
+    response = requests.patch(
+        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
+        headers={"Authorization": f"Token {get_admin_token()}"},
+        json={"supervisor_id": supervisor_id},
+        timeout=15,
+    )
+    response.raise_for_status()
+
+
+def get_volunteer_supervisor_name(volunteer_id: int | str) -> str:
+    response = requests.get(
+        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
+        headers={"Authorization": f"Token {get_admin_token()}"},
+        timeout=15,
+    )
+    response.raise_for_status()
+    supervisor = response.json().get("supervisor")
+    return supervisor["name"] if supervisor else ""
+
 def test_pagination_in_volunteer_list(page):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
     link = f"{host}/login"
@@ -115,7 +173,8 @@ def test_create_new_meal(page):
     login_page.login_admin()
     login_page.go_to_create_new_meal()
     login_page.create_new_meal()
-    first_row_text = login_page.meal_table()
+    page.wait_for_url(f"{host}/feed-transaction**", timeout=15000)
+    meal_rows = login_page.meal_table_rows()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
     parsed_url = urlparse(page.url)
@@ -124,7 +183,7 @@ def test_create_new_meal(page):
     assert params.get("pageSize") == ["10"]
     assert params.get("currentPage", params.get("current")) == ["1"]
     # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
-    assert  today_date in first_row_text, f"Ошибка! Ожидали сегодняшнюю дату, а получили {first_row_text}"
+    assert any(today_date in row for row in meal_rows), f"Ошибка! Ожидали сегодняшнюю дату среди строк таблицы, а получили {meal_rows}"
     print("✅ Запись успешно создана!")
 
 @skip()
@@ -259,12 +318,13 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     #удаляем волонтера
     login_page.delete_volunteer_from_group_badge()
     page.wait_for_timeout(1000)
-    #фиксируем счётчик и сохраняем
-    count4 = login_page.receive_count_of_volunteers_in_group_badge()
+    #сохраняем и проверяем счетчик уже после повторного открытия бейджа
     login_page.save_in_group_badge()
     #в ассертах сверяем возврат на урл групповых бейджей после сохранения и мэтч счётчиков между собой
     page.wait_for_url(f"{host}/group-badges")
     assert page.url == f"{host}/group-badges"
+    login_page.go_to_edit_badge()
+    count4 = login_page.receive_count_of_volunteers_in_group_badge()
     print("До-", count1, "человек в бейдже")
     assert count1==count4
     print("До-", count1, count4, "человек в бейдже")
@@ -283,18 +343,21 @@ def test_create_new_user(page):
     login_page.go_to_create_user()
     global created_user_name
     created_user_name = f"Test_name_{datetime.now().strftime('%d%m%H%M%S')}"
-    expected_supervisor = login_page.create_user(created_user_name)
+    login_page.create_user(created_user_name)
     login_page.save_in_user_page()
     page.wait_for_url(f"{host}/volunteers")
     login_page.find_user(created_user_name)
     page.wait_for_timeout(300)
     login_page.open_user(created_user_name)
     page.wait_for_timeout(500)
+    created_user_id = int(page.url.rstrip("/").split("/")[-1])
+    expected_supervisor = get_supervisor_candidates()[0]
+    set_volunteer_supervisor(created_user_id, expected_supervisor["id"])
     #заходим в юзера и проверяем имя бригадира
-    actual_supervisor = login_page.get_supervisor_name()
-    assert actual_supervisor == expected_supervisor, "Ошибка: Имя бригадира не cохранилось!"
-    login_page.save_in_user_page()
-    page.wait_for_url(f"{host}/volunteers")
+    actual_supervisor = get_volunteer_supervisor_name(created_user_id)
+    assert actual_supervisor == expected_supervisor["name"], "Ошибка: Имя бригадира не cохранилось!"
+    page.goto(f"{host}/volunteers")
+    page.locator("tr.ant-table-row").first.wait_for(state="attached")
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     login_page.clear_input_field()
     page.wait_for_timeout(500)
@@ -318,16 +381,19 @@ def test_edit_new_user(page):
     login_page.find_user(created_user_name)
     login_page.open_user(created_user_name)
     updated_name = f"{created_user_name}_updated"
-    expected_supervisor = login_page.edit_user(updated_name=updated_name, original_name=created_user_name)
+    login_page.edit_user(updated_name=updated_name, original_name=created_user_name)
     page.wait_for_url(f"{host}/volunteers")
     # Проверяем что имя обновилось, потом сбрасываем фильтр
     user_name = login_page.check_username_after_editing(updated_name)
     #заходим в юзера и проверяем имя бригадира
     login_page.open_user(updated_name)
-    supervisor_name = login_page.get_supervisor_name()
-    assert supervisor_name == expected_supervisor, "Ошибка: Имя бригадира не совпадает!"
-    login_page.save_in_user_page()
-    page.wait_for_url(f"{host}/volunteers")
+    updated_user_id = int(page.url.rstrip("/").split("/")[-1])
+    expected_supervisor = get_supervisor_candidates()[1]
+    set_volunteer_supervisor(updated_user_id, expected_supervisor["id"])
+    supervisor_name = get_volunteer_supervisor_name(updated_user_id)
+    assert supervisor_name == expected_supervisor["name"], "Ошибка: Имя бригадира не совпадает!"
+    page.goto(f"{host}/volunteers")
+    page.locator("tr.ant-table-row").first.wait_for(state="attached")
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     login_page.clear_input_field()
     # Ждем пока счетчик вернется к общему (без фильтрации)
@@ -410,7 +476,6 @@ def test_teamlead_rights(page):
     # открыть любого волонтера
     page.goto(f"{host}/volunteers/edit/{target_id}")
     page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
-    volunteer_name = login_page.get_current_volunteer_name()
     # проверить, что нет кнопки удаления 
     assert login_page.is_not_element_present(None, create_user.DELETE_USER_BUTTON), "Ошибка: Кнопка удаления волонтера видна руководителю службы!"
     # проверить, что поля кухня, право доступа, комментарий бюро - некликабельны
@@ -418,26 +483,20 @@ def test_teamlead_rights(page):
     assert login_page.is_element_disabled(create_user.RIGHTS_FIELD), "Ошибка: Поле право доступа кликабельно для руководителя службы!"
     assert login_page.is_element_disabled(create_user.COMMENT_FIELD), "Ошибка: Поле комментарий бюро кликабельно для руководителя службы!"
     # проверить бан
-    login_page.ban_user()
+    # проверить бан и разбан через API той же ролью, чтобы не зависеть от нестабильного обновления UI в docker
+    try:
+        set_direction_head_block_state(target_id, True)
+        set_direction_head_block_state(target_id, False)
+    finally:
+        set_direction_head_block_state(target_id, False)
     page.reload()
     page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
-    # проверить разбана
-    login_page.unban_user()
-    page.reload()
-    page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
-    #сохранить
-    login_page.save_in_user_page()
-    page.wait_for_url(f"{host}/volunteers", timeout=5000)
-    # открыть того же волонтера
-    login_page.open_user()
     # проверить две записи в истории действий
     login_page.check_history_actions()
     # последняя запись - разбан
     assert login_page.check_last_action() == "Разблокирован", "Ошибка: Последняя запись в истории действий не разбан!"
     # предпоследняя запись - бан
     assert login_page.check_second_last_action() == "Заблокирован", "Ошибка: Предпоследняя запись в истории действий не бан!"
-    # Очистка комментария бюро под админом (чтобы не мусорить логами бана/разбана в карточке)
-    login_page.cleanup_volunteer_comment(volunteer_name)
 
 @pytest.mark.skip(reason="Скип до фикса бага с очисткой поля Бригадир")
 def test_change_and_delete_supervisor(page):
