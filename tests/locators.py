@@ -2,11 +2,13 @@ import time
 from selenium.webdriver.common.by import By
 
 class registration():
-    CHOOSE_LOGIN_TYPE = "label.ant-segmented-item .ant-segmented-item-label[aria-selected='false']"
-    CHOOSE_QR_TYPE = "label.ant-segmented-item .ant-segmented-item-label[aria-selected='true']"
+    CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
+    CHOOSE_QR_TYPE = ".ant-segmented-item:has-text('QR-код')"
+    SEGMENTED_ITEMS = "label.ant-segmented-item"
     LOGIN = "#username"
     PASSWORD = "#password"
     BUTTONREG = "//button[span[text()='Войти']]"
+    LOGOUT = "span.ant-menu-title-content:has-text('Выход')"
     CUSTOM_FIELD = "//button[span[text()='Колонки']]"
     CUSTOM_FIELD_CREATE = "//button[span[text()='Добавить колонку']]"
     CUSTOM_NAME = "input#name"
@@ -55,6 +57,8 @@ class create_user():
     SEARCH_VOLUNTEER_FIELD = "ant-input.css-sphnl3"
     USER_NAME = "#name"
     KITCHEN_NUMBER = "#kitchen"
+    SUPERVISOR = ".ant-select-selector:has(#supervisor_id)"
+    CLEAR_SUPERVISOR = ".ant-select:has(#supervisor_id) .ant-select-clear"
     MEAL_TYPE = "#feed_type"
     ROLE_USER = "#main_role"
     DEPARTMENT = "#directions"
@@ -67,8 +71,15 @@ class create_user():
     DATE_FROM = "#arrivals_0_arrival_date"
     DATE_TO = "#arrivals_0_departure_date"
     TODAY = "a.ant-picker-now-btn"
-    BAN_BUTTON = "//button[span[text()='Заблокировать Волонтера']]"
+
+    # Бан/Разбан
+    BAN_BUTTON = "//button[span[text()='Заблокировать волонтера']]"
+    BAN_CONFIRM = "//button[span[text()='Заблокировать Волонтера']]"
     BAN_REASON = "#form-block_reason"
+
+    UNBAN_BUTTON = "//button[span[text()='Разблокировать волонтера']]"
+    UNBAN_CONFIRM = "//button[@type='submit'][span[text()='Разблокировать волонтера']]"
+
 
     FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
@@ -76,3 +87,16 @@ class create_user():
     DELETE_USER_BUTTON = "//button[span[text()='Удалить волонтера']]"
     DELETE_CONFIRM = "//button[span[text()='Да']]"
     USERS_COUNTER = 'span[data-testid="volunteer-count"]'
+
+    INPUT_REASON = "#form-block_reason"
+
+    # Поля для проверки прав доступа (read-only)
+    KITCHEN_FIELD = "#kitchen"
+    RIGHTS_FIELD = "#main_role"
+    COMMENT_FIELD = "#comment"
+
+    # История действий
+    HISTORY_TAB = "//*[text()='История действий']"
+    HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
+
+
