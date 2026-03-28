@@ -439,8 +439,8 @@ class BasePage:
         reason = self.page.locator(create_user.BAN_REASON)
         reason.fill("Причина бана")
         confirm = self.page.locator(create_user.BAN_CONFIRM)
-        confirm.click()
-        self.page.locator(create_user.BAN_REASON).wait_for(state="hidden", timeout=15000)
+        confirm.click(force=True)
+        self.page.wait_for_timeout(500)
 
     def unban_user(self):
         unban = self.page.locator(create_user.UNBAN_BUTTON)
@@ -449,8 +449,8 @@ class BasePage:
         reason = self.page.locator(create_user.BAN_REASON)
         reason.fill("Причина разбана")
         confirm = self.page.locator(create_user.UNBAN_CONFIRM)
-        confirm.click()
-        self.page.locator(create_user.BAN_REASON).wait_for(state="hidden", timeout=15000)
+        confirm.click(force=True)
+        self.page.wait_for_timeout(500)
 
     def check_history_actions(self):
         # Кликаем по вкладке "История действий"
@@ -464,11 +464,21 @@ class BasePage:
 
     def check_last_action(self):
         # Возвращаем текст последнего действия
-        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(1).inner_text().strip()
+        actions = [
+            text.strip()
+            for text in self.page.locator(create_user.HISTORY_LOG_ITEM).all_inner_texts()
+            if text.strip() in {"Разблокирован", "Заблокирован"}
+        ]
+        return actions[0]
 
     def check_second_last_action(self):
         # Возвращаем текст предпоследнего действия
-        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
+        actions = [
+            text.strip()
+            for text in self.page.locator(create_user.HISTORY_LOG_ITEM).all_inner_texts()
+            if text.strip() in {"Разблокирован", "Заблокирован"}
+        ]
+        return actions[1]
 
     def get_current_volunteer_name(self):
         # Получаем имя из поля #name

@@ -419,10 +419,12 @@ def test_teamlead_rights(page):
     assert login_page.is_element_disabled(create_user.COMMENT_FIELD), "Ошибка: Поле комментарий бюро кликабельно для руководителя службы!"
     # проверить бан
     login_page.ban_user()
-    page.wait_for_timeout(500)
+    page.reload()
+    page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
     # проверить разбана
     login_page.unban_user()
-    page.wait_for_timeout(500)
+    page.reload()
+    page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
     #сохранить
     login_page.save_in_user_page()
     page.wait_for_url(f"{host}/volunteers", timeout=5000)
