@@ -145,6 +145,11 @@ class BasePage:
         first_row = self.page.locator("tbody.ant-table-tbody tr:first-child td:first-child")
         return first_row.inner_text()
 
+    def meal_table_rows(self):
+        rows = self.page.locator("tbody.ant-table-tbody tr td:first-child")
+        rows.first.wait_for(state="visible", timeout=30000)
+        return rows.all_inner_texts()
+
     def open_meal(self):
         first_row = self.page.locator("tr.ant-table-row").first
         column = first_row.locator("td").nth(1)
@@ -435,7 +440,7 @@ class BasePage:
         reason.fill("Причина бана")
         confirm = self.page.locator(create_user.BAN_CONFIRM)
         confirm.click()
-        self.page.locator(create_user.UNBAN_BUTTON).wait_for(state="visible", timeout=15000)
+        self.page.locator(create_user.BAN_REASON).wait_for(state="hidden", timeout=15000)
 
     def unban_user(self):
         unban = self.page.locator(create_user.UNBAN_BUTTON)
@@ -445,7 +450,7 @@ class BasePage:
         reason.fill("Причина разбана")
         confirm = self.page.locator(create_user.UNBAN_CONFIRM)
         confirm.click()
-        self.page.locator(create_user.BAN_BUTTON).wait_for(state="visible", timeout=15000)
+        self.page.locator(create_user.BAN_REASON).wait_for(state="hidden", timeout=15000)
 
     def check_history_actions(self):
         # Кликаем по вкладке "История действий"
@@ -496,5 +501,3 @@ class BasePage:
         self.save_in_user_page()
         # Ждем возврата в список волонтеров
         self.page.wait_for_timeout(5000)
-
-
