@@ -92,6 +92,12 @@ export const FeedTransactionList = () => {
                     record.is_vegan !== null ? (record.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : ''
             },
             {
+                key: 'isPaid',
+                title: 'Платное',
+                render: (_: unknown, record: FeedTransactionEntity) =>
+                    record.is_paid !== null ? (record.is_paid ? 'Да' : 'Нет') : ''
+            },
+            {
                 key: 'mealType',
                 title: 'Прием пищи',
                 render: (_: unknown, record: FeedTransactionEntity) => MEAL_MAP[record.meal_time]
