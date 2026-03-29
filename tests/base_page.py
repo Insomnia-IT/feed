@@ -1,3 +1,4 @@
+import re
 import time
 import re
 from datetime import datetime
@@ -12,6 +13,9 @@ class BasePage:
 
     def open(self):
         self.page.goto(self.url)
+
+    def wait_for_list_page(self, path, timeout=30000):
+        self.page.wait_for_url(re.compile(rf"{re.escape(path)}(?:\?.*)?$"), timeout=timeout)
 
 
     def is_element_present(self, how, what):
@@ -116,9 +120,16 @@ class BasePage:
         department = self.page.locator(badge_create.DEPARTMENT_NAME)
         department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        self.page.locator(".ant-select-dropdown .ant-select-item").first.wait_for(state="visible")
-        department.press("Enter")
-        department.press("Enter")
+        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
+        department_option.wait_for(state="visible")
+        department_option.click()
+        role = self.page.locator("#role")
+        role.click()
+        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
+            has_text="Волонтёр"
+        ).first
+        role_option.wait_for(state="visible")
+        role_option.click()
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         self.page.locator(badge_create.SUBMIT_BUTTON).click()
@@ -144,6 +155,7 @@ class BasePage:
 
     def meal_table(self):
         first_row = self.page.locator("tbody.ant-table-tbody tr:first-child td:first-child")
+        first_row.wait_for(state="visible")
         return first_row.inner_text()
 
     def open_meal(self):
@@ -289,6 +301,8 @@ class BasePage:
     def find_user(self, user_name="Test_name"):
         find = self.page.locator(create_user.FIND_INPUT)
         find.fill(user_name)
+        find.press("Enter")
+        self.page.wait_for_timeout(1000)
 
 
     def open_user(self, expected_name=None):
@@ -302,9 +316,8 @@ class BasePage:
             except Exception:
                 pass
         
-        self.page.wait_for_timeout(500)
         first_row = self.page.locator("tr.ant-table-row").first
-        first_row.wait_for(state="attached")
+        first_row.wait_for(state="visible")
         column = first_row.locator("td").nth(1)
         column.click()
 
@@ -382,6 +395,7 @@ class BasePage:
 
     def check_username_after_editing(self, expected_name="Test_name"):
         first_row = self.page.locator("tr.ant-table-row").first
+        first_row.wait_for(state="visible")
         column = first_row.locator("td").nth(1)
         try:
             # Даем таблице время отфильтроваться после ввода в поиск
