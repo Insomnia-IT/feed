@@ -2,10 +2,13 @@ import time
 from selenium.webdriver.common.by import By
 
 class registration():
+    CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
+    CHOOSE_QR_TYPE = ".ant-segmented-item:has-text('QR-код')"
     SEGMENTED_ITEMS = "label.ant-segmented-item"
     LOGIN = "#username"
     PASSWORD = "#password"
     BUTTONREG = "//button[span[text()='Войти']]"
+    LOGOUT = "span.ant-menu-title-content:has-text('Выход')"
     CUSTOM_FIELD = "//button[span[text()='Колонки']]"
     CUSTOM_FIELD_CREATE = "//button[span[text()='Добавить колонку']]"
     CUSTOM_NAME = "input#name"
@@ -54,6 +57,8 @@ class create_user():
     SEARCH_VOLUNTEER_FIELD = "ant-input.css-sphnl3"
     USER_NAME = "#name"
     KITCHEN_NUMBER = "#kitchen"
+    SUPERVISOR = ".ant-select-selector:has(#supervisor_id)"
+    CLEAR_SUPERVISOR = ".ant-select:has(#supervisor_id) .ant-select-clear"
     MEAL_TYPE = "#feed_type"
     ROLE_USER = "#main_role"
     DEPARTMENT = "#directions"
