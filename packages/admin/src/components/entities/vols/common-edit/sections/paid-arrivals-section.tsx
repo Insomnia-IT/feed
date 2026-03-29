@@ -111,7 +111,6 @@ export const PaidArrivalsSection = ({ visible }: { visible: boolean }) => {
                                         key={paidArrivalField.key}
                                         index={index}
                                         remove={remove}
-                                        isSingle={paidArrivalFields.length === 1}
                                         activeFromValidationRules={activeFromValidationRules}
                                         activeToValidationRules={activeToValidationRules}
                                     />
@@ -136,13 +135,11 @@ export const PaidArrivalsSection = ({ visible }: { visible: boolean }) => {
 
 function PaidArrivalItem({
     index,
-    isSingle,
     remove,
     activeFromValidationRules,
     activeToValidationRules
 }: {
     index: number;
-    isSingle: boolean;
     remove: (index: number) => void;
     activeFromValidationRules: (index: number) => Array<
         | { required: boolean }
@@ -185,7 +182,6 @@ function PaidArrivalItem({
                         type="link"
                         icon={<DeleteOutlined />}
                         onClick={() => remove(index)}
-                        style={{ visibility: isSingle ? 'hidden' : undefined }}
                     >
                         Удалить
                     </Button>
