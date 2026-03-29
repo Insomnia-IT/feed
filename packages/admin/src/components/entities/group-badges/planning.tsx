@@ -12,7 +12,7 @@ type PlanningMealType = Exclude<MealType, 'night'>;
 
 const PLANNING_MEALS: PlanningMealType[] = ['breakfast', 'lunch', 'dinner'];
 
-const isPlanningMeal = (meal: MealType): meal is PlanningMealType => PLANNING_MEALS.includes(meal as PlanningMealType);
+const isPlanningMeal = (meal: string): meal is PlanningMealType => PLANNING_MEALS.includes(meal as PlanningMealType);
 
 const isDisabledMealCell = (cell?: GroupBadgePlanningCellEntity) => cell?.amount_meat === 0 && cell?.amount_vegan === 0;
 
@@ -34,7 +34,7 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
 
         (data?.data?.planning_cells ?? []).forEach((cell) => {
             if (cell.date === tomorrowDate && isPlanningMeal(cell.meal_time)) {
-                result.set(cell.meal_time, cell);
+                result.set(cell.meal_time, cell as GroupBadgePlanningCellEntity);
             }
         });
 
