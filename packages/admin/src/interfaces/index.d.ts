@@ -89,6 +89,9 @@ export interface GroupBadgeEntity {
     comment?: string;
     /* Количество волонтеров в бейдже */
     volunteer_count: number;
+
+    /* Планирование питания */
+    planning_cells: MealPlanCell[];
 }
 
 export interface VolunteerCustomFieldEntity {
@@ -182,4 +185,16 @@ export interface WashEntity {
     volunteer: VolEntity;
     actor: VolEntity;
     wash_count: number;
+}
+
+export interface MealPlanCell {
+    id: number;
+    group_badge: number;
+    group_badge_name: string;
+    created_at: string;
+    updated_at: string;
+    date: string;
+    meal_time: string;
+    amount_meat: number | null;
+    amount_vegan: number | null;
 }
