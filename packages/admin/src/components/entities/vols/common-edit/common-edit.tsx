@@ -77,7 +77,10 @@ export const CommonEdit = () => {
 
     const { options: kitchenOptions } = useSelect<KitchenEntity>({ resource: 'kitchens', optionLabel: 'name' });
     const { options: feedTypeOptions } = useSelect<FeedTypeEntity>({ resource: 'feed-types', optionLabel: 'name' });
-    const { data: feedTypesData } = useList<FeedTypeEntity>({ resource: 'feed-types', pagination: { pageSize: 100 } });
+    const { result: feedTypesResult } = useList<FeedTypeEntity>({
+        resource: 'feed-types',
+        pagination: { pageSize: 100 }
+    });
     const { options: colorTypeOptions } = useSelect<ColorTypeEntity>({
         resource: 'colors',
         optionLabel: 'description'
@@ -106,8 +109,8 @@ export const CommonEdit = () => {
         }
     };
     const { activeAnchor } = useAnchorNavigation(containerRef);
-    const showPaidArrivals = (feedTypesData?.data ?? []).some(
-        ({ id, code }) => id === selectedFeedType && (code === 'FREE' || code === 'PAID')
+    const showPaidArrivals = (feedTypesResult.data ?? []).some(
+        ({ id, code }: FeedTypeEntity) => id === selectedFeedType && (code === 'FREE' || code === 'PAID')
     );
 
     const handleClear = () => {
