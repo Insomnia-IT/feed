@@ -20,6 +20,14 @@ const SEARCH_TEXT_STORAGE_ITEM_NAME = 'volSearchText';
 const FILTERS_STORAGE_ITEM_NAME = 'volFilter';
 const VISIBLE_FILTERS_STORAGE_ITEM_NAME = 'volVisibleFilters';
 
+const isFilterItem = (value: unknown): value is FilterItem =>
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    'op' in value &&
+    'value' in value &&
+    typeof (value as { name: unknown }).name === 'string';
+
 const useMapFromList = (list: GetListResponse | undefined, nameField = 'name'): Record<string, string> =>
     useMemo(
         () =>
@@ -37,7 +45,8 @@ const getDefaultVisibleFilters = (): Array<string> => {
     const volVisibleFiltersStr = localStorage.getItem(VISIBLE_FILTERS_STORAGE_ITEM_NAME);
     if (volVisibleFiltersStr) {
         try {
-            return JSON.parse(volVisibleFiltersStr) as Array<string>;
+            const parsed = JSON.parse(volVisibleFiltersStr) as unknown;
+            return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
         } catch {
             /* empty */
         }
@@ -49,7 +58,8 @@ const getDefaultActiveFilters = (): Array<FilterItem> => {
     const volFilterStr = localStorage.getItem(FILTERS_STORAGE_ITEM_NAME);
     if (volFilterStr) {
         try {
-            return JSON.parse(volFilterStr) as Array<FilterItem>;
+            const parsed = JSON.parse(volFilterStr) as unknown;
+            return Array.isArray(parsed) ? parsed.filter(isFilterItem) : [];
         } catch {
             /* empty */
         }
@@ -335,7 +345,7 @@ export const useFilters = ({
         },
         setVisibleFilters: (value: string[]) => {
             setVisibleFilters(value);
-            changeStorageAndPageOnlyIfNeeded({ itemName: FILTERS_STORAGE_ITEM_NAME, value, resetPage });
+            changeStorageAndPageOnlyIfNeeded({ itemName: VISIBLE_FILTERS_STORAGE_ITEM_NAME, value, resetPage });
         },
         setActiveFilters: (value: FilterItem[]) => {
             setActiveFilters(value);
