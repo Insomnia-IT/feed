@@ -59,7 +59,7 @@
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.57.2",
         "vite": "^8.0.3",
-        "vite-plugin-pwa": "^1.0.2"
+        "vite-plugin-pwa": "^1.0.3"
     },
     "overrides": {
         "vite-plugin-pwa": {

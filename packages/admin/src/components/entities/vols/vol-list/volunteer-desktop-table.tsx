@@ -4,9 +4,8 @@ import type { TablePaginationConfig, TableProps } from 'antd';
 import { CheckOutlined, StopOutlined } from '@ant-design/icons';
 import type { TableRowSelection } from 'antd/es/table/interface';
 
-import type { ArrivalEntity, CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
-import { getSorter } from 'utils';
-import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
+import type { CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
+import { findClosestArrival, getFormattedArrivalIntervals, getOnFieldColors } from './volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from '../list.module.css';
@@ -20,16 +19,6 @@ const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string 
     }
     return value;
 };
-
-function getFormattedArrivals(arrivalString: string): string {
-    const date = new Date(arrivalString);
-    const options: Intl.DateTimeFormatOptions = {
-        month: '2-digit',
-        day: '2-digit'
-    };
-
-    return new Intl.DateTimeFormat('ru-RU', options).format(date);
-}
 
 /* Компонент отображающий список волонтеров на декстопе */
 export const VolunteerDesktopTable = ({
@@ -112,21 +101,27 @@ export const VolunteerDesktopTable = ({
             dataIndex: 'arrivals',
             key: 'arrivals',
             title: 'Даты на поле',
-            render: (arrivals: Array<ArrivalEntity>) => (
+            render: (arrivals) => (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {arrivals
-                        .slice()
-                        .sort(getSorter('arrival_date'))
-                        .map(({ arrival_date, departure_date }) => {
-                            const arrival = getFormattedArrivals(arrival_date);
-                            const departure = getFormattedArrivals(departure_date);
-                            return (
-                                <div
-                                    style={{ whiteSpace: 'nowrap' }}
-                                    key={`${arrival_date}${departure_date}`}
-                                >{`${arrival} - ${departure}`}</div>
-                            );
-                        })}
+                    {getFormattedArrivalIntervals(arrivals).map((interval) => (
+                        <div style={{ whiteSpace: 'nowrap' }} key={interval}>
+                            {interval}
+                        </div>
+                    ))}
+                </div>
+            )
+        },
+        {
+            dataIndex: 'paid_arrivals',
+            key: 'paid_arrivals',
+            title: 'Оплаченные даты',
+            render: (paidArrivals) => (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {getFormattedArrivalIntervals(paidArrivals).map((interval) => (
+                        <div style={{ whiteSpace: 'nowrap' }} key={interval}>
+                            {interval}
+                        </div>
+                    ))}
                 </div>
             )
         },
