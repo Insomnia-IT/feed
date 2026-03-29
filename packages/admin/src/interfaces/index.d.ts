@@ -25,6 +25,7 @@ export interface VolEntity {
     main_role?: string;
     access_role?: string;
     arrivals: Array<ArrivalEntity>;
+    paid_arrivals: Array<PaidArrivalEntity>;
     direction_head_comment?: string;
     is_ticket_received?: boolean;
     supervisor_id?: number | null;
@@ -39,6 +40,8 @@ export interface KitchenEntity {
 export interface FeedTypeEntity {
     id: number;
     name: string;
+    code?: string;
+    paid?: boolean;
 }
 
 export interface ColorTypeEntity {
@@ -152,6 +155,13 @@ export interface ArrivalEntity {
     departure_date: string;
     departure_transport: string;
     status: string;
+}
+
+export interface PaidArrivalEntity {
+    id: string;
+    arrival_date: string;
+    departure_date: string;
+    is_free: boolean;
 }
 
 interface EngagementEntity {
