@@ -88,6 +88,7 @@ export interface GroupBadgeEntity {
     id: number;
     qr: string;
     direction?: DirectionEntity;
+    role?: string;
     name: string;
     comment?: string;
     /* Количество волонтеров в бейдже */

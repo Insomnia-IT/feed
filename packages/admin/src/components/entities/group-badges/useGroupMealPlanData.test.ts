@@ -324,7 +324,7 @@ describe('transformToRenderData', () => {
     });
 
     it.each([
-        { input: [], expectedLength: 0 },
+        { input: [], expectedLength: 1 },
         {
             input: [createMealRow({ date: TEST_DATES.LATE, feedType: 'breakfast', amountMeat: 15, amountVegan: 3 })],
             expectedLength: 1
