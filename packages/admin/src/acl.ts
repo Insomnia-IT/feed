@@ -81,6 +81,23 @@ const checkCustomPermission = (role: AppRole, action: Action): boolean => {
     }
 };
 
+export const canAccessByRole = (role: AppRole, action: string, resource: string): boolean => {
+    if (action === 'list' || action === 'show') {
+        return canRole(role).read(resource).granted;
+    }
+    if (action === 'create') {
+        return canRole(role).create(resource).granted;
+    }
+    if (action === 'edit') {
+        return canRole(role).update(resource).granted;
+    }
+    if (action === 'delete') {
+        return canRole(role).delete(resource).granted;
+    }
+
+    return checkCustomPermission(role, action as Action);
+};
+
 export const ACL: AccessControlProvider = {
     can: async ({ action, resource }) => {
         const user = await getUserData(true);
@@ -92,21 +109,11 @@ export const ACL: AccessControlProvider = {
             return { can: false };
         }
 
-        const granted = user.roles.some((role) => {
-            if (action === 'list' || action === 'show') {
-                return canRole(role).read(resource).granted;
-            }
-            if (action === 'create') {
-                return canRole(role).create(resource).granted;
-            }
-            if (action === 'edit') {
-                return canRole(role).update(resource).granted;
-            }
-            if (action === 'delete') {
-                return canRole(role).delete(resource).granted;
-            }
-            return checkCustomPermission(role, action as Action);
-        });
+        if (!resource) {
+            return { can: false };
+        }
+
+        const granted = user.roles.some((role) => canAccessByRole(role, action, resource));
 
         return { can: granted };
     }

@@ -18,7 +18,7 @@ export const AdditionalSection = ({
     isBlocked: boolean;
     canUnban: boolean;
     canDelete: boolean;
-    volunteerId: number;
+    volunteerId?: number | string;
 }) => {
     const form = Form.useFormInstance();
     const [isBanModalVisible, setBanModalVisible] = useState(false);
@@ -93,22 +93,24 @@ export const AdditionalSection = ({
                     className={styles.blockButton}
                     type="default"
                     onClick={() => setBanModalVisible(true)}
-                    disabled={isBlocked ? !canUnban : false}
+                    disabled={!volunteerId || (isBlocked ? !canUnban : false)}
                 >
                     {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
                     {isBlocked ? 'Разблокировать волонтера' : 'Заблокировать волонтера'}
                 </Button>
 
-                <BanModal
-                    isBlocked={isBlocked}
-                    visible={isBanModalVisible}
-                    onCancel={() => setBanModalVisible(false)}
-                    volunteerId={volunteerId}
-                    currentComment={currentComment}
-                    onSuccess={handleBanSuccess}
-                />
+                {volunteerId ? (
+                    <BanModal
+                        isBlocked={isBlocked}
+                        visible={isBanModalVisible}
+                        onCancel={() => setBanModalVisible(false)}
+                        volunteerId={volunteerId}
+                        currentComment={currentComment}
+                        onSuccess={handleBanSuccess}
+                    />
+                ) : null}
 
-                {canDelete && !isDeleted && (
+                {canDelete && !isDeleted && volunteerId ? (
                     <DeleteButton
                         type="primary"
                         icon={false}
@@ -121,7 +123,7 @@ export const AdditionalSection = ({
                     >
                         Удалить волонтера
                     </DeleteButton>
-                )}
+                ) : null}
             </div>
             <div className={styles.visuallyHidden}>
                 <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: 0 }}>

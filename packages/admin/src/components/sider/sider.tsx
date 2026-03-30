@@ -2,7 +2,6 @@ import { Layout, Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import {
-    CanAccess,
     type TreeMenuItem,
     useGetIdentity,
     useIsExistAuthentication,
@@ -21,6 +20,7 @@ import {
     UserOutlined
 } from '@ant-design/icons';
 
+import { canAccessByRole } from 'acl';
 import { useScreen } from 'shared/providers';
 import { AppRoles, type UserData } from 'auth';
 import type { AccessRoleEntity } from 'interfaces';
@@ -57,7 +57,7 @@ const CustomSider = () => {
 
     const accessRoleName = useMemo(() => {
         if (!role) return '';
-        return accessRoles.find((r) => r.id === role)?.name ?? '';
+        return accessRoles.find((item) => item.id === role)?.name ?? '';
     }, [accessRoles, role]);
 
     const handleLogout = useCallback(() => {
@@ -65,44 +65,47 @@ const CustomSider = () => {
         logout();
     }, [logout, queryClient]);
 
-    const buildMenuItems = useCallback(function buildMenuItems(tree: TreeMenuItem[]): MenuProps['items'] {
-        return tree
-            .map((item) => {
-                const { children, icon, label, name, route } = item;
-                const key = String(route || name);
+    const buildMenuItems = useCallback(
+        (tree: TreeMenuItem[]): MenuProps['items'] => {
+            const walk = (nodes: TreeMenuItem[]): NonNullable<MenuProps['items']> => {
+                return nodes
+                    .map((item) => {
+                        const { children, icon, label, name, route } = item;
+                        const key = String(route || name);
 
-                if (children?.length) {
-                    const subItems = (buildMenuItems(children) ?? []).filter(Boolean) as MenuProps['items'];
-                    if (!subItems?.length) return null;
+                        if (children?.length) {
+                            const subItems = walk(children);
+                            if (!subItems.length) return null;
 
-                    return {
-                        key,
-                        icon: icon ?? <UnorderedListOutlined />,
-                        label,
-                        children: subItems
-                    };
-                }
+                            return {
+                                key,
+                                icon: icon ?? <UnorderedListOutlined />,
+                                label,
+                                children: subItems
+                            };
+                        }
 
-                return {
-                    key,
-                    icon: icon ?? <UnorderedListOutlined />,
-                    label: (
-                        <CanAccess
-                            resource={String(name).toLowerCase()}
-                            action="list"
-                            params={{ resource: item }}
-                            fallback={null}
-                        >
-                            <Link to={route as string}>{label}</Link>
-                        </CanAccess>
-                    )
-                };
-            })
-            .filter(Boolean) as MenuProps['items'];
-    }, []);
+                        const resource = String(name).toLowerCase();
+                        if (!role || !canAccessByRole(role, 'list', resource)) {
+                            return null;
+                        }
+
+                        return {
+                            key,
+                            icon: icon ?? <UnorderedListOutlined />,
+                            label: <Link to={route as string}>{label}</Link>
+                        };
+                    })
+                    .filter(Boolean) as NonNullable<MenuProps['items']>;
+            };
+
+            return walk(tree);
+        },
+        [role]
+    );
 
     const userMenuItems = useMemo<MenuProps['items']>(() => {
-        const items: MenuProps['items'] = [
+        const items: NonNullable<MenuProps['items']> = [
             {
                 key: 'user-info',
                 disabled: true,
@@ -119,7 +122,7 @@ const CustomSider = () => {
         ];
 
         if (menuItems) {
-            items.push(...(buildMenuItems(menuItems) ?? []));
+            items.push(...((buildMenuItems(menuItems) ?? []).filter(Boolean) as NonNullable<MenuProps['items']>));
         }
 
         if (isAuth) {

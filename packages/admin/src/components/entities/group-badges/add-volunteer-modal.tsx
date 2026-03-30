@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Button, Input, Modal, Table } from 'antd';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import { type CrudFilters, useInvalidate, useList, useNotification, useUpdateMany } from '@refinedev/core';
+import { useInvalidate, useList, useNotification, useUpdateMany } from '@refinedev/core';
 
 import type { VolEntity } from 'interfaces';
 import { useScreen } from 'shared/providers';
@@ -23,21 +23,23 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
 
     const pageSize = isDesktop ? 10 : 5;
 
-    const serverFilters: CrudFilters = useMemo(() => {
-        const filters: CrudFilters = [];
+    const resource = useMemo(() => {
+        const params = new URLSearchParams();
+
         if (search) {
-            filters.push({
-                field: 'search',
-                operator: 'eq',
-                value: search
-            });
+            params.set('search', search);
         }
-        return filters;
-    }, [search]);
+
+        visibleDirections?.forEach((directionId) => {
+            params.append('directions', directionId);
+        });
+
+        const query = params.toString();
+        return query ? `volunteers/?${query}` : 'volunteers';
+    }, [search, visibleDirections]);
 
     const { result, query } = useList<VolEntity>({
-        resource: 'volunteers',
-        filters: serverFilters,
+        resource,
         pagination: {
             mode: 'server',
             currentPage: page,
@@ -45,21 +47,9 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
         }
     });
 
-    const volunteersRaw = result.data ?? [];
+    const volunteers = result.data ?? [];
     const total = result.total ?? 0;
     const isLoading = query.isLoading;
-
-    const visibleDirectionsSet = useMemo(() => {
-        return visibleDirections ? new Set(visibleDirections.map(String)) : null;
-    }, [visibleDirections]);
-
-    const volunteers = useMemo(() => {
-        if (!visibleDirectionsSet) return volunteersRaw;
-
-        return volunteersRaw.filter((v: VolEntity) =>
-            v.directions?.some((d) => visibleDirectionsSet.has(String(d.id)))
-        );
-    }, [volunteersRaw, visibleDirectionsSet]);
 
     const rowSelection: TableRowSelection<VolEntity> = {
         selectedRowKeys: selectedIds,

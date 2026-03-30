@@ -6,7 +6,7 @@ import type { GroupBadgeEntity } from 'interfaces';
 import { CreateEdit } from './common';
 
 export const GroupBadgeCreate = () => {
-    const { formProps, saveButtonProps } = useForm<GroupBadgeEntity>();
+    const { form, formProps, saveButtonProps } = useForm<GroupBadgeEntity>();
 
     return (
         <Create
@@ -18,7 +18,7 @@ export const GroupBadgeCreate = () => {
                 }
             }}
         >
-            <Form {...formProps} layout="vertical">
+            <Form {...formProps} form={form} layout="vertical">
                 <CreateEdit />
             </Form>
         </Create>

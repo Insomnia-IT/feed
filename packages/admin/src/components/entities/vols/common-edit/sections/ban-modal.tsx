@@ -17,6 +17,13 @@ const BanModal = ({ currentComment, isBlocked, onCancel, onSuccess, visible, vol
 
     const handleFinish = async () => {
         try {
+            if (volunteerId == null || volunteerId === '') {
+                notification.error({
+                    message: 'Не удалось определить ID волонтёра'
+                });
+                return;
+            }
+
             const values = await form.validateFields();
             const reason = values.reason;
             const currentDate = new Date();

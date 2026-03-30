@@ -18,19 +18,18 @@ interface ICustomFieldValue {
 export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: IProps) => {
     const form = Form.useFormInstance();
 
-    const { result: customFieldsResult, query: customFieldsQuery } = useList<CustomFieldEntity>({
+    const { result: customFieldsResult } = useList<CustomFieldEntity>({
         resource: 'volunteer-custom-fields',
         pagination: { pageSize: 0 }
     });
 
-    const { result: volunteer, query: volunteerQuery } = useOne<VolEntity>({
+    const { result: volunteer } = useOne<VolEntity>({
         resource: 'volunteers',
         id: volunteerId
     });
 
     const customFields = customFieldsResult.data ?? [];
-
-    const customFieldValues = (volunteer as unknown as { custom_field_values?: ICustomFieldValue[] })
+    const customFieldValues = (volunteer as unknown as { custom_field_values?: ICustomFieldValue[] } | undefined)
         ?.custom_field_values;
 
     const customFieldValuesById = useMemo(() => {
@@ -44,32 +43,26 @@ export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: IProps) => {
         return map;
     }, [customFieldValues]);
 
-    const isLoading = customFieldsQuery.isFetching || volunteerQuery.isFetching;
-
     return (
         <>
             <p className={styles.formSection__title}>Кастомные Поля</p>
 
-            {isLoading ? null : (
-                <>
-                    {customFields
-                        .filter((item) => item.mobile || canBadgeEdit)
-                        .map((item) => {
-                            const fieldName = ['updated_custom_fields', item.id.toString()];
+            {customFields
+                .filter((item) => item.mobile || canBadgeEdit)
+                .map((item) => {
+                    const fieldName = ['updated_custom_fields', item.id.toString()];
 
-                            // Для случая стирания поля, чтобы старое значение не "мигало"
-                            const isFieldTouched = form.isFieldTouched(fieldName);
-                            const valueFromAPI = isFieldTouched ? undefined : customFieldValuesById.get(item.id);
+                    // Для случая стирания поля, чтобы старое значение не "мигало"
+                    const isFieldTouched = form.isFieldTouched(fieldName);
+                    const valueFromAPI = isFieldTouched ? undefined : customFieldValuesById.get(item.id);
 
-                            // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
-                            return (
-                                <Form.Item key={item.id} label={item.name} name={fieldName}>
-                                    <CustomFieldValueHandler type={item.type} valueFromAPI={valueFromAPI} />
-                                </Form.Item>
-                            );
-                        })}
-                </>
-            )}
+                    // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
+                    return (
+                        <Form.Item key={item.id} label={item.name} name={fieldName}>
+                            <CustomFieldValueHandler type={item.type} valueFromAPI={valueFromAPI} />
+                        </Form.Item>
+                    );
+                })}
         </>
     );
 };

@@ -29,13 +29,14 @@ import {
 import styles from '../common.module.css';
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
-import { useLocation } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
 export const CommonEdit = () => {
     const form = Form.useFormInstance();
 
     const person = Form.useWatch('person', form);
+    const { id: routeVolunteerId } = useParams<{ id: string }>();
     const { search, pathname } = useLocation();
 
     const isCreationProcess = pathname.includes('create');
@@ -71,7 +72,7 @@ export const CommonEdit = () => {
         loadPerson();
     }, [search, form]);
 
-    const volunteerId = form.getFieldValue('id');
+    const volunteerId = routeVolunteerId ?? form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);
     const selectedFeedType = Form.useWatch('feed_type', form);
 
