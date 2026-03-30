@@ -1,17 +1,24 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
+import {
+    getActivePaidArrivalsNow,
+    getTodayTrans,
+    hasActiveArrivalNow,
+    db,
+    dbIncFeed,
+    FeedType,
+    isActivatedStatus,
+    MealTime
+} from '~/db';
 import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from '~/db';
 import { getMealTimeText } from '~/shared/lib/utils';
 
 const isVolExpired = (vol: Volunteer): boolean => {
-    return vol.arrivals.every(
-        ({ arrival_date, departure_date, status }) =>
-            !isActivatedStatus(status) ||
-            dayjs() < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
-            dayjs() > dayjs(departure_date).endOf('day').add(7, 'hours')
-    );
+    const hasActiveArrival = hasActiveArrivalNow(vol);
+    const hasActivePaidArrival = getActivePaidArrivalsNow(vol).length > 0;
+
+    return !hasActiveArrival && !hasActivePaidArrival;
 };
 
 export const validateVol = ({
@@ -43,7 +50,9 @@ export const validateVol = ({
         }
     }
 
-    if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
+    const hasActivePaidArrival = getActivePaidArrivalsNow(vol).length > 0;
+
+    if (!hasActivePaidArrival && !vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
         isActivated = false;
         msg.push('Бейдж не активирован в штабе');
     }
