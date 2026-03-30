@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
-import { FeedType, getFeedStats, getVolsOnField, MealTime } from '~/db';
+import { getFeedStats, getVolsOnField, hasActiveArrivalOnDate, hasActivePaidArrivalOnDate, MealTime } from '~/db';
 import { DATE_FORMAT } from '~/shared/lib/date';
 import type { LocalStatsHook } from '~/request-local-db/lib';
 
@@ -19,33 +19,34 @@ export type FeedStats = { onField: FeedStatsRecord; feedCount: FeedStatsRecord }
 const getStatsByDate = async (statsDate: string): Promise<{ feedCount: FeedStatsRecord; onField: FeedStatsRecord }> => {
     const onFieldPromises = MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
         let vols = await getVolsOnField(statsDate);
+        const minDepartureDate =
+            MT === MealTime.dinner || MT === MealTime.night
+                ? dayjs(statsDate).add(1, 'd').format(DATE_FORMAT)
+                : statsDate;
+
         if (MT === MealTime.breakfast) {
-            vols = vols.filter((vol) =>
-                vol.arrivals.some(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                        dayjs(departure_date).unix() >= dayjs(statsDate).unix()
-                )
-            );
+            vols = vols.filter((vol) => {
+                return (
+                    hasActiveArrivalOnDate(vol, statsDate, minDepartureDate) ||
+                    hasActivePaidArrivalOnDate(vol, statsDate, minDepartureDate)
+                );
+            });
         }
         if (MT === MealTime.dinner) {
-            vols = vols.filter((vol) =>
-                vol.arrivals.some(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                        dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix()
-                )
-            );
+            vols = vols.filter((vol) => {
+                return (
+                    hasActiveArrivalOnDate(vol, statsDate, minDepartureDate) ||
+                    hasActivePaidArrivalOnDate(vol, statsDate, minDepartureDate)
+                );
+            });
         }
         if (MT === MealTime.night) {
-            vols = vols.filter((vol) =>
-                vol.arrivals.some(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                        dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix() &&
-                        vol.feed_type !== FeedType.Paid
-                )
-            );
+            vols = vols.filter((vol) => {
+                return (
+                    hasActiveArrivalOnDate(vol, statsDate, minDepartureDate) ||
+                    hasActivePaidArrivalOnDate(vol, statsDate, minDepartureDate)
+                );
+            });
         }
 
         try {
