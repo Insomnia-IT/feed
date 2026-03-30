@@ -88,9 +88,10 @@ const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
 };
 
 const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
-    return trans.map(({ amount, group_badge, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+    return trans.map(({ amount, group_badge, is_paid, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
         volunteer: vol_id,
         is_vegan,
+        is_paid,
         amount,
         dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
         ulid,
@@ -113,9 +114,10 @@ const markTransactionsAsUpdated = async (trans): Promise<IndexableType> => {
 const putNewServerTransactions = async (data): Promise<IndexableType> => {
     const serverTransactions = data as Array<ServerTransaction>;
     const transactions = serverTransactions.map(
-        ({ amount, dtime, group_badge, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
+        ({ amount, dtime, group_badge, is_paid, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
             vol_id: volunteer,
             is_vegan,
+            is_paid,
             mealTime: meal_time,
             ulid,
             amount,

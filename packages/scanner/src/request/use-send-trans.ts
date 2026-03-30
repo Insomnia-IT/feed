@@ -22,9 +22,10 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
 
         const data = (trans || [])
             .filter(({ is_new }) => is_new)
-            .map(({ amount, group_badge, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+            .map(({ amount, group_badge, is_paid, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
                 volunteer: vol_id,
                 is_vegan,
+                is_paid,
                 amount,
                 dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
                 ulid,
