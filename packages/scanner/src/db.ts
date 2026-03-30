@@ -12,6 +12,7 @@ export interface Transaction {
     ts: number;
     mealTime: MealTime;
     is_new: boolean;
+    is_paid?: boolean;
     is_vegan?: boolean;
     reason?: string | null;
     kitchen: number;
@@ -24,6 +25,7 @@ export interface ServerTransaction {
     amount: number;
     dtime: string;
     meal_time: MealTime;
+    is_paid?: boolean;
     is_vegan: boolean;
     kitchen: number;
     group_badge?: number | null;
@@ -56,6 +58,7 @@ export interface Volunteer {
     is_vegan: boolean;
     deleted_at: string | null;
     arrivals: Array<Arrival>;
+    paid_arrivals?: Array<PaidArrival>;
     feed_type: FeedType;
     infant: boolean;
     directions: Array<{ name: string }>;
@@ -72,6 +75,13 @@ export interface Arrival {
     arrival_transport: string;
     departure_date: string;
     departure_transport: string;
+}
+
+export interface PaidArrival {
+    id: string;
+    arrival_date: string;
+    departure_date: string;
+    is_free: boolean;
 }
 
 export interface GroupBadge {
@@ -160,6 +170,7 @@ export const addTransaction = async ({
     await db.transactions.add({
         vol_id: vol ? vol.id : null,
         is_vegan: vol ? vol.is_vegan : isVegan,
+        is_paid: resolveIsPaidTransaction(vol),
         ts,
         kitchen: kitchenId,
         amount: amountInner,
@@ -213,21 +224,77 @@ export function isActivatedStatus(status: string): boolean {
     return ['ARRIVED', 'STARTED', 'JOINED'].includes(status);
 }
 
+const isDateInArrivalRange = ({
+    arrival_date,
+    departure_date,
+    date,
+    minDepartureDate = date
+}: {
+    arrival_date: string;
+    departure_date: string;
+    date: string;
+    minDepartureDate?: string;
+}): boolean =>
+    dayjs(departure_date).startOf('day').unix() >= dayjs(minDepartureDate).unix() &&
+    dayjs(arrival_date).startOf('day').unix() <= dayjs(date).unix();
+
+const isNowInArrivalRange = ({
+    arrival_date,
+    departure_date
+}: {
+    arrival_date: string;
+    departure_date: string;
+}): boolean =>
+    dayjs() >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
+    dayjs() <= dayjs(departure_date).endOf('day').add(7, 'hours');
+
+export const hasActiveArrivalOnDate = (vol: Volunteer, statsDate: string, minDepartureDate?: string): boolean =>
+    vol.arrivals.some(({ arrival_date, departure_date, status }) => {
+        return (
+            isActivatedStatus(status) &&
+            isDateInArrivalRange({ arrival_date, departure_date, date: statsDate, minDepartureDate })
+        );
+    });
+
+export const hasActivePaidArrivalOnDate = (vol: Volunteer, statsDate: string, minDepartureDate?: string): boolean =>
+    (vol.paid_arrivals ?? []).some(({ arrival_date, departure_date }) =>
+        isDateInArrivalRange({ arrival_date, departure_date, date: statsDate, minDepartureDate })
+    );
+
+export const hasActiveArrivalNow = (vol: Volunteer): boolean =>
+    vol.arrivals.some(({ arrival_date, departure_date, status }) => {
+        return isActivatedStatus(status) && isNowInArrivalRange({ arrival_date, departure_date });
+    });
+
+export const getActivePaidArrivalsNow = (vol: Volunteer): Array<PaidArrival> =>
+    (vol.paid_arrivals ?? []).filter(({ arrival_date, departure_date }) =>
+        isNowInArrivalRange({ arrival_date, departure_date })
+    );
+
+export const resolveIsPaidTransaction = (vol?: Volunteer | null): boolean => {
+    if (!vol) {
+        return false;
+    }
+
+    if (hasActiveArrivalNow(vol)) {
+        return false;
+    }
+
+    return getActivePaidArrivalsNow(vol).some(({ is_free }) => !is_free);
+};
+
 export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
     const kitchenId = localStorage.getItem('kitchenId');
     return db.volunteers
         .filter((vol) => {
+            const isOnFieldByArrivals = hasActiveArrivalOnDate(vol, statsDate);
+            const isOnFieldByPaidArrivals = hasActivePaidArrivalOnDate(vol, statsDate);
+
             return (
                 vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
                 vol.feed_type !== FeedType.NoFeed &&
-                vol.arrivals.some(({ arrival_date, departure_date, status }) => {
-                    return (
-                        dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
-                        dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
-                        isActivatedStatus(status)
-                    );
-                })
+                (isOnFieldByArrivals || isOnFieldByPaidArrivals)
             );
         })
         .toArray();
