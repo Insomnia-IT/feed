@@ -1,4 +1,4 @@
-import type { CrudFilter, DataProvider, LogicalFilter } from '@refinedev/core';
+import type { CrudFilter, CrudSorting, DataProvider, LogicalFilter } from '@refinedev/core';
 import type { AxiosInstance } from 'axios';
 
 import { NEW_API_URL } from 'const';
@@ -11,15 +11,25 @@ function isLogicalFilter(filter: CrudFilter): filter is LogicalFilter {
     return (filter as LogicalFilter).field !== undefined;
 }
 
+function generateOrdering(sorters?: CrudSorting): string | undefined {
+    if (!sorters?.length) return undefined;
+
+    return sorters.map(({ field, order }) => `${order === 'desc' ? '-' : ''}${String(field)}`).join(',');
+}
+
 export const crudDataProvider = (
     apiUrl: string,
     httpClient: AxiosInstance = axios
 ): Omit<Required<DataProvider>, 'createMany' | 'updateMany' | 'deleteMany' | 'custom'> => ({
-    getList: async ({ resource, pagination, filters, meta }) => {
+    getList: async ({ resource, pagination, sorters, filters, meta }) => {
         const url = `${apiUrl}/${resource}${resource.includes('/') ? '' : '/'}`;
 
         const { headers: headersFromMeta, method } = meta ?? {};
         const requestMethod = (method as MethodTypes) ?? 'get';
+        const currentPage = pagination?.currentPage ?? 1;
+        const pageSize = pagination?.pageSize ?? 10;
+        const mode = pagination?.mode ?? 'server';
+        const ordering = generateOrdering(sorters);
 
         const { data } = await httpClient[requestMethod](url, {
             params: {
@@ -29,11 +39,9 @@ export const crudDataProvider = (
                     }
                     return acc;
                 }, {}),
-                limit: pagination?.mode === 'server' && pagination?.pageSize ? pagination.pageSize : 10000,
-                offset:
-                    pagination?.mode === 'server' && pagination?.currentPage && pagination?.pageSize
-                        ? (pagination.currentPage - 1) * pagination.pageSize
-                        : 0
+                ...(ordering ? { ordering } : {}),
+                limit: mode === 'server' ? pageSize : 10000,
+                offset: mode === 'server' ? (currentPage - 1) * pageSize : 0
             },
             headers: headersFromMeta
         });

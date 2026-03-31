@@ -22,7 +22,9 @@ export const GroupBadgeList = () => {
     const { edit } = useNavigation();
     const { result: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
+        sorters: [{ field: 'id', order: 'desc' }],
         pagination: {
+            mode: 'server',
             currentPage: isDesktop ? page : 1,
             pageSize: isDesktop ? pageSize : 10000
         }
@@ -46,6 +48,7 @@ export const GroupBadgeList = () => {
         showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
         current: page,
         pageSize,
+        showSizeChanger: true,
         onChange: (newPage, newPageSize) => {
             setPage(newPage);
             setPageSize(newPageSize);

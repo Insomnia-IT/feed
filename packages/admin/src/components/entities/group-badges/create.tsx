@@ -6,7 +6,11 @@ import type { GroupBadgeEntity } from 'interfaces';
 import { CreateEdit } from './common';
 
 export const GroupBadgeCreate = () => {
-    const { form, formProps, saveButtonProps } = useForm<GroupBadgeEntity>();
+    const { form, formProps, saveButtonProps } = useForm<GroupBadgeEntity>({
+        onMutationSuccess: () => {
+            localStorage.setItem('gbPageIndex', '1');
+        }
+    });
 
     return (
         <Create
