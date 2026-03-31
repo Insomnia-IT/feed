@@ -1,5 +1,5 @@
 import { Form, Modal } from 'antd';
-import { useSelect } from '@refinedev/core';
+import { useList, useSelect } from '@refinedev/core';
 import React, { useEffect, useRef } from 'react';
 
 import type {
@@ -20,6 +20,7 @@ import {
     CustomFieldsSection,
     HrInfoSection,
     VolInfoSection,
+    PaidArrivalsSection,
     PreviousYearsSection,
     SidebarNavigation
 } from './sections';
@@ -72,9 +73,11 @@ export const CommonEdit: React.FC = () => {
 
     const volunteerId = form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);
+    const selectedFeedType = Form.useWatch('feed_type', form);
 
     const { options: kitchenOptions } = useSelect<KitchenEntity>({ resource: 'kitchens', optionLabel: 'name' });
     const { options: feedTypeOptions } = useSelect<FeedTypeEntity>({ resource: 'feed-types', optionLabel: 'name' });
+    const { data: feedTypesData } = useList<FeedTypeEntity>({ resource: 'feed-types', pagination: { pageSize: 100 } });
     const { options: colorTypeOptions } = useSelect<ColorTypeEntity>({
         resource: 'colors',
         optionLabel: 'description'
@@ -101,6 +104,9 @@ export const CommonEdit: React.FC = () => {
         }
     };
     const { activeAnchor } = useAnchorNavigation(containerRef);
+    const showPaidArrivals = (feedTypesData?.data ?? []).some(
+        ({ id, code }) => id === selectedFeedType && (code === 'FREE' || code === 'PAID')
+    );
 
     const handleClear = () => {
         void clearDuplicateQR();
@@ -131,7 +137,11 @@ export const CommonEdit: React.FC = () => {
 
     return (
         <div className={styles.edit}>
-            <SidebarNavigation activeAnchor={activeAnchor} denyBadgeEdit={denyBadgeEdit} />
+            <SidebarNavigation
+                activeAnchor={activeAnchor}
+                denyBadgeEdit={denyBadgeEdit}
+                showPaidArrivals={showPaidArrivals}
+            />
 
             <div className={styles.formWrap} ref={containerRef}>
                 <section id="section1" className={styles.formSection}>
@@ -145,6 +155,13 @@ export const CommonEdit: React.FC = () => {
                 </section>
                 <section id="section2" className={styles.formSection}>
                     <ArrivalsSection statusesOptions={statusesOptions} transportsOptions={transportsOptions} />
+                </section>
+                <section
+                    id="section2paid"
+                    className={styles.formSection}
+                    style={{ display: showPaidArrivals ? undefined : 'none' }}
+                >
+                    <PaidArrivalsSection visible={showPaidArrivals} />
                 </section>
                 <section id="section3" className={styles.formSection}>
                     <PersonalInfoSection

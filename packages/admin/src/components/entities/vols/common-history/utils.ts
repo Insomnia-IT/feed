@@ -22,6 +22,7 @@ export const FIELD_LABELS: Record<string, string> = {
     status: 'Статус',
     departure_date: 'Дата отъезда',
     arrival_date: 'Дата приезда',
+    is_free: 'Бесплатно',
     is_blocked: 'Статус блокировки',
     person: 'Персона',
     deleted: 'Удален',
@@ -44,6 +45,7 @@ export const STATUS_MAP: Record<string, string> = {
 
 export const BOOL_MAP = {
     vegan: ['Мясоед', 'Веган'],
+    is_free: ['Нет', 'Да'],
     is_blocked: ['Разблокирован', 'Заблокирован'],
     deleted: ['Нет', 'Да'],
     ticket: ['Не выдан', 'Выдан'],

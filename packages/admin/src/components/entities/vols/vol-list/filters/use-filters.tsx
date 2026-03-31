@@ -225,6 +225,8 @@ export const useFilters = ({
                     .filter(({ id }) => !visibleDirections || visibleDirections.includes(id))
         }, // directions
         { type: FilterFieldType.Date, name: 'arrivals.staying_date', title: 'На поле' },
+        { type: FilterFieldType.Date, name: 'paid_arrivals.staying_date', title: 'Оплаченные даты' },
+        { type: FilterFieldType.Boolean, single: true, name: 'paid_arrivals.is_free', title: 'Оплаченные бесплатные' },
         {
             type: FilterFieldType.Lookup,
             name: 'arrivals.status',
