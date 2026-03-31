@@ -169,6 +169,7 @@ export const CommonEdit: React.FC = () => {
                         canUnban={canUnban}
                         canDelete={canDelete}
                         volunteerId={volunteerId}
+                        isCreationProcess={isCreationProcess}
                     />
                 </section>
                 <section id="section7" className={styles.formSection}>

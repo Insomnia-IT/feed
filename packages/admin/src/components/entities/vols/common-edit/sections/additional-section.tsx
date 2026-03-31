@@ -13,12 +13,14 @@ export const AdditionalSection = ({
     isBlocked,
     canUnban,
     canDelete,
-    volunteerId
+    volunteerId,
+    isCreationProcess
 }: {
     isBlocked: boolean;
     canUnban: boolean;
     canDelete: boolean;
     volunteerId: number;
+    isCreationProcess: boolean
 }) => {
     const form = Form.useFormInstance();
     const [isBanModalVisible, setBanModalVisible] = useState(false);
@@ -84,6 +86,9 @@ export const AdditionalSection = ({
                     name="scanner_comment"
                 >
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
+                </Form.Item>
+                <Form.Item label="Кто согласовал" name="approver">
+                        <Input disabled={!isCreationProcess}/>
                 </Form.Item>
             </div>
             <Divider />
