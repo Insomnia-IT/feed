@@ -32,6 +32,7 @@ export const AdditionalSection = ({
 
     const currentComment = form.getFieldValue('comment') || '';
     const isDeleted = form.getFieldValue('deleted_at');
+    const approver = form.getFieldValue('approver');
 
     const handleBanSuccess = (updatedData: Record<string, unknown>) => {
         form.setFieldsValue(updatedData);
@@ -87,9 +88,11 @@ export const AdditionalSection = ({
                 >
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
                 </Form.Item>
-                <Form.Item label="Кто согласовал" name="approver">
+                {approver && (
+                    <Form.Item label="Кто согласовал" name="approver">
                         <Input disabled={!isCreationProcess}/>
-                </Form.Item>
+                    </Form.Item>
+                )}
             </div>
             <Divider />
 
