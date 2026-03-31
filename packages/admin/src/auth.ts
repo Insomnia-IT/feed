@@ -39,10 +39,19 @@ export const getUserData = async <T extends true | false>(decode: T): Promise<Us
     };
 
     if (decode) {
-        return (await getUserInfo(token)) as UserDataReturn<T>;
-    } else {
-        return token as UserDataReturn<T>;
+        try {
+            return (await getUserInfo(token)) as UserDataReturn<T>;
+        } catch (error) {
+            if (axios.isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0)) {
+                clearUserData();
+                return null as UserDataReturn<T>;
+            }
+
+            throw error;
+        }
     }
+
+    return token as UserDataReturn<T>;
 };
 
 export const setUserData = (token: string): void => {
@@ -138,6 +147,7 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
 export const clearUserData = (): void => {
     Cookies.remove(AUTH_COOKIE_NAME);
     userRequest = undefined;
+    axios.defaults.headers.common = {};
     clearUserInfo();
 };
 

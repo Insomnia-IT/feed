@@ -55,7 +55,7 @@ export const GroupBadgeEdit = () => {
 
     return (
         <Edit saveButtonProps={saveButtonProps} contentProps={{ style: { marginBottom: 60, overflow: 'auto' } }}>
-            <Form {...formProps} layout="vertical">
+            <Form {...formProps} scrollToFirstError layout="vertical">
                 <CreateEdit />
             </Form>
 

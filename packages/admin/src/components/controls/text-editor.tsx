@@ -8,7 +8,9 @@ type QuillDelta = unknown;
 
 interface QuillInstance {
     root: { innerHTML: string };
-    clipboard: { convert: (html: string) => QuillDelta };
+    clipboard: {
+        convert: (content: { html?: string; text?: string }, formats?: Record<string, unknown>) => QuillDelta;
+    };
     setContents: (delta: QuillDelta, source?: string) => void;
     on: (eventName: string, handler: () => void) => void;
     off: (eventName: string, handler: () => void) => void;
@@ -76,7 +78,7 @@ export const TextEditor = memo(function TextEditor({
             quillRef.current = q;
 
             const applyHtml = (html: string) => {
-                const delta = q.clipboard.convert(html);
+                const delta = q.clipboard.convert({ html });
                 q.setContents(delta, 'silent');
             };
 
@@ -122,7 +124,7 @@ export const TextEditor = memo(function TextEditor({
 
         if (next !== current && next !== lastHtmlRef.current) {
             const sel = q.getSelection();
-            const delta = q.clipboard.convert(next);
+            const delta = q.clipboard.convert({ html: next });
             q.setContents(delta, 'silent');
             if (sel) q.setSelection(sel);
             lastHtmlRef.current = q.root.innerHTML;

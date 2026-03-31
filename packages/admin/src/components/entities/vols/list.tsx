@@ -161,18 +161,21 @@ export const VolList = () => {
     }, [volunteers?.total, page, pageSize, setPageWithStorage]);
 
     useEffect(() => {
-        if (!canListCustomFields) return;
-
         let cancelled = false;
 
-        dataProvider.getList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' }).then(({ data }) => {
-            if (!cancelled) setCustomFields(data);
-        });
+        dataProvider
+            .getList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' })
+            .then(({ data }) => {
+                if (!cancelled) setCustomFields(data);
+            })
+            .catch(() => {
+                if (!cancelled) setCustomFields([]);
+            });
 
         return () => {
             cancelled = true;
         };
-    }, [canListCustomFields]);
+    }, []);
 
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({

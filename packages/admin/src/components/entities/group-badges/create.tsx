@@ -18,7 +18,7 @@ export const GroupBadgeCreate = () => {
                 }
             }}
         >
-            <Form {...formProps} form={form} layout="vertical">
+            <Form {...formProps} form={form} scrollToFirstError layout="vertical">
                 <CreateEdit />
             </Form>
         </Create>
