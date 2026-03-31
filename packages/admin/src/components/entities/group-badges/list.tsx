@@ -22,7 +22,6 @@ export const GroupBadgeList = () => {
     const { edit } = useNavigation();
     const { result: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
-        sorters: [{ field: 'id', order: 'desc' }],
         pagination: {
             mode: 'server',
             currentPage: isDesktop ? page : 1,
