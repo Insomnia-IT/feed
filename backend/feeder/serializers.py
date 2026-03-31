@@ -218,6 +218,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         exclude = ['person']
 
     def update(self, instance, validated_data):
+        validated_data.pop('approver', None)
         arrivals_data = None
         if 'arrivals' in validated_data:
             arrivals_data = validated_data.pop('arrivals')

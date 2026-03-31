@@ -167,6 +167,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         related_name='supervisees',
         verbose_name="Бригадир")
     infant = models.BooleanField('IsChild', null=True, blank=True, default=False)
+    approver = models.CharField(max_length=100, null=True, blank=True, verbose_name="Утвердивший")
 
     class Meta:
         verbose_name = "Волонтёр"
