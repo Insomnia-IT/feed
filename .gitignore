@@ -58,3 +58,6 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+.claude
+.playwright-cli
