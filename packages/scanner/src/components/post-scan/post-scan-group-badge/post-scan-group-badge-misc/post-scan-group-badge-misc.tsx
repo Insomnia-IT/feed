@@ -1,17 +1,15 @@
 import type { FC } from 'react';
 import { useState } from 'react';
-import cn from 'classnames';
 
-import type { TransactionJoined, Volunteer } from '~/db';
+import type { TransactionJoined } from '~/db';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
-import { getPlural } from '~/shared/lib/utils';
 import { FeedOtherCount } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
 import { WarningPartiallyFedModal } from '~/components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
 import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
 
-import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
+import type { GroupBadgeFeedAnonsPayload, ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 import { NotFeedListModalTrigger } from '../not-feed-list-modal/not-feed-list-modal';
 
 import css from './post-scan-group-badge-misc.module.css';
@@ -34,13 +32,13 @@ export const GroupBadgeWarningCard: FC<{
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
-    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
+    doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
     close: () => void;
 }> = ({ alreadyFedTransactions, close, doFeedAnons, name, validationGroups }) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
-    const calculateDefaultFeedCount = (isVegan: boolean) => {
+    const calculateDefaultFeedCount = (isVegan: boolean): number => {
         const alreadyFedCount = calculateAlreadyFedCount(
             alreadyFedTransactions.filter((t) => Boolean(t.is_vegan) === isVegan)
         );
@@ -48,8 +46,13 @@ export const GroupBadgeWarningCard: FC<{
         return Math.max(volsToFeedCount - alreadyFedCount, 0);
     };
 
-    const [vegansCount, setVegansCount] = useState<number>(() => calculateDefaultFeedCount(true));
-    const [nonVegansCount, setNonVegansCount] = useState<number>(() => calculateDefaultFeedCount(false));
+    const [initialCalculatedCounts] = useState(() => ({
+        vegans: calculateDefaultFeedCount(true),
+        nonVegans: calculateDefaultFeedCount(false)
+    }));
+
+    const [vegansCount, setVegansCount] = useState<number>(initialCalculatedCounts.vegans);
+    const [nonVegansCount, setNonVegansCount] = useState<number>(initialCalculatedCounts.nonVegans);
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const handleFeed = (): void => {
@@ -59,12 +62,23 @@ export const GroupBadgeWarningCard: FC<{
             return;
         }
 
-        doFeedAnons({ vegansCount, nonVegansCount });
+        doFeedAnons({
+            vegansCount,
+            nonVegansCount,
+            anomalyMeta: {
+                vegans: {
+                    edited: vegansCount !== initialCalculatedCounts.vegans,
+                    calculatedAmount: initialCalculatedCounts.vegans
+                },
+                nonVegans: {
+                    edited: nonVegansCount !== initialCalculatedCounts.nonVegans,
+                    calculatedAmount: initialCalculatedCounts.nonVegans
+                }
+            }
+        });
 
         close();
     };
-
-    alreadyFedTransactions.filter((t) => t.is_vegan);
 
     const amountToFeed = Number(vegansCount) + Number(nonVegansCount);
 
@@ -73,7 +87,7 @@ export const GroupBadgeWarningCard: FC<{
             <WarningPartiallyFedModal
                 alreadyFedTransactions={alreadyFedTransactions}
                 setShowModal={setIsWarningModalShown}
-                doFeedAnons={(value: { vegansCount: number; nonVegansCount: number }) => {
+                doFeedAnons={(value) => {
                     doFeedAnons(value);
                     close();
                 }}
