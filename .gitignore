@@ -61,3 +61,5 @@ dist
 
 .claude
 .playwright-cli
+# Superpowers Plans
+/docs/superpowers/plans/

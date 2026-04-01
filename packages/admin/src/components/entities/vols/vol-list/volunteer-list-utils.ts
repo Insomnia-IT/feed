@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 
-import type { ArrivalEntity, VolEntity } from 'interfaces';
+import type { ArrivalEntity, PaidArrivalEntity, VolEntity } from 'interfaces';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+import { getSorter } from 'utils';
 
 import type { FilterField } from './filters/filter-types';
 
@@ -73,6 +74,27 @@ export function findClosestArrival(arrivals: Array<ArrivalEntity>): ArrivalEntit
     } else {
         return null;
     }
+}
+
+function getFormattedArrivalDate(arrivalString: string): string {
+    const date = new Date(arrivalString);
+    const options: Intl.DateTimeFormatOptions = {
+        month: '2-digit',
+        day: '2-digit'
+    };
+
+    return new Intl.DateTimeFormat('ru-RU', options).format(date);
+}
+
+export function getFormattedArrivalIntervals(arrivals: Array<ArrivalEntity | PaidArrivalEntity>): string[] {
+    return arrivals
+        .slice()
+        .sort(getSorter('arrival_date'))
+        .map(({ arrival_date, departure_date }) => {
+            const arrival = getFormattedArrivalDate(arrival_date);
+            const departure = getFormattedArrivalDate(departure_date);
+            return `${arrival} - ${departure}`;
+        });
 }
 
 export const getFilterValueText = (field: FilterField, value: boolean | string): string => {
