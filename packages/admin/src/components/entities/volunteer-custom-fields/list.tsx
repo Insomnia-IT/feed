@@ -57,6 +57,7 @@ export const VolunteerCustomFieldList = () => {
                     key="mobile"
                     title="Отображать в мобильной админке"
                     sorter={getSorter('mobile')}
+                    sortOrder={mapCrudSortOrderToAntdSortOrder(sortOrderByField.get('mobile'))}
                     render={(value?: boolean) => <p>{value ? 'Да' : 'Нет'}</p>}
                 />
                 <Table.Column<VolunteerCustomFieldEntity>
