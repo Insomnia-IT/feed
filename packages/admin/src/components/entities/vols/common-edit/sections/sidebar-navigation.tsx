@@ -2,10 +2,12 @@ import styles from '../../common.module.css';
 
 export const SidebarNavigation = ({
     activeAnchor,
-    denyBadgeEdit
+    denyBadgeEdit,
+    showPaidArrivals
 }: {
     activeAnchor: string;
     denyBadgeEdit: boolean;
+    showPaidArrivals: boolean;
 }) => {
     return (
         <div className={styles.edit__nav}>
@@ -21,6 +23,13 @@ export const SidebarNavigation = ({
                     data-id="section2"
                 >
                     Даты на поле
+                </li>
+                <li
+                    className={`${styles.navList__item} ${activeAnchor === 'section2paid' ? styles.active : ''}`}
+                    data-id="section2paid"
+                    style={{ display: showPaidArrivals ? '' : 'none' }}
+                >
+                    Платное питание
                 </li>
                 <li
                     className={`${styles.navList__item} ${activeAnchor === 'section3' ? styles.active : ''}`}

@@ -58,3 +58,6 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Superpowers Plans
+/docs/superpowers/plans/
