@@ -1,11 +1,12 @@
-export const Scanner = () => {
-    const origin = typeof window === 'undefined' ? '' : window.location.origin;
+import { SCANNER_URL } from 'const';
 
+export const Scanner = () => {
     return (
         <center>
-            {origin && (
+            {SCANNER_URL && (
                 <iframe
-                    src={`${origin}/scanner/`}
+                    src={SCANNER_URL}
+                    title="Scanner"
                     style={{
                         height: 'min(95vh,1024px)',
                         width: 'min(50vh, 512px)',
