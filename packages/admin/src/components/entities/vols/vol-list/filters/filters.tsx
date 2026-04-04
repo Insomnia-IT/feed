@@ -124,14 +124,18 @@ export const Filters = ({
         () => filterFields.filter((f) => visibleFilters.includes(f.name)),
         [filterFields, visibleFilters]
     );
+    const activeFilterByName = useMemo(
+        () => new Map(activeFilters.map((filter) => [filter.name, filter])),
+        [activeFilters]
+    );
 
     const filterPairs = useMemo(
         () =>
             visibleFiltersFields.map((field) => ({
                 filterField: field,
-                filterItem: activeFilters.find((f) => f.name === field.name)
+                filterItem: activeFilterByName.get(field.name)
             })),
-        [visibleFiltersFields, activeFilters]
+        [visibleFiltersFields, activeFilterByName]
     );
 
     const resetFilters = () => {

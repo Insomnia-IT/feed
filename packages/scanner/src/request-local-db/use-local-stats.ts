@@ -23,86 +23,72 @@ const createEmptyFeedStatsRecord = (): FeedStatsRecord => ({
     [MealTime.night]: { NT1: 0, NT2: 0, total: 0 }
 });
 
+const getUnixDayRange = (statsDate: string) => {
+    const start = dayjs(statsDate).startOf('day');
+    return {
+        start: start.unix(),
+        nextDayStart: start.add(1, 'day').unix()
+    };
+};
+
 const getStatsByDate = async (statsDate: string): Promise<FeedStats> => {
-    const onFieldArr = await Promise.all(
-        MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
-            let vols = await getVolsOnField(statsDate);
-            if (MT === MealTime.breakfast) {
-                vols = vols.filter((vol) =>
-                    vol.arrivals.some(
-                        ({ arrival_date, departure_date }) =>
-                            dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                            dayjs(departure_date).unix() >= dayjs(statsDate).unix()
-                    )
-                );
-            }
-            if (MT === MealTime.dinner) {
-                vols = vols.filter((vol) =>
-                    vol.arrivals.some(
-                        ({ arrival_date, departure_date }) =>
-                            dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                            dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix()
-                    )
-                );
-            }
-            if (MT === MealTime.night) {
-                vols = vols.filter((vol) =>
-                    vol.arrivals.some(
-                        ({ arrival_date, departure_date }) =>
-                            dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                            dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix() &&
-                            vol.feed_type !== FeedType.Paid
-                    )
-                );
-            }
-
-            try {
-                console.log(
-                    `stat: type - plan, date - ${statsDate}, meal_time - ${MT}:`,
-                    vols.map((vol) => ({
-                        id: vol.id,
-                        date: statsDate,
-                        type: 'plan',
-                        meal_time: MT,
-                        is_vegan: vol.is_vegan,
-                        amount: 1,
-                        kitchen_id: vol.kitchen
-                    }))
-                );
-            } catch (error) {
-                console.log('stat, plan:', `logging failed - ${error}`);
-            }
-
-            const nt1 = vols.filter((vol) => !vol.is_vegan).length;
-            const nt2 = vols.filter((vol) => vol.is_vegan).length;
-            const total = vols.length;
-
-            return {
-                [MT]: { NT1: nt1, NT2: nt2, total }
-            } as FeedStatsRecord;
-        })
-    );
-
-    const feedCountArr = await Promise.all(
-        MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
-            let txs = await getFeedStats(statsDate);
-            txs = txs.filter((tx) => tx.mealTime === MT);
-
-            const nt1 = txs.reduce((acc, curr) => (!curr.is_vegan ? acc + curr.amount : acc), 0);
-            const nt2 = txs.reduce((acc, curr) => (curr.is_vegan ? acc + curr.amount : acc), 0);
-            const total = nt1 + nt2;
-
-            return {
-                [MT]: { NT1: nt1, NT2: nt2, total }
-            } as FeedStatsRecord;
-        })
-    );
+    const [volsOnField, feedTransactions] = await Promise.all([getVolsOnField(statsDate), getFeedStats(statsDate)]);
+    const { start, nextDayStart } = getUnixDayRange(statsDate);
 
     const onField: FeedStatsRecord = createEmptyFeedStatsRecord();
-    Object.assign(onField, ...onFieldArr);
+    for (const vol of volsOnField) {
+        let hasBreakfast = false;
+        let hasDinner = false;
+        let hasNight = false;
+
+        for (const arrival of vol.arrivals) {
+            const arrivalUnix = dayjs(arrival.arrival_date).unix();
+            const departureUnix = dayjs(arrival.departure_date).unix();
+
+            if (arrivalUnix <= start && departureUnix >= start) {
+                hasBreakfast = true;
+            }
+            if (arrivalUnix <= start && departureUnix >= nextDayStart) {
+                hasDinner = true;
+                if (vol.feed_type !== FeedType.Paid) {
+                    hasNight = true;
+                }
+            }
+
+            if (hasBreakfast && hasDinner && (hasNight || vol.feed_type === FeedType.Paid)) {
+                break;
+            }
+        }
+
+        for (const mealTime of MEAL_TIME) {
+            const include =
+                mealTime === MealTime.lunch ||
+                (mealTime === MealTime.breakfast && hasBreakfast) ||
+                (mealTime === MealTime.dinner && hasDinner) ||
+                (mealTime === MealTime.night && hasNight);
+
+            if (!include) continue;
+
+            const mealStats = onField[mealTime];
+            if (vol.is_vegan) {
+                mealStats.NT2 += 1;
+            } else {
+                mealStats.NT1 += 1;
+            }
+            mealStats.total += 1;
+        }
+    }
 
     const feedCount: FeedStatsRecord = createEmptyFeedStatsRecord();
-    Object.assign(feedCount, ...feedCountArr);
+    for (const tx of feedTransactions) {
+        const mealStats = feedCount[tx.mealTime];
+        if (tx.is_vegan) {
+            mealStats.NT2 += tx.amount;
+        } else {
+            mealStats.NT1 += tx.amount;
+        }
+        mealStats.total += tx.amount;
+    }
 
     return { onField, feedCount };
 };

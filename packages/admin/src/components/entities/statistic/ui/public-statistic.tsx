@@ -34,11 +34,7 @@ const LinearChart = lazy(() => import('./linear-chart'));
 const toApiDate = (date: dayjsExt.Dayjs | null | undefined) => (date ? date.format('YYYY-MM-DD') : '');
 
 const sortByDate = (a: IStatisticApi, b: IStatisticApi) => {
-    const da = dayjsExt(a.date);
-    const db = dayjsExt(b.date);
-    if (da.isBefore(db)) return -1;
-    if (da.isAfter(db)) return 1;
-    return 0;
+    return a.date.localeCompare(b.date);
 };
 
 type FiltersState = {
@@ -165,18 +161,31 @@ export function PublicStatistic() {
     }, [apiParams]);
 
     const data = useMemo(() => convertResponceToData(response), [response]);
-    const dataForTable = useMemo(
-        () => handleDataForTable(data, dateStr, filters.typeOfEater, filters.kitchenId),
-        [data, dateStr, filters.typeOfEater, filters.kitchenId]
-    );
-    const dataForColumnChart = useMemo(
-        () => handleDataForColumnChart(data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime),
-        [data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime]
-    );
-    const dataForLinearChart = useMemo(
-        () => handleDataForLinearChart(data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime),
-        [data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime]
-    );
+    const dataForDateView = useMemo(() => {
+        if (statisticViewType !== 'date') {
+            return {
+                table: [],
+                columnChart: []
+            };
+        }
+
+        return {
+            table: handleDataForTable(data, dateStr, filters.typeOfEater, filters.kitchenId),
+            columnChart: handleDataForColumnChart(
+                data,
+                filters.typeOfEater,
+                filters.kitchenId,
+                filters.selectedMealTime
+            )
+        };
+    }, [data, dateStr, filters.kitchenId, filters.selectedMealTime, filters.typeOfEater, statisticViewType]);
+    const dataForLinearChart = useMemo(() => {
+        if (statisticViewType !== 'range') {
+            return [];
+        }
+
+        return handleDataForLinearChart(data, filters.typeOfEater, filters.kitchenId, filters.selectedMealTime);
+    }, [data, filters.kitchenId, filters.selectedMealTime, filters.typeOfEater, statisticViewType]);
 
     return (
         <div className={styles.layout}>
@@ -309,7 +318,7 @@ export function PublicStatistic() {
                 </FilterCard>
             </div>
 
-            {statisticViewType === 'date' && <TableStats data={dataForTable} loading={loading} />}
+            {statisticViewType === 'date' && <TableStats data={dataForDateView.table} loading={loading} />}
 
             <div className={styles.row}>
                 <Text type="secondary" className={styles.inlineLabel}>
@@ -329,7 +338,7 @@ export function PublicStatistic() {
 
             <Suspense fallback={<Spin className={styles.loading} />}>
                 {statisticViewType === 'date' ? (
-                    <ColumnChart data={dataForColumnChart} mealTime={filters.selectedMealTime} />
+                    <ColumnChart data={dataForDateView.columnChart} mealTime={filters.selectedMealTime} />
                 ) : (
                     <LinearChart data={dataForLinearChart} />
                 )}

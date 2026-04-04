@@ -23,6 +23,12 @@ const checkArrivalStatus = (arrival: ArrivalEntity | null) => {
     return (arrivalDate.isSame(today, 'day') || arrivalDate.isSame(yesterday, 'day')) && arrival.status === 'ARRIVED';
 };
 
+type VolMobileRow = VolEntity & {
+    currentArrival: ArrivalEntity | null;
+    visitDays: string;
+    onFieldColor: ReturnType<typeof getOnFieldColors>;
+};
+
 const VolunteerMobileCard = memo(
     ({
         vol,
@@ -31,21 +37,14 @@ const VolunteerMobileCard = memo(
         onOpen,
         loadingVolId
     }: {
-        vol: VolEntity;
+        vol: VolMobileRow;
         statusById: Record<string, string>;
         onStartArrival: (vol: VolEntity) => void;
         onOpen: (id: number) => void;
         loadingVolId: number | null;
     }) => {
-        const currentArrival = useMemo(() => findClosestArrival(vol.arrivals), [vol.arrivals]);
-
-        const visitDays = useMemo(
-            () => `${formatDate(currentArrival?.arrival_date)} - ${formatDate(currentArrival?.departure_date)}`,
-            [currentArrival]
-        );
-
         const rightActions = useMemo<SwipeActionItem[]>(() => {
-            if (!currentArrival || ['STARTED', 'JOINED'].includes(currentArrival.status)) return [];
+            if (!vol.currentArrival || ['STARTED', 'JOINED'].includes(vol.currentArrival.status)) return [];
             return [
                 {
                     key: 'edit',
@@ -59,7 +58,7 @@ const VolunteerMobileCard = memo(
                     onClick: () => onStartArrival(vol)
                 }
             ];
-        }, [currentArrival, onStartArrival, vol]);
+        }, [onStartArrival, vol]);
 
         return (
             <SwipeActionRow rightActions={rightActions}>
@@ -72,16 +71,16 @@ const VolunteerMobileCard = memo(
                     <div className={`${styles.textRow} ${styles.bold}`}>
                         {`${vol.name} ${vol.first_name ?? ''} ${vol.last_name ?? ''}`}
                     </div>
-                    <div className={styles.textRow}>{visitDays || 'Нет данных о датах'}</div>
+                    <div className={styles.textRow}>{vol.visitDays || 'Нет данных о датах'}</div>
                     <div>
                         {vol.is_blocked && <Tag color="red">Заблокирован</Tag>}
-                        <Tag color={getOnFieldColors(vol)}>
-                            {currentArrival ? statusById[currentArrival.status] : 'Статус неизвестен'}
+                        <Tag color={vol.onFieldColor}>
+                            {vol.currentArrival ? statusById[vol.currentArrival.status] : 'Статус неизвестен'}
                         </Tag>
                     </div>
                     <div className={styles.textRow}>
                         <span className={styles.bold}>Заметка: </span>
-                        {vol?.direction_head_comment || '-'}
+                        {vol.direction_head_comment || '-'}
                     </div>
                 </div>
             </SwipeActionRow>
@@ -109,6 +108,19 @@ export const VolunteerMobileList = ({
     const list = useMemo(() => {
         return result.data?.pages.flatMap((page: GetListResponse<VolEntity>) => page.data) ?? [];
     }, [result.data]);
+    const preparedList = useMemo<VolMobileRow[]>(
+        () =>
+            list.map((vol) => {
+                const currentArrival = findClosestArrival(vol.arrivals);
+                return {
+                    ...vol,
+                    currentArrival,
+                    visitDays: `${formatDate(currentArrival?.arrival_date)} - ${formatDate(currentArrival?.departure_date)}`,
+                    onFieldColor: getOnFieldColors(vol, currentArrival)
+                };
+            }),
+        [list]
+    );
 
     const [loadingVolId, setLoadingVolId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -163,7 +175,7 @@ export const VolunteerMobileList = ({
                     <Spin />
                 ) : (
                     <>
-                        {list.map((vol) => (
+                        {preparedList.map((vol) => (
                             <VolunteerMobileCard
                                 key={vol.id}
                                 vol={vol}

@@ -176,6 +176,29 @@ export const useFilters = ({
         ],
         pagination: { pageSize: 0 }
     });
+    const directionsLookup = useMemo(
+        () =>
+            (directionsResult.data ?? [])
+                .slice()
+                .sort(getSorter('name'))
+                .filter(({ id }) => !visibleDirections || visibleDirections.includes(String(id))),
+        [directionsResult.data, visibleDirections]
+    );
+    const statusesLookup = useMemo(() => statusesResult.data ?? [], [statusesResult.data]);
+    const transportsLookup = useMemo(() => transportsResult.data ?? [], [transportsResult.data]);
+    const volunteerRolesLookup = useMemo(() => volunteerRolesResult.data ?? [], [volunteerRolesResult.data]);
+    const kitchensLookup = useMemo(() => kitchensResult.data ?? [], [kitchensResult.data]);
+    const feedTypesLookup = useMemo(() => feedTypesResult.data ?? [], [feedTypesResult.data]);
+    const accessRolesLookup = useMemo(() => accessRolesResult.data ?? [], [accessRolesResult.data]);
+    const groupBadgesLookup = useMemo(() => groupBadgesResult.data ?? [], [groupBadgesResult.data]);
+    const supervisorsLookup = useMemo(
+        () =>
+            (supervisorsResult.data ?? []).map((supervisor) => ({
+                id: supervisor.id,
+                name: supervisor.name ?? ''
+            })),
+        [supervisorsResult.data]
+    );
 
     const filterFields = useMemo<FilterField[]>(
         () => [
@@ -188,11 +211,7 @@ export const useFilters = ({
                     return (data.directions ?? []).map(({ id }) => String(id));
                 },
                 skipNull: true,
-                lookup: () =>
-                    (directionsResult.data ?? [])
-                        .slice()
-                        .sort(getSorter('name'))
-                        .filter(({ id }) => !visibleDirections || visibleDirections.includes(String(id)))
+                lookup: () => directionsLookup
             },
             { type: FilterFieldType.Date, name: 'arrivals.staying_date', title: 'На поле' },
             { type: FilterFieldType.Date, name: 'paid_arrivals.staying_date', title: 'Оплаченные даты' },
@@ -206,21 +225,21 @@ export const useFilters = ({
                 type: FilterFieldType.Lookup,
                 name: 'arrivals.status',
                 title: 'Статус заезда',
-                lookup: () => statusesResult.data ?? []
+                lookup: () => statusesLookup
             },
             { type: FilterFieldType.Date, name: 'arrivals.arrival_date', title: 'Дата заезда' },
             {
                 type: FilterFieldType.Lookup,
                 name: 'arrivals.arrival_transport',
                 title: 'Транспорт заезда',
-                lookup: () => transportsResult.data ?? []
+                lookup: () => transportsLookup
             },
             { type: FilterFieldType.Date, name: 'arrivals.departure_date', title: 'Дата отъезда' },
             {
                 type: FilterFieldType.Lookup,
                 name: 'arrivals.departure_transport',
                 title: 'Транспорт отъезда',
-                lookup: () => transportsResult.data ?? []
+                lookup: () => transportsLookup
             },
             { type: FilterFieldType.Date, name: 'feeded_date', title: 'Питался' },
             { type: FilterFieldType.Date, name: 'non_feeded_date', title: 'Не питался' },
@@ -233,7 +252,7 @@ export const useFilters = ({
                 title: 'Роль',
                 skipNull: true,
                 single: true,
-                lookup: () => volunteerRolesResult.data ?? []
+                lookup: () => volunteerRolesLookup
             },
             { type: FilterFieldType.Boolean, single: true, name: 'is_blocked', title: 'Заблокирован' },
             { type: FilterFieldType.Boolean, name: 'is_deleted', title: 'Удален' },
@@ -243,7 +262,7 @@ export const useFilters = ({
                 title: 'Кухня',
                 skipNull: true,
                 single: true,
-                lookup: () => kitchensResult.data ?? []
+                lookup: () => kitchensLookup
             },
             { type: FilterFieldType.String, name: 'printing_batch', title: 'Партия бейджа' },
             { type: FilterFieldType.String, name: 'badge_number', title: 'Номер бейджа' },
@@ -253,7 +272,7 @@ export const useFilters = ({
                 title: 'Тип питания',
                 skipNull: true,
                 single: true,
-                lookup: () => feedTypesResult.data ?? []
+                lookup: () => feedTypesLookup
             },
             { type: FilterFieldType.Boolean, single: true, name: 'is_vegan', title: 'Веган' },
             { type: FilterFieldType.Boolean, single: true, name: 'infant', title: '<18 лет' },
@@ -266,7 +285,7 @@ export const useFilters = ({
                 title: 'Право доступа',
                 skipNull: true,
                 single: true,
-                lookup: () => accessRolesResult.data ?? []
+                lookup: () => accessRolesLookup
             },
             {
                 type: FilterFieldType.Lookup,
@@ -274,7 +293,7 @@ export const useFilters = ({
                 title: 'Групповой бейдж',
                 skipNull: true,
                 single: true,
-                lookup: () => groupBadgesResult.data ?? []
+                lookup: () => groupBadgesLookup
             },
             {
                 type: FilterFieldType.Lookup,
@@ -282,11 +301,7 @@ export const useFilters = ({
                 title: 'Бригадир',
                 skipNull: true,
                 single: true,
-                lookup: () =>
-                    (supervisorsResult.data ?? []).map((supervisor) => ({
-                        id: supervisor.id,
-                        name: supervisor.name ?? ''
-                    }))
+                lookup: () => supervisorsLookup
             },
             { type: FilterFieldType.Boolean, single: true, name: 'is_supervisor', title: 'Является бригадиром' },
             { type: FilterFieldType.Boolean, single: true, name: 'has_supervisor', title: 'Назначен бригадир' },
@@ -298,17 +313,16 @@ export const useFilters = ({
             }))
         ],
         [
-            accessRolesResult.data,
+            accessRolesLookup,
             customFields,
-            directionsResult.data,
-            feedTypesResult.data,
-            groupBadgesResult.data,
-            kitchensResult.data,
-            statusesResult.data,
-            supervisorsResult.data,
-            transportsResult.data,
-            visibleDirections,
-            volunteerRolesResult.data
+            directionsLookup,
+            feedTypesLookup,
+            groupBadgesLookup,
+            kitchensLookup,
+            statusesLookup,
+            supervisorsLookup,
+            transportsLookup,
+            volunteerRolesLookup
         ]
     );
 
@@ -327,6 +341,7 @@ export const useFilters = ({
                 : activeFiltersState,
         [activeFiltersState, customFieldsLoaded, validFilterNames]
     );
+    const visibleFilterSet = useMemo(() => new Set(visibleFilters), [visibleFilters]);
 
     useEffect(() => {
         safeSetLS(FILTERS_STORAGE_ITEM_NAME, JSON.stringify(activeFilters));
@@ -351,7 +366,7 @@ export const useFilters = ({
 
     const buildFilterQueryParams = useCallback(
         (enforceVisibleDirections: boolean): string => {
-            const activeVisibleFilters = activeFilters.filter(({ name }) => visibleFilters.includes(name));
+            const activeVisibleFilters = activeFilters.filter(({ name }) => visibleFilterSet.has(name));
             if (
                 enforceVisibleDirections &&
                 visibleDirections?.length &&
@@ -374,7 +389,7 @@ export const useFilters = ({
 
             return params.length ? `?${params.join('&')}` : '';
         },
-        [activeFilters, visibleFilters, searchText, visibleDirections, formatFilter]
+        [activeFilters, visibleFilterSet, searchText, visibleDirections, formatFilter]
     );
 
     const filterQueryParams = useMemo(() => buildFilterQueryParams(true), [buildFilterQueryParams]);

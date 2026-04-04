@@ -1,23 +1,23 @@
 import { useCallback, useState } from 'react';
 import type { TransactionJoined } from 'db';
-import { db, getLastTrans } from 'db';
+import { getLastTrans } from 'db';
 
 import type { LocalLastTransHook } from './lib';
+
+const PAGE_SIZE = 20;
 
 export const useLocalLastTrans = (): LocalLastTransHook => {
     const [error, setError] = useState<string | null>(null);
     const [transactions, setTransactions] = useState<Array<TransactionJoined>>([]);
     const [progress, setProgress] = useState<boolean>(false);
 
-    const update = useCallback(async (limit: number) => {
+    const update = useCallback(async (offset: number) => {
         setProgress(true);
         try {
-            const txs = await getLastTrans(0, limit);
-            const filteredTxs = txs.filter((tx) => tx.amount !== 0);
-            setTransactions(txs);
-            const total = await db.transactions.filter((tx) => tx.amount !== 0).count();
+            const txs = await getLastTrans(offset, PAGE_SIZE);
+            setTransactions((prev) => (offset === 0 ? txs : [...prev, ...txs]));
             setProgress(false);
-            return { txs: filteredTxs, total };
+            return { txs, total: 0 };
         } catch (e: unknown) {
             setProgress(false);
             setError(e instanceof Error ? e.message : 'Unknown error');

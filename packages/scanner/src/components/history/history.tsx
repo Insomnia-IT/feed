@@ -7,7 +7,7 @@ import { StatsBlock } from 'components/history/stats-block/stats-block';
 import css from './history.module.css';
 
 export const History = () => {
-    const [limit, setLimit] = useState<number>(20);
+    const [offset, setOffset] = useState<number>(0);
     const [end, setEnd] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -21,7 +21,7 @@ export const History = () => {
         const handleScroll = (): void => {
             const { clientHeight, scrollHeight, scrollTop } = table;
             if (scrollTop + clientHeight >= scrollHeight - 5 && !loading && !end) {
-                setLimit((prevLimit) => prevLimit + 20);
+                setOffset((prevOffset) => prevOffset + 20);
             }
         };
 
@@ -34,14 +34,14 @@ export const History = () => {
     useEffect(() => {
         const loadTxs = async () => {
             setLoading(true);
-            const { total, txs } = await update(limit);
-            if (txs.length >= total) {
+            const { txs } = await update(offset);
+            if (txs.length < 20) {
                 setEnd(true);
             }
             setLoading(false);
         };
         void loadTxs();
-    }, [limit, update]);
+    }, [offset, update]);
 
     return (
         <div className={css.history} ref={tableRef}>

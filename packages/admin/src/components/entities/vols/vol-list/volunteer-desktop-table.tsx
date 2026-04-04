@@ -5,20 +5,31 @@ import { CheckOutlined, StopOutlined } from '@ant-design/icons';
 import type { TableRowSelection } from 'antd/es/table/interface';
 
 import { RichTextPreview } from 'components/controls/rich-text-preview';
-import type { CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
+import type { ArrivalEntity, CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
 import { findClosestArrival, getFormattedArrivalIntervals, getOnFieldColors } from './volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from '../list.module.css';
 
-const getCustomValue = (vol: VolEntity, customField: CustomFieldEntity): string | boolean => {
-    const value =
-        vol.custom_field_values.find((customFieldValue) => customFieldValue.custom_field === customField.id)?.value ||
-        '';
-    if (customField.type === 'boolean') {
-        return value === 'true';
+type VolTableRow = VolEntity & {
+    closestArrival: ArrivalEntity | null;
+    onFieldColor: ReturnType<typeof getOnFieldColors>;
+    arrivalIntervals: string[];
+    paidArrivalIntervals: string[];
+    customFieldValueById: Record<number, string | boolean>;
+};
+
+const mapCustomFieldValues = (vol: VolEntity, customFields: CustomFieldEntity[]): Record<number, string | boolean> => {
+    const customFieldTypeById = new Map(customFields.map((customField) => [customField.id, customField.type]));
+    const values: Record<number, string | boolean> = {};
+
+    for (const customFieldValue of vol.custom_field_values) {
+        const type = customFieldTypeById.get(customFieldValue.custom_field);
+        values[customFieldValue.custom_field] =
+            type === 'boolean' ? customFieldValue.value === 'true' : customFieldValue.value;
     }
-    return value;
+
+    return values;
 };
 
 /* Компонент отображающий список волонтеров на декстопе */
@@ -40,6 +51,21 @@ export const VolunteerDesktopTable = ({
     rowSelection?: TableRowSelection<VolEntity> | undefined;
 }) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
+    const tableData = useMemo<VolTableRow[]>(
+        () =>
+            volunteersData.map((vol) => {
+                const closestArrival = findClosestArrival(vol.arrivals);
+                return {
+                    ...vol,
+                    closestArrival,
+                    onFieldColor: getOnFieldColors(vol, closestArrival),
+                    arrivalIntervals: getFormattedArrivalIntervals(vol.arrivals),
+                    paidArrivalIntervals: getFormattedArrivalIntervals(vol.paid_arrivals),
+                    customFieldValueById: mapCustomFieldValues(vol, customFields ?? [])
+                };
+            }),
+        [customFields, volunteersData]
+    );
 
     const getCellAction: (id: number) => { onClick: (event: ReactMouseEvent<HTMLElement>) => void } = (
         id: number
@@ -55,33 +81,33 @@ export const VolunteerDesktopTable = ({
         };
     };
 
-    const fields: TableProps<VolEntity>['columns'] = [
-        {
-            dataIndex: 'id',
-            key: 'id',
-            title: 'ID'
-        },
-        {
-            dataIndex: 'name',
-            key: 'name',
-            title: 'Позывной'
-        },
-        {
-            dataIndex: 'first_name',
-            key: 'first_name',
-            title: 'Имя'
-        },
-        {
-            dataIndex: 'last_name',
-            key: 'last_name',
-            title: 'Фамилия'
-        },
-        {
-            dataIndex: 'directions',
-            key: 'directions',
-            title: 'Службы / Локации',
-            render: (value: DirectionEntity[]) => {
-                return (
+    const fields = useMemo<NonNullable<TableProps<VolTableRow>['columns']>>(
+        () => [
+            {
+                dataIndex: 'id',
+                key: 'id',
+                title: 'ID'
+            },
+            {
+                dataIndex: 'name',
+                key: 'name',
+                title: 'Позывной'
+            },
+            {
+                dataIndex: 'first_name',
+                key: 'first_name',
+                title: 'Имя'
+            },
+            {
+                dataIndex: 'last_name',
+                key: 'last_name',
+                title: 'Фамилия'
+            },
+            {
+                dataIndex: 'directions',
+                key: 'directions',
+                title: 'Службы / Локации',
+                render: (value: DirectionEntity[]) => (
                     <>
                         {value.map(({ name }) => (
                             <Tag key={name} color={'default'} icon={false} closable={false}>
@@ -89,121 +115,121 @@ export const VolunteerDesktopTable = ({
                             </Tag>
                         ))}
                     </>
-                );
-            }
-        },
-        {
-            dataIndex: 'supervisor',
-            key: 'supervisor',
-            title: 'Бригадир',
-            render: (supervisor) => supervisor?.name
-        },
-        {
-            dataIndex: 'arrivals',
-            key: 'arrivals',
-            title: 'Даты на поле',
-            render: (arrivals) => (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {getFormattedArrivalIntervals(arrivals).map((interval) => (
-                        <div style={{ whiteSpace: 'nowrap' }} key={interval}>
-                            {interval}
-                        </div>
-                    ))}
-                </div>
-            )
-        },
-        {
-            dataIndex: 'paid_arrivals',
-            key: 'paid_arrivals',
-            title: 'Оплаченные даты',
-            render: (paidArrivals) => (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {getFormattedArrivalIntervals(paidArrivals).map((interval) => (
-                        <div style={{ whiteSpace: 'nowrap' }} key={interval}>
-                            {interval}
-                        </div>
-                    ))}
-                </div>
-            )
-        },
-        {
-            key: 'on_field',
-            title: 'Статус',
-            render: (vol) => {
-                const currentArrival = findClosestArrival(vol.arrivals);
-                const currentStatus = currentArrival ? statusById[currentArrival?.status] : 'Статус неизвестен';
-                return <div>{<Tag color={getOnFieldColors(vol)}>{currentStatus}</Tag>}</div>;
-            }
-        },
-        {
-            dataIndex: 'is_blocked',
-            key: 'is_blocked',
-            title: '❌',
-            render: (value) => <ListBooleanNegative value={Boolean(value)} />
-        },
-        {
-            dataIndex: 'kitchen',
-            key: 'kitchen',
-            title: 'Кухня'
-        },
-        {
-            dataIndex: 'printing_batch',
-            key: 'printing_batch',
-            title: (
-                <span>
-                    Партия
-                    <br />
-                    Бейджа
-                </span>
-            )
-        },
-        {
-            dataIndex: 'comment',
-            key: 'comment',
-            title: 'Комментарий',
-            render: (value) => <RichTextPreview html={value} />
-        },
-        ...(customFields?.map((customField) => {
-            return {
+                )
+            },
+            {
+                dataIndex: 'supervisor',
+                key: 'supervisor',
+                title: 'Бригадир',
+                render: (supervisor) => supervisor?.name
+            },
+            {
+                dataIndex: 'arrivalIntervals',
+                key: 'arrivals',
+                title: 'Даты на поле',
+                render: (arrivalIntervals: string[]) => (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {arrivalIntervals.map((interval) => (
+                            <div style={{ whiteSpace: 'nowrap' }} key={interval}>
+                                {interval}
+                            </div>
+                        ))}
+                    </div>
+                )
+            },
+            {
+                dataIndex: 'paidArrivalIntervals',
+                key: 'paid_arrivals',
+                title: 'Оплаченные даты',
+                render: (paidArrivalIntervals: string[]) => (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {paidArrivalIntervals.map((interval) => (
+                            <div style={{ whiteSpace: 'nowrap' }} key={interval}>
+                                {interval}
+                            </div>
+                        ))}
+                    </div>
+                )
+            },
+            {
+                key: 'on_field',
+                title: 'Статус',
+                render: (vol) => {
+                    const currentStatus = vol.closestArrival
+                        ? statusById[vol.closestArrival.status]
+                        : 'Статус неизвестен';
+                    return <div>{<Tag color={vol.onFieldColor}>{currentStatus}</Tag>}</div>;
+                }
+            },
+            {
+                dataIndex: 'is_blocked',
+                key: 'is_blocked',
+                title: '❌',
+                render: (value) => <ListBooleanNegative value={Boolean(value)} />
+            },
+            {
+                dataIndex: 'kitchen',
+                key: 'kitchen',
+                title: 'Кухня'
+            },
+            {
+                dataIndex: 'printing_batch',
+                key: 'printing_batch',
+                title: (
+                    <span>
+                        Партия
+                        <br />
+                        Бейджа
+                    </span>
+                )
+            },
+            {
+                dataIndex: 'comment',
+                key: 'comment',
+                title: 'Комментарий',
+                render: (value) => <RichTextPreview html={value} />
+            },
+            ...(customFields?.map((customField) => ({
                 key: customField.name,
                 title: customField.name,
-                render: (vol: VolEntity) => {
-                    const value = getCustomValue(vol, customField);
+                render: (vol: VolTableRow) => {
+                    const value = vol.customFieldValueById[customField.id] ?? '';
 
                     if (customField.type === 'boolean') {
-                        return <ListBooleanPositive value={value as boolean} />;
+                        return <ListBooleanPositive value={Boolean(value)} />;
                     }
 
                     return value;
                 }
-            };
-        }) ?? [])
-    ];
+            })) ?? [])
+        ],
+        [customFields, statusById]
+    );
 
-    const visibleColumns = !activeColumns.length
-        ? fields // Не отображать ничего - странно и не ясно зачем. Поэтому отображаем без фильтрации в таком случае
-        : fields.filter((column) => activeColumns.includes(String(column.key)));
+    const visibleColumns = activeColumns.length
+        ? fields.filter((column) => activeColumns.includes(String(column.key)))
+        : fields;
 
     return (
         <>
-            <Table<VolEntity>
+            <Table<VolTableRow>
                 onRow={(record) => {
                     return getCellAction(record.id);
                 }}
                 scroll={{ x: '100%' }}
                 pagination={{ ...pagination, position: ['bottomLeft'] }}
                 loading={volunteersIsLoading}
-                dataSource={volunteersData}
+                dataSource={tableData}
                 rowKey="id"
                 rowClassName={styles.cursorPointer}
                 columns={visibleColumns}
-                rowSelection={rowSelection}
+                rowSelection={rowSelection as TableRowSelection<VolTableRow> | undefined}
             />
         </>
     );
 };
 
-export const CheckMark = ({ checked }: { checked: boolean }) => {
+const CheckMark = ({ checked }: { checked: boolean }) => {
     const style = useMemo(
         () => ({
             color: checked ? 'green' : undefined
@@ -213,7 +239,7 @@ export const CheckMark = ({ checked }: { checked: boolean }) => {
     return <CheckOutlined style={style} />;
 };
 
-export const StopMark = ({ checked }: { checked: boolean }) => {
+const StopMark = ({ checked }: { checked: boolean }) => {
     const style = useMemo(
         () => ({
             color: checked ? 'red' : undefined
@@ -223,10 +249,10 @@ export const StopMark = ({ checked }: { checked: boolean }) => {
     return <StopOutlined style={style} />;
 };
 
-export const ListBooleanPositive = ({ value }: { value: boolean }) => {
+const ListBooleanPositive = ({ value }: { value: boolean }) => {
     return value ? <CheckMark checked={value} /> : null;
 };
 
-export const ListBooleanNegative = ({ value }: { value: boolean }) => {
+const ListBooleanNegative = ({ value }: { value: boolean }) => {
     return value ? <StopMark checked={value} /> : null;
 };

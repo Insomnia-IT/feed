@@ -5,6 +5,7 @@ import { Input, Row, Col, Segmented } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
 
 import { dataProvider } from 'dataProvider';
+import { useDebouncedCallback } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
 import type { UserData } from 'auth';
@@ -82,8 +83,14 @@ export const VolList = () => {
         customFields,
         customFieldsLoaded
     });
+    const [searchInputValue, setSearchInputValue] = useState(searchText);
+    const debouncedSetSearchText = useDebouncedCallback((value: string) => setSearchText(value), 250);
 
     const userId = user?.id;
+
+    useEffect(() => {
+        setSearchInputValue(searchText);
+    }, [searchText]);
 
     useEffect(() => {
         if (isDesktop || !userId) return;
@@ -158,7 +165,6 @@ export const VolList = () => {
         const outOfRange = (page - 1) * pageSize >= total;
         if (!outOfRange) return;
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPageWithStorage(1);
     }, [volunteers?.total, page, pageSize, setPageWithStorage]);
 
@@ -227,8 +233,12 @@ export const VolList = () => {
                 <ActiveColumnsContextProvider customFields={customFields}>
                     <Input
                         placeholder="Поиск по волонтерам, датам, службам"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
+                        value={searchInputValue}
+                        onChange={(e) => {
+                            const nextValue = e.target.value;
+                            setSearchInputValue(nextValue);
+                            debouncedSetSearchText(nextValue);
+                        }}
                         allowClear
                     />
                     <Filters

@@ -2,7 +2,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 import type { ArrivalEntity, VolEntity, WashEntity } from 'interfaces';
 
-export interface WashToShow {
+interface WashToShow {
     id: number;
     volunteerName?: string;
     volunteerFullName?: string;

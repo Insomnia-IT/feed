@@ -62,13 +62,6 @@ export const datumInstance: DataType = {
     }
 };
 
-export const dataEmpty: IData = {
-    all: {},
-    1: {},
-    2: {},
-    3: {}
-};
-
 export interface IColumnChartData {
     date: string;
     plan: number;
