@@ -3,6 +3,7 @@ import { DeleteButton, EditButton, List } from '@refinedev/antd';
 import { Space, Table, type TablePaginationConfig, Tooltip } from 'antd';
 import { useList, useNavigation } from '@refinedev/core';
 
+import { RichTextPreview } from 'components/controls/rich-text-preview';
 import type { GroupBadgeEntity } from 'interfaces';
 import { useScreen } from 'shared/providers';
 import { getSorter } from 'utils';
@@ -100,7 +101,7 @@ export const GroupBadgeList = () => {
                             {badge.comment && (
                                 <div className={styles.comment}>
                                     <span className={styles.label}>Комментарий:</span>
-                                    <div dangerouslySetInnerHTML={{ __html: badge.comment }} />
+                                    <RichTextPreview html={badge.comment} />
                                 </div>
                             )}
                         </div>
@@ -136,8 +137,8 @@ export const GroupBadgeList = () => {
                         key="comment"
                         title="Комментарий"
                         render={(value) => (
-                            <Tooltip title={value}>
-                                <div className={styles.ellipsis} dangerouslySetInnerHTML={{ __html: value }} />
+                            <Tooltip title={<RichTextPreview html={value} />}>
+                                <RichTextPreview className={styles.ellipsis} html={value} />
                             </Tooltip>
                         )}
                         ellipsis

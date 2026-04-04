@@ -43,6 +43,7 @@ export const VolList = () => {
     });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
+    const [customFieldsLoaded, setCustomFieldsLoaded] = useState(false);
     const [hasMyBrigade, setHasMyBrigade] = useState(false);
     const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
 
@@ -78,7 +79,8 @@ export const VolList = () => {
         visibleFilters
     } = useFilters({
         setPage: setPageWithStorage,
-        customFields
+        customFields,
+        customFieldsLoaded
     });
 
     const userId = user?.id;
@@ -166,10 +168,16 @@ export const VolList = () => {
         dataProvider
             .getList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' })
             .then(({ data }) => {
-                if (!cancelled) setCustomFields(data);
+                if (!cancelled) {
+                    setCustomFields(data);
+                    setCustomFieldsLoaded(true);
+                }
             })
             .catch(() => {
-                if (!cancelled) setCustomFields([]);
+                if (!cancelled) {
+                    setCustomFields([]);
+                    setCustomFieldsLoaded(true);
+                }
             });
 
         return () => {

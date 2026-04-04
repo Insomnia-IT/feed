@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { FeedType, getFeedStats, getVolsOnField, MealTime } from 'db';
 import { DATE_FORMAT } from 'shared/lib/date';
@@ -135,8 +135,9 @@ export const useLocalStats = (): LocalStatsHook => {
     const [progress, setProgress] = useState<boolean>(true);
     const [updated, setUpdated] = useState<boolean>(false);
 
-    const update = async (statsDate: string, predict = false): Promise<void> => {
+    const update = useCallback(async (statsDate: string, predict = false): Promise<void> => {
         setUpdated(false);
+        setError(null);
         setProgress(true);
 
         try {
@@ -149,7 +150,7 @@ export const useLocalStats = (): LocalStatsHook => {
         } finally {
             setProgress(false);
         }
-    };
+    }, []);
 
     return { progress, update, error, updated, stats };
 };

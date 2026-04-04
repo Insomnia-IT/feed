@@ -3,6 +3,7 @@ import { Table, Space } from 'antd';
 import { DeleteButton, EditButton, List, ShowButton, useTable } from '@refinedev/antd';
 import type { CrudSort } from '@refinedev/core';
 
+import { RichTextPreview } from 'components/controls/rich-text-preview';
 import type { VolunteerCustomFieldEntity } from 'interfaces';
 import { getSorter } from 'utils';
 
@@ -50,7 +51,7 @@ export const VolunteerCustomFieldList = () => {
                     dataIndex="comment"
                     key="comment"
                     title="Комментарий"
-                    render={(value?: string) => <div dangerouslySetInnerHTML={{ __html: value ?? '' }} />}
+                    render={(value?: string) => <RichTextPreview html={value} />}
                 />
                 <Table.Column
                     dataIndex="mobile"

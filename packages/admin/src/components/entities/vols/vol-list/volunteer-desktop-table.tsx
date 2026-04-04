@@ -4,6 +4,7 @@ import type { TablePaginationConfig, TableProps } from 'antd';
 import { CheckOutlined, StopOutlined } from '@ant-design/icons';
 import type { TableRowSelection } from 'antd/es/table/interface';
 
+import { RichTextPreview } from 'components/controls/rich-text-preview';
 import type { CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
 import { findClosestArrival, getFormattedArrivalIntervals, getOnFieldColors } from './volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
@@ -160,7 +161,7 @@ export const VolunteerDesktopTable = ({
             dataIndex: 'comment',
             key: 'comment',
             title: 'Комментарий',
-            render: (value) => <div dangerouslySetInnerHTML={{ __html: value }} />
+            render: (value) => <RichTextPreview html={value} />
         },
         ...(customFields?.map((customField) => {
             return {
