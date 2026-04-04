@@ -1,7 +1,10 @@
 import { Button } from '~/shared/ui/button';
 import { Modal } from '~/shared/ui/modal';
 import { Text } from '~/shared/ui/typography';
-import type { ValidatedVol } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
+import type {
+    GroupBadgeFeedAnonsPayload,
+    ValidatedVol
+} from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
 import type { TransactionJoined } from '~/db';
 import { getPlural } from '~/shared/lib/utils';
 import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
@@ -14,7 +17,7 @@ const WarningPartiallyFedModal: React.FC<{
     setShowModal: (isShown: boolean) => void;
     greenVols: Array<ValidatedVol>;
     alreadyFedTransactions: Array<TransactionJoined>;
-    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
+    doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
 }> = ({ alreadyFedTransactions, doFeedAnons, greenVols, setShowModal, showModal }) => {
     const onClose = (): void => {
         setShowModal(false);
@@ -43,7 +46,14 @@ const WarningPartiallyFedModal: React.FC<{
     const finalMeats = Math.max(leftMeats - vegansOverFed, 0);
 
     const primaryAction = (): void => {
-        doFeedAnons({ vegansCount: finalVegans, nonVegansCount: finalMeats });
+        doFeedAnons({
+            vegansCount: finalVegans,
+            nonVegansCount: finalMeats,
+            anomalyMeta: {
+                vegans: { edited: false, calculatedAmount: finalVegans },
+                nonVegans: { edited: false, calculatedAmount: finalMeats }
+            }
+        });
         onClose();
     };
 
