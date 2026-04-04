@@ -29,20 +29,20 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
 
-                        const qrs = {};
-                        const ids = {};
-                        for (const v of results as Array<GroupBadge>) {
-                            if (ids[v.id]) {
-                                console.log(ids[v.id], v);
-                            } else {
-                                ids[v.id] = v;
-                            }
-                            if (qrs[v.qr]) {
-                                console.log(qrs[v.qr], v);
-                            } else {
-                                qrs[v.qr] = v;
-                            }
-                        }
+                        // const qrs = {};
+                        // const ids = {};
+                        // for (const v of results as Array<GroupBadge>) {
+                        //     if (ids[v.id]) {
+                        //         console.log(ids[v.id], v);
+                        //     } else {
+                        //         ids[v.id] = v;
+                        //     }
+                        //     if (qrs[v.qr]) {
+                        //         console.log(qrs[v.qr], v);
+                        //     } else {
+                        //         qrs[v.qr] = v;
+                        //     }
+                        // }
 
                         try {
                             await db.groupBadges.bulkPut(results as Array<GroupBadge>);

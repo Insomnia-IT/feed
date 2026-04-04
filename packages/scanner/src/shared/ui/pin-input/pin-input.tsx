@@ -38,6 +38,9 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
         }
     };
 
+    const isAllFilled = pin.length === 4;
+    const activeIndex = pin.length < 4 ? pin.length : 3;
+
     return (
         <div className={css.pinInputWrapper}>
             <div className={css.container}>
@@ -55,46 +58,24 @@ export const PinInput = memo(function PinInput(props: PinInputProps): React.Reac
                     }}
                     type={'number'}
                 />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[0] || ''}
-                    readOnly
-                    focus={focus}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[1] || ''}
-                    readOnly
-                    focus={focus}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[2] || ''}
-                    readOnly
-                    focus={focus}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
-                <Input
-                    tabIndex={-1}
-                    className={css.pinInput}
-                    value={pin?.[3] || ''}
-                    readOnly
-                    focus={focus}
-                    onFocus={handleFocus}
-                    type='number'
-                    error={!!error}
-                />
+                {[0, 1, 2, 3].map((idx) => {
+                    const shouldHighlight = focus && activeIndex === idx && !isAllFilled;
+                    return (
+                        <div key={idx} style={{ position: 'relative' }}>
+                            <Input
+                                tabIndex={-1}
+                                className={css.pinInput}
+                                value={pin?.[idx] || ''}
+                                readOnly
+                                focus={focus && (isAllFilled || activeIndex === idx)}
+                                onFocus={handleFocus}
+                                type='number'
+                                error={!!error}
+                            />
+                            {shouldHighlight && <div className={css.pinCursor} />}
+                        </div>
+                    );
+                })}
             </div>
             {!!error && <p className={css.errorText}>{error}</p>}
         </div>

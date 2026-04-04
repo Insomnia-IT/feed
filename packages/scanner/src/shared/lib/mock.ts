@@ -20,7 +20,7 @@ const createTestTrans = (type: 'now' | 'rnd', mealTime: MealTime): Transaction =
         vol_id: null,
         amount: 1,
         ts,
-        ulid: ulid(ts),
+        ulid: ulid(ts * 1000),
         kitchen,
         mealTime: mealTime,
         is_new: true,

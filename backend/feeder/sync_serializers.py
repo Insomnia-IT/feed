@@ -2,12 +2,31 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from feeder.models import (Volunteer, Arrival, Direction, FeedType, DirectionType, Person, Status, Transport,
-                           Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen)
+from feeder.models import (Volunteer, Arrival, PaidArrival, Direction, FeedType, DirectionType, Person, Status, Transport,
+                           Engagement, EngagementRole, VolunteerCustomFieldValue, VolunteerRole, Kitchen, 
+                           AccessRole)
 
 from history.models import History
 
 from django.conf import settings
+
+
+class SupervisorIdField(serializers.Field):
+    def to_representation(self, value):
+        if not value:
+            return None
+        return str(value.uuid)
+
+    def to_internal_value(self, data):
+        if data in (None, ""):
+            return None
+        try:
+            return Volunteer.objects.get(uuid=data)
+        except (Volunteer.DoesNotExist, ValueError, TypeError):
+            try:
+                return Volunteer.objects.get(pk=data)
+            except (Volunteer.DoesNotExist, ValueError, TypeError):
+                raise serializers.ValidationError("Volunteer not found for supervisor_id")
 
 
 class SaveSyncSerializerMixin(object):
@@ -78,6 +97,8 @@ class SaveSyncSerializerMixin(object):
 
         if self.initial_data.get("deleted", False):
             self.delete_instance()
+        elif self.initial_data.get("deleted") == False and hasattr(self.instance, "undelete"):
+            self.instance.undelete()
 
         return self.instance
 
@@ -93,6 +114,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
                                         queryset=VolunteerRole.objects.all(), required=False)
     ticket = serializers.BooleanField(source="is_ticket_received", required=False, allow_null=True)
     scanner_comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    supervisor_id = SupervisorIdField(required=False, allow_null=True)
 
     class Meta:
         model = Volunteer
@@ -102,7 +124,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment", "infant",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type",
-            "ticket", "scanner_comment"
+            "ticket", "scanner_comment", "supervisor_id"
         )
         uuid_field = "uuid"
 
@@ -154,6 +176,9 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
 
         instance = super().save(**kwargs)
 
+        if not self.initial_data.get("deleted"):
+            self._assign_location_head_access_role(instance)
+
         new_photo_url = self.initial_data.get("photo")
 
         if new_photo_url:
@@ -162,6 +187,19 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
                 instance.save(update_fields=["is_photo_updated"])
 
         return instance
+
+    def _assign_location_head_access_role(self, instance):
+        if not instance:
+            return
+
+        access_role = AccessRole.objects.filter(pk="DIRECTION_HEAD").first()
+        if not access_role:
+            return
+
+        supervisor = instance.supervisor_id
+        if supervisor and not supervisor.access_role:
+            supervisor.access_role = access_role
+            supervisor.save(update_fields=["access_role"])
 
 
 class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
@@ -176,6 +214,22 @@ class ArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSer
         fields = (
             "id", "deleted", "badge", "status", "arrival_date",
             "arrival_transport", "departure_date", "departure_transport"
+        )
+
+    def get_deleted(self, obj):
+        if hasattr(obj, "deleted_at") and obj.deleted_at:
+            return True
+        return False
+
+
+class PaidArrivalHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
+    deleted = serializers.SerializerMethodField()
+    badge = serializers.SlugRelatedField(source="volunteer", slug_field="uuid", queryset=Volunteer.objects.all())
+
+    class Meta:
+        model = PaidArrival
+        fields = (
+            "id", "deleted", "badge", "arrival_date", "departure_date", "is_free"
         )
 
     def get_deleted(self, obj):
@@ -234,6 +288,7 @@ def get_history_serializer(instance_name):
     instance_serializer = {
         "volunteer": VolunteerHistoryDataSerializer,
         "arrival": ArrivalHistoryDataSerializer,
+        "paidarrival": PaidArrivalHistoryDataSerializer,
         "direction": DirectionHistoryDataSerializer,
         "engagement": EngagementHistoryDataSerializer,
         "person": PersonHistoryDataSerializer,

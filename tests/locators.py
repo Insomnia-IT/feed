@@ -2,77 +2,101 @@ import time
 from selenium.webdriver.common.by import By
 
 class registration():
-    CHOOSE_LOGIN_TYPE = (By.CSS_SELECTOR, "label.ant-segmented-item .ant-segmented-item-label[aria-selected='false']")
-    CHOOSE_QR_TYPE = (By.CSS_SELECTOR, "label.ant-segmented-item .ant-segmented-item-label[aria-selected='true']")
-    LOGIN = (By.ID, "username")
-    PASSWORD = (By.ID, "password")
-    BUTTONREG = (By.XPATH, "//button[span[text()='Войти']]")
-    CUSTOM_FIELD = (By.XPATH, "//button[span[text()='Колонки']]")
-    CUSTOM_FIELD_CREATE = (By.XPATH, "//button[span[text()='Добавить колонку']]")
-    CUSTOM_NAME = (By.CSS_SELECTOR, "input#name")
-    CUSTOM_TYPE = (By.ID, "type")
-    SAVE_BUTTON = (By.CLASS_NAME, "ant-btn.css-sphnl3.ant-btn-primary.ant-btn-color-primary.ant-btn-variant-solid")
+    CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
+    CHOOSE_QR_TYPE = ".ant-segmented-item:has-text('QR-код')"
+    SEGMENTED_ITEMS = "label.ant-segmented-item"
+    LOGIN = "#username"
+    PASSWORD = "#password"
+    BUTTONREG = "//button[span[text()='Войти']]"
+    LOGOUT = "span.ant-menu-title-content:has-text('Выход')"
+    CUSTOM_FIELD = "//button[span[text()='Колонки']]"
+    CUSTOM_FIELD_CREATE = "//button[span[text()='Добавить колонку']]"
+    CUSTOM_NAME = "input#name"
+    CUSTOM_TYPE = "#type"
+    SAVE_BUTTON = "//button[span[text()='Сохранить']]"
 
 
 
 class meal_create():
-    CREATE_BUTTON = (By.CLASS_NAME, "anticon anticon-plus-square")
-    TIME_FIELD = (By.CSS_SELECTOR, 'input#dtime')
-    TIME_CHOOSE = (By.CSS_SELECTOR, 'a.ant-picker-now-btn')
-    MEAL_FIELD = (By.ID, "meal_time")
-    MEAL_TYPE =  (By.CLASS_NAME, "ant-select-item-option-content")
-    KITCHEN_FIELD = (By.ID, "kitchen")
-    KITCHEN_TYPE = (By.CSS_SELECTOR, "div.ant-select-item-option-content:contains('Кухня')")
-    SAVE_BUTTON = (By.CSS_SELECTOR, "button[type='submit']")
+    CREATE_BUTTON = ".anticon.anticon-plus-square"
+    TIME_FIELD = "input#dtime"
+    TIME_CHOOSE = "a.ant-picker-now-btn"
+    MEAL_FIELD = "#meal_time"
+    MEAL_TYPE =  ".ant-select-item-option-content:has-text('Завтрак')"
+    KITCHEN_FIELD = "#kitchen"
+    KITCHEN_TYPE = "div.ant-select-item-option-content:has-text('Кухня')"
+    SAVE_BUTTON = "button[type='submit']"
 
 class badge_create():
-    BADGE_NAME = (By.ID, "name")
-    DEPARTMENT_NAME = (By.ID, "direction")
-    QR_NAME = (By.ID, "qr")
-    SUBMIT_BUTTON = (By.CSS_SELECTOR, "button[type='submit']")
-    COUNTER = (By.CSS_SELECTOR, "li.ant-pagination-total-text")
+    BADGE_NAME = "#name"
+    DEPARTMENT_NAME = "#direction"
+    QR_NAME = "#qr"
+    SUBMIT_BUTTON = "button[type='submit']"
+    COUNTER = "li.ant-pagination-total-text"
 
 class feed_history_pagination():
-    NEXT_PAGE = (By.CLASS_NAME, "anticon.anticon-right")
+    NEXT_PAGE = ".anticon.anticon-right"
 
 class group_badges():
-    VOLONTEER_COUNTER = (By.CSS_SELECTOR, 'span[data-testid="volunteer-count-value"]')
-    DELETE_VOLUNTEER_BUTTON = (By.CSS_SELECTOR, "div:nth-child(2) > button")
-    DELETE_VOLUNTEER_BUTTON_2 = (By.XPATH, "//button[span[text()='Удалить']]")
-    SAVE_BUTTON = (By.XPATH, "//button[span[text()='Сохранить']]")
-    ADD_VOLUNTEER = (By.XPATH, "//button[span[text()='Добавить волонтера']]")
-    SEARCH_FIELD = (By.CSS_SELECTOR, "body > div:nth-child(2) > div > div.ant-modal-wrap > div > div:nth-child(1) > div div.ant-modal-body > input")
-    CHECKBOX = (By.CSS_SELECTOR,"input.ant-checkbox-input")
-    OK_BUTTON = (By.XPATH, "//button[span[text()='OK']]")
-    EDIT_LAST_BUTTON = (By.CSS_SELECTOR, "button.refine-edit-button")
+    VOLONTEER_COUNTER = "span.ant-typography.ant-typography-secondary"
+    DELETE_VOLUNTEER_BUTTON = "div:nth-child(2) > button"
+    DELETE_VOLUNTEER_BUTTON_2 = "//button[span[text()='Удалить']]"
+    SAVE_BUTTON = "//button[span[text()='Сохранить']]"
+    ADD_VOLUNTEER = "//button[span[text()='Добавить волонтера']]"
+    SEARCH_FIELD = ".ant-modal-body input[type='text']"
+    CHECKBOX = "input.ant-checkbox-input"
+    OK_BUTTON = "//button[span[text()='OK']]"
+    EDIT_LAST_BUTTON = "button.refine-edit-button"
 
 class custom_field():
-    DELETE_ROW = (By.XPATH, "//div/div[3]/button")
-    DELETE_ROW_2 = (By.XPATH, "//button[span[text()='Удалить']]")
+    DELETE_ROW = "//div/div[3]/button"
+    DELETE_ROW_2 = "//button[span[text()='Удалить']]"
 
 class create_user():
-    CREATE_USER_BUTTON = (By.XPATH, "//button[span[text()='Создать']]")
-    SEARCH_VOLUNTEER_FIELD = (By.CSS_SELECTOR, "ant-input css-sphnl3")
-    USER_NAME = (By.CSS_SELECTOR, "#name")
-    KITCHEN_NUMBER = (By.CSS_SELECTOR, "#kitchen")
-    MEAL_TYPE = (By.CSS_SELECTOR, "#feed_type")
-    ROLE_USER = (By.CSS_SELECTOR, "#main_role")
-    DEPARTMENT = (By.CSS_SELECTOR, "#directions")
-    QR_NUMBER = (By.CSS_SELECTOR, "#qr")
-    SAVE_BUTTON = (By.XPATH, "//button[span[text()='Сохранить']]")
+    CREATE_USER_BUTTON = "//button[span[text()='Создать']]"
+    SEARCH_VOLUNTEER_FIELD = "ant-input.css-sphnl3"
+    USER_NAME = "#name"
+    KITCHEN_NUMBER = "#kitchen"
+    SUPERVISOR = ".ant-select-selector:has(#supervisor_id)"
+    CLEAR_SUPERVISOR = ".ant-select:has(#supervisor_id) .ant-select-clear"
+    MEAL_TYPE = "#feed_type"
+    ROLE_USER = "#main_role"
+    DEPARTMENT = "#directions"
+    QR_NUMBER = "#qr"
+    SAVE_BUTTON = "//button[span[text()='Сохранить']]"
 
-    ADD_VISIT_BUTTON = (By.XPATH, "//button[span[text()='Добавить заезд']]")
-    VISIT_STATUS = (By.CSS_SELECTOR, "#arrivals_0_status")
-    ZAEHAL_STATUS = (By.XPATH, "//div[contains(@class, 'ant-select-item-option-content') and text()='✅ Заехал на поле']")
-    DATE_FROM = (By.CSS_SELECTOR, "#arrivals_0_arrival_date")
-    DATE_TO = (By.CSS_SELECTOR, "#arrivals_0_departure_date")
-    TODAY = (By.CSS_SELECTOR, "a.ant-picker-now-btn")
-    BAN_BUTTON = (By.XPATH, "//button[span[text()='Заблокировать Волонтера']]")
-    BAN_REASON = (By.CSS_SELECTOR, "#form-block_reason")
+    ADD_VISIT_BUTTON = "//button[span[text()='Добавить заезд']]"
+    VISIT_STATUS = "#arrivals_0_status"
+    ZAEHAL_STATUS = "//div[contains(@class, 'ant-select-item-option-content') and text()='✅ Заехал на поле']"
+    DATE_FROM = "#arrivals_0_arrival_date"
+    DATE_TO = "#arrivals_0_departure_date"
+    TODAY = "a.ant-picker-now-btn"
 
-    FIND_INPUT = (By.CSS_SELECTOR, "input.ant-input.css-sphnl3")
-    FIND_TESTNAME = (By.CSS_SELECTOR, "ant-input.css-sphnl3")
+    # Бан/Разбан
+    BAN_BUTTON = "//button[span[text()='Заблокировать волонтера']]"
+    BAN_CONFIRM = "//button[span[text()='Заблокировать Волонтера']]"
+    BAN_REASON = "#form-block_reason"
 
-    DELETE_USER_BUTTON = (By.XPATH, "//button[span[text()='Удалить волонтера']]")
-    DELETE_CONFIRM = (By.XPATH, "//button[span[text()='Да']]")
-    USERS_COUNTER = (By.CSS_SELECTOR, 'span[data-testid="volunteer-count"]')
+    UNBAN_BUTTON = "//button[span[text()='Разблокировать волонтера']]"
+    UNBAN_CONFIRM = "//button[@type='submit'][span[text()='Разблокировать волонтера']]"
+
+
+    FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
+    FIND_TESTNAME = "ant-input.css-sphnl3"
+
+    DELETE_USER_BUTTON = "//button[span[text()='Удалить волонтера']]"
+    DELETE_CONFIRM = "//button[span[text()='Да']]"
+    USERS_COUNTER = 'span[data-testid="volunteer-count"]'
+
+    INPUT_REASON = "#form-block_reason"
+
+    # Поля для проверки прав доступа (read-only)
+    KITCHEN_FIELD = "#kitchen"
+    RIGHTS_FIELD = "#main_role"
+    COMMENT_FIELD = "#comment"
+
+    # История действий
+    HISTORY_TAB = "//*[text()='История действий']"
+    HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
+
+

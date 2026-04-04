@@ -1,0 +1,39 @@
+version: '3.5'
+name: feed
+
+services:
+  backend:
+    networks:
+      - internal
+    build:
+      context: .
+      dockerfile: Dockerfile_backend
+      args:
+        SYNC_URL:
+        SYNC_LOGIN:
+        SYNC_PASSWORD:
+    restart: always
+    environment:
+      SKIP_BACK_SYNC: ${SKIP_BACK_SYNC:-False}
+      PHOTO_AUTH_TOKEN: ${PHOTO_AUTH_TOKEN}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+    volumes:
+      - ${DB_DIR:-./db}:/app/db
+      - ${PHOTO_STORAGE_PATH:-./db/photos}:/app/photos
+
+  front:
+    networks:
+      - internal
+    build:
+      context: .
+      dockerfile: ./Dockerfile_front
+      args:
+        NEW_API_URL: /feedapi/v1
+    restart: always
+    ports:
+      - ${PORT:-80}:80
+    depends_on:
+      - backend
+
+networks:
+  internal:

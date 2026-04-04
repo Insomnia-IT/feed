@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 
-import type { ArrivalEntity, VolEntity } from 'interfaces';
-import { isActivatedStatus } from 'shared/lib';
+import type { ArrivalEntity, PaidArrivalEntity, VolEntity } from 'interfaces';
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+import { getSorter } from 'utils';
 
 import type { FilterField } from './filters/filter-types';
 
@@ -16,7 +17,7 @@ export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | 'orange' | u
     if (
         currentArrivalArray.some(
             ({ arrival_date, departure_date, status }) =>
-                isActivatedStatus(status) &&
+                isVolunteerActivatedStatusValue(status) &&
                 day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         )
@@ -27,7 +28,7 @@ export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | 'orange' | u
     if (
         currentArrivalArray.some(
             ({ arrival_date, departure_date, status }) =>
-                !isActivatedStatus(status) &&
+                !isVolunteerActivatedStatusValue(status) &&
                 day >= dayjs(arrival_date).startOf('day').add(7, 'hours') &&
                 day <= dayjs(departure_date).endOf('day').add(7, 'hours')
         )
@@ -73,6 +74,27 @@ export function findClosestArrival(arrivals: Array<ArrivalEntity>): ArrivalEntit
     } else {
         return null;
     }
+}
+
+function getFormattedArrivalDate(arrivalString: string): string {
+    const date = new Date(arrivalString);
+    const options: Intl.DateTimeFormatOptions = {
+        month: '2-digit',
+        day: '2-digit'
+    };
+
+    return new Intl.DateTimeFormat('ru-RU', options).format(date);
+}
+
+export function getFormattedArrivalIntervals(arrivals: Array<ArrivalEntity | PaidArrivalEntity>): string[] {
+    return arrivals
+        .slice()
+        .sort(getSorter('arrival_date'))
+        .map(({ arrival_date, departure_date }) => {
+            const arrival = getFormattedArrivalDate(arrival_date);
+            const departure = getFormattedArrivalDate(departure_date);
+            return `${arrival} - ${departure}`;
+        });
 }
 
 export const getFilterValueText = (field: FilterField, value: boolean | string): string => {

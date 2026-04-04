@@ -31,7 +31,7 @@ export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
     }, []);
 
     const onTimeChange = useCallback(
-        (value: Dayjs | null) => form.setFieldValue('ulid', value ? ulid(value.unix()) : undefined),
+        (value: Dayjs | null) => form.setFieldValue('ulid', value ? ulid(value.valueOf()) : undefined),
         [form]
     );
 

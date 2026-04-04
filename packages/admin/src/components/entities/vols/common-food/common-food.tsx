@@ -4,12 +4,12 @@ import { Button, Space, Table, Tooltip, Typography, type TableProps } from 'antd
 import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { useList, HttpError } from '@refinedev/core';
 import dayjs from 'dayjs';
-import ExcelJS from 'exceljs';
 
-import { DATETIME_LONG, DATETIME_SHORT, MEAL_MAP } from 'const';
-import type { FeedTransactionEntity, KitchenEntity } from 'interfaces';
+import axios from 'axios';
+import { DATETIME_LONG, DATETIME_SHORT, MEAL_MAP, NEW_API_URL } from 'const';
+import type { FeedTransactionEntity } from 'interfaces';
 import { useScreen } from 'shared/providers';
-import { saveXLSX } from 'shared/lib/saveXLSX';
+import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
 import useCanAccess from '../use-can-access';
 
 import styles from './common-food.module.css';
@@ -37,48 +37,21 @@ const CommonFood: FC = () => {
     const rows = useMemo(() => txResp?.data ?? [], [txResp?.data]);
     const foodCount = useMemo(() => rows.reduce((sum, { amount }) => sum + amount, 0), [rows]);
 
-    const { data: kitchensResp } = useList<KitchenEntity>({
-        resource: 'kitchens',
-        pagination: { mode: 'off' }
-    });
-
-    const kitchenNameById = useMemo(
-        () => Object.fromEntries((kitchensResp?.data ?? []).map(({ id, name }) => [id, name])),
-        [kitchensResp]
-    );
-
     const exportXLSX = useCallback(async () => {
-        const wb = new ExcelJS.Workbook();
-        const sh = wb.addWorksheet('Transactions log');
+        if (!volId) {
+            return;
+        }
 
-        sh.addRow([
-            'Дата',
-            'Время',
-            'ID волонтера',
-            'Волонтер',
-            'Тип питания',
-            'Прием пищи',
-            'Кухня',
-            'Кол-во',
-            'Причина'
-        ]);
-
-        rows.forEach((tx) =>
-            sh.addRow([
-                dayjs(tx.dtime).format('DD.MM.YYYY'),
-                dayjs(tx.dtime).format('HH:mm:ss'),
-                tx.volunteer,
-                tx?.volunteer_name || 'Аноним',
-                tx.is_vegan ? 'Веган' : 'Мясоед',
-                MEAL_MAP[tx.meal_time] ?? 'дожор',
-                kitchenNameById[tx.kitchen],
-                tx.amount,
-                tx.reason
-            ])
+        const { data, headers } = await axios.get<Blob>(
+            `${NEW_API_URL}/feed-transaction/export-xlsx/?volunteer=${volId}`,
+            {
+                responseType: 'blob'
+            }
         );
 
-        await saveXLSX(wb, 'feed-transactions');
-    }, [rows, kitchenNameById]);
+        const filename = getFilenameFromContentDisposition(headers['content-disposition'], 'feed-transactions.xlsx');
+        downloadBlob(data, filename);
+    }, [volId]);
 
     const columns: TableProps<FeedTransactionEntity>['columns'] = useMemo(
         () => [

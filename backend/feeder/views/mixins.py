@@ -5,10 +5,11 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
 from feeder.sync_serializers import get_history_serializer
 from history.models import History
-from feeder.models import Arrival, VolunteerCustomFieldValue, FeedTransaction
+from feeder.models import Arrival, PaidArrival, VolunteerCustomFieldValue, FeedTransaction
 
 
 User = get_user_model()
@@ -28,10 +29,21 @@ class VolunteerExtraFilterMixin(ModelViewSet):
         arrival_status = self.request.query_params.getlist('arrivals.status')
         arrival_transport = self.request.query_params.getlist('arrivals.arrival_transport')
         departure_transport = self.request.query_params.getlist('arrivals.departure_transport')
+        paid_arrival_date = self.request.query_params.get('paid_arrivals.arrival_date')
+        paid_departure_date = self.request.query_params.get('paid_arrivals.departure_date')
+        paid_staying_date = self.request.query_params.get('paid_arrivals.staying_date')
+        paid_is_free = self.request.query_params.getlist('paid_arrivals.is_free')
         custom_field_id = self.request.query_params.getlist('custom_field_id')
         custom_field_value = self.request.query_params.getlist('custom_field_value')
         feeded_date = self.request.query_params.get('feeded_date')
         non_feeded_date = self.request.query_params.get('non_feeded_date')
+        is_qr_empty = self.request.query_params.getlist('is_qr_empty')
+
+        if len(is_qr_empty) == 1:
+            if is_qr_empty[0] == 'false':
+                qs = qs.exclude(qr__isnull=True).exclude(qr__exact='')
+            elif is_qr_empty[0] == 'true':
+                qs = qs.filter(Q(qr__isnull=True) | Q(qr__exact=''))
 
         if arrival_date or departure_date or staying_date or arrival_status or arrival_transport or departure_transport:  
             arrive_qs = Arrival.objects.all()
@@ -64,15 +76,53 @@ class VolunteerExtraFilterMixin(ModelViewSet):
                 arrive_qs = arrive_qs.filter(departure_transport__id__in=departure_transport)
             qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
 
+        if paid_arrival_date or paid_departure_date or paid_staying_date or paid_is_free:
+            paid_arrive_qs = PaidArrival.objects.all()
+
+            if paid_arrival_date:
+                if ':' in paid_arrival_date:
+                    start_date, end_date = paid_arrival_date.split(':')
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date__gte=start_date, arrival_date__lte=end_date)
+                else:
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date=paid_arrival_date)
+            if paid_departure_date:
+                if ':' in paid_departure_date:
+                    start_date, end_date = paid_departure_date.split(':')
+                    paid_arrive_qs = paid_arrive_qs.filter(departure_date__gte=start_date, departure_date__lte=end_date)
+                else:
+                    paid_arrive_qs = paid_arrive_qs.filter(departure_date=paid_departure_date)
+            if paid_staying_date:
+                if ':' in paid_staying_date:
+                    start_date, end_date = paid_staying_date.split(':')
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date__lte=end_date, departure_date__gte=start_date)
+                else:
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date__lte=paid_staying_date, departure_date__gte=paid_staying_date)
+            if len(paid_is_free) == 1:
+                if paid_is_free[0] == 'false':
+                    paid_arrive_qs = paid_arrive_qs.filter(is_free=False)
+                elif paid_is_free[0] == 'true':
+                    paid_arrive_qs = paid_arrive_qs.filter(is_free=True)
+
+            qs = qs.filter(id__in=paid_arrive_qs.values_list('volunteer_id', flat=True))
+
         if feeded_date or non_feeded_date:
             if ':' in (feeded_date or non_feeded_date):
                 start_date_feed, end_date_feed = (feeded_date or non_feeded_date).split(':')
                 start_datetime_feed = arrow.get(start_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
                 end_datetime_feed = arrow.get(end_date_feed, tzinfo=TZ).shift(hours=+DAY_START_HOUR).shift(days=+1)
-                feed_transactions_qs = FeedTransaction.objects.filter(dtime__gte=start_datetime_feed.datetime, dtime__lt=end_datetime_feed.datetime, volunteer_id__isnull=False)
+                feed_transactions_qs = FeedTransaction.objects.filter(
+                    dtime__gte=start_datetime_feed.datetime,
+                    dtime__lt=end_datetime_feed.datetime,
+                    volunteer_id__isnull=False,
+                    amount__gt=0
+                )
             else:
                 feed_datetime = arrow.get(feeded_date or non_feeded_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
-                feed_transactions_qs = FeedTransaction.objects.filter(dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime), volunteer_id__isnull=False)
+                feed_transactions_qs = FeedTransaction.objects.filter(
+                    dtime__range=(feed_datetime.datetime, feed_datetime.shift(days=+1).datetime),
+                    volunteer_id__isnull=False,
+                    amount__gt=0
+                )
             if feeded_date:
                 qs = qs.filter(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
             if non_feeded_date:
@@ -98,9 +148,13 @@ class VolunteerExtraFilterMixin(ModelViewSet):
 
 class SoftDeleteViewSetMixin(ModelViewSet):
     def get_queryset(self):
+        pk = self.kwargs.get("pk", None)
         qs = super().get_queryset()
-        if not self.request.query_params.get("all_qs", None):
-            return qs.filter(deleted_at=None)
+        is_deleted = self.request.query_params.getlist("is_deleted", None)
+        if not is_deleted and not pk or ('false' in is_deleted and not 'true' in is_deleted):
+            qs = qs.filter(deleted_at=None)
+        if 'true' in is_deleted and not 'false' in is_deleted:
+            qs = qs.exclude(deleted_at=None)
         return qs
 
     # @action(methods=["delete"], detail=True, url_path="hard_delete")
@@ -245,4 +299,13 @@ class MultiSerializerViewSetMixin(object):
             return self.serializer_action_classes[self.action]
         except (KeyError, AttributeError):
             return super(MultiSerializerViewSetMixin, self).get_serializer_class()
-
+        
+def auto_tag_viewset(tag_name: str):
+    return extend_schema_view(
+        list=extend_schema(tags=[tag_name]),
+        create=extend_schema(tags=[tag_name]),
+        retrieve=extend_schema(tags=[tag_name]),
+        update=extend_schema(tags=[tag_name]),
+        partial_update=extend_schema(tags=[tag_name]),
+        destroy=extend_schema(tags=[tag_name]),
+    )

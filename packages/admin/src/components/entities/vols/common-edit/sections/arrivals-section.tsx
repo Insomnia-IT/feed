@@ -1,13 +1,44 @@
 import { DatePicker, Form, Select, Button } from 'antd';
-import { useCallback } from 'react';
+import { ReactNode, useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
-
 import { Rules } from 'components/form';
 import { formDateFormat } from 'shared/lib';
 
 import styles from '../../common.module.css';
+import useCanAccess from '../../use-can-access';
+import { VolunteerStatus } from 'shared/constants/volunteer-status';
+import {
+    isVolunteerStatus,
+    isVolunteerCompletedStatusValue,
+    getVolunteerStatusOrder
+} from 'shared/helpers/volunteer-status';
+
+type StatusItem = { label: React.ReactNode; value: string; disabled?: boolean };
+
+const isInsideOtherArrival = (
+    otherArrival: {
+        arrival_date?: string;
+        departure_date?: string;
+    },
+    currentArrival: {
+        arrival_date?: string;
+        departure_date?: string;
+    }
+) => {
+    const arrival = dayjs(otherArrival.arrival_date);
+    const departure = dayjs(otherArrival.departure_date);
+
+    const targetStart = dayjs(currentArrival.arrival_date);
+    const targetEnd = dayjs(currentArrival.departure_date);
+
+    return (
+        (targetStart.isBefore(departure) && targetStart.isAfter(arrival)) ||
+        (targetEnd.isAfter(arrival) && targetEnd.isBefore(departure)) ||
+        (targetStart.isBefore(arrival) && targetEnd.isAfter(departure))
+    );
+};
 
 export const ArrivalsSection = ({
     statusesOptions,
@@ -18,28 +49,64 @@ export const ArrivalsSection = ({
 }) => {
     const form = Form.useFormInstance();
 
-    const statusesOptionsNew =
-        statusesOptions?.map((item) =>
-            ['ARRIVED', 'STARTED', 'JOINED'].includes(item.value as string)
+    const canArrivedAssign = useCanAccess({ action: 'status_arrived_assign', resource: 'volunteers' });
+    const canStartedAssign = useCanAccess({ action: 'status_started_assign', resource: 'volunteers' });
+    const accessRole = Form.useWatch('access_role', form);
+    const canArrivedAssignForRole = canArrivedAssign && accessRole !== 'DIRECTION_HEAD';
+
+    const statusesOrder = useMemo<ReadonlyArray<VolunteerStatus>>(
+        () => getVolunteerStatusOrder(canArrivedAssignForRole),
+        [canArrivedAssignForRole]
+    );
+
+    const statusesOptionsNew: StatusItem[] = (statusesOptions ?? [])
+        .slice()
+        .sort((a, b) => {
+            const ai = isVolunteerStatus(a.value) ? statusesOrder.indexOf(a.value) : Number.MAX_SAFE_INTEGER;
+            const bi = isVolunteerStatus(b.value) ? statusesOrder.indexOf(b.value) : Number.MAX_SAFE_INTEGER;
+            return ai - bi;
+        })
+        .map((item) => {
+            if (!isVolunteerStatus(item.value)) return { ...item, disabled: true };
+
+            const inOrder = statusesOrder.includes(item.value);
+            const allowedByPerm =
+                (item.value !== 'ARRIVED' || canArrivedAssignForRole) && (item.value !== 'STARTED' || canStartedAssign);
+
+            const disabled = !(inOrder && allowedByPerm);
+
+            const withCheck = isVolunteerCompletedStatusValue(item.value)
                 ? { ...item, label: `✅ ${item.label}` }
-                : item
-        ) || [];
+                : item;
+
+            return { ...withCheck, disabled };
+        });
 
     const activeFromValidationRules = useCallback(
         (index: number) => [
-            {
-                required: true
-            },
+            { required: true },
             {
                 validator: async (_: unknown, value: string | number | Date | dayjs.Dayjs | null | undefined) => {
-                    const arrivalDates = form
-                        .getFieldValue('arrivals')
+                    const arrivals = form.getFieldValue('arrivals') as {
+                        arrival_date?: string;
+                        departure_date?: string;
+                    }[];
+
+                    const otherArrivals = arrivals.filter((_, ind) => ind !== index);
+                    const targetArrival = arrivals[index];
+
+                    const arrivalDates = arrivals
                         .slice()
-                        .map((a: { arrival_date: dayjs.Dayjs }) => dayjs(a.arrival_date).format('YYYY-MM-DD'));
+                        .map((arrival) => dayjs(arrival.arrival_date).format('YYYY-MM-DD'));
+
                     arrivalDates.splice(index, 1);
 
                     if (arrivalDates.includes(dayjs(value).format('YYYY-MM-DD'))) {
                         return Promise.reject(new Error('Дата заезда не должна повторяться'));
+                    }
+
+                    if (otherArrivals.some((otherArrival) => isInsideOtherArrival(otherArrival, targetArrival))) {
+                        return Promise.reject(new Error('Даты заездов не должны пересекаться'));
                     }
 
                     return Promise.resolve();
@@ -51,15 +118,27 @@ export const ArrivalsSection = ({
 
     const activeToValidationRules = useCallback(
         (index: number) => [
-            {
-                required: true
-            },
+            { required: true },
             {
                 validator: async (_: unknown, value: string | number | Date) => {
                     const arrivalDate = form.getFieldValue(['arrivals', index, 'arrival_date']);
+
+                    const arrivals = form.getFieldValue('arrivals') as {
+                        arrival_date?: string;
+                        departure_date?: string;
+                    }[];
+
+                    const otherArrivals = arrivals.filter((_, ind) => ind !== index);
+                    const targetArrival = arrivals[index];
+
+                    if (otherArrivals.some((otherArrival) => isInsideOtherArrival(otherArrival, targetArrival))) {
+                        return Promise.reject(new Error('Даты заездов не должны пересекаться'));
+                    }
+
                     if (dayjs(value) >= dayjs(arrivalDate)) {
                         return Promise.resolve();
                     }
+
                     return Promise.reject(new Error('Дата заезда не может быть раньше Даты отъезда'));
                 }
             }
@@ -125,7 +204,7 @@ function ArrivalItem({
     index: number;
     isSingle: boolean;
     remove: (index: number) => void;
-    statusesOptions: { label: string; value: string }[];
+    statusesOptions: StatusItem[];
     transportsOptions: { label: string; value: string }[];
     activeFromValidationRules: (index: number) => Array<
         | { required: boolean }
@@ -152,95 +231,102 @@ function ArrivalItem({
     };
 
     const getDateValue = (value: string | number | Date | dayjs.Dayjs | null | undefined) => ({
-        value: value ? dayjs(value) : ''
+        value: value ? dayjs(value) : undefined
     });
 
+    const renderLabel = (props: { label: React.ReactNode; value: string | number }): ReactNode => {
+        if (!props.label) {
+            return statusesOptions.find((item) => item.value === props.value)?.label;
+        }
+        return props.label;
+    };
+
+    const filteredStatusesOptions = useMemo(() => statusesOptions.filter((item) => !item.disabled), [statusesOptions]);
+
     return (
-        <>
-            <div className={index !== 0 ? `${styles.dateWrapper}` : ''}>
-                <div className={styles.dateWrap}>
-                    <div className={styles.dateLabel}>
-                        <div>Заезд {index + 1}</div>
-                        <Button
-                            className={styles.deleteButton}
-                            danger
-                            type="link"
-                            icon={<DeleteOutlined />}
-                            onClick={deleteArrival}
-                            style={{
-                                visibility: isSingle ? 'hidden' : undefined
-                            }}
-                        >
-                            Удалить
-                        </Button>
-                    </div>
-                    <div className={styles.dateInput}>
-                        <Form.Item label="Статус заезда" name={[index, 'status']} rules={Rules.required}>
-                            <Select options={statusesOptions} style={{ width: '100%' }} />
-                        </Form.Item>
-                    </div>
+        <div className={index !== 0 ? `${styles.dateWrapper}` : ''}>
+            <div className={styles.dateWrap}>
+                <div className={styles.dateLabel}>
+                    <div>Заезд {index + 1}</div>
+                    <Button
+                        className={styles.deleteButton}
+                        danger
+                        type="link"
+                        icon={<DeleteOutlined />}
+                        onClick={deleteArrival}
+                        style={{
+                            visibility: isSingle ? 'hidden' : undefined
+                        }}
+                    >
+                        Удалить
+                    </Button>
                 </div>
-                <div className={styles.dateWrap}>
-                    <div className={`${styles.dateLabel} ${styles.dateLabelEmpty}`} style={{ visibility: 'hidden' }}>
-                        <div>Заезд {index + 1}</div>
-                        <Button
-                            className={styles.deleteButton}
-                            danger
-                            type="link"
-                            icon={<DeleteOutlined />}
-                            onClick={deleteArrival}
-                        >
-                            Удалить
-                        </Button>
-                    </div>
-                    <div className={styles.dateInput}>
-                        <Form.Item
-                            label="Дата заезда"
-                            name={[index, 'arrival_date']}
-                            getValueProps={getDateValue}
-                            rules={activeFromValidationRules(index)}
-                        >
-                            <DatePicker
-                                format={formDateFormat}
-                                style={{ width: '100%' }}
-                                onChange={createDateChange('arrival_date')}
-                            />
-                        </Form.Item>
-                    </div>
-                    <div className={styles.dateInput}>
-                        <Form.Item label="Как добрался?" name={[index, 'arrival_transport']} rules={Rules.required}>
-                            <Select options={transportsOptions} style={{ width: '100%' }} />
-                        </Form.Item>
-                    </div>
-                </div>
-                <div className={styles.dateWrap}>
-                    <div className={`${styles.dateLabel} ${styles.dateLabelEmpty}`} style={{ visibility: 'hidden' }}>
-                        <div>Заезд {index + 1}</div>
-                        <Button className={styles.deleteButton} danger type="link" icon={<DeleteOutlined />}>
-                            Удалить
-                        </Button>
-                    </div>
-                    <div className={styles.dateInput}>
-                        <Form.Item
-                            label="Дата отъезда"
-                            name={[index, 'departure_date']}
-                            getValueProps={getDateValue}
-                            rules={activeToValidationRules(index)}
-                        >
-                            <DatePicker
-                                format={formDateFormat}
-                                style={{ width: '100%' }}
-                                onChange={createDateChange('departure_date')}
-                            />
-                        </Form.Item>
-                    </div>
-                    <div className={styles.dateInput}>
-                        <Form.Item label="Как уехал?" name={[index, 'departure_transport']} rules={Rules.required}>
-                            <Select options={transportsOptions} style={{ width: '100%' }} />
-                        </Form.Item>
-                    </div>
+                <div className={styles.dateInput}>
+                    <Form.Item label="Статус заезда" name={[index, 'status']} rules={Rules.required}>
+                        <Select options={filteredStatusesOptions} style={{ width: '100%' }} labelRender={renderLabel} />
+                    </Form.Item>
                 </div>
             </div>
-        </>
+            <div className={styles.dateWrap}>
+                <div className={`${styles.dateLabel} ${styles.dateLabelEmpty}`} style={{ visibility: 'hidden' }}>
+                    <div>Заезд {index + 1}</div>
+                    <Button
+                        className={styles.deleteButton}
+                        danger
+                        type="link"
+                        icon={<DeleteOutlined />}
+                        onClick={deleteArrival}
+                    >
+                        Удалить
+                    </Button>
+                </div>
+                <div className={styles.dateInput}>
+                    <Form.Item
+                        label="Дата заезда"
+                        name={[index, 'arrival_date']}
+                        getValueProps={getDateValue}
+                        rules={activeFromValidationRules(index)}
+                    >
+                        <DatePicker
+                            format={formDateFormat}
+                            style={{ width: '100%' }}
+                            onChange={createDateChange('arrival_date')}
+                        />
+                    </Form.Item>
+                </div>
+                <div className={styles.dateInput}>
+                    <Form.Item label="Как добрался?" name={[index, 'arrival_transport']} rules={Rules.required}>
+                        <Select options={transportsOptions} style={{ width: '100%' }} />
+                    </Form.Item>
+                </div>
+            </div>
+            <div className={styles.dateWrap}>
+                <div className={`${styles.dateLabel} ${styles.dateLabelEmpty}`} style={{ visibility: 'hidden' }}>
+                    <div>Заезд {index + 1}</div>
+                    <Button className={styles.deleteButton} danger type="link" icon={<DeleteOutlined />}>
+                        Удалить
+                    </Button>
+                </div>
+                <div className={styles.dateInput}>
+                    <Form.Item
+                        label="Дата отъезда"
+                        name={[index, 'departure_date']}
+                        getValueProps={getDateValue}
+                        rules={activeToValidationRules(index)}
+                    >
+                        <DatePicker
+                            format={formDateFormat}
+                            style={{ width: '100%' }}
+                            onChange={createDateChange('departure_date')}
+                        />
+                    </Form.Item>
+                </div>
+                <div className={styles.dateInput}>
+                    <Form.Item label="Как уехал?" name={[index, 'departure_transport']} rules={Rules.required}>
+                        <Select options={transportsOptions} style={{ width: '100%' }} />
+                    </Form.Item>
+                </div>
+            </div>
+        </div>
     );
 }

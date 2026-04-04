@@ -25,8 +25,11 @@ export interface VolEntity {
     main_role?: string;
     access_role?: string;
     arrivals: Array<ArrivalEntity>;
+    paid_arrivals: Array<PaidArrivalEntity>;
     direction_head_comment?: string;
     is_ticket_received?: boolean;
+    supervisor_id?: number | null;
+    supervisor?: { id: number; name: string } | null;
 }
 
 export interface KitchenEntity {
@@ -37,6 +40,8 @@ export interface KitchenEntity {
 export interface FeedTypeEntity {
     id: number;
     name: string;
+    code?: string;
+    paid?: boolean;
 }
 
 export interface ColorTypeEntity {
@@ -67,6 +72,7 @@ export interface FeedTransactionEntity {
     meal_time: string;
     volunteer: number;
     is_vegan: boolean | null;
+    is_paid: boolean | null;
     reason: string | null;
     kitchen: number;
     kitchen_name?: string | null;
@@ -82,10 +88,14 @@ export interface GroupBadgeEntity {
     id: number;
     qr: string;
     direction?: DirectionEntity;
+    role?: string;
     name: string;
     comment?: string;
     /* Количество волонтеров в бейдже */
     volunteer_count: number;
+
+    /* Планирование питания */
+    planning_cells: MealPlanCell[];
 }
 
 export interface VolunteerCustomFieldEntity {
@@ -148,6 +158,13 @@ export interface ArrivalEntity {
     status: string;
 }
 
+export interface PaidArrivalEntity {
+    id: string;
+    arrival_date: string;
+    departure_date: string;
+    is_free: boolean;
+}
+
 interface EngagementEntity {
     id: string;
     year: number;
@@ -179,4 +196,16 @@ export interface WashEntity {
     volunteer: VolEntity;
     actor: VolEntity;
     wash_count: number;
+}
+
+export interface MealPlanCell {
+    id: number;
+    group_badge: number;
+    group_badge_name: string;
+    created_at: string;
+    updated_at: string;
+    date: string;
+    meal_time: string;
+    amount_meat: number | null;
+    amount_vegan: number | null;
 }

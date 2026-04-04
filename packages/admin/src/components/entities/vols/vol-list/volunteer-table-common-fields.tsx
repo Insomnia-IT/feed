@@ -44,6 +44,10 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
         title: 'Даты на поле'
     },
     {
+        fieldName: 'paid_arrivals',
+        title: 'Оплаченные даты'
+    },
+    {
         fieldName: 'on_field',
         title: 'Статус',
         isDefault: true
@@ -61,6 +65,10 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
     {
         fieldName: 'printing_batch',
         title: 'Партия Бейджа'
+    },
+    {
+        fieldName: 'supervisor',
+        title: 'Бригадир'
     },
     {
         fieldName: 'comment',

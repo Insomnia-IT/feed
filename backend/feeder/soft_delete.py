@@ -49,5 +49,10 @@ class SoftDeleteModelMixin(models.Model):
         self.deleted_at = datetime.utcnow()
         self.save(**kwargs)
 
+    def undelete(self, *args, **kwargs):
+        if self.deleted_at:
+            self.deleted_at = None
+            self.save(**kwargs)
+
     def hard_delete(self):
         super(SoftDeleteModelMixin, self).delete()

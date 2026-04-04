@@ -37,6 +37,15 @@ class Arrival(TimeMixin, CommentMixin):
         return self.status and self.status.id in ['ARRIVED', 'STARTED', 'JOINED']
 
 
+class PaidArrival(TimeMixin, CommentMixin):
+    """ Платники """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="paid_arrivals")
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+    is_free = models.BooleanField()
+
+
 class Status(TimeMixin):
     id = models.CharField(max_length=20, verbose_name="Код", primary_key=True)
     name = models.CharField(max_length=255, verbose_name="Наименование")
@@ -57,6 +66,7 @@ class VolunteerRole(TimeMixin):
     color = models.CharField(max_length=6)
     is_leader = models.BooleanField(default=False)
     is_team = models.BooleanField(default=False)
+    is_group_badge = models.BooleanField(default=False)
 
 
 class DirectionType(TimeMixin):
@@ -153,6 +163,9 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     responsible_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
         related_name='volunteers',
         verbose_name="Ответственный")
+    supervisor_id = models.ForeignKey('Volunteer', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='supervisees',
+        verbose_name="Бригадир")
     infant = models.BooleanField('IsChild', null=True, blank=True, default=False)
 
     class Meta:
@@ -194,12 +207,17 @@ class Kitchen(TimeMixin):
         verbose_name_plural = "Кухни"
 
 
-class GroupBadge(TimeMixin, CommentMixin, NameMixin):
-    qr = models.TextField(unique=True, verbose_name="QR-код")
+class GroupBadge(TimeMixin, SoftDeleteModelMixin, CommentMixin, NameMixin):
+    qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
+    role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return self.name
+    
+    def delete(self, *args, **kwargs):
+        self.volunteers.update(group_badge=None)
+        return super().delete(*args, **kwargs)
 
     class Meta:
         verbose_name = "Групповой бейдж"
@@ -284,12 +302,20 @@ def validate_meal_time(value):
             params={"value": value, "meal_times": ", ".join(meal_times)},
         )
 
+class MealTime(models.TextChoices):
+    """ Время приема пищи """
+    BREAKFAST = 'breakfast', 'breakfast'
+    LUNCH = 'lunch', 'lunch'
+    DINNER = 'dinner', 'dinner'
+    NIGHT = 'night', 'night'
 
 class FeedTransaction(TimeMixin):
     ulid = models.CharField(max_length=255, primary_key=True)
     volunteer = models.ForeignKey(Volunteer, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Волонтёр")
     group_badge = models.ForeignKey(GroupBadge, null=True, blank=True, on_delete=models.SET_NULL, related_name='feed_transactions', verbose_name="Групповой бейдж")
     is_vegan = models.BooleanField(null=True, verbose_name="Вегетарианец?")
+    is_paid = models.BooleanField(default=False, verbose_name="Платное питание?")
+    is_anomaly = models.BooleanField(default=False, verbose_name="Аномалия?")
     kitchen = models.ForeignKey(Kitchen, on_delete=models.PROTECT, verbose_name="Кухня")
     amount = models.IntegerField(default=0, verbose_name="Количество")
     reason = models.CharField(max_length=255, null=True, blank=True, verbose_name="Причина")
@@ -324,3 +350,19 @@ class Wash(TimeMixin):
     class Meta:
         verbose_name = "Стирка"
         verbose_name_plural = "Стирки"
+
+class GroupBadgePlanningCells(TimeMixin):
+    """ Ячейки планирования питания групповых бейджей """
+    id = models.AutoField(primary_key=True)
+    group_badge = models.ForeignKey(GroupBadge, on_delete=models.CASCADE, related_name="group_badge_planning_cells")
+    meal_time = models.CharField(max_length=10, choices=MealTime.choices, verbose_name="Время питания")
+    date = models.DateField(verbose_name="Дата")
+    amount_meat = models.SmallIntegerField(null=True, verbose_name="Количество мясоедов")
+    amount_vegan = models.SmallIntegerField(null=True, verbose_name="Количество вегетарианцев")
+
+    class Meta:
+        verbose_name = "Ячейка планирования питания группового бейджа"
+        verbose_name_plural = "Ячейки планирования питания групповых бейджей"
+        constraints = [
+            models.UniqueConstraint(fields=['group_badge', 'meal_time', 'date'], name='unique planning cell')
+        ]

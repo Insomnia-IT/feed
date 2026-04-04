@@ -1,4 +1,4 @@
-from rest_framework import routers, serializers, viewsets
+from rest_framework import serializers
 
 from django.db import transaction
 from django.utils import timezone
@@ -88,14 +88,13 @@ class VolunteerCustomFieldValueNestedSerializer(serializers.ModelSerializer):
 
 
 class PersonSerializer(serializers.ModelSerializer):
-    engagements = EngagementSerializer(many=True)
-    # engagements = serializers.SerializerMethodField()
+    engagements = serializers.SerializerMethodField()
 
-    # def get_engagements(self, obj):
-    #     return EngagementSerializer(
-    #         obj.engagements.all().order_by('-year')[:1],
-    #         many=True
-    #     ).data
+    def get_engagements(self, obj):
+        return EngagementSerializer(
+            obj.engagements.all().order_by('-year'),
+            many=True
+        ).data
 
     class Meta:
         model = models.Person
@@ -121,33 +120,63 @@ class ArrivalSerializer(serializers.ModelSerializer):
         exclude = ["volunteer"]
 
 
+class PaidArrivalSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+
+    class Meta:
+        model = models.PaidArrival
+        exclude = ["volunteer"]
+
+
 class VolunteerListArrivalSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Arrival
         fields = ['id', 'arrival_date', 'departure_date', 'status', 'arrival_transport', 'departure_transport']
 
+
+class VolunteerListPaidArrivalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PaidArrival
+        fields = ['id', 'arrival_date', 'departure_date', 'is_free']
+
+
 class SortArrivalsMixin:
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        response["arrivals"] = sorted(response["arrivals"], key=lambda x: x["arrival_date"])
+        if "arrivals" in response:
+            response["arrivals"] = sorted(response["arrivals"], key=lambda x: x["arrival_date"])
+        if "paid_arrivals" in response:
+            response["paid_arrivals"] = sorted(response["paid_arrivals"], key=lambda x: x["arrival_date"])
         return response
+
 
 class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     directions = DirectionSerializer(many=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True)
     arrivals = VolunteerListArrivalSerializer(many=True)
+    paid_arrivals = VolunteerListPaidArrivalSerializer(many=True)
+    supervisor = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Volunteer
         fields = '__all__'
+    
+    def get_supervisor(self, volunteer):
+        supervisor = getattr(volunteer, "supervisor_id", None)
+        if supervisor:
+            return {"id": supervisor.id, "name": supervisor.name}
+        return None
 
 class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
     arrivals = ArrivalSerializer(many=True)
+    paid_arrivals = PaidArrivalSerializer(many=True)
     person = PersonSerializer(required=False, allow_null=True)
     color_type = serializers.SerializerMethodField(read_only=True)
+    supervisor = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Volunteer
         fields = '__all__'
@@ -159,9 +188,16 @@ class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer
                 return models.Color.objects.get(name = main_role.color).id
             except models.Color.DoesNotExist:
                 return None
+    
+    def get_supervisor(self, volunteer):
+        supervisor = getattr(volunteer, "supervisor_id", None)
+        if supervisor:
+            return {"id": supervisor.id, "name": supervisor.name}
+        return None
 
 class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     arrivals = ArrivalSerializer(many=True, required=False)
+    paid_arrivals = PaidArrivalSerializer(many=True, required=False)
     directions = serializers.PrimaryKeyRelatedField(
         queryset=models.Direction.objects.all(),
         many=True
@@ -170,6 +206,11 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         source='person', 
         queryset=models.Person.objects.all(),
         required=False
+    )
+    supervisor_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Volunteer.objects.all(),
+        required=False,
+        allow_null=True
     )
 
     class Meta:
@@ -180,6 +221,9 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         arrivals_data = None
         if 'arrivals' in validated_data:
             arrivals_data = validated_data.pop('arrivals')
+        paid_arrivals_data = None
+        if 'paid_arrivals' in validated_data:
+            paid_arrivals_data = validated_data.pop('paid_arrivals')
         directions_data = validated_data.pop('directions', None)
         
         with transaction.atomic():
@@ -190,11 +234,14 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
 
             if arrivals_data is not None:
                 self._process_arrivals(instance, arrivals_data, is_create=False)
+            if paid_arrivals_data is not None:
+                self._process_paid_arrivals(instance, paid_arrivals_data, is_create=False)
 
         return instance
     
     def create(self, validated_data):
         arrivals_data = validated_data.pop('arrivals', [])
+        paid_arrivals_data = validated_data.pop('paid_arrivals', [])
         directions_data = validated_data.pop('directions', [])
         
         with transaction.atomic():
@@ -206,6 +253,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             
             # Создаем связанные заезды
             self._process_arrivals(volunteer, arrivals_data, is_create=True)
+            self._process_paid_arrivals(volunteer, paid_arrivals_data, is_create=True)
             
         return volunteer
     
@@ -268,52 +316,108 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             if field in data and isinstance(data[field], str):
                 data[field] = model.objects.get(id=data[field])
 
+        return self._prepare_interval_data(data)
+
+    def _prepare_interval_data(self, data):
+        data = data.copy()
+
         for date_field in ['arrival_date', 'departure_date']:
             if date_field in data and isinstance(data[date_field], str):
                 dt_moscow = arrow.get(data[date_field]).to(TZ)
                 data[date_field] = dt_moscow.format("YYYY-MM-DD")
         
         return data
+
+    def _process_paid_arrivals(self, volunteer, paid_arrivals_data, is_create=False):
+        current_paid_arrivals = {str(a.id): a for a in volunteer.paid_arrivals.all()}
+        processed_ids = set()
+        group_op = self.context['group_op'] if 'group_op' in self.context else None
+
+        for paid_arrival_data in paid_arrivals_data:
+            paid_arrival_id = paid_arrival_data.get('id')
+            prepared_data = self._prepare_interval_data(paid_arrival_data)
+
+            if is_create and paid_arrival_id:
+                prepared_data['id'] = paid_arrival_id
+
+            if paid_arrival_id and str(paid_arrival_id) in current_paid_arrivals:
+                paid_arrival = current_paid_arrivals[str(paid_arrival_id)]
+                old_values = {field.name: getattr(paid_arrival, field.name) for field in models.PaidArrival._meta.fields}
+                changed_data = {
+                    field: value for field, value in prepared_data.items() if getattr(paid_arrival, field) != value
+                }
+                for attr, value in prepared_data.items():
+                    setattr(paid_arrival, attr, value)
+                paid_arrival.save()
+
+                if changed_data:
+                    self._log_paid_arrival_change(paid_arrival, volunteer, "UPDATE", old_values, changed_data, group_op)
+
+                processed_ids.add(str(paid_arrival_id))
+            else:
+                paid_arrival = models.PaidArrival.objects.create(volunteer=volunteer, **prepared_data)
+                processed_ids.add(str(paid_arrival.id))
+                self._log_paid_arrival_change(paid_arrival, volunteer, "CREATE", {}, prepared_data, group_op)
+
+        if not is_create:
+            to_delete = [paid_arrival_id for paid_arrival_id in current_paid_arrivals if paid_arrival_id not in processed_ids]
+            for paid_arrival_id in to_delete:
+                paid_arrival = current_paid_arrivals[paid_arrival_id]
+                old_values = {field.name: getattr(paid_arrival, field.name) for field in models.PaidArrival._meta.fields}
+                self._log_paid_arrival_change(paid_arrival, volunteer, "DELETE", old_values, {}, group_op)
+                paid_arrival.delete()
     
     def _log_arrival_change(self, arrival, volunteer, action, old_data=None, new_data=None, group_op=None, group_arr_id=None):
+        self._log_interval_change(
+            item=arrival,
+            volunteer=volunteer,
+            action=action,
+            object_name="arrival",
+            old_data=old_data,
+            new_data=new_data,
+            group_op=group_op,
+            force_full_change=bool(group_op and group_arr_id == arrival.id)
+        )
+
+    def _log_paid_arrival_change(self, paid_arrival, volunteer, action, old_data=None, new_data=None, group_op=None):
+        self._log_interval_change(
+            item=paid_arrival,
+            volunteer=volunteer,
+            action=action,
+            object_name="paidarrival",
+            old_data=old_data,
+            new_data=new_data,
+            group_op=group_op
+        )
+
+    def _log_interval_change(self, item, volunteer, action, object_name, old_data=None, new_data=None, group_op=None, force_full_change=False):
         user_id = get_request_user_id(self.context["request"].user)
 
-        def serialize_value(value):
-            if isinstance(value, models.Status):
-                return str(value.id)
-            if isinstance(value, models.Transport):
-                return str(value.id)
-            if isinstance(value, date):  
-                return value.isoformat()
-            if isinstance(value, UUID):
-                return str(value)
-            return value
+        old_data = {k: self._serialize_history_value(v) for k, v in (old_data or {}).items()}
+        new_data = {k: self._serialize_history_value(v) for k, v in (new_data or {}).items()}
 
-        old_data = {k: serialize_value(v) for k, v in (old_data or {}).items()}
-        new_data = {k: serialize_value(v) for k, v in (new_data or {}).items()}
-
-        if group_op and group_arr_id == arrival.id:
+        if force_full_change:
             changed_data = {k: v for k, v in new_data.items()}
         else:
             changed_data = {k: v for k, v in new_data.items() if old_data.get(k) != v}
         old_changed_data = {k: old_data[k] for k in changed_data.keys() if k in old_data}
 
-        changed_data['id'] = arrival.id
+        changed_data['id'] = item.id
         changed_data['badge'] = volunteer.uuid
 
         history_data = {
             "status": History.STATUS_UPDATE if action == "UPDATE" else History.STATUS_CREATE,
-            "object_name": "arrival",
+            "object_name": object_name,
             "actor_badge": user_id,
             "action_at": timezone.now(),
             "data": changed_data,
             "old_data": old_changed_data,
-            "volunteer_uuid": str(arrival.volunteer.uuid)
+            "volunteer_uuid": str(item.volunteer.uuid)
         }
 
         if action == "DELETE":
             history_data["status"] = History.STATUS_DELETE
-            history_data["data"] = {"id": str(arrival.id), "deleted": True}
+            history_data["data"] = {"id": str(item.id), "deleted": True}
 
         if group_op:
             history_data["group_operation_uuid"] = str(group_op)
@@ -321,14 +425,43 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         if history_data["data"]:
             History.objects.create(**history_data)
 
+    def _serialize_history_value(self, value):
+        if isinstance(value, models.Status):
+            return str(value.id)
+        if isinstance(value, models.Transport):
+            return str(value.id)
+        if isinstance(value, date):
+            return value.isoformat()
+        if isinstance(value, UUID):
+            return str(value)
+        return value
+
 class VolunteerRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.VolunteerRole
         fields = '__all__'
 
+class GroupBadgePlanningCellsSerializer(serializers.ModelSerializer):
+    group_badge_name = serializers.CharField(source='group_badge.name', read_only=True)
+    
+    class Meta:
+        model = models.GroupBadgePlanningCells
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=models.GroupBadgePlanningCells.objects.all(),
+                fields=['group_badge', 'meal_time', 'date'],
+                message="Ячейка с такой комбинацией дата/групповой бейдж/тип питания уже существует."
+            ),
+        ]
 
 class GroupBadgeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    planning_cells = GroupBadgePlanningCellsSerializer(
+        many=True, 
+        read_only=True,
+        source='group_badge_planning_cells'
+    )
 
     class Meta:
         model = models.GroupBadge
@@ -338,6 +471,11 @@ class GroupBadgeSerializer(serializers.ModelSerializer):
 class GroupBadgeListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     direction = DirectionSerializer(required=False)
+    planning_cells = GroupBadgePlanningCellsSerializer(
+        many=True, 
+        read_only=True,
+        source='group_badge_planning_cells'
+    )
     volunteer_count = serializers.IntegerField(
         source='volunteers.count',
         read_only=True

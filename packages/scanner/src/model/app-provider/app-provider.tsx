@@ -27,13 +27,12 @@ interface IAppContext {
     syncError: boolean;
     autoSync: boolean;
     toggleAutoSync: () => void;
-    doSync: (override?: { kitchenId?: number }) => Promise<void>;
+    doSync: (override?: { full?: boolean; kitchenId?: number }) => Promise<void>;
 }
 const AppContext = React.createContext<IAppContext | null>(null);
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-const storedPin = localStorage.getItem('pin');
 const storedKitchenId = Number(localStorage.getItem('kitchenId'));
 const lastSyncStartLS = localStorage.getItem('lastSyncStart');
 const debugModeLS = localStorage.getItem('debug');
@@ -61,16 +60,21 @@ export const AppProvider = (props) => {
     }, []);
 
     const saveLastSyncStart = useCallback((ts) => {
+        console.log('localStorage.setItem', String(ts));
+
         localStorage.setItem('lastSyncStart', String(ts));
         setLastSyncStart(ts);
     }, []);
 
     const doSync = useCallback(
-        async ({ kitchenId: kitchenIdOverride }: { kitchenId?: number } = {}) => {
+        async ({ full, kitchenId: kitchenIdOverride }: { full?: boolean; kitchenId?: number } = {}) => {
             if (navigator.onLine && !syncFetching) {
                 console.log('online, updating...');
                 try {
-                    return await syncSend({ lastSyncStart, kitchenId: kitchenIdOverride || kitchenId });
+                    return await syncSend({
+                        lastSyncStart: full ? null : lastSyncStart,
+                        kitchenId: kitchenIdOverride || kitchenId
+                    });
                 } catch (e) {
                     console.log(e);
                 }

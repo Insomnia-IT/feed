@@ -2,12 +2,14 @@
 from rest_framework import viewsets, permissions, filters
 
 from feeder import serializers, models
+from feeder.filters import NormalizedSearchFilter
 
-from feeder.views.mixins import SoftDeleteViewSetMixin
+from feeder.views.mixins import SoftDeleteViewSetMixin, auto_tag_viewset
 
+@auto_tag_viewset("Person")
 class PersonViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, ]
     queryset = models.Person.objects.all()
     serializer_class = serializers.PersonSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [NormalizedSearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'name', 'nickname', 'other_names', 'telegram', 'phone', 'email']
