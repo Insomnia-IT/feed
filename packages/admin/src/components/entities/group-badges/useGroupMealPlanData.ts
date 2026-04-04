@@ -1,0 +1,341 @@
+import { useCallback, useMemo, useState } from 'react';
+import { BaseKey, useGetIdentity, useOne, useUpdate, useCreate } from '@refinedev/core';
+import dayjs, { type Dayjs } from 'dayjs';
+import { AppRoles, type UserData } from 'auth';
+import { type GroupBadgeEntity, MealPlanCell } from '../../../interfaces';
+
+export const MESSAGES = {
+    PAST_DATE: 'Нельзя редактировать прошедшие даты',
+    AFTER_21: 'После 21:00 следующий день можно редактировать только через бюро',
+    DEFAULT: 'Редактирование недоступно'
+} as const;
+
+const DISPLAY_END_DAYS_AHEAD = 3;
+const JULY_MONTH_INDEX = 6;
+
+export type MealTypeKey = 'breakfast' | 'lunch' | 'dinner';
+
+export type MealAmounts = { amount_meat: number | null; amount_vegan: number | null } | null;
+
+export interface EditabilityResult {
+    editable: boolean;
+    message?: string;
+}
+
+type SimpleMealPlanCell = Pick<MealPlanCell, 'meal_time' | 'date' | 'amount_meat' | 'amount_vegan'>;
+
+export const createDateHelpers = () => {
+    const today = dayjs();
+    return {
+        yesterday: today.subtract(1, 'day'),
+        today,
+        tomorrow: today.add(1, 'day'),
+        currentHour: today.hour()
+    };
+};
+
+export const checkDateEditability = (date: Dayjs, role?: AppRoles): EditabilityResult => {
+    const { yesterday, today, tomorrow, currentHour } = createDateHelpers();
+
+    if (date.isSame(yesterday, 'day') || date.isBefore(yesterday, 'day')) {
+        return { editable: false, message: MESSAGES.PAST_DATE };
+    }
+
+    if (role === AppRoles.DIRECTION_HEAD) {
+        if (date.isSame(today, 'day')) {
+            return { editable: true };
+        }
+        if (date.isSame(tomorrow, 'day') && currentHour >= 21) {
+            return { editable: false, message: MESSAGES.AFTER_21 };
+        }
+    }
+
+    return { editable: true };
+};
+
+export interface MealPlanRowRender {
+    id: string;
+    date: Dayjs;
+    breakfast: { amount_meat: number | null; amount_vegan: number | null };
+    lunch: { amount_meat: number | null; amount_vegan: number | null };
+    dinner: { amount_meat: number | null; amount_vegan: number | null };
+    editable: boolean;
+    readonlyMessage?: string;
+}
+
+const getDefaultMealValue = () => ({ amount_meat: null, amount_vegan: null });
+
+export const groupByDate = (data: SimpleMealPlanCell[]): Map<string, SimpleMealPlanCell[]> => {
+    const grouped = new Map<string, SimpleMealPlanCell[]>();
+
+    for (const row of data) {
+        const existing = grouped.get(row.date) || [];
+        existing.push(row);
+        grouped.set(row.date, existing);
+    }
+
+    return grouped;
+};
+
+export const forwardFillMeals = ({
+    grouped,
+    firstDate,
+    lastDate,
+    role
+}: {
+    grouped: Map<string, SimpleMealPlanCell[]>;
+    firstDate: Dayjs;
+    lastDate: Dayjs;
+    role?: AppRoles;
+}): MealPlanRowRender[] => {
+    const lastMealValues: Record<MealTypeKey, MealAmounts> = {
+        breakfast: getDefaultMealValue(),
+        lunch: getDefaultMealValue(),
+        dinner: getDefaultMealValue()
+    };
+
+    const result: MealPlanRowRender[] = [];
+    let currentDate = firstDate;
+
+    while (!currentDate.isAfter(lastDate, 'day')) {
+        const dateStr = currentDate.format('YYYY-MM-DD');
+        const existingRows = grouped.get(dateStr) || [];
+
+        const breakfast = existingRows.find((row) => row.meal_time === 'breakfast');
+        const lunch = existingRows.find((row) => row.meal_time === 'lunch');
+        const dinner = existingRows.find((row) => row.meal_time === 'dinner');
+
+        const filledBreakfast = breakfast
+            ? { amount_meat: breakfast.amount_meat, amount_vegan: breakfast.amount_vegan }
+            : lastMealValues.breakfast;
+
+        const filledLunch = lunch
+            ? { amount_meat: lunch.amount_meat, amount_vegan: lunch.amount_vegan }
+            : lastMealValues.lunch;
+
+        const filledDinner = dinner
+            ? { amount_meat: dinner.amount_meat, amount_vegan: dinner.amount_vegan }
+            : lastMealValues.dinner;
+
+        const editability = checkDateEditability(currentDate, role);
+
+        result.push({
+            id: dateStr,
+            date: currentDate,
+            breakfast: filledBreakfast ?? getDefaultMealValue(),
+            lunch: filledLunch ?? getDefaultMealValue(),
+            dinner: filledDinner ?? getDefaultMealValue(),
+            editable: editability.editable,
+            readonlyMessage: editability.message
+        });
+
+        if (filledBreakfast) {
+            lastMealValues.breakfast = filledBreakfast;
+        }
+        if (filledLunch) {
+            lastMealValues.lunch = filledLunch;
+        }
+        if (filledDinner) {
+            lastMealValues.dinner = filledDinner;
+        }
+
+        currentDate = currentDate.add(1, 'day');
+    }
+
+    return result;
+};
+
+export const transformToRenderData = (data: SimpleMealPlanCell[], role?: AppRoles): MealPlanRowRender[] => {
+    let tempData = data;
+
+    if (data.length === 0) {
+        tempData = getDefaultCells();
+    }
+
+    const grouped = groupByDate(tempData);
+    const dates = Array.from(grouped.keys()).sort();
+
+    if (dates.length === 0) {
+        return [];
+    }
+
+    const firstDate = dayjs(dates[0]);
+    const lastDate = dayjs(dates[dates.length - 1]);
+
+    return forwardFillMeals({ grouped, firstDate, lastDate, role });
+};
+
+export const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): MealPlanRowRender[] => {
+    if (data.length === 0) {
+        return data;
+    }
+
+    const lastDayOfJuly = dayjs().month(JULY_MONTH_INDEX).date(31);
+
+    let lastRealRow: MealPlanRowRender | undefined;
+    for (let i = data.length - 1; i >= 0; i--) {
+        const row = data[i];
+        if (row.breakfast || row.lunch || row.dinner) {
+            lastRealRow = row;
+            break;
+        }
+    }
+
+    const lastDate = data[data.length - 1].date;
+
+    if (!lastRealRow || !lastDate.isBefore(lastDayOfJuly, 'day')) {
+        return data;
+    }
+
+    const result: MealPlanRowRender[] = [...data];
+    let currentDate = lastDate.add(1, 'day');
+
+    while (!currentDate.isAfter(lastDayOfJuly, 'day')) {
+        const editability = checkDateEditability(currentDate, role);
+        result.push({
+            id: currentDate.format('YYYY-MM-DD'),
+            date: currentDate,
+            breakfast: lastRealRow.breakfast ? { ...lastRealRow.breakfast } : getDefaultMealValue(),
+            lunch: lastRealRow.lunch ? { ...lastRealRow.lunch } : getDefaultMealValue(),
+            dinner: lastRealRow.dinner ? { ...lastRealRow.dinner } : getDefaultMealValue(),
+            editable: editability.editable,
+            readonlyMessage: editability.message
+        });
+        currentDate = currentDate.add(1, 'day');
+    }
+
+    return result;
+};
+
+interface UseGroupMealPlanDataReturn {
+    showAll: boolean;
+    renderData: MealPlanRowRender[];
+    displayData: MealPlanRowRender[];
+    setShowAll: (showAll: boolean) => void;
+    handleSave: (params: {
+        date: Dayjs;
+        mealTypeKey: MealTypeKey;
+        editMeat: number | null;
+        editaVegan: number | null;
+    }) => Promise<void>;
+    isLoading?: boolean;
+    isSaving?: boolean;
+}
+
+const filterDisplayData = (data: MealPlanRowRender[], showAll: boolean): MealPlanRowRender[] => {
+    if (showAll) return data;
+
+    const yesterday = dayjs().subtract(1, 'day');
+    const endDate = dayjs().add(DISPLAY_END_DAYS_AHEAD, 'day');
+
+    return data.filter(
+        (row) =>
+            (row.date.isSame(yesterday, 'day') || row.date.isAfter(yesterday)) &&
+            row.date.isBefore(endDate.add(1, 'day'))
+    );
+};
+
+const getDefaultCells = (): SimpleMealPlanCell[] => [
+    {
+        date: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+        meal_time: 'breakfast',
+        amount_meat: null,
+        amount_vegan: null
+    },
+    {
+        date: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+        meal_time: 'lunch',
+        amount_meat: null,
+        amount_vegan: null
+    },
+    {
+        date: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+        meal_time: 'dinner',
+        amount_meat: null,
+        amount_vegan: null
+    }
+];
+
+export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlanDataReturn => {
+    const { data, refetch } = useOne<GroupBadgeEntity>({ resource: 'group-badges', id });
+
+    const { mutateAsync: updateCell, isLoading: isUpdating } = useUpdate();
+    const { mutateAsync: createCell, isLoading: isCreating } = useCreate();
+
+    const { data: user } = useGetIdentity<UserData>();
+    const role = user?.roles?.[0];
+
+    const [showAll, setShowAll] = useState(false);
+
+    const renderData = useMemo(
+        () => fillMissingDates(transformToRenderData(data?.data?.planning_cells ?? []), role),
+        [data, role]
+    );
+
+    const displayData = useMemo(() => filterDisplayData(renderData, showAll), [renderData, showAll]);
+
+    const handleSave = useCallback(
+        async ({
+            date,
+            mealTypeKey,
+            editMeat,
+            editaVegan
+        }: {
+            date: Dayjs;
+            mealTypeKey: MealTypeKey;
+            editMeat: number | null;
+            editaVegan: number | null;
+        }) => {
+            if (!id) {
+                return;
+            }
+
+            const dateStr = date.format('YYYY-MM-DD');
+            const planningCells = data?.data?.planning_cells ?? [];
+
+            // Find existing cell
+            const existingCell = planningCells.find((cell) => cell.date === dateStr && cell.meal_time === mealTypeKey);
+
+            const payload = {
+                group_badge: id as number,
+                date: dateStr,
+                meal_time: mealTypeKey,
+                amount_meat: editMeat,
+                amount_vegan: editaVegan
+            };
+
+            try {
+                if (existingCell) {
+                    // Update existing cell
+                    await updateCell({
+                        resource: 'group-badge-planning-cells',
+                        id: existingCell.id,
+                        values: payload
+                    });
+                } else {
+                    // Create new cell
+                    await createCell({
+                        resource: 'group-badge-planning-cells',
+                        values: payload
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to save meal plan cell:', error);
+                // Could show error notification here
+            } finally {
+                await refetch();
+            }
+        },
+        [id, data?.data?.planning_cells, updateCell, createCell]
+    );
+
+    return {
+        showAll,
+        renderData,
+        displayData,
+        setShowAll,
+        handleSave,
+        isLoading: isCreating || isUpdating,
+        isSaving: isCreating || isUpdating
+    };
+};

@@ -18,30 +18,12 @@ import css from './post-scan-group-badge-misc.module.css';
 
 export const GroupBadgeInfo: FC<{
     name: string;
-    volsToFeed: Array<Volunteer>;
-}> = ({ name, volsToFeed }) => {
-    const totalVegs = volsToFeed.filter((vol) => vol.is_vegan).length;
-    const totalMeats = volsToFeed.filter((vol) => !vol.is_vegan).length;
-
+}> = ({ name }) => {
     return (
         <div className={css.info}>
             <Title>Групповой бейдж</Title>
             <div className={css.detail}>
-                <Text>
-                    Вы отсканировали групповой бейдж “{name}” ({volsToFeed.length}):
-                </Text>
-                <div className={cn(css.counts, { [css.oneCount]: totalVegs === 0 || totalMeats === 0 })}>
-                    {totalMeats > 0 && (
-                        <Text className={css.volInfo}>
-                            {totalMeats} {getPlural(totalMeats, ['Мясоед', 'Мясоеда', 'Мясоедов'])} 🥩
-                        </Text>
-                    )}
-                    {totalVegs > 0 && (
-                        <Text className={css.volInfo}>
-                            {totalVegs} {getPlural(totalVegs, ['Веган', 'Вегана', 'Веганов'])} 🥦
-                        </Text>
-                    )}
-                </div>
+                <Text>Вы отсканировали групповой бейдж “{name}”:</Text>
             </div>
         </div>
     );
@@ -54,46 +36,37 @@ export const GroupBadgeWarningCard: FC<{
     doFeed: (vols: Array<ValidatedVol>) => void;
     doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
     close: () => void;
-}> = ({ alreadyFedTransactions, close, doFeed, doFeedAnons, name, validationGroups }) => {
+}> = ({ alreadyFedTransactions, close, doFeedAnons, name, validationGroups }) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
-    const [showOtherCount, setShowOtherCount] = useState(false);
-    const [vegansCount, setVegansCount] = useState<string | number>(0);
-    const [nonVegansCount, setNonVegansCount] = useState<string | number>(0);
+    const calculateDefaultFeedCount = (isVegan: boolean) => {
+        const alreadyFedCount = calculateAlreadyFedCount(
+            alreadyFedTransactions.filter((t) => Boolean(t.is_vegan) === isVegan)
+        );
+        const volsToFeedCount = volsToFeed.filter((v) => Boolean(v.is_vegan) === isVegan).length;
+        return Math.max(volsToFeedCount - alreadyFedCount, 0);
+    };
+
+    const [vegansCount, setVegansCount] = useState<number>(() => calculateDefaultFeedCount(true));
+    const [nonVegansCount, setNonVegansCount] = useState<number>(() => calculateDefaultFeedCount(false));
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
-    const isPartiallyFed = !!alreadyFedTransactions.length;
-
     const handleFeed = (): void => {
-        if (showOtherCount) {
-            if (typeof vegansCount === 'string' || typeof nonVegansCount === 'string') {
-                alert('введено некорректное значение');
+        if (typeof vegansCount === 'string' || typeof nonVegansCount === 'string') {
+            alert('введено некорректное значение');
 
-                return;
-            }
-
-            doFeedAnons({ vegansCount, nonVegansCount });
-        } else {
-            if (isPartiallyFed) {
-                setIsWarningModalShown(true);
-                return;
-            }
-
-            doFeed(volsToFeed);
+            return;
         }
+
+        doFeedAnons({ vegansCount, nonVegansCount });
 
         close();
     };
 
-    const alreadyFedCount = calculateAlreadyFedCount(alreadyFedTransactions);
+    alreadyFedTransactions.filter((t) => t.is_vegan);
 
-    // Максимальное количество = количество людей, прошедших валидацию * 1.5 - количество уже покормленных. Но не меньше нуля!
-    const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedCount, 0);
-
-    const amountToFeed = showOtherCount
-        ? Number(vegansCount) + Number(nonVegansCount)
-        : Math.max(volsToFeed.length - alreadyFedCount, 0);
+    const amountToFeed = Number(vegansCount) + Number(nonVegansCount);
 
     return (
         <div className={css.groupBadgeCard}>
@@ -107,7 +80,7 @@ export const GroupBadgeWarningCard: FC<{
                 greenVols={validationGroups.greens}
                 showModal={isWarningModalShown}
             />
-            <GroupBadgeInfo name={name} volsToFeed={volsToFeed} />
+            <GroupBadgeInfo name={name} />
 
             {reds.length > 0 && (
                 <div className={css.volunteerList}>
@@ -115,23 +88,14 @@ export const GroupBadgeWarningCard: FC<{
                 </div>
             )}
 
-            {showOtherCount ? (
-                <FeedOtherCount
-                    maxCount={maxCountOther}
-                    vegansCount={vegansCount}
-                    nonVegansCount={nonVegansCount}
-                    setVegansCount={setVegansCount}
-                    setNonVegansCount={setNonVegansCount}
-                />
-            ) : null}
-
-            <BottomBlock
-                amountToFeed={amountToFeed}
-                handlePrimaryAction={handleFeed}
-                handleCancel={close}
-                handleAlternativeAction={() => setShowOtherCount(!showOtherCount)}
-                alternativeText={showOtherCount ? 'Кормить всех' : 'Кормить часть'}
+            <FeedOtherCount
+                vegansCount={vegansCount}
+                nonVegansCount={nonVegansCount}
+                setVegansCount={setVegansCount}
+                setNonVegansCount={setNonVegansCount}
             />
+
+            <BottomBlock amountToFeed={amountToFeed} handlePrimaryAction={handleFeed} handleCancel={close} />
         </div>
     );
 };
