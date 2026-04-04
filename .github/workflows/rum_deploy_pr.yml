@@ -47,7 +47,7 @@ jobs:
       id: create-link
       run: echo "::set-output name=app_url::https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru"
     - name: remove db dir
-      if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
+      if: ${{ github.event.action == 'closed' || github.event.pull_request.draft == true }}
       run: |
         rm -r ${DB_DIR}
 
