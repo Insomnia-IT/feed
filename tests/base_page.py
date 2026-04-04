@@ -1,363 +1,504 @@
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from datetime import datetime
+import re
 import time
+from datetime import datetime
+from playwright.sync_api import Page
 
-from locators import *
-# registration meal_create badge_create feed_history_pagination group_badges custom_field create_user
+from locators import registration, meal_create, badge_create, feed_history_pagination, group_badges, custom_field, create_user
 
 class BasePage:
-    def __init__(self, browser, url, timeout=10):
-        self.browser = browser
+    def __init__(self, page: Page, url:str):
+        self.page = page
         self.url = url
-        self.browser.implicitly_wait(timeout)
-        self.driver = browser
-
 
     def open(self):
-        self.browser.get(self.url)
+        self.page.goto(self.url)
+
+    def wait_for_list_page(self, path, timeout=30000):
+        self.page.wait_for_url(re.compile(rf"{re.escape(path)}(?:\?.*)?$"), timeout=timeout)
 
 
     def is_element_present(self, how, what):
-        try:
-            self.browser.find_element(how, what)
-        except NoSuchElementException:
-            return False
-        return True
+        return self.page.locator(what).is_visible()
 
-    def is_not_element_present(self, how, what, timeout=4):
+    def is_not_element_present(self, how, what, timeout=4000):
+        # Playwright's wait_for takes timeout in milliseconds.
         try:
-            WebDriverWait(self.browser, timeout).until(EC.presence_of_element_located((how, what)))
-        except TimeoutException:
+            self.page.locator(what).wait_for(state="visible", timeout=timeout)
+            return False
+        except Exception:
             return True
-        return False
+
+    def is_element_disabled(self, what):
+        # Проверяем наличие атрибута 'disabled' у элемента
+        return self.page.locator(what).is_disabled()
+
 
     def first_window(self):
-        first_button = self.browser.find_element(*registration.CHOOSE_LOGIN_TYPE)
-        first_button.click()
+        # Переключаемся на таб "Логин и пароль"
+        # Используем поиск по тексту, так как это наиболее надежно в данном случае
+        tab = self.page.get_by_text("Логин и пароль")
+        tab.first.wait_for(state="visible", timeout=7000)
+        tab.first.click(force=True)
+        
+        # Даем время на анимацию переключения
+        self.page.wait_for_timeout(1000)
+        
+        # Ждем, пока поле логина станет доступным для ввода
+        login_input = self.page.locator(registration.LOGIN)
+        login_input.wait_for(state="visible", timeout=7000)
 
     def first_window_qr(self):
-        first_button = self.browser.find_element(*registration.CHOOSE_QR_TYPE)
-        first_button.click()
+        # Находим таб "QR-код" через локатор и кликаем принудительно
+        first_button = self.page.locator(registration.CHOOSE_QR_TYPE)
+        first_button.wait_for(state="visible", timeout=7000)
+        first_button.click(force=True)
 
-    def scan_user(self):
-        self.driver.execute_script("""
-            document.body.dispatchEvent(new CustomEvent("scan", { 
-                detail: { scanCode: "e93e5fae99bd43b4b77d5c0235b14da9" } 
-            }));
+    def scan_user(self, qr_code="20635ffe1ad2496f8cfc5668d7e8b34d"):
+        # login.tsx вешает слушатель 'scan' на document внутри useEffect.
+        # Даем React время зарегистрировать его после рендера страницы.
+        self.page.wait_for_timeout(500)
+        # Диспатчим в точности так же как onscan.js: с bubbles:true
+        self.page.evaluate(f"""
+            document.dispatchEvent(new CustomEvent("scan", {{
+                bubbles: true,
+                detail: {{ scanCode: "{qr_code}" }}
+            }}));
         """)
-        time.sleep(2)
-
 
     def login_admin(self):
         login = "admin"
         password = "Kolombina25"
-        login_input = self.browser.find_element(*registration.LOGIN)
-        password_input = self.browser.find_element(*registration.PASSWORD)
-        login_input.send_keys(login)
-        password_input.send_keys(password)
-        prod_link = self.browser.find_element(*registration.BUTTONREG)
+        # Всегда ждем появления поля перед вводом
+        self.page.locator(registration.LOGIN).wait_for(state="visible", timeout=7000)
+        login_input = self.page.locator(registration.LOGIN)
+        password_input = self.page.locator(registration.PASSWORD)
+        login_input.fill(login)
+        password_input.fill(password)
+        prod_link = self.page.locator(registration.BUTTONREG)
         prod_link.click()
 
+    def logout(self):
+        # Нажимаем кнопку выход
+        logout_button = self.page.locator(registration.LOGOUT)
+        logout_button.wait_for(state="visible", timeout=5000)
+        logout_button.click()
+        # Ждем, когда кнопка исчезнет или мы окажемся на странице логина
+        self.page.wait_for_url("**/login", timeout=5000)
+
     def pagination(self):
-        page_link = self.browser.find_element(By.CLASS_NAME, "ant-pagination-item-2")
+        page_link = self.page.locator(".ant-pagination-item-2")
         page_link.click()
 
     def go_to_create_new_meal(self):
-        go_to_create = self.browser.find_element(By.XPATH, "//button[span[text()='Создать']]")
+        go_to_create = self.page.locator("//button[span[text()='Создать']]")
         go_to_create.click()
 
     def create_new_meal(self):
-        time.sleep(1)
-        time_field = self.browser.find_element(*meal_create.TIME_FIELD)
+        time_field = self.page.locator(meal_create.TIME_FIELD)
         time_field.click()
-        time.sleep(1)
-        choose_time = self.browser.find_element(*meal_create.TIME_CHOOSE)
+        choose_time = self.page.locator(meal_create.TIME_CHOOSE)
         choose_time.click()
-        choose_meal = self.browser.find_element(*meal_create.MEAL_FIELD)
+        choose_meal = self.page.locator(meal_create.MEAL_FIELD)
         choose_meal.click()
-        time.sleep(1)
-        choose_meal_type = self.browser.find_element(*meal_create.MEAL_TYPE)
+        choose_meal_type = self.page.locator(meal_create.MEAL_TYPE)
         choose_meal_type.click()
-        time.sleep(1)
-        kitchen = self.browser.find_element(*meal_create.KITCHEN_FIELD)
-        kitchen.send_keys("Кухня №2")
-        kitchen.send_keys(Keys.TAB)
-        time.sleep(3)
-        self.browser.find_element(*meal_create.SAVE_BUTTON).click()
+        kitchen = self.page.locator(meal_create.KITCHEN_FIELD)
+        kitchen.fill("Кухня №2")
+        kitchen.press("Tab")
+        self.page.locator(meal_create.SAVE_BUTTON).click()
 
 
     def go_to_create_badge(self):
-        go_to_create = self.browser.find_element(By.CSS_SELECTOR, ".refine-create-button")
+        go_to_create = self.page.locator(".refine-create-button")
         go_to_create.click()
 
 
     def create_badge(self):
-        badge_name =self.browser.find_element(*badge_create.BADGE_NAME)
-        badge_name.send_keys("autotest" + datetime.now().strftime("%d%m%H%M%S"))
-        department = self.browser.find_element(*badge_create.DEPARTMENT_NAME)
+        badge_name =self.page.locator(badge_create.BADGE_NAME)
+        badge_name.fill("autotest" + datetime.now().strftime("%d%m%H%M%S"))
+        department = self.page.locator(badge_create.DEPARTMENT_NAME)
         department.click()
-        department.send_keys(Keys.ENTER)
-        department.send_keys(Keys.ENTER)
-        qr = self.browser.find_element(*badge_create.QR_NAME)
-        qr.send_keys("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        self.browser.find_element(*badge_create.SUBMIT_BUTTON).click()
+        # Ждем пока выпадашка раскроется и в ней появятся элементы
+        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
+        department_option.wait_for(state="visible")
+        department_option.click()
+        role = self.page.locator("#role")
+        role.click()
+        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
+            has_text="Волонтёр"
+        ).first
+        role_option.wait_for(state="visible")
+        role_option.click()
+        qr = self.page.locator(badge_create.QR_NAME)
+        qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
+        self.page.locator(badge_create.SUBMIT_BUTTON).click()
 
     def badges_counter(self):
-        counter = self.browser.find_element(*badge_create.COUNTER).text
-        initial_count = int(counter.split(": ")[1])
-        return initial_count
+        # Ждем пока счетчик стабилизируется (не меняется 2 итерации подряд)
+        import time
+        prev = None
+        for _ in range(10):
+            try:
+                counter = self.page.locator(badge_create.COUNTER).inner_text()
+                current = int(counter.split(": ")[1].split(" ")[0])
+                print(f"[DEBUG] badges_counter raw: '{counter}'")
+                if current == prev and current > 0:
+                    return current
+                prev = current
+            except Exception:
+                pass
+            time.sleep(0.5)
+        # последнее значение
+        return prev or 0
 
 
     def meal_table(self):
-        first_row = self.browser.find_element(By.CSS_SELECTOR, "tbody.ant-table-tbody tr:first-child td:first-child")
-        return first_row.text
+        first_row = self.page.locator("tbody.ant-table-tbody tr:first-child td:first-child")
+        first_row.wait_for(state="visible")
+        return first_row.inner_text()
+
+    def open_meal(self):
+        first_row = self.page.locator("tr.ant-table-row").first
+        column = first_row.locator("td").nth(1)
+        column.click()
 
     def meal_deleting(self):
-        delete_buttons = self.browser.find_elements(By.CSS_SELECTOR,"button.refine-delete-button")
-        if delete_buttons:
-            delete_button = delete_buttons[0]
+        delete_buttons = self.page.locator("button.refine-delete-button")
+        if delete_buttons.count() > 0:
+            delete_button = delete_buttons.first
             delete_button.click()
-        time.sleep(1)
-        confirm_button = self.browser.find_element(By.XPATH, "//button[span[text()='Удалить']]")
+        confirm_button = self.page.locator("//button[span[text()='Удалить']]")
         confirm_button.click()
 
     def meal_history_pagination(self):
-        next_page = self.browser.find_element(*feed_history_pagination.NEXT_PAGE)
+        next_page = self.page.locator(feed_history_pagination.NEXT_PAGE)
         next_page.click()
 
     def go_to_custom_field_creating(self):
-        time.sleep(3)
-        custom_field = self.browser.find_element(*registration.CUSTOM_FIELD)
+        custom_field = self.page.locator(registration.CUSTOM_FIELD)
         custom_field.click()
-        time.sleep(3)
 
     def go_to_custom_field_creating_2(self):
-        create_column = self.browser.find_element(*registration.CUSTOM_FIELD_CREATE)
+        create_column = self.page.locator(registration.CUSTOM_FIELD_CREATE)
         create_column.click()
 
 
     def create_custom_field(self):
-        name = self.browser.find_element(*registration.CUSTOM_NAME)
+        name = self.page.locator(registration.CUSTOM_NAME)
         name.click()
-        name.send_keys("user" + datetime.now().strftime("H%M%S"))
-        type = self.browser.find_element(*registration.CUSTOM_TYPE)
+        name.fill("user" + datetime.now().strftime("H%M%S"))
+        type = self.page.locator(registration.CUSTOM_TYPE)
         type.click()
-        type.send_keys(Keys.ENTER)
-        type.send_keys(Keys.ENTER)
-        save_button = self.browser.find_element(*registration.SAVE_BUTTON)
+        type.press("Enter")
+        type.press("Enter")
+        save_button = self.page.locator(registration.SAVE_BUTTON)
         save_button.click()
 
     def delete_row(self):
-        delete_row_1 = self.browser.find_elements(*custom_field.DELETE_ROW)
-        if delete_row_1:
-            delete_row = delete_row_1[-1]  # Берем последний
-            delete_row.click()
-        time.sleep(1)
-        delete_row_2 = self.browser.find_element(*custom_field.DELETE_ROW_2)
+        delete_row = self.page.locator(custom_field.DELETE_ROW).last
+        delete_row.click()
+        delete_row_2 = self.page.locator(custom_field.DELETE_ROW_2)
         delete_row_2.click()
 
     def receive_count_of_volunteers_in_group_badge(self):
-        element_raw = self.browser.find_element(*group_badges.VOLONTEER_COUNTER)
-        element = int(element_raw.text)
+        element_raw = self.page.locator(group_badges.VOLONTEER_COUNTER).first
+        text = element_raw.inner_text()
+        element = int(text.strip("()"))
         return element
 
     def go_to_edit_badge(self):
-        edit_0 = self.browser.find_elements(*group_badges.EDIT_LAST_BUTTON)
-        if edit_0:
-            edit = edit_0[-1]  # Берем последний
-            edit.click()
+        edit = self.page.locator(group_badges.EDIT_LAST_BUTTON).last
+        edit.click()
 
     def add_volunteer_in_group_badge(self):
-        add_new = self.browser.find_element(*group_badges.ADD_VOLUNTEER)
+        add_new = self.page.locator(group_badges.ADD_VOLUNTEER)
         add_new.click()
-        time.sleep(6)
-        insert_name_raw = self.browser.find_elements(*group_badges.SEARCH_FIELD)
-        if insert_name_raw:
-            insert_name=insert_name_raw[-1]
-            insert_name.click()
-        insert_name.send_keys("Корица")
-        time.sleep(10)
-        checkbox = self.browser.find_elements(*group_badges.CHECKBOX)
-        if checkbox:
-            last_checkbox = checkbox[-1]  # Берем последний чекбокс
-            last_checkbox.click()
-        ok = self.browser.find_element(*group_badges.OK_BUTTON)
+        insert_name = self.page.locator(group_badges.SEARCH_FIELD).last
+        insert_name.click()
+        insert_name.fill("Корица")
+        checkbox = self.page.locator(group_badges.CHECKBOX).last
+        checkbox.click()
+        ok = self.page.locator(group_badges.OK_BUTTON)
         ok.click()
 
 
     def delete_volunteer_from_group_badge(self):
-        delete_him_1 = self.browser.find_elements(*group_badges.DELETE_VOLUNTEER_BUTTON)
-        if delete_him_1:
-            delete_him = delete_him_1[-1]  # Берем последний чекбокс
-            delete_him.click()
-            time.sleep(1)
-        delete_him_2 = self.browser.find_element(*group_badges.DELETE_VOLUNTEER_BUTTON_2)
+        delete_him = self.page.locator(group_badges.DELETE_VOLUNTEER_BUTTON).last
+        delete_him.click()
+        delete_him_2 = self.page.locator(group_badges.DELETE_VOLUNTEER_BUTTON_2)
         delete_him_2.click()
-        time.sleep(1)
 
     def delete_group_badge(self):
-        delete1 = self.browser.find_elements(By.CSS_SELECTOR, "button.refine-delete-button")
-        if delete1:
-            delete = delete1[-1]  # Берем последний чекбокс
-            delete.click()
-        time.sleep(2)
-        confirm = self.browser.find_element(By.XPATH, "//button[span[text()='Удалить']]")
+        delete = self.page.locator("button.refine-delete-button").last
+        delete.click()
+        confirm = self.page.locator("//button[span[text()='Удалить']]")
         confirm.click()
-        time.sleep(2)
 
     def receive_badges_count(self):
-        amount = self.browser.find_element(By.CSS_SELECTOR, "li.ant-pagination-total-text")
-        amount_number = amount.text
+        amount = self.page.locator("li.ant-pagination-total-text")
+        amount_number = amount.inner_text()
         return amount_number
 
 
     def save_in_group_badge(self):
-        saving = self.browser.find_element(*group_badges.SAVE_BUTTON)
+        saving = self.page.locator(group_badges.SAVE_BUTTON)
         saving.click()
 
 
     def go_to_create_user(self):
-        create = self.browser.find_element(*create_user.CREATE_USER_BUTTON)
+        create = self.page.locator(create_user.CREATE_USER_BUTTON)
         create.click()
 
-    def create_user(self):
-        add_name = self.browser.find_element(*create_user.USER_NAME)
+    def create_user(self, user_name="Test_name", supervisor_name='None'):
+        add_name = self.page.locator(create_user.USER_NAME)
         add_name.click()
-        add_name.send_keys("Test_name")
-        add_kitchen = self.browser.find_element(*create_user.KITCHEN_NUMBER)
+        add_name.fill(user_name)
+        add_supervisor = self.page.locator(create_user.SUPERVISOR)
+        add_supervisor.click()
+        self.page.locator(".ant-select-item-option").nth(1).click()
+        self.page.wait_for_timeout(500)
+        supervisor_name = add_supervisor.inner_text()
+        add_kitchen = self.page.locator(create_user.KITCHEN_NUMBER)
         add_kitchen.click()
-        add_kitchen.send_keys(Keys.TAB)
-        add_meal = self.browser.find_element(*create_user.MEAL_TYPE)
+        add_kitchen.press("Tab")
+        add_meal = self.page.locator(create_user.MEAL_TYPE)
         add_meal.click()
-        add_meal.send_keys(Keys.TAB)
-        add_role = self.browser.find_element(*create_user.ROLE_USER)
+        add_meal.press("Tab")
+        add_role = self.page.locator(create_user.ROLE_USER)
         add_role.click()
-        add_role.send_keys(Keys.TAB)
-        add_department = self.browser.find_element(*create_user.DEPARTMENT)
+        add_role.press("Tab")
+        add_department = self.page.locator(create_user.DEPARTMENT)
         add_department.click()
-        add_department.send_keys(Keys.TAB)
-        add_qr = self.browser.find_element(*create_user.QR_NUMBER)
+        add_department.press("Tab")
+        add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
-        add_qr.send_keys("qr" + datetime.now().strftime("%d%m%H%M%S"))
+        add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
+        return supervisor_name
 
 
     def save_in_user_page(self):
-        save = self.browser.find_element(*create_user.SAVE_BUTTON)
+        # Кликаем первую кнопку "Сохранить"
+        save = self.page.locator(create_user.SAVE_BUTTON).first
         save.click()
-        confirm = self.browser.find_elements(*create_user.SAVE_BUTTON)
-        if confirm:
-            confirm1 = confirm[-1]  # Берем последний чекбокс
-            confirm1.click()
+        # Проверяем, появилась ли вторая кнопка "Сохранить" (модалка подтверждения)
+        # Ждем максимум 3 секунды — если не появилась, значит её нет
+        try:
+            confirm = self.page.locator(create_user.SAVE_BUTTON).nth(1)
+            confirm.wait_for(state="visible", timeout=3000)
+            # Ждем пока кнопка станет активной (может стартовать disabled)
+            self.page.wait_for_function(
+                "() => !Array.from(document.querySelectorAll('button.refine-save-button')).at(-1)?.disabled",
+                timeout=5000
+            )
+            confirm.click(force=True)
+        except Exception:
+            # если нет модалки, иди дальше
+            pass
 
-    def find_user(self):
-        find = self.browser.find_element(*create_user.FIND_INPUT)
-        find.send_keys("Test_name")
-        time.sleep(3)
+    def find_user(self, user_name="Test_name"):
+        find = self.page.locator(create_user.FIND_INPUT)
+        find.fill(user_name)
+        find.press("Enter")
+        self.page.wait_for_timeout(1000)
 
 
-    def open_user(self):
-        first_row = self.browser.find_elements(By.CSS_SELECTOR, "tr.ant-table-row")[0]
-        column = first_row.find_elements(By.CSS_SELECTOR, "td")[1]
+    def open_user(self, expected_name=None):
+        if expected_name:
+            # Даем таблице время отфильтроваться после ввода в поиск
+            try:
+                self.page.wait_for_function(
+                    f"() => document.querySelector('tr.ant-table-row:first-child td:nth-child(2)')?.innerText === '{expected_name}'",
+                    timeout=5000
+                )
+            except Exception:
+                pass
+        
+        first_row = self.page.locator("tr.ant-table-row").first
+        first_row.wait_for(state="visible")
+        column = first_row.locator("td").nth(1)
         column.click()
-        time.sleep(2)
 
-    def edit_user(self):
-        add_name = self.browser.find_element(*create_user.USER_NAME)
-        add_name.clear()
-        time.sleep(1)
-        add_name.send_keys("_1")
-        add_visit = self.browser.find_element(*create_user.ADD_VISIT_BUTTON)
-        add_visit.click()
-        time.sleep(1)
-        status = self.browser.find_element(*create_user.VISIT_STATUS)
+    def edit_user(self, updated_name="_1", supervisor_name = None, original_name=None):
+        add_name = self.page.locator(create_user.USER_NAME)
+        
+        if original_name:
+            # Ждем пока форма прогрузит данные с бекенда (в инпуте появится оригинальное имя)
+            try:
+                self.page.wait_for_function(
+                    f"() => document.querySelector('#name')?.value === '{original_name}'",
+                    timeout=5000
+                )
+            except Exception:
+                pass
+        else:
+            # Fallback для старых тестов: просто ждем пару секунд
+            self.page.wait_for_timeout(2000)
+            
+        # Надежно устанавливаем имя, борясь с React, который может его затереть
+        for _ in range(3):
+            add_name.click()
+            add_name.clear()
+            add_name.fill(updated_name)
+            self.page.wait_for_timeout(500)
+            # Проверяем, что React не затер наше значение оригинальным
+            current_value = self.page.evaluate("() => document.querySelector('#name')?.value")
+            if current_value == updated_name:
+                break
+        change_supervisor = self.page.locator(create_user.SUPERVISOR)
+        change_supervisor.click()
+        self.page.locator(".ant-select-item-option").nth(2).click()
+        self.page.wait_for_timeout(300)
+        supervisor_name = change_supervisor.inner_text()
+        
+        add_visit = self.page.locator(create_user.ADD_VISIT_BUTTON)
+        add_visit.wait_for(state="visible")
+        add_visit.click(force=True)
+        
+        # Wait for React to render the new visit form row
+        self.page.wait_for_timeout(500)
+
+        status = self.page.locator(create_user.VISIT_STATUS)
+        status.wait_for(state="attached")
         status.click()
-        zaehal = self.browser.find_element(*create_user.ZAEHAL_STATUS)
+        zaehal = self.page.locator(create_user.ZAEHAL_STATUS)
         zaehal.click()
-        date_from = self.browser.find_element(*create_user.DATE_FROM)
+        date_from = self.page.locator(create_user.DATE_FROM)
         date_from.click()
-        time.sleep(1)
-        today = self.browser.find_element(*create_user.TODAY)
+        today = self.page.locator(create_user.TODAY)
         today.click()
-        time.sleep(1)
-        date_to = self.browser.find_element(*create_user.DATE_TO)
+        date_to = self.page.locator(create_user.DATE_TO)
         date_to.click()
-        time.sleep(2)
-        today1 = self.browser.find_elements(*create_user.TODAY)
-        if today1:
-            today2 = today1[-1]  # Берем последний чекбокс
-            today2.click()
-        time.sleep(1)
-        save = self.browser.find_element(*create_user.SAVE_BUTTON)
-        save.click()
+        today_last = self.page.locator(create_user.TODAY).last
+        today_last.click()
+        self.save_in_user_page()
+        return supervisor_name
 
-    def check_username_after_editing(self):
-        first_row = self.browser.find_elements(By.CSS_SELECTOR, "tr.ant-table-row")[0]
-        column = first_row.find_elements(By.CSS_SELECTOR, "td")[1]
-        column_text = column.text
-        time.sleep(2)
+    def change_supervisor(self, option_index=3):
+        change_supervisor = self.page.locator(create_user.SUPERVISOR)
+        change_supervisor.click()
+        self.page.locator(".ant-select-item-option").nth(option_index).click()
+        self.page.wait_for_timeout(300)
+        supervisor_name = change_supervisor.inner_text()
+        return supervisor_name
+
+    def clear_supervisor(self):
+        clear_supervisor = self.page.locator(create_user.CLEAR_SUPERVISOR)
+        clear_supervisor.click()
+        self.page.wait_for_timeout(300)
+
+    def get_supervisor_name(self):
+        new_supervisor_name = self.page.locator(create_user.SUPERVISOR).inner_text()
+        return new_supervisor_name
+
+    def check_username_after_editing(self, expected_name="Test_name"):
+        first_row = self.page.locator("tr.ant-table-row").first
+        first_row.wait_for(state="visible")
+        column = first_row.locator("td").nth(1)
+        try:
+            # Даем таблице время отфильтроваться после ввода в поиск
+            self.page.wait_for_function(
+                f"() => document.querySelector('tr.ant-table-row:first-child td:nth-child(2)')?.innerText === '{expected_name}'",
+                timeout=5000
+            )
+        except Exception:
+            pass
+        column_text = column.inner_text()
         return column_text
 
-    def check_username_after_deleting(self):
-        find = self.browser.find_element(*create_user.FIND_INPUT)
-        find.send_keys("Test_updated_name")
-        time.sleep(1)
+    def check_username_after_deleting(self, expected_name="Test_updated_name"):
+        find = self.page.locator(create_user.FIND_INPUT)
+        find.fill(expected_name)
 
 
     def delete_user(self):
-        delete1 = self.browser.find_element(*create_user.DELETE_USER_BUTTON)
+        delete1 = self.page.locator(create_user.DELETE_USER_BUTTON)
         delete1.click()
-        time.sleep(1)
-        delete2 = self.browser.find_element(*create_user.DELETE_CONFIRM)
+        delete2 = self.page.locator(create_user.DELETE_CONFIRM)
         delete2.click()
 
     def receive_volunteers_count(self):
-        amount = self.browser.find_element(*create_user.USERS_COUNTER)
-        amount_number = int(amount.text)
-        return amount_number
+        amount = self.page.locator(create_user.USERS_COUNTER)
+        # Ждём, пока в счётчике появится текст
+        import time
+        for _ in range(10):
+            text = amount.inner_text().strip()
+            if text and text.isdigit():
+                return int(text)
+            time.sleep(0.5)
+        # Fallback if it still fails
+        return int(amount.inner_text().strip())
 
     def clear_input_field(self):
-        find = self.browser.find_element(*create_user.FIND_INPUT)
-        find.send_keys(Keys.END)  # Перемещаем курсор в конец строки
-        for _ in range(len(find.get_attribute("value"))):
-            find.send_keys(Keys.BACKSPACE)  # Удаляем символы один за другим
+        find = self.page.locator(create_user.FIND_INPUT)
+        find.press("End")  # Перемещаем курсор в конец строки
+        val = find.input_value()
+        for _ in range(len(val)):
+            find.press("Backspace")  # Удаляем символы один за другим
+
+    def ban_user(self):
+        ban = self.page.locator(create_user.BAN_BUTTON)
+        ban.click()
+        reason = self.page.locator(create_user.BAN_REASON)
+        reason.fill("Причина бана")
+        confirm = self.page.locator(create_user.BAN_CONFIRM)
+        confirm.click()
+
+    def unban_user(self):
+        unban = self.page.locator(create_user.UNBAN_BUTTON)
+        unban.wait_for(state="visible", timeout=5000)
+        unban.click()
+        reason = self.page.locator(create_user.BAN_REASON)
+        reason.fill("Причина разбана")
+        confirm = self.page.locator(create_user.UNBAN_CONFIRM)
+        confirm.click()
+
+    def check_history_actions(self):
+        # Кликаем по вкладке "История действий"
+        self.page.locator(create_user.HISTORY_TAB).click()
+        # Даем истории время прогрузиться (асинхронные логи)
+        self.page.wait_for_timeout(1000)
+        # Ждем появления элементов в списке истории
+        self.page.locator(create_user.HISTORY_LOG_ITEM).first.wait_for(state="visible", timeout=5000)
 
 
 
+    def check_last_action(self):
+        # Возвращаем текст последнего действия
+        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(1).inner_text().strip()
 
+    def check_second_last_action(self):
+        # Возвращаем текст предпоследнего действия
+        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
 
+    def get_current_volunteer_name(self):
+        # Получаем имя из поля #name
+        return self.page.locator(create_user.USER_NAME).input_value()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def cleanup_volunteer_comment(self, volunteer_name):
+        # Сначала выходим из текущей сессии (руководителя службы)
+        self.logout()
+        # ждем
+        self.page.wait_for_timeout(500)
+        # Переключаемся на форму логина/пароля
+        self.first_window()
+        # Логинимся под админом
+        self.login_admin()
+        self.page.wait_for_timeout(500)
+        # Ищем и открываем пользователя
+        find = self.page.locator(create_user.FIND_INPUT)
+        find.click()
+        find.fill(volunteer_name)
+        self.page.wait_for_timeout(500)
+        self.open_user(volunteer_name)
+        # Очищаем комментарий
+        self.page.wait_for_timeout(1000)
+        comment = self.page.locator(create_user.COMMENT_FIELD)
+        comment.press("ControlOrMeta+A")
+        self.page.wait_for_timeout(1000)
+        comment.press("Backspace")
+        self.page.wait_for_timeout(1000)
+        # Сохраняем
+        self.save_in_user_page()
+        # Ждем возврата в список волонтеров
+        self.page.wait_for_timeout(5000)
 

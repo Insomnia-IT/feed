@@ -1,11 +1,11 @@
 import { Button, Form, Input, Select } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
 import { useSelect } from '@refinedev/antd';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
 import { TextEditor } from 'components/controls/text-editor';
-import type { DirectionEntity } from 'interfaces';
+import type { DirectionEntity, VolunteerRoleEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
@@ -14,10 +14,28 @@ export const CreateEdit: FC = () => {
         resource: 'directions',
         optionLabel: 'name'
     });
+    const { selectProps: volunteerRoleSelectProps } = useSelect<VolunteerRoleEntity>({
+        resource: 'volunteer-roles',
+        optionLabel: 'name',
+        filters: [
+            {
+                field: 'is_group_badge',
+                operator: 'eq',
+                value: true
+            }
+        ]
+    });
 
     const visibleDirections = useVisibleDirections();
     const directions = directionSelectProps.options?.filter(
         ({ value }) => !visibleDirections || visibleDirections.includes(value as string)
+    );
+    const groupBadgeRoles = useMemo(
+        () =>
+            [...(volunteerRoleSelectProps.options ?? [])].sort((left, right) =>
+                String(left.label).localeCompare(String(right.label), 'ru')
+            ),
+        [volunteerRoleSelectProps.options]
     );
 
     const form = Form.useFormInstance();
@@ -43,6 +61,9 @@ export const CreateEdit: FC = () => {
             </Form.Item>
             <Form.Item label="Служба/Направление" name="direction" rules={Rules.required}>
                 <Select {...directionSelectProps} options={directions} />
+            </Form.Item>
+            <Form.Item label="Роль волонтеров" name="role" rules={Rules.required}>
+                <Select {...volunteerRoleSelectProps} options={groupBadgeRoles} />
             </Form.Item>
             <Form.Item label="QR" name="qr" rules={Rules.required}>
                 <Input.Search
