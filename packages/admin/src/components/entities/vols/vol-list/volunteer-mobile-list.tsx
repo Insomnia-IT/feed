@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, memo } from 'react';
+import { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import { Spin, Tag, Modal, Typography } from 'antd';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -91,11 +91,13 @@ const VolunteerMobileCard = memo(
 export const VolunteerMobileList = ({
     filterQueryParams,
     statusById,
-    openVolunteer
+    openVolunteer,
+    onTotalChange
 }: {
     filterQueryParams: string;
     statusById: Record<string, string>;
     openVolunteer: (id: number) => Promise<boolean>;
+    onTotalChange?: (total: number) => void;
 }) => {
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
@@ -108,6 +110,12 @@ export const VolunteerMobileList = ({
     const list = useMemo(() => {
         return result.data?.pages.flatMap((page: GetListResponse<VolEntity>) => page.data) ?? [];
     }, [result.data]);
+
+    useEffect(() => {
+        const total = result.data?.pages[0]?.total ?? 0;
+        onTotalChange?.(total);
+    }, [onTotalChange, result.data]);
+
     const preparedList = useMemo<VolMobileRow[]>(
         () =>
             list.map((vol) => {

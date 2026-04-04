@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useList, CanAccess, useGetIdentity } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col, Segmented } from 'antd';
@@ -28,6 +28,133 @@ const LS_PAGE_SIZE = 'volPageSize';
 
 const isBrowser = () => typeof window !== 'undefined';
 
+const DesktopVolunteersContent = ({
+    page,
+    pageSize,
+    setPageWithStorage,
+    setPageSizeWithStorage,
+    effectiveFilterQueryParams,
+    statusById,
+    customFields,
+    canBulkEdit,
+    canListCustomFields,
+    isFiltersLoading,
+    searchText,
+    activeFilters,
+    openVolunteer
+}: {
+    page: number;
+    pageSize: number;
+    setPageWithStorage: (value: number) => void;
+    setPageSizeWithStorage: (value: number) => void;
+    effectiveFilterQueryParams: string;
+    statusById: Record<string, string>;
+    customFields: Array<CustomFieldEntity>;
+    canBulkEdit: boolean;
+    canListCustomFields: boolean;
+    isFiltersLoading: boolean;
+    searchText: string;
+    activeFilters: unknown[];
+    openVolunteer: (id: number) => Promise<boolean>;
+}) => {
+    const { result: volunteersResult, query: volunteersQuery } = useList<VolEntity>({
+        resource: `volunteers/${effectiveFilterQueryParams}`,
+        pagination: {
+            mode: 'server',
+            currentPage: page,
+            pageSize
+        }
+    });
+    const volunteers = volunteersResult;
+    const volunteersIsLoading = volunteersQuery.isLoading;
+    const reloadVolunteers = volunteersQuery.refetch;
+
+    useEffect(() => {
+        const total = volunteers?.total;
+        if (!total) return;
+
+        const outOfRange = (page - 1) * pageSize >= total;
+        if (!outOfRange) return;
+
+        setPageWithStorage(1);
+    }, [volunteers?.total, page, pageSize, setPageWithStorage]);
+
+    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
+        useMassEdit({
+            totalVolunteersCount: volunteers?.total ?? 0,
+            filterQueryParams: effectiveFilterQueryParams
+        });
+
+    const pagination = useMemo<TablePaginationConfig>(
+        () => ({
+            total: volunteers?.total ?? 1,
+            showTotal: (total) => (
+                <>
+                    <span data-testid="volunteer-count-caption">Волонтёров:</span>{' '}
+                    <span data-testid="volunteer-count-value">{total}</span>
+                </>
+            ),
+            hideOnSinglePage: false,
+            current: page,
+            pageSize,
+            showSizeChanger: true,
+            onChange: (newPage, newSize) => {
+                setPageWithStorage(newPage);
+                setPageSizeWithStorage(newSize);
+            }
+        }),
+        [volunteers?.total, page, pageSize, setPageWithStorage, setPageSizeWithStorage]
+    );
+
+    const noActiveFilters = activeFilters.length === 0;
+    const volunteersData = volunteers?.data ?? [];
+    const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
+
+    return (
+        <>
+            <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
+                <Col style={{ display: 'flex', alignItems: 'center' }}>
+                    <span>
+                        <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
+                    </span>
+                </Col>
+
+                <Row style={{ gap: '12px' }}>
+                    <ChooseColumnsButton canListCustomFields={canListCustomFields} />
+                    <SaveAsXlsxButton
+                        isDisabled={!volunteersData.length || isFiltersLoading}
+                        filterQueryParams={effectiveFilterQueryParams}
+                    />
+                </Row>
+            </Row>
+
+            {!showPersons && (
+                <VolunteerDesktopTable
+                    openVolunteer={openVolunteer}
+                    pagination={pagination}
+                    statusById={statusById}
+                    volunteersIsLoading={volunteersIsLoading}
+                    volunteersData={volunteersData}
+                    customFields={customFields}
+                    rowSelection={canBulkEdit ? rowSelection : undefined}
+                />
+            )}
+            {showPersons && <PersonsTable key={searchText} searchText={searchText} />}
+            {canBulkEdit && (
+                <MassEdit
+                    selectedVolunteers={selectedVols}
+                    unselectAll={unselectAllSelected}
+                    unselectVolunteer={unselectVolunteer}
+                    reloadVolunteers={async () => {
+                        await reloadVolunteers();
+                        await reloadSelectedVolunteers();
+                    }}
+                />
+            )}
+        </>
+    );
+};
+
 export const VolList = () => {
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
@@ -47,6 +174,7 @@ export const VolList = () => {
     const [customFieldsLoaded, setCustomFieldsLoaded] = useState(false);
     const [hasMyBrigade, setHasMyBrigade] = useState(false);
     const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
+    const [mobileTotal, setMobileTotal] = useState(0);
 
     const setPageWithStorage = useCallback((value: number): void => {
         setPage(value);
@@ -121,53 +249,6 @@ export const VolList = () => {
         };
     }, [isDesktop, userId]);
 
-    const isMyBrigadeAvailable = !isDesktop && Boolean(userId) && hasMyBrigade;
-    const effectiveBrigadeScope: 'my' | 'all' = isMyBrigadeAvailable ? brigadeScope : 'all';
-
-    const mobileFilterQueryParams = useMemo(() => {
-        if (!isMyBrigadeAvailable || effectiveBrigadeScope !== 'my' || !userId) {
-            return filterQueryParams;
-        }
-
-        const baseParams = filterQueryParamsWithoutDefaultDirections;
-        const separator = baseParams ? '&' : '?';
-
-        return `${baseParams}${separator}supervisor_id=${encodeURIComponent(String(userId))}`;
-    }, [
-        effectiveBrigadeScope,
-        filterQueryParams,
-        filterQueryParamsWithoutDefaultDirections,
-        isMyBrigadeAvailable,
-        userId
-    ]);
-
-    const effectiveFilterQueryParams = isDesktop ? filterQueryParams : mobileFilterQueryParams;
-
-    const { result: volunteersResult, query: volunteersQuery } = useList<VolEntity>({
-        resource: `volunteers/${effectiveFilterQueryParams}`,
-        pagination: isDesktop
-            ? {
-                  mode: 'server',
-                  currentPage: page,
-                  pageSize
-              }
-            : undefined
-    });
-    const volunteers = volunteersResult;
-    const volunteersIsLoading = volunteersQuery.isLoading;
-    const reloadVolunteers = volunteersQuery.refetch;
-
-    useEffect(() => {
-        // Если текущая страница выходит за пределы общего количества, сбрасываем на 1
-        const total = volunteers?.total;
-        if (!total) return;
-
-        const outOfRange = (page - 1) * pageSize >= total;
-        if (!outOfRange) return;
-
-        setPageWithStorage(1);
-    }, [volunteers?.total, page, pageSize, setPageWithStorage]);
-
     useEffect(() => {
         let cancelled = false;
 
@@ -191,32 +272,27 @@ export const VolList = () => {
         };
     }, []);
 
-    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
-        useMassEdit({
-            totalVolunteersCount: volunteers?.total ?? 0,
-            filterQueryParams: effectiveFilterQueryParams
-        });
+    const isMyBrigadeAvailable = !isDesktop && Boolean(userId) && hasMyBrigade;
+    const effectiveBrigadeScope: 'my' | 'all' = isMyBrigadeAvailable ? brigadeScope : 'all';
 
-    const pagination = useMemo<TablePaginationConfig>(
-        () => ({
-            total: volunteers?.total ?? 1,
-            showTotal: (total) => (
-                <>
-                    <span data-testid="volunteer-count-caption">Волонтёров:</span>{' '}
-                    <span data-testid="volunteer-count-value">{total}</span>
-                </>
-            ),
-            hideOnSinglePage: false,
-            current: page,
-            pageSize,
-            showSizeChanger: true,
-            onChange: (newPage, newSize) => {
-                setPageWithStorage(newPage);
-                setPageSizeWithStorage(newSize);
-            }
-        }),
-        [volunteers?.total, page, pageSize, setPageWithStorage, setPageSizeWithStorage]
-    );
+    const mobileFilterQueryParams = useMemo(() => {
+        if (!isMyBrigadeAvailable || effectiveBrigadeScope !== 'my' || !userId) {
+            return filterQueryParams;
+        }
+
+        const baseParams = filterQueryParamsWithoutDefaultDirections;
+        const separator = baseParams ? '&' : '?';
+
+        return `${baseParams}${separator}supervisor_id=${encodeURIComponent(String(userId))}`;
+    }, [
+        effectiveBrigadeScope,
+        filterQueryParams,
+        filterQueryParamsWithoutDefaultDirections,
+        isMyBrigadeAvailable,
+        userId
+    ]);
+
+    const effectiveFilterQueryParams = isDesktop ? filterQueryParams : mobileFilterQueryParams;
 
     const openVolunteer = (id: number) => {
         edit('volunteers', id);
@@ -224,8 +300,6 @@ export const VolList = () => {
     };
 
     const noActiveFilters = activeFilters.length === 0;
-    const volunteersData = volunteers?.data ?? [];
-    const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
 
     return (
         <List canCreate={noActiveFilters}>
@@ -261,61 +335,35 @@ export const VolList = () => {
                             onChange={(value) => setBrigadeScope(value as 'my' | 'all')}
                         />
                     )}
-                    <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
-                        {isDesktop ? (
-                            <>
-                                <Col style={{ display: 'flex', alignItems: 'center' }}>
-                                    <span>
-                                        <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span>{' '}
-                                        волонтеров
-                                    </span>
-                                </Col>
-
-                                <Row style={{ gap: '12px' }}>
-                                    <ChooseColumnsButton canListCustomFields={canListCustomFields} />
-                                    <SaveAsXlsxButton
-                                        isDisabled={!volunteersData.length || isFiltersLoading}
-                                        filterQueryParams={effectiveFilterQueryParams}
-                                    />
-                                </Row>
-                            </>
-                        ) : (
-                            <span>Найдено: {volunteers?.total ?? 0}</span>
-                        )}
-                    </Row>
 
                     {isDesktop ? (
-                        <>
-                            {!showPersons && (
-                                <VolunteerDesktopTable
-                                    openVolunteer={openVolunteer}
-                                    pagination={pagination}
-                                    statusById={statusById}
-                                    volunteersIsLoading={volunteersIsLoading}
-                                    volunteersData={volunteersData}
-                                    customFields={customFields}
-                                    rowSelection={canBulkEdit ? rowSelection : undefined}
-                                />
-                            )}
-                            {showPersons && <PersonsTable key={searchText} searchText={searchText} />}
-                            {canBulkEdit && (
-                                <MassEdit
-                                    selectedVolunteers={selectedVols}
-                                    unselectAll={unselectAllSelected}
-                                    unselectVolunteer={unselectVolunteer}
-                                    reloadVolunteers={async () => {
-                                        await reloadVolunteers();
-                                        await reloadSelectedVolunteers();
-                                    }}
-                                />
-                            )}
-                        </>
-                    ) : (
-                        <VolunteerMobileList
-                            filterQueryParams={effectiveFilterQueryParams}
+                        <DesktopVolunteersContent
+                            page={page}
+                            pageSize={pageSize}
+                            setPageWithStorage={setPageWithStorage}
+                            setPageSizeWithStorage={setPageSizeWithStorage}
+                            effectiveFilterQueryParams={effectiveFilterQueryParams}
                             statusById={statusById}
+                            customFields={customFields}
+                            canBulkEdit={canBulkEdit}
+                            canListCustomFields={canListCustomFields}
+                            isFiltersLoading={isFiltersLoading}
+                            searchText={searchText}
+                            activeFilters={activeFilters}
                             openVolunteer={openVolunteer}
                         />
+                    ) : (
+                        <>
+                            <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
+                                <span>Найдено: {mobileTotal}</span>
+                            </Row>
+                            <VolunteerMobileList
+                                filterQueryParams={effectiveFilterQueryParams}
+                                statusById={statusById}
+                                openVolunteer={openVolunteer}
+                                onTotalChange={setMobileTotal}
+                            />
+                        </>
                     )}
                 </ActiveColumnsContextProvider>
             </CanAccess>
