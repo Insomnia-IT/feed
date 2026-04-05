@@ -361,20 +361,9 @@ export const FeedTransactionList: FC = () => {
         { dataIndex: 'amount', title: 'Кол-во' },
         { dataIndex: 'reason', title: 'Причина' },
         {
-            dataIndex: ['serviceName', 'anomalyType', 'isAnomaly'],
+            dataIndex: 'isAnomaly',
             title: 'Аномалия',
-            render: (_: unknown, row: TransformedTransaction) => {
-                if (!row.isAnomaly) return '—';
-                const label = `${row.serviceName}: ${row.anomalyType}`;
-                const tooltipText = tooltipForAnomalyType(row.problem ?? row.anomalyType);
-                return (
-                    <Tooltip title={tooltipText}>
-                        <span style={{ cursor: 'help', textDecoration: 'underline dotted' }}>
-                            {label}
-                        </span>
-                    </Tooltip>
-                );
-            }
+            render: (_: unknown, row: TransformedTransaction) => (row.isAnomaly ? 'Да' : '—')
         },
         { dataIndex: 'groupBadgeName', title: 'Групповой бейдж' },
         {
