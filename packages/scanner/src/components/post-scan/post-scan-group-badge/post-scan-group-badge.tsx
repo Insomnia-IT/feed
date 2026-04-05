@@ -189,6 +189,8 @@ export const PostScanGroupBadge: FC<{
                 closeFeed={closeFeed}
                 name={name}
                 view={view}
+                groupBadge={groupBadge}
+                mealTime={mealTime}
             />
         </CardContainer>
     );
@@ -202,7 +204,19 @@ const ResultScreen: React.FC<{
     name: string;
     validationGroups: ValidationGroups;
     view: Views;
-}> = ({ alreadyFedTransactions, closeFeed, doFeed, doFeedAnons, name, validationGroups, view }) => {
+    groupBadge: GroupBadge;
+    mealTime: MealTime | null;
+}> = ({
+    alreadyFedTransactions,
+    closeFeed,
+    doFeed,
+    doFeedAnons,
+    groupBadge,
+    mealTime,
+    name,
+    validationGroups,
+    view
+}) => {
     switch (view) {
         case Views.LOADING:
             return <ErrorCard close={closeFeed} title='Загрузка...' msg='' />;
@@ -224,6 +238,8 @@ const ResultScreen: React.FC<{
                     doFeed={doFeed}
                     close={closeFeed}
                     validationGroups={validationGroups}
+                    groupBadge={groupBadge}
+                    mealTime={mealTime!}
                 />
             );
 
