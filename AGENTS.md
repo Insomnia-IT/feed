@@ -7,7 +7,7 @@
 - **Install dependencies**: `npm install`
 - **Build all packages**: `npm run build`
 - **Lint all**: `npm run lint`
-- **Fix linting**: `npm run lint-fix:js`
+- **Fix linting**: `npm run lint-fix`
 - **Run type checking**: `npm run tc`
 
 ### Backend (Django)
@@ -48,8 +48,11 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
 ### Tech Stack Highlights
 
 - **Backend**: Python/Django/SQLite (Dev)/PostgreSQL (Prod).
-- **Frontend**: React, TypeScript, Vite (Admin), Craco/Webpack (Scanner), Refine (Admin framework).
-- **Monorepo Tools**: Lerna and Nx for task orchestration.
+- **Frontend**:
+    - `packages/admin`: React 19, TypeScript, Vite, Refine 6, Ant Design, TanStack Query, React Router 7.
+    - `packages/scanner`: React 19, TypeScript, Vite, PWA, Dexie.
+    - Both frontend packages use Vite and `@vitejs/plugin-react`.
+- **Monorepo Tools**: npm workspaces, Lerna 9, Nx 22.
 
 ### Key Models (Backend)
 
