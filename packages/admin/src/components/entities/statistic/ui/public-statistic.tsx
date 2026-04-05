@@ -53,7 +53,7 @@ export function PublicStatistic() {
         applyHistory: 'false' as BooleanExtended,
         selectedMealTime: 'breakfast' as MealTime
     });
-    console.log('filters', filters);
+    
     const [statisticViewType, setStatisticViewType] = useState<StatisticViewType>('date');
     const [date, setDate] = useState<dayjsExt.Dayjs>(dayjsExt().startOf('date'));
     const [timePeriod, setTimePeriod] = useState<[dayjsExt.Dayjs | null, dayjsExt.Dayjs | null]>([
