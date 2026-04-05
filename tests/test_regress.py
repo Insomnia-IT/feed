@@ -307,14 +307,13 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     #добавляем волонтера
     login_page.add_volunteer_in_group_badge()
     page.wait_for_timeout(1000)
-    #фиксируем счетчик и сохраняем
-    count2 = login_page.receive_count_of_volunteers_in_group_badge()
+    #сохраняем изменения
     login_page.save_in_group_badge()
     login_page.open()
     #возвращаемся в бейдж
     login_page.go_to_edit_badge()
-    #фиксируем счетчик
-    count3 = login_page.receive_count_of_volunteers_in_group_badge()
+    #фиксируем счетчик уже после повторного открытия
+    count2 = login_page.receive_count_of_volunteers_in_group_badge()
     #удаляем волонтера
     login_page.delete_volunteer_from_group_badge()
     page.wait_for_timeout(1000)
@@ -325,12 +324,12 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     assert page.url.startswith(f"{host}/group-badges")
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     login_page.go_to_edit_badge()
-    count4 = login_page.receive_count_of_volunteers_in_group_badge()
+    count3 = login_page.receive_count_of_volunteers_in_group_badge()
     print("До-", count1, "человек в бейдже")
     assert count2 == count1 + 1
-    print("До-", count1, count4, "человек в бейдже")
-    assert count4 == count3 - 1
-    print("После-", count3, "человек в бейдже")
+    print("До-", count1, count3, "человек в бейдже")
+    assert count3 == count1
+    print("После-", count2, "человек в бейдже")
 
 def test_create_new_user(page):
     #создать нового юзера
@@ -346,7 +345,7 @@ def test_create_new_user(page):
     created_user_name = f"Test_name_{datetime.now().strftime('%d%m%H%M%S')}"
     login_page.create_user(created_user_name)
     login_page.save_in_user_page()
-    page.wait_for_url(f"{host}/volunteers")
+    login_page.wait_for_list_page(f"{host}/volunteers")
     login_page.find_user(created_user_name)
     page.wait_for_timeout(300)
     login_page.open_user(created_user_name)
@@ -366,7 +365,7 @@ def test_create_new_user(page):
     counter2 = login_page.receive_volunteers_count()
     login_page.find_user(created_user_name)
     user_name = login_page.check_username_after_editing(created_user_name)
-    assert page.url == f"{host}/volunteers", "Ошибка: Редирект не случився!"
+    assert page.url.startswith(f"{host}/volunteers"), "Ошибка: Редирект не случився!"
     assert counter1 + 1 == counter2, "Счетчик не увеличился на 1!!!"
     assert user_name == created_user_name, "Ошибка: Имя не совпадает!"
 

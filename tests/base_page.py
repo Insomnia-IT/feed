@@ -131,7 +131,12 @@ class BasePage:
         role_option.click()
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        self.page.locator(badge_create.SUBMIT_BUTTON).click()
+        with self.page.expect_response(
+            lambda response: response.request.method == "POST"
+            and "/group-badges/" in response.url
+            and response.ok
+        ):
+            self.page.locator(badge_create.SUBMIT_BUTTON).click()
 
     def badges_counter(self):
         # Ждем пока счетчик стабилизируется (не меняется 2 итерации подряд)
@@ -216,14 +221,33 @@ class BasePage:
         edit.click()
 
     def add_volunteer_in_group_badge(self):
+        existing_volunteers = {
+            name.strip()
+            for name in self.page.locator("table").first.locator("tbody tr td:nth-child(1)").all_inner_texts()
+            if name.strip()
+        }
         add_new = self.page.locator(group_badges.ADD_VOLUNTEER)
         add_new.click()
-        insert_name = self.page.locator(group_badges.SEARCH_FIELD).last
+        modal = self.page.locator(".ant-modal-content").last
+        insert_name = modal.locator(group_badges.SEARCH_FIELD).first
         insert_name.click()
         insert_name.fill("Корица")
-        checkbox = self.page.locator(group_badges.CHECKBOX).last
-        checkbox.click()
-        ok = self.page.locator(group_badges.OK_BUTTON)
+        modal_rows = modal.locator("tbody tr")
+        modal_rows.first.wait_for(state="visible")
+        selected_row = None
+        for index in range(modal_rows.count()):
+            row = modal_rows.nth(index)
+            volunteer_name = row.locator("td").nth(1).inner_text().strip()
+            if volunteer_name and volunteer_name not in existing_volunteers:
+                selected_row = row
+                break
+
+        if selected_row is None:
+            raise AssertionError("Не найден волонтёр для добавления в групповой бейдж")
+
+        checkbox = selected_row.locator(group_badges.CHECKBOX).first
+        checkbox.check(force=True)
+        ok = modal.locator(group_badges.OK_BUTTON)
         ok.click()
 
 
@@ -442,10 +466,10 @@ class BasePage:
 
     def clear_input_field(self):
         find = self.page.locator(create_user.FIND_INPUT)
-        find.press("End")  # Перемещаем курсор в конец строки
-        val = find.input_value()
-        for _ in range(len(val)):
-            find.press("Backspace")  # Удаляем символы один за другим
+        find.click()
+        find.fill("")
+        find.press("Enter")
+        self.page.wait_for_timeout(1000)
 
     def ban_user(self):
         ban = self.page.locator(create_user.BAN_BUTTON)
