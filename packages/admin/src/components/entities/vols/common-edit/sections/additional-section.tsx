@@ -3,6 +3,7 @@ import { Divider, Form, Input, Button, Checkbox, Tooltip } from 'antd';
 import { FrownOutlined, SmileOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { DeleteButton } from '@refinedev/antd';
 import { useNavigate } from 'react-router-dom';
+import { Rules } from 'components/form/rules';
 
 import BanModal from './ban-modal';
 import useCanAccess from '../../use-can-access';
@@ -89,7 +90,7 @@ export const AdditionalSection = ({
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
                 </Form.Item>
                 {(approver || isCreationProcess) && (
-                    <Form.Item label="Кто согласовал" name="approver">
+                    <Form.Item label="Кто согласовал" name="approver" rules={Rules.required}>
                         <Input disabled={!isCreationProcess}/>
                     </Form.Item>
                 )}
