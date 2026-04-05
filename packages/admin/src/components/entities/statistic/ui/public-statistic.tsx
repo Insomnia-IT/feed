@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useList } from '@refinedev/core';
 import { Button, DatePicker, Form, Radio, RadioChangeEvent, Space, Spin, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -15,6 +16,9 @@ import type {
     MealTime,
     PredictionAlg
 } from '../types';
+import type {
+    KitchenEntity
+} from 'interfaces';
 import {
     convertResponceToData,
     handleDataForColumnChart,
@@ -49,13 +53,18 @@ export function PublicStatistic() {
         applyHistory: 'false' as BooleanExtended,
         selectedMealTime: 'breakfast' as MealTime
     });
-
+    
     const [statisticViewType, setStatisticViewType] = useState<StatisticViewType>('date');
     const [date, setDate] = useState<dayjsExt.Dayjs>(dayjsExt().startOf('date'));
     const [timePeriod, setTimePeriod] = useState<[dayjsExt.Dayjs | null, dayjsExt.Dayjs | null]>([
         dayjsExt().add(-1, 'day').startOf('date'),
         dayjsExt().add(1, 'day').startOf('date')
     ]);
+
+    const { data: kitchensData } = useList<KitchenEntity>({ 
+        resource: 'kitchens', 
+        pagination: { pageSize: 0 } 
+    });
 
     const handleFilterChange = useCallback(
         (key: keyof typeof filters) => (e: RadioChangeEvent) => {
@@ -81,6 +90,19 @@ export function PublicStatistic() {
         [timePeriod]
     );
 
+    const kitchenOptions = useMemo(() => {
+        if (!kitchensData?.data?.length) {
+            return [{ label: 'Все', value: 'all' }];
+        }
+        
+        return [
+            { label: 'Все', value: 'all' },
+            ...kitchensData.data.map(kitchen => ({
+                label: `№${kitchen.id}`,
+                value: kitchen.id.toString()
+            }))
+        ];
+    }, [kitchensData]);
     const loadStats = useCallback(async () => {
         setLoading(true);
         try {
@@ -183,10 +205,11 @@ export function PublicStatistic() {
                 </Form.Item>
                 <Form.Item label="Кухня">
                     <Radio.Group value={filters.kitchenId} onChange={handleFilterChange('kitchenId')}>
-                        <Radio.Button value="all">Все</Radio.Button>
-                        <Radio.Button value="1">№1</Radio.Button>
-                        <Radio.Button value="2">№2</Radio.Button>
-                        <Radio.Button value="3">№3</Radio.Button>
+                        {kitchenOptions.map(option => (
+                            <Radio.Button key={option.value} value={option.value}>
+                                {option.label}
+                            </Radio.Button>
+                        ))}
                     </Radio.Group>
                 </Form.Item>
                 <Form.Item label="Аноним">
