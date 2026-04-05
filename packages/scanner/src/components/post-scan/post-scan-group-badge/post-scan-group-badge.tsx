@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 
 import { useApp } from 'model/app-provider/app-provider';
 import { db, dbIncFeed } from 'db';
-import type { GroupBadge, MealTime, Transaction, Volunteer, TransactionJoined } from 'db';
+import type { GroupBadge, MealTime, Transaction, TransactionJoined, Volunteer } from 'db';
 import { ErrorCard } from 'components/post-scan/post-scan-cards/error-card/error-card';
 import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
 import { AlreadyFedModal } from 'components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
@@ -59,7 +59,7 @@ const useGroupBadgeData = ({
         return withTxs;
     }, [id]);
 
-    // Транзакции с текущим бейджем и временем питания - уже покормленные волонтеры (чаще всего - анонимы)
+    // Транзакции с текущим бейджем и временем питания: уже покормленные волонтеры, чаще всего анонимы
     const alreadyFedTransactionsRaw = useLiveQuery<Array<TransactionJoined>>(() => {
         return getGroupBadgeCurrentMealTransactions(id, mealTime);
     }, [id, mealTime]);
@@ -168,7 +168,7 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
     }, [isLoading, vols, kitchenId, mealTime]);
 
     const leftToFeedInBadge =
-        // Транзакции кормления анонимов по групповому бейджу могут содержать значение amount, отличное от 1
+        // Транзакции кормления анонимов по групповому бейджу могут содержать amount, отличное от 1
         validationGroups.greens.length - alreadyFedVolsCount;
 
     const doFeed = (volsToFeed: Array<ValidatedVol>): void => {
@@ -190,6 +190,8 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
                 closeFeed={closeFeed}
                 name={name}
                 view={view}
+                groupBadge={groupBadge}
+                mealTime={mealTime}
             />
         </CardContainer>
     );
@@ -200,6 +202,8 @@ const ResultScreen = ({
     closeFeed,
     doFeed,
     doFeedAnons,
+    groupBadge,
+    mealTime,
     name,
     validationGroups,
     view
@@ -208,6 +212,8 @@ const ResultScreen = ({
     closeFeed: () => void;
     doFeed: (vols: Array<ValidatedVol>) => void;
     doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
+    groupBadge: GroupBadge;
+    mealTime: MealTime | null;
     name: string;
     validationGroups: ValidationGroups;
     view: Views;
@@ -220,7 +226,7 @@ const ResultScreen = ({
         case Views.ERROR_VALIDATION:
             return (
                 <ErrorCard
-                    msg={`Упс.. Ошибка при проверке волонтеров в бейдже “${name}”. Cделай скриншот и передай в бюро!`}
+                    msg={`Упс.. Ошибка при проверке волонтеров в бейдже "${name}". Сделай скриншот и передай в бюро!`}
                     close={closeFeed}
                 />
             );
@@ -233,6 +239,8 @@ const ResultScreen = ({
                     doFeed={doFeed}
                     close={closeFeed}
                     validationGroups={validationGroups}
+                    groupBadge={groupBadge}
+                    mealTime={mealTime!}
                 />
             );
 

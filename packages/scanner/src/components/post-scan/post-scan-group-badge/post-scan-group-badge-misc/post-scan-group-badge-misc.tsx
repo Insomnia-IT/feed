@@ -1,7 +1,8 @@
 import cn from 'classnames';
-import { useState } from 'react';
+import dayjs from 'dayjs';
+import { useMemo, useState } from 'react';
 
-import type { TransactionJoined, Volunteer } from 'db';
+import type { GroupBadge, MealPlanCell, MealTime, TransactionJoined, Volunteer } from 'db';
 import { Text, Title } from 'shared/ui/typography';
 import { Button } from 'shared/ui/button';
 import { VolAndUpdateInfo } from 'components/vol-and-update-info';
@@ -43,11 +44,50 @@ export const GroupBadgeInfo = ({ name, volsToFeed }: { name: string; volsToFeed:
     );
 };
 
+const useTodayPlannedValues = (
+    groupBadge: GroupBadge,
+    mealTime: MealTime
+): { vegansCount: number | null; nonVegansCount: number | null } => {
+    const targetCell = useMemo(() => {
+        const today = dayjs();
+
+        let currentTargetCell: MealPlanCell | undefined;
+
+        for (const currentCell of groupBadge.planning_cells) {
+            const currentCellDate = dayjs(currentCell.date);
+
+            if (currentCell.meal_time !== mealTime || currentCellDate.isAfter(today)) {
+                continue;
+            }
+
+            if (!currentTargetCell) {
+                currentTargetCell = currentCell;
+                continue;
+            }
+
+            const targetCellDate = dayjs(currentTargetCell.date);
+
+            if (currentCellDate.isAfter(targetCellDate)) {
+                currentTargetCell = currentCell;
+            }
+        }
+
+        return currentTargetCell;
+    }, [groupBadge, mealTime]);
+
+    return {
+        vegansCount: targetCell?.amount_vegan ?? null,
+        nonVegansCount: targetCell?.amount_meat ?? null
+    };
+};
+
 export const GroupBadgeWarningCard = ({
     alreadyFedTransactions,
     close,
     doFeed,
     doFeedAnons,
+    groupBadge,
+    mealTime,
     name,
     validationGroups
 }: {
@@ -57,11 +97,14 @@ export const GroupBadgeWarningCard = ({
     doFeed: (vols: Array<ValidatedVol>) => void;
     doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
     close: () => void;
+    groupBadge: GroupBadge;
+    mealTime: MealTime;
 }) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
     const [showOtherCount, setShowOtherCount] = useState(false);
+    const planned = useTodayPlannedValues(groupBadge, mealTime);
 
     const calculateDefaultFeedCount = (isVegan: boolean): number => {
         const alreadyFedCount = calculateAlreadyFedCount(
@@ -76,8 +119,18 @@ export const GroupBadgeWarningCard = ({
         nonVegans: calculateDefaultFeedCount(false)
     }));
 
-    const [vegansCount, setVegansCount] = useState<number>(initialCalculatedCounts.vegans);
-    const [nonVegansCount, setNonVegansCount] = useState<number>(initialCalculatedCounts.nonVegans);
+    const getDefaultCount = (isVegan: boolean): number => {
+        const plannedCount = isVegan ? planned.vegansCount : planned.nonVegansCount;
+
+        if (plannedCount !== null) {
+            return plannedCount;
+        }
+
+        return calculateDefaultFeedCount(isVegan);
+    };
+
+    const [vegansCount, setVegansCount] = useState<number>(() => getDefaultCount(true));
+    const [nonVegansCount, setNonVegansCount] = useState<number>(() => getDefaultCount(false));
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const isPartiallyFed = alreadyFedTransactions.length > 0;

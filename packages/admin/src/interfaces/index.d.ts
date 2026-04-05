@@ -200,7 +200,7 @@ export interface WashEntity {
 }
 
 export interface MealPlanCell {
-    id: number;
+    id?: number;
     group_badge: number;
     group_badge_name: string;
     created_at: string;
