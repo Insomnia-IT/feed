@@ -44,8 +44,13 @@ export const MealPlanEditModal: React.FC<MealPlanEditModalProps> = ({
                 <div className={styles.inputRow}>
                     <label className={styles.meat}>🥩 Мясоеды:</label>
                     <InputNumber
+                        min={0}
                         value={editMeat}
-                        onChange={onMeatChange}
+                        onChange={(value) => {
+                            console.log({ value });
+
+                            onMeatChange(value);
+                        }}
                         addonAfter={
                             <Button
                                 title="Очистить"
@@ -60,6 +65,7 @@ export const MealPlanEditModal: React.FC<MealPlanEditModalProps> = ({
                 <div className={styles.inputRow}>
                     <label className={styles.vegan}>🥦 Веганы:</label>
                     <InputNumber
+                        min={0}
                         value={editVegan}
                         onChange={onVeganChange}
                         addonAfter={
