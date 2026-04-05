@@ -1,13 +1,13 @@
-import { Modal, Tag, Spin } from 'antd';
+import { Modal, Spin, Tag } from 'antd';
 import { getUserData } from 'auth';
 import type { ReactNode } from 'react';
 import dayjs from 'dayjs';
 import { useList, useNotification } from '@refinedev/core';
 
+import type { ArrivalEntity, WashEntity } from 'interfaces';
 import { useAddWash } from '../hooks/useAddWash';
 import { useSearchVolunteer } from '../hooks/useSearchVolunteer';
-import type { ArrivalEntity, WashEntity } from 'interfaces';
-import { getTotalDaysOnFieldText, getCurrentArrivalDateText, getLatestWashDateText } from '../list/utils';
+import { getCurrentArrivalDateText, getLatestWashDateText, getTotalDaysOnFieldText } from '../list/utils';
 
 import styles from './washes-post-scan.module.css';
 
@@ -55,7 +55,6 @@ export const PostScan = ({ volunteerQr, onClose }: PostScanProps) => {
     const isLoading = isWashesLoading || isVolunteerLoading;
 
     const latestWash = washesInCurrentArrival.length ? washesInCurrentArrival[0] : undefined;
-
     const latestWashDateAgo = getLatestWashDateText({ latestWash, washDate });
 
     const directions = volunteer?.directions?.map(({ name }) => (
@@ -94,7 +93,7 @@ export const PostScan = ({ volunteerQr, onClose }: PostScanProps) => {
                 },
                 onError: (error) => {
                     console.error(error);
-                    open({ message: 'Ошибка при добавлении стрики', type: 'error' });
+                    open({ message: 'Ошибка при добавлении стирки', type: 'error' });
                     onClose();
                 }
             }
@@ -110,6 +109,8 @@ export const PostScan = ({ volunteerQr, onClose }: PostScanProps) => {
             okText="Стирать"
             cancelText="Отмена"
             confirmLoading={isUpdateInProgress}
+            loading={isLoading}
+            okButtonProps={{ disabled: !volunteer || isVolunteerLoading }}
         >
             <Spin spinning={isLoading}>
                 {volunteer && (

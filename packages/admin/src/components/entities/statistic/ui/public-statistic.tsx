@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useList } from '@refinedev/core';
 import { Button, DatePicker, Radio, type RadioChangeEvent, Space, Spin, Tooltip, Typography } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -14,6 +15,7 @@ import type {
     MealTime,
     PredictionAlg
 } from '../types';
+import type { KitchenEntity } from 'interfaces';
 import {
     convertResponceToData,
     handleDataForColumnChart,
@@ -75,15 +77,34 @@ const FilterCard = ({ label, children, className }: FilterCardProps) => (
 export function PublicStatistic() {
     const [loading, setLoading] = useState(false);
     const [response, setResponse] = useState<IStatisticResponse>([]);
-
     const [filters, setFilters] = useState<FiltersState>(DEFAULT_FILTERS);
-
     const [statisticViewType, setStatisticViewType] = useState<StatisticViewType>('date');
     const [date, setDate] = useState<dayjsExt.Dayjs>(dayjsExt().startOf('date'));
     const [timePeriod, setTimePeriod] = useState<[dayjsExt.Dayjs | null, dayjsExt.Dayjs | null]>([
         dayjsExt().add(-1, 'day').startOf('date'),
         dayjsExt().add(1, 'day').startOf('date')
     ]);
+
+    const { result: kitchensResult } = useList<KitchenEntity>({
+        resource: 'kitchens',
+        pagination: { pageSize: 0 }
+    });
+
+    const kitchenOptions = useMemo(() => {
+        const kitchens = kitchensResult?.data ?? [];
+
+        if (!kitchens.length) {
+            return [{ label: 'Все', value: 'all' }];
+        }
+
+        return [
+            { label: 'Все', value: 'all' },
+            ...kitchens.map((kitchen: KitchenEntity) => ({
+                label: `№${kitchen.id}`,
+                value: kitchen.id.toString()
+            }))
+        ];
+    }, [kitchensResult]);
 
     const handleFilterChange = useCallback(
         (key: keyof FiltersState) => (e: RadioChangeEvent) => {
@@ -98,28 +119,24 @@ export function PublicStatistic() {
     }, []);
 
     const { dateStr, dateFrom, dateTo } = useMemo(() => {
-        const dateStr = toApiDate(date);
+        const currentDate = toApiDate(date);
 
         if (statisticViewType === 'range') {
             const [start, end] = timePeriod;
-
             const safeStart = start ?? date.add(-1, 'day').startOf('date');
             const safeEnd = end ?? date.add(1, 'day').startOf('date');
 
             return {
-                dateStr,
+                dateStr: currentDate,
                 dateFrom: toApiDate(safeStart),
                 dateTo: toApiDate(safeEnd)
             };
         }
 
-        const prev = date.add(-1, 'day');
-        const next = date.add(1, 'day');
-
         return {
-            dateStr,
-            dateFrom: toApiDate(prev),
-            dateTo: toApiDate(next)
+            dateStr: currentDate,
+            dateFrom: toApiDate(date.add(-1, 'day')),
+            dateTo: toApiDate(date.add(1, 'day'))
         };
     }, [date, statisticViewType, timePeriod]);
 
@@ -148,10 +165,14 @@ export function PublicStatistic() {
                 const sorted = (res.data as IStatisticResponse).slice().sort(sortByDate);
                 setResponse(sorted);
             } catch (error: unknown) {
-                if (controller.signal.aborted) return;
+                if (controller.signal.aborted) {
+                    return;
+                }
                 console.error('Failed to load stats:', error);
             } finally {
-                if (!controller.signal.aborted) setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
@@ -179,6 +200,7 @@ export function PublicStatistic() {
             )
         };
     }, [data, dateStr, filters.kitchenId, filters.selectedMealTime, filters.typeOfEater, statisticViewType]);
+
     const dataForLinearChart = useMemo(() => {
         if (statisticViewType !== 'range') {
             return [];
@@ -216,9 +238,11 @@ export function PublicStatistic() {
                 ) : (
                     <RangePicker
                         value={timePeriod}
-                        onChange={(val) => {
-                            if (!val) return;
-                            setTimePeriod([val[0], val[1]]);
+                        onChange={(value) => {
+                            if (!value) {
+                                return;
+                            }
+                            setTimePeriod([value[0], value[1]]);
                         }}
                         format={formDateFormat}
                     />
@@ -236,10 +260,11 @@ export function PublicStatistic() {
 
                 <FilterCard label="Кухня">
                     <Radio.Group value={filters.kitchenId} onChange={handleFilterChange('kitchenId')}>
-                        <Radio.Button value="all">Все</Radio.Button>
-                        <Radio.Button value="1">№1</Radio.Button>
-                        <Radio.Button value="2">№2</Radio.Button>
-                        <Radio.Button value="3">№3</Radio.Button>
+                        {kitchenOptions.map((option) => (
+                            <Radio.Button key={option.value} value={option.value}>
+                                {option.label}
+                            </Radio.Button>
+                        ))}
                     </Radio.Group>
                 </FilterCard>
 

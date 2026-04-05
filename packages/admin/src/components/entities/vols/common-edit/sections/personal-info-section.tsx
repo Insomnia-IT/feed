@@ -8,6 +8,7 @@ import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 import styles from '../../common.module.css';
 
 export const PersonalInfoSection = ({
+    canFullEditing,
     isCreationProcess,
     denyBadgeEdit,
     denyFeedTypeEdit,
@@ -16,6 +17,7 @@ export const PersonalInfoSection = ({
     genderOptions,
     handleQRChange
 }: {
+    canFullEditing: boolean;
     isCreationProcess: boolean;
     denyBadgeEdit: boolean;
     denyFeedTypeEdit: boolean;
@@ -77,7 +79,7 @@ export const PersonalInfoSection = ({
                     <Input disabled={denyBadgeEdit} />
                 </Form.Item>
                 <Form.Item label="Партия бейджа" name="printing_batch">
-                    <Input disabled={denyBadgeEdit} />
+                    <Input disabled={!canFullEditing} />
                 </Form.Item>
                 {/* <Form.Item name="is_badged_leader" valuePropName="checked">
                     <Checkbox>Бейдж у Руководителя</Checkbox>

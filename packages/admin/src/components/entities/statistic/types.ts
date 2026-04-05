@@ -5,10 +5,10 @@ export const mealTimeArr: Array<MealTime> = ['breakfast', 'lunch', 'dinner', 'ni
 export type EaterType = 'vegan' | 'meatEater';
 export type EaterTypeExtended = EaterType | 'all';
 
-export type KitchenId = '1' | '2' | '3';
+export type KitchenId = string;
 export type KitchenIdExtended = KitchenId | 'all';
 export type BooleanExtended = 'true' | 'false' | 'all';
-export type PredictionAlg = '1' | '2';
+export type PredictionAlg = '1' | '2' | '3';
 
 export type IEaterTypeAmount = {
     [eaterType in EaterType]: number;
