@@ -10,22 +10,32 @@ interface IProps {
     onChange?(value: string): void;
     theme?: 'snow' | 'bubble';
     readOnly?: boolean;
+    whiteEditor?: boolean;
 }
 
-export const TextEditor: FC<IProps> = memo(({ value = '', onChange, theme = 'snow', readOnly = false }) => {
-    const editorId = useId();
+export const TextEditor: FC<IProps> = memo(
+    ({ value = '', onChange, theme = 'snow', readOnly = false, whiteEditor = false }) => {
+        const editorId = useId();
 
-    const handleChange = useCallback((newValue: string) => onChange?.(newValue), [onChange]);
+        const handleChange = useCallback((newValue: string) => onChange?.(newValue), [onChange]);
 
-    return (
-        <Suspense
-            fallback={
-                <div style={{ padding: 8 }} role="status" aria-busy="true">
-                    Загрузка редактора…
-                </div>
-            }
-        >
-            <ReactQuill key={editorId} theme={theme} value={value} onChange={handleChange} readOnly={readOnly} />
-        </Suspense>
-    );
-});
+        return (
+            <Suspense
+                fallback={
+                    <div style={{ padding: 8 }} role="status" aria-busy="true">
+                        Загрузка редактора…
+                    </div>
+                }
+            >
+                <ReactQuill
+                    key={editorId}
+                    theme={theme}
+                    value={value}
+                    onChange={handleChange}
+                    style={whiteEditor ? { backgroundColor: '#FFF' } : undefined}
+                    readOnly={readOnly}
+                />
+            </Suspense>
+        );
+    }
+);
