@@ -41,6 +41,12 @@ export const useTransactionsFilters = () => {
             },
             {
                 type: FilterFieldType.Boolean,
+                name: 'is_paid',
+                title: 'Платное',
+                single: true
+            },
+            {
+                type: FilterFieldType.Boolean,
                 name: 'is_anomaly',
                 title: 'Аномалия',
                 single: true
