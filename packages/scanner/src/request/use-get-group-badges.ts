@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
-import dayjs from 'dayjs';
 
 import type { ApiHook } from '~/request/lib';
 import type { GroupBadge } from '~/db';
