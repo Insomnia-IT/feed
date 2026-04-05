@@ -120,6 +120,7 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             cancelText="Отмена"
             confirmLoading={isUpdateInProgress}
             loading={isLoading}
+            okButtonProps={{ disabled: !volunteer || isVolunteerLoading }}
         >
             {volunteer && (
                 <>
