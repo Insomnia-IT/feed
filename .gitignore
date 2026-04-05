@@ -22,9 +22,6 @@
 **/build
 **/dist
 
-# pyenv (local Python 3.12 for backend)
-.pyenv
-
 # misc
 .DS_Store
 .env.local

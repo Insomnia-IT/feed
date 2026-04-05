@@ -8,19 +8,6 @@ from django.utils import timezone
 from datetime import timedelta
 import re
 
-
-def strtobool(val):
-    """Replace distutils.util.strtobool (removed in Python 3.12)."""
-    if isinstance(val, bool):
-        return 1 if val else 0
-    val = str(val).lower()
-    if val in ('y', 'yes', 't', 'true', 'on', '1'):
-        return 1
-    if val in ('n', 'no', 'f', 'false', 'off', '0'):
-        return 0
-    raise ValueError(f"invalid truth value {val!r}")
-
-
 from feeder import serializers, models
 from feeder.filters import NormalizedSearchFilter
 from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \

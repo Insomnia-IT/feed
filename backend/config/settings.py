@@ -63,14 +63,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3001',
-    'http://localhost:3002',
-    'http://localhost:3003',
-    'http://localhost:3004',
-    'http://localhost:3005',
-]
-# Allow any localhost port so the admin dev server works when Vite uses 3006, 3007, etc.
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r'^http://localhost:\d+$',
+    'http://localhost:3002'
 ]
 CORS_ALLOW_CREDENTIALS = True
 
