@@ -1,6 +1,4 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# AGENTS.md - Coding Guidelines for AI Assistants
 
 ## Development Commands
 
@@ -60,3 +58,34 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
 - `FeedTransaction`: Records of meals provided to volunteers/groups.
 - `Direction`: Locations or services volunteers belong to.
 - `Kitchen`: Feeding points.
+
+## TypeScript/JavaScript Conventions
+
+### Function Parameters
+
+**Rule: If a function accepts more than 2 arguments, use an object with named fields instead of positional arguments.**
+
+#### Bad (positional arguments):
+```typescript
+function createUser(name: string, age: number, email: string, role: string, isActive: boolean) {
+    // ...
+}
+```
+
+#### Good (object argument):
+```typescript
+function createUser(params: {
+    name: string;
+    age: number;
+    email: string;
+    role: string;
+    isActive: boolean;
+}) {
+    // ...
+}
+```
+
+This rule improves:
+- **Readability**: Named parameters are self-documenting
+- **Maintainability**: Adding new parameters doesn't require changing call sites
+- **Type Safety**: Easier to validate and understand parameter shapes

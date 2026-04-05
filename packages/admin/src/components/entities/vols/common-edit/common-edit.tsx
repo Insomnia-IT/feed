@@ -165,6 +165,7 @@ export const CommonEdit: React.FC = () => {
                 </section>
                 <section id="section3" className={styles.formSection}>
                     <PersonalInfoSection
+                        canFullEditing={canFullEditing}
                         isCreationProcess={isCreationProcess}
                         denyBadgeEdit={denyBadgeEdit}
                         handleQRChange={handleQRChange}

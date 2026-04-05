@@ -2,8 +2,11 @@ import dayjs from 'dayjs';
 import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
+import type { MealPlanCell } from '@feed/admin/src/interfaces';
 
 import { getToday } from '~/shared/lib/date';
+
+export type { MealPlanCell };
 
 export interface Transaction {
     ulid: string;
@@ -81,6 +84,7 @@ export interface GroupBadge {
     id: number;
     name: string;
     qr: string;
+    planning_cells: Array<MealPlanCell>;
 }
 
 export class MySubClassedDexie extends Dexie {
