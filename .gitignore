@@ -57,5 +57,7 @@ dist
 !.yarn/sdks
 !.yarn/versions
 
+.claude
+.playwright-cli
 # Superpowers Plans
 /docs/superpowers/plans/

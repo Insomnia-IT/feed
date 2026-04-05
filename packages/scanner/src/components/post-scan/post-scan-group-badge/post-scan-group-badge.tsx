@@ -17,7 +17,7 @@ import {
     validateVol
 } from '../post-scan.utils';
 
-import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
+import type { GroupBadgeFeedAnonsPayload, ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
 import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 
@@ -67,7 +67,6 @@ const useGroupBadgeData = ({
     return { volsRaw, alreadyFedTransactionsRaw };
 };
 
-// callback to feed vols
 const incFeedAsync = async ({
     groupBadge,
     kitchenId,
@@ -83,6 +82,7 @@ const incFeedAsync = async ({
         return;
     }
 
+    // callback to feed vols
     await Promise.all(
         vols.map((vol) => {
             const log = { error: false, reason: vol.msg.join(', ') };
@@ -107,10 +107,8 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
     const { volsRaw, alreadyFedTransactionsRaw } = useGroupBadgeData({ badge: groupBadge, mealTime });
 
     const isLoading = volsRaw === undefined || alreadyFedTransactionsRaw === undefined;
-
     const vols = volsRaw ?? [];
     const alreadyFedTransactions = alreadyFedTransactionsRaw ?? [];
-
     const alreadyFedVolsCount = calculateAlreadyFedCount(alreadyFedTransactions);
 
     const { view, validationGroups } = useMemo(() => {
@@ -177,7 +175,7 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
         void incFeedAsync({ vols: volsToFeed, mealTime, kitchenId, groupBadge });
     };
 
-    const doFeedAnons = (value: { vegansCount: number; nonVegansCount: number }): void => {
+    const doFeedAnons = (value: GroupBadgeFeedAnonsPayload): void => {
         void massFeedAnons({ ...value, groupBadge, kitchenId, mealTime });
     };
 
@@ -209,7 +207,7 @@ const ResultScreen = ({
     alreadyFedTransactions: Array<TransactionJoined>;
     closeFeed: () => void;
     doFeed: (vols: Array<ValidatedVol>) => void;
-    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
+    doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
     name: string;
     validationGroups: ValidationGroups;
     view: Views;

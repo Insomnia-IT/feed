@@ -59,11 +59,20 @@ const useMapFromList = <T extends WithId>(items: T[] | undefined, nameField = 'n
         return acc;
     }, [items, nameField]);
 
+const isFilterItem = (value: unknown): value is FilterItem =>
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    'op' in value &&
+    'value' in value &&
+    typeof (value as { name: unknown }).name === 'string';
+
 const getDefaultVisibleFilters = (): Array<string> => {
     const str = safeGetLS(VISIBLE_FILTERS_STORAGE_ITEM_NAME);
     if (str) {
         try {
-            return JSON.parse(str) as Array<string>;
+            const parsed = JSON.parse(str) as unknown;
+            return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
         } catch {
             /* empty */
         }
@@ -75,7 +84,8 @@ const getDefaultActiveFilters = (): Array<FilterItem> => {
     const str = safeGetLS(FILTERS_STORAGE_ITEM_NAME);
     if (str) {
         try {
-            return JSON.parse(str) as Array<FilterItem>;
+            const parsed = JSON.parse(str) as unknown;
+            return Array.isArray(parsed) ? parsed.filter(isFilterItem) : [];
         } catch {
             /* empty */
         }
