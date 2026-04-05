@@ -88,7 +88,7 @@ export const AdditionalSection = ({
                 >
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
                 </Form.Item>
-                {approver && (
+                {(approver || isCreationProcess) && (
                     <Form.Item label="Кто согласовал" name="approver">
                         <Input disabled={!isCreationProcess}/>
                     </Form.Item>
