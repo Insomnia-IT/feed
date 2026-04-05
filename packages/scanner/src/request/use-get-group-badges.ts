@@ -20,7 +20,7 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
 
             return new Promise((res, rej) => {
                 axios
-                    .get(`${baseUrl}/group-badges/`, {
+                    .get<{ results: Array<GroupBadge> }>(`${baseUrl}/group-badges/`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
@@ -29,42 +29,34 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
 
-                        // const qrs = {};
-                        // const ids = {};
-                        // for (const v of results as Array<GroupBadge>) {
-                        //     if (ids[v.id]) {
-                        //         console.log(ids[v.id], v);
-                        //     } else {
-                        //         ids[v.id] = v;
-                        //     }
-                        //     if (qrs[v.qr]) {
-                        //         console.log(qrs[v.qr], v);
-                        //     } else {
-                        //         qrs[v.qr] = v;
-                        //     }
-                        // }
-
                         try {
-                            await db.groupBadges.bulkPut(results as Array<GroupBadge>);
-                        } catch (e) {
-                            console.error(e);
-                            rej(e);
+                            await db.groupBadges.bulkPut(results);
+                        } catch (error) {
+                            console.error(error);
+                            rej(error);
+
                             return false;
                         }
+
                         setUpdated(+new Date());
                         res(true);
+
                         return true;
                     })
-                    .catch((e) => {
+                    .catch((error) => {
                         setFetching(false);
-                        if (e?.response?.status === 401) {
+
+                        if (error?.response?.status === 401) {
                             rej(false);
                             setAuth(false);
+
                             return false;
                         }
-                        setError(e);
-                        rej(e);
-                        return e;
+
+                        setError(error);
+                        rej(error);
+
+                        return error;
                     });
             });
         },

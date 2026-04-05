@@ -43,7 +43,7 @@ export const WashesHistory = () => {
 
     return (
         <List>
-            <Row>
+            <Row style={{ marginBottom: 10 }}>
                 <Col style={{ width: '50%' }}>
                     <Button
                         type={'primary'}

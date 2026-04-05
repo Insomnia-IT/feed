@@ -48,15 +48,29 @@ export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth:
                     try {
                         const serverTransactions = results as Array<ServerTransaction>;
                         const transactions = serverTransactions.map(
-                            ({ amount, dtime, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
+                            ({
+                                amount,
+                                dtime,
+                                group_badge,
+                                is_anomaly,
+                                is_vegan,
+                                kitchen,
+                                meal_time,
+                                reason,
+                                ulid,
+                                volunteer
+                            }) => ({
                                 vol_id: volunteer,
                                 is_vegan,
+                                is_anomaly,
                                 mealTime: meal_time,
                                 ulid,
                                 amount,
                                 ts: Math.floor(new Date(dtime).valueOf() / 1000),
                                 is_new: false,
-                                kitchen
+                                kitchen,
+                                reason,
+                                group_badge
                             })
                         );
 

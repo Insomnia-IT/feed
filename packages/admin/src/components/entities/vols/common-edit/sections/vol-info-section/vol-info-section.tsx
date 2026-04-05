@@ -191,7 +191,7 @@ export const VolInfoSection: React.FC<IProps> = ({
                             <Input readOnly={denyBadgeEdit} disabled />
                         </Form.Item>
                     </div>
-                    <Form.Item label="Бригадир" name="supervisor_id">
+                    <Form.Item label="Бригадир" name="supervisor_id" normalize={(value) => value ?? null}>
                         <Select
                             allowClear
                             showSearch
