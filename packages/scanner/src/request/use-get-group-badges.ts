@@ -3,58 +3,8 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 
 import type { ApiHook } from '~/request/lib';
-import type { GroupBadge, MealPlanCell } from '~/db';
+import type { GroupBadge } from '~/db';
 import { db } from '~/db';
-
-type MealTime = 'breakfast' | 'lunch' | 'dinner';
-
-const fillMissingTodayCells = (results: Array<GroupBadge>): Array<GroupBadge> => {
-    const today = dayjs().format('YYYY-MM-DD');
-    const mealTimes: Array<MealTime> = ['breakfast', 'lunch', 'dinner'];
-
-    return results.map((groupBadge) => {
-        const cells = [...groupBadge.planning_cells];
-        const todayCells = cells.filter((cell) => cell.date === today);
-
-        const newCells: Array<MealPlanCell> = [];
-
-        for (const mealTime of mealTimes) {
-            const todayCell = todayCells.find((cell) => cell.meal_time === mealTime);
-
-            if (todayCell) {
-                continue;
-            }
-
-            const previousCells = cells
-                .filter((cell) => cell.date < today && cell.meal_time === mealTime)
-                .sort((a, b) => b.date.localeCompare(a.date));
-
-            const previousCell = previousCells[0];
-
-            if (previousCell) {
-                newCells.push({
-                    group_badge: groupBadge.id,
-                    group_badge_name: groupBadge.name,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    date: today,
-                    meal_time: mealTime,
-                    amount_meat: previousCell.amount_meat,
-                    amount_vegan: previousCell.amount_vegan
-                });
-            }
-        }
-
-        if (newCells.length > 0) {
-            return {
-                ...groupBadge,
-                planning_cells: [...cells, ...newCells]
-            };
-        }
-
-        return groupBadge;
-    });
-};
 
 export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<any>(null);
@@ -81,7 +31,6 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
                         setFetching(false);
 
                         try {
-                            results = fillMissingTodayCells(results);
                             await db.groupBadges.bulkPut(results);
                         } catch (error) {
                             console.error(error);

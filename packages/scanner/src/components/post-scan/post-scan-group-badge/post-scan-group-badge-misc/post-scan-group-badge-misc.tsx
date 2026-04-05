@@ -1,8 +1,8 @@
 import type { FC } from 'react';
-import { useState } from 'react';
-
-import type { TransactionJoined, GroupBadge, MealTime } from '~/db';
+import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
+
+import type { TransactionJoined, GroupBadge, MealTime, MealPlanCell } from '~/db';
 import { Text, Title } from '~/shared/ui/typography';
 import { Button } from '~/shared/ui/button';
 import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
@@ -28,12 +28,41 @@ export const GroupBadgeInfo: FC<{
     );
 };
 
-const useTodayPlannedValues = (groupBadge: GroupBadge, mealTime: MealTime) => {
-    const today = dayjs().format('YYYY-MM-DD');
-    const cell = groupBadge.planning_cells.find((c) => c.date === today && c.meal_time === mealTime);
+const useTodayPlannedValues = (
+    groupBadge: GroupBadge,
+    mealTime: MealTime
+): { vegansCount: number | null; nonVegansCount: number | null } => {
+    const targetCell = useMemo(() => {
+        const today = dayjs();
+
+        let targetCell: MealPlanCell | undefined = undefined;
+
+        for (const currentCell of groupBadge.planning_cells) {
+            const currentCellDate = dayjs(currentCell.date);
+
+            if (currentCell.meal_time !== mealTime || currentCellDate.isAfter(today)) {
+                continue;
+            }
+
+            if (!targetCell) {
+                targetCell = currentCell;
+
+                continue;
+            }
+
+            const targetCellDate = dayjs(targetCell.date);
+
+            if (currentCellDate.isAfter(targetCellDate)) {
+                targetCell = currentCell;
+            }
+        }
+
+        return targetCell;
+    }, [groupBadge, mealTime]);
+
     return {
-        vegansCount: cell?.amount_vegan ?? null,
-        nonVegansCount: cell?.amount_meat ?? null
+        vegansCount: targetCell?.amount_vegan ?? null,
+        nonVegansCount: targetCell?.amount_meat ?? null
     };
 };
 
