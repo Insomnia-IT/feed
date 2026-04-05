@@ -52,7 +52,6 @@ type Action =
 const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
     switch (action) {
         case 'badge_edit':
-            return role === AppRoles.ADMIN;
         case 'full_list':
         case 'bulk_edit': // массовые изменения
             return role !== AppRoles.DIRECTION_HEAD;
