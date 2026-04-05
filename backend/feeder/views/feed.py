@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from feeder.views.mixins import auto_tag_viewset
+from feeder.utils import get_feed_transaction_anomalies
 
 from feeder import serializers, models
 from feeder.views.xlsx import build_xlsx_response
@@ -123,6 +124,27 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
                 "Службы",
             ],
             rows=rows,
+        )
+
+
+class FeedTransactionAnomalies(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @extend_schema(
+        tags=["Feed Transaction"],
+        parameters=[serializers.FeedTransactionAnomaliesFilterSerializer],
+        responses={200: serializers.FeedTransactionAnomalySerializer(many=True)},
+    )
+    def get(self, request):
+        serializer = serializers.FeedTransactionAnomaliesFilterSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        result = get_feed_transaction_anomalies(
+            serializer.validated_data['dtime_from'],
+            serializer.validated_data['dtime_to'],
+        )
+
+        return Response(
+            serializers.FeedTransactionAnomalySerializer(result, many=True).data
         )
 
 
