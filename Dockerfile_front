@@ -19,35 +19,39 @@ ENV CI_ENV=${CI}
 
 WORKDIR /app
 
-FROM base as builder
+FROM base as deps
 
-RUN apk add --no-cache curl python3 py3-setuptools
+RUN apk add --no-cache curl python3 py3-setuptools build-base
 RUN curl -sf https://gobinaries.com/tj/node-prune | sh
 RUN echo "npm cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
 
-RUN apk add --no-cache build-base
-
 COPY ./package.json /app/package.json
 COPY ./package-lock.json /app/package-lock.json
-
 COPY ./packages/admin/package.json /app/packages/admin/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm ci
 
-COPY ./eslint.config.js /app/eslint.config.js
-COPY ./lerna.json /app/lerna.json
-COPY ./stylelint.config.mjs /app/stylelint.config.mjs
-COPY ./tsconfig.eslint.json /app/tsconfig.eslint.json
+FROM deps as admin-builder
+
 COPY ./tsconfig.json /app/tsconfig.json
-COPY ./packages /app/packages
+COPY ./packages/admin /app/packages/admin
 
 ARG NEW_API_URL
 ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
 ARG APP_VERSION
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
-    VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm run build
+    VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm --workspace @feed/admin run build
+
+FROM deps as scanner-builder
+
+COPY ./tsconfig.json /app/tsconfig.json
+COPY ./packages/scanner /app/packages/scanner
+
+ARG APP_VERSION
+RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm --workspace @feed/scanner run build
 
 # RUN RUN npm prune --production
 
@@ -65,12 +69,11 @@ ENV NEW_API_URL_ENV=${NEW_API_URL}
 ARG ADMIN_BASE_PATH
 ENV ADMIN_BASE_PATH_ENV=${ADMIN_BASE_PATH}
 
-COPY --from=builder /app/tsconfig.json /app/
-COPY --from=builder /app/package.json /app/
+COPY --from=admin-builder /app/tsconfig.json /app/
+COPY --from=admin-builder /app/package.json /app/
+COPY --from=admin-builder /app/packages/admin/dist/ /app/packages/admin/dist/
 
-COPY --from=builder /app/packages/admin/dist/ /app/packages/admin/dist/
-
-COPY --from=builder /app/packages/scanner/package.json /app/packages/scanner/
-COPY --from=builder /app/packages/scanner/dist/ /app/packages/scanner/dist/
+COPY --from=scanner-builder /app/packages/scanner/package.json /app/packages/scanner/
+COPY --from=scanner-builder /app/packages/scanner/dist/ /app/packages/scanner/dist/
 
 CMD nginx
