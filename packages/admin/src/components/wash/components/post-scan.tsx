@@ -116,7 +116,6 @@ export const PostScan: FC<PostScanProps> = ({ volunteerQr, onClose }) => {
             open={true}
             onOk={handleWash}
             onCancel={onClose}
-            onClose={onClose}
             okText="Стирать"
             cancelText="Отмена"
             confirmLoading={isUpdateInProgress}

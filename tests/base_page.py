@@ -1,9 +1,9 @@
+import re
 import time
 from datetime import datetime
 from playwright.sync_api import Page
 
-from locators import *
-# registration meal_create badge_create feed_history_pagination group_badges custom_field create_user
+from locators import registration, meal_create, badge_create, feed_history_pagination, group_badges, custom_field, create_user
 
 class BasePage:
     def __init__(self, page: Page, url:str):
@@ -12,6 +12,9 @@ class BasePage:
 
     def open(self):
         self.page.goto(self.url)
+
+    def wait_for_list_page(self, path, timeout=30000):
+        self.page.wait_for_url(re.compile(rf"{re.escape(path)}(?:\?.*)?$"), timeout=timeout)
 
 
     def is_element_present(self, how, what):
@@ -25,31 +28,62 @@ class BasePage:
         except Exception:
             return True
 
+    def is_element_disabled(self, what):
+        # Проверяем наличие атрибута 'disabled' у элемента
+        return self.page.locator(what).is_disabled()
+
+
     def first_window(self):
-        first_button = self.page.locator(registration.CHOOSE_LOGIN_TYPE)
-        first_button.click()
+        # Переключаемся на таб "Логин и пароль"
+        # Используем поиск по тексту, так как это наиболее надежно в данном случае
+        tab = self.page.get_by_text("Логин и пароль")
+        tab.first.wait_for(state="visible", timeout=7000)
+        tab.first.click(force=True)
+        
+        # Даем время на анимацию переключения
+        self.page.wait_for_timeout(1000)
+        
+        # Ждем, пока поле логина станет доступным для ввода
+        login_input = self.page.locator(registration.LOGIN)
+        login_input.wait_for(state="visible", timeout=7000)
 
     def first_window_qr(self):
+        # Находим таб "QR-код" через локатор и кликаем принудительно
         first_button = self.page.locator(registration.CHOOSE_QR_TYPE)
-        first_button.click()
+        first_button.wait_for(state="visible", timeout=7000)
+        first_button.click(force=True)
 
     def scan_user(self, qr_code="20635ffe1ad2496f8cfc5668d7e8b34d"):
-        # Диспатчим событие QR-сканирования точно так же как это делает настоящий сканер
+        # login.tsx вешает слушатель 'scan' на document внутри useEffect.
+        # Даем React время зарегистрировать его после рендера страницы.
+        self.page.wait_for_timeout(500)
+        # Диспатчим в точности так же как onscan.js: с bubbles:true
         self.page.evaluate(f"""
-            document.body.dispatchEvent(new CustomEvent("scan", {{ 
-                detail: {{ scanCode: "{qr_code}" }} 
+            document.dispatchEvent(new CustomEvent("scan", {{
+                bubbles: true,
+                detail: {{ scanCode: "{qr_code}" }}
             }}));
         """)
 
     def login_admin(self):
         login = "admin"
         password = "Kolombina25"
+        # Всегда ждем появления поля перед вводом
+        self.page.locator(registration.LOGIN).wait_for(state="visible", timeout=7000)
         login_input = self.page.locator(registration.LOGIN)
         password_input = self.page.locator(registration.PASSWORD)
         login_input.fill(login)
         password_input.fill(password)
         prod_link = self.page.locator(registration.BUTTONREG)
         prod_link.click()
+
+    def logout(self):
+        # Нажимаем кнопку выход
+        logout_button = self.page.locator(registration.LOGOUT)
+        logout_button.wait_for(state="visible", timeout=5000)
+        logout_button.click()
+        # Ждем, когда кнопка исчезнет или мы окажемся на странице логина
+        self.page.wait_for_url("**/login", timeout=5000)
 
     def pagination(self):
         page_link = self.page.locator(".ant-pagination-item-2")
@@ -85,9 +119,16 @@ class BasePage:
         department = self.page.locator(badge_create.DEPARTMENT_NAME)
         department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        self.page.locator(".ant-select-dropdown .ant-select-item").first.wait_for(state="visible")
-        department.press("Enter")
-        department.press("Enter")
+        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
+        department_option.wait_for(state="visible")
+        department_option.click()
+        role = self.page.locator("#role")
+        role.click()
+        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
+            has_text="Волонтёр"
+        ).first
+        role_option.wait_for(state="visible")
+        role_option.click()
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         self.page.locator(badge_create.SUBMIT_BUTTON).click()
@@ -113,6 +154,7 @@ class BasePage:
 
     def meal_table(self):
         first_row = self.page.locator("tbody.ant-table-tbody tr:first-child td:first-child")
+        first_row.wait_for(state="visible")
         return first_row.inner_text()
 
     def open_meal(self):
@@ -125,7 +167,6 @@ class BasePage:
         if delete_buttons.count() > 0:
             delete_button = delete_buttons.first
             delete_button.click()
-        time.sleep(1)
         confirm_button = self.page.locator("//button[span[text()='Удалить']]")
         confirm_button.click()
 
@@ -208,10 +249,15 @@ class BasePage:
         create = self.page.locator(create_user.CREATE_USER_BUTTON)
         create.click()
 
-    def create_user(self, user_name="Test_name"):
+    def create_user(self, user_name="Test_name", supervisor_name='None'):
         add_name = self.page.locator(create_user.USER_NAME)
         add_name.click()
         add_name.fill(user_name)
+        add_supervisor = self.page.locator(create_user.SUPERVISOR)
+        add_supervisor.click()
+        self.page.locator(".ant-select-item-option").nth(1).click()
+        self.page.wait_for_timeout(500)
+        supervisor_name = add_supervisor.inner_text()
         add_kitchen = self.page.locator(create_user.KITCHEN_NUMBER)
         add_kitchen.click()
         add_kitchen.press("Tab")
@@ -227,6 +273,7 @@ class BasePage:
         add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
         add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
+        return supervisor_name
 
 
     def save_in_user_page(self):
@@ -251,6 +298,8 @@ class BasePage:
     def find_user(self, user_name="Test_name"):
         find = self.page.locator(create_user.FIND_INPUT)
         find.fill(user_name)
+        find.press("Enter")
+        self.page.wait_for_timeout(1000)
 
 
     def open_user(self, expected_name=None):
@@ -264,13 +313,12 @@ class BasePage:
             except Exception:
                 pass
         
-        self.page.wait_for_timeout(500)
         first_row = self.page.locator("tr.ant-table-row").first
-        first_row.wait_for(state="attached")
+        first_row.wait_for(state="visible")
         column = first_row.locator("td").nth(1)
         column.click()
 
-    def edit_user(self, updated_name="_1", original_name=None):
+    def edit_user(self, updated_name="_1", supervisor_name = None, original_name=None):
         add_name = self.page.locator(create_user.USER_NAME)
         
         if original_name:
@@ -287,7 +335,7 @@ class BasePage:
             self.page.wait_for_timeout(2000)
             
         # Надежно устанавливаем имя, борясь с React, который может его затереть
-        for _ in range(5):
+        for _ in range(3):
             add_name.click()
             add_name.clear()
             add_name.fill(updated_name)
@@ -296,14 +344,19 @@ class BasePage:
             current_value = self.page.evaluate("() => document.querySelector('#name')?.value")
             if current_value == updated_name:
                 break
+        change_supervisor = self.page.locator(create_user.SUPERVISOR)
+        change_supervisor.click()
+        self.page.locator(".ant-select-item-option").nth(2).click()
+        self.page.wait_for_timeout(300)
+        supervisor_name = change_supervisor.inner_text()
+        
         add_visit = self.page.locator(create_user.ADD_VISIT_BUTTON)
         add_visit.wait_for(state="visible")
-        add_visit.click()
+        add_visit.click(force=True)
         
         # Wait for React to render the new visit form row
         self.page.wait_for_timeout(500)
-        
-        # Wait for the status dropdown to appear in the DOM
+
         status = self.page.locator(create_user.VISIT_STATUS)
         status.wait_for(state="attached")
         status.click()
@@ -318,9 +371,28 @@ class BasePage:
         today_last = self.page.locator(create_user.TODAY).last
         today_last.click()
         self.save_in_user_page()
+        return supervisor_name
+
+    def change_supervisor(self, option_index=3):
+        change_supervisor = self.page.locator(create_user.SUPERVISOR)
+        change_supervisor.click()
+        self.page.locator(".ant-select-item-option").nth(option_index).click()
+        self.page.wait_for_timeout(300)
+        supervisor_name = change_supervisor.inner_text()
+        return supervisor_name
+
+    def clear_supervisor(self):
+        clear_supervisor = self.page.locator(create_user.CLEAR_SUPERVISOR)
+        clear_supervisor.click()
+        self.page.wait_for_timeout(300)
+
+    def get_supervisor_name(self):
+        new_supervisor_name = self.page.locator(create_user.SUPERVISOR).inner_text()
+        return new_supervisor_name
 
     def check_username_after_editing(self, expected_name="Test_name"):
         first_row = self.page.locator("tr.ant-table-row").first
+        first_row.wait_for(state="visible")
         column = first_row.locator("td").nth(1)
         try:
             # Даем таблице время отфильтроваться после ввода в поиск
@@ -363,37 +435,70 @@ class BasePage:
         for _ in range(len(val)):
             find.press("Backspace")  # Удаляем символы один за другим
 
+    def ban_user(self):
+        ban = self.page.locator(create_user.BAN_BUTTON)
+        ban.click()
+        reason = self.page.locator(create_user.BAN_REASON)
+        reason.fill("Причина бана")
+        confirm = self.page.locator(create_user.BAN_CONFIRM)
+        confirm.click()
+
+    def unban_user(self):
+        unban = self.page.locator(create_user.UNBAN_BUTTON)
+        unban.wait_for(state="visible", timeout=5000)
+        unban.click()
+        reason = self.page.locator(create_user.BAN_REASON)
+        reason.fill("Причина разбана")
+        confirm = self.page.locator(create_user.UNBAN_CONFIRM)
+        confirm.click()
+
+    def check_history_actions(self):
+        # Кликаем по вкладке "История действий"
+        self.page.locator(create_user.HISTORY_TAB).click()
+        # Даем истории время прогрузиться (асинхронные логи)
+        self.page.wait_for_timeout(1000)
+        # Ждем появления элементов в списке истории
+        self.page.locator(create_user.HISTORY_LOG_ITEM).first.wait_for(state="visible", timeout=5000)
 
 
 
+    def check_last_action(self):
+        # Возвращаем текст последнего действия
+        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(1).inner_text().strip()
 
+    def check_second_last_action(self):
+        # Возвращаем текст предпоследнего действия
+        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
 
+    def get_current_volunteer_name(self):
+        # Получаем имя из поля #name
+        return self.page.locator(create_user.USER_NAME).input_value()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def cleanup_volunteer_comment(self, volunteer_name):
+        # Сначала выходим из текущей сессии (руководителя службы)
+        self.logout()
+        # ждем
+        self.page.wait_for_timeout(500)
+        # Переключаемся на форму логина/пароля
+        self.first_window()
+        # Логинимся под админом
+        self.login_admin()
+        self.page.wait_for_timeout(500)
+        # Ищем и открываем пользователя
+        find = self.page.locator(create_user.FIND_INPUT)
+        find.click()
+        find.fill(volunteer_name)
+        self.page.wait_for_timeout(500)
+        self.open_user(volunteer_name)
+        # Очищаем комментарий
+        self.page.wait_for_timeout(1000)
+        comment = self.page.locator(create_user.COMMENT_FIELD)
+        comment.press("ControlOrMeta+A")
+        self.page.wait_for_timeout(1000)
+        comment.press("Backspace")
+        self.page.wait_for_timeout(1000)
+        # Сохраняем
+        self.save_in_user_page()
+        # Ждем возврата в список волонтеров
+        self.page.wait_for_timeout(5000)
 

@@ -37,6 +37,15 @@ class Arrival(TimeMixin, CommentMixin):
         return self.status and self.status.id in ['ARRIVED', 'STARTED', 'JOINED']
 
 
+class PaidArrival(TimeMixin, CommentMixin):
+    """ Платники """
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    volunteer = models.ForeignKey('Volunteer', on_delete=models.CASCADE, related_name="paid_arrivals")
+    arrival_date = models.DateField()
+    departure_date = models.DateField()
+    is_free = models.BooleanField()
+
+
 class Status(TimeMixin):
     id = models.CharField(max_length=20, verbose_name="Код", primary_key=True)
     name = models.CharField(max_length=255, verbose_name="Наименование")
@@ -305,6 +314,7 @@ class FeedTransaction(TimeMixin):
     volunteer = models.ForeignKey(Volunteer, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Волонтёр")
     group_badge = models.ForeignKey(GroupBadge, null=True, blank=True, on_delete=models.SET_NULL, related_name='feed_transactions', verbose_name="Групповой бейдж")
     is_vegan = models.BooleanField(null=True, verbose_name="Вегетарианец?")
+    is_paid = models.BooleanField(default=False, verbose_name="Платное питание?")
     is_anomaly = models.BooleanField(default=False, verbose_name="Аномалия?")
     kitchen = models.ForeignKey(Kitchen, on_delete=models.PROTECT, verbose_name="Кухня")
     amount = models.IntegerField(default=0, verbose_name="Количество")
