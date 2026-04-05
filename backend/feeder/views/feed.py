@@ -27,6 +27,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
     dtime_to = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='lte')
     meal_time = django_filters.CharFilter(field_name="meal_time", lookup_expr="exact")
     group_badge = django_filters.NumberFilter(field_name="group_badge")
+    direction = django_filters.UUIDFilter(field_name="volunteer__directions__id")
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
     is_group_badge = django_filters.BooleanFilter(method="filter_is_group_badge")
     is_paid = django_filters.BooleanFilter(field_name="is_paid")
@@ -44,7 +45,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.FeedTransaction
-        fields = ['kitchen', 'volunteer', 'is_paid', 'is_anomaly']
+        fields = ['kitchen', 'volunteer', 'direction', 'is_paid', 'is_anomaly']
 
 @auto_tag_viewset("Feed Transaction")
 class FeedTransactionViewSet(viewsets.ModelViewSet):
