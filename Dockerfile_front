@@ -49,6 +49,8 @@ FROM deps as scanner-builder
 COPY ./tsconfig.json /app/tsconfig.json
 COPY ./packages/scanner /app/packages/scanner
 
+ARG NEW_API_URL
+ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
 ARG APP_VERSION
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm --workspace @feed/scanner run build

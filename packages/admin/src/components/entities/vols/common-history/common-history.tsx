@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo, useCallback, type ReactNode } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useNavigate, useParams } from 'react-router';
 import { Button, Modal, message } from 'antd';
 import { useList, type HttpError } from '@refinedev/core';
 import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
+import { dataProvider } from 'dataProvider';
 import type {
     AccessRoleEntity,
     ColorTypeEntity,
@@ -17,7 +18,6 @@ import type {
     TransportEntity,
     VolunteerRoleEntity
 } from 'interfaces';
-import { dataProvider } from 'dataProvider';
 import useCanAccess from '../use-can-access';
 import type { IData, IResult } from './common-history.types';
 import { BOOL_MAP, FIELD_LABELS, IGNORE_FIELDS, STATUS_MAP, useIdNameMap } from './utils';
@@ -60,6 +60,7 @@ export const CommonHistory = ({ role }: IProps) => {
 
     const [history, setHistory] = useState<IResult[]>([]);
     const [customFields, setCustomFields] = useState<CustomFieldEntity[]>([]);
+    const [pendingCancelGroupUuid, setPendingCancelGroupUuid] = useState<string | null>(null);
 
     const canCancelGroupOperation = useCanAccess({
         action: 'bulk_edit',
@@ -112,6 +113,7 @@ export const CommonHistory = ({ role }: IProps) => {
     useEffect(() => {
         if (!volunteerId) return;
         let cancelled = false;
+
         const load = async () => {
             try {
                 const {
@@ -136,6 +138,7 @@ export const CommonHistory = ({ role }: IProps) => {
         };
 
         void load();
+
         return () => {
             cancelled = true;
         };
@@ -156,13 +159,16 @@ export const CommonHistory = ({ role }: IProps) => {
     const formatFieldValue = useCallback(
         (obj: IData, key: string): ReactNode => {
             if (!obj) return '';
+
             if (BOOL_KEY_SET.has(key)) {
                 return BOOL_MAP[key as keyof typeof BOOL_MAP][Number(obj[key])];
             }
+
             if (COMMENT_KEY_SET.has(key)) {
                 const value = obj[key];
                 return typeof value === 'string' ? value.replace(/<\/?[^>]+(>|$)/g, '') : '';
             }
+
             const maps: Record<string, Record<string | number, string>> = {
                 kitchen: kitchenById,
                 main_role: volunteerRoleById,
@@ -175,6 +181,7 @@ export const CommonHistory = ({ role }: IProps) => {
                 arrival_transport: transportById,
                 departure_transport: transportById
             };
+
             if (key === 'supervisor') {
                 const { id, name } = obj[key] ?? {};
 
@@ -189,6 +196,7 @@ export const CommonHistory = ({ role }: IProps) => {
                     '-'
                 );
             }
+
             if (maps[key]) {
                 const value = obj[key];
                 if (typeof value === 'string' || typeof value === 'number') {
@@ -196,30 +204,38 @@ export const CommonHistory = ({ role }: IProps) => {
                 }
                 return '';
             }
+
             if (key === 'directions') {
-                const arr = obj[key] as unknown as Array<string | number> | undefined;
-                return (arr ?? [])
+                const values = obj[key] as Array<string | number> | undefined;
+                return (values ?? [])
                     .map((id) => directionById[id])
                     .filter(Boolean)
                     .join(', ');
             }
+
             if (key === 'value') {
                 const value = String(obj[key] ?? '');
                 return value === 'true' ? 'Да' : value === 'false' ? 'Нет' : value;
             }
+
             const value = obj[key];
+
             if (typeof value === 'string' || typeof value === 'number') {
                 return value;
             }
+
             if (typeof value === 'boolean') {
                 return value ? 'Да' : 'Нет';
             }
+
             if (Array.isArray(value)) {
                 return value.join(', ');
             }
+
             if (value && typeof value === 'object' && 'name' in value && typeof value.name === 'string') {
                 return value.name;
             }
+
             return '';
         },
         [
@@ -278,25 +294,27 @@ export const CommonHistory = ({ role }: IProps) => {
         }
     }, []);
 
-    const confirmCancel = useCallback(
-        (uuid: string) => {
-            Modal.confirm({
-                title: 'Отмена групповой операции',
-                content: 'Вы уверены, что хотите отменить групповую операцию?',
-                okText: 'Да',
-                cancelText: 'Отмена',
-                onOk: () => cancelGroupOperation(uuid)
-            });
-        },
-        [cancelGroupOperation]
-    );
-
     if (historyView.length === 0) {
         return <div className={styles.historyWrap}>ИЗМЕНЕНИЙ НЕТ</div>;
     }
 
     return (
         <div className={styles.historyWrap}>
+            <Modal
+                title="Отмена групповой операции"
+                open={pendingCancelGroupUuid !== null}
+                onCancel={() => setPendingCancelGroupUuid(null)}
+                okText="Да"
+                cancelText="Отмена"
+                onOk={async () => {
+                    if (!pendingCancelGroupUuid) return;
+
+                    await cancelGroupOperation(pendingCancelGroupUuid);
+                    setPendingCancelGroupUuid(null);
+                }}
+            >
+                <p>Вы уверены, что хотите отменить групповую операцию?</p>
+            </Modal>
             {historyView.map((item) => (
                 <div key={item.key} className={styles.historyItem}>
                     <div className={styles.itemTitleWrap}>
@@ -328,7 +346,7 @@ export const CommonHistory = ({ role }: IProps) => {
                         <Button
                             type="link"
                             danger
-                            onClick={() => confirmCancel(item.groupOperationUuid!)}
+                            onClick={() => setPendingCancelGroupUuid(item.groupOperationUuid ?? null)}
                             className={styles.cancelGroupBtn}
                         >
                             Отменить групповую операцию
