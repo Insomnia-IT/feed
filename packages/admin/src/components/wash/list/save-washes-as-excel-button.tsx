@@ -1,11 +1,10 @@
-import { WashEntity } from 'interfaces';
-import { dataProvider } from '../../../dataProvider';
-import { transformWashesForShow } from './utils';
-import dayjs from 'dayjs';
-import { formDateFormat, saveXLSX } from 'shared/lib';
 import { useState } from 'react';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
+import axios from 'axios';
+
+import { NEW_API_URL } from 'const';
+import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
 
 export const SaveWashesAsExcelButton = () => {
     const [isExporting, setIsExporting] = useState(false);
@@ -13,7 +12,13 @@ export const SaveWashesAsExcelButton = () => {
     const onClick = async () => {
         try {
             setIsExporting(true);
-            await saveWashesAsExcel();
+
+            const { data, headers } = await axios.get<Blob>(`${NEW_API_URL}/washes/export-xlsx/`, {
+                responseType: 'blob'
+            });
+
+            const filename = getFilenameFromContentDisposition(headers['content-disposition'], 'washes.xlsx');
+            downloadBlob(data, filename);
         } catch (error) {
             console.error(error);
         } finally {
@@ -30,48 +35,4 @@ export const SaveWashesAsExcelButton = () => {
             Скачать
         </Button>
     );
-};
-
-const saveWashesAsExcel = async () => {
-    const { data = [] } = await dataProvider.getList<WashEntity>({
-        resource: 'washes'
-    });
-
-    const ExcelJS = await import('exceljs');
-
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Washes');
-
-    const header = [
-        'ID',
-        'Позывной',
-        'ФИО',
-        'Службы/Локации',
-        'Дней на поле',
-        'Дата стирки',
-        'Номер стирки',
-        'Позывной совы'
-    ];
-
-    sheet.addRow(header);
-
-    data.forEach((washItem) => {
-        const itemForSave = transformWashesForShow(washItem);
-
-        const { id, volunteerName, volunteerFullName, daysOnField, directions, washDate, washCount, owlName } =
-            itemForSave;
-
-        sheet.addRow([
-            id,
-            volunteerName,
-            volunteerFullName,
-            directions?.join(',') ?? '',
-            daysOnField,
-            dayjs(washDate).format(formDateFormat),
-            washCount,
-            owlName
-        ]);
-    });
-
-    await saveXLSX(workbook, 'Washes');
 };

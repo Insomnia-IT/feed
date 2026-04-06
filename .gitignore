@@ -59,4 +59,7 @@ dist
 !.yarn/sdks
 !.yarn/versions
 
-.claude/settings.local.json
+.claude
+.playwright-cli
+# Superpowers Plans
+/docs/superpowers/plans/

@@ -2,8 +2,11 @@ import dayjs from 'dayjs';
 import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
+import type { MealPlanCell } from '@feed/admin/src/interfaces';
 
 import { getToday } from '~/shared/lib/date';
+
+export type { MealPlanCell };
 
 export interface Transaction {
     ulid: string;
@@ -13,6 +16,7 @@ export interface Transaction {
     mealTime: MealTime;
     is_new: boolean;
     is_vegan?: boolean;
+    is_anomaly?: boolean;
     reason?: string | null;
     kitchen: number;
     group_badge?: number | null;
@@ -25,6 +29,8 @@ export interface ServerTransaction {
     dtime: string;
     meal_time: MealTime;
     is_vegan: boolean;
+    is_anomaly?: boolean;
+    reason?: string | null;
     kitchen: number;
     group_badge?: number | null;
 }
@@ -78,6 +84,7 @@ export interface GroupBadge {
     id: number;
     name: string;
     qr: string;
+    planning_cells: Array<MealPlanCell>;
 }
 
 export class MySubClassedDexie extends Dexie {
@@ -129,6 +136,7 @@ export const db = new MySubClassedDexie();
 export const addTransaction = async ({
     amount,
     group_badge,
+    isAnomaly,
     isVegan,
     kitchenId,
     log,
@@ -138,6 +146,7 @@ export const addTransaction = async ({
     vol?: Volunteer | null;
     mealTime: MealTime;
     isVegan: boolean | undefined;
+    isAnomaly?: boolean;
     kitchenId: number;
     log?: {
         error: boolean;
@@ -166,6 +175,7 @@ export const addTransaction = async ({
         ulid: ulid(ts * 1000),
         mealTime: MealTime[mealTime],
         is_new: true,
+        is_anomaly: Boolean(isAnomaly),
         reason,
         group_badge
     });
@@ -174,6 +184,7 @@ export const addTransaction = async ({
 export const dbIncFeed = async ({
     amount,
     group_badge,
+    isAnomaly,
     isVegan,
     kitchenId,
     log,
@@ -182,6 +193,7 @@ export const dbIncFeed = async ({
 }: {
     amount?: number;
     group_badge?: number | null;
+    isAnomaly?: boolean;
     vol?: Volunteer | null;
     mealTime: MealTime;
     isVegan?: boolean | undefined;
@@ -191,7 +203,7 @@ export const dbIncFeed = async ({
     };
     kitchenId: number;
 }): Promise<any> => {
-    return await addTransaction({ amount, group_badge, vol, mealTime, isVegan, log, kitchenId });
+    return await addTransaction({ amount, group_badge, isAnomaly, vol, mealTime, isVegan, log, kitchenId });
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {

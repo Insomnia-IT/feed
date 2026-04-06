@@ -18,7 +18,7 @@ import {
     validateVol
 } from '../post-scan.utils';
 
-import type { ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
+import type { GroupBadgeFeedAnonsPayload, ValidatedVol, ValidationGroups } from './post-scan-group-badge.lib';
 import { getAllVols } from './post-scan-group-badge.utils';
 import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 
@@ -121,7 +121,7 @@ export const PostScanGroupBadge: FC<{
         void incFeedAsync({ vols, mealTime, kitchenId, groupBadge });
     };
 
-    const doFeedAnons = (value: { vegansCount: number; nonVegansCount: number }): void => {
+    const doFeedAnons = (value: GroupBadgeFeedAnonsPayload): void => {
         void massFeedAnons({ ...value, groupBadge, kitchenId, mealTime });
     };
 
@@ -189,6 +189,8 @@ export const PostScanGroupBadge: FC<{
                 closeFeed={closeFeed}
                 name={name}
                 view={view}
+                groupBadge={groupBadge}
+                mealTime={mealTime}
             />
         </CardContainer>
     );
@@ -198,11 +200,23 @@ const ResultScreen: React.FC<{
     alreadyFedTransactions: Array<TransactionJoined>;
     closeFeed: () => void;
     doFeed: (vols: Array<ValidatedVol>) => void;
-    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
+    doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
     name: string;
     validationGroups: ValidationGroups;
     view: Views;
-}> = ({ alreadyFedTransactions, closeFeed, doFeed, doFeedAnons, name, validationGroups, view }) => {
+    groupBadge: GroupBadge;
+    mealTime: MealTime | null;
+}> = ({
+    alreadyFedTransactions,
+    closeFeed,
+    doFeed,
+    doFeedAnons,
+    groupBadge,
+    mealTime,
+    name,
+    validationGroups,
+    view
+}) => {
     switch (view) {
         case Views.LOADING:
             return <ErrorCard close={closeFeed} title='Загрузка...' msg='' />;
@@ -224,6 +238,8 @@ const ResultScreen: React.FC<{
                     doFeed={doFeed}
                     close={closeFeed}
                     validationGroups={validationGroups}
+                    groupBadge={groupBadge}
+                    mealTime={mealTime!}
                 />
             );
 

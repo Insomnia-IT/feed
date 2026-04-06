@@ -7,3 +7,19 @@ export type ValidatedVol = Volunteer & {
 };
 
 export type ValidationGroups = Record<'greens' | 'reds', Array<ValidatedVol>>;
+
+export interface GroupBadgeAnomalyMetaCategory {
+    edited: boolean;
+    calculatedAmount: number;
+}
+
+export interface GroupBadgeAnomalyMeta {
+    vegans: GroupBadgeAnomalyMetaCategory;
+    nonVegans: GroupBadgeAnomalyMetaCategory;
+}
+
+export interface GroupBadgeFeedAnonsPayload {
+    vegansCount: number;
+    nonVegansCount: number;
+    anomalyMeta?: GroupBadgeAnomalyMeta;
+}
