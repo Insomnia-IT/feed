@@ -50,6 +50,24 @@ const isFilterItem = (value: unknown): value is FilterItem =>
     'value' in value &&
     typeof (value as { name: unknown }).name === 'string';
 
+const isCustomFieldFilterName = (name: string) => name.startsWith('custom_field_values.');
+
+const shouldKeepFilterName = ({
+    name,
+    customFieldsLoaded,
+    validFilterNames
+}: {
+    name: string;
+    customFieldsLoaded: boolean;
+    validFilterNames: Set<string>;
+}) => {
+    if (!customFieldsLoaded && isCustomFieldFilterName(name)) {
+        return false;
+    }
+
+    return !customFieldsLoaded || validFilterNames.has(name);
+};
+
 export const useFilters = ({
     customFields,
     customFieldsLoaded,
@@ -315,15 +333,25 @@ export const useFilters = ({
 
     const visibleFilters = useMemo(
         () =>
-            customFieldsLoaded ? visibleFiltersState.filter((name) => validFilterNames.has(name)) : visibleFiltersState,
+            visibleFiltersState.filter((name) =>
+                shouldKeepFilterName({
+                    name,
+                    customFieldsLoaded,
+                    validFilterNames
+                })
+            ),
         [customFieldsLoaded, validFilterNames, visibleFiltersState]
     );
 
     const activeFilters = useMemo(
         () =>
-            customFieldsLoaded
-                ? activeFiltersState.filter(({ name }) => validFilterNames.has(name))
-                : activeFiltersState,
+            activeFiltersState.filter(({ name }) =>
+                shouldKeepFilterName({
+                    name,
+                    customFieldsLoaded,
+                    validFilterNames
+                })
+            ),
         [activeFiltersState, customFieldsLoaded, validFilterNames]
     );
     const visibleFilterSet = useMemo(() => new Set(visibleFilters), [visibleFilters]);
