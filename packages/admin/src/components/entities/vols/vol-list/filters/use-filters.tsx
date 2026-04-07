@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type HttpError, useList } from '@refinedev/core';
 
 import type {
@@ -19,6 +19,7 @@ import {
     FilterFieldType,
     type FilterItem
 } from 'components/entities/vols/vol-list/filters/filter-types';
+import { useLocalStorage } from 'shared/hooks';
 import { getSorter } from 'utils';
 
 const SEARCH_TEXT_STORAGE_ITEM_NAME = 'volSearchText';
@@ -26,24 +27,6 @@ const FILTERS_STORAGE_ITEM_NAME = 'volFilter';
 const VISIBLE_FILTERS_STORAGE_ITEM_NAME = 'volVisibleFilters';
 
 type WithId = { id: number | string };
-
-const safeGetLS = (key: string): string | null => {
-    if (typeof window === 'undefined') return null;
-    try {
-        return window.localStorage.getItem(key);
-    } catch {
-        return null;
-    }
-};
-
-const safeSetLS = (key: string, value: string) => {
-    if (typeof window === 'undefined') return;
-    try {
-        window.localStorage.setItem(key, value);
-    } catch {
-        /* empty */
-    }
-};
 
 const getFieldString = (obj: object, key: string): string => {
     const value = (obj as Record<string, unknown>)[key];
@@ -67,50 +50,6 @@ const isFilterItem = (value: unknown): value is FilterItem =>
     'value' in value &&
     typeof (value as { name: unknown }).name === 'string';
 
-const getDefaultVisibleFilters = (): Array<string> => {
-    const str = safeGetLS(VISIBLE_FILTERS_STORAGE_ITEM_NAME);
-    if (str) {
-        try {
-            const parsed = JSON.parse(str) as unknown;
-            return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
-        } catch {
-            /* empty */
-        }
-    }
-    return [];
-};
-
-const getDefaultActiveFilters = (): Array<FilterItem> => {
-    const str = safeGetLS(FILTERS_STORAGE_ITEM_NAME);
-    if (str) {
-        try {
-            const parsed = JSON.parse(str) as unknown;
-            return Array.isArray(parsed) ? parsed.filter(isFilterItem) : [];
-        } catch {
-            /* empty */
-        }
-    }
-    return [];
-};
-
-const changeStorageAndPageOnlyIfNeeded = ({
-    itemName,
-    value,
-    resetPage
-}: {
-    itemName: string;
-    value: unknown;
-    resetPage: () => void;
-}) => {
-    const currentValue = safeGetLS(itemName);
-    const newValue = typeof value === 'string' ? value : JSON.stringify(value);
-
-    if (currentValue !== newValue) {
-        resetPage();
-        safeSetLS(itemName, newValue);
-    }
-};
-
 export const useFilters = ({
     customFields,
     customFieldsLoaded,
@@ -120,9 +59,44 @@ export const useFilters = ({
     customFields: CustomFieldEntity[];
     customFieldsLoaded: boolean;
 }) => {
-    const [searchText, setSearchTextState] = useState(() => safeGetLS(SEARCH_TEXT_STORAGE_ITEM_NAME) || '');
-    const didMountRef = useRef(false);
+    const { getItem, setItem } = useLocalStorage();
+    const getDefaultVisibleFilters = useCallback((): Array<string> => {
+        const str = getItem(VISIBLE_FILTERS_STORAGE_ITEM_NAME);
+        if (str) {
+            try {
+                const parsed = JSON.parse(str) as unknown;
+                return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+            } catch {
+                /* empty */
+            }
+        }
+        return [];
+    }, [getItem]);
+    const getDefaultActiveFilters = useCallback((): Array<FilterItem> => {
+        const str = getItem(FILTERS_STORAGE_ITEM_NAME);
+        if (str) {
+            try {
+                const parsed = JSON.parse(str) as unknown;
+                return Array.isArray(parsed) ? parsed.filter(isFilterItem) : [];
+            } catch {
+                /* empty */
+            }
+        }
+        return [];
+    }, [getItem]);
+    const changeStorageAndPageOnlyIfNeeded = useCallback(
+        ({ itemName, value, resetPage }: { itemName: string; value: unknown; resetPage: () => void }) => {
+            const currentValue = getItem(itemName);
+            const newValue = typeof value === 'string' ? value : JSON.stringify(value);
 
+            if (currentValue !== newValue) {
+                resetPage();
+                setItem(itemName, newValue);
+            }
+        },
+        [getItem, setItem]
+    );
+    const [searchText, setSearchTextState] = useState(() => getItem(SEARCH_TEXT_STORAGE_ITEM_NAME) || '');
     const resetPage = useCallback(() => {
         setPage(1);
     }, [setPage]);
@@ -131,8 +105,8 @@ export const useFilters = ({
     const [visibleFiltersState, setVisibleFiltersState] = useState<Array<string>>(getDefaultVisibleFilters);
 
     useEffect(() => {
-        safeSetLS(SEARCH_TEXT_STORAGE_ITEM_NAME, searchText);
-    }, [searchText]);
+        setItem(SEARCH_TEXT_STORAGE_ITEM_NAME, searchText);
+    }, [searchText, setItem]);
 
     const { result: groupBadgesResult } = useList<GroupBadgeEntity, HttpError>({
         resource: 'group-badges',
@@ -355,21 +329,12 @@ export const useFilters = ({
     const visibleFilterSet = useMemo(() => new Set(visibleFilters), [visibleFilters]);
 
     useEffect(() => {
-        safeSetLS(FILTERS_STORAGE_ITEM_NAME, JSON.stringify(activeFilters));
-    }, [activeFilters]);
+        setItem(FILTERS_STORAGE_ITEM_NAME, JSON.stringify(activeFilters));
+    }, [activeFilters, setItem]);
 
     useEffect(() => {
-        safeSetLS(VISIBLE_FILTERS_STORAGE_ITEM_NAME, JSON.stringify(visibleFilters));
-    }, [visibleFilters]);
-
-    useEffect(() => {
-        if (!didMountRef.current) {
-            didMountRef.current = true;
-            return;
-        }
-
-        setPage(1);
-    }, [activeFilters, visibleFilters, searchText, setPage]);
+        setItem(VISIBLE_FILTERS_STORAGE_ITEM_NAME, JSON.stringify(visibleFilters));
+    }, [setItem, visibleFilters]);
 
     const formatFilter = useCallback((name: string, value: unknown) => {
         if (name.startsWith('custom_field_values.')) {

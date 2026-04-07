@@ -5,6 +5,7 @@ import { useList, useNavigation } from '@refinedev/core';
 
 import { RichTextPreview } from 'components/controls/rich-text-preview';
 import type { GroupBadgeEntity } from 'interfaces';
+import { useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import { getSorter } from 'utils';
 import useVisibleDirections from '../vols/use-visible-directions';
@@ -15,8 +16,9 @@ const LS_PAGE_KEY = 'gbPageIndex';
 const LS_SIZE_KEY = 'gbPageSize';
 
 export const GroupBadgeList = () => {
-    const [page, setPage] = useState<number>(Number(localStorage.getItem(LS_PAGE_KEY)) || 1);
-    const [pageSize, setPageSize] = useState<number>(Number(localStorage.getItem(LS_SIZE_KEY)) || 10);
+    const { getItem, setItem } = useLocalStorage();
+    const [page, setPage] = useState<number>(Number(getItem(LS_PAGE_KEY)) || 1);
+    const [pageSize, setPageSize] = useState<number>(Number(getItem(LS_SIZE_KEY)) || 10);
 
     const visibleDirections = useVisibleDirections();
     const { isDesktop } = useScreen();
@@ -39,9 +41,9 @@ export const GroupBadgeList = () => {
         const maxPage = Math.max(1, Math.ceil(total / pageSize));
         if (page > maxPage) {
             startTransition(() => setPage(1));
-            localStorage.setItem(LS_PAGE_KEY, '1');
+            setItem(LS_PAGE_KEY, '1');
         }
-    }, [isDesktop, groupBadges?.total, page, pageSize]);
+    }, [isDesktop, groupBadges?.total, page, pageSize, setItem]);
 
     const pagination: TablePaginationConfig = {
         total: groupBadges?.total ?? 1,
@@ -52,8 +54,8 @@ export const GroupBadgeList = () => {
         onChange: (newPage, newPageSize) => {
             setPage(newPage);
             setPageSize(newPageSize);
-            localStorage.setItem(LS_PAGE_KEY, String(newPage));
-            localStorage.setItem(LS_SIZE_KEY, String(newPageSize));
+            setItem(LS_PAGE_KEY, String(newPage));
+            setItem(LS_SIZE_KEY, String(newPageSize));
         }
     };
 

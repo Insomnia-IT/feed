@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigation, useList, CanAccess, useGetIdentity } from '@refinedev/core';
+import { useList, CanAccess, useGetIdentity } from '@refinedev/core';
 import { List } from '@refinedev/antd';
 import { Input, Row, Col, Segmented } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
+import { useNavigate } from 'react-router';
 
 import { dataProvider } from 'dataProvider';
-import { useDebouncedCallback } from 'shared/hooks';
+import { useDebouncedCallback, useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
 import type { UserData } from 'auth';
@@ -26,7 +27,10 @@ import { PersonsTable } from './vol-list/persons-table';
 const LS_PAGE_INDEX = 'volPageIndex';
 const LS_PAGE_SIZE = 'volPageSize';
 
-const isBrowser = () => typeof window !== 'undefined';
+const getPositiveNumber = (value: string | null, fallback: number) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
 
 const DesktopVolunteersContent = ({
     page,
@@ -157,17 +161,16 @@ const DesktopVolunteersContent = ({
 
 export const VolList = () => {
     const { isDesktop } = useScreen();
-    const { edit } = useNavigation();
+    const navigate = useNavigate();
     const { data: user } = useGetIdentity<UserData>();
+    const { getItem, setItem } = useLocalStorage();
 
     const [page, setPage] = useState<number>(() => {
-        if (!isBrowser()) return 1;
-        return Number(localStorage.getItem(LS_PAGE_INDEX)) || 1;
+        return getPositiveNumber(getItem(LS_PAGE_INDEX), 1);
     });
 
     const [pageSize, setPageSize] = useState<number>(() => {
-        if (!isBrowser()) return 10;
-        return Number(localStorage.getItem(LS_PAGE_SIZE)) || 10;
+        return getPositiveNumber(getItem(LS_PAGE_SIZE), 10);
     });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
@@ -176,17 +179,29 @@ export const VolList = () => {
     const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
     const [mobileTotal, setMobileTotal] = useState(0);
 
-    const setPageWithStorage = useCallback((value: number): void => {
-        setPage(value);
-        if (!isBrowser()) return;
-        localStorage.setItem(LS_PAGE_INDEX, String(value));
-    }, []);
+    const syncPaginationState = useCallback(
+        ({ nextPage, nextPageSize }: { nextPage: number; nextPageSize: number }) => {
+            setItem(LS_PAGE_INDEX, String(nextPage));
+            setItem(LS_PAGE_SIZE, String(nextPageSize));
+        },
+        [setItem]
+    );
 
-    const setPageSizeWithStorage = useCallback((value: number): void => {
-        setPageSize(value);
-        if (!isBrowser()) return;
-        localStorage.setItem(LS_PAGE_SIZE, String(value));
-    }, []);
+    const setPageWithStorage = useCallback(
+        (value: number): void => {
+            setPage(value);
+            syncPaginationState({ nextPage: value, nextPageSize: pageSize });
+        },
+        [pageSize, syncPaginationState]
+    );
+
+    const setPageSizeWithStorage = useCallback(
+        (value: number): void => {
+            setPageSize(value);
+            syncPaginationState({ nextPage: page, nextPageSize: value });
+        },
+        [page, syncPaginationState]
+    );
 
     const canListCustomFields = useCanAccess({
         action: 'list',
@@ -295,7 +310,13 @@ export const VolList = () => {
     const effectiveFilterQueryParams = isDesktop ? filterQueryParams : mobileFilterQueryParams;
 
     const openVolunteer = (id: number) => {
-        edit('volunteers', id);
+        navigate(`/volunteers/edit/${id}`, {
+            state: {
+                returnTo: '/volunteers',
+                returnPage: page,
+                returnPageSize: pageSize
+            }
+        });
         return Promise.resolve(true);
     };
 

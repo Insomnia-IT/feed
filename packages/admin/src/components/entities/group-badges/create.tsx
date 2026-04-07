@@ -2,13 +2,15 @@ import { Create, useForm } from '@refinedev/antd';
 import { Form } from 'antd';
 
 import type { GroupBadgeEntity } from 'interfaces';
+import { useLocalStorage } from 'shared/hooks';
 
 import { CreateEdit } from './common';
 
 export const GroupBadgeCreate = () => {
+    const { setItem } = useLocalStorage();
     const { form, formProps, saveButtonProps } = useForm<GroupBadgeEntity>({
         onMutationSuccess: () => {
-            localStorage.setItem('gbPageIndex', '1');
+            setItem('gbPageIndex', '1');
         }
     });
 
