@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type HttpError, useList } from '@refinedev/core';
 
 import type {
@@ -121,6 +121,7 @@ export const useFilters = ({
     customFieldsLoaded: boolean;
 }) => {
     const [searchText, setSearchTextState] = useState(() => safeGetLS(SEARCH_TEXT_STORAGE_ITEM_NAME) || '');
+    const didMountRef = useRef(false);
 
     const resetPage = useCallback(() => {
         setPage(1);
@@ -362,6 +363,11 @@ export const useFilters = ({
     }, [visibleFilters]);
 
     useEffect(() => {
+        if (!didMountRef.current) {
+            didMountRef.current = true;
+            return;
+        }
+
         setPage(1);
     }, [activeFilters, visibleFilters, searchText, setPage]);
 

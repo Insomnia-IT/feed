@@ -171,26 +171,28 @@ const OptionValueChanger = ({
     };
 
     const optionsMapped =
-        (options ?? [])
-            .slice()
-            .map((item) => {
-                if (!isVolunteerStatus(item.value)) {
-                    return { ...item, disabled: true };
-                }
+        resource === 'statuses'
+            ? ((options ?? [])
+                  .slice()
+                  .map((item) => {
+                      if (!isVolunteerStatus(item.value)) {
+                          return { ...item, disabled: true };
+                      }
 
-                const withCheck = isVolunteerCompletedStatusValue(item.value)
-                    ? { ...item, label: `✅ ${item.label}` }
-                    : item;
+                      const withCheck = isVolunteerCompletedStatusValue(item.value)
+                          ? { ...item, label: `✅ ${item.label}` }
+                          : item;
 
-                const inOrder = isVolunteerStatus(item.value) && statusesOrder.includes(item.value);
-                const allowedByPerm =
-                    (item.value !== 'ARRIVED' || canStatusArrivedAssign) &&
-                    (item.value !== 'STARTED' || canStatusStartedAssign);
+                      const inOrder = isVolunteerStatus(item.value) && statusesOrder.includes(item.value);
+                      const allowedByPerm =
+                          (item.value !== 'ARRIVED' || canStatusArrivedAssign) &&
+                          (item.value !== 'STARTED' || canStatusStartedAssign);
 
-                return { ...withCheck, disabled: !(inOrder && allowedByPerm) };
-            })
-            .sort((a, b) => orderIndex(a.value as string) - orderIndex(b.value as string))
-            .filter((x) => !x.disabled) ?? [];
+                      return { ...withCheck, disabled: !(inOrder && allowedByPerm) };
+                  })
+                  .sort((a, b) => orderIndex(a.value as string) - orderIndex(b.value as string))
+                  .filter((x) => !x.disabled) ?? [])
+            : (options ?? []);
 
     return <Select style={{ width: '100%' }} onSelect={(value) => onChange(value)} options={optionsMapped} />;
 };
