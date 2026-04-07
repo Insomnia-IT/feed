@@ -28,7 +28,7 @@ export const AdditionalSection = ({
 
     const canDirectionHeadCommentEdit = useCanAccess({ action: 'direction_head_comment_edit', resource: 'volunteers' });
 
-    const currentComment = form.getFieldValue('comment') || '';
+    const currentComment = Form.useWatch('comment', form) || '';
     const isDeleted = form.getFieldValue('deleted_at');
 
     const handleBanSuccess = (updatedData: Record<string, unknown>) => {

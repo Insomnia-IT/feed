@@ -54,6 +54,7 @@ interface IActor {
 type IVolunteer = IActor;
 
 export interface IResult {
+    id: number;
     action_at: string;
     actor: IActor | null;
     actor_badge: string;

@@ -268,7 +268,7 @@ export const CommonHistory = ({ role }: IProps) => {
                     }));
 
                 return {
-                    key: item.action_at + item.status,
+                    key: String(item.id),
                     actorLabel:
                         role === 'volunteer'
                             ? (item.actor?.name ?? (item.by_sync ? 'Синхронизация' : 'Админ'))
