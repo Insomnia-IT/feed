@@ -4,7 +4,7 @@ import { Checkbox, Space, Spin, Typography } from 'antd';
 import { useDataProvider, useInvalidate, useNotification, useOne } from '@refinedev/core';
 
 import { MEAL_MAP } from 'const';
-import type { GroupBadgeEntity, GroupBadgePlanningCellEntity, MealType } from 'interfaces';
+import type { GroupBadgeEntity, GroupBadgePlanningCellEntity, MealPlanCell, MealType } from 'interfaces';
 
 const { Text, Title } = Typography;
 
@@ -15,6 +15,20 @@ const PLANNING_MEALS: PlanningMealType[] = ['breakfast', 'lunch', 'dinner'];
 const isPlanningMeal = (meal: string): meal is PlanningMealType => PLANNING_MEALS.includes(meal as PlanningMealType);
 
 const isDisabledMealCell = (cell?: GroupBadgePlanningCellEntity) => cell?.amount_meat === 0 && cell?.amount_vegan === 0;
+
+const getFuturePlanningCells = ({
+    planningCells,
+    meal,
+    tomorrowDate
+}: {
+    planningCells: MealPlanCell[];
+    meal: PlanningMealType;
+    tomorrowDate: string;
+}) =>
+    planningCells.filter(
+        (cell): cell is GroupBadgePlanningCellEntity =>
+            isPlanningMeal(cell.meal_time) && cell.meal_time === meal && cell.date >= tomorrowDate
+    );
 
 export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) => {
     const dataProvider = useDataProvider();
@@ -44,7 +58,12 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
     const isMealEnabled = (meal: PlanningMealType) => !isDisabledMealCell(tomorrowCellsByMeal.get(meal));
 
     const updatePlanningCell = async (meal: PlanningMealType, nextChecked: boolean) => {
-        const cell = tomorrowCellsByMeal.get(meal);
+        const tomorrowCell = tomorrowCellsByMeal.get(meal);
+        const futureCells = getFuturePlanningCells({
+            planningCells: groupBadge?.planning_cells ?? [],
+            meal,
+            tomorrowDate
+        });
         const mutationVariables = nextChecked
             ? {
                   amount_meat: null,
@@ -58,13 +77,19 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
         try {
             setSavingMeal(meal);
 
-            if (cell?.id) {
-                await dataProvider().update<GroupBadgePlanningCellEntity>({
-                    resource: 'group-badge-planning-cells',
-                    id: cell.id,
-                    variables: mutationVariables
-                });
-            } else if (!nextChecked) {
+            await Promise.all(
+                futureCells
+                    .filter((cell) => cell.id)
+                    .map((cell) =>
+                        dataProvider().update<GroupBadgePlanningCellEntity>({
+                            resource: 'group-badge-planning-cells',
+                            id: cell.id as number,
+                            variables: mutationVariables
+                        })
+                    )
+            );
+
+            if (!tomorrowCell?.id && !nextChecked) {
                 await dataProvider().create<GroupBadgePlanningCellEntity>({
                     resource: 'group-badge-planning-cells',
                     variables: {
@@ -80,6 +105,10 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
                 resource: 'group-badges',
                 invalidates: ['detail', 'list'],
                 id: groupBadgeId
+            });
+            await invalidate({
+                resource: 'group-badge-planning-cells',
+                invalidates: ['detail', 'list']
             });
 
             open({

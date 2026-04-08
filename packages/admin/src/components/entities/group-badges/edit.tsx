@@ -60,9 +60,6 @@ export const GroupBadgeEdit = () => {
                 <CreateEdit />
             </Form>
 
-            <Divider />
-            <GroupBadgePlanning groupBadgeId={Number(id)} />
-
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
                 <Col>
                     <Title level={5}>
@@ -116,6 +113,9 @@ export const GroupBadgeEdit = () => {
                     )}
                 />
             </Table>
+
+            <Divider />
+            <GroupBadgePlanning groupBadgeId={Number(id)} />
 
             <Divider />
 
