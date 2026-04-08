@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { Checkbox, Space, Spin, Typography } from 'antd';
 import { useDataProvider, useInvalidate, useNotification, useOne } from '@refinedev/core';
@@ -16,7 +16,7 @@ const isPlanningMeal = (meal: string): meal is PlanningMealType => PLANNING_MEAL
 
 const isDisabledMealCell = (cell?: GroupBadgePlanningCellEntity) => cell?.amount_meat === 0 && cell?.amount_vegan === 0;
 
-export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId }) => {
+export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) => {
     const dataProvider = useDataProvider();
     const invalidate = useInvalidate();
     const { open = () => {} } = useNotification();
@@ -24,7 +24,7 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
     const tomorrowDate = dayjs().add(1, 'day').format('YYYY-MM-DD');
     const tomorrowDateLabel = dayjs(tomorrowDate).format('DD.MM.YYYY');
 
-    const { data, isLoading } = useOne<GroupBadgeEntity>({
+    const { result: groupBadge, query } = useOne<GroupBadgeEntity>({
         resource: 'group-badges',
         id: groupBadgeId
     });
@@ -32,14 +32,14 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
     const tomorrowCellsByMeal = useMemo(() => {
         const result = new Map<PlanningMealType, GroupBadgePlanningCellEntity>();
 
-        (data?.data?.planning_cells ?? []).forEach((cell) => {
+        (groupBadge?.planning_cells ?? []).forEach((cell) => {
             if (cell.date === tomorrowDate && isPlanningMeal(cell.meal_time)) {
                 result.set(cell.meal_time, cell as GroupBadgePlanningCellEntity);
             }
         });
 
         return result;
-    }, [data?.data?.planning_cells, tomorrowDate]);
+    }, [groupBadge?.planning_cells, tomorrowDate]);
 
     const isMealEnabled = (meal: PlanningMealType) => !isDisabledMealCell(tomorrowCellsByMeal.get(meal));
 
@@ -96,7 +96,7 @@ export const GroupBadgePlanning: FC<{ groupBadgeId: number }> = ({ groupBadgeId 
         }
     };
 
-    if (isLoading) {
+    if (query.isLoading) {
         return <Spin />;
     }
 
