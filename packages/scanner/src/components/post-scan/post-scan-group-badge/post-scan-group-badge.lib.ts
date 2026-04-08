@@ -1,4 +1,4 @@
-import type { Volunteer } from '~/db';
+import type { Volunteer } from 'db';
 
 export type ValidatedVol = Volunteer & {
     msg: Array<string>;

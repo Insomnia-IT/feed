@@ -7,7 +7,7 @@
 - **Install dependencies**: `npm install`
 - **Build all packages**: `npm run build`
 - **Lint all**: `npm run lint`
-- **Fix linting**: `npm run lint-fix:js`
+- **Fix linting**: `npm run lint-fix`
 - **Run type checking**: `npm run tc`
 
 ### Backend (Django)
@@ -48,8 +48,11 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
 ### Tech Stack Highlights
 
 - **Backend**: Python/Django/SQLite (Dev)/PostgreSQL (Prod).
-- **Frontend**: React, TypeScript, Vite (Admin), Craco/Webpack (Scanner), Refine (Admin framework).
-- **Monorepo Tools**: Lerna and Nx for task orchestration.
+- **Frontend**:
+    - `packages/admin`: React 19, TypeScript, Vite, Refine 6, Ant Design, TanStack Query, React Router 7.
+    - `packages/scanner`: React 19, TypeScript, Vite, PWA, Dexie.
+    - Both frontend packages use Vite and `@vitejs/plugin-react`.
+- **Monorepo Tools**: npm workspaces, Lerna 9, Nx 22.
 
 ### Key Models (Backend)
 
@@ -66,6 +69,7 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
 **Rule: If a function accepts more than 2 arguments, use an object with named fields instead of positional arguments.**
 
 #### Bad (positional arguments):
+
 ```typescript
 function createUser(name: string, age: number, email: string, role: string, isActive: boolean) {
     // ...
@@ -73,19 +77,15 @@ function createUser(name: string, age: number, email: string, role: string, isAc
 ```
 
 #### Good (object argument):
+
 ```typescript
-function createUser(params: {
-    name: string;
-    age: number;
-    email: string;
-    role: string;
-    isActive: boolean;
-}) {
+function createUser(params: { name: string; age: number; email: string; role: string; isActive: boolean }) {
     // ...
 }
 ```
 
 This rule improves:
+
 - **Readability**: Named parameters are self-documenting
 - **Maintainability**: Adding new parameters doesn't require changing call sites
 - **Type Safety**: Easier to validate and understand parameter shapes

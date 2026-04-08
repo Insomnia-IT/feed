@@ -12,11 +12,18 @@ interface IProps {
     volunteerId: string | number;
 }
 
-const BanModal: React.FC<IProps> = ({ currentComment, isBlocked, onCancel, onSuccess, visible, volunteerId }) => {
+const BanModal = ({ currentComment, isBlocked, onCancel, onSuccess, visible, volunteerId }: IProps) => {
     const [form] = Form.useForm();
 
     const handleFinish = async () => {
         try {
+            if (volunteerId == null || volunteerId === '') {
+                notification.error({
+                    message: 'Не удалось определить ID волонтёра'
+                });
+                return;
+            }
+
             const values = await form.validateFields();
             const reason = values.reason;
             const currentDate = new Date();

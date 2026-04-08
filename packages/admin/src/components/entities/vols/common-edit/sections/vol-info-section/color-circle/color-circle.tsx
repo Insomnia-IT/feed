@@ -1,10 +1,8 @@
-import React from 'react';
-
 import styles from './color-circle.module.css';
 
 export type ColorDef = string | { fill: string; border: string };
 
-export const ColorCircle: React.FC<{ def: ColorDef }> = ({ def }) =>
+export const ColorCircle = ({ def }: { def: ColorDef }) =>
     typeof def === 'string' ? (
         <span className={styles.badgeColorCircle} style={{ backgroundColor: def }} />
     ) : (

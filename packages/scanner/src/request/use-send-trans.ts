@@ -2,14 +2,14 @@ import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import type { ApiHook } from '~/request/lib';
-import { db } from '~/db';
+import type { ApiHook } from 'request/lib';
+import { db } from 'db';
 
 export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const trans = useLiveQuery(async () => await db.transactions.toArray());
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const send = useCallback(() => {
         if (trans?.length === 0) {
@@ -55,20 +55,20 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
                     setUpdated(+new Date());
                     res(resp);
                 })
-                .catch((e) => {
+                .catch((e: unknown) => {
                     setFetching(false);
-                    if (e?.response?.status === 401) {
+                    if (axios.isAxiosError(e) && e.response?.status === 401) {
                         rej(false);
                         setAuth(false);
                         return;
                     }
-                    setError(error);
-                    rej(error);
+                    setError(e);
+                    rej(e);
                 });
         });
     }, [baseUrl, error, fetching, pin, setAuth, trans]);
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -76,5 +76,5 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };

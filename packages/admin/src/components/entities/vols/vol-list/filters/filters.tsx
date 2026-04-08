@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { useMemo } from 'react';
 import { DeleteOutlined, FilterOutlined } from '@ant-design/icons';
 import { Button, Col, Popover, Row } from 'antd';
 
@@ -18,7 +18,7 @@ interface IProps {
     setActiveFilters: (filters: FilterItem[]) => void;
 }
 
-export const Filters: FC<IProps> = ({
+export const Filters = ({
     activeFilters,
     filterFields,
     searchText,
@@ -26,7 +26,7 @@ export const Filters: FC<IProps> = ({
     setActiveFilters,
     visibleFilters,
     setVisibleFilters
-}) => {
+}: IProps) => {
     const toggleVisibleFilter = (name: string): void => {
         const visible = visibleFilters.includes(name);
         if (visible) {
@@ -124,14 +124,18 @@ export const Filters: FC<IProps> = ({
         () => filterFields.filter((f) => visibleFilters.includes(f.name)),
         [filterFields, visibleFilters]
     );
+    const activeFilterByName = useMemo(
+        () => new Map(activeFilters.map((filter) => [filter.name, filter])),
+        [activeFilters]
+    );
 
     const filterPairs = useMemo(
         () =>
             visibleFiltersFields.map((field) => ({
                 filterField: field,
-                filterItem: activeFilters.find((f) => f.name === field.name)
+                filterItem: activeFilterByName.get(field.name)
             })),
-        [visibleFiltersFields, activeFilters]
+        [visibleFiltersFields, activeFilterByName]
     );
 
     const resetFilters = () => {

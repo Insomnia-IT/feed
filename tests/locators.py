@@ -92,11 +92,10 @@ class create_user():
 
     # Поля для проверки прав доступа (read-only)
     KITCHEN_FIELD = "#kitchen"
-    RIGHTS_FIELD = "#main_role"
+    RIGHTS_FIELD = "#access_role"
     COMMENT_FIELD = "#comment"
 
     # История действий
     HISTORY_TAB = "//*[text()='История действий']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
-
 

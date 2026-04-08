@@ -101,6 +101,7 @@ export interface GroupBadgeEntity {
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
+    type: string;
     comment?: string;
     mobile: boolean;
 }
