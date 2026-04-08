@@ -15,13 +15,38 @@
     flex-wrap: wrap;
     gap: 12px;
     align-items: end;
+}
 
-    @media (width <= 576px) {
-        :global(.ant-btn) {
-            min-height: 32px;
-            height: fit-content;
-        }
+.filterItemsMobile {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    align-items: end;
+    width: 100%;
+
+    :global(.ant-btn) {
+        min-height: 32px;
+        height: fit-content;
     }
+}
+
+.mobileFiltersHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.mobileFiltersSummary {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    white-space: nowrap;
+}
+
+.mobileFilterField :global(.ant-picker) {
+    width: 100% !important;
 }
 
 /* Отступ между плашками фильтров и крестиком очистки в мультиселекте */

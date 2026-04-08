@@ -16,15 +16,17 @@ const fieldStyle = {
 export const FilterItemControl: FC<{
     field: FilterField;
     filterItem?: FilterItem;
+    isMobile?: boolean;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}> = ({ field, filterItem, onFilterTextValueChange, onFilterValueChange }) => {
+}> = ({ field, filterItem, isMobile, onFilterTextValueChange, onFilterValueChange }) => {
     if (field.type === FilterFieldType.Lookup || field.type === FilterFieldType.Boolean) {
         return (
             <FilterSelect
                 field={field}
                 isMultiple={field.type === FilterFieldType.Lookup}
                 filterItem={filterItem}
+                isMobile={isMobile}
                 onFilterTextValueChange={onFilterTextValueChange}
                 onFilterValueChange={onFilterValueChange}
             />
@@ -32,10 +34,24 @@ export const FilterItemControl: FC<{
     }
 
     if (field.type === FilterFieldType.Date) {
-        return <DateField field={field} filterItem={filterItem} onFilterTextValueChange={onFilterTextValueChange} />;
+        return (
+            <DateField
+                field={field}
+                filterItem={filterItem}
+                isMobile={isMobile}
+                onFilterTextValueChange={onFilterTextValueChange}
+            />
+        );
     }
 
-    return <FilterInput field={field} filterItem={filterItem} onFilterTextValueChange={onFilterTextValueChange} />;
+    return (
+        <FilterInput
+            field={field}
+            filterItem={filterItem}
+            isMobile={isMobile}
+            onFilterTextValueChange={onFilterTextValueChange}
+        />
+    );
 };
 
 const SEPARATOR = ':';
@@ -43,8 +59,9 @@ const SEPARATOR = ':';
 const DateField: FC<{
     field: FilterField;
     filterItem?: FilterItem;
+    isMobile?: boolean;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}> = ({ field, filterItem, onFilterTextValueChange }) => {
+}> = ({ field, filterItem, isMobile, onFilterTextValueChange }) => {
     const [isCalPopOpen, setIsCalPopOpen] = useState<boolean | undefined>(undefined);
 
     const [beforeString, afterString] = ((filterItem?.value as string | undefined) ?? '')?.split(SEPARATOR) ?? [];
@@ -53,7 +70,7 @@ const DateField: FC<{
     const changeValue = (value: string) => onFilterTextValueChange(field.name, value);
 
     return (
-        <Col style={fieldStyle}>
+        <Col style={fieldStyle} className={isMobile ? styles.mobileFilterField : undefined}>
             <Row style={{ justifyContent: 'space-between' }}>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
@@ -97,6 +114,7 @@ const DateField: FC<{
                     <DatePicker
                         open={isCalPopOpen}
                         onOpenChange={(value) => setIsCalPopOpen(value)}
+                        placeholder="Выбери дату"
                         panelRender={(panel) => (
                             <>
                                 <Row style={{ justifyContent: 'flex-start', gap: '8px', padding: '8px' }}>
@@ -127,12 +145,13 @@ const DateField: FC<{
 const FilterInput: FC<{
     field: FilterField;
     filterItem?: FilterItem;
+    isMobile?: boolean;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}> = ({ field, filterItem, onFilterTextValueChange }) => {
+}> = ({ field, filterItem, isMobile, onFilterTextValueChange }) => {
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
-        <Col style={fieldStyle}>
+        <Col style={fieldStyle} className={isMobile ? styles.mobileFilterField : undefined}>
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
@@ -154,9 +173,10 @@ const FilterSelect: FC<{
     field: FilterField;
     isMultiple?: boolean;
     filterItem?: FilterItem;
+    isMobile?: boolean;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}> = ({ field, isMultiple, filterItem, onFilterValueChange, onFilterTextValueChange }) => {
+}> = ({ field, isMultiple, filterItem, isMobile, onFilterValueChange, onFilterTextValueChange }) => {
     const values = getFilterListItems(field, filterItem);
 
     const onSelect = (_value: string, option: FilterListItem) =>
@@ -166,7 +186,7 @@ const FilterSelect: FC<{
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
-        <Col style={fieldStyle}>
+        <Col style={fieldStyle} className={isMobile ? styles.mobileFilterField : undefined}>
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
