@@ -194,7 +194,14 @@ export const FeedTransactionList = () => {
             <Table
                 onChange={tableProps.onChange}
                 loading={tableProps.loading}
-                pagination={tableProps.pagination}
+                pagination={
+                    tableProps.pagination
+                        ? {
+                              ...tableProps.pagination,
+                              showTotal: (total) => `Всего: ${total}`
+                          }
+                        : false
+                }
                 dataSource={tableProps.dataSource}
                 rowKey="ulid"
                 footer={() => (

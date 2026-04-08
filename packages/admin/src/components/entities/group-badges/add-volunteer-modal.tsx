@@ -111,6 +111,7 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
                         current: page,
                         pageSize,
                         total,
+                        showTotal: (itemsTotal) => `Всего: ${itemsTotal}`,
                         showSizeChanger: false,
                         onChange: (p) => setPage(p)
                     }}
