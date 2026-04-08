@@ -114,23 +114,28 @@ export const GroupBadgeWarningCard = ({
         return Math.max(volsToFeedCount - alreadyFedCount, 0);
     };
 
-    const [initialCalculatedCounts] = useState(() => ({
-        vegans: calculateDefaultFeedCount(true),
-        nonVegans: calculateDefaultFeedCount(false)
-    }));
+    const getAlreadyFedCount = (isVegan: boolean): number => {
+        return calculateAlreadyFedCount(alreadyFedTransactions.filter((t) => Boolean(t.is_vegan) === isVegan));
+    };
 
     const getDefaultCount = (isVegan: boolean): number => {
         const plannedCount = isVegan ? planned.vegansCount : planned.nonVegansCount;
 
         if (plannedCount !== null) {
-            return plannedCount;
+            return Math.max(plannedCount - getAlreadyFedCount(isVegan), 0);
         }
 
         return calculateDefaultFeedCount(isVegan);
     };
 
-    const [vegansCount, setVegansCount] = useState<number>(() => getDefaultCount(true));
-    const [nonVegansCount, setNonVegansCount] = useState<number>(() => getDefaultCount(false));
+    const buildInitialCounts = (): { vegans: number; nonVegans: number } => ({
+        vegans: getDefaultCount(true),
+        nonVegans: getDefaultCount(false)
+    });
+
+    const [initialCalculatedCounts, setInitialCalculatedCounts] = useState(buildInitialCounts);
+    const [vegansCount, setVegansCount] = useState<number>(initialCalculatedCounts.vegans);
+    const [nonVegansCount, setNonVegansCount] = useState<number>(initialCalculatedCounts.nonVegans);
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const isPartiallyFed = alreadyFedTransactions.length > 0;
@@ -171,6 +176,17 @@ export const GroupBadgeWarningCard = ({
         ? Number(vegansCount) + Number(nonVegansCount)
         : Math.max(volsToFeed.length - alreadyFedCount, 0);
 
+    const handleToggleOtherCount = (): void => {
+        if (!showOtherCount) {
+            const nextInitialCounts = buildInitialCounts();
+            setInitialCalculatedCounts(nextInitialCounts);
+            setVegansCount(nextInitialCounts.vegans);
+            setNonVegansCount(nextInitialCounts.nonVegans);
+        }
+
+        setShowOtherCount((prev) => !prev);
+    };
+
     return (
         <div className={css.groupBadgeCard}>
             <WarningPartiallyFedModal
@@ -205,7 +221,7 @@ export const GroupBadgeWarningCard = ({
                 amountToFeed={amountToFeed}
                 handlePrimaryAction={handleFeed}
                 handleCancel={close}
-                handleAlternativeAction={() => setShowOtherCount(!showOtherCount)}
+                handleAlternativeAction={handleToggleOtherCount}
                 alternativeText={showOtherCount ? 'Кормить всех' : 'Кормить часть'}
             />
         </div>
