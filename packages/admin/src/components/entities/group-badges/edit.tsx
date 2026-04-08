@@ -84,7 +84,19 @@ export const GroupBadgeEdit = () => {
                 </Col>
             </Row>
 
-            <Table {...tableProps} rowKey="id" loading={tableProps.loading || isUpdating}>
+            <Table
+                {...tableProps}
+                rowKey="id"
+                loading={tableProps.loading || isUpdating}
+                pagination={
+                    tableProps.pagination
+                        ? {
+                              ...tableProps.pagination,
+                              showTotal: (total) => `Всего: ${total}`
+                          }
+                        : false
+                }
+            >
                 <Table.Column dataIndex="name" title="Имя на бейдже" />
                 <Table.Column dataIndex="first_name" title="Имя" />
                 <Table.Column dataIndex="last_name" title="Фамилия" />
