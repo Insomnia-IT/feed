@@ -1,17 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 
-import type { ApiHook } from '~/request/lib';
-import type { GroupBadge } from '~/db';
-import { db } from '~/db';
+import type { ApiHook } from 'request/lib';
+import type { GroupBadge } from 'db';
+import { db } from 'db';
 
 export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const send = useCallback(
-        (filters) => {
+        (filters: Record<string, string | number | boolean>) => {
             if (fetching) {
                 return Promise.resolve(false);
             }
@@ -20,7 +20,7 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
 
             return new Promise((res, rej) => {
                 axios
-                    .get(`${baseUrl}/group-badges/`, {
+                    .get<{ results: Array<GroupBadge> }>(`${baseUrl}/group-badges/`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
@@ -29,49 +29,41 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
 
-                        // const qrs = {};
-                        // const ids = {};
-                        // for (const v of results as Array<GroupBadge>) {
-                        //     if (ids[v.id]) {
-                        //         console.log(ids[v.id], v);
-                        //     } else {
-                        //         ids[v.id] = v;
-                        //     }
-                        //     if (qrs[v.qr]) {
-                        //         console.log(qrs[v.qr], v);
-                        //     } else {
-                        //         qrs[v.qr] = v;
-                        //     }
-                        // }
-
                         try {
-                            await db.groupBadges.bulkPut(results as Array<GroupBadge>);
-                        } catch (e) {
-                            console.error(e);
-                            rej(e);
+                            await db.groupBadges.bulkPut(results);
+                        } catch (error) {
+                            console.error(error);
+                            rej(error);
+
                             return false;
                         }
+
                         setUpdated(+new Date());
                         res(true);
+
                         return true;
                     })
-                    .catch((e) => {
+                    .catch((error: unknown) => {
                         setFetching(false);
-                        if (e?.response?.status === 401) {
+
+                        if (axios.isAxiosError(error) && error.response?.status === 401) {
                             rej(false);
                             setAuth(false);
+
                             return false;
                         }
-                        setError(e);
-                        rej(e);
-                        return e;
+
+                        setError(error);
+                        rej(error);
+
+                        return error;
                     });
             });
         },
         [baseUrl, error, fetching, pin, setAuth]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -79,5 +71,5 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };

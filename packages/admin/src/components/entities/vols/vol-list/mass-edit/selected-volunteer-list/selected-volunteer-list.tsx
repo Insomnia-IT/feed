@@ -1,4 +1,3 @@
-import React from 'react';
 import type { VolEntity } from 'interfaces';
 import { CloseOutlined } from '@ant-design/icons';
 import styles from './selected-volunteer-list.module.css';
@@ -7,12 +6,16 @@ import dayjs from 'dayjs';
 import { canBeVolunteerArrivalChanged, findTargetArrival } from '../utils';
 import { useArrivalDates } from '../arrival-dates-context/arrival-dates-context';
 
-export const SelectedVolunteerList: React.FC<{
+export const SelectedVolunteerList = ({
+    selectedVolunteers,
+    unselectVolunteer,
+    outlineVolunteersWithoutArrival = false
+}: {
     selectedVolunteers: VolEntity[];
     unselectVolunteer: (volunteer: VolEntity) => void;
     /** Подсвечивать волонтеров без текущего заезда */
     outlineVolunteersWithoutArrival?: boolean;
-}> = ({ selectedVolunteers, unselectVolunteer, outlineVolunteersWithoutArrival = false }) => {
+}) => {
     const { date, dateType } = useArrivalDates();
 
     const volunteers = selectedVolunteers.map((vol: VolEntity) => {

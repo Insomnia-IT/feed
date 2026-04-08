@@ -1,103 +1,145 @@
-import React from 'react';
-import { Route, Routes, Outlet } from 'react-router-dom';
+import { Suspense, lazy, type ComponentType, type ReactNode } from 'react';
+import { Route, Routes, Outlet } from 'react-router';
 import { Authenticated } from '@refinedev/core';
-import { ThemedLayoutV2, ErrorComponent } from '@refinedev/antd';
-import { CatchAllNavigate } from '@refinedev/react-router-v6';
+import { ThemedLayout, ErrorComponent } from '@refinedev/antd';
+import { CatchAllNavigate } from '@refinedev/react-router';
+import { Spin } from 'antd';
 
 import { useScreen } from 'shared/providers';
 import CustomSider from 'components/sider/sider';
-import { LoginPage } from 'components/login';
-import { Dashboard } from 'components/dashboard';
-import { VolList, VolCreate, VolEdit, VolShow } from 'components/entities/vols';
-import {
-    VolunteerCustomFieldList,
-    VolunteerCustomFieldCreate,
-    VolunteerCustomFieldEdit,
-    VolunteerCustomFieldShow
-} from 'components/entities/volunteer-custom-fields';
-import { DepartmentList, DepartmentCreate, DirectionEdit, DirectionShow } from 'components/entities/directions';
-import { GroupBadgeList, GroupBadgeCreate, GroupBadgeEdit, GroupBadgeShow } from 'components/entities/group-badges';
-import { FeedTransactionList, FeedTransactionCreate } from 'components/entities/feed-transaction';
-import { PublicStatistic } from 'components/entities/statistic';
-import { Scanner } from 'components/scanner';
-import { Sync } from 'components/sync';
-import { Wash } from 'components/wash';
-import { WashesHistory } from 'components/wash/list/washes-history';
 
 interface IProps {
-    initial: React.ReactNode;
+    initial: ReactNode;
 }
 
-export const AppRoutes: React.FC<IProps> = ({ initial }) => {
+function lazyNamed<TModule extends Record<string, ComponentType>, TName extends keyof TModule>(
+    loader: () => Promise<TModule>,
+    name: TName
+) {
+    return lazy(async () => ({
+        default: (await loader())[name]
+    }));
+}
+
+const LoginPage = lazyNamed(() => import('components/login/login'), 'LoginPage');
+const Dashboard = lazyNamed(() => import('components/dashboard/dashboard'), 'Dashboard');
+const VolList = lazyNamed(() => import('components/entities/vols/list'), 'VolList');
+const VolCreate = lazyNamed(() => import('components/entities/vols/create'), 'VolCreate');
+const VolEdit = lazyNamed(() => import('components/entities/vols/edit'), 'VolEdit');
+const VolShow = lazyNamed(() => import('components/entities/vols/show'), 'VolShow');
+const VolunteerCustomFieldList = lazyNamed(
+    () => import('components/entities/volunteer-custom-fields/list'),
+    'VolunteerCustomFieldList'
+);
+const VolunteerCustomFieldCreate = lazyNamed(
+    () => import('components/entities/volunteer-custom-fields/create'),
+    'VolunteerCustomFieldCreate'
+);
+const VolunteerCustomFieldEdit = lazyNamed(
+    () => import('components/entities/volunteer-custom-fields/edit'),
+    'VolunteerCustomFieldEdit'
+);
+const VolunteerCustomFieldShow = lazyNamed(
+    () => import('components/entities/volunteer-custom-fields/show'),
+    'VolunteerCustomFieldShow'
+);
+const DepartmentList = lazyNamed(() => import('components/entities/directions/list'), 'DepartmentList');
+const DepartmentCreate = lazyNamed(() => import('components/entities/directions/create'), 'DepartmentCreate');
+const DirectionEdit = lazyNamed(() => import('components/entities/directions/edit'), 'DirectionEdit');
+const DirectionShow = lazyNamed(() => import('components/entities/directions/show'), 'DirectionShow');
+const GroupBadgeList = lazyNamed(() => import('components/entities/group-badges/list'), 'GroupBadgeList');
+const GroupBadgeCreate = lazyNamed(() => import('components/entities/group-badges/create'), 'GroupBadgeCreate');
+const GroupBadgeEdit = lazyNamed(() => import('components/entities/group-badges/edit'), 'GroupBadgeEdit');
+const GroupBadgeShow = lazyNamed(() => import('components/entities/group-badges/show'), 'GroupBadgeShow');
+const FeedTransactionList = lazyNamed(() => import('components/entities/feed-transaction/list'), 'FeedTransactionList');
+const FeedTransactionCreate = lazyNamed(
+    () => import('components/entities/feed-transaction/create'),
+    'FeedTransactionCreate'
+);
+const PublicStatistic = lazyNamed(() => import('components/entities/statistic/ui/public-statistic'), 'PublicStatistic');
+const Scanner = lazyNamed(() => import('components/scanner/scanner'), 'Scanner');
+const Sync = lazyNamed(() => import('components/sync/sync'), 'Sync');
+const Wash = lazyNamed(() => import('components/wash/create/wash'), 'Wash');
+const WashesHistory = lazyNamed(() => import('components/wash/list/washes-history'), 'WashesHistory');
+
+const routeFallback = (
+    <div style={{ display: 'grid', minHeight: '40vh', placeItems: 'center' }}>
+        <Spin size="large" />
+    </div>
+);
+
+export const AppRoutes = ({ initial }: IProps) => {
     const { isDesktop } = useScreen();
 
     return (
-        <Routes>
-            <Route
-                element={
-                    <Authenticated key="authenticated-inner" fallback={<CatchAllNavigate to="/login" />}>
-                        <ThemedLayoutV2 Sider={() => <CustomSider />}>
-                            <Outlet />
-                        </ThemedLayoutV2>
-                    </Authenticated>
-                }
-            >
-                <Route index element={initial} />
+        <Suspense fallback={routeFallback}>
+            <Routes>
+                <Route
+                    element={
+                        <Authenticated key="authenticated-inner" fallback={<CatchAllNavigate to="/login" />}>
+                            <ThemedLayout Sider={() => <CustomSider />}>
+                                <Outlet />
+                            </ThemedLayout>
+                        </Authenticated>
+                    }
+                >
+                    <Route index element={initial} />
 
-                <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
 
-                {!isDesktop ? (
-                    <Route path="/wash" element={<Wash />} />
-                ) : (
-                    <Route path="/wash">
-                        <Route index element={<WashesHistory />} />
-                        <Route path="create" element={<Wash />} />
+                    {!isDesktop ? (
+                        <Route path="/wash" element={<Wash />} />
+                    ) : (
+                        <Route path="/wash">
+                            <Route index element={<WashesHistory />} />
+                            <Route path="create" element={<Wash />} />
+                        </Route>
+                    )}
+
+                    <Route path="/volunteers">
+                        <Route index element={<VolList />} />
+                        <Route path="create" element={<VolCreate />} />
+                        <Route path="edit/:id" element={<VolEdit />} />
+                        <Route path="show/:id" element={<VolShow />} />
                     </Route>
-                )}
 
-                <Route path="/volunteers">
-                    <Route index element={<VolList />} />
-                    <Route path="create" element={<VolCreate />} />
-                    <Route path="edit/:id" element={<VolEdit />} />
-                    <Route path="show/:id" element={<VolShow />} />
+                    <Route path="/volunteer-custom-fields">
+                        <Route index element={<VolunteerCustomFieldList />} />
+                        <Route path="create" element={<VolunteerCustomFieldCreate />} />
+                        <Route path="edit/:id" element={<VolunteerCustomFieldEdit />} />
+                        <Route path="show/:id" element={<VolunteerCustomFieldShow />} />
+                    </Route>
+
+                    <Route path="/directions">
+                        <Route index element={<DepartmentList />} />
+                        <Route path="create" element={<DepartmentCreate />} />
+                        <Route path="edit/:id" element={<DirectionEdit />} />
+                        <Route path="show/:id" element={<DirectionShow />} />
+                    </Route>
+
+                    <Route path="/group-badges">
+                        <Route index element={<GroupBadgeList />} />
+                        <Route path="create" element={<GroupBadgeCreate />} />
+                        <Route path="edit/:id" element={<GroupBadgeEdit />} />
+                        <Route path="show/:id" element={<GroupBadgeShow />} />
+                    </Route>
+
+                    <Route path="/feed-transaction">
+                        <Route index element={<FeedTransactionList />} />
+                        <Route path="create" element={<FeedTransactionCreate />} />
+                    </Route>
+
+                    <Route path="/stats" element={<PublicStatistic />} />
+
+                    <Route path="/scanner-page" element={<Scanner />} />
+
+                    <Route path="/sync" element={<Sync />} />
+
+                    <Route path="*" element={<ErrorComponent />} />
                 </Route>
 
-                <Route path="/volunteer-custom-fields">
-                    <Route index element={<VolunteerCustomFieldList />} />
-                    <Route path="create" element={<VolunteerCustomFieldCreate />} />
-                    <Route path="edit/:id" element={<VolunteerCustomFieldEdit />} />
-                    <Route path="show/:id" element={<VolunteerCustomFieldShow />} />
-                </Route>
-
-                <Route path="/directions">
-                    <Route index element={<DepartmentList />} />
-                    <Route path="create" element={<DepartmentCreate />} />
-                    <Route path="edit/:id" element={<DirectionEdit />} />
-                    <Route path="show/:id" element={<DirectionShow />} />
-                </Route>
-
-                <Route path="/group-badges">
-                    <Route index element={<GroupBadgeList />} />
-                    <Route path="create" element={<GroupBadgeCreate />} />
-                    <Route path="edit/:id" element={<GroupBadgeEdit />} />
-                    <Route path="show/:id" element={<GroupBadgeShow />} />
-                </Route>
-
-                <Route path="/feed-transaction">
-                    <Route index element={<FeedTransactionList />} />
-                    <Route path="create" element={<FeedTransactionCreate />} />
-                </Route>
-
-                <Route path="/stats" element={<PublicStatistic />} />
-
-                <Route path="/scanner-page" element={<Scanner />} />
-
-                <Route path="/sync" element={<Sync />} />
-
-                <Route path="*" element={<ErrorComponent />} />
-            </Route>
-
-            <Route path="/login" element={<LoginPage />} />
-        </Routes>
+                <Route path="/login" element={<LoginPage />} />
+            </Routes>
+        </Suspense>
     );
 };

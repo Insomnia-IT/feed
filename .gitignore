@@ -33,8 +33,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-#pwa-ver.txt
-
 **/node_modules
 **/*.db
 **/*.db-wal
@@ -59,5 +57,7 @@ dist
 !.yarn/sdks
 !.yarn/versions
 
+.claude
+.playwright-cli
 # Superpowers Plans
 /docs/superpowers/plans/

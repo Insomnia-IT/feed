@@ -3,13 +3,24 @@ import os
 from django.apps import AppConfig
 from django.db.backends.signals import connection_created
 
+from feeder.search_normalization import SEARCH_NORMALIZE_FUNCTION, normalize_search_text
+
+
 class FeederConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'feeder'
     verbose_name = "Кормитель"
 
     def ready(self):
+        connection_created.connect(register_search_functions)
         connection_created.connect(load_icu)
+
+
+def register_search_functions(connection, **kwargs):
+    if connection.vendor != 'sqlite':
+        return
+
+    connection.connection.create_function(SEARCH_NORMALIZE_FUNCTION, 1, normalize_search_text)
 
 def load_icu(connection, **kwargs):
     extension_path = './icu/libSqliteIcu.so'

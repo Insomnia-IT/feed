@@ -9,6 +9,7 @@ from datetime import timedelta
 import re
 
 from feeder import serializers, models
+from feeder.filters import NormalizedSearchFilter
 from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \
     SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin, auto_tag_viewset
 from feeder.views.xlsx import build_xlsx_response
@@ -92,7 +93,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
         'list': serializers.VolunteerListSerializer,
         'retrieve': serializers.RetrieveVolunteerSerializer
     }
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, NormalizedSearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid',
                      'person__name', 'person__last_name', 'person__first_name', 'person__nickname', 'person__other_names', 'person__telegram']
     filterset_class = VolunteerFilter

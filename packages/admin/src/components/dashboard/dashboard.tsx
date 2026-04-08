@@ -1,16 +1,16 @@
 import { Divider } from 'antd';
-import { FC, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { QrScannerComponent } from 'shared/components/qr-scanner-component';
 import { useScannerController } from 'shared/components/qr-scanner-component/hooks/useScannerController';
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 import type { VolEntity } from 'interfaces';
 
-export const Dashboard: FC = () => {
+export const Dashboard = () => {
     const navigate = useNavigate();
 
     const visibleDirectionsLocal = useVisibleDirections();
@@ -24,11 +24,11 @@ export const Dashboard: FC = () => {
         onScan: async (qr: string, { disableScan, enableScan }) => {
             disableScan();
             try {
-                const { data } = await axios.get(`${NEW_API_URL}/volunteers/`, { params: { qr } });
-                console.log('volunteers by qr', data);
+                const { data } = await axios.get(`${NEW_API_URL}/volunteers/`, {
+                    params: { qr }
+                });
 
-                const volunteer = data.results[0] as VolEntity;
-
+                const volunteer = data.results?.[0] as VolEntity | undefined;
                 const visibleDirections = visibleDirectionsRef.current;
 
                 if (
@@ -37,7 +37,7 @@ export const Dashboard: FC = () => {
                 ) {
                     alert('Волонтер не найден');
                 } else {
-                    navigate(`/volunteers/edit/${data.results[0].id}`);
+                    navigate(`/volunteers/edit/${volunteer.id}`);
                 }
             } catch (e) {
                 console.log(e);

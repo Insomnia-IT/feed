@@ -108,6 +108,7 @@ export interface GroupBadgePlanningCellEntity extends MealPlanCell {
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
+    type: string;
     comment?: string;
     mobile: boolean;
 }
@@ -206,7 +207,7 @@ export interface WashEntity {
 }
 
 export interface MealPlanCell {
-    id: number;
+    id?: number;
     group_badge: number;
     group_badge_name?: string | null;
     created_at?: string;
