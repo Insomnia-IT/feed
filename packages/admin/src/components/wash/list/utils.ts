@@ -83,13 +83,13 @@ export const getLatestWashDateText = ({
 };
 
 export const transformWashesForShow = (wash: WashEntity): WashToShow => {
-    const { name: owlName = 'Анонимная Сова' } = wash.actor;
-    const { name = 'Аноним', first_name, last_name, directions } = wash.volunteer;
+    const owlName = wash.actor.name ?? 'Анонимная Сова';
+    const { name, first_name, last_name, directions } = wash.volunteer;
 
     return {
         id: wash.id,
-        volunteerName: name,
-        volunteerFullName: [first_name, last_name].join(' '),
+        volunteerName: name ?? undefined,
+        volunteerFullName: [first_name, last_name].filter(Boolean).join(' '),
         directions: directions?.map((direction) => direction.name),
         washDate: dayjs(wash.created_at),
         daysOnField: getDaysOnFieldText({ volunteer: wash.volunteer, washDate: dayjs(wash.created_at) }),

@@ -15,7 +15,7 @@ export interface Transaction {
     ts: number;
     mealTime: MealTime;
     is_new: boolean;
-    is_vegan?: boolean;
+    is_vegan?: boolean | null;
     is_anomaly?: boolean;
     reason?: string | null;
     kitchen: number;
@@ -24,15 +24,19 @@ export interface Transaction {
 
 export interface ServerTransaction {
     ulid: string;
-    volunteer: number;
+    volunteer: number | null;
     amount: number;
     dtime: string;
     meal_time: MealTime;
-    is_vegan: boolean;
+    is_vegan: boolean | null;
+    is_paid?: boolean;
     is_anomaly?: boolean;
     reason?: string | null;
+    comment?: string | null;
     kitchen: number;
     group_badge?: number | null;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface TransactionJoined extends Transaction {
@@ -57,31 +61,53 @@ export const MealTime = {
 
 export type MealTime = (typeof MealTime)[keyof typeof MealTime];
 
+export interface VolunteerDirection {
+    id: string;
+    name: string;
+    type?: {
+        id: string;
+        name: string;
+        is_federal?: boolean;
+    } | null;
+    first_year?: number | null;
+    last_year?: number | null;
+}
+
 export interface Volunteer {
     qr: string;
     id: number;
-    first_name: string;
-    name: string;
+    first_name: string | null;
+    last_name?: string | null;
+    name: string | null;
     is_blocked: boolean;
     is_vegan: boolean;
     deleted_at: string | null;
     arrivals: Array<Arrival>;
-    feed_type: FeedType;
-    infant: boolean;
-    directions: Array<{ name: string }>;
-    kitchen: number;
+    paid_arrivals?: Array<PaidArrival>;
+    feed_type: FeedType | null;
+    infant: boolean | null;
+    directions: Array<VolunteerDirection>;
+    kitchen: number | null;
     group_badge: number | null;
     scanner_comment: string | null;
-    transactions: Array<Transaction> | null;
+    // Hydrated locally for group-badge validation; backend does not send it in /volunteers list.
+    transactions?: Array<Transaction> | null;
 }
 
 export interface Arrival {
     id: string;
-    status: string;
+    status: string | null;
     arrival_date: string;
-    arrival_transport: string;
+    arrival_transport: string | null;
     departure_date: string;
-    departure_transport: string;
+    departure_transport: string | null;
+}
+
+export interface PaidArrival {
+    id: string;
+    arrival_date: string;
+    departure_date: string;
+    is_free: boolean;
 }
 
 export interface GroupBadge {
@@ -89,6 +115,10 @@ export interface GroupBadge {
     name: string;
     qr: string;
     planning_cells: Array<MealPlanCell>;
+    comment?: string | null;
+    role?: string | null;
+    volunteer_count?: number;
+    direction?: VolunteerDirection | null;
 }
 
 export class MySubClassedDexie extends Dexie {
