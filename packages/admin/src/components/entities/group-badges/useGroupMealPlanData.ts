@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useGetIdentity, useOne, useUpdate, useCreate } from '@refinedev/core';
 import type { BaseKey } from '@refinedev/core';
 import dayjs, { type Dayjs } from 'dayjs';
-import { AppRoles, type AppRole, type UserData } from 'auth';
+import { AppRoles, isAppRole, type AppRole, type UserData } from 'auth';
 import type { GroupBadgeEntity, MealPlanCell } from 'interfaces';
 
 export const MESSAGES = {
@@ -267,7 +267,7 @@ export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlan
     const { mutateAsync: createCell } = useCreate();
 
     const { data: user } = useGetIdentity<UserData>();
-    const role = user?.roles?.[0];
+    const role = user?.roles?.find(isAppRole);
 
     const [showAll, setShowAll] = useState(false);
     const [isSaving, setIsSaving] = useState(false);

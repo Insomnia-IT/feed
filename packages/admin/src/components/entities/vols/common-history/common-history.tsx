@@ -19,7 +19,8 @@ import type {
     VolunteerRoleEntity
 } from 'interfaces';
 import useCanAccess from '../use-can-access';
-import type { IData, IResult } from './common-history.types';
+import type { HistoryChangeData as IData, HistoryRecord as IResult } from './common-history.types';
+import type { HistoryViewModel } from './common-history.view-types';
 import { BOOL_MAP, FIELD_LABELS, IGNORE_FIELDS, STATUS_MAP, useIdNameMap } from './utils';
 
 import styles from './common-history.module.css';
@@ -28,27 +29,9 @@ interface IProps {
     role: 'volunteer' | 'actor';
 }
 
-type HistoryFieldEntry = {
-    key: string;
-    label: string;
-    oldValue: ReactNode;
-    newValue: ReactNode;
-};
-
-type HistoryViewModel = {
-    key: string;
-    actorLabel: string;
-    actorRouteId?: number;
-    actionAt: string;
-    statusLabel: string;
-    titleAddition?: string;
-    fields: HistoryFieldEntry[];
-    groupOperationUuid?: string;
-};
-
 const BOOL_KEY_SET = new Set(Object.keys(BOOL_MAP));
 const COMMENT_KEY_SET = new Set(['comment', 'direction_head_comment']);
-const TITLE_ADDITION: Record<IResult['object_name'], string> = {
+const TITLE_ADDITION: Partial<Record<IResult['object_name'], string>> = {
     arrival: 'информацию по заезду',
     volunteer: 'информацию по волонтеру',
     volunteercustomfieldvalue: 'информацию по кастомному полю'
@@ -157,7 +140,7 @@ export const CommonHistory = ({ role }: IProps) => {
     );
 
     const formatFieldValue = useCallback(
-        (obj: IData, key: string): ReactNode => {
+        (obj: IData | null | undefined, key: string): ReactNode => {
             if (!obj) return '';
 
             if (BOOL_KEY_SET.has(key)) {
