@@ -191,10 +191,11 @@
 
     .fieldValues {
         flex-direction: column;
+        align-items: flex-start;
     }
 
     .itemDrescrOld,
     .itemDrescrNew {
-        width: 100%;
+        max-width: 100%;
     }
 }
