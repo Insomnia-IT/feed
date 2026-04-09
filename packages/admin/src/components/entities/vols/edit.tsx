@@ -13,6 +13,12 @@ import useSaveConfirm from './use-save-confirm';
 
 import styles from './common.module.css';
 
+const contentStyle = {
+    background: 'initial',
+    boxShadow: 'initial',
+    height: '100%'
+};
+
 export const VolEdit = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -100,16 +106,10 @@ export const VolEdit = () => {
                 ...saveButtonProps,
                 onClick
             }}
-            contentProps={
-                shouldHideFooterActions
-                    ? {
-                          actions: [],
-                          style: { background: 'initial', boxShadow: 'initial', height: '100%' }
-                      }
-                    : {
-                          style: { background: 'initial', boxShadow: 'initial', height: '100%' }
-                      }
-            }
+            contentProps={{
+                ...(shouldHideFooterActions ? { actions: [] } : {}),
+                style: contentStyle
+            }}
         >
             <Form {...formProps} scrollToFirstError layout="vertical">
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />

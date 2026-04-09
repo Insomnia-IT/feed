@@ -30,12 +30,12 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
             },
             {
                 key: '3',
-                label: isDesktop ? 'История действий' : 'Действия',
+                label: isDesktop ? 'История изменений' : 'История',
                 children: <CommonHistory role="volunteer" />
             },
             {
                 key: '4',
-                label: isDesktop ? 'История волонтёра' : 'История',
+                label: isDesktop ? 'История действий' : 'Действия',
                 children: <CommonHistory role="actor" />
             }
         ],

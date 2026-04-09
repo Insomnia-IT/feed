@@ -8,6 +8,12 @@ import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 
+const contentStyle = {
+    background: 'initial',
+    boxShadow: 'initial',
+    height: '100%'
+};
+
 export const VolCreate = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
@@ -30,24 +36,10 @@ export const VolCreate = () => {
                 ...saveButtonProps,
                 onClick
             }}
-            contentProps={
-                shouldHideFooterActions
-                    ? {
-                          actions: [],
-                          style: {
-                              background: 'initial',
-                              boxShadow: 'initial',
-                              height: '100%'
-                          }
-                      }
-                    : {
-                          style: {
-                              background: 'initial',
-                              boxShadow: 'initial',
-                              height: '100%'
-                          }
-                      }
-            }
+            contentProps={{
+                ...(shouldHideFooterActions ? { actions: [] } : {}),
+                style: contentStyle
+            }}
         >
             <Form {...formProps} scrollToFirstError layout="vertical">
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
