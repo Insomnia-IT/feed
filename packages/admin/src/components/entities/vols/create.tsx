@@ -19,21 +19,35 @@ export const VolCreate = () => {
 
     const { isDesktop } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
+    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
 
     return (
         <Create
+            headerProps={{
+                extra: null
+            }}
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick,
-                hidden: !isDesktop && activeKey !== '1'
+                onClick
             }}
-            contentProps={{
-                style: {
-                    background: 'initial',
-                    boxShadow: 'initial',
-                    height: '100%'
-                }
-            }}
+            contentProps={
+                shouldHideFooterActions
+                    ? {
+                          actions: [],
+                          style: {
+                              background: 'initial',
+                              boxShadow: 'initial',
+                              height: '100%'
+                          }
+                      }
+                    : {
+                          style: {
+                              background: 'initial',
+                              boxShadow: 'initial',
+                              height: '100%'
+                          }
+                      }
+            }
         >
             <Form {...formProps} scrollToFirstError layout="vertical">
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />

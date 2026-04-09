@@ -1,10 +1,11 @@
 import { Tabs } from 'antd';
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 
 import { useScreen } from 'shared/providers';
 import { CommonEdit } from './common-edit/common-edit';
 import CommonFood from './common-food/common-food';
 import { CommonHistory } from './common-history/common-history';
+import styles from './common.module.css';
 
 interface IProps {
     activeKey: string;
@@ -13,10 +14,7 @@ interface IProps {
 
 const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     const { isDesktop } = useScreen();
-
-    useEffect(() => {
-        document.querySelector('.ant-page-header-heading-extra')?.remove();
-    }, []);
+    const shouldAddMobileBottomOffset = !isDesktop && activeKey !== '1';
 
     const items = useMemo(
         () => [
@@ -32,12 +30,12 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
             },
             {
                 key: '3',
-                label: 'История действий',
+                label: isDesktop ? 'История действий' : 'Действия',
                 children: <CommonHistory role="volunteer" />
             },
             {
                 key: '4',
-                label: 'История волонтёра',
+                label: isDesktop ? 'История волонтёра' : 'История',
                 children: <CommonHistory role="actor" />
             }
         ],
@@ -45,13 +43,9 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     );
 
     return (
-        <Tabs
-            activeKey={activeKey}
-            onChange={setActiveKey}
-            size={isDesktop ? 'middle' : 'small'}
-            tabBarGutter={isDesktop ? 16 : 6}
-            items={items}
-        />
+        <div className={shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : undefined}>
+            <Tabs activeKey={activeKey} onChange={setActiveKey} size={isDesktop ? 'middle' : 'small'} items={items} />
+        </div>
     );
 };
 
