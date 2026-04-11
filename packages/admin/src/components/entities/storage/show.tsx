@@ -33,9 +33,10 @@ import type {
 const { Text } = Typography;
 
 export const StorageShow: React.FC = () => {
-    const { queryResult } = useShow<StorageEntity>();
-    const { data: storageData, isLoading: storageLoading } = queryResult;
-    const storage = storageData?.data;
+    const {
+        result: storage,
+        query: { isLoading: storageLoading }
+    } = useShow<StorageEntity>();
 
     const filters: CrudFilter[] = [
         {
@@ -46,9 +47,8 @@ export const StorageShow: React.FC = () => {
     ];
 
     const {
-        data: binsData,
-        isLoading: binsLoading,
-        refetch: binsRefetch
+        result: binsData,
+        query: { isLoading: binsLoading, refetch: binsRefetch }
     } = useList<BinEntity>({
         resource: 'storage-bins',
         filters,
@@ -56,27 +56,25 @@ export const StorageShow: React.FC = () => {
     });
 
     const {
-        data: itemsData,
-        isLoading: itemsLoading,
-        refetch: itemsRefetch
+        result: itemsData,
+        query: { isLoading: itemsLoading, refetch: itemsRefetch }
     } = useList<ItemEntity>({
         resource: 'storage-items'
     });
 
     const {
-        data: positionsData,
-        isLoading: positionsLoading,
-        refetch: positionsRefetch
+        result: positionsResult,
+        query: { isLoading: positionsLoading, refetch: positionsRefetch }
     } = useList<StorageItemPositionEntity>({
         resource: 'storage-positions',
         filters,
         queryOptions: { enabled: !!storage?.id }
     });
+    const positionsData = positionsResult;
 
     const {
-        data: receivingsData,
-        isLoading: receivingsLoading,
-        refetch: receivingsRefetch
+        result: receivingsData,
+        query: { isLoading: receivingsLoading, refetch: receivingsRefetch }
     } = useList<ReceivingEntity>({
         resource: 'storage-receivings',
         filters: [
@@ -90,9 +88,8 @@ export const StorageShow: React.FC = () => {
     });
 
     const {
-        data: issuancesData,
-        isLoading: issuancesLoading,
-        refetch: issuancesRefetch
+        result: issuancesResult,
+        query: { isLoading: issuancesLoading, refetch: issuancesRefetch }
     } = useList<IssuanceEntity>({
         resource: 'storage-issuances',
         filters: [
@@ -104,6 +101,7 @@ export const StorageShow: React.FC = () => {
         ],
         queryOptions: { enabled: !!storage?.id }
     });
+    const issuancesData = issuancesResult;
 
     const [isReceiveModalVisible, setIsReceiveModalVisible] = useState(false);
     const [isIssueModalVisible, setIsIssueModalVisible] = useState(false);
@@ -480,7 +478,7 @@ export const StorageShow: React.FC = () => {
                                 ((option?.label as string) ?? '').toLowerCase().includes(input.toLowerCase())
                             }
                             onChange={(value) => {
-                                const selectedItem = itemsData?.data.find((item) => item.id === value);
+                                const selectedItem = itemsData.data?.find((item: ItemEntity) => item.id === value);
                                 if (selectedItem?.is_unique) {
                                     positionFormProps.form?.setFieldsValue({ count: 1 });
                                 }
@@ -493,7 +491,7 @@ export const StorageShow: React.FC = () => {
                     >
                         {({ getFieldValue }) => {
                             const itemId = getFieldValue('item');
-                            const selectedItem = itemsData?.data.find((item) => item.id === itemId);
+                            const selectedItem = itemsData.data?.find((item: ItemEntity) => item.id === itemId);
                             return selectedItem?.is_unique ? (
                                 <Form.Item name="count" hidden initialValue={1}>
                                     <InputNumber />
@@ -511,7 +509,7 @@ export const StorageShow: React.FC = () => {
                     >
                         {({ getFieldValue }) => {
                             const itemId = getFieldValue('item');
-                            const selectedItem = itemsData?.data.find((item) => item.id === itemId);
+                            const selectedItem = itemsData.data?.find((item: ItemEntity) => item.id === itemId);
                             return (
                                 <Form.Item
                                     name="volunteer"

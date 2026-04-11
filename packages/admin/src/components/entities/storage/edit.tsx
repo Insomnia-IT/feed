@@ -4,10 +4,11 @@ import { Form, Input } from 'antd';
 import type { StorageEntity } from 'interfaces';
 
 export const StorageEdit: React.FC = () => {
-    const { formProps, saveButtonProps, queryResult } = useForm<StorageEntity>();
+    const { formProps, saveButtonProps, query } = useForm<StorageEntity>();
+    const storage = query?.data?.data;
 
     return (
-        <Edit saveButtonProps={saveButtonProps} title={`Редактировать склад: ${queryResult?.data?.data?.name}`}>
+        <Edit saveButtonProps={saveButtonProps} title={`Редактировать склад: ${storage?.name}`}>
             <Form {...formProps} layout="vertical">
                 <Form.Item label="Название" name="name" rules={[{ required: true }]}>
                     <Input />

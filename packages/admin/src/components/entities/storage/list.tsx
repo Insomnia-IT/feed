@@ -5,12 +5,9 @@ import type { StorageEntity } from 'interfaces';
 
 export const StorageList: React.FC = () => {
     const { tableProps, sorters } = useTable<StorageEntity>({
-        initialSorter: [
-            {
-                field: 'name',
-                order: 'asc'
-            }
-        ]
+        pagination: {
+            mode: 'server'
+        }
     });
 
     return (
