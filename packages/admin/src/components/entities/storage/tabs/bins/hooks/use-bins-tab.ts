@@ -10,7 +10,10 @@ interface UseBinsTabParams {
 }
 
 export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
-    const { tableProps: binsTableProps } = useTable<BinEntity>({
+    const {
+        tableProps: binsTableProps,
+        tableQuery: { refetch: binsRefetch }
+    } = useTable<BinEntity>({
         resource: 'storage-bins',
         filters: {
             initial: filters
@@ -28,7 +31,10 @@ export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
         show: showBinModal
     } = useModalForm<BinEntity>({
         resource: 'storage-bins',
-        action: 'create'
+        action: 'create',
+        onMutationSuccess: () => {
+            binsRefetch();
+        }
     });
 
     useEffect(() => {

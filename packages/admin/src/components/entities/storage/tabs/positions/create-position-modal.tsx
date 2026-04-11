@@ -84,8 +84,7 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
                                         <Button
                                             type="text"
                                             icon={<QrcodeOutlined />}
-                                            onClick={(e: React.MouseEvent) => {
-                                                e.stopPropagation();
+                                            onClick={() => {
                                                 onOpenQrScanner(formProps.form!);
                                             }}
                                         />

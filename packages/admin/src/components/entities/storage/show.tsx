@@ -1,17 +1,15 @@
 import React from 'react';
 import { Show } from '@refinedev/antd';
 import { Tabs } from 'antd';
-import { useStorageData, useStorageQrScanner } from './hooks';
+import { useStorageData } from './hooks';
 import { PositionsTab } from './tabs/positions';
 import { BinsTab } from './tabs/bins';
 import { ItemsTab } from './tabs/items';
 import { ReceivingsTab } from './tabs/receivings';
 import { IssuancesTab } from './tabs/issuances';
-import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 export const StorageShow: React.FC = () => {
     const { storage, storageLoading } = useStorageData();
-    const qrScanner = useStorageQrScanner();
 
     return (
         <Show isLoading={storageLoading} title={`Склад: ${storage?.name}`}>
@@ -40,12 +38,6 @@ export const StorageShow: React.FC = () => {
                     <IssuancesTab />
                 </Tabs.TabPane>
             </Tabs>
-
-            <QRScannerModal
-                open={qrScanner.isQrModalOpen}
-                onClose={() => qrScanner.setIsQrModalOpen(false)}
-                onScan={qrScanner.handleQrScan}
-            />
         </Show>
     );
 };

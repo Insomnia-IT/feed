@@ -6,7 +6,10 @@ export const useItemsTab = () => {
     const { result } = useShow<ItemEntity>();
     const storageId = result?.id;
 
-    const { tableProps: itemsTableProps } = useTable<ItemEntity>({
+    const {
+        tableProps: itemsTableProps,
+        tableQuery: { refetch: itemsRefetch }
+    } = useTable<ItemEntity>({
         resource: 'storage-items',
         filters: {
             initial: [{ field: 'storage', operator: 'eq', value: storageId }]
@@ -23,7 +26,10 @@ export const useItemsTab = () => {
         show: showItemModal
     } = useModalForm<ItemEntity>({
         resource: 'storage-items',
-        action: 'create'
+        action: 'create',
+        onMutationSuccess: () => {
+            itemsRefetch();
+        }
     });
 
     const {
@@ -32,7 +38,10 @@ export const useItemsTab = () => {
         show: showEditItemModal
     } = useModalForm<ItemEntity>({
         resource: 'storage-items',
-        action: 'edit'
+        action: 'edit',
+        onMutationSuccess: () => {
+            itemsRefetch();
+        }
     });
 
     const { mutate: deleteMutate } = useDelete();

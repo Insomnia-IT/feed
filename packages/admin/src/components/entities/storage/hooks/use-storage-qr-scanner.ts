@@ -15,6 +15,7 @@ export const useStorageQrScanner = () => {
     useEffect(() => {
         if (scannedVolunteer && currentForm) {
             currentForm.setFieldValue('volunteer', scannedVolunteer.id);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             setScannedQr(undefined);
             setIsQrModalOpen(false);
             notification.success({ message: `Волонтер найден: ${scannedVolunteer.name}` });

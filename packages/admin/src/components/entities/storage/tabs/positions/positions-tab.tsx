@@ -10,6 +10,7 @@ import { IssueModal } from './issue-modal';
 import { CreatePositionModal } from './create-position-modal';
 import { useItemOptions, useItemsTab } from '../items/hooks/use-items-tab';
 import { useBinOptions } from '../bins/hooks/use-bins-tab';
+import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 export const PositionsTab: React.FC = () => {
     const { storage, filters } = useStorageData();
@@ -97,6 +98,11 @@ export const PositionsTab: React.FC = () => {
                 volunteerSelectProps={qrScanner.volunteerSelectProps}
                 isVolunteerLoading={qrScanner.isVolunteerLoading}
                 onOpenQrScanner={qrScanner.handleOpenQrScanner}
+            />
+            <QRScannerModal
+                open={qrScanner.isQrModalOpen}
+                onClose={() => qrScanner.setIsQrModalOpen(false)}
+                onScan={qrScanner.handleQrScan}
             />
         </div>
     );

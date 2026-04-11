@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useTable, useModalForm } from '@refinedev/antd';
-import { useList } from '@refinedev/core';
 import { notification, type FormInstance } from 'antd';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import type { CrudFilter } from '@refinedev/core';
-import type { StorageItemPositionEntity, ReceivingEntity, IssuanceEntity } from 'interfaces';
+import type { StorageItemPositionEntity } from 'interfaces';
 
 interface UsePositionsTabParams {
     storage: any;
@@ -14,7 +13,10 @@ interface UsePositionsTabParams {
 }
 
 export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTabParams) => {
-    const { tableProps: positionsTableProps } = useTable<StorageItemPositionEntity>({
+    const {
+        tableProps: positionsTableProps,
+        tableQuery: { refetch: positionsRefetch }
+    } = useTable<StorageItemPositionEntity>({
         resource: 'storage-positions',
         filters: {
             initial: filters
@@ -26,39 +28,6 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
         queryOptions: { enabled: !!storage?.id }
     });
 
-    const {
-        result: receivingsData,
-        query: { isLoading: receivingsLoading, refetch: receivingsRefetch }
-    } = useList<ReceivingEntity>({
-        resource: 'storage-receivings',
-        filters: [
-            {
-                field: 'position__storage',
-                operator: 'eq',
-                value: storage?.id
-            }
-        ],
-        pagination: { mode: 'server' },
-        queryOptions: { enabled: !!storage?.id }
-    });
-
-    const {
-        result: issuancesResult,
-        query: { isLoading: issuancesLoading, refetch: issuancesRefetch }
-    } = useList<IssuanceEntity>({
-        resource: 'storage-issuances',
-        filters: [
-            {
-                field: 'position__storage',
-                operator: 'eq',
-                value: storage?.id
-            }
-        ],
-        pagination: { mode: 'server' },
-        queryOptions: { enabled: !!storage?.id }
-    });
-    const issuancesData = issuancesResult;
-
     const [isReceiveModalVisible, setIsReceiveModalVisible] = useState(false);
     const [isIssueModalVisible, setIsIssueModalVisible] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState<StorageItemPositionEntity | null>(null);
@@ -69,7 +38,10 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
         show: showPositionModal
     } = useModalForm<StorageItemPositionEntity>({
         resource: 'storage-positions',
-        action: 'create'
+        action: 'create',
+        onMutationSuccess: () => {
+            positionsRefetch();
+        }
     });
 
     const handleAction = async (action: 'receive' | 'issue') => {
@@ -88,6 +60,7 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
             setIsReceiveModalVisible(false);
             setIsIssueModalVisible(false);
             actionForm.resetFields();
+            positionsRefetch();
         } catch (error) {
             console.error(error);
             notification.error({ message: 'Ошибка при выполнении операции' });
@@ -96,13 +69,6 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
 
     return {
         positionsTableProps,
-        positionsData: positionsTableProps.dataSource,
-        receivingsData: receivingsData?.data,
-        receivingsLoading,
-        receivingsRefetch,
-        issuancesData: issuancesData?.data,
-        issuancesLoading,
-        issuancesRefetch,
         isReceiveModalVisible,
         setIsReceiveModalVisible,
         isIssueModalVisible,

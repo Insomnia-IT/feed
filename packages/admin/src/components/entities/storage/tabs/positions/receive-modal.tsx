@@ -46,8 +46,7 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({
                             <Button
                                 type="text"
                                 icon={<QrcodeOutlined />}
-                                onClick={(e: React.MouseEvent) => {
-                                    e.stopPropagation();
+                                onClick={() => {
                                     onOpenQrScanner(form);
                                 }}
                             />

@@ -46,8 +46,7 @@ export const IssueModal: React.FC<IssueModalProps> = ({
                             <Button
                                 type="text"
                                 icon={<QrcodeOutlined />}
-                                onClick={(e: React.MouseEvent) => {
-                                    e.stopPropagation();
+                                onClick={() => {
                                     onOpenQrScanner(form);
                                 }}
                             />
