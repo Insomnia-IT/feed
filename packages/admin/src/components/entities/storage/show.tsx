@@ -17,7 +17,7 @@ export const StorageShow: React.FC = () => {
 
     return (
         <Show isLoading={storageLoading} title={`Склад: ${storage?.name}`}>
-            <div style={{ marginBottom: 24 }}>
+            <div>
                 <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{storage?.description}</span>
             </div>
 
