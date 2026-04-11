@@ -33,7 +33,17 @@ export interface IData {
         id: number;
         name: string;
     };
-    [key: string]: any;
+    [key: string]:
+        | string
+        | number
+        | boolean
+        | null
+        | undefined
+        | string[]
+        | {
+              id: number;
+              name: string;
+          };
 }
 
 interface IActor {
@@ -44,6 +54,7 @@ interface IActor {
 type IVolunteer = IActor;
 
 export interface IResult {
+    id: number;
     action_at: string;
     actor: IActor | null;
     actor_badge: string;

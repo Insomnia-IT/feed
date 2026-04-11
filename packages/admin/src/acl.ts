@@ -1,9 +1,11 @@
-import { AccessControlProvider } from '@refinedev/core';
 import { AccessControl } from 'accesscontrol';
+import type { AccessControlProvider } from '@refinedev/core';
 
-import { AppRoles, getUserData } from 'auth';
+import { AppRoles, getUserData, type AppRole } from 'auth';
 
 const ac = new AccessControl();
+
+const canRole = (role: AppRole) => ac.can(role as string);
 ac
     // Руководитель локации
     .grant(AppRoles.DIRECTION_HEAD)
@@ -78,16 +80,20 @@ type Action =
     | 'direction_head_comment_edit'
     | 'brigadier_edit';
 
-const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
+const checkCustomPermission = (role: AppRole, action: Action): boolean => {
     switch (action) {
         case 'badge_edit':
         case 'full_list':
         case 'bulk_edit': // массовые изменения
             return role !== AppRoles.DIRECTION_HEAD;
-        case 'status_started_assign':
-            return [AppRoles.DIRECTION_HEAD, AppRoles.CAT, AppRoles.SENIOR, AppRoles.ADMIN].includes(role);
-        case 'status_arrived_assign':
-            return [AppRoles.CAT, AppRoles.SENIOR, AppRoles.ADMIN].includes(role);
+        case 'status_started_assign': {
+            const roles: AppRole[] = [AppRoles.DIRECTION_HEAD, AppRoles.CAT, AppRoles.SENIOR, AppRoles.ADMIN];
+            return roles.includes(role);
+        }
+        case 'status_arrived_assign': {
+            const roles: AppRole[] = [AppRoles.CAT, AppRoles.SENIOR, AppRoles.ADMIN];
+            return roles.includes(role);
+        }
         case 'direction_head_comment_edit':
             return role === AppRoles.DIRECTION_HEAD;
         case 'brigadier_edit':
@@ -96,12 +102,29 @@ const checkCustomPermission = (role: AppRoles, action: Action): boolean => {
         case 'unban':
             return role !== AppRoles.CAT;
         case 'role_edit':
-            return [AppRoles.ADMIN, AppRoles.SENIOR].includes(role);
+            return role === AppRoles.ADMIN || role === AppRoles.SENIOR;
         case 'full_edit':
             return role === AppRoles.ADMIN;
         default:
             return false;
     }
+};
+
+export const canAccessByRole = (role: AppRole, action: string, resource: string): boolean => {
+    if (action === 'list' || action === 'show') {
+        return canRole(role).read(resource).granted;
+    }
+    if (action === 'create') {
+        return canRole(role).create(resource).granted;
+    }
+    if (action === 'edit') {
+        return canRole(role).update(resource).granted;
+    }
+    if (action === 'delete') {
+        return canRole(role).delete(resource).granted;
+    }
+
+    return checkCustomPermission(role, action as Action);
 };
 
 export const ACL: AccessControlProvider = {
@@ -115,21 +138,11 @@ export const ACL: AccessControlProvider = {
             return { can: false };
         }
 
-        const granted = user.roles.some((role) => {
-            if (action === 'list' || action === 'show') {
-                return ac.can(role).read(resource).granted;
-            }
-            if (action === 'create') {
-                return ac.can(role).create(resource).granted;
-            }
-            if (action === 'edit') {
-                return ac.can(role).update(resource).granted;
-            }
-            if (action === 'delete') {
-                return ac.can(role).delete(resource).granted;
-            }
-            return checkCustomPermission(role, action as Action);
-        });
+        if (!resource) {
+            return { can: false };
+        }
+
+        const granted = user.roles.some((role) => canAccessByRole(role, action, resource));
 
         return { can: granted };
     }

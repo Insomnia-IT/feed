@@ -1,16 +1,12 @@
 import { Col, Row, Popover, Button, Checkbox } from 'antd';
 import { DatabaseOutlined, PlusOutlined } from '@ant-design/icons';
-import { FC, useContext } from 'react';
+import { useContext } from 'react';
 
-import { CustomFieldEntity } from 'interfaces';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 import { useNavigation } from '@refinedev/core';
 import { EditButton } from '@refinedev/antd';
 
-export const ChooseColumnsButton: FC<{
-    canListCustomFields: boolean;
-    customFields: Array<CustomFieldEntity>;
-}> = ({ canListCustomFields }) => {
+export const ChooseColumnsButton = ({ canListCustomFields }: { canListCustomFields: boolean }) => {
     const { activeColumns = [], allColumns = [], toggleOne } = useContext(ActiveColumnsContext) ?? {};
 
     const { create } = useNavigation();

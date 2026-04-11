@@ -1,19 +1,13 @@
 import dayjs from 'dayjs';
 import { ulid } from 'ulid';
 
-import type { MealTime, Transaction } from '~/db';
+import type { MealTime, Transaction } from 'db';
 
 import { rndInt } from './utils';
 
 const createTestTrans = (type: 'now' | 'rnd', mealTime: MealTime): Transaction => {
-    let ts: any;
-    if (type === 'now') {
-        ts = dayjs();
-    }
-    if (type === 'rnd') {
-        ts = dayjs().startOf('day').add(rndInt(7, 31), 'h');
-    }
-    ts = ts.unix();
+    const date = type === 'now' ? dayjs() : dayjs().startOf('day').add(rndInt(7, 31), 'h');
+    const ts = date.unix();
     const kitchen = Number(localStorage.getItem('kitchenId'));
 
     return {

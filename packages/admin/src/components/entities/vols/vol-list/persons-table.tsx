@@ -1,17 +1,21 @@
-import { CreateButton, useTable } from '@refinedev/antd';
+import { CreateButton } from '@refinedev/antd';
+import { useList } from '@refinedev/core';
 import { Space, Table } from 'antd';
 import type { TableProps } from 'antd';
+import { useState } from 'react';
 import type { PersonEntity } from 'interfaces';
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from 'react-router';
 
 export const PersonsTable = ({ searchText }: { searchText: string }) => {
-    const {
-        tableProps
-    } = useTable<PersonEntity>({
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
+    const { result, query } = useList<PersonEntity>({
         resource: `persons/?search=${searchText}`,
         pagination: {
-            // pageSize: 0
+            mode: 'server',
+            currentPage,
+            pageSize
         }
     });
 
@@ -50,19 +54,33 @@ export const PersonsTable = ({ searchText }: { searchText: string }) => {
             width: 100,
             render: (_, record) => (
                 <Space>
-                    <CreateButton resource="volunteers" onClick={() => {
-                        navigate('/volunteers/create?person_id=' + record.id)
-                    }} />
+                    <CreateButton
+                        resource="volunteers"
+                        onClick={() => {
+                            navigate('/volunteers/create?person_id=' + record.id);
+                        }}
+                    />
                 </Space>
             )
         }
     ];
 
-
-    return <Table<PersonEntity>
-        {...tableProps}
-        scroll={{ x: '100%' }}
-        rowKey="id"
-        columns={columns}
-    />
-}
+    return (
+        <Table
+            dataSource={result.data}
+            loading={query.isLoading}
+            pagination={{
+                current: currentPage,
+                pageSize,
+                total: result.total,
+                onChange: (page, size) => {
+                    setCurrentPage(page);
+                    setPageSize(size);
+                }
+            }}
+            scroll={{ x: '100%' }}
+            rowKey="id"
+            columns={columns}
+        />
+    );
+};

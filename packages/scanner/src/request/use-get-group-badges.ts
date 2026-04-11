@@ -1,17 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 
-import type { ApiHook } from '~/request/lib';
-import type { GroupBadge } from '~/db';
-import { db } from '~/db';
+import type { ApiHook } from 'request/lib';
+import type { GroupBadge } from 'db';
+import { db } from 'db';
 
 export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const send = useCallback(
-        (filters) => {
+        (filters: Record<string, string | number | boolean>) => {
             if (fetching) {
                 return Promise.resolve(false);
             }
@@ -43,10 +43,10 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
 
                         return true;
                     })
-                    .catch((error) => {
+                    .catch((error: unknown) => {
                         setFetching(false);
 
-                        if (error?.response?.status === 401) {
+                        if (axios.isAxiosError(error) && error.response?.status === 401) {
                             rej(false);
                             setAuth(false);
 
@@ -63,7 +63,7 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
         [baseUrl, error, fetching, pin, setAuth]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -71,5 +71,5 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };
