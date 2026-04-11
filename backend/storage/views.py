@@ -1,8 +1,11 @@
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django_filters import rest_framework as django_filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder.views.mixins import SoftDeleteViewSetMixin
 from .models import Storage, Bin, Item, StorageItemPosition, Issuance, Receiving
@@ -10,6 +13,45 @@ from .serializers import (
     StorageSerializer, BinSerializer, ItemSerializer,
     StorageItemPositionSerializer, IssuanceSerializer, ReceivingSerializer
 )
+
+
+class StoragePositionFilter(django_filters.FilterSet):
+    storage = django_filters.NumberFilter(field_name='storage_id', lookup_expr='exact')
+    bin = django_filters.NumberFilter(field_name='bin_id', lookup_expr='exact')
+    item = django_filters.NumberFilter(field_name='item_id', lookup_expr='exact')
+    storage_name = django_filters.CharFilter(field_name='storage__name', lookup_expr='icontains')
+    bin_name = django_filters.CharFilter(field_name='bin__name', lookup_expr='icontains')
+    item_name = django_filters.CharFilter(field_name='item__name', lookup_expr='icontains')
+    is_unique = django_filters.BooleanFilter(field_name='item__is_unique')
+    is_anonymous = django_filters.BooleanFilter(field_name='item__is_anonymous')
+
+    class Meta:
+        model = StorageItemPosition
+        fields = ['storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']
+
+
+class ReceivingFilter(django_filters.FilterSet):
+    position = django_filters.NumberFilter(field_name='position_id', lookup_expr='exact')
+    position__storage = django_filters.NumberFilter(field_name='position__storage_id', lookup_expr='exact')
+    position__bin = django_filters.NumberFilter(field_name='position__bin_id', lookup_expr='exact')
+    position__item = django_filters.NumberFilter(field_name='position__item_id', lookup_expr='exact')
+    volunteer = django_filters.NumberFilter(field_name='volunteer_id', lookup_expr='exact')
+
+    class Meta:
+        model = Receiving
+        fields = ['position', 'position__storage', 'position__bin', 'position__item', 'volunteer']
+
+
+class IssuanceFilter(django_filters.FilterSet):
+    position = django_filters.NumberFilter(field_name='position_id', lookup_expr='exact')
+    position__storage = django_filters.NumberFilter(field_name='position__storage_id', lookup_expr='exact')
+    position__bin = django_filters.NumberFilter(field_name='position__bin_id', lookup_expr='exact')
+    position__item = django_filters.NumberFilter(field_name='position__item_id', lookup_expr='exact')
+    volunteer = django_filters.NumberFilter(field_name='volunteer_id', lookup_expr='exact')
+
+    class Meta:
+        model = Issuance
+        fields = ['position', 'position__storage', 'position__bin', 'position__item', 'volunteer']
 
 class StorageViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = Storage.objects.all()
@@ -21,15 +63,38 @@ class BinViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     serializer_class = BinSerializer
     permission_classes = [IsAuthenticated]
 
+class ItemFilter(django_filters.FilterSet):
+    storage = django_filters.NumberFilter(method='filter_storage')
+    is_unique = django_filters.BooleanFilter(field_name='is_unique')
+    is_anonymous = django_filters.BooleanFilter(field_name='is_anonymous')
+    has_storage = django_filters.BooleanFilter(method='filter_has_storage')
+
+    def filter_storage(self, queryset, name, value):
+        return queryset.filter(Q(storage__isnull=True) | Q(storage__exact=value))
+    
+    def filter_has_storage(self, queryset, name, value):
+        if value:
+            return queryset.filter(storage__isnull=False)
+        return queryset.filter(storage__isnull=True)
+
+    class Meta:
+        model = Item
+        fields = ['storage', 'is_unique', 'is_anonymous', 'has_storage']
+
+
 class ItemViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ItemFilter
 
 class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = StorageItemPosition.objects.all()
     serializer_class = StorageItemPositionSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = StoragePositionFilter
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -139,8 +204,12 @@ class IssuanceViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Issuance.objects.all()
     serializer_class = IssuanceSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IssuanceFilter
 
 class ReceivingViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Receiving.objects.all()
     serializer_class = ReceivingSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ReceivingFilter

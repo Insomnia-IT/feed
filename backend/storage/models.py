@@ -24,6 +24,7 @@ class Item(TimeMixin, SoftDeleteModelMixin):
     sku = models.CharField(max_length=64, blank=True, null=True)
     is_unique = models.BooleanField(default=False)
     is_anonymous = models.BooleanField(default=False)
+    storage = models.ForeignKey(Storage, on_delete=models.SET_NULL, blank=True, null=True, related_name="items")
     metadata = models.JSONField(blank=True, null=True)
 
     def __str__(self):

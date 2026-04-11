@@ -126,6 +126,8 @@ export interface ItemEntity {
     sku?: string;
     is_unique: boolean;
     is_anonymous: boolean;
+    storage?: number;
+    storage_name?: string;
     metadata?: any;
 }
 

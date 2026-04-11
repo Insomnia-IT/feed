@@ -1,13 +1,17 @@
 import { useModalForm } from '@refinedev/antd';
-import { useDelete, useList, useSelect } from '@refinedev/core';
+import { useDelete, useList, useSelect, useShow } from '@refinedev/core';
 import type { ItemEntity } from 'interfaces';
 
 export const useItemsTab = () => {
+    const { result } = useShow<ItemEntity>();
+    const storageId = result?.id;
+
     const {
         result: itemsData,
         query: { isLoading: itemsLoading, refetch: itemsRefetch }
     } = useList<ItemEntity>({
-        resource: 'storage-items'
+        resource: 'storage-items',
+        filters: [{ field: 'storage', operator: 'eq', value: storageId }]
     });
 
     const {
@@ -37,6 +41,7 @@ export const useItemsTab = () => {
     const { mutate: deleteMutate } = useDelete();
 
     return {
+        storageId,
         itemsData: itemsData?.data,
         itemsLoading,
         itemsRefetch,
@@ -51,9 +56,13 @@ export const useItemsTab = () => {
 };
 
 export const useItemOptions = () => {
+    const { result } = useShow<ItemEntity>();
+    const storageId = result?.id;
+
     const itemOptionsResult = useSelect<ItemEntity>({
         resource: 'storage-items',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        filters: [{ field: 'storage', operator: 'eq', value: storageId }]
     });
 
     return { itemOptions: itemOptionsResult.options };

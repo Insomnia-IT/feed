@@ -3,11 +3,12 @@ import { Modal, Form, Input, Checkbox, Space } from 'antd';
 import type { ModalProps } from 'antd';
 
 interface CreateItemModalProps {
+    storageId: number | undefined;
     modalProps: ModalProps;
     formProps: any;
 }
 
-export const CreateItemModal: React.FC<CreateItemModalProps> = ({ modalProps, formProps }) => {
+export const CreateItemModal: React.FC<CreateItemModalProps> = ({ storageId, modalProps, formProps }) => {
     return (
         <Modal {...modalProps} title="Создать предмет">
             <Form {...formProps} layout="vertical">
@@ -25,6 +26,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({ modalProps, fo
                         <Checkbox>Анонимный</Checkbox>
                     </Form.Item>
                 </Space>
+                <Form.Item name="storage" hidden initialValue={storageId}>
+                    <Input />
+                </Form.Item>
             </Form>
         </Modal>
     );

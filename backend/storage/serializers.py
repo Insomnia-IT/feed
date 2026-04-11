@@ -12,6 +12,8 @@ class BinSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ItemSerializer(serializers.ModelSerializer):
+    storage_name = serializers.ReadOnlyField(source='storage.name')
+
     class Meta:
         model = Item
         fields = '__all__'

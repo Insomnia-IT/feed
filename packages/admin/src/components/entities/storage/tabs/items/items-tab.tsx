@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Button, Space, Popconfirm } from 'antd';
+import { Table, Button, Space, Popconfirm, Tabs } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ItemEntity } from 'interfaces';
 import { useItemsTab } from './hooks/use-items-tab';
@@ -8,6 +8,7 @@ import { EditItemModal } from './edit-item-modal';
 
 export const ItemsTab: React.FC = () => {
     const {
+        storageId,
         itemsData,
         itemsLoading,
         itemModalProps,
@@ -23,6 +24,7 @@ export const ItemsTab: React.FC = () => {
     const columns = [
         { dataIndex: 'name', title: 'Название' },
         { dataIndex: 'sku', title: 'Артикул / SKU' },
+        { dataIndex: 'storage_name', title: 'Склад' },
         {
             dataIndex: 'is_unique',
             title: 'Уникальный',
@@ -68,8 +70,8 @@ export const ItemsTab: React.FC = () => {
                     Добавить предмет
                 </Button>
             </div>
-            <Table dataSource={itemsData as any} rowKey="id" loading={itemsLoading} columns={columns} />
-            <CreateItemModal modalProps={itemModalProps} formProps={itemFormProps} />
+            <Table dataSource={itemsData} rowKey="id" loading={itemsLoading} columns={columns} pagination={false} />
+            <CreateItemModal storageId={storageId} modalProps={itemModalProps} formProps={itemFormProps} />
             <EditItemModal modalProps={editItemModalProps} formProps={editItemFormProps} />
         </div>
     );
