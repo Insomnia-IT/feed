@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useShow, useList, useSelect, type CrudFilter } from '@refinedev/core';
+import { useSelect as useSelectAntd } from '@refinedev/antd';
 import { Show, useModalForm } from '@refinedev/antd';
+import type { FormInstance } from 'antd';
 import {
     Typography,
     Tabs,
@@ -16,7 +18,14 @@ import {
     Popconfirm,
     notification
 } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import {
+    ArrowDownOutlined,
+    ArrowUpOutlined,
+    PlusOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    QrcodeOutlined
+} from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useDelete } from '@refinedev/core';
@@ -29,6 +38,9 @@ import type {
     ReceivingEntity,
     IssuanceEntity
 } from 'interfaces';
+import { QRScannerModal } from 'shared/components/qr-scanner-modal';
+import { useSearchVolunteer } from 'shared/hooks';
+import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 
 const { Text } = Typography;
 
@@ -107,13 +119,46 @@ export const StorageShow: React.FC = () => {
     const [isIssueModalVisible, setIsIssueModalVisible] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState<StorageItemPositionEntity | null>(null);
 
-    const { options: volunteerOptions } = useSelect<VolEntity>({
-        resource: 'volunteers',
-        optionLabel: 'name'
-    });
-
     const [actionForm] = Form.useForm();
     const { mutate: deleteMutate } = useDelete();
+
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+    const [currentForm, setCurrentForm] = useState<FormInstance | null>(null);
+    const [scannedQr, setScannedQr] = useState<string | undefined>();
+
+    const { data: scannedVolunteer, isLoading: isVolunteerLoading } = useSearchVolunteer(scannedQr);
+
+    React.useEffect(() => {
+        if (scannedVolunteer && currentForm) {
+            currentForm.setFieldValue('volunteer', scannedVolunteer.id);
+            setScannedQr(undefined);
+            setIsQrModalOpen(false);
+            notification.success({ message: `Волонтер найден: ${scannedVolunteer.name}` });
+        }
+    }, [scannedVolunteer, currentForm]);
+
+    const { selectProps: volunteerSelectProps } = useSelectAntd<VolEntity>({
+        resource: 'volunteers',
+        optionLabel: formatVolunteerLabel,
+        onSearch: (value) => [
+            {
+                field: 'search',
+                operator: 'eq',
+                value: value
+            }
+        ],
+        defaultValue: scannedVolunteer?.id
+    });
+
+    const handleOpenQrScanner = (form: FormInstance) => {
+        setCurrentForm(form);
+        setScannedQr(undefined);
+        setIsQrModalOpen(true);
+    };
+
+    const handleQrScan = (qr: string) => {
+        setScannedQr(qr);
+    };
 
     const {
         modalProps: binModalProps,
@@ -398,12 +443,20 @@ export const StorageShow: React.FC = () => {
                         rules={[{ required: !selectedPosition?.item_is_anonymous }]}
                     >
                         <Select
-                            options={volunteerOptions}
+                            {...volunteerSelectProps}
                             showSearch
                             allowClear={selectedPosition?.item_is_anonymous}
-                            filterOption={(input, option) =>
-                                ((option?.label as string) ?? '').toLowerCase().includes(input.toLowerCase())
+                            suffixIcon={
+                                <Button
+                                    type="text"
+                                    icon={<QrcodeOutlined />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenQrScanner(actionForm);
+                                    }}
+                                />
                             }
+                            loading={isVolunteerLoading}
                         />
                     </Form.Item>
                     <Form.Item name="notes" label="Заметки">
@@ -435,12 +488,20 @@ export const StorageShow: React.FC = () => {
                         rules={[{ required: !selectedPosition?.item_is_anonymous }]}
                     >
                         <Select
-                            options={volunteerOptions}
+                            {...volunteerSelectProps}
                             showSearch
                             allowClear={selectedPosition?.item_is_anonymous}
-                            filterOption={(input, option) =>
-                                ((option?.label as string) ?? '').toLowerCase().includes(input.toLowerCase())
+                            suffixIcon={
+                                <Button
+                                    type="text"
+                                    icon={<QrcodeOutlined />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenQrScanner(actionForm);
+                                    }}
+                                />
                             }
+                            loading={isVolunteerLoading}
                         />
                     </Form.Item>
                     <Form.Item name="notes" label="Заметки">
@@ -517,7 +578,7 @@ export const StorageShow: React.FC = () => {
                                     rules={[{ required: !selectedItem?.is_anonymous }]}
                                 >
                                     <Select
-                                        options={volunteerOptions}
+                                        {...volunteerSelectProps}
                                         showSearch
                                         allowClear={selectedItem?.is_anonymous}
                                         filterOption={(input, option) =>
@@ -525,6 +586,17 @@ export const StorageShow: React.FC = () => {
                                                 .toLowerCase()
                                                 .includes(input.toLowerCase())
                                         }
+                                        suffixIcon={
+                                            <Button
+                                                type="text"
+                                                icon={<QrcodeOutlined />}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenQrScanner(positionFormProps.form!);
+                                                }}
+                                            />
+                                        }
+                                        loading={isVolunteerLoading}
                                     />
                                 </Form.Item>
                             );
@@ -576,6 +648,8 @@ export const StorageShow: React.FC = () => {
                     </Space>
                 </Form>
             </Modal>
+
+            <QRScannerModal open={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} onScan={handleQrScan} />
         </Show>
     );
 };
