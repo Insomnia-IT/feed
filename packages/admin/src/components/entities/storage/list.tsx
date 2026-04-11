@@ -1,9 +1,11 @@
 import React from 'react';
-import { List, useTable, EditButton, ShowButton, DeleteButton, getDefaultSortOrder } from '@refinedev/antd';
+import { List, useTable, EditButton, DeleteButton, getDefaultSortOrder } from '@refinedev/antd';
+import { useNavigate } from 'react-router';
 import { Space, Table } from 'antd';
 import type { StorageEntity } from 'interfaces';
 
 export const StorageList: React.FC = () => {
+    const navigate = useNavigate();
     const { tableProps, sorters } = useTable<StorageEntity>({
         pagination: {
             mode: 'server'
@@ -12,7 +14,16 @@ export const StorageList: React.FC = () => {
 
     return (
         <List title="Склады">
-            <Table {...tableProps} rowKey="id">
+            <Table
+                {...tableProps}
+                rowKey="id"
+                onRow={(record: StorageEntity) => ({
+                    onClick: () => {
+                        navigate(`/storages/show/${record.id}`);
+                    },
+                    style: { cursor: 'pointer' }
+                })}
+            >
                 <Table.Column
                     dataIndex="id"
                     title="ID"
@@ -31,7 +42,6 @@ export const StorageList: React.FC = () => {
                     dataIndex="actions"
                     render={(_: any, record: StorageEntity) => (
                         <Space>
-                            <ShowButton hideText size="small" recordItemId={record.id} />
                             <EditButton hideText size="small" recordItemId={record.id} />
                             <DeleteButton hideText size="small" recordItemId={record.id} />
                         </Space>
