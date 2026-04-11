@@ -1,17 +1,20 @@
-import { useModalForm } from '@refinedev/antd';
-import { useDelete, useList, useSelect, useShow } from '@refinedev/core';
+import { useModalForm, useTable } from '@refinedev/antd';
+import { useDelete, useSelect, useShow } from '@refinedev/core';
 import type { ItemEntity } from 'interfaces';
 
 export const useItemsTab = () => {
     const { result } = useShow<ItemEntity>();
     const storageId = result?.id;
 
-    const {
-        result: itemsData,
-        query: { isLoading: itemsLoading, refetch: itemsRefetch }
-    } = useList<ItemEntity>({
+    const { tableProps: itemsTableProps } = useTable<ItemEntity>({
         resource: 'storage-items',
-        filters: [{ field: 'storage', operator: 'eq', value: storageId }]
+        filters: {
+            initial: [{ field: 'storage', operator: 'eq', value: storageId }]
+        },
+        pagination: { mode: 'server' },
+        sorters: {
+            initial: [{ field: 'id', order: 'desc' }]
+        }
     });
 
     const {
@@ -20,10 +23,7 @@ export const useItemsTab = () => {
         show: showItemModal
     } = useModalForm<ItemEntity>({
         resource: 'storage-items',
-        action: 'create',
-        onMutationSuccess: () => {
-            itemsRefetch();
-        }
+        action: 'create'
     });
 
     const {
@@ -32,19 +32,14 @@ export const useItemsTab = () => {
         show: showEditItemModal
     } = useModalForm<ItemEntity>({
         resource: 'storage-items',
-        action: 'edit',
-        onMutationSuccess: () => {
-            itemsRefetch();
-        }
+        action: 'edit'
     });
 
     const { mutate: deleteMutate } = useDelete();
 
     return {
         storageId,
-        itemsData: itemsData?.data,
-        itemsLoading,
-        itemsRefetch,
+        itemsTableProps,
         itemModalProps,
         itemFormProps,
         showItemModal,

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Table, Button, Space, Popconfirm, Tabs } from 'antd';
+import { Table, Button, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ItemEntity } from 'interfaces';
+import type { ColumnsType } from 'antd/es/table';
 import { useItemsTab } from './hooks/use-items-tab';
 import { CreateItemModal } from './create-item-modal';
 import { EditItemModal } from './edit-item-modal';
@@ -9,19 +10,17 @@ import { EditItemModal } from './edit-item-modal';
 export const ItemsTab: React.FC = () => {
     const {
         storageId,
-        itemsData,
-        itemsLoading,
+        itemsTableProps,
         itemModalProps,
         itemFormProps,
         showItemModal,
         editItemModalProps,
         editItemFormProps,
         showEditItemModal,
-        deleteMutate,
-        itemsRefetch
+        deleteMutate
     } = useItemsTab();
 
-    const columns = [
+    const columns: ColumnsType<ItemEntity> = [
         { dataIndex: 'name', title: 'Название' },
         { dataIndex: 'sku', title: 'Артикул / SKU' },
         { dataIndex: 'storage_name', title: 'Склад' },
@@ -43,17 +42,7 @@ export const ItemsTab: React.FC = () => {
                     <Popconfirm
                         title="Удалить предмет?"
                         onConfirm={() => {
-                            deleteMutate(
-                                {
-                                    resource: 'storage-items',
-                                    id: record.id
-                                },
-                                {
-                                    onSuccess: () => {
-                                        itemsRefetch();
-                                    }
-                                }
-                            );
+                            deleteMutate({ resource: 'storage-items', id: record.id });
                         }}
                     >
                         <Button size="small" danger icon={<DeleteOutlined />} />
@@ -70,7 +59,7 @@ export const ItemsTab: React.FC = () => {
                     Добавить предмет
                 </Button>
             </div>
-            <Table dataSource={itemsData} rowKey="id" loading={itemsLoading} columns={columns} pagination={false} />
+            <Table {...itemsTableProps} rowKey="id" columns={columns} />
             <CreateItemModal storageId={storageId} modalProps={itemModalProps} formProps={itemFormProps} />
             <EditItemModal modalProps={editItemModalProps} formProps={editItemFormProps} />
         </div>

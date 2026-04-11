@@ -1,6 +1,6 @@
 from django.db import transaction
 from django.db.models import Q
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -202,14 +202,16 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
 
 class IssuanceViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Issuance.objects.all()
+    ordering = ('-id')
     serializer_class = IssuanceSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = IssuanceFilter
 
 class ReceivingViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Receiving.objects.all()
+    ordering = ('-id')
     serializer_class = ReceivingSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = ReceivingFilter

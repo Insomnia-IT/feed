@@ -1,7 +1,8 @@
 import React from 'react';
 import { Table, Button, Space } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, PlusOutlined } from '@ant-design/icons';
-import type { StorageItemPositionEntity } from 'interfaces';
+import type { StorageItemPositionEntity, ItemEntity } from 'interfaces';
+import type { ColumnsType } from 'antd/es/table';
 import { usePositionsTab } from './hooks/use-positions-tab';
 import { useStorageData, useStorageQrScanner } from '../../hooks';
 import { ReceiveModal } from './receive-modal';
@@ -20,9 +21,10 @@ export const PositionsTab: React.FC = () => {
     });
     const { itemOptions } = useItemOptions();
     const { binOptions } = useBinOptions(filters);
-    const { itemsData } = useItemsTab();
+    const { itemsTableProps } = useItemsTab();
+    const itemsData = itemsTableProps.dataSource as ItemEntity[] | undefined;
 
-    const columns = [
+    const columns: ColumnsType<StorageItemPositionEntity> = [
         { dataIndex: 'id', title: 'ID' },
         { dataIndex: 'bin_name', title: 'Ячейка' },
         { dataIndex: 'item_name', title: 'Предмет' },
@@ -64,12 +66,7 @@ export const PositionsTab: React.FC = () => {
                     Принять
                 </Button>
             </div>
-            <Table
-                dataSource={positions.positionsData as any}
-                columns={columns}
-                rowKey="id"
-                loading={positions.positionsLoading}
-            />
+            <Table {...positions.positionsTableProps} rowKey="id" columns={columns} />
             <CreatePositionModal
                 modalProps={positions.positionModalProps}
                 formProps={positions.positionFormProps}

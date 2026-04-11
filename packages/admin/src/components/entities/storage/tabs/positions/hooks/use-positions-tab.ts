@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { useTable, useModalForm } from '@refinedev/antd';
 import { useList } from '@refinedev/core';
-import { useModalForm } from '@refinedev/antd';
 import { notification, type FormInstance } from 'antd';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -14,15 +14,17 @@ interface UsePositionsTabParams {
 }
 
 export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTabParams) => {
-    const {
-        result: positionsResult,
-        query: { isLoading: positionsLoading, refetch: positionsRefetch }
-    } = useList<StorageItemPositionEntity>({
+    const { tableProps: positionsTableProps } = useTable<StorageItemPositionEntity>({
         resource: 'storage-positions',
-        filters,
+        filters: {
+            initial: filters
+        },
+        pagination: { mode: 'server' },
+        sorters: {
+            initial: [{ field: 'id', order: 'desc' }]
+        },
         queryOptions: { enabled: !!storage?.id }
     });
-    const positionsData = positionsResult;
 
     const {
         result: receivingsData,
@@ -36,6 +38,7 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
                 value: storage?.id
             }
         ],
+        pagination: { mode: 'server' },
         queryOptions: { enabled: !!storage?.id }
     });
 
@@ -51,6 +54,7 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
                 value: storage?.id
             }
         ],
+        pagination: { mode: 'server' },
         queryOptions: { enabled: !!storage?.id }
     });
     const issuancesData = issuancesResult;
@@ -65,11 +69,7 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
         show: showPositionModal
     } = useModalForm<StorageItemPositionEntity>({
         resource: 'storage-positions',
-        action: 'create',
-        onMutationSuccess: () => {
-            positionsRefetch();
-            receivingsRefetch();
-        }
+        action: 'create'
     });
 
     const handleAction = async (action: 'receive' | 'issue') => {
@@ -88,9 +88,6 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
             setIsReceiveModalVisible(false);
             setIsIssueModalVisible(false);
             actionForm.resetFields();
-            positionsRefetch();
-            receivingsRefetch();
-            issuancesRefetch();
         } catch (error) {
             console.error(error);
             notification.error({ message: 'Ошибка при выполнении операции' });
@@ -98,9 +95,8 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
     };
 
     return {
-        positionsData: positionsData?.data,
-        positionsLoading,
-        positionsRefetch,
+        positionsTableProps,
+        positionsData: positionsTableProps.dataSource,
         receivingsData: receivingsData?.data,
         receivingsLoading,
         receivingsRefetch,

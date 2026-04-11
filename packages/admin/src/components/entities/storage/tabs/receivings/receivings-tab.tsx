@@ -1,28 +1,32 @@
 import React from 'react';
 import { Table } from 'antd';
-import { useList } from '@refinedev/core';
+import { useTable } from '@refinedev/antd';
 import { useStorageData } from '../../hooks';
 import type { ReceivingEntity } from 'interfaces';
+import type { ColumnsType } from 'antd/es/table';
 
 export const ReceivingsTab: React.FC = () => {
     const { storage } = useStorageData();
 
-    const {
-        result: receivingsData,
-        query: { isLoading: receivingsLoading }
-    } = useList<ReceivingEntity>({
+    const { tableProps: receivingsTableProps } = useTable<ReceivingEntity>({
         resource: 'storage-receivings',
-        filters: [
-            {
-                field: 'position__storage',
-                operator: 'eq',
-                value: storage?.id
-            }
-        ],
+        filters: {
+            initial: [
+                {
+                    field: 'position__storage',
+                    operator: 'eq',
+                    value: storage?.id
+                }
+            ]
+        },
+        pagination: { mode: 'server' },
+        sorters: {
+            initial: [{ field: 'id', order: 'desc' }]
+        },
         queryOptions: { enabled: !!storage?.id }
     });
 
-    const columns = [
+    const columns: ColumnsType<ReceivingEntity> = [
         { dataIndex: 'id', title: 'ID' },
         { dataIndex: 'item_name', title: 'Предмет' },
         { dataIndex: 'count', title: 'Кол-во' },
@@ -35,5 +39,5 @@ export const ReceivingsTab: React.FC = () => {
         }
     ];
 
-    return <Table dataSource={receivingsData?.data as any} rowKey="id" loading={receivingsLoading} columns={columns} />;
+    return <Table {...receivingsTableProps} rowKey="id" columns={columns} />;
 };

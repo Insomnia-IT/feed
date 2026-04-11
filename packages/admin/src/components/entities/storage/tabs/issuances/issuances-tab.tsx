@@ -1,28 +1,32 @@
 import React from 'react';
 import { Table } from 'antd';
-import { useList } from '@refinedev/core';
+import { useTable } from '@refinedev/antd';
 import { useStorageData } from '../../hooks';
 import type { IssuanceEntity } from 'interfaces';
+import type { ColumnsType } from 'antd/es/table';
 
 export const IssuancesTab: React.FC = () => {
     const { storage } = useStorageData();
 
-    const {
-        result: issuancesData,
-        query: { isLoading: issuancesLoading }
-    } = useList<IssuanceEntity>({
+    const { tableProps: issuancesTableProps } = useTable<IssuanceEntity>({
         resource: 'storage-issuances',
-        filters: [
-            {
-                field: 'position__storage',
-                operator: 'eq',
-                value: storage?.id
-            }
-        ],
+        filters: {
+            initial: [
+                {
+                    field: 'position__storage',
+                    operator: 'eq',
+                    value: storage?.id
+                }
+            ]
+        },
+        pagination: { mode: 'server' },
+        sorters: {
+            initial: [{ field: 'id', order: 'desc' }]
+        },
         queryOptions: { enabled: !!storage?.id }
     });
 
-    const columns = [
+    const columns: ColumnsType<IssuanceEntity> = [
         { dataIndex: 'id', title: 'ID' },
         { dataIndex: 'item_name', title: 'Предмет' },
         { dataIndex: 'count', title: 'Кол-во' },
@@ -35,5 +39,5 @@ export const IssuancesTab: React.FC = () => {
         }
     ];
 
-    return <Table dataSource={issuancesData?.data as any} rowKey="id" loading={issuancesLoading} columns={columns} />;
+    return <Table {...issuancesTableProps} rowKey="id" columns={columns} />;
 };

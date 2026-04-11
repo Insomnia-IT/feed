@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useModalForm } from '@refinedev/antd';
-import { useList, useSelect } from '@refinedev/core';
+import { useModalForm, useTable } from '@refinedev/antd';
+import { useSelect } from '@refinedev/core';
 import type { BinEntity } from 'interfaces';
 import type { CrudFilter } from '@refinedev/core';
 
@@ -10,12 +10,15 @@ interface UseBinsTabParams {
 }
 
 export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
-    const {
-        result: binsData,
-        query: { isLoading: binsLoading, refetch: binsRefetch }
-    } = useList<BinEntity>({
+    const { tableProps: binsTableProps } = useTable<BinEntity>({
         resource: 'storage-bins',
-        filters,
+        filters: {
+            initial: filters
+        },
+        pagination: { mode: 'server' },
+        sorters: {
+            initial: [{ field: 'id', order: 'desc' }]
+        },
         queryOptions: { enabled: !!storage?.id }
     });
 
@@ -25,10 +28,7 @@ export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
         show: showBinModal
     } = useModalForm<BinEntity>({
         resource: 'storage-bins',
-        action: 'create',
-        onMutationSuccess: () => {
-            binsRefetch();
-        }
+        action: 'create'
     });
 
     useEffect(() => {
@@ -38,9 +38,7 @@ export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
     }, [storage?.id, binFormProps.form]);
 
     return {
-        binsData: binsData?.data,
-        binsLoading,
-        binsRefetch,
+        binsTableProps,
         binModalProps,
         binFormProps,
         showBinModal
