@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Checkbox, TableProps } from 'antd';
+import { Checkbox, type TableProps } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 import type { VolEntity } from 'interfaces';
@@ -44,7 +44,7 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
         try {
             const { data } = await dataProvider.getList<VolEntity>({
                 resource: `volunteers/${filterQueryParams}`,
-                pagination: { current: 1, pageSize: 0 }
+                pagination: { currentPage: 1, pageSize: 0 }
             });
 
             setSelectedVols(data);
@@ -58,7 +58,7 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
         selectedRowKeys,
         getCheckboxProps: (record) => ({ name: record.name }),
         columnTitle: (
-            <>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <Checkbox
                     style={isLoading ? { display: 'none' } : undefined}
                     checked={isAllSelected}
@@ -68,7 +68,7 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
                     onChange={handleSelectAllToggle}
                 />
                 {isLoading ? <LoadingOutlined /> : null}
-            </>
+            </span>
         )
     };
 

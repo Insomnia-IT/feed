@@ -2,8 +2,11 @@ import dayjs from 'dayjs';
 import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
+import type { MealPlanCell } from '@feed/admin/src/interfaces';
 
-import { getToday } from '~/shared/lib/date';
+import { getToday } from 'shared/lib/date';
+
+export type { MealPlanCell };
 
 export interface Transaction {
     ulid: string;
@@ -36,19 +39,23 @@ export interface TransactionJoined extends Transaction {
     vol?: Volunteer;
 }
 
-export enum FeedType {
-    Free = 1, // бесплатно
-    Paid = 2, // платно
-    Child = 3, // ребенок
-    NoFeed = 4 // без питания
-}
+export const FeedType = {
+    Free: 1, // бесплатно
+    Paid: 2, // платно
+    Child: 3, // ребенок
+    NoFeed: 4 // без питания
+} as const;
 
-export enum MealTime {
-    breakfast = 'breakfast',
-    lunch = 'lunch',
-    dinner = 'dinner',
-    night = 'night'
-}
+export type FeedType = (typeof FeedType)[keyof typeof FeedType];
+
+export const MealTime = {
+    breakfast: 'breakfast',
+    lunch: 'lunch',
+    dinner: 'dinner',
+    night: 'night'
+} as const;
+
+export type MealTime = (typeof MealTime)[keyof typeof MealTime];
 
 export interface Volunteer {
     qr: string;
@@ -81,6 +88,7 @@ export interface GroupBadge {
     id: number;
     name: string;
     qr: string;
+    planning_cells: Array<MealPlanCell>;
 }
 
 export class MySubClassedDexie extends Dexie {
@@ -150,7 +158,7 @@ export const addTransaction = async ({
     };
     group_badge?: number | null;
     amount?: number;
-}): Promise<any> => {
+}): Promise<void> => {
     const ts = dayjs().unix();
     let amountInner = amount ?? 1;
     let reason: string | null = null;
@@ -198,8 +206,8 @@ export const dbIncFeed = async ({
         reason: string;
     };
     kitchenId: number;
-}): Promise<any> => {
-    return await addTransaction({ amount, group_badge, isAnomaly, vol, mealTime, isVegan, log, kitchenId });
+}): Promise<void> => {
+    await addTransaction({ amount, group_badge, isAnomaly, vol, mealTime, isVegan, log, kitchenId });
 };
 
 export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<Array<TransactionJoined>> {

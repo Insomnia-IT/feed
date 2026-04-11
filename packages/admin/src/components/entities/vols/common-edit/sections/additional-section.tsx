@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Divider, Form, Input, Button, Checkbox, Tooltip } from 'antd';
 import { FrownOutlined, SmileOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { DeleteButton } from '@refinedev/antd';
-import { useNavigate } from 'react-router-dom';
 import { Rules } from 'components/form/rules';
+import { useNavigate } from 'react-router';
 
 import BanModal from './ban-modal';
 import useCanAccess from '../../use-can-access';
@@ -20,8 +20,12 @@ export const AdditionalSection = ({
     isBlocked: boolean;
     canUnban: boolean;
     canDelete: boolean;
+<<<<<<< HEAD
     volunteerId: number;
     isCreationProcess: boolean
+=======
+    volunteerId?: number | string;
+>>>>>>> 5f800df08b3d57483b7b7a36ca033a14f49bc897
 }) => {
     const form = Form.useFormInstance();
     const [isBanModalVisible, setBanModalVisible] = useState(false);
@@ -31,7 +35,7 @@ export const AdditionalSection = ({
 
     const canDirectionHeadCommentEdit = useCanAccess({ action: 'direction_head_comment_edit', resource: 'volunteers' });
 
-    const currentComment = form.getFieldValue('comment') || '';
+    const currentComment = Form.useWatch('comment', form) || '';
     const isDeleted = form.getFieldValue('deleted_at');
     const approver = form.getFieldValue('approver');
 
@@ -102,22 +106,24 @@ export const AdditionalSection = ({
                     className={styles.blockButton}
                     type="default"
                     onClick={() => setBanModalVisible(true)}
-                    disabled={isBlocked ? !canUnban : false}
+                    disabled={!volunteerId || (isBlocked ? !canUnban : false)}
                 >
                     {isBlocked ? <SmileOutlined /> : <FrownOutlined />}
                     {isBlocked ? 'Разблокировать волонтера' : 'Заблокировать волонтера'}
                 </Button>
 
-                <BanModal
-                    isBlocked={isBlocked}
-                    visible={isBanModalVisible}
-                    onCancel={() => setBanModalVisible(false)}
-                    volunteerId={volunteerId}
-                    currentComment={currentComment}
-                    onSuccess={handleBanSuccess}
-                />
+                {volunteerId ? (
+                    <BanModal
+                        isBlocked={isBlocked}
+                        visible={isBanModalVisible}
+                        onCancel={() => setBanModalVisible(false)}
+                        volunteerId={volunteerId}
+                        currentComment={currentComment}
+                        onSuccess={handleBanSuccess}
+                    />
+                ) : null}
 
-                {canDelete && !isDeleted && (
+                {canDelete && !isDeleted && volunteerId ? (
                     <DeleteButton
                         type="primary"
                         icon={false}
@@ -130,15 +136,12 @@ export const AdditionalSection = ({
                     >
                         Удалить волонтера
                     </DeleteButton>
-                )}
+                ) : null}
             </div>
             <div className={styles.visuallyHidden}>
                 <Form.Item name="is_blocked" valuePropName="checked" style={{ marginBottom: 0 }}>
                     <Checkbox disabled={!canFullEditing}>Заблокирован</Checkbox>
                 </Form.Item>
-                <Form.Item name="person" hidden />
-                <Form.Item name="person_id" hidden />
-                <Form.Item name="deleted_at" hidden />
             </div>
         </>
     );

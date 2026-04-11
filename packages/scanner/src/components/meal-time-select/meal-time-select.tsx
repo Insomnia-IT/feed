@@ -1,10 +1,8 @@
-import React from 'react';
-
-import { MealTime } from '~/db';
-import { Button } from '~/shared/ui/button/button';
-import { useApp } from '~/model/app-provider';
-import { AppViews, useView } from '~/model/view-provider';
-import { ScreenWrapper } from '~/shared/ui/screen-wrapper';
+import { MealTime } from 'db';
+import { Button } from 'shared/ui/button/button';
+import { useApp } from 'model/app-provider';
+import { AppViews, useView } from 'model/view-provider';
+import { ScreenWrapper } from 'shared/ui/screen-wrapper';
 
 import logo from './logo.png';
 import css from './meal-time-select.module.css';
@@ -13,7 +11,7 @@ export const MealTimeSelect = () => {
     const { setMealTime } = useApp();
     const { setCurrentView } = useView();
 
-    const handleClickButton = (mealTime) => {
+    const handleClickButton = (mealTime: MealTime) => {
         setMealTime(mealTime);
         setCurrentView(AppViews.MAIN);
     };

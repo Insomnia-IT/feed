@@ -1,15 +1,15 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { useGetVols } from '~/request/use-get-vols';
-import { useSyncTransactions } from '~/request/use-sync-trans';
+import { useGetVols } from 'request/use-get-vols';
+import { useSyncTransactions } from 'request/use-sync-trans';
 
 import { useGetGroupBadges } from './use-get-group-badges';
 import type { ApiHook } from './lib';
 
 export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const { fetching: volsFetching, send: volsSend } = useGetVols(baseUrl, pin, setAuth);
 
@@ -31,16 +31,17 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
 
             setFetching(true);
 
+            // eslint-disable-next-line no-async-promise-executor
             return new Promise(async (res, rej) => {
                 const success = (): void => {
                     setFetching(false);
                     setError(null);
                     setUpdated(updateTimeStart);
-                    res(true);
+                    res(updateTimeStart);
                     return;
                 };
 
-                const error = (err): void => {
+                const error = (err: unknown): void => {
                     setError(err);
                     setFetching(false);
                     rej(err);
@@ -65,7 +66,6 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                     ]);
                     const rejected = results.find((res) => res.status === 'rejected');
                     if (rejected) {
-                        //@ts-ignore
                         error(rejected?.reason);
                     } else {
                         success();
@@ -78,7 +78,7 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
         [volsFetching, syncTransactionsFetching, groupBadgesFetching, volsSend, groupBadgesSend, syncTransactionsSend]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             updated,
@@ -86,5 +86,5 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };

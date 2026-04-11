@@ -1,5 +1,5 @@
-import { Text } from '~/shared/ui/typography';
-import { Input } from '~/shared/ui/input';
+import { Text } from 'shared/ui/typography';
+import { Input } from 'shared/ui/input';
 
 import css from './feed-other-count.module.css';
 
@@ -11,14 +11,27 @@ const fixNumber = (value?: string): number => {
     return Number(value?.replaceAll(/\D/g, ''));
 };
 
-export const FeedOtherCount: React.FC<{
+export const FeedOtherCount = ({
+    maxCount,
+    nonVegansCount,
+    setNonVegansCount,
+    setVegansCount,
+    vegansCount
+}: {
+    maxCount: number;
     vegansCount: number;
     setVegansCount: (value: number) => void;
     nonVegansCount: number;
     setNonVegansCount: (value: number) => void;
-}> = ({ nonVegansCount, setNonVegansCount, setVegansCount, vegansCount }) => {
+}) => {
+    const maxVeganCount = maxCount - nonVegansCount;
+    const maxNonVeganCount = maxCount - vegansCount;
+
     return (
         <div style={{ width: '100%' }}>
+            <div style={{ paddingBottom: '20px' }}>
+                <b>Максимум {maxCount} суммарно</b>
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-evenly', width: '100%' }}>
                 <div
                     style={{
@@ -31,8 +44,9 @@ export const FeedOtherCount: React.FC<{
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
-                        value={vegansCount.toString()}
+                        type="number"
+                        max={maxVeganCount}
+                        value={vegansCount}
                         onChange={(event) => {
                             const textValue = event?.currentTarget?.value;
 
@@ -43,8 +57,9 @@ export const FeedOtherCount: React.FC<{
                             }
 
                             const value = fixNumber(textValue);
+                            const isMaxCountReached = value >= maxVeganCount;
 
-                            setVegansCount(value);
+                            setVegansCount(isMaxCountReached ? maxVeganCount : value);
                         }}
                     />
                 </div>
@@ -59,8 +74,9 @@ export const FeedOtherCount: React.FC<{
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
-                        value={nonVegansCount.toString()}
+                        type="number"
+                        max={maxNonVeganCount}
+                        value={nonVegansCount}
                         onChange={(event) => {
                             const textValue = event?.currentTarget?.value;
 
@@ -68,8 +84,11 @@ export const FeedOtherCount: React.FC<{
                                 setNonVegansCount(0);
                                 return;
                             }
+
                             const value = fixNumber(textValue);
-                            setNonVegansCount(value);
+                            const isMaxCountReached = value >= maxNonVeganCount;
+
+                            setNonVegansCount(isMaxCountReached ? maxNonVeganCount : value);
                         }}
                     />
                 </div>
