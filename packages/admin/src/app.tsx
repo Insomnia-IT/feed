@@ -153,20 +153,19 @@ const App = () => {
                                     meta: { icon: <MobileOutlined /> }
                                 },
                                 {
-                                    name: 'wash',
-                                    list: '/wash',
-                                    meta: { icon: <ExperimentOutlined /> }
-                                },
-                                {
                                     name: 'storages',
                                     list: '/storages',
                                     create: '/storages/create',
                                     edit: '/storages/edit/:id',
                                     show: '/storages/show/:id',
                                     meta: {
-                                        label: 'Склады',
                                         icon: <AuditOutlined />
                                     }
+                                },
+                                {
+                                    name: 'wash',
+                                    list: '/wash',
+                                    meta: { icon: <ExperimentOutlined /> }
                                 },
                                 {
                                     name: 'sync',
