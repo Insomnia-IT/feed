@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Divider, Form, Input, Button, Checkbox, Tooltip } from 'antd';
 import { FrownOutlined, SmileOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { DeleteButton } from '@refinedev/antd';
+import { Rules } from 'components/form/rules';
 import { useNavigate } from 'react-router';
 
 import BanModal from './ban-modal';
@@ -13,12 +14,14 @@ export const AdditionalSection = ({
     isBlocked,
     canUnban,
     canDelete,
-    volunteerId
+    volunteerId,
+    isCreationProcess
 }: {
     isBlocked: boolean;
     canUnban: boolean;
     canDelete: boolean;
     volunteerId?: number | string;
+    isCreationProcess: boolean
 }) => {
     const form = Form.useFormInstance();
     const [isBanModalVisible, setBanModalVisible] = useState(false);
@@ -30,6 +33,7 @@ export const AdditionalSection = ({
 
     const currentComment = Form.useWatch('comment', form) || '';
     const isDeleted = form.getFieldValue('deleted_at');
+    const approver = form.getFieldValue('approver');
 
     const handleBanSuccess = (updatedData: Record<string, unknown>) => {
         form.setFieldsValue(updatedData);
@@ -85,6 +89,11 @@ export const AdditionalSection = ({
                 >
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
                 </Form.Item>
+                {(approver || isCreationProcess) && (
+                    <Form.Item label="Кто согласовал" name="approver" rules={Rules.required}>
+                        <Input disabled={!isCreationProcess}/>
+                    </Form.Item>
+                )}
             </div>
             <Divider />
 

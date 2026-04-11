@@ -2,6 +2,7 @@
 
 import django.db.models.deletion
 from django.db import migrations, models
+from feeder.models import MealTime
 
 
 class Migration(migrations.Migration):
@@ -20,7 +21,7 @@ class Migration(migrations.Migration):
                 ('date', models.DateField(verbose_name='Дата')),
                 ('amount_meat', models.SmallIntegerField(null=True, verbose_name='Количество мясоедов')),
                 ('amount_vegan', models.SmallIntegerField(null=True, verbose_name='Количество вегетарианцев')),
-                ('meal_time', models.CharField(max_length=10, verbose_name='Время питания')),
+                ('meal_time', models.CharField(max_length=10, choices=MealTime.choices, verbose_name='Время питания')),
                 ('group_badge', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_badge_planning_cells', to='feeder.groupbadge')),
             ],
             options={
