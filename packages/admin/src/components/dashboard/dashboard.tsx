@@ -40,7 +40,7 @@ export const Dashboard = () => {
                     navigate(`/volunteers/edit/${volunteer.id}`);
                 }
             } catch (e) {
-                console.log(e);
+                console.error(e);
                 alert(`Ошибка поиска волонтера: ${e}`);
             } finally {
                 enableScan();
