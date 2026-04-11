@@ -17,6 +17,7 @@ export interface Transaction {
     is_new: boolean;
     is_vegan?: boolean;
     is_anomaly?: boolean;
+    is_paid?: boolean;
     reason?: string | null;
     kitchen: number;
     group_badge?: number | null;
@@ -30,6 +31,7 @@ export interface ServerTransaction {
     meal_time: MealTime;
     is_vegan: boolean;
     is_anomaly?: boolean;
+    is_paid?: boolean;
     reason?: string | null;
     kitchen: number;
     group_badge?: number | null;
@@ -66,6 +68,7 @@ export interface Volunteer {
     is_vegan: boolean;
     deleted_at: string | null;
     arrivals: Array<Arrival>;
+    paid_arrivals?: Array<PaidArrival>;
     feed_type: FeedType;
     infant: boolean;
     directions: Array<{ name: string }>;
@@ -82,6 +85,13 @@ export interface Arrival {
     arrival_transport: string;
     departure_date: string;
     departure_transport: string;
+}
+
+export interface PaidArrival {
+    id: string;
+    arrival_date: string;
+    departure_date: string;
+    is_free: boolean;
 }
 
 export interface GroupBadge {
@@ -173,6 +183,7 @@ export const addTransaction = async ({
     await db.transactions.add({
         vol_id: vol ? vol.id : null,
         is_vegan: vol ? vol.is_vegan : isVegan,
+        is_paid: vol ? shouldMarkTransactionAsPaid(vol) : false,
         ts,
         kitchen: kitchenId,
         amount: amountInner,
@@ -229,6 +240,71 @@ export function isActivatedStatus(status: string): boolean {
     return ['ARRIVED', 'STARTED', 'JOINED'].includes(status);
 }
 
+type DateInterval = {
+    arrival_date: string;
+    departure_date: string;
+};
+
+const isDateWithinInterval = ({ interval, statsDate }: { interval: DateInterval; statsDate: string }): boolean => {
+    const statsDateUnix = dayjs(statsDate).startOf('day').unix();
+    return (
+        dayjs(interval.departure_date).startOf('day').unix() >= statsDateUnix &&
+        dayjs(interval.arrival_date).startOf('day').unix() <= statsDateUnix
+    );
+};
+
+const isNowWithinInterval = (interval: DateInterval): boolean => {
+    const now = dayjs();
+    return (
+        now >= dayjs(interval.arrival_date).startOf('day').add(7, 'hours') &&
+        now <= dayjs(interval.departure_date).endOf('day').add(7, 'hours')
+    );
+};
+
+const getActivatedArrivals = (vol: Volunteer): Array<Arrival> =>
+    vol.arrivals.filter(({ status }) => isActivatedStatus(status));
+
+const getPaidArrivals = (vol: Volunteer): Array<PaidArrival> => vol.paid_arrivals ?? [];
+
+export const getFeedingPermissionForDate = (
+    vol: Volunteer,
+    statsDate: string
+): { allowed: boolean; byArrivals: boolean; byPaidArrivals: boolean } => {
+    const byArrivals = getActivatedArrivals(vol).some((interval) => isDateWithinInterval({ interval, statsDate }));
+    const byPaidArrivals = getPaidArrivals(vol).some((interval) => isDateWithinInterval({ interval, statsDate }));
+
+    if (vol.feed_type === FeedType.NoFeed) {
+        return { allowed: false, byArrivals, byPaidArrivals };
+    }
+    if (vol.feed_type === FeedType.Paid) {
+        return { allowed: byPaidArrivals, byArrivals, byPaidArrivals };
+    }
+
+    return { allowed: byArrivals || byPaidArrivals, byArrivals, byPaidArrivals };
+};
+
+export const getFeedingPermissionForNow = (
+    vol: Volunteer
+): { allowed: boolean; byArrivals: boolean; byPaidArrivals: boolean; paidArrival: PaidArrival | null } => {
+    const byArrivals = getActivatedArrivals(vol).some((interval) => isNowWithinInterval(interval));
+    const matchedPaidArrival = getPaidArrivals(vol).find((interval) => isNowWithinInterval(interval)) ?? null;
+    const byPaidArrivals = Boolean(matchedPaidArrival);
+
+    if (vol.feed_type === FeedType.NoFeed) {
+        return { allowed: false, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
+    }
+    if (vol.feed_type === FeedType.Paid) {
+        return { allowed: byPaidArrivals, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
+    }
+
+    return { allowed: byArrivals || byPaidArrivals, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
+};
+
+const shouldMarkTransactionAsPaid = (vol: Volunteer): boolean => {
+    const permission = getFeedingPermissionForNow(vol);
+    return Boolean(permission.byPaidArrivals && permission.paidArrival && !permission.paidArrival.is_free);
+};
+
 export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
     const kitchenId = localStorage.getItem('kitchenId');
     return db.volunteers
@@ -236,14 +312,7 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
             return (
                 vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
-                vol.feed_type !== FeedType.NoFeed &&
-                vol.arrivals.some(({ arrival_date, departure_date, status }) => {
-                    return (
-                        dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
-                        dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
-                        isActivatedStatus(status)
-                    );
-                })
+                getFeedingPermissionForDate(vol, statsDate).allowed
             );
         })
         .toArray();
