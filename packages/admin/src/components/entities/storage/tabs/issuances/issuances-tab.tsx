@@ -20,9 +20,6 @@ export const IssuancesTab: React.FC = () => {
             ]
         },
         pagination: { mode: 'server' },
-        sorters: {
-            initial: [{ field: 'id', order: 'desc' }]
-        },
         queryOptions: { enabled: !!storage?.id }
     });
 

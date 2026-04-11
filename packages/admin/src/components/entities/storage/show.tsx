@@ -11,6 +11,10 @@ import { IssuancesTab } from './tabs/issuances';
 export const StorageShow: React.FC = () => {
     const { storage, storageLoading } = useStorageData();
 
+    if (!storage) {
+        return null;
+    }
+
     return (
         <Show isLoading={storageLoading} title={`Склад: ${storage?.name}`}>
             <div style={{ marginBottom: 24 }}>
@@ -30,11 +34,11 @@ export const StorageShow: React.FC = () => {
                     <ItemsTab />
                 </Tabs.TabPane>
 
-                <Tabs.TabPane tab="Приемка" key="receivings">
+                <Tabs.TabPane tab="Принято" key="receivings">
                     <ReceivingsTab />
                 </Tabs.TabPane>
 
-                <Tabs.TabPane tab="Выдача" key="issuances">
+                <Tabs.TabPane tab="Выдано" key="issuances">
                     <IssuancesTab />
                 </Tabs.TabPane>
             </Tabs>

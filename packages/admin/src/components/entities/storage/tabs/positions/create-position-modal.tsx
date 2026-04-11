@@ -7,7 +7,7 @@ import type { ItemEntity } from 'interfaces';
 interface CreatePositionModalProps {
     modalProps: ModalProps;
     formProps: { form?: FormInstance };
-    storageId: number | undefined;
+    storageId: number;
     binOptions: { label: string; value: number }[] | undefined;
     itemOptions: { label: string; value: number }[] | undefined;
     itemsData: ItemEntity[] | undefined;

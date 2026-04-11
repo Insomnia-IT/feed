@@ -14,10 +14,7 @@ export const useItemsTab = () => {
         filters: {
             initial: [{ field: 'storage', operator: 'eq', value: storageId }]
         },
-        pagination: { mode: 'server' },
-        sorters: {
-            initial: [{ field: 'id', order: 'desc' }]
-        }
+        pagination: { mode: 'server' }
     });
 
     const {

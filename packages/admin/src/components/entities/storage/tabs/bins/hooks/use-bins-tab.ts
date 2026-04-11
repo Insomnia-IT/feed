@@ -19,9 +19,6 @@ export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
             initial: filters
         },
         pagination: { mode: 'server' },
-        sorters: {
-            initial: [{ field: 'id', order: 'desc' }]
-        },
         queryOptions: { enabled: !!storage?.id }
     });
 

@@ -52,6 +52,10 @@ export const ItemsTab: React.FC = () => {
         }
     ];
 
+    if (!storageId) {
+        return null;
+    }
+
     return (
         <div>
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>

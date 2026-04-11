@@ -19,12 +19,9 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
     } = useTable<StorageItemPositionEntity>({
         resource: 'storage-positions',
         filters: {
-            initial: filters
+            permanent: filters.concat([{ field: 'has_count', operator: 'eq', value: true }])
         },
         pagination: { mode: 'server' },
-        sorters: {
-            initial: [{ field: 'id', order: 'desc' }]
-        },
         queryOptions: { enabled: !!storage?.id }
     });
 

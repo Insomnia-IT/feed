@@ -24,7 +24,12 @@ class StoragePositionFilter(django_filters.FilterSet):
     item_name = django_filters.CharFilter(field_name='item__name', lookup_expr='icontains')
     is_unique = django_filters.BooleanFilter(field_name='item__is_unique')
     is_anonymous = django_filters.BooleanFilter(field_name='item__is_anonymous')
+    has_count = django_filters.BooleanFilter(method='filter_has_count')
 
+    def filter_has_count(self, queryset, name, value):
+        if value:
+            return queryset.filter(count__gt=0)
+        return queryset.filter(storage__lte=0)
     class Meta:
         model = StorageItemPosition
         fields = ['storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']

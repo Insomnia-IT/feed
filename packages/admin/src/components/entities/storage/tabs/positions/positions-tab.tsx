@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Button, Space } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined, PlusOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowRightOutlined, ArrowUpOutlined, PlusOutlined } from '@ant-design/icons';
 import type { StorageItemPositionEntity, ItemEntity } from 'interfaces';
 import type { ColumnsType } from 'antd/es/table';
 import { usePositionsTab } from './hooks/use-positions-tab';
@@ -37,6 +37,7 @@ export const PositionsTab: React.FC = () => {
                     <Button
                         size="small"
                         icon={<ArrowDownOutlined />}
+                        disabled={record.item_is_unique && record.count > 0}
                         onClick={() => {
                             positions.setSelectedPosition(record);
                             positions.setIsReceiveModalVisible(true);
@@ -55,10 +56,24 @@ export const PositionsTab: React.FC = () => {
                     >
                         Выдать
                     </Button>
+                    <Button
+                        size="small"
+                        icon={<ArrowRightOutlined />}
+                        disabled={record.count === 0}
+                        onClick={() => {
+                            // TODO
+                        }}
+                    >
+                        Переместить
+                    </Button>
                 </Space>
             )
         }
     ];
+
+    if (!storage) {
+        return null;
+    }
 
     return (
         <div>
@@ -71,7 +86,7 @@ export const PositionsTab: React.FC = () => {
             <CreatePositionModal
                 modalProps={positions.positionModalProps}
                 formProps={positions.positionFormProps}
-                storageId={storage?.id}
+                storageId={storage.id}
                 binOptions={binOptions}
                 itemOptions={itemOptions}
                 itemsData={itemsData}

@@ -5,7 +5,7 @@ import type { ModalProps } from 'antd';
 interface CreateBinModalProps {
     modalProps: ModalProps;
     formProps: any;
-    storageId: number | undefined;
+    storageId: number;
 }
 
 export const CreateBinModal: React.FC<CreateBinModalProps> = ({ modalProps, formProps, storageId }) => {

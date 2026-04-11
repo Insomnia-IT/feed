@@ -3,7 +3,7 @@ import { Modal, Form, Input, Checkbox, Space } from 'antd';
 import type { ModalProps } from 'antd';
 
 interface CreateItemModalProps {
-    storageId: number | undefined;
+    storageId: number;
     modalProps: ModalProps;
     formProps: any;
 }

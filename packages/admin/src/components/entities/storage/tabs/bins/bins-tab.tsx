@@ -20,6 +20,10 @@ export const BinsTab: React.FC = () => {
         { dataIndex: 'description', title: 'Описание' }
     ];
 
+    if (!storage) {
+        return null;
+    }
+
     return (
         <div>
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
@@ -28,7 +32,7 @@ export const BinsTab: React.FC = () => {
                 </Button>
             </div>
             <Table {...binsTableProps} rowKey="id" columns={columns} />
-            <CreateBinModal modalProps={binModalProps} formProps={binFormProps} storageId={storage?.id} />
+            <CreateBinModal modalProps={binModalProps} formProps={binFormProps} storageId={storage.id} />
         </div>
     );
 };
