@@ -88,18 +88,21 @@ const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
 };
 
 const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
-    return trans.map(({ amount, group_badge, is_anomaly, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
-        volunteer: vol_id,
-        is_vegan,
-        is_anomaly,
-        amount,
-        dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
-        ulid,
-        meal_time: mealTime,
-        kitchen,
-        reason,
-        group_badge
-    }));
+    return trans.map(
+        ({ amount, group_badge, is_anomaly, is_paid, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+            volunteer: vol_id,
+            is_vegan,
+            is_anomaly,
+            is_paid,
+            amount,
+            dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
+            ulid,
+            meal_time: mealTime,
+            kitchen,
+            reason,
+            group_badge
+        })
+    );
 };
 
 const markTransactionsAsUpdated = async (trans: Array<Transaction>): Promise<IndexableType> => {
@@ -113,10 +116,23 @@ const markTransactionsAsUpdated = async (trans: Array<Transaction>): Promise<Ind
 
 const putNewServerTransactions = async (serverTransactions: Array<ServerTransaction>): Promise<IndexableType> => {
     const transactions = serverTransactions.map(
-        ({ amount, dtime, group_badge, is_anomaly, is_vegan, kitchen, meal_time, reason, ulid, volunteer }) => ({
+        ({
+            amount,
+            dtime,
+            group_badge,
+            is_anomaly,
+            is_paid,
+            is_vegan,
+            kitchen,
+            meal_time,
+            reason,
+            ulid,
+            volunteer
+        }) => ({
             vol_id: volunteer,
             is_vegan,
             is_anomaly,
+            is_paid,
             mealTime: meal_time,
             ulid,
             amount,
