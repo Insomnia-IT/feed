@@ -20,12 +20,8 @@ export const AdditionalSection = ({
     isBlocked: boolean;
     canUnban: boolean;
     canDelete: boolean;
-<<<<<<< HEAD
-    volunteerId: number;
-    isCreationProcess: boolean
-=======
     volunteerId?: number | string;
->>>>>>> 5f800df08b3d57483b7b7a36ca033a14f49bc897
+    isCreationProcess: boolean
 }) => {
     const form = Form.useFormInstance();
     const [isBanModalVisible, setBanModalVisible] = useState(false);
