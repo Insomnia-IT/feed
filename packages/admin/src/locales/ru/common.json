@@ -166,6 +166,15 @@
             "show": "Показать"
         }
     },
+    "storages": {
+        "storages": "Склады",
+        "titles": {
+            "create": "Создать склад",
+            "edit": "Редактировать склад",
+            "list": "Список складов",
+            "show": "Склад"
+        }
+    },
     "scanner-page": {
         "scanner-page": "Кормитель",
         "titles": {
