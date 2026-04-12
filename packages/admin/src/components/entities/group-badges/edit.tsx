@@ -27,7 +27,7 @@ export const GroupBadgeEdit = () => {
             initial: [{ field: 'group_badge', operator: 'eq', value: id }]
         },
         sorters: {
-            initial: [{ field: 'id', order: 'desc' }]
+            initial: [{ field: 'name', order: 'asc' }]
         },
         pagination: { pageSize: 10 }
     });
