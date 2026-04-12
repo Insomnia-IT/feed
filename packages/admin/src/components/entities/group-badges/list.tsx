@@ -1,9 +1,11 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useState, startTransition } from 'react';
 import { DeleteButton, EditButton, List } from '@refinedev/antd';
-import { Space, Table, TablePaginationConfig, Tooltip } from 'antd';
+import { Space, Table, type TablePaginationConfig, Tooltip } from 'antd';
 import { useList, useNavigation } from '@refinedev/core';
 
+import { RichTextPreview } from 'components/controls/rich-text-preview';
 import type { GroupBadgeEntity } from 'interfaces';
+import { useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import { getSorter } from 'utils';
 import useVisibleDirections from '../vols/use-visible-directions';
@@ -13,41 +15,47 @@ import styles from './group-badge-list.module.css';
 const LS_PAGE_KEY = 'gbPageIndex';
 const LS_SIZE_KEY = 'gbPageSize';
 
-export const GroupBadgeList: FC = () => {
-    const [page, setPage] = useState<number>(Number(localStorage.getItem(LS_PAGE_KEY)) || 1);
-    const [pageSize, setPageSize] = useState<number>(Number(localStorage.getItem(LS_SIZE_KEY)) || 10);
+export const GroupBadgeList = () => {
+    const { getItem, setItem } = useLocalStorage();
+    const [page, setPage] = useState<number>(Number(getItem(LS_PAGE_KEY)) || 1);
+    const [pageSize, setPageSize] = useState<number>(Number(getItem(LS_SIZE_KEY)) || 10);
 
     const visibleDirections = useVisibleDirections();
     const { isDesktop } = useScreen();
     const { edit } = useNavigation();
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
+    const { result: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
-        config: {
-            pagination: {
-                current: isDesktop ? page : 1,
-                pageSize: isDesktop ? pageSize : 10000
-            }
+        pagination: {
+            mode: 'server',
+            currentPage: isDesktop ? page : 1,
+            pageSize: isDesktop ? pageSize : 10000
         }
     });
 
     useEffect(() => {
+        if (!isDesktop) return;
+
+        const total = groupBadges?.total;
+        if (!total) return;
         // Если текущая страница выходит за пределы общего количества бейджей, сбрасываем на 1
-        if (groupBadges?.total && (page - 1) * pageSize >= groupBadges.total) {
-            setPage(1);
-            localStorage.setItem(LS_PAGE_KEY, '1');
+        const maxPage = Math.max(1, Math.ceil(total / pageSize));
+        if (page > maxPage) {
+            startTransition(() => setPage(1));
+            setItem(LS_PAGE_KEY, '1');
         }
-    }, [groupBadges?.total, page, pageSize]);
+    }, [isDesktop, groupBadges?.total, page, pageSize, setItem]);
 
     const pagination: TablePaginationConfig = {
-        total: groupBadges?.total ?? 1,
+        total: groupBadges?.total ?? 0,
         showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
         current: page,
-        pageSize: pageSize,
+        pageSize,
+        showSizeChanger: true,
         onChange: (newPage, newPageSize) => {
             setPage(newPage);
             setPageSize(newPageSize);
-            localStorage.setItem(LS_PAGE_KEY, String(newPage));
-            localStorage.setItem(LS_SIZE_KEY, String(newPageSize));
+            setItem(LS_PAGE_KEY, String(newPage));
+            setItem(LS_SIZE_KEY, String(newPageSize));
         }
     };
 
@@ -95,7 +103,7 @@ export const GroupBadgeList: FC = () => {
                             {badge.comment && (
                                 <div className={styles.comment}>
                                     <span className={styles.label}>Комментарий:</span>
-                                    <div dangerouslySetInnerHTML={{ __html: badge.comment }} />
+                                    <RichTextPreview html={badge.comment} />
                                 </div>
                             )}
                         </div>
@@ -131,8 +139,8 @@ export const GroupBadgeList: FC = () => {
                         key="comment"
                         title="Комментарий"
                         render={(value) => (
-                            <Tooltip title={value}>
-                                <div className={styles.ellipsis} dangerouslySetInnerHTML={{ __html: value }} />
+                            <Tooltip title={<RichTextPreview html={value} />}>
+                                <RichTextPreview className={styles.ellipsis} html={value} />
                             </Tooltip>
                         )}
                         ellipsis

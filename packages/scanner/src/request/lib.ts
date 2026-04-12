@@ -1,7 +1,7 @@
 export interface ApiHook {
     fetching: boolean;
-    error: any;
-    data: any;
-    updated: number;
-    send: (data?: any) => Promise<any>;
+    error: unknown;
+    data?: unknown;
+    updated: number | null;
+    send: (data?: unknown) => Promise<unknown> | void;
 }

@@ -38,7 +38,7 @@ class feed_history_pagination():
     NEXT_PAGE = ".anticon.anticon-right"
 
 class group_badges():
-    VOLONTEER_COUNTER = "span.ant-typography.ant-typography-secondary"
+    VOLONTEER_COUNTER = "h5.ant-typography span.ant-typography.ant-typography-secondary"
     DELETE_VOLUNTEER_BUTTON = "div:nth-child(2) > button"
     DELETE_VOLUNTEER_BUTTON_2 = "//button[span[text()='Удалить']]"
     SAVE_BUTTON = "//button[span[text()='Сохранить']]"
@@ -92,11 +92,10 @@ class create_user():
 
     # Поля для проверки прав доступа (read-only)
     KITCHEN_FIELD = "#kitchen"
-    RIGHTS_FIELD = "#main_role"
+    RIGHTS_FIELD = "#access_role"
     COMMENT_FIELD = "#comment"
 
     # История действий
     HISTORY_TAB = "//*[text()='История действий']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
-
 

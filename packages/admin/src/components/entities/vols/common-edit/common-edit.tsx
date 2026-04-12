@@ -1,6 +1,6 @@
 import { Form, Modal } from 'antd';
 import { useList, useSelect } from '@refinedev/core';
-import React, { useEffect, useRef } from 'react';
+import { type ChangeEvent, useEffect, useRef } from 'react';
 
 import type {
     AccessRoleEntity,
@@ -29,13 +29,14 @@ import {
 import styles from '../common.module.css';
 import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 
-export const CommonEdit: React.FC = () => {
+export const CommonEdit = () => {
     const form = Form.useFormInstance();
 
     const person = Form.useWatch('person', form);
+    const { id: routeVolunteerId } = useParams<{ id: string }>();
     const { search, pathname } = useLocation();
 
     const isCreationProcess = pathname.includes('create');
@@ -71,13 +72,16 @@ export const CommonEdit: React.FC = () => {
         loadPerson();
     }, [search, form]);
 
-    const volunteerId = form.getFieldValue('id');
+    const volunteerId = routeVolunteerId ?? form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);
     const selectedFeedType = Form.useWatch('feed_type', form);
 
     const { options: kitchenOptions } = useSelect<KitchenEntity>({ resource: 'kitchens', optionLabel: 'name' });
     const { options: feedTypeOptions } = useSelect<FeedTypeEntity>({ resource: 'feed-types', optionLabel: 'name' });
-    const { data: feedTypesData } = useList<FeedTypeEntity>({ resource: 'feed-types', pagination: { pageSize: 100 } });
+    const { result: feedTypesResult } = useList<FeedTypeEntity>({
+        resource: 'feed-types',
+        pagination: { pageSize: 100 }
+    });
     const { options: colorTypeOptions } = useSelect<ColorTypeEntity>({
         resource: 'colors',
         optionLabel: 'description'
@@ -87,7 +91,9 @@ export const CommonEdit: React.FC = () => {
 
     const { options: groupBadgeOptions } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        optionValue: 'id',
+        pagination: { mode: 'off' }
     });
     const { options: transportsOptions } = useSelect<TransportEntity>({ resource: 'transports', optionLabel: 'name' });
     const { options: statusesOptions } = useSelect<StatusEntity>({ resource: 'statuses', optionLabel: 'name' });
@@ -96,7 +102,7 @@ export const CommonEdit: React.FC = () => {
     const { qrDuplicateVolunteer, setQrDuplicateVolunteer, handleDuplicateQRChange, clearDuplicateQR } =
         useQrDuplicationCheck(form);
 
-    const handleQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleQRChange = (e: ChangeEvent<HTMLInputElement>) => {
         handleDuplicateQRChange(e);
         const { value } = e.target;
         if (value === '') {
@@ -104,8 +110,8 @@ export const CommonEdit: React.FC = () => {
         }
     };
     const { activeAnchor } = useAnchorNavigation(containerRef);
-    const showPaidArrivals = (feedTypesData?.data ?? []).some(
-        ({ id, code }) => id === selectedFeedType && (code === 'FREE' || code === 'PAID')
+    const showPaidArrivals = (feedTypesResult.data ?? []).some(
+        ({ id, code }: FeedTypeEntity) => id === selectedFeedType && (code === 'FREE' || code === 'PAID')
     );
 
     const handleClear = () => {

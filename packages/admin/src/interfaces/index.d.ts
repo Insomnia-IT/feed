@@ -104,14 +104,22 @@ export interface GroupBadgeEntity {
     comment?: string;
     /* Количество волонтеров в бейдже */
     volunteer_count: number;
+    planning_cells?: MealPlanCell[];
+}
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'night';
+
+export interface GroupBadgePlanningCellEntity extends MealPlanCell {
+    group_badge_name?: string | null;
+    meal_time: MealType;
 
     /* Планирование питания */
-    planning_cells: MealPlanCell[];
 }
 
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
+    type: string;
     comment?: string;
     mobile: boolean;
 }
@@ -212,9 +220,9 @@ export interface WashEntity {
 export interface MealPlanCell {
     id?: number;
     group_badge: number;
-    group_badge_name: string;
-    created_at: string;
-    updated_at: string;
+    group_badge_name?: string | null;
+    created_at?: string;
+    updated_at?: string;
     date: string;
     meal_time: string;
     amount_meat: number | null;

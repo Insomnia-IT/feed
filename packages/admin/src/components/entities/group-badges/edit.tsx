@@ -1,27 +1,34 @@
-import { FC } from 'react';
 import { Edit, EditButton, TextField, useForm, useTable } from '@refinedev/antd';
 import { Button, Col, Divider, Form, Input, Popconfirm, Row, Space, Table, Typography } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
-import { HttpError, useInvalidate, useNotification, useUpdateMany } from '@refinedev/core';
+import { type HttpError, useInvalidate, useNotification, useUpdateMany } from '@refinedev/core';
 
 import type { DirectionEntity, GroupBadgeEntity, VolEntity } from 'interfaces';
 import { useDebouncedCallback } from 'shared/hooks';
 import { CreateEdit } from './common';
 import { AddVolunteerModal } from './add-volunteer-modal';
+import { GroupBadgePlanning } from './planning';
 import { GroupMealPlan } from './group-meal-plan';
 
 const { Title, Text } = Typography;
 
-export const GroupBadgeEdit: FC = () => {
+export const GroupBadgeEdit = () => {
     const { open = () => {} } = useNotification();
     const invalidate = useInvalidate();
-    const { mutate: updateMany, isLoading: isUpdating } = useUpdateMany();
+
+    const { mutate: updateMany, mutation: updateManyMutation } = useUpdateMany();
+    const isUpdating = Boolean(updateManyMutation.isPending);
+
     const { id, formProps, saveButtonProps } = useForm<GroupBadgeEntity, HttpError>();
 
-    const { tableProps, setFilters } = useTable<VolEntity>({
+    const { tableProps, setFilters } = useTable<VolEntity, HttpError>({
         resource: 'volunteers',
-        initialFilter: [{ field: 'group_badge', operator: 'eq', value: id }],
-        initialSorter: [{ field: 'id', order: 'desc' }],
+        filters: {
+            initial: [{ field: 'group_badge', operator: 'eq', value: id }]
+        },
+        sorters: {
+            initial: [{ field: 'id', order: 'desc' }]
+        },
         pagination: { pageSize: 10 }
     });
 
@@ -49,11 +56,9 @@ export const GroupBadgeEdit: FC = () => {
 
     return (
         <Edit saveButtonProps={saveButtonProps} contentProps={{ style: { marginBottom: 60, overflow: 'auto' } }}>
-            <Form {...formProps} layout="vertical">
+            <Form {...formProps} scrollToFirstError layout="vertical">
                 <CreateEdit />
             </Form>
-
-            <Divider />
 
             <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
                 <Col>
@@ -73,12 +78,24 @@ export const GroupBadgeEdit: FC = () => {
                             allowClear
                             onChange={(e) => debouncedSearch(e.target.value)}
                         />
-                        <AddVolunteerModal groupBadgeId={id as number} />
+                        <AddVolunteerModal groupBadgeId={Number(id)} />
                     </Space>
                 </Col>
             </Row>
 
-            <Table {...tableProps} rowKey="id" loading={isUpdating}>
+            <Table
+                {...tableProps}
+                rowKey="id"
+                loading={tableProps.loading || isUpdating}
+                pagination={
+                    tableProps.pagination
+                        ? {
+                              ...tableProps.pagination,
+                              showTotal: (total) => `Всего: ${total}`
+                          }
+                        : false
+                }
+            >
                 <Table.Column dataIndex="name" title="Имя на бейдже" />
                 <Table.Column dataIndex="first_name" title="Имя" />
                 <Table.Column dataIndex="last_name" title="Фамилия" />
@@ -94,12 +111,7 @@ export const GroupBadgeEdit: FC = () => {
                     title="Действия"
                     render={(_, record: VolEntity) => (
                         <Space>
-                            <EditButton
-                                hideText
-                                size="small"
-                                resourceNameOrRouteName="volunteers"
-                                recordItemId={record.id}
-                            />
+                            <EditButton hideText size="small" resource="volunteers" recordItemId={record.id} />
                             <Popconfirm
                                 title="Уверены?"
                                 okText="Удалить"
@@ -113,6 +125,9 @@ export const GroupBadgeEdit: FC = () => {
                     )}
                 />
             </Table>
+
+            <Divider />
+            <GroupBadgePlanning groupBadgeId={Number(id)} />
 
             <Divider />
 

@@ -1,5 +1,7 @@
+﻿import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import { List, useTable } from '@refinedev/antd';
 import { useQuery } from '@tanstack/react-query';
+import type { CrudFilter, HttpError } from '@refinedev/core';
 import {
     Button,
     DatePicker,
@@ -15,24 +17,26 @@ import {
     Tooltip,
     Typography
 } from 'antd';
-import { CrudFilter, HttpError } from '@refinedev/core';
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import type { ColumnsType } from 'antd/es/table';
 import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-import type { FeedTransactionAnomaly } from 'interfaces';
+import type { FeedTransactionAnomaly, FeedTransactionEntity } from 'interfaces';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
-import { FeedTransactionEntity } from 'interfaces';
 import { MEAL_MAP, NEW_API_URL } from 'const';
-import { ColumnsType } from 'antd/es/table';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
-import { FilterItem } from '../vols/vol-list/filters/filter-types';
+import type { FilterItem } from '../vols/vol-list/filters/filter-types';
 import { Filters } from '../vols/vol-list/filters/filters';
 
 const { RangePicker } = DatePicker;
+
+type SearchFormValues = {
+    search?: string;
+    date?: [string, string];
+};
 
 const ANOMALY_TOOLTIPS: Record<string, string> = {
     'Бейдж брошен':
@@ -78,7 +82,7 @@ const anomalyModalColumns: ColumnsType<FeedTransactionAnomaly> = [
     { dataIndex: 'problem', title: 'Проблема', ellipsis: true }
 ];
 
-function AnomalyMobileCard({ row }: { row: FeedTransactionAnomaly }): React.ReactElement {
+function AnomalyMobileCard({ row }: { row: FeedTransactionAnomaly }): JSX.Element {
     const type = anomalyTypeFromProblem(row.problem);
     const tooltip = tooltipForAnomalyType(row.problem);
     return (
@@ -183,13 +187,13 @@ export const FeedTransactionList: FC = () => {
         return [from, to];
     });
 
-    const { searchFormProps, tableProps, filters, setCurrent, setPageSize } = useTable<
+    const { searchFormProps, tableProps, filters } = useTable<
         FeedTransactionEntity,
         HttpError,
-        { search?: string; date?: [string, string] }
+        SearchFormValues
     >({
-        defaultSetFilterBehavior: 'replace',
-        onSearch: (values: { search?: string; date?: [string, string] }) => {
+        filters: { defaultBehavior: 'replace' },
+        onSearch: (values: SearchFormValues) => {
             const newFilters: Array<CrudFilter> = [];
 
             newFilters.push({
@@ -219,7 +223,7 @@ export const FeedTransactionList: FC = () => {
                 let valueToUse: string = typeof value === 'boolean' ? String(value) : (value as string);
 
                 if (Array.isArray(value)) {
-                    valueToUse = value.length > 1 ? value.join(',') : String(valueToUse[0]);
+                    valueToUse = value.length > 1 ? value.join(',') : String(value[0]);
                 }
 
                 newFilters.push({
@@ -235,7 +239,6 @@ export const FeedTransactionList: FC = () => {
 
     useEffect(() => {
         if (!anomaliesModalOpen) return;
-        // На момент открытия модалки хотим "последние 24 часа"
         const to = dayjsExtended();
         const from = to.subtract(24, 'hour');
         setAnomaliesRange([from, to]);
@@ -310,7 +313,6 @@ export const FeedTransactionList: FC = () => {
             return;
         }
 
-        // Последние 3 суток: включаем сегодня + 2 предыдущих календарных дня
         const from = now.subtract(2, 'day').startOf('day');
         setAnomaliesRange([from, now.endOf('day')]);
     };
@@ -388,13 +390,18 @@ export const FeedTransactionList: FC = () => {
         if (filters) {
             filters.forEach((filter: CrudFilter) => {
                 if (filter.value && 'field' in filter) {
-                    url = url.concat(`&${filter?.field}=${encodeURIComponent(String(filter.value))}`);
+                    url = url.concat(
+                        `&${String(filter.field)}=${encodeURIComponent(String(filter.value))}`
+                    );
                 }
             });
         }
 
         const { data, headers } = await axios.get<Blob>(url, { responseType: 'blob' });
-        const filename = getFilenameFromContentDisposition(headers['content-disposition'], 'feed-transactions.xlsx');
+        const filename = getFilenameFromContentDisposition(
+            headers['content-disposition'],
+            'feed-transactions.xlsx'
+        );
         downloadBlob(data, filename);
     }, [filters]);
 
@@ -418,7 +425,16 @@ export const FeedTransactionList: FC = () => {
             )}
         >
             <Form {...searchFormProps}>
-                <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        flexWrap: 'wrap',
+                        gap: 8
+                    }}
+                >
                     <Space align="start">
                         <Form.Item name="search">
                             <Input placeholder="Имя волонтера" allowClear />
@@ -448,26 +464,23 @@ export const FeedTransactionList: FC = () => {
                     visibleFilters={visibleFilters}
                     setVisibleFilters={setVisibleFilters}
                     activeFilters={activeFilters}
-                    setActiveFilters={(filters) => {
-                        setActiveFilters(filters);
-
-                        // Для более отзывчивого поведения
+                    setActiveFilters={(next) => {
+                        setActiveFilters(next);
                         setTimeout(() => searchFormProps?.form?.submit());
                     }}
                 />
             </Form>
             <Table<TransformedTransaction>
+                onChange={tableProps.onChange}
                 loading={tableProps.loading}
-                pagination={{
-                    ...tableProps.pagination,
-                    onChange: (page, size) => {
-                        setCurrent(page);
-
-                        if (typeof size === 'number') {
-                            setPageSize(size);
-                        }
-                    }
-                }}
+                pagination={
+                    tableProps.pagination
+                        ? {
+                              ...tableProps.pagination,
+                              showTotal: (total) => `Всего: ${total}`
+                          }
+                        : false
+                }
                 dataSource={transformedResult}
                 rowKey="ulid"
                 footer={() => (
@@ -489,7 +502,15 @@ export const FeedTransactionList: FC = () => {
                     body: { padding: isCompactAnomalies ? 12 : undefined }
                 }}
             >
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: 8,
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        marginBottom: 12
+                    }}
+                >
                     <RangePicker
                         value={anomaliesRange as any}
                         onChange={(values) => {

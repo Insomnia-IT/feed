@@ -1,12 +1,10 @@
-import { FC } from 'react';
 import { Edit, useForm, useSelect } from '@refinedev/antd';
 import { Form, Input, Select } from 'antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
 
 import { Rules } from 'components/form/rules';
 import type { DirectionEntity, DirectionTypeEntity } from 'interfaces';
 
-export const DirectionEdit: FC<IResourceComponentsProps> = () => {
+export const DirectionEdit = () => {
     const { formProps, saveButtonProps } = useForm<DirectionEntity>();
 
     const { selectProps: typesSelectProps } = useSelect<DirectionTypeEntity>({
