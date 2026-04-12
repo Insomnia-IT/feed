@@ -27,6 +27,7 @@ export const SwipeActionRow = ({
     const startOffsetRef = useRef(0);
     const directionRef = useRef<'none' | 'horizontal' | 'vertical'>('none');
     const hasMovedRef = useRef(false);
+    const skipActionClickRef = useRef(false);
 
     const clampOffset = useCallback((value: number) => Math.max(0, Math.min(maxOffset, value)), [maxOffset]);
     const clampedOffset = clampOffset(offset);
@@ -105,27 +106,46 @@ export const SwipeActionRow = ({
         [clampedOffset]
     );
 
+    const triggerAction = useCallback((action: SwipeActionItem) => {
+        setOffset(0);
+        // чтобы позволить анимации жеста завершиться и избежать конфликтов с обработкой событий
+        window.setTimeout(action.onClick, 0);
+    }, []);
+
     if (rightActions.length === 0) return <>{children}</>;
 
     return (
-        <div
-            className={styles.swipeContainer}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-        >
-            <div className={styles.swipeActions} style={{ width: maxOffset }}>
+        <div className={styles.swipeContainer}>
+            <div
+                className={styles.swipeActions}
+                style={{
+                    width: maxOffset,
+                    transform: `translateX(${maxOffset - clampedOffset}px)`,
+                    transition: isDragging ? 'none' : 'transform 120ms ease'
+                }}
+            >
                 {rightActions.map((action) => (
                     <button
                         key={action.key}
                         className={styles.swipeAction}
                         style={{ backgroundColor: action.color, width: SWIPE_ACTION_WIDTH }}
+                        onPointerDown={(event) => {
+                            event.stopPropagation();
+                        }}
+                        onPointerUp={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            skipActionClickRef.current = true;
+                            triggerAction(action);
+                        }}
                         onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
-                            setOffset(0);
-                            action.onClick();
+                            if (skipActionClickRef.current) {
+                                skipActionClickRef.current = false;
+                                return;
+                            }
+                            triggerAction(action);
                         }}
                         type="button"
                     >
@@ -139,6 +159,10 @@ export const SwipeActionRow = ({
                     transform: `translateX(-${clampedOffset}px)`,
                     transition: isDragging ? 'none' : 'transform 120ms ease'
                 }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
                 onClickCapture={handleContentClickCapture}
             >
                 {children}
