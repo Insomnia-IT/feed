@@ -110,6 +110,13 @@ export interface GroupBadgeEntity {
     deleted_at?: string | null;
 }
 
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'night';
+
+export interface GroupBadgePlanningCellEntity extends MealPlanCell {
+    group_badge_name?: string | null;
+    meal_time: MealType;
+}
+
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
@@ -212,9 +219,9 @@ export interface WashEntity {
 export interface MealPlanCell {
     id?: number;
     group_badge: number;
-    group_badge_name: string;
-    created_at: string;
-    updated_at: string;
+    group_badge_name?: string | null;
+    created_at?: string;
+    updated_at?: string;
     date: string;
     meal_time: string;
     amount_meat: number | null;

@@ -13,6 +13,12 @@ import useSaveConfirm from './use-save-confirm';
 
 import styles from './common.module.css';
 
+const contentStyle = {
+    background: 'initial',
+    boxShadow: 'initial',
+    height: '100%'
+};
+
 export const VolEdit = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -54,6 +60,7 @@ export const VolEdit = () => {
     const { isDesktop } = useScreen();
 
     const [activeKey, setActiveKey] = useState('1');
+    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
@@ -76,7 +83,8 @@ export const VolEdit = () => {
     return (
         <Edit
             headerProps={{
-                onBack: navigateBackToList
+                onBack: navigateBackToList,
+                extra: null
             }}
             breadcrumb={crumbItems.length > 0 ? <Breadcrumb items={crumbItems} /> : null}
             title={
@@ -96,11 +104,11 @@ export const VolEdit = () => {
             }
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick,
-                hidden: !isDesktop && activeKey !== '1'
+                onClick
             }}
             contentProps={{
-                style: { background: 'initial', boxShadow: 'initial', height: '100%' }
+                ...(shouldHideFooterActions ? { actions: [] } : {}),
+                style: contentStyle
             }}
         >
             <Form {...formProps} scrollToFirstError layout="vertical">

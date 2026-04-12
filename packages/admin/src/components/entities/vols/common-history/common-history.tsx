@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Button, Modal, message } from 'antd';
+import { Button, Empty, Modal, Skeleton, message } from 'antd';
 import { useList, type HttpError } from '@refinedev/core';
 import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
-import { dataProvider } from 'dataProvider';
 import type {
     AccessRoleEntity,
     ColorTypeEntity,
@@ -19,9 +18,9 @@ import type {
     VolunteerRoleEntity
 } from 'interfaces';
 import useCanAccess from '../use-can-access';
-import type { HistoryChangeData as IData, HistoryRecord as IResult } from './common-history.types';
-import type { HistoryViewModel } from './common-history.view-types';
-import { BOOL_MAP, FIELD_LABELS, IGNORE_FIELDS, STATUS_MAP, useIdNameMap } from './utils';
+import type { HistoryLookupMaps, IHistoryRecord } from './common-history.types';
+import { buildHistoryView, createHistoryFieldFormatter } from './common-history.helpers';
+import { useIdNameMap } from './utils';
 
 import styles from './common-history.module.css';
 
@@ -29,20 +28,19 @@ interface IProps {
     role: 'volunteer' | 'actor';
 }
 
-const BOOL_KEY_SET = new Set(Object.keys(BOOL_MAP));
-const COMMENT_KEY_SET = new Set(['comment', 'direction_head_comment']);
-const TITLE_ADDITION: Partial<Record<IResult['object_name'], string>> = {
-    arrival: 'информацию по заезду',
-    volunteer: 'информацию по волонтеру',
-    volunteercustomfieldvalue: 'информацию по кастомному полю'
-};
+const EMPTY_DESCRIPTION = 'ИЗМЕНЕНИЙ НЕТ';
+const CANCEL_MODAL_TITLE = 'Отмена групповой операции';
+const CANCEL_MODAL_TEXT = 'Вы уверены, что хотите отменить групповую операцию?';
+const CANCEL_SUCCESS_TEXT = 'Групповая операция отменена';
+const CANCEL_ERROR_TEXT = 'Не удалось отменить групповую операцию';
+const LOAD_ERROR_TEXT = 'Ошибка загрузки истории';
 
 export const CommonHistory = ({ role }: IProps) => {
     const { id: volunteerId } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [history, setHistory] = useState<IResult[]>([]);
-    const [customFields, setCustomFields] = useState<CustomFieldEntity[]>([]);
+    const [history, setHistory] = useState<IHistoryRecord[]>([]);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
     const [pendingCancelGroupUuid, setPendingCancelGroupUuid] = useState<string | null>(null);
 
     const canCancelGroupOperation = useCanAccess({
@@ -70,6 +68,10 @@ export const CommonHistory = ({ role }: IProps) => {
         filters: [{ field: 'is_deleted', operator: 'eq', value: 'all' }],
         pagination: { mode: 'off' }
     });
+    const customFieldsList = useList<CustomFieldEntity, HttpError>({
+        resource: 'volunteer-custom-fields',
+        pagination: { mode: 'off' }
+    });
 
     const kitchenById = useIdNameMap(kitchensList.query.data);
     const feedTypeById = useIdNameMap(feedTypesList.query.data);
@@ -89,34 +91,67 @@ export const CommonHistory = ({ role }: IProps) => {
         [colorsList.query.data?.data]
     );
     const customFieldNameById = useMemo<Record<number, string>>(
-        () => Object.fromEntries(customFields.map((field) => [field.id, field.name])),
-        [customFields]
+        () => Object.fromEntries((customFieldsList.query.data?.data ?? []).map((field) => [field.id, field.name])),
+        [customFieldsList.query.data?.data]
+    );
+    const lookupMaps = useMemo<HistoryLookupMaps>(
+        () => ({
+            kitchen: kitchenById,
+            main_role: volunteerRoleById,
+            access_role: accessRoleById,
+            color_type: colorById,
+            feed_type: feedTypeById,
+            gender: genderById,
+            status: statusById,
+            group_badge: groupBadgeById,
+            arrival_transport: transportById,
+            departure_transport: transportById
+        }),
+        [
+            accessRoleById,
+            colorById,
+            feedTypeById,
+            genderById,
+            groupBadgeById,
+            kitchenById,
+            statusById,
+            transportById,
+            volunteerRoleById
+        ]
     );
 
     useEffect(() => {
-        if (!volunteerId) return;
+        if (!volunteerId) {
+            setIsHistoryLoading(false);
+            return;
+        }
         let cancelled = false;
 
         const load = async () => {
+            setIsHistoryLoading(true);
+
             try {
                 const {
                     data: { uuid }
                 } = await axios.get<{ uuid: string }>(`${NEW_API_URL}/volunteers/${volunteerId}`);
-                const [historyRes, cfRes] = await Promise.all([
-                    axios.get<{ results: IResult[] }>(`${NEW_API_URL}/history`, {
-                        params: {
-                            limit: 100000,
-                            [role === 'actor' ? 'actor_badge' : 'volunteer_uuid']: uuid
-                        }
-                    }),
-                    dataProvider.getList<CustomFieldEntity>({ resource: 'volunteer-custom-fields' })
-                ]);
+                const historyRes = await axios.get<{ results: IHistoryRecord[] }>(`${NEW_API_URL}/history`, {
+                    params: {
+                        limit: 100000,
+                        [role === 'actor' ? 'actor_badge' : 'volunteer_uuid']: uuid
+                    }
+                });
 
-                if (cancelled) return;
-                setHistory(historyRes.data.results.slice().reverse());
-                setCustomFields(cfRes.data);
+                if (!cancelled) {
+                    setHistory(historyRes.data.results.slice().reverse());
+                }
             } catch {
-                message.error('Ошибка загрузки истории');
+                if (!cancelled) {
+                    message.error(LOAD_ERROR_TEXT);
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsHistoryLoading(false);
+                }
             }
         };
 
@@ -139,130 +174,32 @@ export const CommonHistory = ({ role }: IProps) => {
         []
     );
 
-    const formatFieldValue = useCallback(
-        (obj: IData | null | undefined, key: string): ReactNode => {
-            if (!obj) return '';
-
-            if (BOOL_KEY_SET.has(key)) {
-                return BOOL_MAP[key as keyof typeof BOOL_MAP][Number(obj[key])];
-            }
-
-            if (COMMENT_KEY_SET.has(key)) {
-                const value = obj[key];
-                return typeof value === 'string' ? value.replace(/<\/?[^>]+(>|$)/g, '') : '';
-            }
-
-            const maps: Record<string, Record<string | number, string>> = {
-                kitchen: kitchenById,
-                main_role: volunteerRoleById,
-                access_role: accessRoleById,
-                color_type: colorById,
-                feed_type: feedTypeById,
-                gender: genderById,
-                status: statusById,
-                group_badge: groupBadgeById,
-                arrival_transport: transportById,
-                departure_transport: transportById
-            };
-
-            if (key === 'supervisor') {
-                const { id, name } = obj[key] ?? {};
-
-                return id ? (
+    const formatFieldValue = useMemo(
+        () =>
+            createHistoryFieldFormatter({
+                directionById,
+                lookupMaps,
+                renderVolunteerLink: ({ id, name }) => (
                     <span
                         className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
-                        onClick={() => (window.location.href = `/volunteers/edit/${id}`)}
+                        onClick={() => navigate(`/volunteers/edit/${id}`)}
                     >
                         {name}
                     </span>
-                ) : (
-                    '-'
-                );
-            }
-
-            if (maps[key]) {
-                const value = obj[key];
-                if (typeof value === 'string' || typeof value === 'number') {
-                    return maps[key][value];
-                }
-                return '';
-            }
-
-            if (key === 'directions') {
-                const values = obj[key] as Array<string | number> | undefined;
-                return (values ?? [])
-                    .map((id) => directionById[id])
-                    .filter(Boolean)
-                    .join(', ');
-            }
-
-            if (key === 'value') {
-                const value = String(obj[key] ?? '');
-                return value === 'true' ? 'Да' : value === 'false' ? 'Нет' : value;
-            }
-
-            const value = obj[key];
-
-            if (typeof value === 'string' || typeof value === 'number') {
-                return value;
-            }
-
-            if (typeof value === 'boolean') {
-                return value ? 'Да' : 'Нет';
-            }
-
-            if (Array.isArray(value)) {
-                return value.join(', ');
-            }
-
-            if (value && typeof value === 'object' && 'name' in value && typeof value.name === 'string') {
-                return value.name;
-            }
-
-            return '';
-        },
-        [
-            accessRoleById,
-            colorById,
-            directionById,
-            feedTypeById,
-            genderById,
-            groupBadgeById,
-            kitchenById,
-            statusById,
-            transportById,
-            volunteerRoleById
-        ]
+                )
+            }),
+        [directionById, lookupMaps, navigate]
     );
 
-    const historyView = useMemo<HistoryViewModel[]>(
+    const historyView = useMemo(
         () =>
-            history.map((item) => {
-                const fields = Object.entries(item.data)
-                    .filter(([key]) => !IGNORE_FIELDS.has(key))
-                    .map(([key]) => ({
-                        key,
-                        label:
-                            (key === 'value' ? customFieldNameById[Number(item.data.custom_field)] : undefined) ??
-                            FIELD_LABELS[key] ??
-                            'кастомное поле удалено',
-                        oldValue: formatFieldValue(item.old_data, key) || '',
-                        newValue: formatFieldValue(item.data, key) || '‑'
-                    }));
-
-                return {
-                    key: String(item.id),
-                    actorLabel:
-                        role === 'volunteer'
-                            ? (item.actor?.name ?? (item.by_sync ? 'Синхронизация' : 'Админ'))
-                            : (item.volunteer?.name ?? 'Админ'),
-                    actorRouteId: role === 'volunteer' ? item.actor?.id : item.volunteer?.id,
-                    actionAt: formatDate(item.action_at),
-                    statusLabel: STATUS_MAP[item.status],
-                    titleAddition: TITLE_ADDITION[item.object_name],
-                    fields,
-                    groupOperationUuid: item.group_operation_uuid
-                };
+            buildHistoryView({
+                customFieldNameById,
+                formatDate,
+                formatFieldValue,
+                history,
+                role,
+                routeActorId: (item) => (role === 'volunteer' ? item.actor?.id : item.volunteer?.id)
             }),
         [customFieldNameById, formatDate, formatFieldValue, history, role]
     );
@@ -270,21 +207,54 @@ export const CommonHistory = ({ role }: IProps) => {
     const cancelGroupOperation = useCallback(async (groupUuid: string) => {
         try {
             await axios.delete(`${NEW_API_URL}/volunteer-group/${groupUuid}/`);
-            message.success('Групповая операция отменена');
+            message.success(CANCEL_SUCCESS_TEXT);
             setHistory((prev) => prev.filter((item) => item.group_operation_uuid !== groupUuid));
         } catch {
-            message.error('Не удалось отменить групповую операцию');
+            message.error(CANCEL_ERROR_TEXT);
         }
     }, []);
 
+    const isLookupLoading =
+        kitchensList.query.isLoading ||
+        feedTypesList.query.isLoading ||
+        colorsList.query.isLoading ||
+        accessRolesList.query.isLoading ||
+        volunteerRolesList.query.isLoading ||
+        transportsList.query.isLoading ||
+        statusesList.query.isLoading ||
+        gendersList.query.isLoading ||
+        directionsList.query.isLoading ||
+        groupBadgesList.query.isLoading ||
+        customFieldsList.query.isLoading;
+
+    if (isHistoryLoading || isLookupLoading) {
+        return (
+            <div className={`${styles.historyWrap} ${styles.historyLoading}`}>
+                {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className={styles.historyItem}>
+                        <Skeleton
+                            active
+                            title={{ width: '42%' }}
+                            paragraph={{ rows: 3, width: ['28%', '100%', '82%'] }}
+                        />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     if (historyView.length === 0) {
-        return <div className={styles.historyWrap}>ИЗМЕНЕНИЙ НЕТ</div>;
+        return (
+            <div className={`${styles.historyWrap} ${styles.historyEmpty}`}>
+                <Empty description={EMPTY_DESCRIPTION} />
+            </div>
+        );
     }
 
     return (
         <div className={styles.historyWrap}>
             <Modal
-                title="Отмена групповой операции"
+                title={CANCEL_MODAL_TITLE}
                 open={pendingCancelGroupUuid !== null}
                 onCancel={() => setPendingCancelGroupUuid(null)}
                 okText="Да"
@@ -296,45 +266,54 @@ export const CommonHistory = ({ role }: IProps) => {
                     setPendingCancelGroupUuid(null);
                 }}
             >
-                <p>Вы уверены, что хотите отменить групповую операцию?</p>
+                <p>{CANCEL_MODAL_TEXT}</p>
             </Modal>
             {historyView.map((item) => (
                 <div key={item.key} className={styles.historyItem}>
-                    <div className={styles.itemTitleWrap}>
-                        <span
-                            className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
-                            onClick={
-                                item.actorRouteId ? () => navigate(`/volunteers/edit/${item.actorRouteId}`) : undefined
-                            }
-                        >
-                            {item.actorLabel},
-                        </span>
-                        <span className={styles.itemTitle}>{item.actionAt}</span>
-                        <span className={styles.itemAction}>{item.statusLabel}</span>
-                        {item.titleAddition && (
-                            <span className={`${styles.itemAction} ${styles.itemActionModif}`}>
-                                {item.titleAddition}
-                            </span>
+                    <div className={styles.itemTopRow}>
+                        <div className={styles.itemTitleWrap}>
+                            <div className={styles.itemHeader}>
+                                <span
+                                    className={`${styles.itemTitle} ${styles.itemTitleRoute}`}
+                                    onClick={
+                                        item.actorRouteId
+                                            ? () => navigate(`/volunteers/edit/${item.actorRouteId}`)
+                                            : undefined
+                                    }
+                                >
+                                    {item.actorLabel}
+                                </span>
+                                <span className={styles.itemDate}>{item.actionAt}</span>
+                            </div>
+                            <div className={styles.itemSummary}>
+                                <span className={styles.itemAction}>{item.statusLabel}</span>
+                                {item.titleAddition && (
+                                    <span className={styles.itemSummaryText}>{item.titleAddition}</span>
+                                )}
+                            </div>
+                        </div>
+                        {item.groupOperationUuid && canCancelGroupOperation && (
+                            <Button
+                                type="link"
+                                danger
+                                onClick={() => setPendingCancelGroupUuid(item.groupOperationUuid ?? null)}
+                                className={styles.cancelGroupBtn}
+                            >
+                                Отменить
+                            </Button>
                         )}
+                    </div>
+                    <div className={styles.itemFields}>
                         {item.fields.map((field) => (
                             <div key={field.key} className={styles.itemDescrWrap}>
-                                <span className={styles.itemAction}>{field.label}</span>
-                                <br />
-                                <span className={styles.itemDrescrOld}>{field.oldValue}</span>
-                                <span className={styles.itemDrescrNew}>{field.newValue}</span>
+                                <span className={styles.fieldLabel}>{field.label}</span>
+                                <div className={styles.fieldValues}>
+                                    {field.oldValue && <span className={styles.itemDrescrOld}>{field.oldValue}</span>}
+                                    {field.newValue && <span className={styles.itemDrescrNew}>{field.newValue}</span>}
+                                </div>
                             </div>
                         ))}
                     </div>
-                    {item.groupOperationUuid && canCancelGroupOperation && (
-                        <Button
-                            type="link"
-                            danger
-                            onClick={() => setPendingCancelGroupUuid(item.groupOperationUuid ?? null)}
-                            className={styles.cancelGroupBtn}
-                        >
-                            Отменить групповую операцию
-                        </Button>
-                    )}
                 </div>
             ))}
         </div>

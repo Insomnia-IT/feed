@@ -54,7 +54,7 @@ export const GroupBadgeList = () => {
     }, [isDesktop, groupBadges?.total, page, pageSize, setItem]);
 
     const pagination: TablePaginationConfig = {
-        total: groupBadges?.total ?? 1,
+        total: groupBadges?.total ?? 0,
         showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
         current: page,
         pageSize,

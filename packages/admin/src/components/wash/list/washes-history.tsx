@@ -58,6 +58,7 @@ export const WashesHistory = () => {
             <Table
                 pagination={{
                     ...tableProps.pagination,
+                    showTotal: (total) => `Всего: ${total}`,
                     onChange: (page, size) => {
                         setCurrentPage(page);
 
