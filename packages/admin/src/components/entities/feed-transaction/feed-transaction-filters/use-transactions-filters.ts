@@ -25,11 +25,11 @@ export const useTransactionsFilters = () => {
         pagination: { mode: 'off' }
     });
 
-    const kitchens = kitchensResult?.data ?? [];
-    const groupBadges = groupBadgesResult?.data ?? [];
-    const directions = directionsResult?.data ?? [];
-
     const filterFields = useMemo(() => {
+        const kitchens = kitchensResult?.data ?? [];
+        const groupBadges = groupBadgesResult?.data ?? [];
+        const directions = directionsResult?.data ?? [];
+
         return [
             {
                 type: FilterFieldType.Boolean,
@@ -88,7 +88,7 @@ export const useTransactionsFilters = () => {
                 lookup: () => directions
             }
         ];
-    }, [kitchens, groupBadges, directions]);
+    }, [kitchensResult, groupBadgesResult, directionsResult]);
 
     return { filterFields, visibleFilters, setVisibleFilters };
 };
