@@ -44,6 +44,12 @@ export const useTransactionsFilters = () => {
                 single: true
             },
             {
+                type: FilterFieldType.Boolean,
+                name: 'is_anomaly',
+                title: 'Аномалия',
+                single: true
+            },
+            {
                 type: FilterFieldType.Lookup,
                 name: 'kitchen',
                 title: 'Кухня',

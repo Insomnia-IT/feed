@@ -157,11 +157,23 @@ const FilterSelect: FC<{
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
 }> = ({ field, isMultiple, filterItem, onFilterValueChange, onFilterTextValueChange }) => {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const values = getFilterListItems(field, filterItem);
 
-    const onSelect = (_value: string, option: FilterListItem) =>
+    const rawStored = filterItem?.value;
+    const selectValue = isMultiple
+        ? Array.isArray(rawStored)
+            ? rawStored
+            : []
+        : Array.isArray(rawStored)
+          ? rawStored.length > 0
+              ? rawStored[0]
+              : undefined
+          : undefined;
+
+    const onSelect = (_value: string | number | boolean, option: FilterListItem) =>
         onFilterValueChange(field.name, { ...option, selected: false }, field.single);
-    const onDeselect = (_value: string, option: FilterListItem) =>
+    const onDeselect = (_value: string | number | boolean, option: FilterListItem) =>
         onFilterValueChange(field.name, { ...option, selected: true }, field.single);
     const onClear = () => onFilterTextValueChange(field.name);
 
@@ -174,8 +186,10 @@ const FilterSelect: FC<{
                 <Select
                     className={styles.filterValueSelect}
                     style={{ width: '100%' }}
+                    open={dropdownOpen}
+                    onDropdownVisibleChange={setDropdownOpen}
                     maxTagCount={1}
-                    value={(filterItem?.value ?? []) as string[]}
+                    value={selectValue as string[] | string | number | boolean | undefined}
                     onSelect={onSelect}
                     onDeselect={onDeselect}
                     onClear={onClear}
@@ -185,7 +199,21 @@ const FilterSelect: FC<{
                     mode={isMultiple ? 'multiple' : undefined}
                     showSearch
                     allowClear={false}
-                    suffixIcon={<DownOutlined />}
+                    suffixIcon={
+                        <span
+                            role="button"
+                            tabIndex={-1}
+                            aria-expanded={dropdownOpen}
+                            style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDropdownOpen((prev) => !prev);
+                            }}
+                        >
+                            <DownOutlined />
+                        </span>
+                    }
                 />
             </Row>
         </Col>

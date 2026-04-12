@@ -488,8 +488,12 @@ def test_teamlead_rights(page):
     try:
         set_direction_head_block_state(target_id, True)
         set_direction_head_block_state(target_id, False)
-    finally:
-        set_direction_head_block_state(target_id, False)
+    except Exception:
+        try:
+            set_direction_head_block_state(target_id, False)
+        except Exception:
+            pass
+        raise
     page.reload()
     page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
     # проверить две записи в истории действий
