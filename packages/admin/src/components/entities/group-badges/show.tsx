@@ -61,6 +61,8 @@ export const GroupBadgeShow = () => {
                 pagination={{
                     current: currentPage,
                     pageSize,
+                    total: tableQuery.data?.total,
+                    showTotal: (total) => `Всего: ${total}`,
                     onChange: (nextPage, nextSize) => {
                         setCurrentPage(nextPage);
                         if (nextSize) setPageSize(nextSize);

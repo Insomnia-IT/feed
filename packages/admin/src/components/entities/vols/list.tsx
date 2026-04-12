@@ -91,7 +91,7 @@ const DesktopVolunteersContent = ({
 
     const pagination = useMemo<TablePaginationConfig>(
         () => ({
-            total: volunteers?.total ?? 1,
+            total: volunteers?.total ?? 0,
             showTotal: (total) => (
                 <>
                     <span data-testid="volunteer-count-caption">Волонтёров:</span>{' '}
