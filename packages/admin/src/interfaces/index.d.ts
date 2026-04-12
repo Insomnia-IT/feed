@@ -96,6 +96,17 @@ export interface FeedTransactionEntity {
     volunteer_last_name?: string | null;
     volunteer_directions?: Array<string> | null;
     group_badge_name?: string | null;
+    is_anomaly?: boolean;
+}
+
+/** Ответ эндпоинта GET v1/feed-transaction/anomalies (dtime_from, dtime_to) */
+export interface FeedTransactionAnomaly {
+    group_badge_name: string;
+    direction_name: string;
+    direction_amount: number;
+    calculated_amount: number | null;
+    real_amount: number;
+    problem: string;
 }
 
 export interface GroupBadgeEntity {
