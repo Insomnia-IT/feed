@@ -125,8 +125,10 @@ export class MySubClassedDexie extends Dexie {
                 groupBadges: 'id, &qr'
             })
             .upgrade(() => {
+                // eslint-disable-next-line no-console
                 console.log('upgrade');
                 setTimeout(() => {
+                    // eslint-disable-next-line no-console
                     console.log('reset and reload');
                     localStorage.removeItem('lastSyncStart');
                     window.location.reload();

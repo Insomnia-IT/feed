@@ -22,11 +22,13 @@ export const Sync = () => {
             if (response.status === 202) {
                 alert('Данные из Notion получены успешно. Отправить список активированных не удалось.');
 
+                // eslint-disable-next-line no-console
                 console.log(response.data);
             }
         } catch (e) {
             alert('При синхронизации возникла ошибка');
 
+            // eslint-disable-next-line no-console
             console.log(e);
         } finally {
             setDisabled(false);
