@@ -20,6 +20,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 
 import type { FeedTransactionAnomaly, FeedTransactionEntity } from 'interfaces';
@@ -181,7 +182,7 @@ export const FeedTransactionList: FC = () => {
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
     const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
-    const [anomaliesRange, setAnomaliesRange] = useState<[any, any]>(() => {
+    const [anomaliesRange, setAnomaliesRange] = useState<[Dayjs, Dayjs]>(() => {
         const to = dayjsExtended();
         const from = to.subtract(24, 'hour');
         return [from, to];
@@ -237,13 +238,6 @@ export const FeedTransactionList: FC = () => {
         }
     });
 
-    useEffect(() => {
-        if (!anomaliesModalOpen) return;
-        const to = dayjsExtended();
-        const from = to.subtract(24, 'hour');
-        setAnomaliesRange([from, to]);
-    }, [anomaliesModalOpen]);
-
     const anomaliesModalDtimeFrom = useMemo(() => anomaliesRange[0]?.toISOString(), [anomaliesRange]);
     const anomaliesModalDtimeTo = useMemo(() => anomaliesRange[1]?.toISOString(), [anomaliesRange]);
 
@@ -285,10 +279,6 @@ export const FeedTransactionList: FC = () => {
         return () => mq.removeEventListener('change', apply);
     }, []);
 
-    useEffect(() => {
-        setAnomalyPage(1);
-    }, [anomaliesModalOpen, anomaliesModalDtimeFrom, anomaliesModalDtimeTo]);
-
     const anomaliesModalPaged = useMemo(() => {
         const start = (anomalyPage - 1) * ANOMALY_MODAL_PAGE_SIZE;
         return anomaliesModalData.slice(start, start + ANOMALY_MODAL_PAGE_SIZE);
@@ -298,23 +288,27 @@ export const FeedTransactionList: FC = () => {
         const now = dayjsExtended();
         if (preset === 'today') {
             setAnomaliesRange([now.startOf('day'), now.endOf('day')]);
+            setAnomalyPage(1);
             return;
         }
 
         if (preset === 'yesterday') {
             const d = now.subtract(1, 'day');
             setAnomaliesRange([d.startOf('day'), d.endOf('day')]);
+            setAnomalyPage(1);
             return;
         }
 
         if (preset === 'beforeYesterday') {
             const d = now.subtract(2, 'day');
             setAnomaliesRange([d.startOf('day'), d.endOf('day')]);
+            setAnomalyPage(1);
             return;
         }
 
         const from = now.subtract(2, 'day').startOf('day');
         setAnomaliesRange([from, now.endOf('day')]);
+        setAnomalyPage(1);
     };
 
     const transformResult = (
@@ -493,6 +487,13 @@ export const FeedTransactionList: FC = () => {
             <Modal
                 title="Аномалии"
                 open={anomaliesModalOpen}
+                afterOpenChange={(open) => {
+                    if (!open) return;
+                    const to = dayjsExtended();
+                    const from = to.subtract(24, 'hour');
+                    setAnomaliesRange([from, to]);
+                    setAnomalyPage(1);
+                }}
                 onCancel={() => setAnomaliesModalOpen(false)}
                 footer={null}
                 width={isCompactAnomalies ? 'min(calc(100vw - 16px), 900px)' : 900}
@@ -512,12 +513,13 @@ export const FeedTransactionList: FC = () => {
                     }}
                 >
                     <RangePicker
-                        value={anomaliesRange as any}
+                        value={anomaliesRange}
                         onChange={(values) => {
                             if (!values) return;
                             const [from, to] = values;
                             if (!from || !to) return;
                             setAnomaliesRange([from, to]);
+                            setAnomalyPage(1);
                         }}
                         format={formDateFormat}
                         allowClear={false}
