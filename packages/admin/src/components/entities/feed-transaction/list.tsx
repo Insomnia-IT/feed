@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState, type FC, type ReactElement } from 'react';
 import { List, useTable } from '@refinedev/antd';
 import { useQuery } from '@tanstack/react-query';
 import type { CrudFilter, HttpError } from '@refinedev/core';
@@ -17,6 +17,7 @@ import {
     Tooltip,
     Typography
 } from 'antd';
+import type { TableProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -83,7 +84,7 @@ const anomalyModalColumns: ColumnsType<FeedTransactionAnomaly> = [
     { dataIndex: 'problem', title: 'Проблема', ellipsis: true }
 ];
 
-function AnomalyMobileCard({ row }: { row: FeedTransactionAnomaly }): JSX.Element {
+function AnomalyMobileCard({ row }: { row: FeedTransactionAnomaly }): ReactElement {
     const type = anomalyTypeFromProblem(row.problem);
     const tooltip = tooltipForAnomalyType(row.problem);
     return (
@@ -465,7 +466,7 @@ export const FeedTransactionList: FC = () => {
                 />
             </Form>
             <Table<TransformedTransaction>
-                onChange={tableProps.onChange}
+                onChange={tableProps.onChange as TableProps<TransformedTransaction>['onChange']}
                 loading={tableProps.loading}
                 pagination={
                     tableProps.pagination
