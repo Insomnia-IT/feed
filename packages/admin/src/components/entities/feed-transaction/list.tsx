@@ -41,11 +41,9 @@ type SearchFormValues = {
 };
 
 const ANOMALY_TOOLTIPS: Record<string, string> = {
-    'Бейдж брошен':
-        'Бейдж заполнен ненулевыми значениями и 2 из 3 приёмов пищи не был забран',
+    'Бейдж брошен': 'Бейдж заполнен ненулевыми значениями и 2 из 3 приёмов пищи не был забран',
     Перекорм: 'Выдали порций больше, чем вообще людей этой службы на поле',
-    'Не скорректирован':
-        'В приёмах пищи подряд выдавали меньше порций, чем существует в бейдже'
+    'Не скорректирован': 'В приёмах пищи подряд выдавали меньше порций, чем существует в бейдже'
 };
 
 /** Тип аномалии из поля problem эндпоинта v1/feed-transaction/anomalies */
@@ -189,11 +187,7 @@ export const FeedTransactionList: FC = () => {
         return [from, to];
     });
 
-    const { searchFormProps, tableProps, filters } = useTable<
-        FeedTransactionEntity,
-        HttpError,
-        SearchFormValues
-    >({
+    const { searchFormProps, tableProps, filters } = useTable<FeedTransactionEntity, HttpError, SearchFormValues>({
         filters: { defaultBehavior: 'replace' },
         onSearch: (values: SearchFormValues) => {
             const newFilters: Array<CrudFilter> = [];
@@ -255,15 +249,12 @@ export const FeedTransactionList: FC = () => {
         ],
         enabled: Boolean(anomaliesModalOpen && anomaliesModalDtimeFrom && anomaliesModalDtimeTo),
         queryFn: async (): Promise<FeedTransactionAnomaly[]> => {
-            const { data } = await axios.get<FeedTransactionAnomaly[]>(
-                `${NEW_API_URL}/feed-transaction/anomalies`,
-                {
-                    params: {
-                        dtime_from: anomaliesModalDtimeFrom,
-                        dtime_to: anomaliesModalDtimeTo
-                    }
+            const { data } = await axios.get<FeedTransactionAnomaly[]>(`${NEW_API_URL}/feed-transaction/anomalies`, {
+                params: {
+                    dtime_from: anomaliesModalDtimeFrom,
+                    dtime_to: anomaliesModalDtimeTo
                 }
-            );
+            });
             return Array.isArray(data) ? data : [];
         }
     });
@@ -312,17 +303,13 @@ export const FeedTransactionList: FC = () => {
         setAnomalyPage(1);
     };
 
-    const transformResult = (
-        transactions?: Readonly<Array<FeedTransactionEntity>>
-    ): Array<TransformedTransaction> => {
+    const transformResult = (transactions?: Readonly<Array<FeedTransactionEntity>>): Array<TransformedTransaction> => {
         return (
             transactions?.map<TransformedTransaction>((item: FeedTransactionEntity) => {
                 const isAnomaly = Boolean(item.is_anomaly);
                 const anomalyType = (anomalyTypeFromProblem(item?.reason ?? '') || item?.reason) ?? 'Аномалия';
                 const serviceName =
-                    (item?.group_badge_name?.trim() && item.group_badge_name) ||
-                    item?.kitchen_name ||
-                    '—';
+                    (item?.group_badge_name?.trim() && item.group_badge_name) || item?.kitchen_name || '—';
                 return {
                     ulid: item.ulid,
                     dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
@@ -385,18 +372,13 @@ export const FeedTransactionList: FC = () => {
         if (filters) {
             filters.forEach((filter: CrudFilter) => {
                 if (filter.value && 'field' in filter) {
-                    url = url.concat(
-                        `&${String(filter.field)}=${encodeURIComponent(String(filter.value))}`
-                    );
+                    url = url.concat(`&${String(filter.field)}=${encodeURIComponent(String(filter.value))}`);
                 }
             });
         }
 
         const { data, headers } = await axios.get<Blob>(url, { responseType: 'blob' });
-        const filename = getFilenameFromContentDisposition(
-            headers['content-disposition'],
-            'feed-transactions.xlsx'
-        );
+        const filename = getFilenameFromContentDisposition(headers['content-disposition'], 'feed-transactions.xlsx');
         downloadBlob(data, filename);
     }, [filters]);
 
@@ -408,11 +390,7 @@ export const FeedTransactionList: FC = () => {
         <List
             headerButtons={({ defaultButtons }) => (
                 <>
-                    <Button
-                        type="default"
-                        icon={<WarningOutlined />}
-                        onClick={() => setAnomaliesModalOpen(true)}
-                    >
+                    <Button type="default" icon={<WarningOutlined />} onClick={() => setAnomaliesModalOpen(true)}>
                         Аномалии
                     </Button>
                     {defaultButtons}
@@ -576,9 +554,7 @@ export const FeedTransactionList: FC = () => {
                         <Table<FeedTransactionAnomaly>
                             loading={false}
                             dataSource={anomaliesModalData}
-                            rowKey={(r, i) =>
-                                `anomaly-${i}-${r.direction_name}-${r.group_badge_name}-${r.real_amount}`
-                            }
+                            rowKey={(r, i) => `anomaly-${i}-${r.direction_name}-${r.group_badge_name}-${r.real_amount}`}
                             pagination={{ pageSize: ANOMALY_MODAL_PAGE_SIZE }}
                             columns={anomalyModalColumns}
                             scroll={{ x: 'max-content' }}
