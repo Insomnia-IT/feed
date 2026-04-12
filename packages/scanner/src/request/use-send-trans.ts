@@ -22,18 +22,33 @@ export const useSendTrans = (baseUrl: string, pin: string | null, setAuth: (auth
 
         const data = (trans || [])
             .filter(({ is_new }) => is_new)
-            .map(({ amount, group_badge, is_anomaly, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
-                volunteer: vol_id,
-                is_vegan,
-                is_anomaly,
-                amount,
-                dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
-                ulid,
-                meal_time: mealTime,
-                kitchen,
-                reason,
-                group_badge
-            }));
+            .map(
+                ({
+                    amount,
+                    group_badge,
+                    is_anomaly,
+                    is_paid,
+                    is_vegan,
+                    kitchen,
+                    mealTime,
+                    reason,
+                    ts,
+                    ulid,
+                    vol_id
+                }) => ({
+                    volunteer: vol_id,
+                    is_vegan,
+                    is_anomaly,
+                    is_paid,
+                    amount,
+                    dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
+                    ulid,
+                    meal_time: mealTime,
+                    kitchen,
+                    reason,
+                    group_badge
+                })
+            );
 
         setFetching(true);
 
