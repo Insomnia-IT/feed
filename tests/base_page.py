@@ -494,12 +494,20 @@ class BasePage:
         self.page.wait_for_timeout(500)
 
     @staticmethod
-    def _block_action_from_card_text(text: str) -> str | None:
-        # «Заблокирован» — подстрока «Разблокирован»; сначала длинная форма
-        if "Разблокирован" in text:
-            return "Разблокирован"
-        if "Заблокирован" in text:
-            return "Заблокирован"
+    def _block_status_from_new_value_span_text(t: str) -> str | None:
+        """Только новое значение поля (как в UI), не весь innerText карточки: в diff на одной строке есть и old, и new."""
+        t = t.strip()
+        if t in ("Разблокирован", "Заблокирован"):
+            return t
+        return None
+
+    def _block_action_from_card(self, card) -> str | None:
+        """Статус блокировки из span нового значения (common-history itemDrescrNew)."""
+        news = card.locator("span[class*='itemDrescrNew']")
+        for i in range(news.count()):
+            w = self._block_status_from_new_value_span_text(news.nth(i).inner_text())
+            if w:
+                return w
         return None
 
     def check_history_actions(self):
@@ -513,11 +521,11 @@ class BasePage:
         )
 
     def _list_block_actions_from_cards(self) -> list[str]:
-        """Подряд карточек (новые сверху), только те, где есть статус блокировки в тексте."""
+        """Карточки сверху вниз; по каждой — новое значение is_blocked, если оно в этом изменении."""
         items = self.page.locator(create_user.HISTORY_ITEM_CARD)
         out: list[str] = []
         for i in range(items.count()):
-            w = self._block_action_from_card_text(items.nth(i).inner_text())
+            w = self._block_action_from_card(items.nth(i))
             if w:
                 out.append(w)
         return out
