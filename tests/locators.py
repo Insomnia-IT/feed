@@ -95,8 +95,9 @@ class create_user():
     RIGHTS_FIELD = "#access_role"
     COMMENT_FIELD = "#comment"
 
-    # История действий
-    HISTORY_TAB = "//*[text()='История действий']"
+    # «История изменений» / «История» — role=volunteer, фильтр volunteer_uuid (бан/разбан карточки).
+    # Не путать с «История действий» / «Действия» (actor_badge — действия от имени этого волонтёра).
+    HISTORY_TAB = "//*[@role='tab' and (normalize-space(.)='История изменений' or normalize-space(.)='История')]"
     # Карточка записи (есть даже если нет diff-полей с itemDrescrNew)
     HISTORY_ITEM_CARD = "div[class*='_historyItem']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
