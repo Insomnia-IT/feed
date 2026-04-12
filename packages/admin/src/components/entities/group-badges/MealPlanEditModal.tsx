@@ -46,11 +46,7 @@ export const MealPlanEditModal: React.FC<MealPlanEditModalProps> = ({
                     <InputNumber
                         min={0}
                         value={editMeat}
-                        onChange={(value) => {
-                            console.log({ value });
-
-                            onMeatChange(value);
-                        }}
+                        onChange={onMeatChange}
                         addonAfter={
                             <Button
                                 title="Очистить"
