@@ -32,7 +32,6 @@ export interface ServerTransaction {
     is_vegan: boolean | null;
     is_paid?: boolean;
     is_anomaly?: boolean;
-    is_paid?: boolean;
     reason?: string | null;
     comment?: string | null;
     kitchen: number;
@@ -103,13 +102,6 @@ export interface Arrival {
     arrival_transport: string | null;
     departure_date: string;
     departure_transport: string | null;
-}
-
-export interface PaidArrival {
-    id: string;
-    arrival_date: string;
-    departure_date: string;
-    is_free: boolean;
 }
 
 export interface PaidArrival {
@@ -267,8 +259,8 @@ export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<A
     });
 }
 
-export function isActivatedStatus(status: string): boolean {
-    return ['ARRIVED', 'STARTED', 'JOINED'].includes(status);
+export function isActivatedStatus(status: string | null | undefined): boolean {
+    return Boolean(status && ['ARRIVED', 'STARTED', 'JOINED'].includes(status));
 }
 
 type DateInterval = {
