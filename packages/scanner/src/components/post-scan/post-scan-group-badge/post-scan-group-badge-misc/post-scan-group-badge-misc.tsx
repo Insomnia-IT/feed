@@ -131,8 +131,6 @@ export const GroupBadgeWarningCard = ({
         close();
     };
 
-    const alreadyFedCount = calculateAlreadyFedCount(alreadyFedTransactions);
-    const maxCountOther = Math.max(Math.round(volsToFeed.length * 1.5) - alreadyFedCount, 0);
     const amountToFeed = Number(vegansCount) + Number(nonVegansCount);
 
     return (
@@ -156,7 +154,6 @@ export const GroupBadgeWarningCard = ({
             )}
 
             <FeedOtherCount
-                maxCount={maxCountOther}
                 vegansCount={vegansCount}
                 nonVegansCount={nonVegansCount}
                 setVegansCount={setVegansCount}
