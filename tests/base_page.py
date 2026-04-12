@@ -1,5 +1,6 @@
 import re
 import time
+import re
 from datetime import datetime
 from playwright.sync_api import Page
 
@@ -213,8 +214,10 @@ class BasePage:
     def receive_count_of_volunteers_in_group_badge(self):
         element_raw = self.page.locator(group_badges.VOLONTEER_COUNTER).first
         text = element_raw.inner_text()
-        element = int(text.strip("()"))
-        return element
+        match = re.search(r"\d+", text)
+        if not match:
+            raise ValueError(f"Could not parse volunteer count from text: {text}")
+        return int(match.group())
 
     def go_to_edit_badge(self):
         edit = self.page.locator(group_badges.EDIT_LAST_BUTTON).last
