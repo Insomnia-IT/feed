@@ -493,33 +493,33 @@ class BasePage:
         confirm.click(force=True)
         self.page.wait_for_timeout(500)
 
+    @staticmethod
+    def _block_action_from_card_text(text: str) -> str | None:
+        # «Заблокирован» — подстрока «Разблокирован»; сначала длинная форма
+        if "Разблокирован" in text:
+            return "Разблокирован"
+        if "Заблокирован" in text:
+            return "Заблокирован"
+        return None
+
     def check_history_actions(self):
         # Кликаем по вкладке "История действий"
         self.page.locator(create_user.HISTORY_TAB).click()
         # Даем истории время прогрузиться (асинхронные логи)
         self.page.wait_for_timeout(1000)
-        # Ждем появления элементов в списке истории
-        self.page.locator(create_user.HISTORY_LOG_ITEM).first.wait_for(state="visible", timeout=5000)
-
-
+        # Ждём карточки истории (бан/разбан может не давать span itemDrescrNew)
+        self.page.locator(create_user.HISTORY_ITEM_CARD).first.wait_for(
+            state="visible", timeout=15000
+        )
 
     def check_last_action(self):
-        # Возвращаем текст последнего действия
-        actions = [
-            text.strip()
-            for text in self.page.locator(create_user.HISTORY_LOG_ITEM).all_inner_texts()
-            if text.strip() in {"Разблокирован", "Заблокирован"}
-        ]
-        return actions[0]
+        # Последняя запись — первая карточка (новые сверху)
+        text = self.page.locator(create_user.HISTORY_ITEM_CARD).first.inner_text()
+        return self._block_action_from_card_text(text)
 
     def check_second_last_action(self):
-        # Возвращаем текст предпоследнего действия
-        actions = [
-            text.strip()
-            for text in self.page.locator(create_user.HISTORY_LOG_ITEM).all_inner_texts()
-            if text.strip() in {"Разблокирован", "Заблокирован"}
-        ]
-        return actions[1]
+        text = self.page.locator(create_user.HISTORY_ITEM_CARD).nth(1).inner_text()
+        return self._block_action_from_card_text(text)
 
     def get_current_volunteer_name(self):
         # Получаем имя из поля #name

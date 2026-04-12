@@ -97,5 +97,7 @@ class create_user():
 
     # История действий
     HISTORY_TAB = "//*[text()='История действий']"
+    # Карточка записи (есть даже если нет diff-полей с itemDrescrNew)
+    HISTORY_ITEM_CARD = "div[class*='_historyItem']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
 
