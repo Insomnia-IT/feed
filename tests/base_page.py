@@ -503,7 +503,7 @@ class BasePage:
         return None
 
     def check_history_actions(self):
-        # Кликаем по вкладке "История действий"
+        # Вкладка «История изменений» / «История» (volunteer_uuid)
         self.page.locator(create_user.HISTORY_TAB).click()
         # Даем истории время прогрузиться (асинхронные логи)
         self.page.wait_for_timeout(1000)
@@ -512,14 +512,30 @@ class BasePage:
             state="visible", timeout=15000
         )
 
+    def _list_block_actions_from_cards(self) -> list[str]:
+        """Подряд карточек (новые сверху), только те, где есть статус блокировки в тексте."""
+        items = self.page.locator(create_user.HISTORY_ITEM_CARD)
+        out: list[str] = []
+        for i in range(items.count()):
+            w = self._block_action_from_card_text(items.nth(i).inner_text())
+            if w:
+                out.append(w)
+        return out
+
     def check_last_action(self):
-        # Последняя запись — первая карточка (новые сверху)
-        text = self.page.locator(create_user.HISTORY_ITEM_CARD).first.inner_text()
-        return self._block_action_from_card_text(text)
+        # Самое свежее событие бана/разбана среди карточек с этим полем
+        actions = self._list_block_actions_from_cards()
+        return actions[0] if actions else None
 
     def check_second_last_action(self):
-        text = self.page.locator(create_user.HISTORY_ITEM_CARD).nth(1).inner_text()
-        return self._block_action_from_card_text(text)
+        # После серии «Разблокирован» (дубликаты/старые записи) ищем предшествующий бан
+        actions = self._list_block_actions_from_cards()
+        if len(actions) < 2:
+            return None
+        i = 1
+        while i < len(actions) and actions[i] == "Разблокирован":
+            i += 1
+        return actions[i] if i < len(actions) else None
 
     def get_current_volunteer_name(self):
         # Получаем имя из поля #name
