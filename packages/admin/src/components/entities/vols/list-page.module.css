@@ -1,0 +1,13 @@
+.desktopActionsRow {
+    padding: 10px 0;
+    gap: 24px;
+}
+
+.desktopResultCol {
+    display: flex;
+    align-items: center;
+}
+
+.desktopButtonsRow {
+    gap: 12px;
+}

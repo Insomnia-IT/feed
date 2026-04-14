@@ -6,10 +6,10 @@ import type { TableRowSelection } from 'antd/es/table/interface';
 
 import { RichTextPreview } from 'components/controls/rich-text-preview';
 import type { ArrivalEntity, CustomFieldEntity, DirectionEntity, VolEntity } from 'interfaces';
-import { findClosestArrival, getFormattedArrivalIntervals, getOnFieldColors } from './volunteer-list-utils';
+import { findClosestArrival, getFormattedArrivalIntervals, getOnFieldColors } from '../volunteer-list-utils';
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
-import styles from '../list.module.css';
+import styles from './volunteer-desktop-table.module.css';
 
 type VolTableRow = VolEntity & {
     closestArrival: ArrivalEntity | null;
@@ -128,9 +128,9 @@ export const VolunteerDesktopTable = ({
                 key: 'arrivals',
                 title: 'Даты на поле',
                 render: (arrivalIntervals: string[]) => (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className={styles.intervalColumn}>
                         {arrivalIntervals.map((interval) => (
-                            <div style={{ whiteSpace: 'nowrap' }} key={interval}>
+                            <div className={styles.intervalItem} key={interval}>
                                 {interval}
                             </div>
                         ))}
@@ -142,9 +142,9 @@ export const VolunteerDesktopTable = ({
                 key: 'paid_arrivals',
                 title: 'Оплаченные даты',
                 render: (paidArrivalIntervals: string[]) => (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className={styles.intervalColumn}>
                         {paidArrivalIntervals.map((interval) => (
-                            <div style={{ whiteSpace: 'nowrap' }} key={interval}>
+                            <div className={styles.intervalItem} key={interval}>
                                 {interval}
                             </div>
                         ))}

@@ -1,0 +1,103 @@
+.filters {
+    display: flex;
+    align-items: baseline;
+    padding: 24px 0;
+    min-height: 100px;
+}
+
+.filterItems {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+}
+
+.filterItemsMobile {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    align-items: end;
+    width: 100%;
+
+    :global(.ant-btn) {
+        min-height: 32px;
+        height: fit-content;
+    }
+}
+
+.mobileFiltersHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.mobileFiltersSummary {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    white-space: nowrap;
+}
+
+.mobileFilterField :global(.ant-picker) {
+    width: 100% !important;
+}
+
+.filterChooserSelect :global(.ant-select-selector) {
+    gap: 20px;
+    padding-right: 40px;
+}
+
+.filterChooser {
+    min-width: 200px;
+    max-width: 350px;
+}
+
+.filterValueSelect :global(.ant-select-selector) {
+    gap: 20px;
+}
+
+.filterControl {
+    width: 100%;
+}
+
+.filterField {
+    min-width: 110px;
+    gap: 4px;
+}
+
+.filterAddButtonCol {
+    width: 105px;
+}
+
+.filterIconToggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.dateTriggerButton {
+    width: 100%;
+}
+
+.desktopDatePicker {
+    width: 300px;
+}
+
+.rangePanelHeader {
+    justify-content: flex-start;
+    padding: 8px;
+    gap: 8px;
+    width: 50%;
+}
+
+.singlePanelHeader {
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 8px;
+}
+
+.filterChooserSelect :global(.ant-select-selection-overflow-item) {
+    padding-right: 0;
+}

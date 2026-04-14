@@ -5,11 +5,11 @@ import dayjs from 'dayjs';
 import { useDataProvider, useInvalidate, useInfiniteList, type GetListResponse } from '@refinedev/core';
 
 import type { VolEntity, ArrivalEntity } from 'interfaces';
-import { findClosestArrival, getOnFieldColors } from './volunteer-list-utils';
-import { InfiniteScrollNative } from './infinite-scroll-native';
-import { SwipeActionRow, type SwipeActionItem } from './swipe-action-row';
+import { findClosestArrival, getOnFieldColors } from '../volunteer-list-utils';
+import { InfiniteScrollNative } from '../infinite-scroll-native';
+import { SwipeActionRow, type SwipeActionItem } from '../swipe-action-row/swipe-action-row';
 
-import styles from '../list.module.css';
+import styles from './volunteer-mobile-list.module.css';
 
 const PAGE_SIZE = 50;
 

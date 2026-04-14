@@ -3,7 +3,7 @@ import { DownOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 
 import type { FilterField } from './filter-types';
-import styles from '../../list.module.css';
+import styles from './filters.module.css';
 
 interface IFilterOption {
     label: string;
@@ -37,10 +37,9 @@ export const FilterChooser = ({
 
     return (
         <Select
-            className={styles.filterChooserSelect}
-            style={{ minWidth: '200px', maxWidth: '350px' }}
+            className={`${styles.filterChooserSelect} ${styles.filterChooser}`}
             open={dropdownOpen}
-            onDropdownVisibleChange={setDropdownOpen}
+            onOpenChange={setDropdownOpen}
             mode={'multiple'}
             value={visibleFilters}
             autoFocus={true}
@@ -56,7 +55,7 @@ export const FilterChooser = ({
                     role="button"
                     tabIndex={-1}
                     aria-expanded={dropdownOpen}
-                    style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}
+                    className={styles.filterIconToggle}
                     onMouseDown={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
