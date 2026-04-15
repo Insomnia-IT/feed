@@ -69,25 +69,40 @@ export const FeedTransactionCreate = () => {
                         <Form.Item name="dtime" rules={Rules.required} hidden>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="Время" required>
-                            <MobileDateTimeDrawer
-                                title="Время"
-                                open={isMobileDrawerOpen}
-                                value={dtimeValue}
-                                onOpen={openMobileDrawer}
-                                onClose={closeMobileDrawer}
-                                onConfirm={(value) => {
-                                    form.setFieldValue('dtime', value ?? undefined);
-                                    updateUlid(value);
-                                    closeMobileDrawer();
-                                }}
-                                onReset={() => {
-                                    form.setFieldValue('dtime', undefined);
-                                    updateUlid(null);
-                                }}
-                                triggerLabel={mobilePickerValueLabel}
-                                emptyLabel={MOBILE_PICKER_LABEL}
-                            />
+                        <Form.Item shouldUpdate noStyle>
+                            {() => {
+                                const dtimeErrors = form.getFieldError('dtime');
+
+                                return (
+                                    <Form.Item
+                                        label="Время"
+                                        required
+                                        validateStatus={dtimeErrors.length ? 'error' : undefined}
+                                        help={dtimeErrors[0]}
+                                    >
+                                        <MobileDateTimeDrawer
+                                            title="Время"
+                                            open={isMobileDrawerOpen}
+                                            value={dtimeValue}
+                                            onOpen={openMobileDrawer}
+                                            onClose={closeMobileDrawer}
+                                            onConfirm={(value) => {
+                                                form.setFieldValue('dtime', value ?? undefined);
+                                                updateUlid(value);
+                                                void form.validateFields(['dtime']).catch(() => undefined);
+                                                closeMobileDrawer();
+                                            }}
+                                            onReset={() => {
+                                                form.setFieldValue('dtime', undefined);
+                                                updateUlid(null);
+                                                void form.validateFields(['dtime']).catch(() => undefined);
+                                            }}
+                                            triggerLabel={mobilePickerValueLabel}
+                                            emptyLabel={MOBILE_PICKER_LABEL}
+                                        />
+                                    </Form.Item>
+                                );
+                            }}
                         </Form.Item>
                     </>
                 ) : (
