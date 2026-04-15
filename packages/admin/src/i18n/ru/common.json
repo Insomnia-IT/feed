@@ -1,0 +1,45 @@
+{
+    "actions": {
+        "list": "Список",
+        "create": "Создать",
+        "edit": "Редактировать",
+        "show": "Показать"
+    },
+    "buttons": {
+        "create": "Создать",
+        "save": "Сохранить",
+        "logout": "Выход",
+        "delete": "Удалить",
+        "edit": "Редактировать",
+        "cancel": "Отмена",
+        "confirm": "Уверены?",
+        "filter": "Фильтр",
+        "clear": "Очистить",
+        "refresh": "Обновить",
+        "show": "Показать",
+        "undo": "Вернуть",
+        "import": "Импорт",
+        "clone": "Копия",
+        "notAccessTitle": "Нет доступа"
+    },
+    "warnWhenUnsavedChanges": "Внесенные данные будут утеряны. Вы уверены, что хотите выйти без сохранения?",
+    "notifications": {
+        "success": "Успешно",
+        "error": "Ошибка (status code: {{statusCode}})",
+        "undoable": "{{seconds}} секунд на отмену",
+        "createSuccess": "Создано {{resource}}",
+        "createError": "Ошибка создания {{resource}} (status code: {{statusCode}})",
+        "deleteSuccess": "Удалено {{resource}}",
+        "deleteError": "Ошибка удаления {{resource}} (status code: {{statusCode}})",
+        "editSuccess": "Отредактировано {{resource}}",
+        "editError": "Ошибка редактирования {{resource}} (status code: {{statusCode}})",
+        "importProgress": "Импорт: {{processed}}/{{total}}"
+    },
+    "loading": "Загрузка",
+    "tags": {
+        "clone": "Копия"
+    },
+    "table": {
+        "actions": "Действия"
+    }
+}
