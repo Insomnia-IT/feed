@@ -17,7 +17,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "axios": "^1.14.0",
+        "axios": "^1.15.0",
         "dexie": "^4.4.1",
         "dexie-react-hooks": "^4.4.0",
         "onscan.js": "^1.5.2",
