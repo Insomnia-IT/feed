@@ -1,5 +1,5 @@
-import { Text } from '~/shared/ui/typography';
-import { Input } from '~/shared/ui/input';
+import { Text } from 'shared/ui/typography';
+import { Input } from 'shared/ui/input';
 
 import css from './feed-other-count.module.css';
 
@@ -11,12 +11,17 @@ const fixNumber = (value?: string): number => {
     return Number(value?.replaceAll(/\D/g, ''));
 };
 
-export const FeedOtherCount: React.FC<{
+export const FeedOtherCount = ({
+    nonVegansCount,
+    setNonVegansCount,
+    setVegansCount,
+    vegansCount
+}: {
     vegansCount: number;
     setVegansCount: (value: number) => void;
     nonVegansCount: number;
     setNonVegansCount: (value: number) => void;
-}> = ({ nonVegansCount, setNonVegansCount, setVegansCount, vegansCount }) => {
+}) => {
     return (
         <div style={{ width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-evenly', width: '100%' }}>
@@ -31,8 +36,8 @@ export const FeedOtherCount: React.FC<{
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
-                        value={vegansCount.toString()}
+                        type="number"
+                        value={vegansCount}
                         onChange={(event) => {
                             const textValue = event?.currentTarget?.value;
 
@@ -59,8 +64,8 @@ export const FeedOtherCount: React.FC<{
                         style={{
                             maxWidth: '90%'
                         }}
-                        type='number'
-                        value={nonVegansCount.toString()}
+                        type="number"
+                        value={nonVegansCount}
                         onChange={(event) => {
                             const textValue = event?.currentTarget?.value;
 
@@ -68,7 +73,9 @@ export const FeedOtherCount: React.FC<{
                                 setNonVegansCount(0);
                                 return;
                             }
+
                             const value = fixNumber(textValue);
+
                             setNonVegansCount(value);
                         }}
                     />

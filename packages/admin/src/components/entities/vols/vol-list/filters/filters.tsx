@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { DeleteOutlined, FilterOutlined } from '@ant-design/icons';
 import { Button, Col, Popover, Row } from 'antd';
 
@@ -10,23 +10,27 @@ import styles from '../../list.module.css';
 
 interface IProps {
     filterFields: FilterField[];
+    isMobile?: boolean;
     searchText?: string;
     setSearchText?: (value: string) => void;
+    mobileSummary?: ReactNode;
     visibleFilters: string[];
     setVisibleFilters: (filters: string[]) => void;
     activeFilters: FilterItem[];
     setActiveFilters: (filters: FilterItem[]) => void;
 }
 
-export const Filters: FC<IProps> = ({
+export const Filters = ({
     activeFilters,
     filterFields,
+    isMobile,
+    mobileSummary,
     searchText,
     setSearchText,
     setActiveFilters,
     visibleFilters,
     setVisibleFilters
-}) => {
+}: IProps) => {
     const toggleVisibleFilter = (name: string): void => {
         const visible = visibleFilters.includes(name);
         if (visible) {
@@ -124,14 +128,18 @@ export const Filters: FC<IProps> = ({
         () => filterFields.filter((f) => visibleFilters.includes(f.name)),
         [filterFields, visibleFilters]
     );
+    const activeFilterByName = useMemo(
+        () => new Map(activeFilters.map((filter) => [filter.name, filter])),
+        [activeFilters]
+    );
 
     const filterPairs = useMemo(
         () =>
             visibleFiltersFields.map((field) => ({
                 filterField: field,
-                filterItem: activeFilters.find((f) => f.name === field.name)
+                filterItem: activeFilterByName.get(field.name)
             })),
-        [visibleFiltersFields, activeFilters]
+        [visibleFiltersFields, activeFilterByName]
     );
 
     const resetFilters = () => {
@@ -144,31 +152,36 @@ export const Filters: FC<IProps> = ({
 
     return (
         <div className={styles.filters}>
-            <div className={styles.filterItems}>
-                <Col style={{ width: '105px' }}>
-                    <Row>
-                        <Popover
-                            key="add-filter"
-                            placement="bottomLeft"
-                            content={
-                                <FilterChooser
-                                    removeAllFilters={removeAllFilters}
-                                    filterFields={filterFields}
-                                    toggleVisibleFilter={toggleVisibleFilter}
-                                    visibleFilters={visibleFilters}
-                                />
-                            }
-                            trigger="click"
-                        >
-                            <Button icon={<FilterOutlined />}>Фильтры</Button>
-                        </Popover>
-                    </Row>
-                </Col>
+            <div className={`${styles.filterItems} ${isMobile ? styles.filterItemsMobile : ''}`}>
+                <div className={isMobile ? styles.mobileFiltersHeader : undefined}>
+                    <Col style={{ width: '105px' }}>
+                        <Row>
+                            <Popover
+                                key="add-filter"
+                                placement="bottomLeft"
+                                content={
+                                    <FilterChooser
+                                        removeAllFilters={removeAllFilters}
+                                        filterFields={filterFields}
+                                        toggleVisibleFilter={toggleVisibleFilter}
+                                        visibleFilters={visibleFilters}
+                                    />
+                                }
+                                trigger="click"
+                            >
+                                <Button icon={<FilterOutlined />}>Фильтры</Button>
+                            </Popover>
+                        </Row>
+                    </Col>
+                    {isMobile && mobileSummary && <div className={styles.mobileFiltersSummary}>{mobileSummary}</div>}
+                </div>
+
                 {filterPairs.map(({ filterField, filterItem }) => (
                     <FilterItemControl
                         key={filterField.name}
                         field={filterField}
                         filterItem={filterItem}
+                        isMobile={isMobile}
                         onFilterTextValueChange={onFilterTextValueChange}
                         onFilterValueChange={onFilterValueChange}
                     />

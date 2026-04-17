@@ -82,6 +82,17 @@ export interface FeedTransactionEntity {
     volunteer_last_name?: string | null;
     volunteer_directions?: Array<string> | null;
     group_badge_name?: string | null;
+    is_anomaly?: boolean;
+}
+
+/** Ответ эндпоинта GET v1/feed-transaction/anomalies (dtime_from, dtime_to) */
+export interface FeedTransactionAnomaly {
+    group_badge_name: string;
+    direction_name: string;
+    direction_amount: number;
+    calculated_amount: number | null;
+    real_amount: number;
+    problem: string;
 }
 
 export interface GroupBadgeEntity {
@@ -93,14 +104,22 @@ export interface GroupBadgeEntity {
     comment?: string;
     /* Количество волонтеров в бейдже */
     volunteer_count: number;
+    planning_cells?: MealPlanCell[];
+}
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'night';
+
+export interface GroupBadgePlanningCellEntity extends MealPlanCell {
+    group_badge_name?: string | null;
+    meal_time: MealType;
 
     /* Планирование питания */
-    planning_cells: MealPlanCell[];
 }
 
 export interface VolunteerCustomFieldEntity {
     id: number;
     name: string;
+    type: string;
     comment?: string;
     mobile: boolean;
 }
@@ -199,11 +218,11 @@ export interface WashEntity {
 }
 
 export interface MealPlanCell {
-    id: number;
+    id?: number;
     group_badge: number;
-    group_badge_name: string;
-    created_at: string;
-    updated_at: string;
+    group_badge_name?: string | null;
+    created_at?: string;
+    updated_at?: string;
     date: string;
     meal_time: string;
     amount_meat: number | null;

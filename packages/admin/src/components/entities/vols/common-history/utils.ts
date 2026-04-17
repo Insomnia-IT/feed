@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { GetListResponse } from '@refinedev/core';
+import type { GetListResponse } from '@refinedev/core';
 
 export const FIELD_LABELS: Record<string, string> = {
     comment: 'Комментарий',
@@ -22,6 +22,7 @@ export const FIELD_LABELS: Record<string, string> = {
     status: 'Статус',
     departure_date: 'Дата отъезда',
     arrival_date: 'Дата приезда',
+    paid_arrivals: 'Платные питания',
     is_free: 'Бесплатно',
     is_blocked: 'Статус блокировки',
     person: 'Персона',
@@ -54,12 +55,12 @@ export const BOOL_MAP = {
 export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'feed', 'role', 'custom_field', 'supervisor_id']);
 
 export function useIdNameMap<T extends { id: number | string }>(list?: GetListResponse<T>, field?: keyof T) {
-    return useMemo<Record<string, string>>(
-        () =>
-            (list?.data ?? []).reduce((acc, i) => {
-                const key = field ?? ('name' as keyof T);
-                return { ...acc, [i.id]: String(i[key]) };
-            }, {}),
-        [list, field]
-    );
+    return useMemo<Record<string, string>>(() => {
+        const acc: Record<string, string> = {};
+        for (const i of list?.data ?? []) {
+            const key = field ?? ('name' as keyof T);
+            acc[String(i.id)] = String(i[key]);
+        }
+        return acc;
+    }, [list, field]);
 }

@@ -1,10 +1,12 @@
-import { FC, memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 
 import css from './qr-scanner-component.module.css';
-import { ScannerController } from './types';
+import type { ScannerController } from './types';
 
-const CameraScreen: FC<{ setRef: (ref: HTMLVideoElement) => void }> = memo(
-    ({ setRef }) => <video className={css.qrScanVideo} ref={setRef} disablePictureInPicture playsInline muted />,
+const CameraScreen = memo(
+    ({ setRef }: { setRef: (ref: HTMLVideoElement) => void }) => (
+        <video className={css.qrScanVideo} ref={setRef} disablePictureInPicture playsInline muted />
+    ),
     () => true
 );
 CameraScreen.displayName = 'CameraScreen';
@@ -13,7 +15,7 @@ export interface QrScannerComponentProps {
     scannerController: ScannerController;
 }
 
-export const QrScannerComponent: FC<QrScannerComponentProps> = memo(({ scannerController }) => {
+export const QrScannerComponent = memo(({ scannerController }: QrScannerComponentProps) => {
     const { scannerInstance, setScannerInstance, createScanner, handleScan } = scannerController;
 
     const video = useRef<HTMLVideoElement | null>(null);
