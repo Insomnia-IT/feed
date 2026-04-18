@@ -32,6 +32,30 @@ const getPositiveNumber = (value: string | null, fallback: number) => {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const VolunteerSearchInput = ({
+    onSearchTextChange,
+    searchText
+}: {
+    onSearchTextChange: (value: string) => void;
+    searchText: string;
+}) => {
+    const [searchInputValue, setSearchInputValue] = useState(searchText);
+    const debouncedSetSearchText = useDebouncedCallback(onSearchTextChange, 250);
+
+    return (
+        <Input
+            placeholder="Поиск по волонтерам, датам, службам"
+            value={searchInputValue}
+            onChange={(e) => {
+                const nextValue = e.target.value;
+                setSearchInputValue(nextValue);
+                debouncedSetSearchText(nextValue);
+            }}
+            allowClear
+        />
+    );
+};
+
 const DesktopVolunteersContent = ({
     page,
     pageSize,
@@ -226,14 +250,7 @@ export const VolList = () => {
         customFields,
         customFieldsLoaded
     });
-    const [searchInputValue, setSearchInputValue] = useState(searchText);
-    const debouncedSetSearchText = useDebouncedCallback((value: string) => setSearchText(value), 250);
-
     const userId = user?.id;
-
-    useEffect(() => {
-        setSearchInputValue(searchText);
-    }, [searchText]);
 
     useEffect(() => {
         if (isDesktop || !userId) return;
@@ -326,16 +343,7 @@ export const VolList = () => {
         <List canCreate={noActiveFilters}>
             <CanAccess fallback="У вас нет доступа к этой странице">
                 <ActiveColumnsContextProvider customFields={customFields}>
-                    <Input
-                        placeholder="Поиск по волонтерам, датам, службам"
-                        value={searchInputValue}
-                        onChange={(e) => {
-                            const nextValue = e.target.value;
-                            setSearchInputValue(nextValue);
-                            debouncedSetSearchText(nextValue);
-                        }}
-                        allowClear
-                    />
+                    <VolunteerSearchInput key={searchText} searchText={searchText} onSearchTextChange={setSearchText} />
                     <Filters
                         activeFilters={activeFilters}
                         setActiveFilters={setActiveFilters}
