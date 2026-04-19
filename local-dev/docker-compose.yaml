@@ -19,10 +19,11 @@ services:
     volumes:
       - ../db/:/db
       - ../backend/:/app
-    #  - /usr/local/lib/python3.10/site-packages
       - ./entrypoint.sh:/tmp/entrypoint.sh:ro
     stdin_open: true
     tty: true
+    networks:
+      - feed-network
   admin:
     platform: linux/amd64
     build:
@@ -34,6 +35,57 @@ services:
       - 3002:3002
     volumes:
       - ../packages/admin/:/app/packages/admin
+    networks:
+      - feed-network
+
+  # chrome:
+  #   image: selenium/standalone-chromium:143.0
+  #   container_name: feedtests_chrome
+  #   ports:
+  #     - 4444:4444
+  #   hostname: chrome
+  #   privileged: true
+  #   shm_size: 2g
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+  #     interval: 15s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 15s
+  #   networks:
+  #     - feed-network
+  tests:
+    build:
+      context: ../tests
+      dockerfile: Dockerfile
+    container_name: feedtests
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'      # Playwright нужно больше CPU
+          memory: 4G       # Минимум 4GB для стабильной работы
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    shm_size: 2gb
+    environment:
+      # WEBDRIVER_REMOTE: true
+      FEED_APP_HOST: http://localhost:3002
+    volumes:
+      - ../tests/:/app
+    working_dir: /app
+    network_mode: host
+    stdin_open: true
+    tty: true
+    depends_on:
+      backend:
+        condition: service_started
+    # networks:
+    #   - feed-network
+
+networks:
+  feed-network:
+    driver: bridge
   # scanner:
   #   build:
   #     context: ../

@@ -152,7 +152,9 @@ class BasePage:
                 prev = current
             except Exception:
                 pass
-            time.sleep(0.5)
+            # Вместо time.sleep используем короткую паузу, но в реальном сценарии
+            # лучше было бы ждать конкретного условия изменения счетчика
+            self.page.wait_for_timeout(500)
         # последнее значение
         return prev or 0
 
@@ -246,9 +248,11 @@ class BasePage:
             raise AssertionError("Не найден волонтёр для добавления в групповой бейдж")
 
         checkbox = selected_row.locator(group_badges.CHECKBOX).first
+        row_key = checkbox.locator('xpath=ancestor::tr').get_attribute('data-row-key')
         checkbox.check(force=True)
         ok = modal.locator(group_badges.OK_BUTTON)
         ok.click()
+        return row_key
 
 
     def delete_volunteer_from_group_badge(self):
@@ -262,6 +266,7 @@ class BasePage:
         delete.click()
         confirm = self.page.locator("//button[span[text()='Удалить']]")
         confirm.click()
+        self.page.wait_for_timeout(1000)
 
     def receive_badges_count(self):
         amount = self.page.locator("li.ant-pagination-total-text")
@@ -278,10 +283,10 @@ class BasePage:
         create = self.page.locator(create_user.CREATE_USER_BUTTON)
         create.click()
 
-    def create_user(self, user_name="Test_name", supervisor_name='None'):
+    def create_user(self, test_user_data):
         add_name = self.page.locator(create_user.USER_NAME)
         add_name.click()
-        add_name.fill(user_name)
+        add_name.fill(test_user_data['username'])
         add_supervisor = self.page.locator(create_user.SUPERVISOR)
         add_supervisor.click()
         self.page.locator(".ant-select-item-option").nth(1).click()
@@ -302,6 +307,7 @@ class BasePage:
         add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
         add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
+        self.fill_approver_field(test_user_data["approver"])
         return supervisor_name
 
 
@@ -460,7 +466,8 @@ class BasePage:
             text = amount.inner_text().strip()
             if text and text.isdigit():
                 return int(text)
-            time.sleep(0.5)
+            # Вместо time.sleep используем короткую паузу
+            self.page.wait_for_timeout(500)
         # Fallback if it still fails
         return int(amount.inner_text().strip())
 
