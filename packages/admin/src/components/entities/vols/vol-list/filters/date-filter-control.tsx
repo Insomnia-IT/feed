@@ -6,6 +6,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import { MobileCalendarPicker } from 'shared/components/mobile-calendar-picker/mobile-calendar-picker';
 import type { FilterField, FilterItem } from './filter-types';
 import { FilterFieldShell } from './filter-field-shell';
+import { isEffectiveFilterValue } from './is-effective-filter-value';
 import styles from './filters.module.css';
 
 const datePickerLocale = (
@@ -24,6 +25,9 @@ const DISPLAY_DATE_FORMAT = 'DD.MM.YYYY';
 const SEPARATOR = ':';
 const SINGLE_MODE = 'single';
 const RANGE_MODE = 'range';
+
+const stretchAndRingClass = (active: boolean): string | undefined =>
+    [styles.volFilterControlStretch, active && styles.volActiveControlRing].filter(Boolean).join(' ') || undefined;
 
 const parseDateValue = (value?: string) => (value ? dayjs(value) : undefined);
 
@@ -150,6 +154,7 @@ export function DateFilterControl({ field, filterItem, isMobile, onFilterTextVal
     const [isCalPopOpen, setIsCalPopOpen] = useState<boolean | undefined>(undefined);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const filterValue = filterItem?.value as string | undefined;
+    const controlClassName = stretchAndRingClass(isEffectiveFilterValue(filterValue));
     const [showPeriod, setShowPeriod] = useState(() => Boolean(filterValue?.includes(SEPARATOR)));
 
     const { beforeString, afterString } = splitDateFilterValue(filterValue);
@@ -220,9 +225,11 @@ export function DateFilterControl({ field, filterItem, isMobile, onFilterTextVal
     if (isMobile) {
         return (
             <FilterFieldShell isMobile title={field.title}>
-                <Button className={styles.dateTriggerButton} onClick={() => setIsDrawerOpen(true)}>
-                    {mobileRangeLabel === PICK_DATE_LABEL ? MOBILE_PICKER_BUTTON_LABEL : mobileRangeLabel}
-                </Button>
+                <div className={controlClassName}>
+                    <Button className={styles.dateTriggerButton} onClick={() => setIsDrawerOpen(true)}>
+                        {mobileRangeLabel === PICK_DATE_LABEL ? MOBILE_PICKER_BUTTON_LABEL : mobileRangeLabel}
+                    </Button>
+                </div>
                 <MobileFilterCalendarPicker
                     open={isDrawerOpen}
                     onClose={() => setIsDrawerOpen(false)}
@@ -242,51 +249,53 @@ export function DateFilterControl({ field, filterItem, isMobile, onFilterTextVal
 
     return (
         <FilterFieldShell title={field.title}>
-            {showPeriod ? (
-                <DatePicker.RangePicker
-                    locale={datePickerLocale}
-                    open={isCalPopOpen}
-                    onOpenChange={setIsCalPopOpen}
-                    inputReadOnly
-                    placeholder={[EMPTY_LABEL, EMPTY_LABEL]}
-                    panelRender={(panel) => (
-                        <>
-                            <DesktopDatePanelHeader showPeriod={showPeriod} onToggle={togglePeriod} />
-                            {panel}
-                        </>
-                    )}
-                    allowEmpty={[true, true]}
-                    className={styles.desktopDatePicker}
-                    value={[beforeDate, afterDate]}
-                    onChange={(value) => {
-                        changeValue(
-                            buildDateFilterValue({
-                                before: value?.[0]?.format(DATE_FORMAT),
-                                after: value?.[1]?.format(DATE_FORMAT)
-                            })
-                        );
-                    }}
-                />
-            ) : (
-                <DatePicker
-                    locale={datePickerLocale}
-                    open={isCalPopOpen}
-                    onOpenChange={setIsCalPopOpen}
-                    inputReadOnly
-                    placeholder={PICK_DATE_LABEL}
-                    panelRender={(panel) => (
-                        <>
-                            <DesktopDatePanelHeader showPeriod={showPeriod} onToggle={togglePeriod} />
-                            {panel}
-                        </>
-                    )}
-                    value={beforeDate}
-                    className={styles.desktopDatePicker}
-                    onChange={(value) => {
-                        changeValue(value?.format(DATE_FORMAT) ?? '');
-                    }}
-                />
-            )}
+            <div className={controlClassName}>
+                {showPeriod ? (
+                    <DatePicker.RangePicker
+                        locale={datePickerLocale}
+                        open={isCalPopOpen}
+                        onOpenChange={setIsCalPopOpen}
+                        inputReadOnly
+                        placeholder={[EMPTY_LABEL, EMPTY_LABEL]}
+                        panelRender={(panel) => (
+                            <>
+                                <DesktopDatePanelHeader showPeriod={showPeriod} onToggle={togglePeriod} />
+                                {panel}
+                            </>
+                        )}
+                        allowEmpty={[true, true]}
+                        className={styles.desktopDatePicker}
+                        value={[beforeDate, afterDate]}
+                        onChange={(value) => {
+                            changeValue(
+                                buildDateFilterValue({
+                                    before: value?.[0]?.format(DATE_FORMAT),
+                                    after: value?.[1]?.format(DATE_FORMAT)
+                                })
+                            );
+                        }}
+                    />
+                ) : (
+                    <DatePicker
+                        locale={datePickerLocale}
+                        open={isCalPopOpen}
+                        onOpenChange={setIsCalPopOpen}
+                        inputReadOnly
+                        placeholder={PICK_DATE_LABEL}
+                        panelRender={(panel) => (
+                            <>
+                                <DesktopDatePanelHeader showPeriod={showPeriod} onToggle={togglePeriod} />
+                                {panel}
+                            </>
+                        )}
+                        value={beforeDate}
+                        className={styles.desktopDatePicker}
+                        onChange={(value) => {
+                            changeValue(value?.format(DATE_FORMAT) ?? '');
+                        }}
+                    />
+                )}
+            </div>
         </FilterFieldShell>
     );
 }

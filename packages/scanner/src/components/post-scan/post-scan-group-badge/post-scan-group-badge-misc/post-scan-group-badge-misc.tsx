@@ -93,23 +93,28 @@ export const GroupBadgeWarningCard = ({
         return Math.max(volsToFeedCount - alreadyFedCount, 0);
     };
 
-    const [initialCalculatedCounts] = useState(() => ({
-        vegans: calculateDefaultFeedCount(true),
-        nonVegans: calculateDefaultFeedCount(false)
-    }));
+    const getAlreadyFedCount = (isVegan: boolean): number => {
+        return calculateAlreadyFedCount(alreadyFedTransactions.filter((t) => Boolean(t.is_vegan) === isVegan));
+    };
 
     const getDefaultCount = (isVegan: boolean): number => {
         const plannedCount = isVegan ? planned.vegansCount : planned.nonVegansCount;
 
         if (plannedCount !== null) {
-            return plannedCount;
+            return Math.max(plannedCount - getAlreadyFedCount(isVegan), 0);
         }
 
         return calculateDefaultFeedCount(isVegan);
     };
 
-    const [vegansCount, setVegansCount] = useState<number>(() => getDefaultCount(true));
-    const [nonVegansCount, setNonVegansCount] = useState<number>(() => getDefaultCount(false));
+    const buildInitialCounts = (): { vegans: number; nonVegans: number } => ({
+        vegans: getDefaultCount(true),
+        nonVegans: getDefaultCount(false)
+    });
+
+    const [initialCalculatedCounts] = useState(buildInitialCounts);
+    const [vegansCount, setVegansCount] = useState<number>(initialCalculatedCounts.vegans);
+    const [nonVegansCount, setNonVegansCount] = useState<number>(initialCalculatedCounts.nonVegans);
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const handleFeed = (): void => {

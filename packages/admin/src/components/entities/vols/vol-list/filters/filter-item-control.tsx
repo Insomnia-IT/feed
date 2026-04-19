@@ -7,10 +7,14 @@ import { FilterFieldType } from './filter-types';
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { FilterFieldShell } from './filter-field-shell';
 import { getFilterListItems } from './get-filter-list-items';
+import { isEffectiveFilterValue } from './is-effective-filter-value';
 import styles from './filters.module.css';
 
 const INPUT_PLACEHOLDER = 'Введи текст';
 const SELECT_PLACEHOLDER = 'Выбери из списка';
+
+const stretchAndRingClass = (active: boolean): string | undefined =>
+    [styles.volFilterControlStretch, active && styles.volActiveControlRing].filter(Boolean).join(' ') || undefined;
 
 type FilterItemControlProps = {
     field: FilterField;
@@ -73,14 +77,16 @@ function FilterInput({ field, filterItem, isMobile, onFilterTextValueChange }: F
 
     return (
         <FilterFieldShell isMobile={isMobile} title={field.title}>
-            <Input
-                className={styles.filterControl}
-                value={filterItem?.value as string | undefined}
-                onChange={(e) => onFilterTextValueChange(field.name, e.target.value)}
-                placeholder={INPUT_PLACEHOLDER}
-                onClear={onClear}
-                allowClear
-            />
+            <div className={stretchAndRingClass(isEffectiveFilterValue(filterItem?.value))}>
+                <Input
+                    className={styles.filterControl}
+                    value={filterItem?.value as string | undefined}
+                    onChange={(e) => onFilterTextValueChange(field.name, e.target.value)}
+                    placeholder={INPUT_PLACEHOLDER}
+                    onClear={onClear}
+                    allowClear
+                />
+            </div>
         </FilterFieldShell>
     );
 }
@@ -124,37 +130,39 @@ function FilterSelect({
 
     return (
         <FilterFieldShell isMobile={isMobile} title={field.title}>
-            <Select
-                className={`${styles.filterValueSelect} ${styles.filterControl}`}
-                open={dropdownOpen}
-                onOpenChange={setDropdownOpen}
-                maxTagCount={1}
-                value={selectValue as string[] | string | number | boolean | undefined}
-                onSelect={onSelect}
-                onDeselect={onDeselect}
-                onClear={onClear}
-                options={values}
-                placeholder={SELECT_PLACEHOLDER}
-                optionFilterProp="label"
-                mode={isMultiple ? 'multiple' : undefined}
-                showSearch
-                allowClear={false}
-                suffixIcon={
-                    <span
-                        role="button"
-                        tabIndex={-1}
-                        aria-expanded={dropdownOpen}
-                        className={styles.filterIconToggle}
-                        onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDropdownOpen((prev) => !prev);
-                        }}
-                    >
-                        <DownOutlined />
-                    </span>
-                }
-            />
+            <div className={stretchAndRingClass(isEffectiveFilterValue(filterItem?.value))}>
+                <Select
+                    className={`${styles.filterValueSelect} ${styles.filterControl}`}
+                    open={dropdownOpen}
+                    onOpenChange={setDropdownOpen}
+                    maxTagCount={1}
+                    value={selectValue as string[] | string | number | boolean | undefined}
+                    onSelect={onSelect}
+                    onDeselect={onDeselect}
+                    onClear={onClear}
+                    options={values}
+                    placeholder={SELECT_PLACEHOLDER}
+                    optionFilterProp="label"
+                    mode={isMultiple ? 'multiple' : undefined}
+                    showSearch
+                    allowClear={false}
+                    suffixIcon={
+                        <span
+                            role="button"
+                            tabIndex={-1}
+                            aria-expanded={dropdownOpen}
+                            className={styles.filterIconToggle}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDropdownOpen((prev) => !prev);
+                            }}
+                        >
+                            <DownOutlined />
+                        </span>
+                    }
+                />
+            </div>
         </FilterFieldShell>
     );
 }

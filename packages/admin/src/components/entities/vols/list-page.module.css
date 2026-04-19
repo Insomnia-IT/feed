@@ -11,3 +11,20 @@
 .desktopButtonsRow {
     gap: 12px;
 }
+
+.volSearchBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.volSearchWrap {
+    width: 100%;
+}
+
+.volActiveControlRing {
+    border-radius: 6px;
+    transition: box-shadow 0.2s ease;
+    box-shadow: 0 0 0 2px rgb(152 180 218 / 48%);
+}

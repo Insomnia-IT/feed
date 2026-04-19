@@ -11,7 +11,7 @@ from history.models import History
 from django.conf import settings
 
 
-class SupervisorIdField(serializers.Field):
+class VolunteerRelationField(serializers.Field):
     def to_representation(self, value):
         if not value:
             return None
@@ -26,7 +26,7 @@ class SupervisorIdField(serializers.Field):
             try:
                 return Volunteer.objects.get(pk=data)
             except (Volunteer.DoesNotExist, ValueError, TypeError):
-                raise serializers.ValidationError("Volunteer not found for supervisor_id")
+                raise serializers.ValidationError("Volunteer not found")
 
 
 class SaveSyncSerializerMixin(object):
@@ -114,7 +114,8 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
                                         queryset=VolunteerRole.objects.all(), required=False)
     ticket = serializers.BooleanField(source="is_ticket_received", required=False, allow_null=True)
     scanner_comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    supervisor_id = SupervisorIdField(required=False, allow_null=True)
+    supervisor_id = VolunteerRelationField(required=False, allow_null=True)
+    responsible_id = VolunteerRelationField(required=False, allow_null=True)
 
     class Meta:
         model = Volunteer
@@ -124,7 +125,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
             "direction_head_comment", "infant",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type",
-            "ticket", "scanner_comment", "supervisor_id"
+            "ticket", "scanner_comment", "supervisor_id", "responsible_id"
         )
         uuid_field = "uuid"
 
@@ -262,12 +263,13 @@ class EngagementHistoryDataSerializer(SaveSyncSerializerMixin, serializers.Model
 
 class PersonHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     vegan = serializers.BooleanField(source="is_vegan", required=False)
+    banned = serializers.BooleanField(required=False, allow_null=True)
 
     class Meta:
         model = Person
         fields = (
             "id", "name", "first_name", "last_name", "nickname", "other_names", "gender", "birth_date",
-            "phone", "telegram", "email", "city", "vegan"
+            "phone", "telegram", "email", "city", "vegan", "banned"
         )
 
     def to_internal_value(self, data):
