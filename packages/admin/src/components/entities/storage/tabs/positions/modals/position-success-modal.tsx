@@ -18,7 +18,6 @@ export const PositionSuccessModal: React.FC<PositionSuccessModalProps> = ({ open
                     {positionId}
                 </Title>
                 <Text style={{ fontSize: '18px', display: 'block' }}>Пожалуйста, подпишите предмет этим номером.</Text>
-                <Button>OK</Button>
             </div>
         </Modal>
     );
