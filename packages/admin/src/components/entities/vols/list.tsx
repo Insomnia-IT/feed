@@ -94,7 +94,7 @@ const DesktopVolunteersContent = ({
     canListCustomFields: boolean;
     isFiltersLoading: boolean;
     searchText: string;
-    activeFilters: unknown[];
+    activeFilters: FilterItem[];
     openVolunteer: (id: number) => Promise<boolean>;
 }) => {
     const { result: volunteersResult, query: volunteersQuery } = useList<VolEntity>({
