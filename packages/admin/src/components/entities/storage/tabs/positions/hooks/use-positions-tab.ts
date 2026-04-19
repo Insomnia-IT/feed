@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useTable, useModalForm } from '@refinedev/antd';
 import { notification, type FormInstance } from 'antd';
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import type { CrudFilter } from '@refinedev/core';
 import type { StorageItemPositionEntity } from 'interfaces';
+import { NEW_API_URL } from 'const';
 
 interface UsePositionsTabParams {
     storage: any;
@@ -44,14 +44,8 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
     const handleAction = async (action: 'receive' | 'issue') => {
         try {
             const values = await actionForm.validateFields();
-            const apiUrl = (window as any)._env_?.VITE_NEW_API_URL || 'http://localhost:8000/feedapi/v1';
-            const token = Cookies.get('auth');
 
-            await axios.post(`${apiUrl}/storage-positions/${selectedPosition?.id}/${action}/`, values, {
-                headers: {
-                    Authorization: token?.startsWith('V-TOKEN ') ? token : `Token ${token}`
-                }
-            });
+            await axios.post(`${NEW_API_URL}/storage-positions/${selectedPosition?.id}/${action}/`, values);
 
             notification.success({ message: 'Успешно' });
             setIsReceiveModalVisible(false);
