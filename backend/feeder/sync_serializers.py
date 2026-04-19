@@ -262,12 +262,13 @@ class EngagementHistoryDataSerializer(SaveSyncSerializerMixin, serializers.Model
 
 class PersonHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelSerializer):
     vegan = serializers.BooleanField(source="is_vegan", required=False)
+    banned = serializers.BooleanField(required=False, allow_null=True)
 
     class Meta:
         model = Person
         fields = (
             "id", "name", "first_name", "last_name", "nickname", "other_names", "gender", "birth_date",
-            "phone", "telegram", "email", "city", "vegan"
+            "phone", "telegram", "email", "city", "vegan", "banned"
         )
 
     def to_internal_value(self, data):
