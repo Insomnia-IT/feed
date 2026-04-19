@@ -216,9 +216,17 @@ export const FeedTransactionList: FC = () => {
             activeFilters.forEach((filter) => {
                 const { name, value } = filter;
 
+                if (typeof value === 'undefined') {
+                    return;
+                }
+
                 let valueToUse: string = typeof value === 'boolean' ? String(value) : (value as string);
 
                 if (Array.isArray(value)) {
+                    if (value.length === 0) {
+                        return;
+                    }
+
                     valueToUse = value.length > 1 ? value.join(',') : String(value[0]);
                 }
 
