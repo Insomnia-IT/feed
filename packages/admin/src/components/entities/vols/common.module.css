@@ -470,6 +470,10 @@
         align-items: flex-start;
         gap: 8px;
     }
+
+    .mobileTabsWithOffset :global(.ant-tabs-content-holder) {
+        padding-bottom: calc(var(--mobile-sider-height) + env(safe-area-inset-bottom));
+    }
 }
 
 @media (width <= 576px) {

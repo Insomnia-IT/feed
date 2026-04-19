@@ -65,12 +65,14 @@ export const QrScan = memo(({ onScan, style }: { onScan: (v: string) => void; st
     useEffect(() => {
         if (!video.current) return;
 
+        // eslint-disable-next-line no-console
         console.log('QrScanner');
 
         const s = new QrScanner(
             video.current,
             ({ data }) => {
                 setError(null);
+                // eslint-disable-next-line no-console
                 console.log(`read: ${data}`);
                 onScan(data.replace(/[^A-Za-z0-9]/g, ''));
             },

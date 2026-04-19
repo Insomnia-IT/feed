@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { DeleteOutlined, FilterOutlined } from '@ant-design/icons';
 import { Button, Col, Popover, Row } from 'antd';
 
@@ -10,8 +10,10 @@ import styles from '../../list.module.css';
 
 interface IProps {
     filterFields: FilterField[];
+    isMobile?: boolean;
     searchText?: string;
     setSearchText?: (value: string) => void;
+    mobileSummary?: ReactNode;
     visibleFilters: string[];
     setVisibleFilters: (filters: string[]) => void;
     activeFilters: FilterItem[];
@@ -21,6 +23,8 @@ interface IProps {
 export const Filters = ({
     activeFilters,
     filterFields,
+    isMobile,
+    mobileSummary,
     searchText,
     setSearchText,
     setActiveFilters,
@@ -148,31 +152,36 @@ export const Filters = ({
 
     return (
         <div className={styles.filters}>
-            <div className={styles.filterItems}>
-                <Col style={{ width: '105px' }}>
-                    <Row>
-                        <Popover
-                            key="add-filter"
-                            placement="bottomLeft"
-                            content={
-                                <FilterChooser
-                                    removeAllFilters={removeAllFilters}
-                                    filterFields={filterFields}
-                                    toggleVisibleFilter={toggleVisibleFilter}
-                                    visibleFilters={visibleFilters}
-                                />
-                            }
-                            trigger="click"
-                        >
-                            <Button icon={<FilterOutlined />}>Фильтры</Button>
-                        </Popover>
-                    </Row>
-                </Col>
+            <div className={`${styles.filterItems} ${isMobile ? styles.filterItemsMobile : ''}`}>
+                <div className={isMobile ? styles.mobileFiltersHeader : undefined}>
+                    <Col style={{ width: '105px' }}>
+                        <Row>
+                            <Popover
+                                key="add-filter"
+                                placement="bottomLeft"
+                                content={
+                                    <FilterChooser
+                                        removeAllFilters={removeAllFilters}
+                                        filterFields={filterFields}
+                                        toggleVisibleFilter={toggleVisibleFilter}
+                                        visibleFilters={visibleFilters}
+                                    />
+                                }
+                                trigger="click"
+                            >
+                                <Button icon={<FilterOutlined />}>Фильтры</Button>
+                            </Popover>
+                        </Row>
+                    </Col>
+                    {isMobile && mobileSummary && <div className={styles.mobileFiltersSummary}>{mobileSummary}</div>}
+                </div>
+
                 {filterPairs.map(({ filterField, filterItem }) => (
                     <FilterItemControl
                         key={filterField.name}
                         field={filterField}
                         filterItem={filterItem}
+                        isMobile={isMobile}
                         onFilterTextValueChange={onFilterTextValueChange}
                         onFilterValueChange={onFilterValueChange}
                     />

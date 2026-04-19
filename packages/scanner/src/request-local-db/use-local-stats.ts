@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 import { useCallback, useState } from 'react';
 
-import { FeedType, getFeedStats, getVolsOnField, MealTime } from 'db';
+import { FeedType, getFeedStats, getVolsOnField, isActivatedStatus, MealTime } from 'db';
+import type { Volunteer } from 'db';
 import { DATE_FORMAT } from 'shared/lib/date';
 import type { LocalStatsHook } from './lib';
 
@@ -31,6 +32,22 @@ const getUnixDayRange = (statsDate: string) => {
     };
 };
 
+type StatsInterval = {
+    arrival_date: string;
+    departure_date: string;
+};
+
+const getStatsIntervals = (vol: Volunteer): Array<StatsInterval> => {
+    const arrivals = vol.arrivals.filter(({ status }) => isActivatedStatus(status));
+    const paidArrivals = vol.paid_arrivals ?? [];
+
+    if (vol.feed_type === FeedType.Paid) {
+        return paidArrivals;
+    }
+
+    return [...arrivals, ...paidArrivals];
+};
+
 const getStatsByDate = async (statsDate: string): Promise<FeedStats> => {
     const [volsOnField, feedTransactions] = await Promise.all([getVolsOnField(statsDate), getFeedStats(statsDate)]);
     const { start, nextDayStart } = getUnixDayRange(statsDate);
@@ -41,9 +58,9 @@ const getStatsByDate = async (statsDate: string): Promise<FeedStats> => {
         let hasDinner = false;
         let hasNight = false;
 
-        for (const arrival of vol.arrivals) {
-            const arrivalUnix = dayjs(arrival.arrival_date).unix();
-            const departureUnix = dayjs(arrival.departure_date).unix();
+        for (const interval of getStatsIntervals(vol)) {
+            const arrivalUnix = dayjs(interval.arrival_date).unix();
+            const departureUnix = dayjs(interval.departure_date).unix();
 
             if (arrivalUnix <= start && departureUnix >= start) {
                 hasBreakfast = true;

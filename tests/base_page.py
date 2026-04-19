@@ -1,5 +1,6 @@
 import re
 import time
+import re
 from datetime import datetime
 from playwright.sync_api import Page
 
@@ -213,8 +214,10 @@ class BasePage:
     def receive_count_of_volunteers_in_group_badge(self):
         element_raw = self.page.locator(group_badges.VOLONTEER_COUNTER).first
         text = element_raw.inner_text()
-        element = int(text.strip("()"))
-        return element
+        match = re.search(r"\d+", text)
+        if not match:
+            raise ValueError(f"Could not parse volunteer count from text: {text}")
+        return int(match.group())
 
     def go_to_edit_badge(self):
         edit = self.page.locator(group_badges.EDIT_LAST_BUTTON).last
@@ -490,33 +493,57 @@ class BasePage:
         confirm.click(force=True)
         self.page.wait_for_timeout(500)
 
+    @staticmethod
+    def _block_status_from_new_value_span_text(t: str) -> str | None:
+        """Только новое значение поля (как в UI), не весь innerText карточки: в diff на одной строке есть и old, и new."""
+        t = t.strip()
+        if t in ("Разблокирован", "Заблокирован"):
+            return t
+        return None
+
+    def _block_action_from_card(self, card) -> str | None:
+        """Статус блокировки из span нового значения (common-history itemDrescrNew)."""
+        news = card.locator("span[class*='itemDrescrNew']")
+        for i in range(news.count()):
+            w = self._block_status_from_new_value_span_text(news.nth(i).inner_text())
+            if w:
+                return w
+        return None
+
     def check_history_actions(self):
-        # Кликаем по вкладке "История действий"
+        # Вкладка «История изменений» / «История» (volunteer_uuid)
         self.page.locator(create_user.HISTORY_TAB).click()
         # Даем истории время прогрузиться (асинхронные логи)
         self.page.wait_for_timeout(1000)
-        # Ждем появления элементов в списке истории
-        self.page.locator(create_user.HISTORY_LOG_ITEM).first.wait_for(state="visible", timeout=5000)
+        # Ждём карточки истории (бан/разбан может не давать span itemDrescrNew)
+        self.page.locator(create_user.HISTORY_ITEM_CARD).first.wait_for(
+            state="visible", timeout=15000
+        )
 
-
+    def _list_block_actions_from_cards(self) -> list[str]:
+        """Карточки сверху вниз; по каждой — новое значение is_blocked, если оно в этом изменении."""
+        items = self.page.locator(create_user.HISTORY_ITEM_CARD)
+        out: list[str] = []
+        for i in range(items.count()):
+            w = self._block_action_from_card(items.nth(i))
+            if w:
+                out.append(w)
+        return out
 
     def check_last_action(self):
-        # Возвращаем текст последнего действия
-        actions = [
-            text.strip()
-            for text in self.page.locator(create_user.HISTORY_LOG_ITEM).all_inner_texts()
-            if text.strip() in {"Разблокирован", "Заблокирован"}
-        ]
-        return actions[0]
+        # Самое свежее событие бана/разбана среди карточек с этим полем
+        actions = self._list_block_actions_from_cards()
+        return actions[0] if actions else None
 
     def check_second_last_action(self):
-        # Возвращаем текст предпоследнего действия
-        actions = [
-            text.strip()
-            for text in self.page.locator(create_user.HISTORY_LOG_ITEM).all_inner_texts()
-            if text.strip() in {"Разблокирован", "Заблокирован"}
-        ]
-        return actions[1]
+        # После серии «Разблокирован» (дубликаты/старые записи) ищем предшествующий бан
+        actions = self._list_block_actions_from_cards()
+        if len(actions) < 2:
+            return None
+        i = 1
+        while i < len(actions) and actions[i] == "Разблокирован":
+            i += 1
+        return actions[i] if i < len(actions) else None
 
     def get_current_volunteer_name(self):
         # Получаем имя из поля #name

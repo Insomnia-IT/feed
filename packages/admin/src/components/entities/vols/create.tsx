@@ -8,6 +8,12 @@ import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 
+const contentStyle = {
+    background: 'initial',
+    boxShadow: 'initial',
+    height: '100%'
+};
+
 export const VolCreate = () => {
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
@@ -19,20 +25,20 @@ export const VolCreate = () => {
 
     const { isDesktop } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
+    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
 
     return (
         <Create
+            headerProps={{
+                extra: null
+            }}
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick,
-                hidden: !isDesktop && activeKey !== '1'
+                onClick
             }}
             contentProps={{
-                style: {
-                    background: 'initial',
-                    boxShadow: 'initial',
-                    height: '100%'
-                }
+                ...(shouldHideFooterActions ? { actions: [] } : {}),
+                style: contentStyle
             }}
         >
             <Form {...formProps} scrollToFirstError layout="vertical">

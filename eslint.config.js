@@ -21,6 +21,7 @@ export default defineConfig([
         },
         rules: {
             'no-tabs': 'error',
+            'no-console': ['error', { allow: ['error'] }],
             quotes: ['error', 'single'],
             'jsx-quotes': ['error', 'prefer-double'],
             'comma-dangle': ['error', 'never'],
