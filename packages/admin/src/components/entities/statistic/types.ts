@@ -5,10 +5,10 @@ export const mealTimeArr: Array<MealTime> = ['breakfast', 'lunch', 'dinner', 'ni
 export type EaterType = 'vegan' | 'meatEater';
 export type EaterTypeExtended = EaterType | 'all';
 
-export type KitchenId = '1' | '2' | '3';
+export type KitchenId = string;
 export type KitchenIdExtended = KitchenId | 'all';
 export type BooleanExtended = 'true' | 'false' | 'all';
-export type PredictionAlg = '1' | '2';
+export type PredictionAlg = '1' | '2' | '3';
 
 export type IEaterTypeAmount = {
     [eaterType in EaterType]: number;
@@ -22,7 +22,7 @@ export interface IStatisticApi {
     amount: number;
     kitchen_id: number;
 }
-export type IStatisticResponce = Array<IStatisticApi>;
+export type IStatisticResponse = Array<IStatisticApi>;
 
 export type DataType = {
     [type in StatisticType]: {
@@ -60,13 +60,6 @@ export const datumInstance: DataType = {
         night: { meatEater: 0, vegan: 0 },
         total: { meatEater: 0, vegan: 0 }
     }
-};
-
-export const dataEmpty: IData = {
-    all: {},
-    1: {},
-    2: {},
-    3: {}
 };
 
 export interface IColumnChartData {

@@ -15,13 +15,38 @@
     flex-wrap: wrap;
     gap: 12px;
     align-items: end;
+}
 
-    @media (width <= 576px) {
-        :global(.ant-btn) {
-            min-height: 32px;
-            height: fit-content;
-        }
+.filterItemsMobile {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    align-items: end;
+    width: 100%;
+
+    :global(.ant-btn) {
+        min-height: 32px;
+        height: fit-content;
     }
+}
+
+.mobileFiltersHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.mobileFiltersSummary {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    white-space: nowrap;
+}
+
+.mobileFilterField :global(.ant-picker) {
+    width: 100% !important;
 }
 
 /* Отступ между плашками фильтров и крестиком очистки в мультиселекте */
@@ -107,6 +132,7 @@
     padding: 12px;
     background: #fff;
     min-width: 0;
+    position: relative;
 
     .textRow {
         white-space: nowrap;
@@ -145,6 +171,35 @@
 
 .modalTitle {
     margin-bottom: 16px;
+}
+
+.swipeContainer {
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+.swipeActions {
+    position: absolute;
+    inset: 0 0 0 auto;
+    display: flex;
+    height: 100%;
+    z-index: 2;
+}
+
+.swipeAction {
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.swipeContent {
+    position: relative;
+    z-index: 1;
+    will-change: transform;
 }
 
 .swipeActionContent {

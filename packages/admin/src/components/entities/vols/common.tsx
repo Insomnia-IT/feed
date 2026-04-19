@@ -1,22 +1,20 @@
 import { Tabs } from 'antd';
-import { useMemo, useEffect, FC } from 'react';
+import { useMemo } from 'react';
 
 import { useScreen } from 'shared/providers';
 import { CommonEdit } from './common-edit/common-edit';
 import CommonFood from './common-food/common-food';
 import { CommonHistory } from './common-history/common-history';
+import styles from './common.module.css';
 
 interface IProps {
     activeKey: string;
     setActiveKey: (key: string) => void;
 }
 
-const CreateEdit: FC<IProps> = ({ activeKey, setActiveKey }) => {
+const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     const { isDesktop } = useScreen();
-
-    useEffect(() => {
-        document.querySelector('.ant-page-header-heading-extra')?.remove();
-    }, []);
+    const shouldAddMobileBottomOffset = !isDesktop && activeKey !== '1';
 
     const items = useMemo(
         () => [
@@ -32,12 +30,12 @@ const CreateEdit: FC<IProps> = ({ activeKey, setActiveKey }) => {
             },
             {
                 key: '3',
-                label: 'История действий',
+                label: isDesktop ? 'История изменений' : 'История',
                 children: <CommonHistory role="volunteer" />
             },
             {
                 key: '4',
-                label: 'История волонтёра',
+                label: isDesktop ? 'История действий' : 'Действия',
                 children: <CommonHistory role="actor" />
             }
         ],
@@ -45,13 +43,9 @@ const CreateEdit: FC<IProps> = ({ activeKey, setActiveKey }) => {
     );
 
     return (
-        <Tabs
-            activeKey={activeKey}
-            onChange={setActiveKey}
-            size={isDesktop ? 'middle' : 'small'}
-            tabBarGutter={isDesktop ? 16 : 6}
-            items={items}
-        />
+        <div className={shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : undefined}>
+            <Tabs activeKey={activeKey} onChange={setActiveKey} size={isDesktop ? 'middle' : 'small'} items={items} />
+        </div>
     );
 };
 

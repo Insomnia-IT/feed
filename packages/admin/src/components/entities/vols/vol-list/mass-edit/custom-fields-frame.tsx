@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
-import { useList, useNotification } from '@refinedev/core';
+import { type HttpError, useList, useNotification } from '@refinedev/core';
 import { HAS_BADGE_FIELD_NAME } from 'const';
 import { Button, Form } from 'antd';
 import styles from './mass-edit.module.css';
 import { SingleField } from './single-field';
-import { ChangeMassEditField } from './mass-edit-types';
+import type { ChangeMassEditField } from './mass-edit-types';
 
-export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doChange: ChangeMassEditField }> = ({
+export const CustomFieldsFrame = ({
     selectedVolunteers,
     doChange
+}: {
+    selectedVolunteers: VolEntity[];
+    doChange: ChangeMassEditField;
 }) => {
-    const { data } = useList<CustomFieldEntity>({ resource: 'volunteer-custom-fields', pagination: { pageSize: 0 } });
+    const { result } = useList<CustomFieldEntity, HttpError>({
+        resource: 'volunteer-custom-fields',
+        pagination: { pageSize: 0 }
+    });
+    const list = result?.data ?? [];
     const [currentFieldName, setCurrentFieldName] = useState<string | undefined>(undefined);
     const [currentValue, setCurrentValue] = useState<string | undefined>(undefined);
     const { open = () => {} } = useNotification();
@@ -26,7 +33,7 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doCh
 
             console.error('<CustomFieldsFrame/> error: Ошибка заполнения поля. Не найден id кастомного поля.', {
                 selectedVolunteers,
-                data,
+                list,
                 id,
                 fieldValue,
                 currentFieldName
@@ -38,7 +45,7 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doCh
         doChange({ fieldName: String(id), fieldValue, isCustom: true });
     };
 
-    const fields = (data?.data ?? []).filter((field) => field.name !== HAS_BADGE_FIELD_NAME);
+    const fields = (result?.data ?? []).filter((field) => field.name !== HAS_BADGE_FIELD_NAME);
 
     const currentField = fields.find((field) => field.name === currentFieldName);
 
@@ -49,24 +56,20 @@ export const CustomFieldsFrame: React.FC<{ selectedVolunteers: VolEntity[]; doCh
                     currentValue={currentValue}
                     setCurrentValue={setCurrentValue}
                     type={currentField.type as 'string' | 'boolean'}
-                    setter={(value) => setFieldValue({ id: currentField?.id, fieldValue: value })}
+                    setter={(value) => setFieldValue({ id: currentField.id, fieldValue: value })}
                     title={currentField.name}
                     selectedVolunteers={selectedVolunteers}
                 />
             ) : (
-                fields.map(({ name }, index) => {
-                    return (
-                        <Button
-                            key={String(name) + String(index)}
-                            style={{ width: '100%' }}
-                            onClick={() => {
-                                setCurrentFieldName(name);
-                            }}
-                        >
-                            {name}
-                        </Button>
-                    );
-                })
+                fields.map((field: CustomFieldEntity, index: number) => (
+                    <Button
+                        key={`${field.name}_${index}`}
+                        style={{ width: '100%' }}
+                        onClick={() => setCurrentFieldName(field.name)}
+                    >
+                        {field.name}
+                    </Button>
+                ))
             )}
         </Form>
     );
