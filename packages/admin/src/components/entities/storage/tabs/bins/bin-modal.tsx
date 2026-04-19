@@ -2,15 +2,16 @@ import React from 'react';
 import { Modal, Form, Input, InputNumber } from 'antd';
 import type { ModalProps } from 'antd';
 
-interface CreateBinModalProps {
+interface BinModalProps {
     modalProps: ModalProps;
     formProps: any;
     storageId: number;
+    action: 'create' | 'edit';
 }
 
-export const CreateBinModal: React.FC<CreateBinModalProps> = ({ modalProps, formProps, storageId }) => {
+export const BinModal: React.FC<BinModalProps> = ({ modalProps, formProps, storageId, action }) => {
     return (
-        <Modal {...modalProps} title="Создать ячейку">
+        <Modal {...modalProps} title={action === 'create' ? 'Создать ячейку' : 'Редактировать ячейку'}>
             <Form {...formProps} layout="vertical">
                 <Form.Item name="name" label="Название" rules={[{ required: true }]}>
                     <Input />

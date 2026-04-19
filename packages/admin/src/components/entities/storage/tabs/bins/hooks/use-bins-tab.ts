@@ -23,9 +23,9 @@ export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
     });
 
     const {
-        modalProps: binModalProps,
-        formProps: binFormProps,
-        show: showBinModal
+        modalProps: createModalProps,
+        formProps: createFormProps,
+        show: showCreateModal
     } = useModalForm<BinEntity>({
         resource: 'storage-bins',
         action: 'create',
@@ -34,17 +34,32 @@ export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
         }
     });
 
+    const {
+        modalProps: editModalProps,
+        formProps: editFormProps,
+        show: showEditModal
+    } = useModalForm<BinEntity>({
+        resource: 'storage-bins',
+        action: 'edit',
+        onMutationSuccess: () => {
+            binsRefetch();
+        }
+    });
+
     useEffect(() => {
         if (storage?.id) {
-            binFormProps.form?.setFieldsValue({ storage: storage.id });
+            createFormProps.form?.setFieldsValue({ storage: storage.id });
         }
-    }, [storage?.id, binFormProps.form]);
+    }, [storage?.id, createFormProps.form]);
 
     return {
         binsTableProps,
-        binModalProps,
-        binFormProps,
-        showBinModal
+        createModalProps,
+        createFormProps,
+        showCreateModal,
+        editModalProps,
+        editFormProps,
+        showEditModal
     };
 };
 
