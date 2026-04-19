@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useList, CanAccess, useGetIdentity } from '@refinedev/core';
+import { useList, CanAccess, useGetIdentity, useTranslate } from '@refinedev/core';
 import { List } from '@refinedev/antd';
-import { Input, Row, Col, Segmented } from 'antd';
+import { App, Button, Input, Row, Col, Segmented, Typography } from 'antd';
+import { PlusSquareOutlined } from '@ant-design/icons';
 import type { TablePaginationConfig } from 'antd/es/table';
 import { useNavigate } from 'react-router';
 
@@ -14,6 +15,8 @@ import type { UserData } from 'auth';
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 
 import { Filters } from './vol-list/filters/filters';
+import { isEffectiveFilterValue } from './vol-list/filters/is-effective-filter-value';
+import type { FilterItem } from 'components/entities/vols/vol-list/filters/filter-types';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
@@ -24,12 +27,45 @@ import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
 
+import styles from './list.module.css';
+
 const LS_PAGE_INDEX = 'volPageIndex';
 const LS_PAGE_SIZE = 'volPageSize';
 
 const getPositiveNumber = (value: string | null, fallback: number) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const VolunteersListCreateButton = ({ activeFilters }: { activeFilters: FilterItem[] }) => {
+    const navigate = useNavigate();
+    const translate = useTranslate();
+    const canCreateVolunteer = useCanAccess({ action: 'create', resource: 'volunteers' });
+    const { modal } = App.useApp();
+
+    if (!canCreateVolunteer) {
+        return null;
+    }
+
+    return (
+        <Button
+            type="primary"
+            icon={<PlusSquareOutlined />}
+            onClick={() => {
+                if (activeFilters.some(({ value }) => isEffectiveFilterValue(value))) {
+                    modal.warning({
+                        title: 'Применены фильтры',
+                        content:
+                            'Список сейчас может быть неполным: при активных фильтрах волонтёр может не отображаться, хотя он уже есть в базе. Сбросьте фильтры и ещё раз поищите, прежде чем создавать новую запись.'
+                    });
+                    return;
+                }
+                void navigate('/volunteers/create');
+            }}
+        >
+            {translate('buttons.create', 'Создать')}
+        </Button>
+    );
 };
 
 const DesktopVolunteersContent = ({
@@ -110,9 +146,9 @@ const DesktopVolunteersContent = ({
         [volunteers?.total, page, pageSize, setPageWithStorage, setPageSizeWithStorage]
     );
 
-    const noActiveFilters = activeFilters.length === 0;
+    const noEffectiveFilters = !activeFilters.some(({ value }) => isEffectiveFilterValue(value));
     const volunteersData = volunteers?.data ?? [];
-    const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
+    const showPersons = !!searchText && noEffectiveFilters && volunteersData.length === 0;
 
     return (
         <>
@@ -320,22 +356,34 @@ export const VolList = () => {
         return Promise.resolve(true);
     };
 
-    const noActiveFilters = activeFilters.length === 0;
-
     return (
-        <List canCreate={noActiveFilters}>
+        <List canCreate headerButtons={() => <VolunteersListCreateButton activeFilters={activeFilters} />}>
             <CanAccess fallback="У вас нет доступа к этой странице">
                 <ActiveColumnsContextProvider customFields={customFields}>
-                    <Input
-                        placeholder="Поиск по волонтерам, датам, службам"
-                        value={searchInputValue}
-                        onChange={(e) => {
-                            const nextValue = e.target.value;
-                            setSearchInputValue(nextValue);
-                            debouncedSetSearchText(nextValue);
-                        }}
-                        allowClear
-                    />
+                    <div className={styles.volSearchBlock}>
+                        <Typography.Text type="secondary">Поиск по волонтёрам</Typography.Text>
+                        <div
+                            className={
+                                [
+                                    styles.volSearchWrap,
+                                    searchInputValue.trim().length > 0 && styles.volActiveControlRing
+                                ]
+                                    .filter(Boolean)
+                                    .join(' ') || undefined
+                            }
+                        >
+                            <Input
+                                placeholder="Поиск по волонтерам, датам, службам"
+                                value={searchInputValue}
+                                onChange={(e) => {
+                                    const nextValue = e.target.value;
+                                    setSearchInputValue(nextValue);
+                                    debouncedSetSearchText(nextValue);
+                                }}
+                                allowClear
+                            />
+                        </div>
+                    </div>
                     <Filters
                         activeFilters={activeFilters}
                         setActiveFilters={setActiveFilters}
@@ -343,8 +391,6 @@ export const VolList = () => {
                         setVisibleFilters={setVisibleFilters}
                         filterFields={filterFields}
                         isMobile={isMobile}
-                        searchText={searchText}
-                        setSearchText={setSearchText}
                         mobileSummary={!isDesktop ? <span>Найдено: {mobileTotal}</span> : undefined}
                     />
                     {isMyBrigadeAvailable && (

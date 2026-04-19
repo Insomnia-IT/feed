@@ -23,6 +23,8 @@
 **/dist
 
 # misc
+.pyenv/
+
 .DS_Store
 .env.local
 .env.development.local
