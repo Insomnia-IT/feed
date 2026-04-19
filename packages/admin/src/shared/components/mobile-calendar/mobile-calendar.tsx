@@ -81,6 +81,14 @@ export function MobileCalendar({
         onPanelChange?.(localizedValue);
     };
 
+    const handleSelect: CalendarProps<Dayjs>['onSelect'] = (nextValue, selectInfo) => {
+        if (selectInfo.source !== 'date') {
+            return;
+        }
+
+        onSelect(nextValue.locale('ru'));
+    };
+
     return (
         <div className={`${styles.wrap} ${className}`.trim()}>
             {summaryItems && summaryItems.length > 0 ? (
@@ -99,7 +107,7 @@ export function MobileCalendar({
                 fullscreen={false}
                 value={resolvedPanelValue}
                 onPanelChange={handlePanelChange}
-                onSelect={(nextValue) => onSelect(nextValue.locale('ru'))}
+                onSelect={handleSelect}
                 headerRender={({ value: headerValue, onChange }) => (
                     <div className={styles.header}>
                         <Button

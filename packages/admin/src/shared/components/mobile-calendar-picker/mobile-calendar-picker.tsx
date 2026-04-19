@@ -1,4 +1,5 @@
-import { Button, Drawer, Row } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+import { Button, Drawer, Row, Typography } from 'antd';
 import { useMemo, type ComponentProps } from 'react';
 import dayjs, { type Dayjs } from 'dayjs';
 
@@ -6,7 +7,7 @@ import { MobileCalendar, type MobileCalendarSummaryItem } from 'shared/component
 
 import styles from './mobile-calendar-picker.module.css';
 
-const DEFAULT_HEIGHT = 'min(680px, calc(100dvh - 24px))';
+const DEFAULT_HEIGHT = 'auto';
 
 type MobileCalendarPickerProps = {
     title: string;
@@ -48,9 +49,26 @@ export function MobileCalendarPicker({
     bottomContent
 }: MobileCalendarPickerProps) {
     const resolvedValue = useMemo(() => (value ?? selectedStart ?? dayjs()).locale('ru'), [selectedStart, value]);
+    const handleReset = () => {
+        onReset?.();
+        onClose();
+    };
 
     return (
-        <Drawer title={title} placement="bottom" open={open} onClose={onClose} height={height}>
+        <Drawer
+            title={
+                <div className={styles.title}>
+                    <Typography.Text strong>{title}</Typography.Text>
+                    <Button type="text" icon={<CloseOutlined />} onClick={onClose} />
+                </div>
+            }
+            placement="bottom"
+            open={open}
+            onClose={onClose}
+            height={height}
+            closable={false}
+            className={styles.drawer}
+        >
             <div className={styles.content}>
                 {topContent}
                 <MobileCalendar
@@ -64,7 +82,7 @@ export function MobileCalendarPicker({
                 />
                 {bottomContent}
                 <Row className={styles.actions}>
-                    <Button onClick={onReset}>{resetLabel}</Button>
+                    {onReset ? <Button onClick={handleReset}>{resetLabel}</Button> : <span />}
                     <Button type="primary" onClick={onConfirm}>
                         {confirmLabel}
                     </Button>

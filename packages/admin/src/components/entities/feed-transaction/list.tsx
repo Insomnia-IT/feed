@@ -28,6 +28,7 @@ import type { FeedTransactionAnomaly, FeedTransactionEntity } from 'interfaces';
 
 import { dayjsExtended, formDateFormat } from 'shared/lib';
 import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
+import { useScreen } from 'shared/providers';
 import { MEAL_MAP, NEW_API_URL } from 'const';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
 import type { FilterItem } from '../vols/vol-list/filters/filter-types';
@@ -178,6 +179,7 @@ interface TransformedTransaction {
 
 export const FeedTransactionList: FC = () => {
     const { filterFields, visibleFilters, setVisibleFilters } = useTransactionsFilters();
+    const { isMobile } = useScreen();
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
     const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
@@ -401,7 +403,7 @@ export const FeedTransactionList: FC = () => {
                     <Button type="default" icon={<WarningOutlined />} onClick={() => setAnomaliesModalOpen(true)}>
                         Аномалии
                     </Button>
-                    {defaultButtons}
+                    {!isMobile && defaultButtons}
                 </>
             )}
         >
@@ -445,6 +447,7 @@ export const FeedTransactionList: FC = () => {
                     visibleFilters={visibleFilters}
                     setVisibleFilters={setVisibleFilters}
                     activeFilters={activeFilters}
+                    isMobile={isMobile}
                     setActiveFilters={(next) => {
                         setActiveFilters(next);
                         setTimeout(() => searchFormProps?.form?.submit());
