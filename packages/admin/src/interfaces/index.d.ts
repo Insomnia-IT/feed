@@ -30,6 +30,7 @@ export interface VolEntity {
     is_ticket_received?: boolean;
     supervisor_id?: number | null;
     supervisor?: { id: number; name: string } | null;
+    approver?: string | null;
 }
 
 export interface KitchenEntity {

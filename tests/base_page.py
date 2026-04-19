@@ -305,6 +305,7 @@ class BasePage:
         add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
         add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
+        self.fill_approver_field()
         return supervisor_name
 
 
@@ -326,6 +327,11 @@ class BasePage:
         except Exception:
             # если нет модалки, иди дальше
             pass
+
+    def fill_approver_field(self, approver_name="Test Approver"):
+        approver_input = self.page.locator(create_user.APPROVER_INPUT)
+        approver_input.wait_for(state="visible", timeout=5000)
+        approver_input.fill(approver_name)
 
     def find_user(self, user_name="Test_name"):
         find = self.page.locator(create_user.FIND_INPUT)
