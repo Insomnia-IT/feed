@@ -3,16 +3,17 @@ import { useTable, useModalForm } from '@refinedev/antd';
 import { notification, type FormInstance } from 'antd';
 import axios from 'axios';
 import type { CrudFilter } from '@refinedev/core';
-import type { StorageItemPositionEntity } from 'interfaces';
+import type { StorageItemPositionEntity, ItemEntity } from 'interfaces';
 import { NEW_API_URL } from 'const';
 
 interface UsePositionsTabParams {
     storage: any;
     filters: CrudFilter[];
     actionForm: FormInstance;
+    itemsData?: ItemEntity[];
 }
 
-export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTabParams) => {
+export const usePositionsTab = ({ storage, filters, actionForm, itemsData }: UsePositionsTabParams) => {
     const {
         tableProps: positionsTableProps,
         tableQuery: { refetch: positionsRefetch }
@@ -28,6 +29,8 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
     const [isReceiveModalVisible, setIsReceiveModalVisible] = useState(false);
     const [isIssueModalVisible, setIsIssueModalVisible] = useState(false);
     const [isMoveModalVisible, setIsMoveModalVisible] = useState(false);
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+    const [createdPositionId, setCreatedPositionId] = useState<number | undefined>();
     const [selectedPosition, setSelectedPosition] = useState<StorageItemPositionEntity | null>(null);
 
     const {
@@ -37,7 +40,16 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
     } = useModalForm<StorageItemPositionEntity>({
         resource: 'storage-positions',
         action: 'create',
-        onMutationSuccess: () => {
+        onMutationSuccess: (data) => {
+            const createdPosition = data?.data;
+            const itemId = positionFormProps.form?.getFieldValue('item');
+            const selectedItem = itemsData?.find((item) => item.id === itemId);
+
+            if (selectedItem?.is_anonymous && createdPosition?.id) {
+                setCreatedPositionId(createdPosition.id);
+                setIsSuccessModalVisible(true);
+            }
+
             positionsRefetch();
         }
     });
@@ -86,6 +98,9 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
         setIsIssueModalVisible,
         isMoveModalVisible,
         setIsMoveModalVisible,
+        isSuccessModalVisible,
+        setIsSuccessModalVisible,
+        createdPositionId,
         selectedPosition,
         setSelectedPosition,
         positionModalProps,

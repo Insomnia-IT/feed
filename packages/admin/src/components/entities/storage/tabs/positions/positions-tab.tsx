@@ -9,6 +9,7 @@ import { ReceiveModal } from './receive-modal';
 import { IssueModal } from './issue-modal';
 import { MoveModal } from './modals/move-modal';
 import { CreatePositionModal } from './create-position-modal';
+import { PositionSuccessModal } from './modals/position-success-modal';
 import { useItemOptions, useItemsTab } from '../items/hooks/use-items-tab';
 import { useBinOptions } from '../bins/hooks/use-bins-tab';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
@@ -16,15 +17,16 @@ import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 export const PositionsTab: React.FC = () => {
     const { storage, filters } = useStorageData();
     const qrScanner = useStorageQrScanner();
+    const { itemsTableProps } = useItemsTab();
+    const itemsData = itemsTableProps.dataSource as ItemEntity[] | undefined;
     const positions = usePositionsTab({
         storage,
         filters,
-        actionForm: qrScanner.actionForm
+        actionForm: qrScanner.actionForm,
+        itemsData
     });
     const { itemOptions } = useItemOptions();
     const { binOptions } = useBinOptions(filters);
-    const { itemsTableProps } = useItemsTab();
-    const itemsData = itemsTableProps.dataSource as ItemEntity[] | undefined;
 
     const columns: ColumnsType<StorageItemPositionEntity> = [
         { dataIndex: 'id', title: 'ID' },
@@ -123,6 +125,11 @@ export const PositionsTab: React.FC = () => {
                 onOk={() => positions.handleMove()}
                 form={qrScanner.actionForm}
                 binOptions={binOptions}
+            />
+            <PositionSuccessModal
+                open={positions.isSuccessModalVisible}
+                positionId={positions.createdPositionId}
+                onClose={() => positions.setIsSuccessModalVisible(false)}
             />
             <QRScannerModal
                 open={qrScanner.isQrModalOpen}

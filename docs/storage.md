@@ -270,6 +270,17 @@ Positions (inventory) are managed on the "Positions" tab:
     - Eliminates manual search through volunteer lists.
     - Reduces errors in volunteer identification.
 
+### Position Success Modal
+
+- **Feature**: Automatic display of the assigned position ID after creation.
+- **Workflow**:
+    - When a position is created for an **Anonymous** item, a success modal automatically appears.
+    - The modal displays the **Position ID** in a very large font (120px).
+    - **Purpose**: Allows operators to immediately see the assigned number and mark the physical item without manual lookup in the table.
+- **Implementation**:
+    - Triggered in the `usePositionsTab` hook's `onMutationSuccess` callback.
+    - Only shown if `Item.is_anonymous=True`, as unique/regular positions usually require more detailed handling or are already labeled.
+
 ### Verification already completed
 
 - `backend/venv/bin/python backend/manage.py check`
