@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { BrowserRouter } from 'react-router';
 import { Refine, useGetIdentity } from '@refinedev/core';
 import routerProvider, {
@@ -9,7 +10,7 @@ import { useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
 
-import antdLocale from 'antd/lib/locale/ru_RU';
+import antdLocaleModule from 'antd/lib/locale/ru_RU';
 import 'shared/lib/dateHelper';
 import {
     UserOutlined,
@@ -32,6 +33,10 @@ import { AppRoles, type UserData } from 'auth';
 import { AppRoutes } from './app-routes';
 import { buildDocumentTitle } from './i18n/document-title';
 import { i18nProvider } from './i18n/provider';
+
+const antdLocale = ('default' in antdLocaleModule ? antdLocaleModule.default : antdLocaleModule) as NonNullable<
+    ComponentProps<typeof ConfigProvider>['locale']
+>;
 
 const InitialNavigation = () => {
     const { data: user } = useGetIdentity<UserData>();

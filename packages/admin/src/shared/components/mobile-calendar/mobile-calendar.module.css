@@ -1,0 +1,64 @@
+.wrap {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.summary {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: #fafafa;
+}
+
+.summaryItem {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.summaryLabel {
+    color: #8c8c8c;
+    font-size: 12px;
+}
+
+.summaryValue {
+    font-weight: 500;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 0;
+}
+
+.dateCell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 32px;
+    border-radius: 8px;
+}
+
+.dateCellSelected {
+    background: #1677ff;
+    color: #fff;
+}
+
+.dateCellInRange {
+    background: #e6f4ff;
+    color: #1677ff;
+}
+
+.wrap :global(.ant-picker-calendar) {
+    width: 100%;
+    padding: 0 8px 8px;
+}
+
+.wrap :global(.ant-picker-calendar-header) {
+    display: none;
+}
