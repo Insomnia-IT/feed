@@ -51,7 +51,7 @@ jobs:
     - name: Create app link
       if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
       id: create-link
-      run: echo "app_url=https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru" >> "$GITHUB_OUTPUT"
+      run: echo "app_url=https://1${{ github.event.number }}.feedapp-dev.insomniafest.ru" >> "$GITHUB_OUTPUT"
     - name: remove db dir
       if: ${{ github.event.action == 'closed' || github.event.pull_request.draft == true }}
       run: |
@@ -94,7 +94,7 @@ jobs:
 
       - name: ⌛ Do Testing
         env:
-          FEED_APP_HOST: https://9${{ github.event.number }}.feedapp-dev.insomniafest.ru
+          FEED_APP_HOST: https://1${{ github.event.number }}.feedapp-dev.insomniafest.ru
         run: |
           cd tests
           echo $FEED_APP_HOST
