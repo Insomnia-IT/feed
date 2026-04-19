@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router';
-import { Refine, useGetIdentity, type I18nProvider } from '@refinedev/core';
+import { Refine, useGetIdentity } from '@refinedev/core';
 import routerProvider, {
     DocumentTitleHandler,
     NavigateToResource,
@@ -10,6 +10,7 @@ import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
 
 import antdLocale from 'antd/lib/locale/ru_RU';
+import 'shared/lib/dateHelper';
 import {
     UserOutlined,
     InsertRowRightOutlined,
@@ -30,50 +31,8 @@ import { authProvider } from 'authProvider';
 import { dataProvider } from 'dataProvider';
 import { AppRoles, type UserData } from 'auth';
 import { AppRoutes } from './app-routes';
-
-import common from './locales/ru/common.json';
-
-type SupportedLocale = 'ru';
-interface TranslationObject {
-    [key: string]: string | TranslationObject;
-}
-type TranslationValue = string | TranslationObject;
-type TranslationParams = Record<string, string | number | boolean | null | undefined>;
-
-const messages: Record<SupportedLocale, TranslationValue> = { ru: common as TranslationValue };
-let currentLocale: SupportedLocale = 'ru';
-
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
-
-function getByPath(obj: unknown, path: string[]): string | undefined {
-    let current: unknown = obj;
-    for (const key of path) {
-        if (!isRecord(current) || !(key in current)) {
-            return undefined;
-        }
-        current = current[key];
-    }
-    return typeof current === 'string' ? current : undefined;
-}
-
-const i18nProvider: I18nProvider = {
-    translate: (key: string, params?: TranslationParams): string => {
-        const path = key.split('.');
-        let msg = getByPath(messages[currentLocale], path);
-        if (!msg) return key;
-
-        if (params) {
-            Object.entries(params).forEach(([k, v]) => {
-                msg = msg!.replace(new RegExp(`{{${k}}}`, 'g'), String(v));
-            });
-        }
-        return msg!;
-    },
-    changeLocale: async (locale: string): Promise<void> => {
-        if (locale === 'ru') currentLocale = 'ru';
-    },
-    getLocale: (): string => currentLocale
-};
+import { buildDocumentTitle } from './i18n/document-title';
+import { i18nProvider } from './i18n/provider';
 
 const InitialNavigation = () => {
     const { data: user } = useGetIdentity<UserData>();
@@ -176,7 +135,7 @@ const App = () => {
                         >
                             <AppRoutes initial={<InitialNavigation />} />
                             <UnsavedChangesNotifier />
-                            <DocumentTitleHandler />
+                            <DocumentTitleHandler handler={buildDocumentTitle} />
                         </Refine>
                     </AntdApp>
                 </ScreenProvider>
