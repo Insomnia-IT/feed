@@ -91,7 +91,7 @@ const DesktopVolunteersContent = ({
 
     const pagination = useMemo<TablePaginationConfig>(
         () => ({
-            total: volunteers?.total ?? 1,
+            total: volunteers?.total ?? 0,
             showTotal: (total) => (
                 <>
                     <span data-testid="volunteer-count-caption">Волонтёров:</span>{' '}
@@ -160,7 +160,7 @@ const DesktopVolunteersContent = ({
 };
 
 export const VolList = () => {
-    const { isDesktop } = useScreen();
+    const { isDesktop, isMobile } = useScreen();
     const navigate = useNavigate();
     const { data: user } = useGetIdentity<UserData>();
     const { getItem, setItem } = useLocalStorage();
@@ -342,8 +342,10 @@ export const VolList = () => {
                         visibleFilters={visibleFilters}
                         setVisibleFilters={setVisibleFilters}
                         filterFields={filterFields}
+                        isMobile={isMobile}
                         searchText={searchText}
                         setSearchText={setSearchText}
+                        mobileSummary={!isDesktop ? <span>Найдено: {mobileTotal}</span> : undefined}
                     />
                     {isMyBrigadeAvailable && (
                         <Segmented
@@ -374,17 +376,12 @@ export const VolList = () => {
                             openVolunteer={openVolunteer}
                         />
                     ) : (
-                        <>
-                            <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
-                                <span>Найдено: {mobileTotal}</span>
-                            </Row>
-                            <VolunteerMobileList
-                                filterQueryParams={effectiveFilterQueryParams}
-                                statusById={statusById}
-                                openVolunteer={openVolunteer}
-                                onTotalChange={setMobileTotal}
-                            />
-                        </>
+                        <VolunteerMobileList
+                            filterQueryParams={effectiveFilterQueryParams}
+                            statusById={statusById}
+                            openVolunteer={openVolunteer}
+                            onTotalChange={setMobileTotal}
+                        />
                     )}
                 </ActiveColumnsContextProvider>
             </CanAccess>

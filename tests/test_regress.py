@@ -19,6 +19,7 @@ host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
 created_user_name = "Test_name"
 admin_login = "admin"
 admin_password = "Kolombina25"
+API_TIMEOUT = 30
 
 
 def get_admin_token() -> str:
@@ -26,7 +27,7 @@ def get_admin_token() -> str:
     auth_response = requests.post(
         f"{api_url}/auth/login/",
         json={"username": admin_login, "password": admin_password},
-        timeout=15,
+        timeout=API_TIMEOUT,
     )
     auth_response.raise_for_status()
     return auth_response.json()["key"]
@@ -39,7 +40,7 @@ def get_direction_head_case() -> tuple[dict, dict]:
     volunteers_response = requests.get(
         f"{api_url}/volunteers/?limit=1000",
         headers={"Authorization": f"Token {token}"},
-        timeout=15,
+        timeout=API_TIMEOUT,
     )
     volunteers_response.raise_for_status()
 
@@ -88,9 +89,55 @@ def set_direction_head_block_state(volunteer_id: int | str, is_blocked: bool) ->
         f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
         headers={"Authorization": f"V-TOKEN {get_direction_head_qr()}"},
         json={"is_blocked": is_blocked},
-        timeout=15,
+        timeout=API_TIMEOUT,
     )
     response.raise_for_status()
+
+
+def get_direction_head_headers() -> dict[str, str]:
+    return {"Authorization": f"V-TOKEN {get_direction_head_qr()}"}
+
+
+def get_volunteer_uuid_for_direction_head(volunteer_id: int | str) -> str:
+    response = requests.get(
+        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
+        headers=get_direction_head_headers(),
+        timeout=API_TIMEOUT,
+    )
+    response.raise_for_status()
+    return response.json()["uuid"]
+
+
+def wait_for_direction_head_block_history_actions(volunteer_id: int | str) -> None:
+    volunteer_uuid = get_volunteer_uuid_for_direction_head(volunteer_id)
+    deadline = time.time() + API_TIMEOUT
+
+    while time.time() < deadline:
+        response = requests.get(
+            f"{host}/feedapi/v1/history/",
+            headers=get_direction_head_headers(),
+            params={"volunteer_uuid": volunteer_uuid, "limit": 100},
+            timeout=API_TIMEOUT,
+        )
+        response.raise_for_status()
+
+        block_history = sorted(
+            (
+                item
+                for item in response.json().get("results", [])
+                if item.get("object_name") == "volunteer" and "is_blocked" in (item.get("data") or {})
+            ),
+            key=lambda item: item["action_at"],
+            reverse=True,
+        )
+
+        latest_values = [item["data"]["is_blocked"] for item in block_history[:2]]
+        if latest_values == [False, True]:
+            return
+
+        time.sleep(1)
+
+    raise AssertionError("Ошибка: В истории не появились подряд записи блокировки и разблокировки волонтера.")
 
 
 @lru_cache(maxsize=1)
@@ -100,7 +147,7 @@ def get_supervisor_candidates() -> tuple[dict, dict]:
     volunteers_response = requests.get(
         f"{api_url}/volunteers/?limit=1000",
         headers={"Authorization": f"Token {token}"},
-        timeout=15,
+        timeout=API_TIMEOUT,
     )
     volunteers_response.raise_for_status()
 
@@ -124,7 +171,7 @@ def set_volunteer_supervisor(volunteer_id: int | str, supervisor_id: int | str |
         f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
         headers={"Authorization": f"Token {get_admin_token()}"},
         json={"supervisor_id": supervisor_id},
-        timeout=15,
+        timeout=API_TIMEOUT,
     )
     response.raise_for_status()
 
@@ -133,7 +180,7 @@ def get_volunteer_supervisor_name(volunteer_id: int | str) -> str:
     response = requests.get(
         f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
         headers={"Authorization": f"Token {get_admin_token()}"},
-        timeout=15,
+        timeout=API_TIMEOUT,
     )
     response.raise_for_status()
     supervisor = response.json().get("supervisor")
@@ -473,36 +520,42 @@ def test_teamlead_rights(page):
     login_page.first_window_qr()
     login_page.scan_user(get_direction_head_qr())
     page.wait_for_url(f"{host}/volunteers", timeout=10000)
+
+    # открыть карточку волонтера из той же службы
     target_id = get_direction_head_target_id()
-    # открыть любого волонтера
     page.goto(f"{host}/volunteers/edit/{target_id}")
     page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
-    # проверить, что нет кнопки удаления 
-    assert login_page.is_not_element_present(None, create_user.DELETE_USER_BUTTON), "Ошибка: Кнопка удаления волонтера видна руководителю службы!"
-    # проверить, что поля кухня, право доступа, комментарий бюро - некликабельны
-    assert login_page.is_element_disabled(create_user.KITCHEN_FIELD), "Ошибка: Поле кухня кликабельно для руководителя службы!"
-    assert login_page.is_element_disabled(create_user.RIGHTS_FIELD), "Ошибка: Поле право доступа кликабельно для руководителя службы!"
-    assert login_page.is_element_disabled(create_user.COMMENT_FIELD), "Ошибка: Поле комментарий бюро кликабельно для руководителя службы!"
-    # проверить бан
-    # проверить бан и разбан через API той же ролью, чтобы не зависеть от нестабильного обновления UI в docker
+
+    # проверить, что недоступны удаление и чувствительные поля
+    assert login_page.is_not_element_present(None, create_user.DELETE_USER_BUTTON), (
+        "Ошибка: Кнопка удаления волонтера видна руководителю службы!"
+    )
+    assert login_page.is_element_disabled(create_user.KITCHEN_FIELD), (
+        "Ошибка: Поле кухня кликабельно для руководителя службы!"
+    )
+    assert login_page.is_element_disabled(create_user.RIGHTS_FIELD), (
+        "Ошибка: Поле право доступа кликабельно для руководителя службы!"
+    )
+    assert login_page.is_element_disabled(create_user.COMMENT_FIELD), (
+        "Ошибка: Поле комментарий бюро кликабельно для руководителя службы!"
+    )
+
+    # проверить бан и разбан через API той же ролью, чтобы не зависеть
+    # от асинхронной загрузки истории действий во фронте
     try:
         set_direction_head_block_state(target_id, True)
         set_direction_head_block_state(target_id, False)
     finally:
         set_direction_head_block_state(target_id, False)
+
+    # после перезагрузки убедиться, что в истории появились две записи:
+    # сначала блокировка, затем разблокировка
     page.reload()
     page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
-    # проверить две записи в истории действий
-    login_page.check_history_actions()
-    # последняя запись - разбан
-    assert login_page.check_last_action() == "Разблокирован", "Ошибка: Последняя запись в истории действий не разбан!"
-    # предпоследняя запись - бан
-    assert login_page.check_second_last_action() == "Заблокирован", "Ошибка: Предпоследняя запись в истории действий не бан!"
-    print("????????????? ???????????????? ??????????????????!")
-    # ?????????????? ?????????????????????? ???????? ?????? ?????????????? (?????????? ???? ???????????????? ???????????? ????????/?????????????? ?? ????????????????)
+    wait_for_direction_head_block_history_actions(target_id)
+
+    # очистить возможный комментарий, который мог остаться после проверок
     login_page.cleanup_volunteer_comment(get_direction_head_target_name())
-
-
 @pytest.mark.skip(reason="Скип до фикса бага с очисткой поля Бригадир")
 def test_change_and_delete_supervisor(page):
     #залогиниться

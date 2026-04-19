@@ -58,6 +58,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const saveLastSyncStart = useCallback((ts: number): void => {
+        // eslint-disable-next-line no-console
         console.log('localStorage.setItem', String(ts));
 
         localStorage.setItem('lastSyncStart', String(ts));
@@ -73,6 +74,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             kitchenId?: number;
         } = {}): Promise<void> => {
             if (navigator.onLine && !syncFetching) {
+                // eslint-disable-next-line no-console
                 console.log('online, updating...');
                 try {
                     const updatedAt = await syncSend({
@@ -86,6 +88,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                     }
                     return;
                 } catch (e) {
+                    // eslint-disable-next-line no-console
                     console.log(e);
                 }
             }

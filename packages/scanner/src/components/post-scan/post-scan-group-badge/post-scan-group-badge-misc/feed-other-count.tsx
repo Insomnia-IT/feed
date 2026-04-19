@@ -12,26 +12,18 @@ const fixNumber = (value?: string): number => {
 };
 
 export const FeedOtherCount = ({
-    maxCount,
     nonVegansCount,
     setNonVegansCount,
     setVegansCount,
     vegansCount
 }: {
-    maxCount: number;
     vegansCount: number;
     setVegansCount: (value: number) => void;
     nonVegansCount: number;
     setNonVegansCount: (value: number) => void;
 }) => {
-    const maxVeganCount = maxCount - nonVegansCount;
-    const maxNonVeganCount = maxCount - vegansCount;
-
     return (
         <div style={{ width: '100%' }}>
-            <div style={{ paddingBottom: '20px' }}>
-                <b>Максимум {maxCount} суммарно</b>
-            </div>
             <div style={{ display: 'flex', justifyContent: 'space-evenly', width: '100%' }}>
                 <div
                     style={{
@@ -45,7 +37,6 @@ export const FeedOtherCount = ({
                             maxWidth: '90%'
                         }}
                         type="number"
-                        max={maxVeganCount}
                         value={vegansCount}
                         onChange={(event) => {
                             const textValue = event?.currentTarget?.value;
@@ -57,9 +48,8 @@ export const FeedOtherCount = ({
                             }
 
                             const value = fixNumber(textValue);
-                            const isMaxCountReached = value >= maxVeganCount;
 
-                            setVegansCount(isMaxCountReached ? maxVeganCount : value);
+                            setVegansCount(value);
                         }}
                     />
                 </div>
@@ -75,7 +65,6 @@ export const FeedOtherCount = ({
                             maxWidth: '90%'
                         }}
                         type="number"
-                        max={maxNonVeganCount}
                         value={nonVegansCount}
                         onChange={(event) => {
                             const textValue = event?.currentTarget?.value;
@@ -86,9 +75,8 @@ export const FeedOtherCount = ({
                             }
 
                             const value = fixNumber(textValue);
-                            const isMaxCountReached = value >= maxNonVeganCount;
 
-                            setNonVegansCount(isMaxCountReached ? maxNonVeganCount : value);
+                            setNonVegansCount(value);
                         }}
                     />
                 </div>
