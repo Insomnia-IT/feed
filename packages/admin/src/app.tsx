@@ -57,7 +57,7 @@ const App = () => {
                                 {
                                     name: 'dashboard',
                                     list: '/dashboard',
-                                    meta: { icon: <DashboardOutlined />, label: 'Регистрация' }
+                                    meta: { icon: <DashboardOutlined /> }
                                 },
                                 {
                                     name: 'volunteers',
@@ -65,7 +65,7 @@ const App = () => {
                                     create: '/volunteers/create',
                                     edit: '/volunteers/edit/:id',
                                     show: '/volunteers/show/:id',
-                                    meta: { icon: <UserOutlined />, label: 'Волонтеры' }
+                                    meta: { icon: <UserOutlined /> }
                                 },
                                 {
                                     name: 'volunteer-custom-fields',
@@ -75,7 +75,6 @@ const App = () => {
                                     show: '/volunteer-custom-fields/show/:id',
                                     meta: {
                                         icon: <InsertRowRightOutlined />,
-                                        label: 'Кастомные поля',
                                         hide: true
                                     }
                                 },
@@ -85,7 +84,7 @@ const App = () => {
                                     create: '/directions/create',
                                     edit: '/directions/edit/:id',
                                     show: '/directions/show/:id',
-                                    meta: { icon: <FormatPainterOutlined />, label: 'Службы/Локации' }
+                                    meta: { icon: <FormatPainterOutlined /> }
                                 },
                                 {
                                     name: 'group-badges',
@@ -93,33 +92,33 @@ const App = () => {
                                     create: '/group-badges/create',
                                     edit: '/group-badges/edit/:id',
                                     show: '/group-badges/show/:id',
-                                    meta: { icon: <ProfileOutlined />, label: 'Групповые бейджи' }
+                                    meta: { icon: <ProfileOutlined /> }
                                 },
                                 {
                                     name: 'feed-transaction',
                                     list: '/feed-transaction',
                                     create: '/feed-transaction/create',
-                                    meta: { icon: <HistoryOutlined />, label: 'История питания' }
+                                    meta: { icon: <HistoryOutlined /> }
                                 },
                                 {
                                     name: 'stats',
                                     list: '/stats',
-                                    meta: { icon: <LineChartOutlined />, label: 'Статистика' }
+                                    meta: { icon: <LineChartOutlined /> }
                                 },
                                 {
                                     name: 'scanner-page',
                                     list: '/scanner-page',
-                                    meta: { icon: <MobileOutlined />, label: 'Кормитель' }
+                                    meta: { icon: <MobileOutlined /> }
                                 },
                                 {
                                     name: 'wash',
                                     list: '/wash',
-                                    meta: { icon: <ExperimentOutlined />, label: 'Стирка' }
+                                    meta: { icon: <ExperimentOutlined /> }
                                 },
                                 {
                                     name: 'sync',
                                     list: '/sync',
-                                    meta: { icon: <SyncOutlined />, label: 'Синхронизация' }
+                                    meta: { icon: <SyncOutlined /> }
                                 }
                             ]}
                         >
