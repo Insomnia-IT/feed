@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useList } from '@refinedev/core';
 
 import { FilterFieldType } from '../../vols/vol-list/filters/filter-types';
-import type { GroupBadgeEntity, KitchenEntity } from 'interfaces';
+import type { DirectionEntity, GroupBadgeEntity, KitchenEntity } from 'interfaces';
 import { MEAL_MAP } from 'const';
 
 const mealTypes = Object.entries(MEAL_MAP).map(([id, name]) => ({ id, name }));
@@ -20,10 +20,16 @@ export const useTransactionsFilters = () => {
         pagination: { pageSize: 0 }
     });
 
-    const kitchens = kitchensResult?.data ?? [];
-    const groupBadges = groupBadgesResult?.data ?? [];
+    const { result: directionsResult } = useList<DirectionEntity>({
+        resource: 'directions',
+        pagination: { mode: 'off' }
+    });
 
     const filterFields = useMemo(() => {
+        const kitchens = kitchensResult?.data ?? [];
+        const groupBadges = groupBadgesResult?.data ?? [];
+        const directions = directionsResult?.data ?? [];
+
         return [
             {
                 type: FilterFieldType.Boolean,
@@ -72,9 +78,17 @@ export const useTransactionsFilters = () => {
                 skipNull: true,
                 single: true,
                 lookup: () => groupBadges
+            },
+            {
+                type: FilterFieldType.Lookup,
+                name: 'direction',
+                title: 'Службы',
+                skipNull: true,
+                single: true,
+                lookup: () => directions
             }
         ];
-    }, [kitchens, groupBadges]);
+    }, [kitchensResult, groupBadgesResult, directionsResult]);
 
     return { filterFields, visibleFilters, setVisibleFilters };
 };

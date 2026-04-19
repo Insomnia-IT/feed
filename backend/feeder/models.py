@@ -97,6 +97,7 @@ class Person(TimeMixin, CommentMixin, SoftDeleteModelMixin):
     phone = models.CharField(max_length=255, null=True, blank=True)
     email = models.CharField(max_length=255, null=True, blank=True)
     is_vegan = models.BooleanField(default=False)
+    banned = models.BooleanField(null=True, blank=True)
 
 
 class Photo(TimeMixin):
