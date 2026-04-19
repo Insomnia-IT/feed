@@ -10,8 +10,6 @@ import styles from '../../list.module.css';
 
 import { isEffectiveFilterValue } from './is-effective-filter-value';
 
-export { isEffectiveFilterValue } from './is-effective-filter-value';
-
 interface IProps {
     filterFields: FilterField[];
     isMobile?: boolean;
