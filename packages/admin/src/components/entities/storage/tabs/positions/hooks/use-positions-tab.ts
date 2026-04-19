@@ -27,6 +27,7 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
 
     const [isReceiveModalVisible, setIsReceiveModalVisible] = useState(false);
     const [isIssueModalVisible, setIsIssueModalVisible] = useState(false);
+    const [isMoveModalVisible, setIsMoveModalVisible] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState<StorageItemPositionEntity | null>(null);
 
     const {
@@ -50,11 +51,30 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
             notification.success({ message: 'Успешно' });
             setIsReceiveModalVisible(false);
             setIsIssueModalVisible(false);
+            setIsMoveModalVisible(false);
             actionForm.resetFields();
             positionsRefetch();
         } catch (error) {
             console.error(error);
             notification.error({ message: 'Ошибка при выполнении операции' });
+        }
+    };
+
+    const handleMove = async () => {
+        try {
+            const values = await actionForm.validateFields();
+
+            await axios.post(`${NEW_API_URL}/storage-positions/${selectedPosition?.id}/move/`, {
+                target_bin_id: values.bin
+            });
+
+            notification.success({ message: 'Успешно перемещено' });
+            setIsMoveModalVisible(false);
+            actionForm.resetFields();
+            positionsRefetch();
+        } catch (error) {
+            console.error(error);
+            notification.error({ message: 'Ошибка при перемещении' });
         }
     };
 
@@ -64,11 +84,14 @@ export const usePositionsTab = ({ storage, filters, actionForm }: UsePositionsTa
         setIsReceiveModalVisible,
         isIssueModalVisible,
         setIsIssueModalVisible,
+        isMoveModalVisible,
+        setIsMoveModalVisible,
         selectedPosition,
         setSelectedPosition,
         positionModalProps,
         positionFormProps,
         showPositionModal,
-        handleAction
+        handleAction,
+        handleMove
     };
 };

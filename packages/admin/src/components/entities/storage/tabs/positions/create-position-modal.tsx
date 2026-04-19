@@ -30,9 +30,6 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
     return (
         <Modal {...modalProps} title="Создать позицию">
             <Form {...formProps} layout="vertical">
-                <Form.Item name="bin" label="Ячейка" rules={[{ required: true }]}>
-                    <Select options={binOptions} />
-                </Form.Item>
                 <Form.Item name="item" label="Предмет" rules={[{ required: true }]}>
                     <Select
                         options={itemOptions}
@@ -47,6 +44,9 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
                             }
                         }}
                     />
+                </Form.Item>
+                <Form.Item name="bin" label="Ячейка" rules={[{ required: true }]}>
+                    <Select options={binOptions} />
                 </Form.Item>
                 <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.item !== currentValues.item}>
                     {({ getFieldValue }) => {

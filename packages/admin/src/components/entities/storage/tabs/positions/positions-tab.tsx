@@ -7,6 +7,7 @@ import { usePositionsTab } from './hooks/use-positions-tab';
 import { useStorageData, useStorageQrScanner } from '../../hooks';
 import { ReceiveModal } from './receive-modal';
 import { IssueModal } from './issue-modal';
+import { MoveModal } from './modals/move-modal';
 import { CreatePositionModal } from './create-position-modal';
 import { useItemOptions, useItemsTab } from '../items/hooks/use-items-tab';
 import { useBinOptions } from '../bins/hooks/use-bins-tab';
@@ -61,7 +62,8 @@ export const PositionsTab: React.FC = () => {
                         icon={<ArrowRightOutlined />}
                         disabled={record.count === 0}
                         onClick={() => {
-                            // TODO
+                            positions.setSelectedPosition(record);
+                            positions.setIsMoveModalVisible(true);
                         }}
                     >
                         Переместить
@@ -113,6 +115,14 @@ export const PositionsTab: React.FC = () => {
                 volunteerSelectProps={qrScanner.volunteerSelectProps}
                 isVolunteerLoading={qrScanner.isVolunteerLoading}
                 onOpenQrScanner={qrScanner.handleOpenQrScanner}
+            />
+            <MoveModal
+                open={positions.isMoveModalVisible}
+                position={positions.selectedPosition}
+                onClose={() => positions.setIsMoveModalVisible(false)}
+                onOk={() => positions.handleMove()}
+                form={qrScanner.actionForm}
+                binOptions={binOptions}
             />
             <QRScannerModal
                 open={qrScanner.isQrModalOpen}

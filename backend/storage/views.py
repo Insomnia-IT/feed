@@ -205,6 +205,26 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
 
         return Response(self.get_serializer(position).data)
 
+    @action(detail=True, methods=['post'])
+    def move(self, request, pk=None):
+        position = self.get_object()
+        target_bin_id = request.data.get('target_bin_id')
+
+        if not target_bin_id:
+            return Response({'error': 'target_bin_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            target_bin = Bin.objects.get(id=target_bin_id)
+        except Bin.DoesNotExist:
+            return Response({'error': 'Target bin not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            position.bin = target_bin
+            position.storage = target_bin.storage
+            position.save()
+
+        return Response(self.get_serializer(position).data)
+
 class IssuanceViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Issuance.objects.all()
     ordering = ('-id')
