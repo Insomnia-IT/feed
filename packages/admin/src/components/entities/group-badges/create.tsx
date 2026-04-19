@@ -1,14 +1,18 @@
-import { FC } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { Form } from 'antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
 
 import type { GroupBadgeEntity } from 'interfaces';
+import { useLocalStorage } from 'shared/hooks';
 
 import { CreateEdit } from './common';
 
-export const GroupBadgeCreate: FC<IResourceComponentsProps> = () => {
-    const { formProps, saveButtonProps } = useForm<GroupBadgeEntity>();
+export const GroupBadgeCreate = () => {
+    const { setItem } = useLocalStorage();
+    const { form, formProps, saveButtonProps } = useForm<GroupBadgeEntity>({
+        onMutationSuccess: () => {
+            setItem('gbPageIndex', '1');
+        }
+    });
 
     return (
         <Create
@@ -20,7 +24,7 @@ export const GroupBadgeCreate: FC<IResourceComponentsProps> = () => {
                 }
             }}
         >
-            <Form {...formProps} layout="vertical">
+            <Form {...formProps} form={form} scrollToFirstError layout="vertical">
                 <CreateEdit />
             </Form>
         </Create>

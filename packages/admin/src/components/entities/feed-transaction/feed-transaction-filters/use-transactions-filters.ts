@@ -1,31 +1,35 @@
 import { useMemo, useState } from 'react';
-import { FilterFieldType } from '../../vols/vol-list/filters/filter-types';
 import { useList } from '@refinedev/core';
-import { GroupBadgeEntity, KitchenEntity } from 'interfaces';
+
+import { FilterFieldType } from '../../vols/vol-list/filters/filter-types';
+import type { DirectionEntity, GroupBadgeEntity, KitchenEntity } from 'interfaces';
 import { MEAL_MAP } from 'const';
 
-const mealTypes = Object.entries(MEAL_MAP).map(([id, name]) => {
-    return { id, name };
-});
+const mealTypes = Object.entries(MEAL_MAP).map(([id, name]) => ({ id, name }));
 
 export const useTransactionsFilters = () => {
-    const [visibleFilters, setVisibleFilters] = useState<Array<string>>([]);
+    const [visibleFilters, setVisibleFilters] = useState<string[]>([]);
 
-    const { data: kitchens } = useList<KitchenEntity>({
+    const { result: kitchensResult } = useList<KitchenEntity>({
         resource: 'kitchens',
-        pagination: {
-            pageSize: 0
-        }
+        pagination: { pageSize: 0 }
     });
 
-    const { data: groupBadges } = useList<GroupBadgeEntity>({
+    const { result: groupBadgesResult } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
-        pagination: {
-            pageSize: 0
-        }
+        pagination: { pageSize: 0 }
+    });
+
+    const { result: directionsResult } = useList<DirectionEntity>({
+        resource: 'directions',
+        pagination: { mode: 'off' }
     });
 
     const filterFields = useMemo(() => {
+        const kitchens = kitchensResult?.data ?? [];
+        const groupBadges = groupBadgesResult?.data ?? [];
+        const directions = directionsResult?.data ?? [];
+
         return [
             {
                 type: FilterFieldType.Boolean,
@@ -40,12 +44,24 @@ export const useTransactionsFilters = () => {
                 single: true
             },
             {
+                type: FilterFieldType.Boolean,
+                name: 'is_paid',
+                title: 'Платное',
+                single: true
+            },
+            {
+                type: FilterFieldType.Boolean,
+                name: 'is_anomaly',
+                title: 'Аномалия',
+                single: true
+            },
+            {
                 type: FilterFieldType.Lookup,
                 name: 'kitchen',
                 title: 'Кухня',
                 skipNull: true,
                 single: true,
-                lookup: () => kitchens?.data ?? []
+                lookup: () => kitchens
             },
             {
                 type: FilterFieldType.Lookup,
@@ -61,10 +77,18 @@ export const useTransactionsFilters = () => {
                 title: 'Групповой бейдж',
                 skipNull: true,
                 single: true,
-                lookup: () => groupBadges?.data ?? []
+                lookup: () => groupBadges
+            },
+            {
+                type: FilterFieldType.Lookup,
+                name: 'direction',
+                title: 'Службы',
+                skipNull: true,
+                single: true,
+                lookup: () => directions
             }
         ];
-    }, [kitchens?.data, groupBadges?.data]);
+    }, [kitchensResult, groupBadgesResult, directionsResult]);
 
     return { filterFields, visibleFilters, setVisibleFilters };
 };

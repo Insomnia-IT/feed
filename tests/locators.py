@@ -2,10 +2,13 @@ import time
 from selenium.webdriver.common.by import By
 
 class registration():
+    CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
+    CHOOSE_QR_TYPE = ".ant-segmented-item:has-text('QR-код')"
     SEGMENTED_ITEMS = "label.ant-segmented-item"
     LOGIN = "#username"
     PASSWORD = "#password"
     BUTTONREG = "//button[span[text()='Войти']]"
+    LOGOUT = "span.ant-menu-title-content:has-text('Выход')"
     CUSTOM_FIELD = "//button[span[text()='Колонки']]"
     CUSTOM_FIELD_CREATE = "//button[span[text()='Добавить колонку']]"
     CUSTOM_NAME = "input#name"
@@ -35,7 +38,7 @@ class feed_history_pagination():
     NEXT_PAGE = ".anticon.anticon-right"
 
 class group_badges():
-    VOLONTEER_COUNTER = "span.ant-typography.ant-typography-secondary"
+    VOLONTEER_COUNTER = "h5.ant-typography span.ant-typography.ant-typography-secondary"
     DELETE_VOLUNTEER_BUTTON = "div:nth-child(2) > button"
     DELETE_VOLUNTEER_BUTTON_2 = "//button[span[text()='Удалить']]"
     SAVE_BUTTON = "//button[span[text()='Сохранить']]"
@@ -54,6 +57,8 @@ class create_user():
     SEARCH_VOLUNTEER_FIELD = "ant-input.css-sphnl3"
     USER_NAME = "#name"
     KITCHEN_NUMBER = "#kitchen"
+    SUPERVISOR = ".ant-select-selector:has(#supervisor_id)"
+    CLEAR_SUPERVISOR = ".ant-select:has(#supervisor_id) .ant-select-clear"
     MEAL_TYPE = "#feed_type"
     ROLE_USER = "#main_role"
     DEPARTMENT = "#directions"
@@ -87,11 +92,13 @@ class create_user():
 
     # Поля для проверки прав доступа (read-only)
     KITCHEN_FIELD = "#kitchen"
-    RIGHTS_FIELD = "#main_role"
+    RIGHTS_FIELD = "#access_role"
     COMMENT_FIELD = "#comment"
 
-    # История действий
-    HISTORY_TAB = "//*[text()='История действий']"
+    # «История изменений» / «История» — role=volunteer, фильтр volunteer_uuid (бан/разбан карточки).
+    # Не путать с «История действий» / «Действия» (actor_badge — действия от имени этого волонтёра).
+    HISTORY_TAB = "//*[@role='tab' and (normalize-space(.)='История изменений' or normalize-space(.)='История')]"
+    # Карточка записи (есть даже если нет diff-полей с itemDrescrNew)
+    HISTORY_ITEM_CARD = "div[class*='_historyItem']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
-
 

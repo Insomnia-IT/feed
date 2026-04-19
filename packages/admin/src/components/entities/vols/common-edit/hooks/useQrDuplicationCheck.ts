@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { FormInstance } from 'antd';
+import { type ChangeEvent, useState } from 'react';
+import type { FormInstance } from 'antd';
 
 import { dataProvider } from 'dataProvider';
-import { VolEntity } from 'interfaces';
+import type { VolEntity } from 'interfaces';
 
 export const useQrDuplicationCheck = (form: FormInstance) => {
     const [qrDuplicateVolunteer, setQrDuplicateVolunteer] = useState<VolEntity | null>(null);
@@ -31,7 +31,7 @@ export const useQrDuplicationCheck = (form: FormInstance) => {
         }
     };
 
-    const handleDuplicateQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDuplicateQRChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
         if (value) void checkQRDuplication(value);
     };

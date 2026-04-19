@@ -89,6 +89,253 @@ def get_kitchen_id_by_history(history_by_volunteer, volunteer_uuid, current_date
             if current_date < item['action_at']:
                 return item['old_data']['kitchen']
 
+
+def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
+    group_badges = list(
+        models.GroupBadge.objects
+        .filter(deleted_at=None)
+        .select_related('direction')
+        .prefetch_related('group_badge_planning_cells')
+    )
+
+    group_transactions = list(
+        models.FeedTransaction.objects
+        .filter(
+            dtime__gte=dtime_from,
+            dtime__lte=dtime_to,
+            group_badge__isnull=False,
+        )
+        .select_related('group_badge__direction')
+        .order_by('dtime', 'ulid')
+    )
+
+    transactions_by_group_badge = {}
+    real_amount_by_group_badge = {}
+    real_amount_by_direction = {}
+    used_meal_times_by_group_badge = {}
+    anomaly_transactions = []
+
+    for txn in group_transactions:
+        group_badge = txn.group_badge
+        if group_badge is None:
+            continue
+
+        if group_badge.id not in transactions_by_group_badge:
+            transactions_by_group_badge[group_badge.id] = []
+        transactions_by_group_badge[group_badge.id].append(txn)
+
+        if group_badge.id not in real_amount_by_group_badge:
+            real_amount_by_group_badge[group_badge.id] = 0
+        real_amount_by_group_badge[group_badge.id] += txn.amount
+
+        if group_badge.id not in used_meal_times_by_group_badge:
+            used_meal_times_by_group_badge[group_badge.id] = set()
+        used_meal_times_by_group_badge[group_badge.id].add(txn.meal_time)
+
+        if group_badge.direction_id:
+            if group_badge.direction_id not in real_amount_by_direction:
+                real_amount_by_direction[group_badge.direction_id] = 0
+            real_amount_by_direction[group_badge.direction_id] += txn.amount
+
+        if txn.is_anomaly:
+            anomaly_transactions.append(txn)
+
+    return {
+        'group_badges': group_badges,
+        'group_transactions': group_transactions,
+        'anomaly_transactions': anomaly_transactions,
+        'transactions_by_group_badge': transactions_by_group_badge,
+        'real_amount_by_group_badge': real_amount_by_group_badge,
+        'real_amount_by_direction': real_amount_by_direction,
+        'used_meal_times_by_group_badge': used_meal_times_by_group_badge,
+    }
+
+
+def get_direction_amount_by_ids(direction_ids, current_date):
+    direction_amount_by_id = {}
+
+    for direction_id in direction_ids:
+        direction_amount_by_id[direction_id] = (
+            models.Volunteer.objects
+            .filter(
+                deleted_at=None,
+                directions__id=direction_id,
+                arrivals__status__id__in=['ARRIVED', 'STARTED', 'JOINED'],
+                arrivals__arrival_date__lte=current_date,
+                arrivals__departure_date__gte=current_date,
+            )
+            .distinct()
+            .count()
+        )
+
+    return direction_amount_by_id
+
+
+def get_feed_transaction_anomalies_context(dtime_from, dtime_to):
+    current_date = arrow.get(dtime_from).to(TZ).date()
+    data = collect_feed_transaction_anomalies_data(dtime_from, dtime_to)
+    direction_ids = set()
+
+    for group_badge in data['group_badges']:
+        if group_badge.direction_id:
+            direction_ids.add(group_badge.direction_id)
+
+    return {
+        'current_date': current_date,
+        'data': data,
+        'direction_amount_by_id': get_direction_amount_by_ids(direction_ids, current_date),
+    }
+
+
+def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
+    meal_time_names = {
+        'breakfast': 'завтрак',
+        'lunch': 'обед',
+        'dinner': 'ужин',
+        'night': 'дожор',
+    }
+    if context is None:
+        context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
+
+    current_date = context['current_date']
+    data = context['data']
+    direction_amount_by_id = context['direction_amount_by_id']
+
+    result = []
+
+    for group_badge in data['group_badges']:
+        missing_meal_times = []
+        used_meal_times = data['used_meal_times_by_group_badge'].get(group_badge.id, set())
+        planning_cells = list(group_badge.group_badge_planning_cells.all())
+
+        for meal_time in meal_times:
+            if meal_time in used_meal_times:
+                continue
+
+            latest_planning_cell = None
+            for planning_cell in planning_cells:
+                if planning_cell.meal_time != meal_time or planning_cell.date > current_date:
+                    continue
+                if latest_planning_cell is None or planning_cell.date > latest_planning_cell.date:
+                    latest_planning_cell = planning_cell
+
+            if latest_planning_cell is None:
+                continue
+
+            planned_amount = (latest_planning_cell.amount_meat or 0) + (latest_planning_cell.amount_vegan or 0)
+            if planned_amount == 0:
+                continue
+
+            missing_meal_times.append(meal_time_names.get(meal_time, meal_time))
+
+        if not missing_meal_times:
+            continue
+
+        result.append({
+            'group_badge_name': group_badge.name,
+            'direction_name': group_badge.direction and group_badge.direction.name or None,
+            'direction_amount': group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
+            'calculated_amount': None,
+            'real_amount': data['real_amount_by_group_badge'].get(group_badge.id, 0),
+            'problem': 'Бейдж не использовался на {0}'.format('/'.join(missing_meal_times)),
+        })
+
+    return result
+
+
+def get_overfeeding_direction_anomalies(dtime_from, dtime_to, context=None):
+    if context is None:
+        context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
+
+    data = context['data']
+    direction_amount_by_id = context['direction_amount_by_id']
+    directions_by_id = {}
+
+    for group_badge in data['group_badges']:
+        if group_badge.direction_id:
+            directions_by_id[group_badge.direction_id] = group_badge.direction
+
+    result = []
+
+    for direction_id, direction in directions_by_id.items():
+        direction_amount = direction_amount_by_id.get(direction_id, 0)
+        real_amount = data['real_amount_by_direction'].get(direction_id, 0)
+
+        if real_amount <= direction_amount:
+            continue
+
+        result.append({
+            'group_badge_name': '',
+            'direction_name': direction and direction.name or None,
+            'direction_amount': direction_amount,
+            'calculated_amount': None,
+            'real_amount': real_amount,
+            'problem': 'Перекорм службы',
+        })
+
+    return result
+
+
+def get_calculated_amount_from_reason(reason):
+    if not reason:
+        return 0
+
+    prefix = 'Рассчитанное кол-во:'
+    if not reason.startswith(prefix):
+        return 0
+
+    amount = reason[len(prefix):].strip()
+    if not amount.isdigit():
+        return 0
+
+    return int(amount)
+
+
+def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=None):
+    if context is None:
+        context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
+
+    data = context['data']
+    direction_amount_by_id = context['direction_amount_by_id']
+    grouped_transactions = {}
+
+    for txn in data['anomaly_transactions']:
+        group_badge = txn.group_badge
+        if group_badge is None:
+            continue
+
+        if group_badge.id not in grouped_transactions:
+            grouped_transactions[group_badge.id] = []
+        grouped_transactions[group_badge.id].append(txn)
+
+    result = []
+
+    for group_badge_id, transactions in grouped_transactions.items():
+        group_badge = transactions[0].group_badge
+        calculated_amount = 0
+
+        for txn in transactions:
+            calculated_amount += get_calculated_amount_from_reason(txn.reason)
+
+        result.append({
+            'group_badge_name': group_badge and group_badge.name or None,
+            'direction_name': group_badge and group_badge.direction and group_badge.direction.name or None,
+            'direction_amount': group_badge and group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
+            'calculated_amount': calculated_amount,
+            'real_amount': data['real_amount_by_group_badge'].get(group_badge_id, 0),
+            'problem': 'Неверный план',
+        })
+
+    return result
+
+
+def get_feed_transaction_anomalies(dtime_from, dtime_to):
+    context = get_feed_transaction_anomalies_context(dtime_from, dtime_to)
+    result = get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=context)
+    result.extend(get_overfeeding_direction_anomalies(dtime_from, dtime_to, context=context))
+    result.extend(get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=context))
+    return result
+
 # DEPRECATED. Актуальную версию смотри в calculate_statistic.py
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, prediction_alg='1', apply_history=False):
     start_time = time.time()

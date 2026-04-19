@@ -1,20 +1,50 @@
-import dayjs from 'dayjs';
 import type {
     EaterType,
     EaterTypeExtended,
     IColumnChartData,
     IData,
     IEaterTypeAmount,
-    IStatisticResponce,
+    IStatisticResponse,
     KitchenId,
     KitchenIdExtended,
     MealTime
 } from '../types';
-import { dataEmpty, datumInstance, mealTimeArr } from '../types';
+import { datumInstance, mealTimeArr } from '../types';
 import type { ITableStatData } from '../ui/table-stats';
 
-export function convertResponceToData(res: IStatisticResponce): IData {
-    const result: IData = JSON.parse(JSON.stringify(dataEmpty));
+const createDatum = (): typeof datumInstance => ({
+    plan: {
+        breakfast: { meatEater: 0, vegan: 0 },
+        dinner: { meatEater: 0, vegan: 0 },
+        lunch: { meatEater: 0, vegan: 0 },
+        night: { meatEater: 0, vegan: 0 },
+        total: { meatEater: 0, vegan: 0 }
+    },
+    fact: {
+        breakfast: { meatEater: 0, vegan: 0 },
+        dinner: { meatEater: 0, vegan: 0 },
+        lunch: { meatEater: 0, vegan: 0 },
+        night: { meatEater: 0, vegan: 0 },
+        total: { meatEater: 0, vegan: 0 }
+    },
+    predict: {
+        breakfast: { meatEater: 0, vegan: 0 },
+        dinner: { meatEater: 0, vegan: 0 },
+        lunch: { meatEater: 0, vegan: 0 },
+        night: { meatEater: 0, vegan: 0 },
+        total: { meatEater: 0, vegan: 0 }
+    }
+});
+
+const createEmptyData = (): IData => ({
+    all: {},
+    1: {},
+    2: {},
+    3: {}
+});
+
+export function convertResponceToData(res: IStatisticResponse): IData {
+    const result: IData = createEmptyData();
 
     res.forEach((datum) => {
         const { amount, date, is_vegan, kitchen_id, meal_time, type } = datum;
@@ -22,10 +52,10 @@ export function convertResponceToData(res: IStatisticResponce): IData {
         const kitchenId: KitchenIdExtended = kitchen_id.toString() as KitchenId;
 
         if (!(date in result[kitchenId])) {
-            result[kitchenId][date] = JSON.parse(JSON.stringify(datumInstance));
+            result[kitchenId][date] = createDatum();
         }
         if (!(date in result['all'])) {
-            result['all'][date] = JSON.parse(JSON.stringify(datumInstance));
+            result['all'][date] = createDatum();
         }
         result[kitchenId][date][type][meal_time][eaterType] += amount;
         result[kitchenId][date][type].total[eaterType] += amount;
@@ -115,7 +145,7 @@ export function handleDataForColumnChart(
         return result;
     }
 
-    const dates = Object.keys(dayData).sort((a, b) => dayjs(a).diff(dayjs(b)));
+    const dates = Object.keys(dayData).sort();
 
     for (const date of dates) {
         const row: IColumnChartData = {
@@ -159,7 +189,9 @@ export function handleDataForLinearChart(
         return result;
     }
 
-    for (const date in data[kitchenId]) {
+    const dates = Object.keys(data[kitchenId]).sort();
+
+    for (const date of dates) {
         const resPlan = data[kitchenId][date].plan[mealTime];
         const resFact = data[kitchenId][date].fact[mealTime];
         const resPredict = data[kitchenId][date].predict[mealTime];

@@ -4,7 +4,7 @@
 
 # Установка frontend
 
-Установить nodejs версии 18 или старше. Для проверки текущей версии можно выполнить команду:
+Установить nodejs версии "^20.19.0 || >=22.12.0" или старше. Для проверки текущей версии можно выполнить команду:
 
 ```bash
 node -v
@@ -127,4 +127,5 @@ python manage.py makemigrations
 ```
 
 # OpenApi дока
+
 Swagger Ui можно найти тут: [локальный бекенд](http://localhost:8000/feedapi/v1), [стейдж](https://feedapp-dev.insomniafest.ru/feedapi/v1/)

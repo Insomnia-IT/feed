@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
     ResponsiveContainer,
     Bar,
@@ -9,11 +9,11 @@ import {
     Legend,
     Line,
     ComposedChart,
-    LabelProps
+    type LabelListProps
 } from 'recharts';
 import { Spin } from 'antd';
 
-import { IColumnChartData, MealTime } from '../types';
+import type { IColumnChartData, MealTime } from '../types';
 
 interface IProps {
     data: IColumnChartData[];
@@ -21,9 +21,9 @@ interface IProps {
     loading?: boolean;
 }
 
-const labelProps: LabelProps = { stroke: '#333', fill: '#333', position: 'top' };
+const labelProps: LabelListProps = { position: 'top', fill: '#333' };
 
-const ColumnChartByMealTime: FC<IProps> = ({ data, loading }) => {
+const ColumnChartByMealTime = ({ data, loading }: IProps) => {
     const chartData = useMemo(() => {
         return data.map((item) => {
             return {
