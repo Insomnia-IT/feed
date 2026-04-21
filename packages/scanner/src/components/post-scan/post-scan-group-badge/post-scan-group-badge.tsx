@@ -24,7 +24,6 @@ import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 export const Views = {
     LOADING: 'LOADING',
     YELLOW: 'YELLOW',
-    ERROR_EMPTY: 'ERROR_EMPTY',
     ERROR_VALIDATION: 'ERROR_VALIDATION'
 } as const;
 
@@ -116,14 +115,6 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
         if (isLoading) {
             return {
                 view: Views.LOADING as Views,
-                validationGroups: { greens: [], reds: [] } as ValidationGroups
-            };
-        }
-
-        // nobody is attached to group badge
-        if (vols.length === 0) {
-            return {
-                view: Views.ERROR_EMPTY as Views,
                 validationGroups: { greens: [], reds: [] } as ValidationGroups
             };
         }
@@ -221,8 +212,6 @@ const ResultScreen = ({
     switch (view) {
         case Views.LOADING:
             return <ErrorCard close={closeFeed} title="Загрузка..." msg="" />;
-        case Views.ERROR_EMPTY:
-            return <ErrorCard close={closeFeed} msg={`В группе '${name}' нет волонтеров.`} />;
         case Views.ERROR_VALIDATION:
             return (
                 <ErrorCard
