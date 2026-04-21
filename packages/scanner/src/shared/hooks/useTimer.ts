@@ -10,26 +10,24 @@ function formatTimerNumber(number: number) {
     });
 }
 
-const getTimespan = (deadline: number | string | Date) => {
-    return +new Date(deadline) - Date.now() > 0 ? +new Date(deadline) - Date.now() : 0;
+const getTimespan = (deadline: number | string | Date, now: number) => {
+    return Math.max(+new Date(deadline) - now, 0);
 };
 
 export function useTimer(deadline: number, interval = SECOND) {
-    const [timespan, setTimespan] = useState(() => getTimespan(deadline));
+    const [now, setNow] = useState(Date.now);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
-            setTimespan(getTimespan(deadline));
+            setNow(Date.now());
         }, interval);
 
         return () => {
             clearInterval(intervalId);
         };
-    }, [interval, deadline]);
+    }, [interval]);
 
-    useEffect(() => {
-        setTimespan(getTimespan(deadline));
-    }, [deadline]);
+    const timespan = getTimespan(deadline, now);
 
     return {
         minutes: formatTimerNumber(Math.floor((timespan / MINUTE) % 60)),

@@ -17,7 +17,11 @@ export default defineConfig([
         ],
         languageOptions: {
             ecmaVersion: 2023,
-            globals: globals.browser
+            globals: globals.browser,
+            parserOptions: {
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname
+            }
         },
         rules: {
             'no-tabs': 'error',

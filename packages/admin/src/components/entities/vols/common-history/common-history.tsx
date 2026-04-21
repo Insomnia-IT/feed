@@ -40,7 +40,7 @@ export const CommonHistory = ({ role }: IProps) => {
     const navigate = useNavigate();
 
     const [history, setHistory] = useState<IHistoryRecord[]>([]);
-    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(Boolean(volunteerId));
     const [pendingCancelGroupUuid, setPendingCancelGroupUuid] = useState<string | null>(null);
 
     const canCancelGroupOperation = useCanAccess({
@@ -122,7 +122,6 @@ export const CommonHistory = ({ role }: IProps) => {
 
     useEffect(() => {
         if (!volunteerId) {
-            setIsHistoryLoading(false);
             return;
         }
         let cancelled = false;
@@ -227,7 +226,9 @@ export const CommonHistory = ({ role }: IProps) => {
         groupBadgesList.query.isLoading ||
         customFieldsList.query.isLoading;
 
-    if (isHistoryLoading || isLookupLoading) {
+    const isHistoryPending = volunteerId ? isHistoryLoading : false;
+
+    if (isHistoryPending || isLookupLoading) {
         return (
             <div className={`${styles.historyWrap} ${styles.historyLoading}`}>
                 {Array.from({ length: 3 }).map((_, index) => (
