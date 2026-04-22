@@ -1,7 +1,14 @@
-export interface VolEntity {
+interface TimeStampedEntity {
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface VolEntity extends TimeStampedEntity {
     id: number;
     uuid?: string;
     qr?: string | null;
+    parent?: number | null;
+    gender?: string | null;
     first_name?: string | null;
     last_name?: string | null;
     name?: string | null;
@@ -29,6 +36,7 @@ export interface VolEntity {
     is_ticket_received?: boolean | null;
     badge_number?: string | null;
     scanner_comment?: string | null;
+    is_photo_updated?: boolean;
     infant?: boolean | null;
     deleted_at?: string | null;
     supervisor_id?: number | null;
@@ -44,22 +52,22 @@ export interface KitchenEntity {
     comment?: string | null;
 }
 
-export interface FeedTypeEntity {
+export interface FeedTypeEntity extends TimeStampedEntity {
     id: number;
     name: string;
-    code?: string | null;
-    paid?: boolean;
-    daily_amount?: number | null;
+    code: string;
+    paid: boolean;
+    daily_amount: number;
     comment?: string | null;
 }
 
-export interface ColorTypeEntity {
+export interface ColorTypeEntity extends TimeStampedEntity {
     id: number;
     name: string;
     description?: string | null;
 }
 
-export interface VolunteerRoleEntity {
+export interface VolunteerRoleEntity extends TimeStampedEntity {
     id: string;
     name: string;
     color: string;
@@ -68,18 +76,23 @@ export interface VolunteerRoleEntity {
     is_group_badge?: boolean;
 }
 
-export interface AccessRoleEntity {
+export interface AccessRoleEntity extends TimeStampedEntity {
     id: string;
     name: string;
     description?: string | null;
 }
 
-export interface FeedTransactionEntity {
-    id?: number | string;
+export interface GenderEntity extends TimeStampedEntity {
+    id: string;
+    name: string;
+}
+
+export interface FeedTransactionEntity extends TimeStampedEntity {
+    id?: number;
     ulid: string;
     amount: number;
     dtime: string;
-    meal_time: string;
+    meal_time: MealType;
     volunteer?: number | null;
     is_vegan: boolean | null;
     is_paid?: boolean;
@@ -87,8 +100,6 @@ export interface FeedTransactionEntity {
     reason?: string | null;
     comment?: string | null;
     kitchen: number;
-    created_at?: string;
-    updated_at?: string;
     kitchen_name?: string | null;
     group_badge?: number | null;
     volunteer_name?: string | null;
@@ -96,20 +107,19 @@ export interface FeedTransactionEntity {
     volunteer_last_name?: string | null;
     volunteer_directions?: Array<string> | null;
     group_badge_name?: string | null;
-    is_anomaly?: boolean;
 }
 
 /** Ответ эндпоинта GET v1/feed-transaction/anomalies (dtime_from, dtime_to) */
 export interface FeedTransactionAnomaly {
-    group_badge_name: string;
-    direction_name: string;
-    direction_amount: number;
+    group_badge_name: string | null;
+    direction_name: string | null;
+    direction_amount: number | null;
     calculated_amount: number | null;
-    real_amount: number;
+    real_amount: number | null;
     problem: string;
 }
 
-export interface GroupBadgeEntity {
+export interface GroupBadgeEntity extends TimeStampedEntity {
     id: number;
     qr?: string | null;
     direction?: DirectionEntity | string | null;
@@ -128,7 +138,7 @@ export interface GroupBadgePlanningCellEntity extends MealPlanCell {
     meal_time: MealType;
 }
 
-export interface VolunteerCustomFieldEntity {
+export interface VolunteerCustomFieldEntity extends TimeStampedEntity {
     id: number;
     name: string;
     type: string;
@@ -136,20 +146,21 @@ export interface VolunteerCustomFieldEntity {
     mobile: boolean;
 }
 
-export interface DirectionEntity {
+export interface DirectionEntity extends TimeStampedEntity {
     id: string;
     name: string;
     type: string | DirectionTypeEntity;
-    first_year: number;
-    last_year: number;
+    first_year: number | null;
+    last_year: number | null;
+    comment?: string | null;
 }
-export interface DirectionTypeEntity {
+export interface DirectionTypeEntity extends TimeStampedEntity {
     id: string;
     name: string;
     is_federal: boolean;
 }
 
-export interface CustomFieldEntity {
+export interface CustomFieldEntity extends TimeStampedEntity {
     id: number;
     name: string;
     type: string;
@@ -157,39 +168,43 @@ export interface CustomFieldEntity {
     mobile: boolean;
 }
 
-export interface VolCustomFieldValueEntity {
+export interface VolCustomFieldValueEntity extends TimeStampedEntity {
     id: number;
     volunteer: number;
     custom_field: number;
     value: string;
 }
 
-export interface TransportEntity {
+export interface TransportEntity extends TimeStampedEntity {
     id: string;
     name: string;
 }
 
-export interface StatusEntity {
+export interface StatusEntity extends TimeStampedEntity {
     id: string;
     name: string;
     visible: string;
     description: string;
 }
 
-export interface ArrivalEntity {
+export interface ArrivalEntity extends TimeStampedEntity {
     id: string;
     arrival_date: string;
     arrival_transport?: string | null;
+    arrival_registered?: string | null;
     departure_date: string;
     departure_transport?: string | null;
+    departure_registered?: string | null;
     status?: string | null;
+    comment?: string | null;
 }
 
-export interface PaidArrivalEntity {
+export interface PaidArrivalEntity extends TimeStampedEntity {
     id: string;
     arrival_date: string;
     departure_date: string;
     is_free: boolean;
+    comment?: string | null;
 }
 
 interface EngagementEntity {
@@ -203,18 +218,27 @@ interface EngagementEntity {
         id?: string | number;
         name: string;
     };
+    position?: string | null;
+    status?: string | null;
 }
 
-export interface PersonEntity {
+export interface PersonEntity extends TimeStampedEntity {
     id: string;
     first_name?: string | null;
     last_name?: string | null;
     name?: string | null;
     nickname?: string | null;
     other_names?: string | null;
+    birth_date?: string | null;
+    city?: string | null;
+    telegram?: string | null;
     phone?: string | null;
     email?: string | null;
+    gender?: string | null;
     is_vegan?: boolean;
+    banned?: boolean | null;
+    comment?: string | null;
+    deleted_at?: string | null;
     engagements: EngagementEntity[];
 }
 
@@ -234,7 +258,7 @@ export interface MealPlanCell {
     created_at?: string;
     updated_at?: string;
     date: string;
-    meal_time: string;
+    meal_time: MealType;
     amount_meat: number | null;
     amount_vegan: number | null;
 }

@@ -11,6 +11,7 @@ import type {
     CustomFieldEntity,
     DirectionEntity,
     FeedTypeEntity,
+    GenderEntity,
     GroupBadgeEntity,
     KitchenEntity,
     StatusEntity,
@@ -61,7 +62,7 @@ export const CommonHistory = ({ role }: IProps) => {
     });
     const transportsList = useList<TransportEntity, HttpError>({ resource: 'transports', pagination: { mode: 'off' } });
     const statusesList = useList<StatusEntity, HttpError>({ resource: 'statuses', pagination: { mode: 'off' } });
-    const gendersList = useList<AccessRoleEntity, HttpError>({ resource: 'genders', pagination: { mode: 'off' } });
+    const gendersList = useList<GenderEntity, HttpError>({ resource: 'genders', pagination: { mode: 'off' } });
     const directionsList = useList<DirectionEntity, HttpError>({ resource: 'directions', pagination: { mode: 'off' } });
     const groupBadgesList = useList<GroupBadgeEntity, HttpError>({
         resource: 'group-badges',
