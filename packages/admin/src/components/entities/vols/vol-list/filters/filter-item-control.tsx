@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { FilterFieldType } from './filter-types';
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { getFilterListItems } from './get-filter-list-items';
+import { isEffectiveFilterValue } from './is-effective-filter-value';
 import styles from '../../list.module.css';
 
 const fieldStyle = {
@@ -24,6 +25,9 @@ const INPUT_PLACEHOLDER = 'Введи текст';
 const SELECT_PLACEHOLDER = 'Выбери из списка';
 const FROM_LABEL = 'С';
 const TO_LABEL = 'По';
+
+const stretchAndRingClass = (active: boolean): string | undefined =>
+    [styles.volFilterControlStretch, active && styles.volActiveControlRing].filter(Boolean).join(' ') || undefined;
 
 export const FilterItemControl: FC<{
     field: FilterField;
@@ -89,7 +93,7 @@ const DateField: FC<{
             <Row style={{ justifyContent: 'space-between' }}>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
-            <Row>
+            <Row className={stretchAndRingClass(isEffectiveFilterValue(filterItem?.value))} style={{ width: '100%' }}>
                 {showPeriod ? (
                     isMobile ? (
                         <Col flex="auto">
@@ -216,15 +220,17 @@ const FilterInput: FC<{
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
-            <Row>
-                <Input
-                    style={fieldStyle}
-                    value={filterItem?.value as string | undefined}
-                    onChange={(e) => onFilterTextValueChange(field.name, e.target.value)}
-                    placeholder={INPUT_PLACEHOLDER}
-                    onClear={onClear}
-                    allowClear
-                />
+            <Row style={{ width: '100%' }}>
+                <div className={stretchAndRingClass(isEffectiveFilterValue(filterItem?.value))}>
+                    <Input
+                        style={{ ...fieldStyle, width: '100%' }}
+                        value={filterItem?.value as string | undefined}
+                        onChange={(e) => onFilterTextValueChange(field.name, e.target.value)}
+                        placeholder={INPUT_PLACEHOLDER}
+                        onClear={onClear}
+                        allowClear
+                    />
+                </div>
             </Row>
         </Col>
     );
@@ -263,39 +269,41 @@ const FilterSelect: FC<{
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
-            <Row>
-                <Select
-                    className={styles.filterValueSelect}
-                    style={{ width: '100%' }}
-                    open={dropdownOpen}
-                    onDropdownVisibleChange={setDropdownOpen}
-                    maxTagCount={1}
-                    value={selectValue as string[] | string | number | boolean | undefined}
-                    onSelect={onSelect}
-                    onDeselect={onDeselect}
-                    onClear={onClear}
-                    options={values}
-                    placeholder={SELECT_PLACEHOLDER}
-                    optionFilterProp={'label'}
-                    mode={isMultiple ? 'multiple' : undefined}
-                    showSearch
-                    allowClear={false}
-                    suffixIcon={
-                        <span
-                            role="button"
-                            tabIndex={-1}
-                            aria-expanded={dropdownOpen}
-                            style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}
-                            onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setDropdownOpen((prev) => !prev);
-                            }}
-                        >
-                            <DownOutlined />
-                        </span>
-                    }
-                />
+            <Row style={{ width: '100%' }}>
+                <div className={stretchAndRingClass(isEffectiveFilterValue(filterItem?.value))}>
+                    <Select
+                        className={styles.filterValueSelect}
+                        style={{ width: '100%' }}
+                        open={dropdownOpen}
+                        onDropdownVisibleChange={setDropdownOpen}
+                        maxTagCount={1}
+                        value={selectValue as string[] | string | number | boolean | undefined}
+                        onSelect={onSelect}
+                        onDeselect={onDeselect}
+                        onClear={onClear}
+                        options={values}
+                        placeholder={SELECT_PLACEHOLDER}
+                        optionFilterProp={'label'}
+                        mode={isMultiple ? 'multiple' : undefined}
+                        showSearch
+                        allowClear={false}
+                        suffixIcon={
+                            <span
+                                role="button"
+                                tabIndex={-1}
+                                aria-expanded={dropdownOpen}
+                                style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setDropdownOpen((prev) => !prev);
+                                }}
+                            >
+                                <DownOutlined />
+                            </span>
+                        }
+                    />
+                </div>
             </Row>
         </Col>
     );

@@ -33,7 +33,7 @@ export const GroupBadgeShow = () => {
             ]
         },
         sorters: {
-            initial: [{ field: 'id', order: 'desc' }]
+            initial: [{ field: 'name', order: 'asc' }]
         }
     });
 
