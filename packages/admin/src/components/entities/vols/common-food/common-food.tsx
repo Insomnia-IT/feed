@@ -3,12 +3,12 @@ import { useNavigate, useParams } from 'react-router';
 import { Button, Space, Table, Tooltip, Typography, type TableProps } from 'antd';
 import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { useList, type HttpError } from '@refinedev/core';
-import dayjs from 'dayjs';
 import axios from 'axios';
 
 import { DATETIME_LONG, DATETIME_SHORT, MEAL_MAP, NEW_API_URL } from 'const';
 import type { FeedTransactionEntity, KitchenEntity } from 'interfaces';
 import { useScreen } from 'shared/providers';
+import { formatInAppTimeZone } from 'shared/lib';
 import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
 import useCanAccess from '../use-can-access';
 
@@ -53,7 +53,7 @@ const CommonFood = () => {
         }
 
         const { data, headers } = await axios.get<Blob>(
-            `${NEW_API_URL}/feed-transaction/export-xlsx/?volunteer=${volId}`,
+            `${NEW_API_URL}/feed-transaction/export-xlsx/?volunteer=${encodeURIComponent(volId)}`,
             {
                 responseType: 'blob'
             }
@@ -68,7 +68,7 @@ const CommonFood = () => {
             {
                 title: 'Время',
                 dataIndex: 'dtime',
-                render: (dtime: string) => dayjs(dtime).format(isMobile ? DATETIME_SHORT : DATETIME_LONG)
+                render: (dtime: string) => formatInAppTimeZone(dtime, isMobile ? DATETIME_SHORT : DATETIME_LONG)
             },
             {
                 title: 'Прием пищи',

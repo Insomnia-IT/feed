@@ -1,5 +1,6 @@
 import dayjs, { Dayjs } from 'dayjs';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+import { appTimeZone, dayjsExtended } from 'shared/lib';
 import type { ArrivalEntity, VolEntity, WashEntity } from 'interfaces';
 
 interface WashToShow {
@@ -91,8 +92,11 @@ export const transformWashesForShow = (wash: WashEntity): WashToShow => {
         volunteerName: name,
         volunteerFullName: [first_name, last_name].join(' '),
         directions: directions?.map((direction) => direction.name),
-        washDate: dayjs(wash.created_at),
-        daysOnField: getDaysOnFieldText({ volunteer: wash.volunteer, washDate: dayjs(wash.created_at) }),
+        washDate: dayjsExtended(wash.created_at).tz(appTimeZone),
+        daysOnField: getDaysOnFieldText({
+            volunteer: wash.volunteer,
+            washDate: dayjsExtended(wash.created_at).tz(appTimeZone)
+        }),
         washCount: wash.wash_count ?? 0,
         owlName
     };

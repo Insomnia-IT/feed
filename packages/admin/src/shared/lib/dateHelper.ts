@@ -8,6 +8,7 @@ import localeData from 'dayjs/plugin/localeData';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import toObject from 'dayjs/plugin/toObject';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import weekday from 'dayjs/plugin/weekday';
 
 dayjs.extend(relativeTime);
@@ -19,8 +20,13 @@ dayjs.extend(localeData);
 dayjs.extend(duration);
 dayjs.extend(toObject);
 dayjs.extend(utc);
+dayjs.extend(timezone);
 dayjs.locale('ru');
 
 const formDateFormat = 'DD.MM.YYYY';
+const appTimeZone = 'Europe/Moscow';
 
-export { dayjs as dayjsExtended, formDateFormat };
+const formatInAppTimeZone = (value: string | number | Date | dayjs.Dayjs, format: string): string =>
+    dayjs(value).tz(appTimeZone).format(format);
+
+export { appTimeZone, dayjs as dayjsExtended, formDateFormat, formatInAppTimeZone };
