@@ -15,6 +15,14 @@ import styles from './group-badge-list.module.css';
 const LS_PAGE_KEY = 'gbPageIndex';
 const LS_SIZE_KEY = 'gbPageSize';
 
+const getDirectionName = (direction: GroupBadgeEntity['direction']): string => {
+    if (!direction) {
+        return '-';
+    }
+
+    return typeof direction === 'string' ? direction : direction.name;
+};
+
 export const GroupBadgeList = () => {
     const { getItem, setItem } = useLocalStorage();
     const [page, setPage] = useState<number>(Number(getItem(LS_PAGE_KEY)) || 1);
@@ -61,7 +69,10 @@ export const GroupBadgeList = () => {
 
     const data =
         groupBadges?.data.filter((item) => {
-            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
+            return (
+                !visibleDirections ||
+                (item.direction && typeof item.direction !== 'string' && visibleDirections.includes(item.direction.id))
+            );
         }) ?? [];
 
     return (
@@ -92,8 +103,8 @@ export const GroupBadgeList = () => {
                             </div>
                             <div className={styles.row}>
                                 <span className={styles.label}>Направление:</span>
-                                <Tooltip title={badge.direction?.name}>
-                                    <span>{badge.direction?.name || '-'}</span>
+                                <Tooltip title={getDirectionName(badge.direction)}>
+                                    <span>{getDirectionName(badge.direction)}</span>
                                 </Tooltip>
                             </div>
                             <div className={styles.row}>

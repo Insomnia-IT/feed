@@ -15,7 +15,7 @@ export interface Transaction {
     ts: number;
     mealTime: MealTime;
     is_new: boolean;
-    is_vegan?: boolean;
+    is_vegan?: boolean | null;
     is_anomaly?: boolean;
     is_paid?: boolean;
     reason?: string | null;
@@ -25,16 +25,19 @@ export interface Transaction {
 
 export interface ServerTransaction {
     ulid: string;
-    volunteer: number;
+    volunteer: number | null;
     amount: number;
     dtime: string;
     meal_time: MealTime;
-    is_vegan: boolean;
-    is_anomaly?: boolean;
+    is_vegan: boolean | null;
     is_paid?: boolean;
+    is_anomaly?: boolean;
     reason?: string | null;
+    comment?: string | null;
     kitchen: number;
     group_badge?: number | null;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface TransactionJoined extends Transaction {
@@ -59,46 +62,94 @@ export const MealTime = {
 
 export type MealTime = (typeof MealTime)[keyof typeof MealTime];
 
-export interface Volunteer {
+interface TimeStampedEntity {
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface VolunteerDirection extends TimeStampedEntity {
+    id: string;
+    name: string;
+    comment?: string | null;
+    type?: {
+        id: string;
+        name: string;
+        is_federal?: boolean;
+    } | null;
+    first_year?: number | null;
+    last_year?: number | null;
+}
+
+export interface Volunteer extends TimeStampedEntity {
     qr: string;
     id: number;
-    first_name: string;
-    name: string;
+    uuid?: string;
+    parent?: number | null;
+    gender?: string | null;
+    first_name: string | null;
+    last_name?: string | null;
+    name: string | null;
+    phone?: string | null;
+    email?: string | null;
+    photo?: string | null;
+    photo_local?: string | null;
+    position?: string | null;
     is_blocked: boolean;
     is_vegan: boolean;
+    is_photo_updated?: boolean;
+    is_ticket_received?: boolean | null;
+    comment?: string | null;
+    direction_head_comment?: string | null;
+    badge_number?: string | null;
+    printing_batch?: number | null;
     deleted_at: string | null;
     arrivals: Array<Arrival>;
     paid_arrivals?: Array<PaidArrival>;
-    feed_type: FeedType;
-    infant: boolean;
-    directions: Array<{ name: string }>;
-    kitchen: number;
+    feed_type: FeedType | null;
+    infant: boolean | null;
+    directions: Array<VolunteerDirection>;
+    kitchen: number | null;
     group_badge: number | null;
     scanner_comment: string | null;
-    transactions: Array<Transaction> | null;
+    access_role?: string | null;
+    main_role?: string | null;
+    responsible_id?: number | null;
+    supervisor_id?: number | null;
+    supervisor?: { id: number; name: string } | null;
+    // Hydrated locally for group-badge validation; backend does not send it in /volunteers list.
+    transactions?: Array<Transaction> | null;
 }
 
-export interface Arrival {
+export interface Arrival extends TimeStampedEntity {
     id: string;
-    status: string;
+    status: string | null;
     arrival_date: string;
-    arrival_transport: string;
+    arrival_transport: string | null;
+    arrival_registered?: string | null;
     departure_date: string;
-    departure_transport: string;
+    departure_transport: string | null;
+    departure_registered?: string | null;
+    comment?: string | null;
 }
 
-export interface PaidArrival {
+export interface PaidArrival extends TimeStampedEntity {
     id: string;
     arrival_date: string;
     departure_date: string;
     is_free: boolean;
+    comment?: string | null;
 }
 
-export interface GroupBadge {
+export interface GroupBadge extends TimeStampedEntity {
     id: number;
     name: string;
     qr: string;
     planning_cells: Array<MealPlanCell>;
+    comment?: string | null;
+    role?: string | null;
+    volunteer_count?: number;
+    deleted_at?: string | null;
+    direction?: VolunteerDirection | null;
 }
 
 export class MySubClassedDexie extends Dexie {
@@ -238,8 +289,8 @@ export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<A
     });
 }
 
-export function isActivatedStatus(status: string): boolean {
-    return ['ARRIVED', 'STARTED', 'JOINED'].includes(status);
+export function isActivatedStatus(status: string | null | undefined): boolean {
+    return Boolean(status && ['ARRIVED', 'STARTED', 'JOINED'].includes(status));
 }
 
 type DateInterval = {
