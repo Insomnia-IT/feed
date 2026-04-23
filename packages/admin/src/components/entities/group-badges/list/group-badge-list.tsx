@@ -8,7 +8,7 @@ import type { GroupBadgeEntity } from 'interfaces';
 import { useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import { getSorter } from 'utils';
-import useVisibleDirections from '../vols/use-visible-directions';
+import useVisibleDirections from '../../vols/use-visible-directions';
 
 import styles from './group-badge-list.module.css';
 

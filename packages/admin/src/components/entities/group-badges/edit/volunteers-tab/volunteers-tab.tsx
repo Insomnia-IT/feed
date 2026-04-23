@@ -1,30 +1,29 @@
-import { Edit, EditButton, TextField, useForm, useTable } from '@refinedev/antd';
-import { Button, Col, Divider, Form, Input, Popconfirm, Row, Space, Table, Typography } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import { EditButton, TextField, useTable } from '@refinedev/antd';
+import { Button, Input, Popconfirm, Space, Table, Typography } from 'antd';
 import { type HttpError, useInvalidate, useNotification, useUpdateMany } from '@refinedev/core';
 
-import type { DirectionEntity, GroupBadgeEntity, VolEntity } from 'interfaces';
+import type { DirectionEntity, VolEntity } from 'interfaces';
 import { useDebouncedCallback } from 'shared/hooks';
-import { CreateEdit } from './common';
-import { AddVolunteerModal } from './add-volunteer-modal';
-import { GroupBadgePlanning } from './planning';
-import { GroupMealPlan } from './group-meal-plan';
+import { AddVolunteerModal } from '../../add-volunteer-modal/add-volunteer-modal';
+import styles from './volunteers-tab.module.css';
 
-const { Title, Text } = Typography;
+const { Text, Title } = Typography;
 
-export const GroupBadgeEdit = () => {
+interface VolunteersTabProps {
+    groupBadgeId: number;
+}
+
+export const VolunteersTab = ({ groupBadgeId }: VolunteersTabProps) => {
     const { open = () => {} } = useNotification();
     const invalidate = useInvalidate();
-
     const { mutate: updateMany, mutation: updateManyMutation } = useUpdateMany();
     const isUpdating = Boolean(updateManyMutation.isPending);
-
-    const { id, formProps, saveButtonProps } = useForm<GroupBadgeEntity, HttpError>();
 
     const { tableProps, setFilters } = useTable<VolEntity, HttpError>({
         resource: 'volunteers',
         filters: {
-            initial: [{ field: 'group_badge', operator: 'eq', value: id }]
+            initial: [{ field: 'group_badge', operator: 'eq', value: groupBadgeId }]
         },
         sorters: {
             initial: [{ field: 'name', order: 'asc' }]
@@ -34,7 +33,7 @@ export const GroupBadgeEdit = () => {
 
     const debouncedSearch = useDebouncedCallback((value: string) => {
         setFilters([
-            { field: 'group_badge', operator: 'eq', value: id },
+            { field: 'group_badge', operator: 'eq', value: groupBadgeId },
             { field: 'search', operator: 'eq', value }
         ]);
     });
@@ -55,33 +54,26 @@ export const GroupBadgeEdit = () => {
     const total = tableProps.pagination && 'total' in tableProps.pagination ? tableProps.pagination.total : 0;
 
     return (
-        <Edit saveButtonProps={saveButtonProps} contentProps={{ style: { marginBottom: 60, overflow: 'auto' } }}>
-            <Form {...formProps} scrollToFirstError layout="vertical">
-                <CreateEdit />
-            </Form>
-
-            <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-                <Col>
-                    <Title level={5}>
-                        Волонтёры{' '}
-                        {typeof total === 'number' && (
-                            <Text type="secondary" style={{ fontSize: '0.875rem' }}>
-                                ({total})
-                            </Text>
-                        )}
-                    </Title>
-                </Col>
-                <Col>
-                    <Space>
-                        <Input
-                            placeholder="Поиск волонтёра"
-                            allowClear
-                            onChange={(e) => debouncedSearch(e.target.value)}
-                        />
-                        <AddVolunteerModal groupBadgeId={Number(id)} />
-                    </Space>
-                </Col>
-            </Row>
+        <>
+            <div className={styles.header}>
+                <Title level={5} className={styles.title}>
+                    Волонтёры{' '}
+                    {typeof total === 'number' && (
+                        <Text type="secondary" className={styles.total}>
+                            ({total})
+                        </Text>
+                    )}
+                </Title>
+                <div className={styles.actions}>
+                    <Input
+                        className={styles.search}
+                        placeholder="Поиск волонтёра"
+                        allowClear
+                        onChange={(e) => debouncedSearch(e.target.value)}
+                    />
+                    <AddVolunteerModal groupBadgeId={groupBadgeId} />
+                </div>
+            </div>
 
             <Table
                 {...tableProps}
@@ -91,7 +83,7 @@ export const GroupBadgeEdit = () => {
                     tableProps.pagination
                         ? {
                               ...tableProps.pagination,
-                              showTotal: (total) => `Всего: ${total}`
+                              showTotal: (itemsTotal) => `Всего: ${itemsTotal}`
                           }
                         : false
                 }
@@ -103,7 +95,7 @@ export const GroupBadgeEdit = () => {
                     dataIndex="directions"
                     title="Службы/Локации"
                     render={(dirs: DirectionEntity[]) => (
-                        <TextField style={{ whiteSpace: 'pre-wrap' }} value={dirs.map(({ name }) => name).join(', ')} />
+                        <TextField className={styles.directions} value={dirs.map(({ name }) => name).join(', ')} />
                     )}
                     ellipsis
                 />
@@ -125,13 +117,6 @@ export const GroupBadgeEdit = () => {
                     )}
                 />
             </Table>
-
-            <Divider />
-            <GroupBadgePlanning groupBadgeId={Number(id)} />
-
-            <Divider />
-
-            <GroupMealPlan id={id} />
-        </Edit>
+        </>
     );
 };

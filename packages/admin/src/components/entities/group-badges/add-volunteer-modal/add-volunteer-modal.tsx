@@ -6,7 +6,8 @@ import { useInvalidate, useList, useNotification, useUpdateMany } from '@refined
 import type { VolEntity } from 'interfaces';
 import { useScreen } from 'shared/providers';
 import { useDebouncedCallback } from 'shared/hooks';
-import useVisibleDirections from '../vols/use-visible-directions';
+import useVisibleDirections from '../../vols/use-visible-directions';
+import styles from './add-volunteer-modal.module.css';
 
 export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) => {
     const [isOpenModal, setOpenModal] = useState(false);
@@ -95,10 +96,10 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
                 okButtonProps={{ disabled: !selectedIds.length }}
             >
                 <Input
+                    className={styles.search}
                     placeholder="Поиск..."
                     allowClear
                     onChange={(e) => debouncedSearch(e.target.value)}
-                    style={{ marginBottom: 16 }}
                 />
 
                 <Table

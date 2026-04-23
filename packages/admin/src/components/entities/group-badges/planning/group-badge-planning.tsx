@@ -5,6 +5,7 @@ import { useDataProvider, useInvalidate, useNotification, useOne } from '@refine
 
 import { MEAL_MAP } from 'const';
 import type { GroupBadgeEntity, GroupBadgePlanningCellEntity, MealPlanCell, MealType } from 'interfaces';
+import styles from './group-badge-planning.module.css';
 
 const { Text, Title } = Typography;
 
@@ -130,11 +131,13 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
     }
 
     return (
-        <div style={{ marginBottom: 24 }}>
+        <div className={styles.container}>
             <Title level={5}>Приемы пищи</Title>
-            <Text type="secondary">Изменение приемов пищи применится с завтрашнего дня {tomorrowDateLabel}</Text>
+            <Text type="secondary" className={styles.description}>
+                Изменение приемов пищи применится с завтрашнего дня {tomorrowDateLabel}
+            </Text>
 
-            <Space wrap size="large" style={{ display: 'flex', marginTop: 16, marginBottom: 16 }}>
+            <Space wrap size="large" className={styles.mealControls}>
                 {PLANNING_MEALS.map((meal) => (
                     <Checkbox
                         key={meal}
