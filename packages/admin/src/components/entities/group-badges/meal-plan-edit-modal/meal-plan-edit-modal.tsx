@@ -1,8 +1,8 @@
 import { Button, InputNumber, Modal } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
-import styles from './group-meal-plan.module.css';
-import { useScreen } from '../../../shared/providers';
+import styles from './meal-plan-edit-modal.module.css';
+import { useScreen } from 'shared/providers';
 
 interface MealPlanEditModalProps {
     open: boolean;
@@ -38,9 +38,9 @@ export const MealPlanEditModal: React.FC<MealPlanEditModalProps> = ({
             footer={null}
             height={400}
             width={isMobile ? undefined : 400}
-            style={{ top: 'calc(100% - 450px)' }}
+            className={styles.modal}
         >
-            <div className={styles.modalContent}>
+            <div className={styles.content}>
                 <div className={styles.inputRow}>
                     <label className={styles.meat}>🥩 Мясоеды:</label>
                     <InputNumber
@@ -75,7 +75,7 @@ export const MealPlanEditModal: React.FC<MealPlanEditModalProps> = ({
                         }
                     />
                 </div>
-                <div className={styles.modalButtons}>
+                <div className={styles.buttons}>
                     <Button onClick={onCancel}>Отмена</Button>
                     <Button type="primary" onClick={onSave} disabled={isValid}>
                         Сохранить
