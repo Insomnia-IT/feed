@@ -59,7 +59,7 @@ export const VolunteersTab = ({ groupBadgeId }: VolunteersTabProps) => {
                 <Title level={5} className={styles.title}>
                     Волонтёры{' '}
                     {typeof total === 'number' && (
-                        <Text type="secondary" className={styles.total}>
+                        <Text type="secondary" className={styles.total} data-testid="group-badge-volunteer-count">
                             ({total})
                         </Text>
                     )}
@@ -111,7 +111,13 @@ export const VolunteersTab = ({ groupBadgeId }: VolunteersTabProps) => {
                                 okType="danger"
                                 onConfirm={() => removeVolunteer(record.id)}
                             >
-                                <Button icon={<DeleteOutlined />} danger size="small" loading={isUpdating} />
+                                <Button
+                                    icon={<DeleteOutlined />}
+                                    danger
+                                    size="small"
+                                    loading={isUpdating}
+                                    data-testid={`group-badge-remove-volunteer-${record.id}`}
+                                />
                             </Popconfirm>
                         </Space>
                     )}

@@ -29,7 +29,7 @@ export const GroupBadgeTabs = ({ activeKey, groupBadgeId, onChange }: GroupBadge
             },
             {
                 key: '2',
-                label: 'Волонтеры',
+                label: <span data-testid="group-badge-volunteers-tab">Волонтеры</span>,
                 children: <VolunteersTab groupBadgeId={numericGroupBadgeId} />
             },
             {

@@ -116,7 +116,12 @@ export const GroupBadgeList = () => {
                         dataIndex="actions"
                         render={(_, record) => (
                             <Space>
-                                <EditButton hideText size="small" recordItemId={record.id} />
+                                <EditButton
+                                    hideText
+                                    size="small"
+                                    recordItemId={record.id}
+                                    data-testid={`group-badge-edit-${record.id}`}
+                                />
                                 <DeleteButton hideText size="small" recordItemId={record.id} />
                             </Space>
                         )}

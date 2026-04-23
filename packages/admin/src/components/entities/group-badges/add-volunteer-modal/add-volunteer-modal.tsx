@@ -84,7 +84,7 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
 
     return (
         <>
-            <Button type="primary" onClick={() => setOpenModal(true)}>
+            <Button type="primary" onClick={() => setOpenModal(true)} data-testid="group-badge-add-volunteer">
                 Добавить волонтера
             </Button>
 
@@ -93,13 +93,14 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
                 open={isOpenModal}
                 onOk={addVols}
                 onCancel={() => setOpenModal(false)}
-                okButtonProps={{ disabled: !selectedIds.length }}
+                okButtonProps={{ disabled: !selectedIds.length, 'data-testid': 'group-badge-add-volunteer-confirm' }}
             >
                 <Input
                     className={styles.search}
                     placeholder="Поиск..."
                     allowClear
                     onChange={(e) => debouncedSearch(e.target.value)}
+                    data-testid="group-badge-add-volunteer-search"
                 />
 
                 <Table
