@@ -6,10 +6,8 @@ import { db, dbIncFeed } from 'db';
 import type { GroupBadge, MealTime, Transaction, TransactionJoined, Volunteer } from 'db';
 import { ErrorCard } from 'components/post-scan/post-scan-cards/error-card/error-card';
 import { CardContainer } from 'components/post-scan/post-scan-cards/ui/card-container/card-container';
-import { AlreadyFedModal } from 'components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 
 import {
-    calculateAlreadyFedCount,
     getGroupBadgeCurrentMealTransactions,
     getTodayStart,
     getVolTransactionsAsync,
@@ -108,7 +106,6 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
     const isLoading = volsRaw === undefined || alreadyFedTransactionsRaw === undefined;
     const vols = volsRaw ?? [];
     const alreadyFedTransactions = alreadyFedTransactionsRaw ?? [];
-    const alreadyFedVolsCount = calculateAlreadyFedCount(alreadyFedTransactions);
 
     const { view, validationGroups } = useMemo(() => {
         // loading
@@ -158,10 +155,6 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
         };
     }, [isLoading, vols, kitchenId, mealTime]);
 
-    const leftToFeedInBadge =
-        // Транзакции кормления анонимов по групповому бейджу могут содержать amount, отличное от 1
-        validationGroups.greens.length - alreadyFedVolsCount;
-
     const doFeed = (volsToFeed: Array<ValidatedVol>): void => {
         void incFeedAsync({ vols: volsToFeed, mealTime, kitchenId, groupBadge });
     };
@@ -172,7 +165,6 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
 
     return (
         <CardContainer>
-            <AlreadyFedModal alreadyFedVolsCount={alreadyFedVolsCount} leftToFeedCount={leftToFeedInBadge} />
             <ResultScreen
                 alreadyFedTransactions={alreadyFedTransactions}
                 doFeedAnons={doFeedAnons}
