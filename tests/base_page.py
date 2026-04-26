@@ -223,6 +223,10 @@ class BasePage:
         edit = self.page.locator(group_badges.EDIT_LAST_BUTTON).last
         edit.click()
 
+    def open_group_badge_volunteers_tab(self):
+        tab = self.page.locator(group_badges.VOLUNTEERS_TAB).first
+        tab.click()
+
     def add_volunteer_in_group_badge(self):
         existing_volunteers = {
             name.strip()

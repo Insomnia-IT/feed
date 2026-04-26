@@ -1,0 +1,74 @@
+.dayName {
+    font-size: 12px;
+    color: #8c8c8c;
+    text-transform: capitalize;
+}
+
+.dateValue {
+    font-weight: 500;
+}
+
+.mealCell {
+    width: 120px;
+    padding: 4px 12px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.editable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mealCell.editable:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+}
+
+.mobileCard {
+    margin-bottom: 0;
+}
+
+.mobileCard :global(.ant-card-body) {
+    padding: 12px;
+}
+
+.mobileCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mobileMealsRow {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+
+.mobileMealCell {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.mobileMealLabel {
+    font-size: 11px;
+    color: #8c8c8c;
+}
+
+.mobileMealCell .mealCell {
+    width: auto;
+    min-width: 60px;
+    padding: 2px 8px;
+    font-size: 14px;
+}
+
+.todayCard {
+    background-color: #fffbe6;
+    border-color: #faad14;
+}

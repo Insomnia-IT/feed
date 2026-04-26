@@ -42,7 +42,7 @@ const formatPaidArrivalItem = (value: HistoryIntervalValue) => {
         .filter((date): date is string => Boolean(date))
         .map(formatHistoryDateValue)
         .join(' - ');
-    const freeLabel = typeof value.is_free === 'boolean' ? (value.is_free ? 'бесплатно' : 'платно') : '';
+    const freeLabel = typeof value.is_free === 'boolean' ? (value.is_free ? 'за счёт фестиваля' : 'платно') : '';
 
     if (interval && freeLabel) return `${interval}, ${freeLabel}`;
     return interval || freeLabel || '';
