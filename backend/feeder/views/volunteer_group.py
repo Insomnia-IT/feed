@@ -240,6 +240,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         group_operation_uuid = uuid4()
         updated_volunteers = []
         errors = []
+        warnings = []
 
         try:
             with transaction.atomic():
@@ -334,16 +335,32 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     data = hist.data
                     old_data = hist.old_data
                     custom_field = data["custom_field"]
-                    custom_field_value = VolunteerCustomFieldValue.objects.get(
+                    try:
+                        custom_field_value = VolunteerCustomFieldValue.objects.get(
                             volunteer_id=volunteer_id,
                             custom_field_id=custom_field,
                         )
-                    if str(custom_field_value) == hist.data["value"]:
-                        if old_data:
-                            VolunteerCustomFieldValue.objects.filter(
+                        if str(custom_field_value).strip() == '':
+                            custom_field_value = None
+                    except VolunteerCustomFieldValue.DoesNotExist:
+                        custom_field_value = None
+                    if str(custom_field_value) == str(hist.data["value"]):
+                        if old_data and old_data["value"] is not None:
+                            existing_data = VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
                                 custom_field_id=custom_field,
-                            ).update(value = old_data["value"])
+                            )
+                            if existing_data:
+                                VolunteerCustomFieldValue.objects.filter(
+                                    volunteer_id=volunteer_id,
+                                    custom_field_id=custom_field,
+                                ).update(value = old_data["value"])
+                            else:
+                                VolunteerCustomFieldValue.objects.create(
+                                    volunteer_id = volunteer_id,
+                                    value = old_data["value"],
+                                    custom_field_id=custom_field
+                                )
                             History.objects.create(
                                 status=History.STATUS_UPDATE,
                                 object_name='volunteercustomfieldvalue',
@@ -355,7 +372,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 volunteer_uuid=hist.volunteer_uuid,
                                 group_operation_uuid=str(group_operation_uuid),
                             )
-                        elif old_data is None:
+                        else:
                             VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
                                 custom_field_id=custom_field,
@@ -372,7 +389,18 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 group_operation_uuid=str(group_operation_uuid),
                             )
                     else:
-                        errors.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        warnings.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        History.objects.create(
+                                status=History.STATUS_UPDATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": str(custom_field_value), "custom_field": custom_field,
+                                      "id": data["id"]},
+                                old_data={"value": str(custom_field_value)},
+                                volunteer_uuid=hist.volunteer_uuid,
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
@@ -383,12 +411,14 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         if errors:
             return Response(
                 {"updated": updated_volunteers,
-                "errors": errors},
+                "errors": errors,
+                "warnings": warnings},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         return Response(
             {"id": str(group_operation_uuid),
-            "updated":  updated_volunteers},
+            "updated":  updated_volunteers,
+            "warnings": warnings},
             status=status.HTTP_200_OK
         )
