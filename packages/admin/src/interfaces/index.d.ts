@@ -30,6 +30,8 @@ export interface VolEntity {
     is_ticket_received?: boolean;
     supervisor_id?: number | null;
     supervisor?: { id: number; name: string } | null;
+    //  Бейдж у руководителя
+    is_badge_located_at_leader?: boolean;
 }
 
 export interface KitchenEntity {

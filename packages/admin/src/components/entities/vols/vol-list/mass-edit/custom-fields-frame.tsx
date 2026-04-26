@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import { type HttpError, useList, useNotification } from '@refinedev/core';
-import { HAS_BADGE_FIELD_NAME } from 'const';
 import { Button, Form } from 'antd';
 import styles from './mass-edit.module.css';
 import { SingleField } from './single-field';
@@ -16,7 +15,7 @@ export const CustomFieldsFrame = ({
 }) => {
     const { result } = useList<CustomFieldEntity, HttpError>({
         resource: 'volunteer-custom-fields',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
     const list = result?.data ?? [];
     const [currentFieldName, setCurrentFieldName] = useState<string | undefined>(undefined);
@@ -45,7 +44,7 @@ export const CustomFieldsFrame = ({
         doChange({ fieldName: String(id), fieldValue, isCustom: true });
     };
 
-    const fields = (result?.data ?? []).filter((field) => field.name !== HAS_BADGE_FIELD_NAME);
+    const fields = result?.data ?? [];
 
     const currentField = fields.find((field) => field.name === currentFieldName);
 
