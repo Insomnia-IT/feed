@@ -1,3 +1,5 @@
+from django.core.exceptions import FieldDoesNotExist
+from django.db import models as django_models
 from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions, filters, status
@@ -142,6 +144,14 @@ class VolunteerGroupViewSet(APIView):
 
                         if len(new_data.keys()) > 0:
                             history_data = new_data.copy()
+                            for field_name in history_data.keys():
+                                try:
+                                    model_field = Volunteer._meta.get_field(field_name)
+                                except FieldDoesNotExist:
+                                    continue
+
+                                if isinstance(model_field, django_models.BooleanField):
+                                    history_data[field_name] = getattr(vol, field_name)
                             history_data['id'] = str(vol.uuid)
 
                             History.objects.create(
