@@ -340,6 +340,8 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                             volunteer_id=volunteer_id,
                             custom_field_id=custom_field,
                         )
+                        if str(custom_field_value).strip() == '':
+                            custom_field_value = None
                     except VolunteerCustomFieldValue.DoesNotExist:
                         custom_field_value = None
                     if str(custom_field_value) == str(hist.data["value"]):
