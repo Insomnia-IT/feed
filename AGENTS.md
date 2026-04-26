@@ -62,6 +62,10 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
 - `Direction`: Locations or services volunteers belong to.
 - `Kitchen`: Feeding points.
 
+## Documentation
+
+Documentation is located in /docs/ folder. Update documentation after each change in code. Each main menu page should have seperate documentation file.
+
 ## TypeScript/JavaScript Conventions
 
 ### Function Parameters
