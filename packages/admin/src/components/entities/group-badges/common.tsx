@@ -1,7 +1,7 @@
 import { Button, Form, Input, Select } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
 import { useSelect } from '@refinedev/antd';
-import { FC, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
 import { TextEditor } from 'components/controls/text-editor';
@@ -9,10 +9,13 @@ import type { DirectionEntity, VolunteerRoleEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
-export const CreateEdit: FC = () => {
+export const CreateEdit = () => {
+    const form = Form.useFormInstance();
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        optionValue: 'id',
+        pagination: { mode: 'off' }
     });
     const { selectProps: volunteerRoleSelectProps } = useSelect<VolunteerRoleEntity>({
         resource: 'volunteer-roles',
@@ -38,7 +41,9 @@ export const CreateEdit: FC = () => {
         [volunteerRoleSelectProps.options]
     );
 
-    const form = Form.useFormInstance();
+    const directionValue = Form.useWatch('direction', form);
+    const shouldHideDirectionValue = directionValue != null && (directionSelectProps.options?.length ?? 0) === 0;
+
     const [openQrModal, setOpenQrModal] = useState(false);
 
     useEffect(() => {
@@ -60,7 +65,13 @@ export const CreateEdit: FC = () => {
                 <Input />
             </Form.Item>
             <Form.Item label="Служба/Направление" name="direction" rules={Rules.required}>
-                <Select {...directionSelectProps} options={directions} />
+                <Select
+                    {...directionSelectProps}
+                    options={directions}
+                    loading={shouldHideDirectionValue || directionSelectProps.loading}
+                    value={shouldHideDirectionValue ? undefined : directionSelectProps.value}
+                    placeholder={shouldHideDirectionValue ? 'Загрузка...' : undefined}
+                />
             </Form.Item>
             <Form.Item label="Роль волонтеров" name="role" rules={Rules.required}>
                 <Select {...volunteerRoleSelectProps} options={groupBadgeRoles} />

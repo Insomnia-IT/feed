@@ -1,24 +1,20 @@
-import type { FC } from 'react';
-import { useState } from 'react';
-import cn from 'classnames';
+import dayjs from 'dayjs';
+import { useMemo, useState } from 'react';
 
-import type { TransactionJoined, Volunteer } from '~/db';
-import { Text, Title } from '~/shared/ui/typography';
-import { Button } from '~/shared/ui/button';
-import { VolAndUpdateInfo } from 'src/components/vol-and-update-info';
-import { getPlural } from '~/shared/lib/utils';
-import { FeedOtherCount } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
-import { WarningPartiallyFedModal } from '~/components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
-import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
+import type { GroupBadge, MealPlanCell, MealTime, TransactionJoined, Volunteer } from 'db';
+import { Text, Title } from 'shared/ui/typography';
+import { Button } from 'shared/ui/button';
+import { VolAndUpdateInfo } from 'components/vol-and-update-info';
+import { FeedOtherCount } from 'components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
+import { WarningPartiallyFedModal } from 'components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
+import { calculateAlreadyFedCount } from 'components/post-scan/post-scan.utils';
 
-import type { ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
+import type { GroupBadgeFeedAnonsPayload, ValidatedVol, ValidationGroups } from '../post-scan-group-badge.lib';
 import { NotFeedListModalTrigger } from '../not-feed-list-modal/not-feed-list-modal';
 
 import css from './post-scan-group-badge-misc.module.css';
 
-export const GroupBadgeInfo: FC<{
-    name: string;
-}> = ({ name }) => {
+export const GroupBadgeInfo = ({ name }: { name: string; volsToFeed: Array<Volunteer> }) => {
     return (
         <div className={css.info}>
             <Title>Групповой бейдж</Title>
@@ -29,18 +25,67 @@ export const GroupBadgeInfo: FC<{
     );
 };
 
-export const GroupBadgeWarningCard: FC<{
+const useTodayPlannedValues = (
+    groupBadge: GroupBadge,
+    mealTime: MealTime
+): { vegansCount: number | null; nonVegansCount: number | null } => {
+    const targetCell = useMemo(() => {
+        const today = dayjs();
+
+        let currentTargetCell: MealPlanCell | undefined;
+
+        for (const currentCell of groupBadge.planning_cells) {
+            const currentCellDate = dayjs(currentCell.date);
+
+            if (currentCell.meal_time !== mealTime || currentCellDate.isAfter(today)) {
+                continue;
+            }
+
+            if (!currentTargetCell) {
+                currentTargetCell = currentCell;
+                continue;
+            }
+
+            const targetCellDate = dayjs(currentTargetCell.date);
+
+            if (currentCellDate.isAfter(targetCellDate)) {
+                currentTargetCell = currentCell;
+            }
+        }
+
+        return currentTargetCell;
+    }, [groupBadge, mealTime]);
+
+    return {
+        vegansCount: targetCell?.amount_vegan ?? null,
+        nonVegansCount: targetCell?.amount_meat ?? null
+    };
+};
+
+export const GroupBadgeWarningCard = ({
+    alreadyFedTransactions,
+    close,
+    doFeedAnons,
+    groupBadge,
+    mealTime,
+    name,
+    validationGroups
+}: {
     alreadyFedTransactions: Array<TransactionJoined>;
     name: string;
     validationGroups: ValidationGroups;
     doFeed: (vols: Array<ValidatedVol>) => void;
-    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
+    doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
     close: () => void;
-}> = ({ alreadyFedTransactions, close, doFeedAnons, name, validationGroups }) => {
+    groupBadge: GroupBadge;
+    mealTime: MealTime;
+}) => {
     const { greens, reds } = validationGroups;
     const volsToFeed = [...greens];
 
-    const calculateDefaultFeedCount = (isVegan: boolean) => {
+    const planned = useTodayPlannedValues(groupBadge, mealTime);
+
+    const calculateDefaultFeedCount = (isVegan: boolean): number => {
         const alreadyFedCount = calculateAlreadyFedCount(
             alreadyFedTransactions.filter((t) => Boolean(t.is_vegan) === isVegan)
         );
@@ -48,23 +93,43 @@ export const GroupBadgeWarningCard: FC<{
         return Math.max(volsToFeedCount - alreadyFedCount, 0);
     };
 
-    const [vegansCount, setVegansCount] = useState<number>(() => calculateDefaultFeedCount(true));
-    const [nonVegansCount, setNonVegansCount] = useState<number>(() => calculateDefaultFeedCount(false));
+    const [initialCalculatedCounts] = useState(() => ({
+        vegans: calculateDefaultFeedCount(true),
+        nonVegans: calculateDefaultFeedCount(false)
+    }));
+
+    const getDefaultCount = (isVegan: boolean): number => {
+        const plannedCount = isVegan ? planned.vegansCount : planned.nonVegansCount;
+
+        if (plannedCount !== null) {
+            return plannedCount;
+        }
+
+        return calculateDefaultFeedCount(isVegan);
+    };
+
+    const [vegansCount, setVegansCount] = useState<number>(() => getDefaultCount(true));
+    const [nonVegansCount, setNonVegansCount] = useState<number>(() => getDefaultCount(false));
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
 
     const handleFeed = (): void => {
-        if (typeof vegansCount === 'string' || typeof nonVegansCount === 'string') {
-            alert('введено некорректное значение');
-
-            return;
-        }
-
-        doFeedAnons({ vegansCount, nonVegansCount });
+        doFeedAnons({
+            vegansCount,
+            nonVegansCount,
+            anomalyMeta: {
+                vegans: {
+                    edited: vegansCount !== initialCalculatedCounts.vegans,
+                    calculatedAmount: initialCalculatedCounts.vegans
+                },
+                nonVegans: {
+                    edited: nonVegansCount !== initialCalculatedCounts.nonVegans,
+                    calculatedAmount: initialCalculatedCounts.nonVegans
+                }
+            }
+        });
 
         close();
     };
-
-    alreadyFedTransactions.filter((t) => t.is_vegan);
 
     const amountToFeed = Number(vegansCount) + Number(nonVegansCount);
 
@@ -73,14 +138,14 @@ export const GroupBadgeWarningCard: FC<{
             <WarningPartiallyFedModal
                 alreadyFedTransactions={alreadyFedTransactions}
                 setShowModal={setIsWarningModalShown}
-                doFeedAnons={(value: { vegansCount: number; nonVegansCount: number }) => {
+                doFeedAnons={(value) => {
                     doFeedAnons(value);
                     close();
                 }}
                 greenVols={validationGroups.greens}
                 showModal={isWarningModalShown}
             />
-            <GroupBadgeInfo name={name} />
+            <GroupBadgeInfo name={name} volsToFeed={volsToFeed} />
 
             {reds.length > 0 && (
                 <div className={css.volunteerList}>
@@ -100,17 +165,23 @@ export const GroupBadgeWarningCard: FC<{
     );
 };
 
-const BottomBlock: React.FC<{
+const BottomBlock = ({
+    alternativeText,
+    amountToFeed,
+    handleAlternativeAction,
+    handleCancel,
+    handlePrimaryAction
+}: {
     handleCancel: () => void;
     handlePrimaryAction: () => void;
     handleAlternativeAction?: () => void;
     alternativeText?: string;
     amountToFeed: number;
-}> = ({ alternativeText, amountToFeed, handleAlternativeAction, handleCancel, handlePrimaryAction }) => {
+}) => {
     return (
         <div className={css.bottomBLock}>
             <div className={css.buttonsBlock}>
-                <Button variant='secondary' onClick={handleCancel}>
+                <Button variant="secondary" onClick={handleCancel}>
                     Отмена
                 </Button>
                 <Button disabled={amountToFeed <= 0} onClick={handlePrimaryAction}>
@@ -118,11 +189,11 @@ const BottomBlock: React.FC<{
                 </Button>
             </div>
             {alternativeText ? (
-                <Button onClick={handleAlternativeAction} variant='secondary'>
+                <Button onClick={handleAlternativeAction} variant="secondary">
                     {alternativeText}
                 </Button>
             ) : null}
-            <VolAndUpdateInfo textColor='black' />
+            <VolAndUpdateInfo textColor="black" />
         </div>
     );
 };

@@ -1,14 +1,14 @@
 import { Form, Input, Select, Checkbox, Divider, Button } from 'antd';
-
+import { type ChangeEvent, useState } from 'react';
 import { QrcodeOutlined } from '@ant-design/icons';
 
 import { Rules } from 'components/form';
-
-import styles from '../../common.module.css';
-import { useState } from 'react';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
+import styles from '../../common.module.css';
+
 export const PersonalInfoSection = ({
+    canFullEditing,
     isCreationProcess,
     denyBadgeEdit,
     denyFeedTypeEdit,
@@ -17,6 +17,7 @@ export const PersonalInfoSection = ({
     genderOptions,
     handleQRChange
 }: {
+    canFullEditing: boolean;
     isCreationProcess: boolean;
     denyBadgeEdit: boolean;
     denyFeedTypeEdit: boolean;
@@ -24,7 +25,7 @@ export const PersonalInfoSection = ({
 
     kitchenOptions: { label: string; value: string | number }[];
     genderOptions: { label: string; value: string | number }[];
-    handleQRChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleQRChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }) => {
     const [openQrModal, setOpenQrModal] = useState(false);
 
@@ -78,7 +79,7 @@ export const PersonalInfoSection = ({
                     <Input disabled={denyBadgeEdit} />
                 </Form.Item>
                 <Form.Item label="Партия бейджа" name="printing_batch">
-                    <Input disabled={denyBadgeEdit} />
+                    <Input disabled={!canFullEditing} />
                 </Form.Item>
                 {/* <Form.Item name="is_badged_leader" valuePropName="checked">
                     <Checkbox>Бейдж у Руководителя</Checkbox>

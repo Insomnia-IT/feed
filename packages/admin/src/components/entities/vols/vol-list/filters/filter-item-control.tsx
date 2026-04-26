@@ -1,29 +1,44 @@
-import { FC, useState } from 'react';
+import { useState, type FC } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Col, DatePicker, Input, Row, Select, Typography, Switch } from 'antd';
-import { FilterField, FilterFieldType, FilterItem, FilterListItem } from './filter-types';
+import { Col, DatePicker, Input, Row, Select, Switch, Typography } from 'antd';
+import dayjs from 'dayjs';
 
+import { FilterFieldType } from './filter-types';
+import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { getFilterListItems } from './get-filter-list-items';
 import styles from '../../list.module.css';
-import dayjs from 'dayjs';
 
 const fieldStyle = {
     minWidth: '110px',
     gap: '4px'
 };
 
+const pickerStyle = {
+    width: 300
+};
+
+const RANGE_SEARCH_LABEL = 'Искать в диапазоне дат';
+const EMPTY_LABEL = 'пусто';
+const PICK_DATE_LABEL = 'Выбери дату';
+const INPUT_PLACEHOLDER = 'Введи текст';
+const SELECT_PLACEHOLDER = 'Выбери из списка';
+const FROM_LABEL = 'С';
+const TO_LABEL = 'По';
+
 export const FilterItemControl: FC<{
     field: FilterField;
     filterItem?: FilterItem;
+    isMobile?: boolean;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}> = ({ field, filterItem, onFilterTextValueChange, onFilterValueChange }) => {
+}> = ({ field, filterItem, isMobile, onFilterTextValueChange, onFilterValueChange }) => {
     if (field.type === FilterFieldType.Lookup || field.type === FilterFieldType.Boolean) {
         return (
             <FilterSelect
                 field={field}
                 isMultiple={field.type === FilterFieldType.Lookup}
                 filterItem={filterItem}
+                isMobile={isMobile}
                 onFilterTextValueChange={onFilterTextValueChange}
                 onFilterValueChange={onFilterValueChange}
             />
@@ -31,15 +46,22 @@ export const FilterItemControl: FC<{
     }
 
     if (field.type === FilterFieldType.Date) {
-        return <DateField field={field} filterItem={filterItem} onFilterTextValueChange={onFilterTextValueChange} />;
+        return (
+            <DateField
+                field={field}
+                filterItem={filterItem}
+                isMobile={isMobile}
+                onFilterTextValueChange={onFilterTextValueChange}
+            />
+        );
     }
 
     return (
         <FilterInput
             field={field}
             filterItem={filterItem}
+            isMobile={isMobile}
             onFilterTextValueChange={onFilterTextValueChange}
-            onFilterValueChange={onFilterValueChange}
         />
     );
 };
@@ -49,69 +71,115 @@ const SEPARATOR = ':';
 const DateField: FC<{
     field: FilterField;
     filterItem?: FilterItem;
+    isMobile?: boolean;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-}> = ({ field, filterItem, onFilterTextValueChange }) => {
+}> = ({ field, filterItem, isMobile, onFilterTextValueChange }) => {
     const [isCalPopOpen, setIsCalPopOpen] = useState<boolean | undefined>(undefined);
 
     const [beforeString, afterString] = ((filterItem?.value as string | undefined) ?? '')?.split(SEPARATOR) ?? [];
-
     const [showPeriod, setShowPeriod] = useState(!!afterString);
 
-    // Ожидаем значение в формате YYYY-MM-DD:YYYY-MM-DD
     const changeValue = (value: string) => onFilterTextValueChange(field.name, value);
+    const changePeriodValue = ({ before, after }: { before?: string; after?: string }) => {
+        changeValue([before, after].filter((date): date is string => !!date).join(SEPARATOR));
+    };
 
     return (
-        <Col style={fieldStyle}>
+        <Col style={fieldStyle} className={isMobile ? styles.mobileFilterField : undefined}>
             <Row style={{ justifyContent: 'space-between' }}>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
             <Row>
                 {showPeriod ? (
-                    <DatePicker.RangePicker
-                        open={isCalPopOpen}
-                        onOpenChange={(value) => setIsCalPopOpen(value)}
-                        placeholder={['пусто', 'пусто']}
-                        panelRender={(panel) => (
-                            <>
-                                <Row style={{ justifyContent: 'flex-start', padding: '8px', gap: '8px', width: '50%' }}>
-                                    <Typography.Text>Искать в диапазоне дат</Typography.Text>
-
-                                    <Switch
-                                        size={'small'}
-                                        value={showPeriod}
-                                        onChange={() => {
-                                            setShowPeriod((prev) => !prev);
+                    isMobile ? (
+                        <Col flex="auto">
+                            <Row style={{ gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                                <DatePicker
+                                    placeholder={FROM_LABEL}
+                                    value={beforeString ? dayjs(beforeString) : undefined}
+                                    style={pickerStyle}
+                                    onChange={(value) =>
+                                        changePeriodValue({
+                                            before: value?.format('YYYY-MM-DD'),
+                                            after: afterString
+                                        })
+                                    }
+                                />
+                                <DatePicker
+                                    placeholder={TO_LABEL}
+                                    value={afterString ? dayjs(afterString) : undefined}
+                                    style={pickerStyle}
+                                    onChange={(value) =>
+                                        changePeriodValue({
+                                            before: beforeString,
+                                            after: value?.format('YYYY-MM-DD')
+                                        })
+                                    }
+                                />
+                            </Row>
+                            <Row style={{ justifyContent: 'flex-start', gap: '8px', padding: '4px 0' }}>
+                                <Typography.Text>{RANGE_SEARCH_LABEL}</Typography.Text>
+                                <Switch
+                                    size={'small'}
+                                    value={showPeriod}
+                                    onChange={() => {
+                                        setShowPeriod((prev) => !prev);
+                                    }}
+                                />
+                            </Row>
+                        </Col>
+                    ) : (
+                        <DatePicker.RangePicker
+                            open={isCalPopOpen}
+                            onOpenChange={(value) => setIsCalPopOpen(value)}
+                            placeholder={[EMPTY_LABEL, EMPTY_LABEL]}
+                            panelRender={(panel) => (
+                                <>
+                                    <Row
+                                        style={{
+                                            justifyContent: 'flex-start',
+                                            padding: '8px',
+                                            gap: '8px',
+                                            width: '50%'
                                         }}
-                                    />
-                                </Row>
-                                {panel}
-                            </>
-                        )}
-                        allowEmpty={[true, true]}
-                        style={{ width: 300, display: showPeriod ? undefined : 'none' }}
-                        value={[
-                            beforeString ? dayjs(beforeString) : undefined,
-                            afterString ? dayjs(afterString) : undefined
-                        ]}
-                        onChange={(value) => {
-                            // Сохраняем значение в формате YYYY-MM-DD:YYYY-MM-DD
-                            const periodString = (value ?? [])
-                                .filter((e) => !!e)
-                                .map((date) => date?.format('YYYY-MM-DD'))
-                                .join(SEPARATOR);
+                                    >
+                                        <Typography.Text>{RANGE_SEARCH_LABEL}</Typography.Text>
+                                        <Switch
+                                            size={'small'}
+                                            value={showPeriod}
+                                            onChange={() => {
+                                                setShowPeriod((prev) => !prev);
+                                            }}
+                                        />
+                                    </Row>
+                                    {panel}
+                                </>
+                            )}
+                            allowEmpty={[true, true]}
+                            style={{ ...pickerStyle, display: showPeriod ? undefined : 'none' }}
+                            value={[
+                                beforeString ? dayjs(beforeString) : undefined,
+                                afterString ? dayjs(afterString) : undefined
+                            ]}
+                            onChange={(value) => {
+                                const periodString = (value ?? [])
+                                    .filter((e) => !!e)
+                                    .map((date) => date?.format('YYYY-MM-DD'))
+                                    .join(SEPARATOR);
 
-                            changeValue(periodString);
-                        }}
-                    />
+                                changeValue(periodString);
+                            }}
+                        />
+                    )
                 ) : (
                     <DatePicker
                         open={isCalPopOpen}
                         onOpenChange={(value) => setIsCalPopOpen(value)}
+                        placeholder={PICK_DATE_LABEL}
                         panelRender={(panel) => (
                             <>
                                 <Row style={{ justifyContent: 'flex-start', gap: '8px', padding: '8px' }}>
-                                    <Typography.Text>Искать в диапазоне дат</Typography.Text>
-
+                                    <Typography.Text>{RANGE_SEARCH_LABEL}</Typography.Text>
                                     <Switch
                                         size={'small'}
                                         value={showPeriod}
@@ -124,12 +192,9 @@ const DateField: FC<{
                             </>
                         )}
                         value={beforeString ? dayjs(beforeString) : undefined}
-                        style={{ width: 300, display: !showPeriod ? undefined : 'none' }}
+                        style={{ ...pickerStyle, display: !showPeriod ? undefined : 'none' }}
                         onChange={(value) => {
-                            // Сохраняем значение в формате YYYY-MM-DD
-                            const periodString = value?.format('YYYY-MM-DD');
-
-                            changeValue(periodString);
+                            changeValue(value?.format('YYYY-MM-DD') ?? '');
                         }}
                     />
                 )}
@@ -141,23 +206,22 @@ const DateField: FC<{
 const FilterInput: FC<{
     field: FilterField;
     filterItem?: FilterItem;
+    isMobile?: boolean;
     onFilterTextValueChange: (fieldName: string, value?: string) => void;
-    onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}> = ({ field, filterItem, onFilterTextValueChange }) => {
+}> = ({ field, filterItem, isMobile, onFilterTextValueChange }) => {
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
-        <Col style={fieldStyle}>
+        <Col style={fieldStyle} className={isMobile ? styles.mobileFilterField : undefined}>
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
-
             <Row>
                 <Input
                     style={fieldStyle}
                     value={filterItem?.value as string | undefined}
                     onChange={(e) => onFilterTextValueChange(field.name, e.target.value)}
-                    placeholder={'Введи текст'}
+                    placeholder={INPUT_PLACEHOLDER}
                     onClear={onClear}
                     allowClear
                 />
@@ -170,39 +234,67 @@ const FilterSelect: FC<{
     field: FilterField;
     isMultiple?: boolean;
     filterItem?: FilterItem;
-    onFilterTextValueChange: (fieldName: string, value?: string) => void;
+    isMobile?: boolean;
     onFilterValueChange: (fieldName: string, filterListItem: FilterListItem, single?: boolean) => void;
-}> = ({ field, isMultiple, filterItem, onFilterValueChange, onFilterTextValueChange }) => {
+    onFilterTextValueChange: (fieldName: string, value?: string) => void;
+}> = ({ field, isMultiple, filterItem, isMobile, onFilterValueChange, onFilterTextValueChange }) => {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const values = getFilterListItems(field, filterItem);
 
-    const onSelect = (_value: string, option: FilterListItem) =>
+    const rawStored = filterItem?.value;
+    const selectValue = isMultiple
+        ? Array.isArray(rawStored)
+            ? rawStored
+            : []
+        : Array.isArray(rawStored)
+          ? rawStored.length > 0
+              ? rawStored[0]
+              : undefined
+          : undefined;
+
+    const onSelect = (_value: string | number | boolean, option: FilterListItem) =>
         onFilterValueChange(field.name, { ...option, selected: false }, field.single);
-    const onDeselect = (_value: string, option: FilterListItem) =>
+    const onDeselect = (_value: string | number | boolean, option: FilterListItem) =>
         onFilterValueChange(field.name, { ...option, selected: true }, field.single);
     const onClear = () => onFilterTextValueChange(field.name);
 
     return (
-        <Col style={fieldStyle}>
+        <Col style={fieldStyle} className={isMobile ? styles.mobileFilterField : undefined}>
             <Row>
                 <Typography.Text type={'secondary'}>{field.title}</Typography.Text>
             </Row>
-
             <Row>
                 <Select
                     className={styles.filterValueSelect}
                     style={{ width: '100%' }}
+                    open={dropdownOpen}
+                    onDropdownVisibleChange={setDropdownOpen}
                     maxTagCount={1}
-                    value={(filterItem?.value ?? []) as string[]}
+                    value={selectValue as string[] | string | number | boolean | undefined}
                     onSelect={onSelect}
                     onDeselect={onDeselect}
                     onClear={onClear}
                     options={values}
-                    placeholder={'Выбери из списка'}
+                    placeholder={SELECT_PLACEHOLDER}
                     optionFilterProp={'label'}
                     mode={isMultiple ? 'multiple' : undefined}
                     showSearch
                     allowClear={false}
-                    suffixIcon={<DownOutlined />}
+                    suffixIcon={
+                        <span
+                            role="button"
+                            tabIndex={-1}
+                            aria-expanded={dropdownOpen}
+                            style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDropdownOpen((prev) => !prev);
+                            }}
+                        >
+                            <DownOutlined />
+                        </span>
+                    }
                 />
             </Row>
         </Col>

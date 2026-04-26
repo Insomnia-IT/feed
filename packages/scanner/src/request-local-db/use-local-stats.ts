@@ -1,9 +1,10 @@
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { FeedType, getFeedStats, getVolsOnField, MealTime } from '~/db';
-import { DATE_FORMAT } from '~/shared/lib/date';
-import type { LocalStatsHook } from '~/request-local-db/lib';
+import { FeedType, getFeedStats, getVolsOnField, isActivatedStatus, MealTime } from 'db';
+import type { Volunteer } from 'db';
+import { DATE_FORMAT } from 'shared/lib/date';
+import type { LocalStatsHook } from './lib';
 
 export const MEAL_TIME = [MealTime.breakfast, MealTime.lunch, MealTime.dinner, MealTime.night] as const;
 
@@ -16,186 +17,143 @@ type StatsByNutritionType = {
 type FeedStatsRecord = Record<MealTime, StatsByNutritionType>;
 export type FeedStats = { onField: FeedStatsRecord; feedCount: FeedStatsRecord };
 
-const getStatsByDate = async (statsDate: string): Promise<{ feedCount: FeedStatsRecord; onField: FeedStatsRecord }> => {
-    const onFieldPromises = MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
-        let vols = await getVolsOnField(statsDate);
-        if (MT === MealTime.breakfast) {
-            vols = vols.filter((vol) =>
-                vol.arrivals.some(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                        dayjs(departure_date).unix() >= dayjs(statsDate).unix()
-                )
-            );
-        }
-        if (MT === MealTime.dinner) {
-            vols = vols.filter((vol) =>
-                vol.arrivals.some(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                        dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix()
-                )
-            );
-        }
-        if (MT === MealTime.night) {
-            vols = vols.filter((vol) =>
-                vol.arrivals.some(
-                    ({ arrival_date, departure_date }) =>
-                        dayjs(arrival_date).unix() <= dayjs(statsDate).unix() &&
-                        dayjs(departure_date).unix() >= dayjs(statsDate).add(1, 'd').unix() &&
-                        vol.feed_type !== FeedType.Paid
-                )
-            );
-        }
+const createEmptyFeedStatsRecord = (): FeedStatsRecord => ({
+    [MealTime.breakfast]: { NT1: 0, NT2: 0, total: 0 },
+    [MealTime.lunch]: { NT1: 0, NT2: 0, total: 0 },
+    [MealTime.dinner]: { NT1: 0, NT2: 0, total: 0 },
+    [MealTime.night]: { NT1: 0, NT2: 0, total: 0 }
+});
 
-        try {
-            console.log(
-                `stat: type - plan, date - ${statsDate}, meal_time - ${MT}:`,
-                vols.map((vol) => ({
-                    id: vol.id,
-                    date: statsDate,
-                    type: 'plan',
-                    meal_time: MT,
-                    is_vegan: vol.is_vegan,
-                    amount: 1,
-                    kitchen_id: vol.kitchen
-                }))
-            );
-        } catch (error) {
-            console.log('stat, plan:', `logging failed - ${error}`);
-        }
-
-        const nt1 = vols.filter((vol) => !vol.is_vegan).length;
-        const nt2 = vols.filter((vol) => vol.is_vegan).length;
-        const total = vols.length;
-
-        return <FeedStatsRecord>{
-            [MT]: {
-                NT1: nt1,
-                NT2: nt2,
-                total: total
-            }
-        };
-    });
-
-    const feedCountPromises = MEAL_TIME.map(async (MT): Promise<FeedStatsRecord> => {
-        let txs = await getFeedStats(statsDate);
-        if (MT === MealTime.breakfast) {
-            txs = txs.filter((tx) => tx.mealTime === MealTime.breakfast);
-        }
-        if (MT === MealTime.lunch) {
-            txs = txs.filter((tx) => tx.mealTime === MealTime.lunch);
-        }
-        if (MT === MealTime.dinner) {
-            txs = txs.filter((tx) => tx.mealTime === MealTime.dinner);
-        }
-        if (MT === MealTime.night) {
-            txs = txs.filter((tx) => tx.mealTime === MealTime.night);
-        }
-
-        const nt1 = txs.reduce((acc, curr) => {
-            if (!curr.is_vegan) {
-                return acc + curr.amount;
-            }
-            return acc;
-        }, 0);
-        const nt2 = txs.reduce((acc, curr) => {
-            if (curr.is_vegan) {
-                return acc + curr.amount;
-            }
-            return acc;
-        }, 0);
-        const total = nt1 + nt2;
-
-        return <FeedStatsRecord>{
-            [MT]: {
-                NT1: nt1,
-                NT2: nt2,
-                total: total
-            }
-        };
-    });
-
-    const onFieldArr = await Promise.all(onFieldPromises);
-    const onFieldRecords = <FeedStatsRecord>{};
-    Object.assign(onFieldRecords, ...onFieldArr);
-
-    const feedCountArr = await Promise.all(feedCountPromises);
-    const feedCountRecords = <FeedStatsRecord>{};
-    Object.assign(feedCountRecords, ...feedCountArr);
-
+const getUnixDayRange = (statsDate: string) => {
+    const start = dayjs(statsDate).startOf('day');
     return {
-        onField: onFieldRecords,
-        feedCount: feedCountRecords
+        start: start.unix(),
+        nextDayStart: start.add(1, 'day').unix()
     };
 };
 
-const calcPredict = async (statsDate: string): Promise<{ feedCount: FeedStatsRecord; onField: FeedStatsRecord }> => {
-    const { feedCount: prevFeedCount, onField: prevOnField } = await getStatsByDate(
-        dayjs(statsDate).subtract(1, 'd').format(DATE_FORMAT)
-    );
-    const { feedCount: prev2FeedCount, onField: prev2OnField } = await getStatsByDate(
-        dayjs(statsDate).subtract(2, 'd').format(DATE_FORMAT)
-    );
-    const { feedCount, onField } = await getStatsByDate(statsDate);
+type StatsInterval = {
+    arrival_date: string;
+    departure_date: string;
+};
 
-    Object.keys(feedCount).forEach((MTKey) => {
-        Object.keys(feedCount[MTKey]).forEach((NTKey) => {
-            if (NTKey === 'total') return;
+const getStatsIntervals = (vol: Volunteer): Array<StatsInterval> => {
+    const arrivals = vol.arrivals.filter(({ status }) => isActivatedStatus(status));
+    const paidArrivals = vol.paid_arrivals ?? [];
 
-            let basisFeedCount: number;
-            let basisOnField: number;
+    if (vol.feed_type === FeedType.Paid) {
+        return paidArrivals;
+    }
 
-            if (prevFeedCount[MTKey][NTKey] !== 0) {
-                basisFeedCount = prevFeedCount[MTKey][NTKey];
-                basisOnField = prevOnField[MTKey][NTKey];
-            } else {
-                basisFeedCount = prev2FeedCount[MTKey][NTKey];
-                basisOnField = prev2OnField[MTKey][NTKey];
+    return [...arrivals, ...paidArrivals];
+};
+
+const getStatsByDate = async (statsDate: string): Promise<FeedStats> => {
+    const [volsOnField, feedTransactions] = await Promise.all([getVolsOnField(statsDate), getFeedStats(statsDate)]);
+    const { start, nextDayStart } = getUnixDayRange(statsDate);
+
+    const onField: FeedStatsRecord = createEmptyFeedStatsRecord();
+    for (const vol of volsOnField) {
+        let hasBreakfast = false;
+        let hasDinner = false;
+        let hasNight = false;
+
+        for (const interval of getStatsIntervals(vol)) {
+            const arrivalUnix = dayjs(interval.arrival_date).unix();
+            const departureUnix = dayjs(interval.departure_date).unix();
+
+            if (arrivalUnix <= start && departureUnix >= start) {
+                hasBreakfast = true;
+            }
+            if (arrivalUnix <= start && departureUnix >= nextDayStart) {
+                hasDinner = true;
+                if (vol.feed_type !== FeedType.Paid) {
+                    hasNight = true;
+                }
             }
 
-            const feedCountPredict = (basisFeedCount / basisOnField) * onField[MTKey][NTKey];
+            if (hasBreakfast && hasDinner && (hasNight || vol.feed_type === FeedType.Paid)) {
+                break;
+            }
+        }
 
-            feedCount[MTKey][NTKey] =
-                isNaN(feedCountPredict) || !isFinite(feedCountPredict)
-                    ? onField[MTKey][NTKey]
-                    : Math.round(feedCountPredict);
-        });
-    });
+        for (const mealTime of MEAL_TIME) {
+            const include =
+                mealTime === MealTime.lunch ||
+                (mealTime === MealTime.breakfast && hasBreakfast) ||
+                (mealTime === MealTime.dinner && hasDinner) ||
+                (mealTime === MealTime.night && hasNight);
 
-    Object.keys(feedCount).forEach((MTKey) => {
-        feedCount[MTKey].total = feedCount[MTKey].NT1 + feedCount[MTKey].NT2;
-    });
+            if (!include) continue;
 
-    return { feedCount: feedCount, onField };
+            const mealStats = onField[mealTime];
+            if (vol.is_vegan) {
+                mealStats.NT2 += 1;
+            } else {
+                mealStats.NT1 += 1;
+            }
+            mealStats.total += 1;
+        }
+    }
+
+    const feedCount: FeedStatsRecord = createEmptyFeedStatsRecord();
+    for (const tx of feedTransactions) {
+        const mealStats = feedCount[tx.mealTime];
+        if (tx.is_vegan) {
+            mealStats.NT2 += tx.amount;
+        } else {
+            mealStats.NT1 += tx.amount;
+        }
+        mealStats.total += tx.amount;
+    }
+
+    return { onField, feedCount };
+};
+
+const calcPredict = async (statsDate: string): Promise<FeedStats> => {
+    const yesterday = dayjs(statsDate).subtract(1, 'd').format(DATE_FORMAT);
+    const dayBefore = dayjs(statsDate).subtract(2, 'd').format(DATE_FORMAT);
+
+    const { feedCount: prevFC, onField: prevOF } = await getStatsByDate(yesterday);
+    const { feedCount: prev2FC, onField: prev2OF } = await getStatsByDate(dayBefore);
+    const { feedCount, onField } = await getStatsByDate(statsDate);
+
+    for (const MT of MEAL_TIME) {
+        for (const NT of ['NT1', 'NT2'] as const) {
+            const basisFC = prevFC[MT][NT] !== 0 ? prevFC[MT][NT] : prev2FC[MT][NT];
+            const basisOF = prevFC[MT][NT] !== 0 ? prevOF[MT][NT] : prev2OF[MT][NT];
+
+            const predict = (basisFC / basisOF) * onField[MT][NT];
+            feedCount[MT][NT] = isFinite(predict) && !isNaN(predict) ? Math.round(predict) : onField[MT][NT];
+        }
+        feedCount[MT].total = feedCount[MT].NT1 + feedCount[MT].NT2;
+    }
+
+    return { onField, feedCount };
 };
 
 export const useLocalStats = (): LocalStatsHook => {
-    const [error, setError] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState<FeedStats | null>(null);
     const [progress, setProgress] = useState<boolean>(true);
     const [updated, setUpdated] = useState<boolean>(false);
 
-    const update = async (statsDate: string, predict = false): Promise<void> => {
+    const update = useCallback(async (statsDate: string, predict = false): Promise<void> => {
         setUpdated(false);
+        setError(null);
         setProgress(true);
 
         try {
-            if (predict) {
-                const stats = await calcPredict(statsDate);
-                setStats(stats);
-            } else {
-                const stats = await getStatsByDate(statsDate);
-                setStats(stats);
-            }
+            const result = predict ? await calcPredict(statsDate) : await getStatsByDate(statsDate);
+            setStats(result);
             setUpdated(true);
-            setProgress(false);
-        } catch (error) {
-            console.error(error);
-            setError(error);
+        } catch (e: unknown) {
+            console.error(e);
+            setError(e instanceof Error ? e.message : 'Unknown error');
+        } finally {
             setProgress(false);
         }
-    };
+    }, []);
 
     return { progress, update, error, updated, stats };
 };

@@ -8,7 +8,7 @@ import { useGroupMealPlanUI } from './useGroupMealPlanUI';
 import { MealPlanEditModal } from './MealPlanEditModal';
 import { useScreen } from '../../../shared/providers';
 import cn from 'classnames';
-import { BaseKey } from '@refinedev/core';
+import type { BaseKey } from '@refinedev/core';
 
 const formatMeals = (meals: { amount_meat: number | null; amount_vegan: number | null }, isMobile: boolean = false) => {
     if (meals?.amount_meat === null && meals?.amount_vegan === null) {
