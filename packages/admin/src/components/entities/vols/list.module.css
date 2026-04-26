@@ -224,3 +224,44 @@
     z-index: 1;
     border-radius: 8px;
 }
+
+/*
+ * Подсветка полей с ненулевым значением (поиск и фильтры волонтёров).
+ * Глобальный ConfigProvider в app.tsx задаёт только token.borderRadius — отдельного preset для «filled» у Input нет.
+ */
+
+.volSearchBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+/* Обёртка строки поиска на всю ширину блока контента */
+.volSearchWrap {
+    width: 100%;
+}
+
+/*
+ * Растягивание контрола внутри ant Row (flex): без этого обёртка сжимается до ширины иконки,
+ * Select теряет плейсхолдер и выглядит «сплющенным».
+ */
+.volFilterControlStretch {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 110px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.volActiveControlRing {
+    /*
+     * Радиус совпадает с token.borderRadius и скруглением Input/Select Ant Design —
+     * иначе при 8px кольцо расходится с контролом и на углах линия выглядит «рваной».
+     */
+    border-radius: 6px;
+    transition: box-shadow 0.2s ease;
+
+    /* Без размытой тени; 2px; приглушённый «серо-голубой», без крика цвета */
+    box-shadow: 0 0 0 2px rgb(152 180 218 / 48%);
+}

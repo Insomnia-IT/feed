@@ -5,6 +5,7 @@ import type { GroupBadge, MealPlanCell, MealTime, TransactionJoined, Volunteer }
 import { Text, Title } from 'shared/ui/typography';
 import { Button } from 'shared/ui/button';
 import { VolAndUpdateInfo } from 'components/vol-and-update-info';
+import { AlreadyFedModal } from 'components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 import { FeedOtherCount } from 'components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
 import { WarningPartiallyFedModal } from 'components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
 import { calculateAlreadyFedCount } from 'components/post-scan/post-scan.utils';
@@ -93,24 +94,33 @@ export const GroupBadgeWarningCard = ({
         return Math.max(volsToFeedCount - alreadyFedCount, 0);
     };
 
-    const [initialCalculatedCounts] = useState(() => ({
-        vegans: calculateDefaultFeedCount(true),
-        nonVegans: calculateDefaultFeedCount(false)
-    }));
+    const getAlreadyFedCount = (isVegan: boolean): number => {
+        return calculateAlreadyFedCount(alreadyFedTransactions.filter((t) => Boolean(t.is_vegan) === isVegan));
+    };
 
     const getDefaultCount = (isVegan: boolean): number => {
         const plannedCount = isVegan ? planned.vegansCount : planned.nonVegansCount;
 
         if (plannedCount !== null) {
-            return plannedCount;
+            return Math.max(plannedCount - getAlreadyFedCount(isVegan), 0);
         }
 
         return calculateDefaultFeedCount(isVegan);
     };
 
-    const [vegansCount, setVegansCount] = useState<number>(() => getDefaultCount(true));
-    const [nonVegansCount, setNonVegansCount] = useState<number>(() => getDefaultCount(false));
+    const buildInitialCounts = (): { vegans: number; nonVegans: number } => ({
+        vegans: getDefaultCount(true),
+        nonVegans: getDefaultCount(false)
+    });
+
+    const [initialCalculatedCounts] = useState(buildInitialCounts);
+    const [vegansCount, setVegansCount] = useState<number>(initialCalculatedCounts.vegans);
+    const [nonVegansCount, setNonVegansCount] = useState<number>(initialCalculatedCounts.nonVegans);
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
+    const alreadyFedCount = calculateAlreadyFedCount(alreadyFedTransactions);
+    const totalPlannedCount = (planned.vegansCount ?? 0) + (planned.nonVegansCount ?? 0);
+    const hasPlannedValues = planned.vegansCount !== null || planned.nonVegansCount !== null;
+    const totalToFeedCount = hasPlannedValues ? totalPlannedCount : volsToFeed.length;
 
     const handleFeed = (): void => {
         doFeedAnons({
@@ -135,6 +145,7 @@ export const GroupBadgeWarningCard = ({
 
     return (
         <div className={css.groupBadgeCard}>
+            <AlreadyFedModal alreadyFedCount={alreadyFedCount} totalCount={totalToFeedCount} />
             <WarningPartiallyFedModal
                 alreadyFedTransactions={alreadyFedTransactions}
                 setShowModal={setIsWarningModalShown}

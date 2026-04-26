@@ -97,6 +97,7 @@ class Person(TimeMixin, CommentMixin, SoftDeleteModelMixin):
     phone = models.CharField(max_length=255, null=True, blank=True)
     email = models.CharField(max_length=255, null=True, blank=True)
     is_vegan = models.BooleanField(default=False)
+    banned = models.BooleanField(null=True, blank=True)
 
 
 class Photo(TimeMixin):
@@ -147,6 +148,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
     direction_head_comment = models.TextField(null=True, blank=True, verbose_name="Комментарий руководителя локации")
     badge_number = models.TextField(null=True, blank=True, verbose_name="Номер бейджа")
+    is_badge_located_at_leader = models.BooleanField(default=False, verbose_name="Бейдж у руководителя?")
     printing_batch = models.IntegerField(null=True, blank=True, verbose_name="Партия бейджа")
     # role = models.TextField(null=True, blank=True, verbose_name="Роль")
     access_role = models.ForeignKey(

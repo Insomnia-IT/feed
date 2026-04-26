@@ -215,7 +215,7 @@ function PaidArrivalItem({
                     </Form.Item>
                 </div>
                 <div className={styles.dateInput}>
-                    <Form.Item label="Бесплатно" name={[index, 'is_free']} valuePropName="checked">
+                    <Form.Item label="За счёт фестиваля" name={[index, 'is_free']} valuePropName="checked">
                         <Checkbox />
                     </Form.Item>
                 </div>

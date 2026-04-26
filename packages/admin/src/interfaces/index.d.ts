@@ -124,6 +124,65 @@ export interface VolunteerCustomFieldEntity {
     mobile: boolean;
 }
 
+export interface StorageEntity {
+    id: number;
+    name: string;
+    description?: string;
+}
+
+export interface BinEntity {
+    id: number;
+    storage: number;
+    name: string;
+    capacity?: number;
+    description?: string;
+}
+
+export interface ItemEntity {
+    id: number;
+    name: string;
+    sku?: string;
+    is_unique: boolean;
+    is_anonymous: boolean;
+    storage?: number;
+    storage_name?: string;
+    metadata?: any;
+}
+
+export interface StorageItemPositionEntity {
+    id: number;
+    storage: number;
+    bin: number;
+    item: number;
+    count: number;
+    description?: string;
+    item_name?: string;
+    item_is_unique?: boolean;
+    item_is_anonymous?: boolean;
+    bin_name?: string;
+    storage_name?: string;
+}
+
+export interface IssuanceEntity {
+    id: number;
+    position: number;
+    volunteer: number;
+    count: number;
+    notes?: string;
+    volunteer_name?: string;
+    item_name?: string;
+}
+
+export interface ReceivingEntity {
+    id: number;
+    position: number;
+    volunteer: number;
+    count: number;
+    notes?: string;
+    volunteer_name?: string;
+    item_name?: string;
+}
+
 export interface DirectionEntity {
     id: string;
     name: string;
