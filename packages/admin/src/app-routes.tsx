@@ -47,9 +47,15 @@ const DepartmentList = lazyNamed(() => import('components/entities/directions/li
 const DepartmentCreate = lazyNamed(() => import('components/entities/directions/create'), 'DepartmentCreate');
 const DirectionEdit = lazyNamed(() => import('components/entities/directions/edit'), 'DirectionEdit');
 const DirectionShow = lazyNamed(() => import('components/entities/directions/show'), 'DirectionShow');
-const GroupBadgeList = lazyNamed(() => import('components/entities/group-badges/list'), 'GroupBadgeList');
-const GroupBadgeCreate = lazyNamed(() => import('components/entities/group-badges/create'), 'GroupBadgeCreate');
-const GroupBadgeEdit = lazyNamed(() => import('components/entities/group-badges/edit'), 'GroupBadgeEdit');
+const GroupBadgeList = lazyNamed(
+    () => import('components/entities/group-badges/list/group-badge-list'),
+    'GroupBadgeList'
+);
+const GroupBadgeCreate = lazyNamed(() => import('components/entities/group-badges/create/create'), 'GroupBadgeCreate');
+const GroupBadgeEdit = lazyNamed(
+    () => import('components/entities/group-badges/edit/group-badge-edit'),
+    'GroupBadgeEdit'
+);
 const GroupBadgeShow = lazyNamed(() => import('components/entities/group-badges/show'), 'GroupBadgeShow');
 const FeedTransactionList = lazyNamed(() => import('components/entities/feed-transaction/list'), 'FeedTransactionList');
 const FeedTransactionCreate = lazyNamed(
