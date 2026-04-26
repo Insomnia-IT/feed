@@ -40,8 +40,8 @@ export const MassEdit = ({
     const applyChanges = async (params: VolunteerField) => {
         await doChange(params);
 
-        // После действия возвращаемся на первый шаг
-        setSectionState(ActionSectionStates.Initial);
+        // После действия снимаем выделение
+        unselectAll();
     };
 
     return (
