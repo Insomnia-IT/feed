@@ -144,8 +144,10 @@ export const GroupBadgeList = () => {
                         key="comment"
                         title="Комментарий"
                         render={(value) => (
-                            <Tooltip title={<RichTextPreview html={value} />}>
-                                <RichTextPreview className={styles.ellipsis} html={value} />
+                            <Tooltip placement="left" title={<RichTextPreview html={value} />}>
+                                <span>
+                                    <RichTextPreview className={styles.ellipsis} html={value} />
+                                </span>
                             </Tooltip>
                         )}
                         ellipsis
