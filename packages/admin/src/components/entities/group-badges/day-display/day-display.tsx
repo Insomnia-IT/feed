@@ -43,6 +43,7 @@ export const MealCell: React.FC<MealCellProps> = ({ value, record, mealType, mea
 
     return (
         <Tag
+            tabIndex={0}
             className={cn(styles.mealCell, styles.editable)}
             bordered={record.editable}
             onClick={() => {
