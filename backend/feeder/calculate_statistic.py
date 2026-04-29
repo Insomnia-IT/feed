@@ -217,6 +217,7 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
     Приоритет: planning_cells > подсчёт волонтёров > 0
     """
     current_date_str = current_day.format(STAT_DATE_FORMAT)
+    kitchen_ids = get_kitchen_ids()
     
     # Группируем волонтёров по бейджам
     badge_volunteers = {}
@@ -252,10 +253,12 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
             # Приоритет: planning_cells
             if cell:
                 predict_meat = cell.get('amount_meat') or 0
-                predict_vegan = cell.get('amount_vegan') or 0    
+                predict_vegan = cell.get('amount_vegan') or 0
+                kitchen_id = '1' 
             else:
                 predict_meat = sum(1 for v in vols if not v['is_vegan'])
                 predict_vegan = sum(1 for v in vols if v['is_vegan'])
+                kitchen_id = next((v['kitchen_id'] for v in vols if v.get('kitchen_id') is not None), '1')
             
             # Добавляем meat
             store.add(
@@ -263,7 +266,7 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
                 stat_type=StatisticType.PREDICT,
                 meal_time=meal_time,
                 is_vegan=False,
-                kitchen_id=None,
+                kitchen_id=kitchen_id,
                 amount=predict_meat,
                 group_badge_id=badge_id
             )
@@ -274,7 +277,7 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
                 stat_type=StatisticType.PREDICT,
                 meal_time=meal_time,
                 is_vegan=True,
-                kitchen_id=None,
+                kitchen_id=kitchen_id,
                 amount=predict_vegan,
                 group_badge_id=badge_id
             )
