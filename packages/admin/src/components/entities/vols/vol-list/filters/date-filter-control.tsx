@@ -73,10 +73,9 @@ type MobileFilterCalendarPickerProps = {
     beforeString?: string;
     open: boolean;
     onClose: () => void;
+    onConfirm: (params: { before?: string; after?: string; showPeriod: boolean }) => void;
     onReset: () => void;
-    onSelectDate: (value: Dayjs) => void;
     showPeriod: boolean;
-    onShowPeriodChange: (nextValue: boolean) => void;
 };
 
 function MobileFilterCalendarPicker({
@@ -84,54 +83,103 @@ function MobileFilterCalendarPicker({
     afterString,
     open,
     onClose,
+    onConfirm,
     onReset,
-    onSelectDate,
-    showPeriod,
-    onShowPeriodChange
+    showPeriod
 }: MobileFilterCalendarPickerProps) {
-    const beforeDate = parseDateValue(beforeString);
-    const afterDate = parseDateValue(afterString);
-    const [panelValue, setPanelValue] = useState<Dayjs>(() => (beforeDate ?? dayjs()).locale('ru'));
+    const [draftBeforeString, setDraftBeforeString] = useState(beforeString);
+    const [draftAfterString, setDraftAfterString] = useState(afterString);
+    const [draftShowPeriod, setDraftShowPeriod] = useState(showPeriod);
+    const draftBeforeDate = parseDateValue(draftBeforeString);
+    const draftAfterDate = parseDateValue(draftAfterString);
+    const [panelValue, setPanelValue] = useState<Dayjs>(() => (draftBeforeDate ?? dayjs()).locale('ru'));
+
     const summaryItems = useMemo(
         () => [
             {
-                label: showPeriod ? 'С' : 'Дата',
-                value: beforeDate ? beforeDate.format(DISPLAY_DATE_FORMAT) : 'Не выбрана'
+                label: draftShowPeriod ? 'С' : 'Дата',
+                value: draftBeforeDate ? draftBeforeDate.format(DISPLAY_DATE_FORMAT) : 'Не выбрана'
             },
-            ...(showPeriod
+            ...(draftShowPeriod
                 ? [
                       {
                           label: 'По',
-                          value: afterDate ? afterDate.format(DISPLAY_DATE_FORMAT) : 'Не выбрана'
+                          value: draftAfterDate ? draftAfterDate.format(DISPLAY_DATE_FORMAT) : 'Не выбрана'
                       }
                   ]
                 : [])
         ],
-        [afterDate, beforeDate, showPeriod]
+        [draftAfterDate, draftBeforeDate, draftShowPeriod]
     );
+
+    const selectDraftDate = (value: Dayjs) => {
+        const nextValue = formatDateValue(value);
+        if (!nextValue) {
+            return;
+        }
+
+        if (!draftShowPeriod) {
+            setDraftBeforeString(nextValue);
+            setDraftAfterString(undefined);
+            return;
+        }
+
+        if (!draftBeforeString || draftAfterString) {
+            setDraftBeforeString(nextValue);
+            setDraftAfterString(undefined);
+            return;
+        }
+
+        if (draftBeforeDate && dayjs(nextValue).isBefore(draftBeforeDate, 'day')) {
+            setDraftBeforeString(nextValue);
+            setDraftAfterString(draftBeforeString);
+            return;
+        }
+
+        if (nextValue === draftBeforeString) {
+            setDraftBeforeString(nextValue);
+            setDraftAfterString(undefined);
+            return;
+        }
+
+        setDraftAfterString(nextValue);
+    };
 
     return (
         <MobileCalendarPicker
             title="Дата"
             open={open}
             onClose={onClose}
-            onConfirm={onClose}
+            onConfirm={() =>
+                onConfirm({
+                    before: draftBeforeString,
+                    after: draftShowPeriod ? draftAfterString : undefined,
+                    showPeriod: draftShowPeriod
+                })
+            }
             onReset={onReset}
             resetLabel={CLEAR_LABEL}
-            value={beforeDate}
+            value={draftBeforeDate}
             panelValue={panelValue}
-            selectedStart={beforeDate}
-            selectedEnd={showPeriod ? afterDate : undefined}
+            selectedStart={draftBeforeDate}
+            selectedEnd={draftShowPeriod ? draftAfterDate : undefined}
             summaryItems={summaryItems}
             onPanelChange={setPanelValue}
-            onSelect={onSelectDate}
+            onSelect={selectDraftDate}
             topContent={
                 <Segmented
                     block
-                    value={showPeriod ? RANGE_MODE : SINGLE_MODE}
+                    value={draftShowPeriod ? RANGE_MODE : SINGLE_MODE}
                     onChange={(nextMode) => {
                         const isRangeMode = nextMode === RANGE_MODE;
-                        onShowPeriodChange(isRangeMode);
+                        setDraftShowPeriod(isRangeMode);
+
+                        if (!isRangeMode) {
+                            setDraftBeforeString(
+                                toSingleValue({ beforeString: draftBeforeString, afterString: draftAfterString })
+                            );
+                            setDraftAfterString(undefined);
+                        }
                     }}
                     options={[
                         { label: EXACT_DATE_LABEL, value: SINGLE_MODE },
@@ -185,43 +233,6 @@ export function DateFilterControl({ field, filterItem, isMobile, onFilterTextVal
         });
     };
 
-    const handleMobileShowPeriodChange = (nextIsRangeMode: boolean) => {
-        setShowPeriod(nextIsRangeMode);
-
-        if (!nextIsRangeMode) {
-            changeValue(toSingleValue({ beforeString, afterString }));
-        }
-    };
-
-    const onMobileSelectDate = (value: Dayjs) => {
-        const nextValue = formatDateValue(value);
-        if (!nextValue) {
-            return;
-        }
-
-        if (!showPeriod) {
-            changeValue(nextValue);
-            return;
-        }
-
-        if (!beforeString || afterString) {
-            changePeriodValue({ before: nextValue, after: undefined });
-            return;
-        }
-
-        if (beforeDate && dayjs(nextValue).isBefore(beforeDate, 'day')) {
-            changePeriodValue({ before: nextValue, after: beforeString });
-            return;
-        }
-
-        if (nextValue === beforeString) {
-            changePeriodValue({ before: nextValue, after: undefined });
-            return;
-        }
-
-        changePeriodValue({ before: beforeString, after: nextValue });
-    };
-
     if (isMobile) {
         return (
             <FilterFieldShell isMobile title={field.title}>
@@ -230,19 +241,24 @@ export function DateFilterControl({ field, filterItem, isMobile, onFilterTextVal
                         {mobileRangeLabel === PICK_DATE_LABEL ? MOBILE_PICKER_BUTTON_LABEL : mobileRangeLabel}
                     </Button>
                 </div>
-                <MobileFilterCalendarPicker
-                    open={isDrawerOpen}
-                    onClose={() => setIsDrawerOpen(false)}
-                    beforeString={beforeString}
-                    afterString={afterString}
-                    showPeriod={showPeriod}
-                    onShowPeriodChange={handleMobileShowPeriodChange}
-                    onSelectDate={onMobileSelectDate}
-                    onReset={() => {
-                        changeValue('');
-                        setShowPeriod(false);
-                    }}
-                />
+                {isDrawerOpen ? (
+                    <MobileFilterCalendarPicker
+                        open={isDrawerOpen}
+                        onClose={() => setIsDrawerOpen(false)}
+                        beforeString={beforeString}
+                        afterString={afterString}
+                        showPeriod={showPeriod}
+                        onConfirm={({ before, after, showPeriod: nextShowPeriod }) => {
+                            setShowPeriod(nextShowPeriod);
+                            changePeriodValue({ before, after });
+                            setIsDrawerOpen(false);
+                        }}
+                        onReset={() => {
+                            changeValue('');
+                            setShowPeriod(false);
+                        }}
+                    />
+                ) : null}
             </FilterFieldShell>
         );
     }

@@ -19,6 +19,7 @@ type MobileDateDrawerProps = {
 
 export function MobileDateDrawer({ title, value, onChange, emptyLabel = EMPTY_LABEL }: MobileDateDrawerProps) {
     const [open, setOpen] = useState(false);
+    const [draftValue, setDraftValue] = useState<Dayjs | null>(() => value ?? null);
     const [panelValue, setPanelValue] = useState<Dayjs>(() => (value ?? dayjs()).locale('ru'));
     const { status } = Form.Item.useStatus();
 
@@ -31,7 +32,9 @@ export function MobileDateDrawer({ title, value, onChange, emptyLabel = EMPTY_LA
                 aria-invalid={status === 'error' ? true : undefined}
                 className={triggerClassName}
                 onClick={() => {
-                    setPanelValue((value ?? dayjs()).locale('ru'));
+                    const nextDraftValue = value ?? null;
+                    setDraftValue(nextDraftValue);
+                    setPanelValue((nextDraftValue ?? dayjs()).locale('ru'));
                     setOpen(true);
                 }}
             >
@@ -41,17 +44,20 @@ export function MobileDateDrawer({ title, value, onChange, emptyLabel = EMPTY_LA
                 title={title}
                 open={open}
                 onClose={() => setOpen(false)}
-                onConfirm={() => setOpen(false)}
+                onConfirm={() => {
+                    onChange?.(draftValue);
+                    setOpen(false);
+                }}
                 onReset={() => onChange?.(null)}
                 resetLabel={RESET_LABEL}
-                value={value}
+                value={draftValue}
                 panelValue={panelValue}
                 onPanelChange={setPanelValue}
                 onSelect={(nextValue) => {
-                    onChange?.(nextValue);
+                    setDraftValue(nextValue);
                     setPanelValue(nextValue);
                 }}
-                selectedStart={value}
+                selectedStart={draftValue}
             />
         </>
     );
