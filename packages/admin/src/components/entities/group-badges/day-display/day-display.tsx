@@ -1,7 +1,7 @@
 import React from 'react';
-import type { MealPlanRowRender } from './useGroupMealPlanData';
+import type { MealPlanRowRender } from '../useGroupMealPlanData';
 import { Card, Tag, Modal } from 'antd';
-import styles from './group-meal-plan.module.css';
+import styles from './day-display.module.css';
 import dayjs from 'dayjs';
 import cn from 'classnames';
 

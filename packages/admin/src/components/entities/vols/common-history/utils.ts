@@ -23,7 +23,7 @@ export const FIELD_LABELS: Record<string, string> = {
     departure_date: 'Дата отъезда',
     arrival_date: 'Дата приезда',
     paid_arrivals: 'Платные питания',
-    is_free: 'Бесплатно',
+    is_free: 'За счёт фестиваля',
     is_blocked: 'Статус блокировки',
     person: 'Персона',
     deleted: 'Удален',
