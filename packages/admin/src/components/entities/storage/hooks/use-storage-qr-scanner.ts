@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelect as useSelectAntd } from '@refinedev/antd';
 import { Form, notification, type FormInstance } from 'antd';
 import type { VolEntity } from 'interfaces';
@@ -9,18 +9,17 @@ export const useStorageQrScanner = () => {
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [currentForm, setCurrentForm] = useState<FormInstance | null>(null);
     const [scannedQr, setScannedQr] = useState<string | undefined>();
+    const processedQrRef = useRef<string | undefined>(undefined);
 
     const { data: scannedVolunteer, isLoading: isVolunteerLoading } = useSearchVolunteer(scannedQr);
 
     useEffect(() => {
-        if (scannedVolunteer && currentForm) {
+        if (scannedQr && scannedVolunteer && currentForm && processedQrRef.current !== scannedQr) {
+            processedQrRef.current = scannedQr;
             currentForm.setFieldValue('volunteer', scannedVolunteer.id);
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            setScannedQr(undefined);
-            setIsQrModalOpen(false);
             notification.success({ message: `Волонтер найден: ${scannedVolunteer.name}` });
         }
-    }, [scannedVolunteer, currentForm]);
+    }, [scannedQr, scannedVolunteer, currentForm]);
 
     const { selectProps: volunteerSelectProps } = useSelectAntd<VolEntity>({
         resource: 'volunteers',
@@ -37,12 +36,18 @@ export const useStorageQrScanner = () => {
 
     const handleOpenQrScanner = (form: FormInstance) => {
         setCurrentForm(form);
+        processedQrRef.current = undefined;
         setScannedQr(undefined);
         setIsQrModalOpen(true);
     };
 
     const handleQrScan = (qr: string) => {
         setScannedQr(qr);
+        setIsQrModalOpen(false);
+    };
+
+    const handleCloseQrScanner = () => {
+        setIsQrModalOpen(false);
     };
 
     const [actionForm] = Form.useForm();
@@ -59,6 +64,7 @@ export const useStorageQrScanner = () => {
         volunteerSelectProps,
         handleOpenQrScanner,
         handleQrScan,
+        handleCloseQrScanner,
         actionForm
     };
 };
