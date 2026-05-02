@@ -115,20 +115,20 @@ export interface FeedTransactionAnomaly {
     direction_name: string | null;
     direction_amount: number | null;
     calculated_amount: number | null;
-    real_amount: number | null;
+    real_amount: number;
     problem: string;
 }
 
 export interface GroupBadgeEntity extends TimeStampedEntity {
     id: number;
-    qr?: string | null;
-    direction?: DirectionEntity | string | null;
-    role?: string | null;
+    qr: string | null;
+    direction: DirectionEntity | null;
+    role: string | null;
     name: string;
-    comment?: string | null;
-    volunteer_count?: number;
-    planning_cells?: MealPlanCell[];
-    deleted_at?: string | null;
+    comment: string | null;
+    volunteer_count: number;
+    planning_cells: MealPlanCell[];
+    deleted_at: string | null;
 }
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'night';
@@ -208,10 +208,10 @@ export interface ReceivingEntity {
 export interface DirectionEntity extends TimeStampedEntity {
     id: string;
     name: string;
-    type: string | DirectionTypeEntity;
+    type: DirectionTypeEntity;
     first_year: number | null;
     last_year: number | null;
-    comment?: string | null;
+    comment: string | null;
 }
 export interface DirectionTypeEntity extends TimeStampedEntity {
     id: string;
@@ -270,11 +270,11 @@ interface EngagementEntity {
     id: string;
     year: number;
     direction: {
-        id?: string | number;
+        id: string;
         name: string;
     };
     role: {
-        id?: string | number;
+        id: string;
         name: string;
     };
     position?: string | null;

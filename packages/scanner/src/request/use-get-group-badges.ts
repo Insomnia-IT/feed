@@ -5,11 +5,6 @@ import type { ApiHook } from 'request/lib';
 import type { GroupBadge } from 'db';
 import { db } from 'db';
 
-interface ServerGroupBadge extends Omit<GroupBadge, 'qr'> {
-    qr: string | null;
-    deleted_at?: string | null;
-}
-
 export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<unknown>(null);
     const [updated, setUpdated] = useState<number | null>(null);
@@ -25,7 +20,7 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
 
             return new Promise((res, rej) => {
                 axios
-                    .get<{ results: Array<ServerGroupBadge> }>(`${baseUrl}/group-badges/`, {
+                    .get<{ results: Array<GroupBadge> }>(`${baseUrl}/group-badges/`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
@@ -34,17 +29,8 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
 
-                        const groupBadges = results
-                            .filter((badge): badge is ServerGroupBadge & { qr: string } => {
-                                return Boolean(badge.qr) && !badge.deleted_at;
-                            })
-                            .map<GroupBadge>(({ qr, ...badge }) => ({
-                                ...badge,
-                                qr
-                            }));
-
                         try {
-                            await db.groupBadges.bulkPut(groupBadges);
+                            await db.groupBadges.bulkPut(results);
                         } catch (error) {
                             console.error(error);
                             rej(error);

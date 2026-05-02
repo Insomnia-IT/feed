@@ -17,7 +17,7 @@ export const DirectionShow = () => {
             <Title level={5}>Название</Title>
             <Text>{record?.name}</Text>
             <Title level={5}>Тип</Title>
-            <Text>{typeof record?.type === 'string' ? record.type : record?.type?.name}</Text>
+            <Text>{record?.type.name}</Text>
         </Show>
     );
 };

@@ -84,19 +84,13 @@ export interface Volunteer extends TimeStampedEntity {
     qr: string;
     id: number;
     uuid?: string;
-    parent?: number | null;
     gender?: string | null;
     first_name: string | null;
     last_name?: string | null;
     name: string | null;
-    phone?: string | null;
-    email?: string | null;
-    photo?: string | null;
-    photo_local?: string | null;
     position?: string | null;
     is_blocked: boolean;
     is_vegan: boolean;
-    is_photo_updated?: boolean;
     is_ticket_received?: boolean | null;
     comment?: string | null;
     direction_head_comment?: string | null;
@@ -116,8 +110,6 @@ export interface Volunteer extends TimeStampedEntity {
     responsible_id?: number | null;
     supervisor_id?: number | null;
     supervisor?: { id: number; name: string } | null;
-    // Hydrated locally for group-badge validation; backend does not send it in /volunteers list.
-    transactions?: Array<Transaction> | null;
 }
 
 export interface Arrival extends TimeStampedEntity {
@@ -125,10 +117,8 @@ export interface Arrival extends TimeStampedEntity {
     status: string | null;
     arrival_date: string;
     arrival_transport: string | null;
-    arrival_registered?: string | null;
     departure_date: string;
     departure_transport: string | null;
-    departure_registered?: string | null;
     comment?: string | null;
 }
 
@@ -145,11 +135,11 @@ export interface GroupBadge extends TimeStampedEntity {
     name: string;
     qr: string;
     planning_cells: Array<MealPlanCell>;
-    comment?: string | null;
-    role?: string | null;
-    volunteer_count?: number;
-    deleted_at?: string | null;
-    direction?: VolunteerDirection | null;
+    comment: string | null;
+    role: string | null;
+    volunteer_count: number;
+    deleted_at: string | null;
+    direction: VolunteerDirection | null;
 }
 
 export class MySubClassedDexie extends Dexie {

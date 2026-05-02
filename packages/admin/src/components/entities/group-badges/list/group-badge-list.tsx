@@ -20,7 +20,7 @@ const getDirectionName = (direction: GroupBadgeEntity['direction']): string => {
         return '-';
     }
 
-    return typeof direction === 'string' ? direction : direction.name;
+    return direction.name;
 };
 
 export const GroupBadgeList = () => {
@@ -69,10 +69,7 @@ export const GroupBadgeList = () => {
 
     const data =
         groupBadges?.data.filter((item) => {
-            return (
-                !visibleDirections ||
-                (item.direction && typeof item.direction !== 'string' && visibleDirections.includes(item.direction.id))
-            );
+            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
         }) ?? [];
 
     return (
@@ -109,7 +106,7 @@ export const GroupBadgeList = () => {
                             </div>
                             <div className={styles.row}>
                                 <span className={styles.label}>Волонтеры:</span>
-                                <span>{badge.volunteer_count || '0'}</span>
+                                <span>{badge.volunteer_count}</span>
                             </div>
                             {badge.comment && (
                                 <div className={styles.comment}>

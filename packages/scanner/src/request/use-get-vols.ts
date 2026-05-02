@@ -29,28 +29,22 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                             Authorization: `K-PIN-CODE ${pin}`
                         },
                         params: {
-                            ...filters,
-                            is_deleted: 'all'
+                            ...filters
                         }
                     })
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
 
-                        const deletedVolunteerIds = results
-                            .filter(({ deleted_at, qr }) => deleted_at || !qr)
-                            .map(({ id }) => id);
+                        const volunteers = results.filter(
+                            (volunteer): volunteer is ServerVolunteer & { qr: string } => {
+                                return Boolean(volunteer.qr);
+                            }
+                        );
 
-                        const volunteers = results
-                            .filter((volunteer): volunteer is ServerVolunteer & { qr: string } => {
-                                return Boolean(volunteer.qr) && !volunteer.deleted_at;
-                            })
-                            .map<Volunteer>(({ qr, ...volunteer }) => ({
-                                ...volunteer,
-                                qr
-                            }));
+                        const skippedVolunteerIds = results.filter(({ qr }) => !qr).map(({ id }) => id);
 
                         try {
-                            await db.volunteers.bulkDelete(deletedVolunteerIds);
+                            await db.volunteers.bulkDelete(skippedVolunteerIds);
                             await db.volunteers.bulkPut(volunteers);
                         } catch (e) {
                             console.error(e);
