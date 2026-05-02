@@ -14,6 +14,15 @@ const getTimespan = (deadline: number | string | Date, now: number) => {
     return Math.max(+new Date(deadline) - now, 0);
 };
 
+export function getTimerParts(deadline: number | string | Date, now: number) {
+    const timespan = getTimespan(deadline, now);
+
+    return {
+        minutes: formatTimerNumber(Math.floor((timespan / MINUTE) % 60)),
+        seconds: formatTimerNumber(Math.floor((timespan / SECOND) % 60))
+    };
+}
+
 export function useTimer(deadline: number, interval = SECOND) {
     const [now, setNow] = useState(Date.now);
 
@@ -27,10 +36,5 @@ export function useTimer(deadline: number, interval = SECOND) {
         };
     }, [interval]);
 
-    const timespan = getTimespan(deadline, now);
-
-    return {
-        minutes: formatTimerNumber(Math.floor((timespan / MINUTE) % 60)),
-        seconds: formatTimerNumber(Math.floor((timespan / SECOND) % 60))
-    };
+    return getTimerParts(deadline, now);
 }

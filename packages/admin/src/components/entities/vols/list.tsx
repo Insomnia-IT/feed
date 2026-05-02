@@ -44,8 +44,20 @@ const VolunteerSearchInput = ({
     onSearchTextChange: (value: string) => void;
     searchText: string;
 }) => {
-    const [searchInputValue, setSearchInputValue] = useState(searchText);
+    const [searchState, setSearchState] = useState(() => ({
+        syncedSearchText: searchText,
+        inputValue: searchText
+    }));
     const debouncedSetSearchText = useDebouncedCallback(onSearchTextChange, 250);
+
+    if (searchState.syncedSearchText !== searchText) {
+        setSearchState({
+            syncedSearchText: searchText,
+            inputValue: searchText
+        });
+    }
+
+    const searchInputValue = searchState.inputValue;
 
     return (
         <div className={styles.volSearchBlock}>
@@ -62,7 +74,10 @@ const VolunteerSearchInput = ({
                     value={searchInputValue}
                     onChange={(e) => {
                         const nextValue = e.target.value;
-                        setSearchInputValue(nextValue);
+                        setSearchState({
+                            syncedSearchText: searchText,
+                            inputValue: nextValue
+                        });
                         debouncedSetSearchText(nextValue);
                     }}
                     allowClear
@@ -388,7 +403,7 @@ export const VolList = () => {
         <List canCreate headerButtons={() => <VolunteersListCreateButton activeFilters={activeFilters} />}>
             <CanAccess fallback="У вас нет доступа к этой странице">
                 <ActiveColumnsContextProvider customFields={customFields}>
-                    <VolunteerSearchInput key={searchText} searchText={searchText} onSearchTextChange={setSearchText} />
+                    <VolunteerSearchInput searchText={searchText} onSearchTextChange={setSearchText} />
                     <Filters
                         activeFilters={activeFilters}
                         setActiveFilters={setActiveFilters}

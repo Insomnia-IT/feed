@@ -226,9 +226,7 @@ export const CommonHistory = ({ role }: IProps) => {
         groupBadgesList.query.isLoading ||
         customFieldsList.query.isLoading;
 
-    const isHistoryPending = volunteerId ? isHistoryLoading : false;
-
-    if (isHistoryPending || isLookupLoading) {
+    if (isHistoryLoading || isLookupLoading) {
         return (
             <div className={`${styles.historyWrap} ${styles.historyLoading}`}>
                 {Array.from({ length: 3 }).map((_, index) => (
