@@ -349,6 +349,7 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     login_page.login_admin()
     #идем в редактирование последнего бейджика
     login_page.go_to_edit_badge()
+    login_page.open_group_badge_volunteers_tab()
     #фиксируем число на счетчике
     count1 = login_page.receive_count_of_volunteers_in_group_badge()
     #добавляем волонтера
@@ -359,6 +360,7 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     login_page.open()
     #возвращаемся в бейдж
     login_page.go_to_edit_badge()
+    login_page.open_group_badge_volunteers_tab()
     #фиксируем счетчик уже после повторного открытия
     count2 = login_page.receive_count_of_volunteers_in_group_badge()
     #удаляем волонтера
@@ -371,6 +373,7 @@ def test_add_and_delete_volunteer_from_group_badge(page):
     assert page.url.startswith(f"{host}/group-badges")
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     login_page.go_to_edit_badge()
+    login_page.open_group_badge_volunteers_tab()
     count3 = login_page.receive_count_of_volunteers_in_group_badge()
     print("До-", count1, "человек в бейдже")
     assert count2 == count1 + 1

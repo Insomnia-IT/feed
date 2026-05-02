@@ -38,15 +38,17 @@ class feed_history_pagination():
     NEXT_PAGE = ".anticon.anticon-right"
 
 class group_badges():
-    VOLONTEER_COUNTER = "h5.ant-typography span.ant-typography.ant-typography-secondary"
-    DELETE_VOLUNTEER_BUTTON = "div:nth-child(2) > button"
+    VOLONTEER_COUNTER = '[data-testid="group-badge-volunteer-count"]'
+    DELETE_VOLUNTEER_BUTTON = '[data-testid^="group-badge-remove-volunteer-"]'
     DELETE_VOLUNTEER_BUTTON_2 = "//button[span[text()='Удалить']]"
     SAVE_BUTTON = "//button[span[text()='Сохранить']]"
-    ADD_VOLUNTEER = "//button[span[text()='Добавить волонтера']]"
-    SEARCH_FIELD = ".ant-modal-body input[type='text']"
+    ADD_VOLUNTEER = '[data-testid="group-badge-add-volunteer"]'
+    SEARCH_FIELD = '[data-testid="group-badge-add-volunteer-search"]'
     CHECKBOX = "input.ant-checkbox-input"
-    OK_BUTTON = "//button[span[text()='OK']]"
-    EDIT_LAST_BUTTON = "button.refine-edit-button"
+    OK_BUTTON = '[data-testid="group-badge-add-volunteer-confirm"]'
+    EDIT_LAST_BUTTON = '[data-testid^="group-badge-edit-"]'
+    VOLUNTEERS_TAB = '[data-testid="group-badge-volunteers-tab"]'
+    VOLUNTEERS_TABLE_ROWS = "tbody tr"
 
 class custom_field():
     DELETE_ROW = "//div/div[3]/button"

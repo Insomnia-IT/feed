@@ -15,6 +15,7 @@ import { useDebouncedCallback } from 'shared/hooks';
 import { ColorCircle, type ColorDef } from './color-circle/color-circle';
 
 import styles from './vol-info-section.module.css';
+import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 
 const PHOTO_FIELD = 'photo_local';
 
@@ -115,15 +116,6 @@ export const VolInfoSection = ({
     const volPhoto = form.getFieldValue(PHOTO_FIELD) as string | undefined;
     const volPhotoUrl = useMemo(() => (volPhoto ? NEW_API_URL + volPhoto : ''), [volPhoto]);
 
-    const formatVolunteerLabel = useCallback((volunteer: VolEntity): string => {
-        const fullName = [volunteer.last_name, volunteer.first_name].filter(Boolean).join(' ');
-        const badgeLabel = volunteer.name;
-        if (fullName) {
-            return badgeLabel ? `${fullName} (${badgeLabel})` : fullName;
-        }
-        return badgeLabel || `ID ${volunteer.id}`;
-    }, []);
-
     const supervisorOptions = useMemo(() => {
         const options = supervisorsData.map((volunteer) => ({
             value: volunteer.id,
@@ -138,7 +130,7 @@ export const VolInfoSection = ({
         }
 
         return options;
-    }, [formatVolunteerLabel, supervisor, supervisorId, supervisorsData]);
+    }, [supervisor, supervisorId, supervisorsData]);
 
     const colorTypeOptionsWithBadges = useMemo(
         () =>

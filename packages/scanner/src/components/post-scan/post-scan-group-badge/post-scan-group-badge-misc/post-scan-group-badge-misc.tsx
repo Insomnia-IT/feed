@@ -5,6 +5,7 @@ import type { GroupBadge, MealPlanCell, MealTime, TransactionJoined, Volunteer }
 import { Text, Title } from 'shared/ui/typography';
 import { Button } from 'shared/ui/button';
 import { VolAndUpdateInfo } from 'components/vol-and-update-info';
+import { AlreadyFedModal } from 'components/post-scan/post-scan-group-badge/already-fed-modal/already-fed-modal';
 import { FeedOtherCount } from 'components/post-scan/post-scan-group-badge/post-scan-group-badge-misc/feed-other-count';
 import { WarningPartiallyFedModal } from 'components/post-scan/post-scan-group-badge/warning-partially-fed-modal/warning-partially-fed-modal';
 import { calculateAlreadyFedCount } from 'components/post-scan/post-scan.utils';
@@ -116,6 +117,10 @@ export const GroupBadgeWarningCard = ({
     const [vegansCount, setVegansCount] = useState<number>(initialCalculatedCounts.vegans);
     const [nonVegansCount, setNonVegansCount] = useState<number>(initialCalculatedCounts.nonVegans);
     const [isWarningModalShown, setIsWarningModalShown] = useState(false);
+    const alreadyFedCount = calculateAlreadyFedCount(alreadyFedTransactions);
+    const totalPlannedCount = (planned.vegansCount ?? 0) + (planned.nonVegansCount ?? 0);
+    const hasPlannedValues = planned.vegansCount !== null || planned.nonVegansCount !== null;
+    const totalToFeedCount = hasPlannedValues ? totalPlannedCount : volsToFeed.length;
 
     const handleFeed = (): void => {
         doFeedAnons({
@@ -140,6 +145,7 @@ export const GroupBadgeWarningCard = ({
 
     return (
         <div className={css.groupBadgeCard}>
+            <AlreadyFedModal alreadyFedCount={alreadyFedCount} totalCount={totalToFeedCount} />
             <WarningPartiallyFedModal
                 alreadyFedTransactions={alreadyFedTransactions}
                 setShowModal={setIsWarningModalShown}
