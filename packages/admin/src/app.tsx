@@ -22,7 +22,8 @@ import {
     MobileOutlined,
     SyncOutlined,
     DashboardOutlined,
-    ExperimentOutlined
+    ExperimentOutlined,
+    AuditOutlined
 } from '@ant-design/icons';
 
 import { ACL } from 'acl';
@@ -114,6 +115,16 @@ const App = () => {
                                     name: 'scanner-page',
                                     list: '/scanner-page',
                                     meta: { icon: <MobileOutlined /> }
+                                },
+                                {
+                                    name: 'storages',
+                                    list: '/storages',
+                                    create: '/storages/create',
+                                    edit: '/storages/edit/:id',
+                                    show: '/storages/show/:id',
+                                    meta: {
+                                        icon: <AuditOutlined />
+                                    }
                                 },
                                 {
                                     name: 'wash',

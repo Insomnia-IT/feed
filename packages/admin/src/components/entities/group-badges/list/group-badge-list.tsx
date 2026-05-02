@@ -8,7 +8,7 @@ import type { GroupBadgeEntity } from 'interfaces';
 import { useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import { getSorter } from 'utils';
-import useVisibleDirections from '../vols/use-visible-directions';
+import useVisibleDirections from '../../vols/use-visible-directions';
 
 import styles from './group-badge-list.module.css';
 
@@ -116,7 +116,12 @@ export const GroupBadgeList = () => {
                         dataIndex="actions"
                         render={(_, record) => (
                             <Space>
-                                <EditButton hideText size="small" recordItemId={record.id} />
+                                <EditButton
+                                    hideText
+                                    size="small"
+                                    recordItemId={record.id}
+                                    data-testid={`group-badge-edit-${record.id}`}
+                                />
                                 <DeleteButton hideText size="small" recordItemId={record.id} />
                             </Space>
                         )}

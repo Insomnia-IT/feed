@@ -32,6 +32,7 @@ class VolunteerFilter(django_filters.FilterSet):
     is_blocked = django_filters.BooleanFilter(field_name='is_blocked')
     is_ticket_received = django_filters.BooleanFilter(method='filter_is_ticket_received')
     is_vegan = django_filters.BooleanFilter(field_name='is_vegan')
+    is_badge_located_at_leader = django_filters.BooleanFilter(field_name='is_badge_located_at_leader')
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
     direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
@@ -170,6 +171,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                     1 if volunteer.is_blocked else 0,
                     volunteer.kitchen.name if volunteer.kitchen else "",
                     volunteer.printing_batch or "",
+                    1 if volunteer.is_badge_located_at_leader else 0,
                     volunteer.feed_type.name if volunteer.feed_type else "",
                     "веган" if volunteer.is_vegan else "мясоед",
                     1 if volunteer.is_ticket_received else 0,
@@ -203,6 +205,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                 "Заблокирован",
                 "Кухня",
                 "Партия бейджа",
+                "Бейдж у руководителя",
                 "Тип питания",
                 "Веган/мясоед",
                 "Выдан билет",

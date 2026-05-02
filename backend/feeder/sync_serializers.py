@@ -123,7 +123,7 @@ class VolunteerHistoryDataSerializer(SaveSyncSerializerMixin, serializers.ModelS
             "id", "deleted", "name", "first_name", "last_name", "gender", "phone",
             "infant", "vegan", "feed", "number", "batch", "role", "position", "photo",
             "person", "comment", "directions", "email", "qr", "is_blocked", "comment",
-            "direction_head_comment", "infant",
+            "direction_head_comment", "infant", "is_badge_located_at_leader",
             "access_role", "group_badge", "kitchen", "main_role", "feed_type",
             "ticket", "scanner_comment", "supervisor_id", "responsible_id"
         )
