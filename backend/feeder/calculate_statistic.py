@@ -1,6 +1,7 @@
 import arrow
 import time
-
+from collections import defaultdict
+from datetime import timedelta, datetime
 from enum import Enum
 from django.db.models import Q, Prefetch
 
@@ -12,6 +13,8 @@ DAY_START_HOUR = 7
 WARMUP_DAYS = 2
 STAT_DATE_FORMAT = 'YYYY-MM-DD'
 TZ = 'Europe/Moscow'
+PLANNIG_DATE_FROM = arrow.get('2026-01-01', tzinfo=TZ).date()
+PLANNIG_DATE_TO = arrow.get('2026-07-31', tzinfo=TZ).date()
 
 ALLOWED_HOSTS = {"grist.insomniafest.ru"}
 
@@ -95,18 +98,8 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None,
     print(f"Date range: {stat_date_from.format(STAT_DATE_FORMAT)} to {stat_date_to.format(STAT_DATE_FORMAT)}")
     
     # === Загружаем planning_cells для групповых бейджей ===
-    planning_cells_cache = {}
-    if group_badge is not False:
-        cells = models.GroupBadgePlanningCells.objects.filter(
-            date__range=(stat_date_from.date(), stat_date_to.date())
-        ).values('group_badge_id', 'meal_time', 'date', 'amount_meat', 'amount_vegan')
-        
-        for cell in cells:
-            key = (cell['group_badge_id'], cell['meal_time'], cell['date'].strftime('%Y-%m-%d'))
-            planning_cells_cache[key] = {
-                'amount_meat': cell['amount_meat'],
-                'amount_vegan': cell['amount_vegan']
-            }
+    planning_cells_cache = load_planning_cells_cache(group_badge)
+    
     # === Загружаем volunteers ===
     volunteers = load_volunteers(stat_date_from, stat_date_to, anonymous, group_badge)
 
@@ -254,7 +247,7 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
             if cell:
                 predict_meat = cell.get('amount_meat') or 0
                 predict_vegan = cell.get('amount_vegan') or 0
-                kitchen_id = '1' 
+                kitchen_id = str(kitchen_ids[0]) if kitchen_ids else '1'
             else:
                 predict_meat = sum(1 for v in vols if not v['is_vegan'])
                 predict_vegan = sum(1 for v in vols if v['is_vegan'])
@@ -395,6 +388,46 @@ def build_history_by_volunteer(history_queryset):
         vol_id: VolunteerHistory(items)
         for vol_id, items in raw_history.items()
     }
+
+def load_planning_cells_cache(group_badge):
+    planning_cells_cache = {}
+    if group_badge is not False:
+        cells = models.GroupBadgePlanningCells.objects.filter(
+            date__range=(PLANNIG_DATE_FROM, PLANNIG_DATE_TO)
+        ).values('group_badge_id', 'meal_time', 'date', 'amount_meat', 'amount_vegan')
+
+        grouped_cells = defaultdict(list)
+        for cell in cells:
+            group_key = (cell['group_badge_id'], cell['meal_time'])
+            
+            grouped_cells[group_key].append({
+                'date': cell['date'],
+                'amount_meat': cell['amount_meat'],
+                'amount_vegan': cell['amount_vegan']
+            })
+        
+        for (badge_id, meal_time), cells in grouped_cells.items():
+            cells.sort(key=lambda x: x['date'])
+            date_to_cell = {c['date']: c for c in cells}
+            last_valid = None
+            current_date = PLANNIG_DATE_FROM
+            while current_date <= PLANNIG_DATE_TO:
+                if current_date in date_to_cell:
+                    cell = date_to_cell[current_date]
+                    if cell['amount_meat'] is not None and cell['amount_vegan'] is not None:
+                        last_valid = cell
+                    else:
+                        last_valid = None
+
+                if last_valid:
+                    key = (badge_id, meal_time, current_date.strftime('%Y-%m-%d'))
+                    planning_cells_cache[key] = {
+                        'amount_meat': last_valid['amount_meat'],
+                        'amount_vegan': last_valid['amount_vegan']
+                    }
+                current_date += timedelta(days=1)
+            
+    return planning_cells_cache
 
 def load_volunteers(date_from, date_to, anonymous, group_badge):
     queryset = models.Volunteer.objects.exclude(
