@@ -4,7 +4,8 @@ import { Form } from 'antd';
 import type { GroupBadgeEntity } from 'interfaces';
 import { useLocalStorage } from 'shared/hooks';
 
-import { CreateEdit } from './common';
+import { CreateEdit } from '../common';
+import styles from './create.module.css';
 
 export const GroupBadgeCreate = () => {
     const { setItem } = useLocalStorage();
@@ -15,15 +16,7 @@ export const GroupBadgeCreate = () => {
     });
 
     return (
-        <Create
-            saveButtonProps={saveButtonProps}
-            contentProps={{
-                style: {
-                    marginBottom: 60,
-                    overflow: 'auto'
-                }
-            }}
-        >
+        <Create saveButtonProps={saveButtonProps} contentProps={{ className: styles.content }}>
             <Form {...formProps} form={form} scrollToFirstError layout="vertical">
                 <CreateEdit />
             </Form>

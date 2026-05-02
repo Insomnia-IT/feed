@@ -14,20 +14,49 @@ ac
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
-    .read(['wash', 'directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
+    .read([
+        'wash',
+        'directions',
+        'feed-transaction',
+        'sync',
+        'stats',
+        'scanner-page',
+        'storages',
+        'storage-bins',
+        'storage-items',
+        'storage-positions',
+        'storage-issuances',
+        'storage-receivings'
+    ])
     .create(['volunteers'])
     // Старший смены
     .grant(AppRoles.SENIOR)
     .extend(AppRoles.CAT)
     .read(['volunteer-custom-fields'])
-    .create(['group-badges', 'volunteer-custom-fields'])
-    .update(['volunteer-custom-fields'])
+    .create([
+        'group-badges',
+        'volunteer-custom-fields',
+        'storages',
+        'storage-bins',
+        'storage-items',
+        'storage-positions'
+    ])
+    .update(['volunteer-custom-fields', 'storages', 'storage-bins', 'storage-items', 'storage-positions'])
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
     .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash'])
     .update(['group-badges', 'volunteer-custom-fields'])
-    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers'])
+    .delete([
+        'group-badges',
+        'volunteer-custom-fields',
+        'feed-transaction',
+        'volunteers',
+        'storages',
+        'storage-bins',
+        'storage-items',
+        'storage-positions'
+    ])
     // Сова
     .grant(AppRoles.SOVA)
     .read('wash')

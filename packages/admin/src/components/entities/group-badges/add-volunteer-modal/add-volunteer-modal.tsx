@@ -6,7 +6,8 @@ import { useInvalidate, useList, useNotification, useUpdateMany } from '@refined
 import type { VolEntity } from 'interfaces';
 import { useScreen } from 'shared/providers';
 import { useDebouncedCallback } from 'shared/hooks';
-import useVisibleDirections from '../vols/use-visible-directions';
+import useVisibleDirections from '../../vols/use-visible-directions';
+import styles from './add-volunteer-modal.module.css';
 
 export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) => {
     const [isOpenModal, setOpenModal] = useState(false);
@@ -83,7 +84,7 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
 
     return (
         <>
-            <Button type="primary" onClick={() => setOpenModal(true)}>
+            <Button type="primary" onClick={() => setOpenModal(true)} data-testid="group-badge-add-volunteer">
                 Добавить волонтера
             </Button>
 
@@ -92,13 +93,14 @@ export const AddVolunteerModal = ({ groupBadgeId }: { groupBadgeId: number }) =>
                 open={isOpenModal}
                 onOk={addVols}
                 onCancel={() => setOpenModal(false)}
-                okButtonProps={{ disabled: !selectedIds.length }}
+                okButtonProps={{ disabled: !selectedIds.length, 'data-testid': 'group-badge-add-volunteer-confirm' }}
             >
                 <Input
+                    className={styles.search}
                     placeholder="Поиск..."
                     allowClear
                     onChange={(e) => debouncedSearch(e.target.value)}
-                    style={{ marginBottom: 16 }}
+                    data-testid="group-badge-add-volunteer-search"
                 />
 
                 <Table

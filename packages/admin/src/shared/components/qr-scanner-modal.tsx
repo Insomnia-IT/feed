@@ -6,11 +6,13 @@ import { QrScannerComponent, useScannerController } from '../components/qr-scann
 export const QRScannerModal = ({
     open,
     onClose,
-    handleQRChange
+    handleQRChange,
+    onScan
 }: {
     open: boolean;
     onClose: () => void;
     handleQRChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+    onScan?: (qr: string) => void;
 }) => {
     const [isModalOpened, setIsModalOpened] = useState(false);
 
@@ -24,9 +26,15 @@ export const QRScannerModal = ({
     const scannerController = useScannerController({
         onScan: async (qr: string) => {
             if (qr) {
-                form.setFieldValue('qr', qr.replace(/[^A-Za-z0-9]/g, ''));
-                closeModal();
-                handleQRChange?.({ target: { value: qr } } as ChangeEvent<HTMLInputElement>);
+                const cleanedQr = qr.replace(/[^A-Za-z0-9]/g, '');
+                if (onScan) {
+                    onScan(cleanedQr);
+                    closeModal();
+                } else if (form) {
+                    form.setFieldValue('qr', cleanedQr);
+                    closeModal();
+                    handleQRChange?.({ target: { value: qr } } as ChangeEvent<HTMLInputElement>);
+                }
             }
         }
     });

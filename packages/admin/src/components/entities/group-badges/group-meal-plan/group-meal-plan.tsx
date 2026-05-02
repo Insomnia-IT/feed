@@ -3,12 +3,12 @@ import { Button, Table } from 'antd';
 import dayjs from 'dayjs';
 
 import styles from './group-meal-plan.module.css';
-import { type MealPlanRowRender, useGroupMealPlanData } from './useGroupMealPlanData';
-import { useGroupMealPlanUI } from './useGroupMealPlanUI';
-import { MealPlanEditModal } from './MealPlanEditModal';
-import { useScreen } from '../../../shared/providers';
+import { type MealPlanRowRender, useGroupMealPlanData } from '../useGroupMealPlanData';
+import { useGroupMealPlanUI } from '../useGroupMealPlanUI';
+import { MealPlanEditModal } from '../meal-plan-edit-modal/meal-plan-edit-modal';
+import { useScreen } from 'shared/providers';
 import type { BaseKey } from '@refinedev/core';
-import { MealCell, MobileDayCard } from './day-display';
+import { MealCell, MobileDayCard } from '../day-display/day-display';
 
 export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
     const { displayData, showAll, setShowAll, handleSave: saveToData } = useGroupMealPlanData({ id });
@@ -34,7 +34,7 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
     };
 
     return (
-        <div className={styles.container}>
+        <>
             <div className={`${styles.header} ${isMobile ? styles.mobileHeader : ''}`}>
                 <span className={styles.legend}>
                     <span className={styles.meat}>🥩 Мясоеды</span> / <span className={styles.vegan}>🥦 Веганы</span>
@@ -145,6 +145,6 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                     onCancel={handleModalClose}
                 />
             )}
-        </div>
+        </>
     );
 };
