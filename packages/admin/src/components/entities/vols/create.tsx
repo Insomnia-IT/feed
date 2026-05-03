@@ -19,7 +19,8 @@ export const VolCreate = () => {
     const translate = useTranslate();
 
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
-        successNotification: ({ data }) => {
+        successNotification: (response) => {
+            const data = response?.data as VolEntity | undefined;
             const volunteerId = data?.id;
             const volunteerPath = volunteerId ? `/volunteers/edit/${volunteerId}` : '/volunteers';
             const volunteerUrl = new URL(volunteerPath, window.location.origin).toString();
