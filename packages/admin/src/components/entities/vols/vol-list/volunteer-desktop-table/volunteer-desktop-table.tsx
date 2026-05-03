@@ -184,6 +184,12 @@ export const VolunteerDesktopTable = ({
                 )
             },
             {
+                dataIndex: 'is_badge_located_at_leader',
+                key: 'is_badge_located_at_leader',
+                title: 'Бейдж у руководителя',
+                render: (value) => <ListBooleanPositive value={Boolean(value)} />
+            },
+            {
                 dataIndex: 'comment',
                 key: 'comment',
                 title: 'Комментарий',
