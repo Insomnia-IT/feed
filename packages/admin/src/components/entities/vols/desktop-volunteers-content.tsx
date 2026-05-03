@@ -8,7 +8,7 @@ import type { FilterItem } from 'components/entities/vols/vol-list/filters/filte
 import { isEffectiveFilterValue } from 'components/entities/vols/vol-list/filters/is-effective-filter-value';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
-import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
+import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table/volunteer-desktop-table';
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';

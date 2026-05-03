@@ -1,7 +1,8 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { CanAccess, useGetIdentity, useTranslate } from '@refinedev/core';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { CanAccess, useGetIdentity, useList, useTranslate } from '@refinedev/core';
 import { List } from '@refinedev/antd';
-import { App, Button, Input, Segmented, Spin, Typography } from 'antd';
+import { App, Button, Col, Input, Row, Segmented, Spin, Typography } from 'antd';
+import type { TablePaginationConfig } from 'antd/es/table';
 import { PlusSquareOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 
@@ -10,21 +11,22 @@ import { useDebouncedCallback, useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
 import type { UserData } from 'auth';
-
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 
 import { Filters } from './vol-list/filters/filters';
 import { isEffectiveFilterValue } from './vol-list/filters/is-effective-filter-value';
 import type { FilterItem } from 'components/entities/vols/vol-list/filters/filter-types';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
-import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
+import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
+import { ChooseColumnsButton } from './vol-list/choose-columns-button';
+import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table/volunteer-desktop-table';
+import { VolunteerMobileList } from './vol-list/volunteer-mobile-list/volunteer-mobile-list';
+import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
+import { MassEdit } from './vol-list/mass-edit/mass-edit';
+import { PersonsTable } from './vol-list/persons-table';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 
-import styles from './list.module.css';
-
-const DesktopVolunteersContent = lazy(() =>
-    import('./desktop-volunteers-content').then((module) => ({ default: module.DesktopVolunteersContent }))
-);
+import styles from './list-page.module.css';
 
 const LS_PAGE_INDEX = 'volPageIndex';
 const LS_PAGE_SIZE = 'volPageSize';
@@ -112,6 +114,133 @@ const VolunteersListCreateButton = ({ activeFilters }: { activeFilters: FilterIt
         >
             {translate('buttons.create', 'Создать')}
         </Button>
+    );
+};
+
+const DesktopVolunteersContent = ({
+    page,
+    pageSize,
+    setPageWithStorage,
+    setPageSizeWithStorage,
+    effectiveFilterQueryParams,
+    statusById,
+    customFields,
+    canBulkEdit,
+    canListCustomFields,
+    isFiltersLoading,
+    searchText,
+    activeFilters,
+    openVolunteer
+}: {
+    page: number;
+    pageSize: number;
+    setPageWithStorage: (value: number) => void;
+    setPageSizeWithStorage: (value: number) => void;
+    effectiveFilterQueryParams: string;
+    statusById: Record<string, string>;
+    customFields: Array<CustomFieldEntity>;
+    canBulkEdit: boolean;
+    canListCustomFields: boolean;
+    isFiltersLoading: boolean;
+    searchText: string;
+    activeFilters: FilterItem[];
+    openVolunteer: (id: number) => Promise<boolean>;
+}) => {
+    const { result: volunteersResult, query: volunteersQuery } = useList<VolEntity>({
+        resource: `volunteers/${effectiveFilterQueryParams}`,
+        pagination: {
+            mode: 'server',
+            currentPage: page,
+            pageSize
+        }
+    });
+    const volunteers = volunteersResult;
+    const volunteersIsLoading = volunteersQuery.isLoading;
+    const reloadVolunteers = volunteersQuery.refetch;
+
+    useEffect(() => {
+        const total = volunteers?.total;
+        if (!total) return;
+
+        const outOfRange = (page - 1) * pageSize >= total;
+        if (!outOfRange) return;
+
+        setPageWithStorage(1);
+    }, [volunteers?.total, page, pageSize, setPageWithStorage]);
+
+    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
+        useMassEdit({
+            totalVolunteersCount: volunteers?.total ?? 0,
+            filterQueryParams: effectiveFilterQueryParams
+        });
+
+    const pagination = useMemo<TablePaginationConfig>(
+        () => ({
+            total: volunteers?.total ?? 0,
+            showTotal: (total) => (
+                <>
+                    <span data-testid="volunteer-count-caption">Волонтёров:</span>{' '}
+                    <span data-testid="volunteer-count-value">{total}</span>
+                </>
+            ),
+            hideOnSinglePage: false,
+            current: page,
+            pageSize,
+            showSizeChanger: true,
+            onChange: (newPage, newSize) => {
+                setPageWithStorage(newPage);
+                setPageSizeWithStorage(newSize);
+            }
+        }),
+        [volunteers?.total, page, pageSize, setPageWithStorage, setPageSizeWithStorage]
+    );
+
+    const noEffectiveFilters = !activeFilters.some(({ value }) => isEffectiveFilterValue(value));
+    const volunteersData = volunteers?.data ?? [];
+    const showPersons = !!searchText && noEffectiveFilters && volunteersData.length === 0;
+
+    return (
+        <>
+            <Row className={styles.desktopActionsRow} justify="end">
+                <Col className={styles.desktopResultCol}>
+                    <span>
+                        <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
+                    </span>
+                </Col>
+
+                <Row className={styles.desktopButtonsRow}>
+                    <ChooseColumnsButton canListCustomFields={canListCustomFields} />
+                    <SaveAsXlsxButton
+                        isDisabled={!volunteersData.length || isFiltersLoading}
+                        filterQueryParams={effectiveFilterQueryParams}
+                    />
+                </Row>
+            </Row>
+
+            {!showPersons && (
+                <VolunteerDesktopTable
+                    openVolunteer={openVolunteer}
+                    pagination={pagination}
+                    statusById={statusById}
+                    volunteersIsLoading={volunteersIsLoading}
+                    volunteersData={volunteersData}
+                    customFields={customFields}
+                    rowSelection={canBulkEdit ? rowSelection : undefined}
+                />
+            )}
+            {showPersons && <PersonsTable key={searchText} searchText={searchText} />}
+            {canBulkEdit && (
+                <MassEdit
+                    selectedVolunteers={selectedVols}
+                    unselectAll={unselectAllSelected}
+                    unselectVolunteer={unselectVolunteer}
+                    reloadVolunteers={async () => {
+                        await reloadVolunteers();
+                        await reloadSelectedVolunteers();
+                    }}
+                />
+            )}
+        </>
     );
 };
 

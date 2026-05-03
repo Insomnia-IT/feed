@@ -1,7 +1,7 @@
 import { Select } from 'antd';
 
 import type { FilterField } from './filter-types';
-import styles from '../../list.module.css';
+import styles from './filters.module.css';
 
 interface IFilterOption {
     label: string;
