@@ -397,7 +397,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                 to_attr='relevant_arrivals'
             )
         )
-        .select_related('kitchen', 'feed_type')
+        .select_related('kitchen', 'feed_type', 'group_badge__kitchen')
     )
     if apply_history:
         history = (
@@ -436,6 +436,11 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                 'is_paid': vol.feed_type.paid if vol.feed_type else False,
                 'is_vegan': vol.is_vegan,
                 'kitchen_id': vol.kitchen.id if vol.kitchen else None,
+                'group_badge_kitchen_id': (
+                    vol.group_badge.kitchen_id
+                    if vol.group_badge
+                    else None
+                ),
             })
     
     print(f'volunteers loaded: {time.time() - start_time}')
@@ -478,7 +483,23 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                 meal_times_set = get_meal_times(is_paid) # in [ "breakfast", "lunch", "dinner" (, is_paid ? "night") ]
 
             for meal_time in meal_times_set:
-                kitchen_id = apply_history and get_kitchen_id_by_history(history_by_volunteer, vol_data['uuid'], current_day.shift(days=-1) if meal_time == 'breakfast' else current_day) or vol_data['kitchen_id']
+                if vol_data['group_badge_kitchen_id'] is not None:
+                    kitchen_id = vol_data['group_badge_kitchen_id']
+                else:
+                    history_date = (
+                        current_day.shift(days=-1)
+                        if meal_time == 'breakfast'
+                        else current_day
+                    )
+                    kitchen_id = (
+                        apply_history
+                        and get_kitchen_id_by_history(
+                            history_by_volunteer,
+                            vol_data['uuid'],
+                            history_date,
+                        )
+                        or vol_data['kitchen_id']
+                    )
                 append_stat(stat, {
                     'date': current_day.format(STAT_DATE_FORMAT),
                     'type': StatisticType.PLAN.value,
