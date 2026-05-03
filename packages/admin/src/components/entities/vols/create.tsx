@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
-import { useTranslate, type IResourceComponentsProps } from '@refinedev/core';
+import { useTranslate } from '@refinedev/core';
 import { Form } from 'antd';
 
 import type { VolEntity } from 'interfaces';
