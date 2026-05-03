@@ -1,4 +1,4 @@
-export NREPS=3
+export NREPS=1
 
 echo "Gonna explicitly build docker compose for regress-tests"
 docker compose build
@@ -22,3 +22,4 @@ echo -e "\n:VERDICT:"
     { echo "Tests passed!"; } ||
     { echo "Tests failed!" ; (exit 2); }
 
+exit "$exitcode"

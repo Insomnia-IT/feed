@@ -1,3 +1,5 @@
+from django.core.exceptions import FieldDoesNotExist
+from django.db import models as django_models
 from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions, filters, status
@@ -8,7 +10,7 @@ from django.utils import timezone
 
 
 from feeder import serializers
-from feeder.models import Volunteer, VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival, VolunteerCustomField
+from feeder.models import Volunteer, VolunteerGroupOperation, VolunteerCustomFieldValue, Arrival, PaidArrival, VolunteerCustomField
 from feeder.serializers import VolunteerSerializer, RetrieveVolunteerSerializer, VolunteerListSerializer, VolunteerGroupSerializer, ArrivalSerializer
 from feeder.views.mixins import get_request_user_id
 
@@ -142,6 +144,14 @@ class VolunteerGroupViewSet(APIView):
 
                         if len(new_data.keys()) > 0:
                             history_data = new_data.copy()
+                            for field_name in history_data.keys():
+                                try:
+                                    model_field = Volunteer._meta.get_field(field_name)
+                                except FieldDoesNotExist:
+                                    continue
+
+                                if isinstance(model_field, django_models.BooleanField):
+                                    history_data[field_name] = getattr(vol, field_name)
                             history_data['id'] = str(vol.uuid)
 
                             History.objects.create(
@@ -240,6 +250,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         group_operation_uuid = uuid4()
         updated_volunteers = []
         errors = []
+        warnings = []
 
         try:
             with transaction.atomic():
@@ -276,7 +287,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                     arrivals = Arrival.objects.filter(volunteer=vol)
 
                     arr_id = old_data.get('id')
-                    target = arrivals.get(id=arr_id)
+                    target = arrivals.filter(id=arr_id).first()
 
                     if not target:
                         continue
@@ -298,21 +309,68 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
 
                     vol = serializer.save()
                     updated_volunteers.append(vol.id)
+                for hist in histories.filter(object_name='paidarrival'):
+                    volunteer_id = hist.volunteer_uuid
+                    old_data = hist.old_data or {}
+                    new_data = hist.data or {}
+
+                    vol = Volunteer.objects.get(uuid=UUID(volunteer_id))
+                    paid_arrivals = PaidArrival.objects.filter(volunteer=vol)
+
+                    paid_arrival_id = old_data.get('id')
+                    target = paid_arrivals.filter(id=paid_arrival_id).first()
+
+                    if not target:
+                        continue
+
+                    all_paid_arrivals = []
+                    for paid_arrival in paid_arrivals:
+                        entry = {"id": paid_arrival.id}
+                        if target and paid_arrival.id == target.id:
+                            entry.update(old_data)
+                        all_paid_arrivals.append(entry)
+
+                    payload = {}
+                    payload['paid_arrivals'] = all_paid_arrivals
+
+                    context = {'request': request, 'group_op': group_operation_uuid}
+
+                    serializer = VolunteerSerializer(vol, data=payload, partial=True, context=context)
+                    serializer.is_valid(raise_exception=True)
+
+                    vol = serializer.save()
+                    updated_volunteers.append(vol.id)
                 for hist in histories.filter(object_name='volunteercustomfieldvalue'):
                     volunteer_id = Volunteer.objects.get(uuid=hist.volunteer_uuid).id
                     data = hist.data
                     old_data = hist.old_data
                     custom_field = data["custom_field"]
-                    custom_field_value = VolunteerCustomFieldValue.objects.get(
+                    try:
+                        custom_field_value = VolunteerCustomFieldValue.objects.get(
                             volunteer_id=volunteer_id,
                             custom_field_id=custom_field,
                         )
-                    if str(custom_field_value) == hist.data["value"]:
-                        if old_data:
-                            VolunteerCustomFieldValue.objects.filter(
+                        if str(custom_field_value).strip() == '':
+                            custom_field_value = None
+                    except VolunteerCustomFieldValue.DoesNotExist:
+                        custom_field_value = None
+                    if str(custom_field_value) == str(hist.data["value"]):
+                        if old_data and old_data["value"] is not None:
+                            existing_data = VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
                                 custom_field_id=custom_field,
-                            ).update(value = old_data["value"])
+                            )
+                            if existing_data:
+                                VolunteerCustomFieldValue.objects.filter(
+                                    volunteer_id=volunteer_id,
+                                    custom_field_id=custom_field,
+                                ).update(value = old_data["value"])
+                            else:
+                                VolunteerCustomFieldValue.objects.create(
+                                    volunteer_id = volunteer_id,
+                                    value = old_data["value"],
+                                    custom_field_id=custom_field
+                                )
                             History.objects.create(
                                 status=History.STATUS_UPDATE,
                                 object_name='volunteercustomfieldvalue',
@@ -324,7 +382,7 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 volunteer_uuid=hist.volunteer_uuid,
                                 group_operation_uuid=str(group_operation_uuid),
                             )
-                        elif old_data is None:
+                        else:
                             VolunteerCustomFieldValue.objects.filter(
                                 volunteer_id=volunteer_id,
                                 custom_field_id=custom_field,
@@ -341,7 +399,18 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
                                 group_operation_uuid=str(group_operation_uuid),
                             )
                     else:
-                        errors.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        warnings.append({"id": volunteer_id, "errors": "volunteer data was already changed after group operation"})
+                        History.objects.create(
+                                status=History.STATUS_UPDATE,
+                                object_name='volunteercustomfieldvalue',
+                                actor_badge=get_request_user_id(request.user),
+                                action_at=timezone.now(),
+                                data={"value": str(custom_field_value), "custom_field": custom_field,
+                                      "id": data["id"]},
+                                old_data={"value": str(custom_field_value)},
+                                volunteer_uuid=hist.volunteer_uuid,
+                                group_operation_uuid=str(group_operation_uuid),
+                            )
         except ValidationError as ve:
             errors.append({"id": volunteer_id, "errors": ve.detail})
         except Volunteer.DoesNotExist:
@@ -352,12 +421,14 @@ class VolunteerGroupDeleteViewSet(APIView):  # viewsets.ModelViewSet):
         if errors:
             return Response(
                 {"updated": updated_volunteers,
-                "errors": errors},
+                "errors": errors,
+                "warnings": warnings},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         return Response(
             {"id": str(group_operation_uuid),
-            "updated":  updated_volunteers},
+            "updated":  updated_volunteers,
+            "warnings": warnings},
             status=status.HTTP_200_OK
         )

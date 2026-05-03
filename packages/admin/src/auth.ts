@@ -3,21 +3,35 @@ import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
 
-export enum AppRoles {
-    ADMIN = 'ADMIN',
-    SENIOR = 'SENIOR',
-    CAT = 'CAT',
-    SOVA = 'SOVA',
-    DIRECTION_HEAD = 'DIRECTION_HEAD'
-}
+export const AppRoles = {
+    ADMIN: 'ADMIN',
+    KITCHEN: 'KITCHEN',
+    SENIOR: 'SENIOR',
+    CAT: 'CAT',
+    SOVA: 'SOVA',
+    DIRECTION_HEAD: 'DIRECTION_HEAD'
+} as const;
+
+export type AppRole = (typeof AppRoles)[keyof typeof AppRoles];
+
+export const isAppRole = (role: string): role is AppRole => {
+    return Object.values(AppRoles).includes(role as AppRole);
+};
 
 export interface UserData {
-    id?: number | string;
-    exp: number;
-    iat: number;
-    roles: Array<AppRoles.ADMIN | AppRoles.SENIOR | AppRoles.CAT | AppRoles.DIRECTION_HEAD | AppRoles.SOVA>;
-    directions?: Array<string>;
+    id?: string;
+    exp?: number;
+    iat?: number;
+    roles: Array<AppRole | string>;
+    directions?: string[];
     username: string;
+    kitchen?: {
+        id: number;
+        name: string;
+        comment?: string | null;
+    };
+    first_name?: string;
+    last_name?: string;
 }
 
 export const AUTH_COOKIE_NAME = 'auth';
@@ -37,10 +51,19 @@ export const getUserData = async <T extends true | false>(decode: T): Promise<Us
     };
 
     if (decode) {
-        return (await getUserInfo(token)) as UserDataReturn<T>;
-    } else {
-        return token as UserDataReturn<T>;
+        try {
+            return (await getUserInfo(token)) as UserDataReturn<T>;
+        } catch (error) {
+            if (axios.isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0)) {
+                clearUserData();
+                return null as UserDataReturn<T>;
+            }
+
+            throw error;
+        }
     }
+
+    return token as UserDataReturn<T>;
 };
 
 export const setUserData = (token: string): void => {
@@ -48,6 +71,7 @@ export const setUserData = (token: string): void => {
         expires: 30,
         path: '/'
     });
+    userRequest = undefined;
     axios.defaults.headers.common = {
         Authorization: token.startsWith('V-TOKEN ') ? token : `Token ${token}`
     };
@@ -61,21 +85,21 @@ export const setUserInfo = (user: UserData): void => {
     });
 };
 
-let userPromise: Promise<UserData | undefined> | undefined;
+let userRequest: { token: string; promise: Promise<UserData | undefined> } | undefined;
 
 export const getUserInfo = async (token: string): Promise<UserData | undefined> => {
     const authData = Cookies.get(AUTH_DATA_COOKIE_NAME);
     if (authData) {
-        userPromise = undefined;
+        userRequest = undefined;
         return JSON.parse(authData) as UserData;
     }
 
-    if (userPromise) {
-        return userPromise;
+    if (userRequest?.token === token) {
+        return userRequest.promise;
     }
 
     if (token.startsWith('V-TOKEN')) {
-        userPromise = axios
+        const promise = axios
             .get(`${NEW_API_URL}/volunteers/?limit=1&qr=${token.replace('V-TOKEN ', '')}`, {
                 headers: {
                     Authorization: token
@@ -96,14 +120,17 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                 return userData;
             })
             .catch((error) => {
-                userPromise = undefined;
                 throw error;
             })
             .finally(() => {
-                userPromise = undefined;
+                if (userRequest?.token === token) {
+                    userRequest = undefined;
+                }
             });
+
+        userRequest = { token, promise };
     } else {
-        userPromise = axios
+        const promise = axios
             .get(`${NEW_API_URL}/auth/user/`, {
                 headers: {
                     Authorization: `Token ${token}`
@@ -115,19 +142,24 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
                 return data;
             })
             .catch((error) => {
-                userPromise = undefined;
                 throw error;
             })
             .finally(() => {
-                userPromise = undefined;
+                if (userRequest?.token === token) {
+                    userRequest = undefined;
+                }
             });
+
+        userRequest = { token, promise };
     }
 
-    return userPromise;
+    return userRequest.promise;
 };
 
 export const clearUserData = (): void => {
     Cookies.remove(AUTH_COOKIE_NAME);
+    userRequest = undefined;
+    axios.defaults.headers.common = {};
     clearUserInfo();
 };
 

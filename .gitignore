@@ -23,6 +23,8 @@
 **/dist
 
 # misc
+.pyenv/
+
 .DS_Store
 .env.local
 .env.development.local
@@ -32,8 +34,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-#pwa-ver.txt
 
 **/node_modules
 **/*.db
@@ -58,3 +58,8 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+.claude
+.playwright-cli
+# Superpowers Plans
+/docs/superpowers/plans/

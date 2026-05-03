@@ -1,17 +1,21 @@
 import { useCallback, useMemo, useState } from 'react';
 import axios from 'axios';
 
-import type { ApiHook } from '~/request/lib';
-import type { Volunteer } from '~/db';
-import { db } from '~/db';
+import type { ApiHook } from 'request/lib';
+import type { Volunteer } from 'db';
+import { db } from 'db';
+
+interface ServerVolunteer extends Omit<Volunteer, 'qr'> {
+    qr: string | null;
+}
 
 export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const send = useCallback(
-        (filters) => {
+        (filters: Record<string, string | number | boolean>) => {
             if (fetching) {
                 return Promise.resolve(false);
             }
@@ -20,42 +24,27 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
 
             return new Promise((res, rej) => {
                 axios
-                    .get(`${baseUrl}/volunteers/`, {
+                    .get<{ results: Array<ServerVolunteer> }>(`${baseUrl}/volunteers/`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
                         params: {
-                            ...filters,
-                            is_deleted: 'all'
+                            ...filters
                         }
                     })
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
-                        // const qrs = {};
-                        // const ids = {};
-                        // for (const v of results as Array<Volunteer>) {
-                        //     if (ids[v.id]) {
-                        //         console.log(ids[v.id], v);
-                        //     } else {
-                        //         ids[v.id] = v;
-                        //     }
-                        //     if (qrs[v.qr]) {
-                        //         console.log(qrs[v.qr], v);
-                        //     } else {
-                        //         qrs[v.qr] = v;
-                        //     }
-                        // }
 
-                        const deletedVolunteerIds = (results as Array<Volunteer>)
-                            .filter(({ deleted_at, qr }) => deleted_at || !qr)
-                            .map(({ id }) => id);
-
-                        const volunteers = (results as Array<Volunteer>).filter(
-                            ({ deleted_at, qr }) => qr && !deleted_at
+                        const volunteers = results.filter(
+                            (volunteer): volunteer is ServerVolunteer & { qr: string } => {
+                                return Boolean(volunteer.qr);
+                            }
                         );
 
+                        const skippedVolunteerIds = results.filter(({ qr }) => !qr).map(({ id }) => id);
+
                         try {
-                            await db.volunteers.bulkDelete(deletedVolunteerIds);
+                            await db.volunteers.bulkDelete(skippedVolunteerIds);
                             await db.volunteers.bulkPut(volunteers);
                         } catch (e) {
                             console.error(e);
@@ -66,9 +55,9 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         res(true);
                         return true;
                     })
-                    .catch((e) => {
+                    .catch((e: unknown) => {
                         setFetching(false);
-                        if (e?.response?.status === 401) {
+                        if (axios.isAxiosError(e) && e.response?.status === 401) {
                             rej(false);
                             setAuth(false);
                             return false;
@@ -82,7 +71,7 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
         [baseUrl, error, fetching, pin, setAuth]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -90,5 +79,5 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };

@@ -1,89 +1,56 @@
-# syntax=docker/dockerfile:experimental
+# syntax=docker/dockerfile:1
 
-FROM node:18-alpine as base
+FROM node:24-alpine AS base
 
-# ENV NODE_ENV=development
 ENV husky_skip_init="1"
-ENV HUSKY_DEBUG="1"
-#ENV NODE_OPTIONS="--max_old_space_size=4000 --openssl-legacy-provider"
+ENV HUSKY="0"
 ENV NODE_OPTIONS="--max_old_space_size=4000"
-
-#TODO review env varables
-
-ARG HOST
-ENV HOST=${HOST}
-
-ARG CI
-ENV CI_ENV=${CI}
 
 WORKDIR /app
 
-FROM base as builder
+FROM base AS deps
 
-RUN apk add --no-cache curl python3 py3-setuptools
-RUN curl -sf https://gobinaries.com/tj/node-prune | sh
-RUN echo "npm cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
-
-RUN apk add --no-cache build-base
+RUN apk add --no-cache python3 py3-setuptools build-base
 
 COPY ./package.json /app/package.json
 COPY ./package-lock.json /app/package-lock.json
-
 COPY ./packages/admin/package.json /app/packages/admin/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm ci
 
-COPY ./.eslintignore /app/.eslintignore
-COPY ./.eslintrc /app/.eslintrc
-COPY ./.eslintrc.js /app/.eslintrc.js
-COPY ./env.d.ts /app/env.d.ts
-COPY ./lerna.json /app/lerna.json
-COPY ./nx.json /app/nx.json
-COPY ./postcss.config.js /app/postcss.config.js
-COPY ./stylelint.config.mjs /app/stylelint.config.mjs
-COPY ./tsconfig.eslint.json /app/tsconfig.eslint.json
+FROM deps AS admin-builder
+
 COPY ./tsconfig.json /app/tsconfig.json
-COPY ./tsconfig.paths.json /app/tsconfig.paths.json
-COPY ./typings.d.ts /app/typings.d.ts
-COPY ./types /app/types
-COPY ./packages /app/packages
+COPY ./packages/admin /app/packages/admin
 
 ARG NEW_API_URL
 ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
-ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
-
-RUN echo $(date +"%Y-%m-%dT%H:%M:%S") > /app/packages/scanner/src/pwa-ver.txt
-
+ARG APP_VERSION
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
-    npm run build
+    --mount=type=cache,target=/app/packages/admin/node_modules/.tmp \
+    VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm --workspace @feed/admin run build
 
-# RUN RUN npm prune --production
+FROM deps AS scanner-builder
 
-# RUN /usr/local/bin/node-clean
+COPY ./tsconfig.json /app/tsconfig.json
+COPY ./packages/scanner /app/packages/scanner
 
-FROM base as runner
+ARG NEW_API_URL
+ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
+ARG APP_VERSION
+RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    --mount=type=cache,target=/app/packages/scanner/node_modules/.tmp \
+    VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm --workspace @feed/scanner run build
+
+FROM nginx:1.29-alpine AS runner
 
 EXPOSE 80
 
-RUN apk add --no-cache nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-ARG NEW_API_URL
-ENV NEW_API_URL_ENV=${NEW_API_URL}
-ENV REACT_APP_NEW_API_URL_ENV=${NEW_API_URL}
-ARG ADMIN_BASE_PATH
-ENV ADMIN_BASE_PATH_ENV=${ADMIN_BASE_PATH}
+COPY --from=admin-builder /app/packages/admin/dist/ /app/packages/admin/dist/
+COPY --from=scanner-builder /app/packages/scanner/dist/ /app/packages/scanner/dist/
 
-COPY --from=builder /app/postcss.config.js /app/
-COPY --from=builder /app/tsconfig.json /app/
-COPY --from=builder /app/tsconfig.paths.json /app/
-COPY --from=builder /app/package.json /app/
-
-COPY --from=builder /app/packages/admin/dist/ /app/packages/admin/dist/
-
-COPY --from=builder /app/packages/scanner/package.json /app/packages/scanner/
-COPY --from=builder /app/packages/scanner/build/ /app/packages/scanner/build/
-
-CMD nginx
+CMD ["nginx"]

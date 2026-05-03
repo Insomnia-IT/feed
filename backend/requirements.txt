@@ -1,7 +1,7 @@
-Django>=5
-django-filter>=24.3
+Django==5.2.3
+django-filter==25.1
 django-cors-headers
-djangorestframework
+djangorestframework==3.17.1
 psycopg2-binary
 django-debug-toolbar
 gunicorn
@@ -9,10 +9,11 @@ flower
 sentry-sdk
 requests
 arrow
-drf-spectacular
+drf-spectacular==0.26.2
 python-dotenv
 dj-rest-auth
 pillow
+openpyxl
 python-crontab
 opentelemetry-instrumentation-django
 opentelemetry-instrumentation-requests

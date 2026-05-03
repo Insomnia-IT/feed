@@ -13,6 +13,7 @@ router.register(r'feed-types', feed.FeedTypeViewSet)
 router.register(r'feed-transaction', feed.FeedTransactionViewSet)
 router.register(r'kitchens', kitchen.KitchenViewSet)
 router.register(r'group-badges', group_badge.GroupBadgeViewSet)
+router.register(r'group-badge-planning-cells', group_badge.GroupBadgePlanningCellsViewSet)
 router.register(r'volunteer-custom-fields', volunteer.VolunteerCustomFieldViewSet)
 router.register(r'volunteer-custom-field-values', volunteer.VolunteerCustomFieldValueViewSet)
 router.register(r'genders', gender.GenderViewSet)
@@ -33,6 +34,7 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
 
     path('', include(router.urls)),
+    path('feed-transaction/anomalies', feed.FeedTransactionAnomalies.as_view()),
     path('feed-transaction/bulk', feed.FeedTransactionBulk.as_view()),
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
@@ -42,4 +44,3 @@ urlpatterns = [
     path('volunteer-photo-sync', photo_sync.DownloadVolunteerPhotos.as_view()),
     # path('notion-sync', sync.SyncWithNotion.as_view()),
 ]
-

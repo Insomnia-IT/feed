@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { axios } from 'authProvider';
-import { VolunteersResponse } from '../types';
+import type { VolunteersResponse } from '../types';
 import { NEW_API_URL } from 'const';
 
 export const useSearchVolunteer = (qr?: string) => {

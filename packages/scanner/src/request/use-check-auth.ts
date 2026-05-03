@@ -1,11 +1,22 @@
-import axios from 'axios';
+import axios, { type AxiosResponse } from 'axios';
 import { useCallback } from 'react';
 
-export const useCheckAuth = (baseUrl: string, setAuth: (auth: boolean) => void): ((pin: string) => Promise<any>) =>
+type AuthUserResponse = {
+    id: string;
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+    roles?: string[];
+};
+
+export const useCheckAuth = (
+    baseUrl: string,
+    setAuth: (auth: boolean) => void
+): ((pin: string) => Promise<AxiosResponse<AuthUserResponse>>) =>
     useCallback(
         (pin: string) =>
             axios
-                .get(`${baseUrl}/auth/user/`, {
+                .get<AuthUserResponse>(`${baseUrl}/auth/user/`, {
                     headers: {
                         Authorization: `K-PIN-CODE ${pin}`
                     }
@@ -13,8 +24,8 @@ export const useCheckAuth = (baseUrl: string, setAuth: (auth: boolean) => void):
                 .then((e) => {
                     return e;
                 })
-                .catch((e) => {
-                    if (e.response && e.response.status === 401) {
+                .catch((e: unknown) => {
+                    if (axios.isAxiosError(e) && e.response && e.response.status === 401) {
                         setAuth(false);
                     }
                     throw e;

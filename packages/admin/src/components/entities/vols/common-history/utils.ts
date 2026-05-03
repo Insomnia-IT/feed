@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { GetListResponse } from '@refinedev/core';
+import type { GetListResponse } from '@refinedev/core';
 
 export const FIELD_LABELS: Record<string, string> = {
     comment: 'Комментарий',
@@ -22,6 +22,8 @@ export const FIELD_LABELS: Record<string, string> = {
     status: 'Статус',
     departure_date: 'Дата отъезда',
     arrival_date: 'Дата приезда',
+    paid_arrivals: 'Платные питания',
+    is_free: 'За счёт фестиваля',
     is_blocked: 'Статус блокировки',
     person: 'Персона',
     deleted: 'Удален',
@@ -32,7 +34,8 @@ export const FIELD_LABELS: Record<string, string> = {
     batch: 'Партия бейджа',
     ticket: 'Билет',
     qr: 'QR бейджа',
-    supervisor_id: 'Бригадир'
+    supervisor: 'Бригадир',
+    is_badge_located_at_leader: 'Бейдж у руководителя'
 };
 
 export const STATUS_MAP: Record<string, string> = {
@@ -43,21 +46,22 @@ export const STATUS_MAP: Record<string, string> = {
 
 export const BOOL_MAP = {
     vegan: ['Мясоед', 'Веган'],
+    is_free: ['Нет', 'Да'],
     is_blocked: ['Разблокирован', 'Заблокирован'],
     deleted: ['Нет', 'Да'],
     ticket: ['Не выдан', 'Выдан'],
     infant: ['Нет', 'Да']
 };
 
-export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'feed', 'role', 'custom_field']);
+export const IGNORE_FIELDS = new Set(['id', 'volunteer', 'badge', 'feed', 'role', 'custom_field', 'supervisor_id']);
 
 export function useIdNameMap<T extends { id: number | string }>(list?: GetListResponse<T>, field?: keyof T) {
-    return useMemo<Record<string, string>>(
-        () =>
-            (list?.data ?? []).reduce((acc, i) => {
-                const key = field ?? ('name' as keyof T);
-                return { ...acc, [i.id]: String(i[key]) };
-            }, {}),
-        [list, field]
-    );
+    return useMemo<Record<string, string>>(() => {
+        const acc: Record<string, string> = {};
+        for (const i of list?.data ?? []) {
+            const key = field ?? ('name' as keyof T);
+            acc[String(i.id)] = String(i[key]);
+        }
+        return acc;
+    }, [list, field]);
 }

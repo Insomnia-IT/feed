@@ -1,18 +1,16 @@
-import React, { FC, useState, useMemo, useCallback } from 'react';
 import { Layout, Menu } from 'antd';
+import type { MenuProps } from 'antd';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import {
-    CanAccess,
-    ITreeMenu,
+    type TreeMenuItem,
+    useGetIdentity,
     useIsExistAuthentication,
     useList,
     useLogout,
-    useMenu,
-    useNavigation,
-    useTitle,
-    useGetIdentity
+    useMenu
 } from '@refinedev/core';
-import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { Link, useLocation, useNavigate } from 'react-router';
 import {
     LogoutOutlined,
     QrcodeOutlined,
@@ -22,8 +20,9 @@ import {
     UserOutlined
 } from '@ant-design/icons';
 
+import { canAccessByRole } from 'acl';
 import { useScreen } from 'shared/providers';
-import { AppRoles, UserData } from 'auth';
+import { AppRoles, type UserData } from 'auth';
 import type { AccessRoleEntity } from 'interfaces';
 
 import styles from './sider.module.css';
@@ -33,31 +32,32 @@ const MOBILE_PATHS = {
     vol: '/volunteers',
     gb: '/group-badges',
     dashboard: '/dashboard'
-};
+} as const;
 
-const CustomSider: FC = () => {
+const CustomSider = () => {
     const { breakpoint, isDesktop } = useScreen();
-
     const [collapsed, setCollapsed] = useState(false);
 
-    const Title = useTitle();
     const isAuth = useIsExistAuthentication();
     const { mutate: logout } = useLogout();
     const queryClient = useQueryClient();
-    const { menuItems, selectedKey } = useMenu();
-    const { push } = useNavigation();
+
+    const { menuItems, selectedKey, defaultOpenKeys } = useMenu();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const { data: user, isLoading: userLoading } = useGetIdentity<UserData>();
-    const role = user?.roles[0];
+    const role = user?.roles?.[0];
 
-    const { data: accessRoles } = useList<AccessRoleEntity>({
+    const {
+        result: { data: accessRoles = [] }
+    } = useList<AccessRoleEntity>({
         resource: 'access-roles'
     });
 
     const accessRoleName = useMemo(() => {
-        if (!accessRoles || !role) return '';
-        return accessRoles.data.find((r) => r.id === role)?.name ?? '';
+        if (!role) return '';
+        return accessRoles.find((item) => item.id === role)?.name ?? '';
     }, [accessRoles, role]);
 
     const handleLogout = useCallback(() => {
@@ -65,68 +65,76 @@ const CustomSider: FC = () => {
         logout();
     }, [logout, queryClient]);
 
-    const renderMenuItems = useCallback(
-        (tree: ITreeMenu[]): React.ReactNode[] => {
-            return tree
-                .map((item) => {
-                    const { children, icon, label, name, route } = item;
-                    const key = route || name;
+    const buildMenuItems = useCallback(
+        (tree: TreeMenuItem[]): MenuProps['items'] => {
+            const walk = (nodes: TreeMenuItem[]): NonNullable<MenuProps['items']> => {
+                return nodes
+                    .map((item) => {
+                        const { children, icon, label, name, route } = item;
+                        const key = String(route || name);
 
-                    if (children?.length) {
-                        const subItems = renderMenuItems(children);
-                        return subItems.length ? (
-                            <Menu.SubMenu key={key} icon={icon ?? <UnorderedListOutlined />} title={label}>
-                                {subItems}
-                            </Menu.SubMenu>
-                        ) : null;
-                    }
+                        if (children?.length) {
+                            const subItems = walk(children);
+                            if (!subItems.length) return null;
 
-                    return (
-                        <CanAccess
-                            key={key}
-                            resource={name.toLowerCase()}
-                            action="list"
-                            params={{ resource: item }}
-                            fallback={null}
-                        >
-                            <Menu.Item
-                                key={key}
-                                icon={icon ?? <UnorderedListOutlined />}
-                                style={key === selectedKey ? { fontWeight: 'bold' } : {}}
-                            >
-                                <Link to={route as string}>{label}</Link>
-                            </Menu.Item>
-                        </CanAccess>
-                    );
-                })
-                .filter(Boolean) as React.ReactNode[];
+                            return {
+                                key,
+                                icon: icon ?? <UnorderedListOutlined />,
+                                label,
+                                children: subItems
+                            };
+                        }
+
+                        const resource = String(name).toLowerCase();
+                        if (!role || !canAccessByRole(role, 'list', resource)) {
+                            return null;
+                        }
+
+                        return {
+                            key,
+                            icon: icon ?? <UnorderedListOutlined />,
+                            label: <Link to={route as string}>{label}</Link>
+                        };
+                    })
+                    .filter(Boolean) as NonNullable<MenuProps['items']>;
+            };
+
+            return walk(tree);
         },
-        [selectedKey]
+        [role]
     );
 
-    const userMenuItems = useMemo(() => {
-        const items: React.ReactNode[] = [
-            <Menu.Item key="user-info" disabled>
-                {userLoading
-                    ? 'Загрузка...'
-                    : accessRoleName
-                      ? `${user?.username} (${accessRoleName})`
-                      : user?.username || '—'}
-            </Menu.Item>
+    const userMenuItems = useMemo<MenuProps['items']>(() => {
+        const items: NonNullable<MenuProps['items']> = [
+            {
+                key: 'user-info',
+                disabled: true,
+                label: (
+                    <span data-testid="current-user-name">
+                        {userLoading
+                            ? 'Загрузка...'
+                            : accessRoleName
+                              ? `${user?.username} (${accessRoleName})`
+                              : user?.username || '—'}
+                    </span>
+                )
+            }
         ];
 
-        if (menuItems) items.push(...renderMenuItems(menuItems));
+        if (menuItems) {
+            items.push(...((buildMenuItems(menuItems) ?? []).filter(Boolean) as NonNullable<MenuProps['items']>));
+        }
 
         if (isAuth) {
-            items.push(
-                <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
-                    Выход
-                </Menu.Item>
-            );
+            items.push({
+                key: 'logout',
+                icon: <LogoutOutlined />,
+                label: 'Выход'
+            });
         }
 
         return items;
-    }, [accessRoleName, user, menuItems, renderMenuItems, isAuth, handleLogout]);
+    }, [accessRoleName, user, userLoading, menuItems, buildMenuItems, isAuth]);
 
     const renderMobileButtons = () => {
         const path = location.pathname;
@@ -138,7 +146,7 @@ const CustomSider: FC = () => {
                         active={path.startsWith(MOBILE_PATHS.wash)}
                         icon={<SmileOutlined />}
                         text="Стиратель"
-                        onClick={() => push(MOBILE_PATHS.wash)}
+                        onClick={() => navigate(MOBILE_PATHS.wash)}
                     />
                 ) : (
                     <>
@@ -146,19 +154,19 @@ const CustomSider: FC = () => {
                             active={path.startsWith(MOBILE_PATHS.dashboard)}
                             icon={<QrcodeOutlined />}
                             text="Сканнер"
-                            onClick={() => push(MOBILE_PATHS.dashboard)}
+                            onClick={() => navigate(MOBILE_PATHS.dashboard)}
                         />
                         <MobileButton
                             active={path.startsWith(MOBILE_PATHS.vol)}
                             icon={<UserOutlined />}
                             text="Волонтеры"
-                            onClick={() => push(MOBILE_PATHS.vol)}
+                            onClick={() => navigate(MOBILE_PATHS.vol)}
                         />
                         <MobileButton
                             active={path.startsWith(MOBILE_PATHS.gb)}
                             icon={<TeamOutlined />}
                             text="Группы"
-                            onClick={() => push(MOBILE_PATHS.gb)}
+                            onClick={() => navigate(MOBILE_PATHS.gb)}
                         />
                     </>
                 )}
@@ -178,15 +186,17 @@ const CustomSider: FC = () => {
             breakpoint="lg"
             onCollapse={setCollapsed}
         >
-            {Title && <Title collapsed={collapsed} />}
             <Menu
                 theme="dark"
                 mode="inline"
-                selectedKeys={[selectedKey]}
-                onClick={() => !isDesktop && setCollapsed(true)}
-            >
-                {userMenuItems}
-            </Menu>
+                selectedKeys={selectedKey ? [selectedKey] : []}
+                defaultOpenKeys={defaultOpenKeys}
+                items={userMenuItems}
+                onClick={(info) => {
+                    if (!isDesktop) setCollapsed(true);
+                    if (info.key === 'logout') handleLogout();
+                }}
+            />
         </Layout.Sider>
     );
 };
@@ -199,12 +209,16 @@ const MobileButton = ({
     active,
     onClick
 }: {
-    icon: React.ReactNode;
+    icon: ReactNode;
     text: string;
     active?: boolean;
     onClick: () => void;
 }) => (
-    <button className={`${styles.siderButton} ${active ? styles.siderButtonActive : ''}`} onClick={onClick}>
+    <button
+        className={`${styles.siderButton} ${active ? styles.siderButtonActive : ''}`}
+        onClick={onClick}
+        type="button"
+    >
         {icon}
         <span className={styles.buttonText}>{text}</span>
     </button>

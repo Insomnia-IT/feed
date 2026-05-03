@@ -5,10 +5,11 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
 from feeder.sync_serializers import get_history_serializer
 from history.models import History
-from feeder.models import Arrival, VolunteerCustomFieldValue, FeedTransaction
+from feeder.models import Arrival, PaidArrival, VolunteerCustomFieldValue, FeedTransaction
 
 
 User = get_user_model()
@@ -28,6 +29,10 @@ class VolunteerExtraFilterMixin(ModelViewSet):
         arrival_status = self.request.query_params.getlist('arrivals.status')
         arrival_transport = self.request.query_params.getlist('arrivals.arrival_transport')
         departure_transport = self.request.query_params.getlist('arrivals.departure_transport')
+        paid_arrival_date = self.request.query_params.get('paid_arrivals.arrival_date')
+        paid_departure_date = self.request.query_params.get('paid_arrivals.departure_date')
+        paid_staying_date = self.request.query_params.get('paid_arrivals.staying_date')
+        paid_is_free = self.request.query_params.getlist('paid_arrivals.is_free')
         custom_field_id = self.request.query_params.getlist('custom_field_id')
         custom_field_value = self.request.query_params.getlist('custom_field_value')
         feeded_date = self.request.query_params.get('feeded_date')
@@ -70,6 +75,35 @@ class VolunteerExtraFilterMixin(ModelViewSet):
             if len(departure_transport):
                 arrive_qs = arrive_qs.filter(departure_transport__id__in=departure_transport)
             qs = qs.filter(id__in=arrive_qs.values_list('volunteer_id', flat=True))
+
+        if paid_arrival_date or paid_departure_date or paid_staying_date or paid_is_free:
+            paid_arrive_qs = PaidArrival.objects.all()
+
+            if paid_arrival_date:
+                if ':' in paid_arrival_date:
+                    start_date, end_date = paid_arrival_date.split(':')
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date__gte=start_date, arrival_date__lte=end_date)
+                else:
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date=paid_arrival_date)
+            if paid_departure_date:
+                if ':' in paid_departure_date:
+                    start_date, end_date = paid_departure_date.split(':')
+                    paid_arrive_qs = paid_arrive_qs.filter(departure_date__gte=start_date, departure_date__lte=end_date)
+                else:
+                    paid_arrive_qs = paid_arrive_qs.filter(departure_date=paid_departure_date)
+            if paid_staying_date:
+                if ':' in paid_staying_date:
+                    start_date, end_date = paid_staying_date.split(':')
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date__lte=end_date, departure_date__gte=start_date)
+                else:
+                    paid_arrive_qs = paid_arrive_qs.filter(arrival_date__lte=paid_staying_date, departure_date__gte=paid_staying_date)
+            if len(paid_is_free) == 1:
+                if paid_is_free[0] == 'false':
+                    paid_arrive_qs = paid_arrive_qs.filter(is_free=False)
+                elif paid_is_free[0] == 'true':
+                    paid_arrive_qs = paid_arrive_qs.filter(is_free=True)
+
+            qs = qs.filter(id__in=paid_arrive_qs.values_list('volunteer_id', flat=True))
 
         if feeded_date or non_feeded_date:
             if ':' in (feeded_date or non_feeded_date):
@@ -265,4 +299,13 @@ class MultiSerializerViewSetMixin(object):
             return self.serializer_action_classes[self.action]
         except (KeyError, AttributeError):
             return super(MultiSerializerViewSetMixin, self).get_serializer_class()
-
+        
+def auto_tag_viewset(tag_name: str):
+    return extend_schema_view(
+        list=extend_schema(tags=[tag_name]),
+        create=extend_schema(tags=[tag_name]),
+        retrieve=extend_schema(tags=[tag_name]),
+        update=extend_schema(tags=[tag_name]),
+        partial_update=extend_schema(tags=[tag_name]),
+        destroy=extend_schema(tags=[tag_name]),
+    )

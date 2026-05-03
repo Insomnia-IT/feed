@@ -1,10 +1,11 @@
-import React, { createContext, FC, useCallback, useMemo, useState } from 'react';
+import { createContext, type PropsWithChildren, useCallback, useMemo, useState } from 'react';
 
 import {
-    VolunteerFieldExtended,
+    type VolunteerFieldExtended,
     volunteerTableCommonFields
 } from 'components/entities/vols/vol-list/volunteer-table-common-fields';
-import { CustomFieldEntity } from 'interfaces';
+import type { CustomFieldEntity } from 'interfaces';
+import { useLocalStorage } from 'shared/hooks';
 
 export const ActiveColumnsContext = createContext<{
     toggleOne: (name: string) => void;
@@ -14,28 +15,31 @@ export const ActiveColumnsContext = createContext<{
 
 const columnsStorageName = 'volVisibleColumns';
 
-const getSavedColumns = (): Array<string> => {
-    const volVisibleColumnsStr = localStorage.getItem(columnsStorageName);
-    if (volVisibleColumnsStr) {
-        try {
-            return JSON.parse(volVisibleColumnsStr) as Array<string>;
-        } catch {
-            /* empty */
-        }
-    }
-
-    return volunteerTableCommonFields.filter((item) => item.isDefault).map((item) => item.fieldName);
-};
-
-export const ActiveColumnsContextProvider: FC<React.PropsWithChildren & { customFields: Array<CustomFieldEntity> }> = ({
+export const ActiveColumnsContextProvider = ({
     children,
     customFields
-}) => {
-    const [checked, setChecked] = useState<Array<string>>(getSavedColumns());
-    const setCheckedWithStorage = useCallback((value: Array<string>): void => {
-        setChecked(value);
-        localStorage.setItem(columnsStorageName, JSON.stringify(value));
-    }, []);
+}: PropsWithChildren & { customFields: Array<CustomFieldEntity> }) => {
+    const { getItem, setItem } = useLocalStorage();
+    const [checked, setChecked] = useState<Array<string>>(() => {
+        const volVisibleColumnsStr = getItem(columnsStorageName);
+        if (volVisibleColumnsStr) {
+            try {
+                return JSON.parse(volVisibleColumnsStr) as Array<string>;
+            } catch {
+                /* empty */
+            }
+        }
+
+        return volunteerTableCommonFields.filter((item) => item.isDefault).map((item) => item.fieldName);
+    });
+
+    const setCheckedWithStorage = useCallback(
+        (value: Array<string>): void => {
+            setChecked(value);
+            setItem(columnsStorageName, JSON.stringify(value));
+        },
+        [setItem]
+    );
 
     const allColumns = useMemo(() => {
         const mappedCustomFields = customFields.map((customField) => {
