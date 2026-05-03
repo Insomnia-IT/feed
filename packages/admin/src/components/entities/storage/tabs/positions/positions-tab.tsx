@@ -133,7 +133,7 @@ export const PositionsTab: React.FC = () => {
             />
             <QRScannerModal
                 open={qrScanner.isQrModalOpen}
-                onClose={() => qrScanner.setIsQrModalOpen(false)}
+                onClose={qrScanner.handleCloseQrScanner}
                 onScan={qrScanner.handleQrScan}
             />
         </div>

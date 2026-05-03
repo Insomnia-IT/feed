@@ -36,6 +36,56 @@ const getPositiveNumber = (value: string | null, fallback: number) => {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const VolunteerSearchInput = ({
+    onSearchTextChange,
+    searchText
+}: {
+    onSearchTextChange: (value: string) => void;
+    searchText: string;
+}) => {
+    const [searchState, setSearchState] = useState(() => ({
+        syncedSearchText: searchText,
+        inputValue: searchText
+    }));
+    const debouncedSetSearchText = useDebouncedCallback(onSearchTextChange, 250);
+
+    if (searchState.syncedSearchText !== searchText) {
+        setSearchState({
+            syncedSearchText: searchText,
+            inputValue: searchText
+        });
+    }
+
+    const searchInputValue = searchState.inputValue;
+
+    return (
+        <div className={styles.volSearchBlock}>
+            <Typography.Text type="secondary">Поиск по волонтёрам</Typography.Text>
+            <div
+                className={
+                    [styles.volSearchWrap, searchInputValue.trim().length > 0 && styles.volActiveControlRing]
+                        .filter(Boolean)
+                        .join(' ') || undefined
+                }
+            >
+                <Input
+                    placeholder="Поиск по волонтерам, датам, службам"
+                    value={searchInputValue}
+                    onChange={(e) => {
+                        const nextValue = e.target.value;
+                        setSearchState({
+                            syncedSearchText: searchText,
+                            inputValue: nextValue
+                        });
+                        debouncedSetSearchText(nextValue);
+                    }}
+                    allowClear
+                />
+            </div>
+        </div>
+    );
+};
+
 const VolunteersListCreateButton = ({ activeFilters }: { activeFilters: FilterItem[] }) => {
     const navigate = useNavigate();
     const translate = useTranslate();
@@ -261,14 +311,7 @@ export const VolList = () => {
         customFields,
         customFieldsLoaded
     });
-    const [searchInputValue, setSearchInputValue] = useState(searchText);
-    const debouncedSetSearchText = useDebouncedCallback((value: string) => setSearchText(value), 250);
-
     const userId = user?.id;
-
-    useEffect(() => {
-        setSearchInputValue(searchText);
-    }, [searchText]);
 
     useEffect(() => {
         if (isDesktop || !userId) return;
@@ -359,30 +402,7 @@ export const VolList = () => {
         <List canCreate headerButtons={() => <VolunteersListCreateButton activeFilters={activeFilters} />}>
             <CanAccess fallback="У вас нет доступа к этой странице">
                 <ActiveColumnsContextProvider customFields={customFields}>
-                    <div className={styles.volSearchBlock}>
-                        <Typography.Text type="secondary">Поиск по волонтёрам</Typography.Text>
-                        <div
-                            className={
-                                [
-                                    styles.volSearchWrap,
-                                    searchInputValue.trim().length > 0 && styles.volActiveControlRing
-                                ]
-                                    .filter(Boolean)
-                                    .join(' ') || undefined
-                            }
-                        >
-                            <Input
-                                placeholder="Поиск по волонтерам, датам, службам"
-                                value={searchInputValue}
-                                onChange={(e) => {
-                                    const nextValue = e.target.value;
-                                    setSearchInputValue(nextValue);
-                                    debouncedSetSearchText(nextValue);
-                                }}
-                                allowClear
-                            />
-                        </div>
-                    </div>
+                    <VolunteerSearchInput searchText={searchText} onSearchTextChange={setSearchText} />
                     <Filters
                         activeFilters={activeFilters}
                         setActiveFilters={setActiveFilters}

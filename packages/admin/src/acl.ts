@@ -1,7 +1,7 @@
 import { AccessControl } from 'accesscontrol';
 import type { AccessControlProvider } from '@refinedev/core';
 
-import { AppRoles, getUserData, type AppRole } from 'auth';
+import { AppRoles, getUserData, isAppRole, type AppRole } from 'auth';
 
 const ac = new AccessControl();
 
@@ -110,7 +110,11 @@ const checkCustomPermission = (role: AppRole, action: Action): boolean => {
     }
 };
 
-export const canAccessByRole = (role: AppRole, action: string, resource: string): boolean => {
+export const canAccessByRole = (role: string, action: string, resource: string): boolean => {
+    if (!isAppRole(role)) {
+        return false;
+    }
+
     if (action === 'list' || action === 'show') {
         return canRole(role).read(resource).granted;
     }

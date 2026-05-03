@@ -49,6 +49,9 @@ export function convertResponceToData(res: IStatisticResponse): IData {
     res.forEach((datum) => {
         const { amount, date, is_vegan, kitchen_id, meal_time, type } = datum;
         const eaterType: EaterType = is_vegan ? 'vegan' : 'meatEater';
+        if (kitchen_id === null) {
+            return;
+        }
         const kitchenId: KitchenIdExtended = kitchen_id.toString() as KitchenId;
 
         if (!(date in result[kitchenId])) {

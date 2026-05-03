@@ -103,7 +103,7 @@ const WarningPartiallyFedModal = ({
     );
 };
 
-const reduceVegans = <T extends { is_vegan?: boolean }>(
+const reduceVegans = <T extends { is_vegan?: boolean | null }>(
     values: Array<T>
 ): { vegans: Array<T>; nonVegans: Array<T> } => {
     return values.reduce<{ vegans: Array<T>; nonVegans: Array<T> }>(
