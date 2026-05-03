@@ -159,7 +159,7 @@ interface TransformedTransaction {
     ulid: string;
     dateTime: string;
     volunteerName: string;
-    volunteerId: number;
+    volunteerId: number | null | undefined;
     feedType: string;
     isPaid: string;
     mealType: string;

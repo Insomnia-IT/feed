@@ -52,7 +52,7 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
     - `packages/admin`: React 19, TypeScript, Vite, Refine 6, Ant Design, TanStack Query, React Router 7.
     - `packages/scanner`: React 19, TypeScript, Vite, PWA, Dexie.
     - Both frontend packages use Vite and `@vitejs/plugin-react`.
-- **Monorepo Tools**: npm workspaces, Lerna 9, Nx 22.
+- **Monorepo Tools**: npm workspaces.
 
 ### Key Models (Backend)
 
@@ -61,6 +61,10 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
 - `FeedTransaction`: Records of meals provided to volunteers/groups.
 - `Direction`: Locations or services volunteers belong to.
 - `Kitchen`: Feeding points.
+
+## Documentation
+
+Documentation is located in /docs/ folder. Update documentation after each change in code. Each main menu page should have seperate documentation file.
 
 ## TypeScript/JavaScript Conventions
 

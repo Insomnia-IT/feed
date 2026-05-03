@@ -21,5 +21,6 @@ urlpatterns = [
     path('feedapi/v1/', include('feeder.urls')),
     path('feedapi/v1/', include('synchronization.urls')),
     path('feedapi/v1/', include('history.urls')),
+    path('feedapi/v1/', include('storage.urls')),
     path('admin/', admin_site.urls),
 ]
