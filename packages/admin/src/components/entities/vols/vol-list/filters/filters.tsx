@@ -1,14 +1,17 @@
-import { useMemo, type ReactNode } from 'react';
+import { lazy, Suspense, useMemo, type ReactNode } from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
-import { Button, Col, Row } from 'antd';
+import { Button, Col, Row, Spin } from 'antd';
 
 import { FilterChooser } from './filter-chooser';
-import { FilterItemControl } from './filter-item-control';
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 
 import styles from '../../list.module.css';
 
 import { isEffectiveFilterValue } from './is-effective-filter-value';
+
+const FilterItemControl = lazy(() =>
+    import('./filter-item-control').then((module) => ({ default: module.FilterItemControl }))
+);
 
 interface IProps {
     filterFields: FilterField[];
@@ -172,14 +175,15 @@ export const Filters = ({
                 </div>
 
                 {filterPairs.map(({ filterField, filterItem }) => (
-                    <FilterItemControl
-                        key={filterField.name}
-                        field={filterField}
-                        filterItem={filterItem}
-                        isMobile={isMobile}
-                        onFilterTextValueChange={onFilterTextValueChange}
-                        onFilterValueChange={onFilterValueChange}
-                    />
+                    <Suspense key={filterField.name} fallback={<Spin />}>
+                        <FilterItemControl
+                            field={filterField}
+                            filterItem={filterItem}
+                            isMobile={isMobile}
+                            onFilterTextValueChange={onFilterTextValueChange}
+                            onFilterValueChange={onFilterValueChange}
+                        />
+                    </Suspense>
                 ))}
                 {showClearFiltersButton && (
                     <Button icon={<DeleteOutlined />} onClick={resetFilters}>

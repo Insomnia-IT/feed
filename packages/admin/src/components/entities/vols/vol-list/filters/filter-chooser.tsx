@@ -1,21 +1,12 @@
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { FilterOutlined } from '@ant-design/icons';
-import { Button, Popover, Select } from 'antd';
+import { Button, Popover, Spin } from 'antd';
 
 import type { FilterField } from './filter-types';
-import styles from '../../list.module.css';
 
-interface IFilterOption {
-    label: string;
-    value: string;
-}
-
-const mapFilterFieldsToOptions = (item: FilterField): IFilterOption => {
-    return {
-        label: item.title,
-        value: item.name
-    };
-};
+const FilterChooserContent = lazy(() =>
+    import('./filter-chooser-content').then((module) => ({ default: module.FilterChooserContent }))
+);
 
 export const FilterChooser = ({
     removeAllFilters,
@@ -28,48 +19,32 @@ export const FilterChooser = ({
     toggleVisibleFilter: (name: string) => void;
     visibleFilters: Array<string>;
 }) => {
-    const selectRef = useRef<React.ComponentRef<typeof Select>>(null);
+    const [popoverOpen, setPopoverOpen] = useState(false);
     const [selectOpen, setSelectOpen] = useState(false);
-    const options = filterFields.map(mapFilterFieldsToOptions);
-
-    const onChoiceChange = (_value: string, option: IFilterOption): void => {
-        toggleVisibleFilter(option.value);
-    };
 
     return (
         <Popover
             placement="bottomLeft"
             trigger="click"
-            /* Убирает «зависшие» порталы/скроллбар списка Select после закрытия */
-            destroyOnHidden
-            afterOpenChange={(open) => {
-                if (open) {
-                    setSelectOpen(true);
-                    selectRef.current?.focus();
-                } else {
-                    setSelectOpen(false);
-                }
+            open={popoverOpen}
+            onOpenChange={(open) => {
+                setPopoverOpen(open);
+                setSelectOpen(open);
             }}
+            destroyOnHidden
             content={
-                <Select
-                    ref={selectRef}
-                    open={selectOpen}
-                    onOpenChange={setSelectOpen}
-                    getPopupContainer={(trigger) =>
-                        trigger.closest('.ant-popover-inner-content') ?? trigger.parentElement ?? document.body
-                    }
-                    className={styles.filterChooserSelect}
-                    style={{ minWidth: '200px', maxWidth: '350px' }}
-                    mode="multiple"
-                    value={visibleFilters}
-                    options={options}
-                    optionFilterProp="label"
-                    onSelect={onChoiceChange}
-                    onDeselect={onChoiceChange}
-                    onClear={removeAllFilters}
-                    showSearch
-                    allowClear={false}
-                />
+                popoverOpen ? (
+                    <Suspense fallback={<Spin />}>
+                        <FilterChooserContent
+                            filterFields={filterFields}
+                            removeAllFilters={removeAllFilters}
+                            selectOpen={selectOpen}
+                            setSelectOpen={setSelectOpen}
+                            toggleVisibleFilter={toggleVisibleFilter}
+                            visibleFilters={visibleFilters}
+                        />
+                    </Suspense>
+                ) : null
             }
         >
             <Button icon={<FilterOutlined />}>Фильтры</Button>
