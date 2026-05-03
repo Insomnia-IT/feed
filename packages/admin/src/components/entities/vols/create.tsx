@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
+import { useTranslate, type IResourceComponentsProps } from '@refinedev/core';
 import { Form } from 'antd';
 
 import type { VolEntity } from 'interfaces';
@@ -10,7 +10,22 @@ import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 
 export const VolCreate: FC<IResourceComponentsProps> = () => {
+    const translate = useTranslate();
+
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+        successNotification: ({ data }) => {
+            const volunteerId = data?.id;
+            const volunteerPath = volunteerId ? `/volunteers/edit/${volunteerId}` : '/volunteers';
+            const volunteerUrl = new URL(volunteerPath, window.location.origin).toString();
+            const resourceName = translate('volunteers.volunteers');
+            const createSuccessText = translate('notifications.createSuccess', { resource: resourceName }).trim();
+
+            return {
+                message: translate('notifications.success'),
+                description: `${createSuccessText}. Путь: ${volunteerUrl}`,
+                type: 'success'
+            };
+        },
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
         },
