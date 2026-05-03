@@ -29,6 +29,10 @@ export type Views = (typeof Views)[keyof typeof Views];
 
 const todayStart = getTodayStart();
 
+type VolunteerWithTransactions = Volunteer & {
+    transactions: Array<Transaction>;
+};
+
 const useGroupBadgeData = ({
     badge,
     mealTime
@@ -36,13 +40,13 @@ const useGroupBadgeData = ({
     badge: GroupBadge;
     mealTime?: MealTime | null;
 }): {
-    volsRaw: Array<Volunteer> | undefined;
+    volsRaw: Array<VolunteerWithTransactions> | undefined;
     alreadyFedTransactionsRaw: Array<TransactionJoined> | undefined;
 } => {
     const { id } = badge;
 
     // get vols linked tp badge, and their transactions for today
-    const volsRaw = useLiveQuery<Array<Volunteer>>(async () => {
+    const volsRaw = useLiveQuery<Array<VolunteerWithTransactions>>(async () => {
         const vols = await db.volunteers.where('group_badge').equals(id).toArray();
 
         // pre-fetching transactions by each vol

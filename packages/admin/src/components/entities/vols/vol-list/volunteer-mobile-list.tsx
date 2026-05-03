@@ -44,7 +44,12 @@ const VolunteerMobileCard = memo(
         loadingVolId: number | null;
     }) => {
         const rightActions = useMemo<SwipeActionItem[]>(() => {
-            if (!vol.currentArrival || ['STARTED', 'JOINED'].includes(vol.currentArrival.status)) return [];
+            if (
+                !vol.currentArrival ||
+                !vol.currentArrival.status ||
+                ['STARTED', 'JOINED'].includes(vol.currentArrival.status)
+            )
+                return [];
             return [
                 {
                     key: 'edit',
@@ -75,7 +80,7 @@ const VolunteerMobileCard = memo(
                     <div>
                         {vol.is_blocked && <Tag color="red">Заблокирован</Tag>}
                         <Tag color={vol.onFieldColor}>
-                            {vol.currentArrival ? statusById[vol.currentArrival.status] : 'Статус неизвестен'}
+                            {vol.currentArrival?.status ? statusById[vol.currentArrival.status] : 'Статус неизвестен'}
                         </Tag>
                     </div>
                     <div className={styles.textRow}>

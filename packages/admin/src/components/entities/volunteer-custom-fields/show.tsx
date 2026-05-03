@@ -15,7 +15,7 @@ export const VolunteerCustomFieldShow = () => {
             <Title level={5}>Название</Title>
             <Text>{record?.name}</Text>
             <Title level={5}>Комментарий</Title>
-            <TextEditor theme="bubble" readOnly value={record?.comment} />
+            <TextEditor theme="bubble" readOnly value={record?.comment ?? undefined} />
         </Show>
     );
 };
