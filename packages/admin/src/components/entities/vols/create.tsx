@@ -29,7 +29,11 @@ export const VolCreate = () => {
 
             return {
                 message: translate('notifications.success'),
-                description: `${createSuccessText}. Путь: ${volunteerUrl}`,
+                description: (
+                    <span>
+                        {createSuccessText}. Путь: <a href={volunteerUrl}>{volunteerUrl}</a>
+                    </span>
+                ),
                 type: 'success'
             };
         },
