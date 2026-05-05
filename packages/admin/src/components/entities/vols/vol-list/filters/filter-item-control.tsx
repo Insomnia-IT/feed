@@ -7,6 +7,7 @@ import { FilterFieldType } from './filter-types';
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { FilterFieldShell } from './filter-field-shell';
 import { getFilterListItems } from './get-filter-list-items';
+import { filterSelectOptionMatches } from './filter-select-search';
 import { isEffectiveFilterValue } from './is-effective-filter-value';
 import styles from './filters.module.css';
 
@@ -142,7 +143,7 @@ function FilterSelect({
                     onClear={onClear}
                     options={values}
                     placeholder={SELECT_PLACEHOLDER}
-                    optionFilterProp="label"
+                    filterOption={filterSelectOptionMatches}
                     mode={isMultiple ? 'multiple' : undefined}
                     showSearch
                     allowClear={false}

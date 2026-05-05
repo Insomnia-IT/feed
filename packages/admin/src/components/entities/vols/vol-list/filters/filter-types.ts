@@ -20,6 +20,12 @@ export type FilterFieldType = (typeof FilterFieldType)[keyof typeof FilterFieldT
 
 export type FilterItem = { name: string; op: 'include' | 'exclude'; value: unknown };
 
-export type FilterListItem = { selected: boolean; value: FilterListItemValue; text: string; count: number };
+export type FilterListItem = {
+    selected: boolean;
+    value: FilterListItemValue;
+    text: string;
+    label?: string;
+    count: number;
+};
 
 export type FilterListItemValue = Array<boolean | string> | boolean | string | unknown;
