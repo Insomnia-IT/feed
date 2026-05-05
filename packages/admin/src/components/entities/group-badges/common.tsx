@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
 import { TextEditor } from 'components/controls/text-editor';
-import type { DirectionEntity, VolunteerRoleEntity } from 'interfaces';
+import type { DirectionEntity, KitchenEntity, VolunteerRoleEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
@@ -13,6 +13,12 @@ export const CreateEdit = () => {
     const form = Form.useFormInstance();
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
+        optionLabel: 'name',
+        optionValue: 'id',
+        pagination: { mode: 'off' }
+    });
+    const { selectProps: kitchenSelectProps } = useSelect<KitchenEntity>({
+        resource: 'kitchens',
         optionLabel: 'name',
         optionValue: 'id',
         pagination: { mode: 'off' }
@@ -75,6 +81,9 @@ export const CreateEdit = () => {
             </Form.Item>
             <Form.Item label="Роль волонтеров" name="role" rules={Rules.required}>
                 <Select {...volunteerRoleSelectProps} options={groupBadgeRoles} />
+            </Form.Item>
+            <Form.Item label="Кухня" name="kitchen" rules={Rules.required}>
+                <Select {...kitchenSelectProps} />
             </Form.Item>
             <Form.Item label="QR" name="qr" rules={Rules.required}>
                 <Input.Search

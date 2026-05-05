@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { Show, TextField } from '@refinedev/antd';
-import { useShow, useTable } from '@refinedev/core';
+import { useList, useShow, useTable } from '@refinedev/core';
 import { Table, Typography } from 'antd';
 
-import type { GroupBadgeEntity, VolEntity } from 'interfaces';
+import type { GroupBadgeEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { TextEditor } from 'components/controls/text-editor';
 
 const { Text, Title } = Typography;
@@ -11,8 +11,32 @@ const { Text, Title } = Typography;
 type DirectionLike = { name: string };
 type VolWithDirections = VolEntity & { directions?: DirectionLike[] };
 
+const getKitchenName = (record: GroupBadgeEntity | undefined, kitchenNameById: Record<string, string>): string => {
+    if (!record) {
+        return '';
+    }
+
+    if (record.kitchen_name) {
+        return record.kitchen_name;
+    }
+
+    if (record.kitchen == null) {
+        return '';
+    }
+
+    return kitchenNameById[String(record.kitchen)] ?? String(record.kitchen);
+};
+
 export const GroupBadgeShow = () => {
     const { query, result: record, showId } = useShow<GroupBadgeEntity>();
+    const { result: kitchensResult } = useList<KitchenEntity>({
+        resource: 'kitchens',
+        pagination: { mode: 'off' }
+    });
+    const kitchenNameById = useMemo<Record<string, string>>(() => {
+        const entries = (kitchensResult.data ?? []).map(({ id, name }) => [String(id), name]);
+        return Object.fromEntries(entries);
+    }, [kitchensResult.data]);
 
     const {
         tableQuery,
@@ -49,6 +73,9 @@ export const GroupBadgeShow = () => {
 
             <Title level={5}>QR</Title>
             <Text>{record?.qr}</Text>
+
+            <Title level={5}>Кухня</Title>
+            <Text>{getKitchenName(record, kitchenNameById)}</Text>
 
             <Title level={5}>Комментарий</Title>
             <TextEditor theme="bubble" readOnly value={record?.comment ?? ''} />

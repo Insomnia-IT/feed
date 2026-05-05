@@ -1,10 +1,10 @@
-import { useEffect, useState, startTransition } from 'react';
+import { useEffect, useMemo, useState, startTransition } from 'react';
 import { DeleteButton, EditButton, List } from '@refinedev/antd';
 import { Space, Table, type TablePaginationConfig, Tooltip } from 'antd';
 import { useList, useNavigation } from '@refinedev/core';
 
 import { RichTextPreview } from 'components/controls/rich-text-preview';
-import type { GroupBadgeEntity } from 'interfaces';
+import type { GroupBadgeEntity, KitchenEntity } from 'interfaces';
 import { useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import { getSorter } from 'utils';
@@ -23,6 +23,18 @@ const getDirectionName = (direction: GroupBadgeEntity['direction']): string => {
     return direction.name;
 };
 
+const getKitchenName = (badge: GroupBadgeEntity, kitchenNameById: Record<string, string>): string => {
+    if (badge.kitchen_name) {
+        return badge.kitchen_name;
+    }
+
+    if (badge.kitchen == null) {
+        return '-';
+    }
+
+    return kitchenNameById[String(badge.kitchen)] ?? String(badge.kitchen);
+};
+
 export const GroupBadgeList = () => {
     const { getItem, setItem } = useLocalStorage();
     const [page, setPage] = useState<number>(Number(getItem(LS_PAGE_KEY)) || 1);
@@ -39,6 +51,14 @@ export const GroupBadgeList = () => {
             pageSize: isDesktop ? pageSize : 10000
         }
     });
+    const { result: kitchensResult } = useList<KitchenEntity>({
+        resource: 'kitchens',
+        pagination: { mode: 'off' }
+    });
+    const kitchenNameById = useMemo<Record<string, string>>(() => {
+        const entries = (kitchensResult?.data ?? []).map(({ id, name }) => [String(id), name]);
+        return Object.fromEntries(entries);
+    }, [kitchensResult?.data]);
 
     useEffect(() => {
         if (!isDesktop) return;
@@ -108,6 +128,10 @@ export const GroupBadgeList = () => {
                                 <span className={styles.label}>Волонтеры:</span>
                                 <span>{badge.volunteer_count}</span>
                             </div>
+                            <div className={styles.row}>
+                                <span className={styles.label}>Кухня:</span>
+                                <span>{getKitchenName(badge, kitchenNameById)}</span>
+                            </div>
                             {badge.comment && (
                                 <div className={styles.comment}>
                                     <span className={styles.label}>Комментарий:</span>
@@ -145,6 +169,13 @@ export const GroupBadgeList = () => {
                         dataIndex="volunteer_count"
                         key="volunteer_count"
                         title="Количество волонтеров"
+                        ellipsis
+                    />
+                    <Table.Column
+                        dataIndex="kitchen"
+                        key="kitchen"
+                        title="Кухня"
+                        render={(_, record: GroupBadgeEntity) => getKitchenName(record, kitchenNameById)}
                         ellipsis
                     />
                     <Table.Column

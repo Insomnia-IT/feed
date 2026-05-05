@@ -125,6 +125,8 @@ export interface GroupBadgeEntity extends TimeStampedEntity {
     id: number;
     qr: string | null;
     direction: DirectionEntity | null;
+    kitchen?: number | null;
+    kitchen_name?: string | null;
     role: string | null;
     name: string;
     comment: string | null;
