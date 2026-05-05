@@ -130,6 +130,11 @@ class BasePage:
         ).first
         role_option.wait_for(state="visible")
         role_option.click()
+        kitchen = self.page.locator(badge_create.KITCHEN_NAME)
+        kitchen.click()
+        kitchen_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
+        kitchen_option.wait_for(state="visible")
+        kitchen_option.click()
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         with self.page.expect_response(
