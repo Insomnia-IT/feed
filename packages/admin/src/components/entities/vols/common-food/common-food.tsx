@@ -106,13 +106,15 @@ const CommonFood = () => {
     return (
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Space wrap align="center" className={styles.buttonsWrap}>
-                <Button
-                    icon={<PlusSquareOutlined />}
-                    onClick={() => navigate('/feed-transaction/create')}
-                    disabled={!canCreate}
-                >
-                    {isMobile ? 'Порцию' : 'Добавить порцию'}
-                </Button>
+                {!isMobile && (
+                    <Button
+                        icon={<PlusSquareOutlined />}
+                        onClick={() => navigate('/feed-transaction/create')}
+                        disabled={!canCreate}
+                    >
+                        Добавить порцию
+                    </Button>
+                )}
 
                 <Space align="center">
                     <span className={styles.resultDescr}>
