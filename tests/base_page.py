@@ -114,31 +114,28 @@ class BasePage:
         go_to_create.click()
 
 
-    def _select_visible_ant_option(self):
-        option = self.page.locator(
-            ".ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option"
-        ).first
-        option.wait_for(state="visible")
-        option.click()
+    def _select_ant_option(self, selector, option_text=None):
+        select = self.page.locator(selector)
+        select.click()
+        popup_id = select.get_attribute("aria-controls")
+        options_selector = (
+            f"#{popup_id} .ant-select-item-option"
+            if popup_id
+            else ".ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option"
+        )
+        options = self.page.locator(options_selector)
+        option = options.filter(has_text=option_text).first if option_text else options.first
+        option.wait_for(state="attached")
+        option.click(force=True)
 
 
     def create_badge(self):
         badge_name =self.page.locator(badge_create.BADGE_NAME)
         badge_name.fill("autotest" + datetime.now().strftime("%d%m%H%M%S"))
-        department = self.page.locator(badge_create.DEPARTMENT_NAME)
-        department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        self._select_visible_ant_option()
-        role = self.page.locator("#role")
-        role.click()
-        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
-            has_text="Волонтёр"
-        ).first
-        role_option.wait_for(state="visible")
-        role_option.click()
-        kitchen = self.page.locator(badge_create.KITCHEN_NAME)
-        kitchen.click()
-        self._select_visible_ant_option()
+        self._select_ant_option(badge_create.DEPARTMENT_NAME)
+        self._select_ant_option("#role", "Волонтёр")
+        self._select_ant_option(badge_create.KITCHEN_NAME)
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         with self.page.expect_response(
