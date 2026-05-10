@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Button, Empty, Modal, Skeleton, message } from 'antd';
-import { useList, type HttpError, useOne } from '@refinedev/core';
+import { useList, type HttpError, useOne, useInvalidate } from '@refinedev/core';
 import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
@@ -133,6 +133,7 @@ const useLookUpParams = () => {
 };
 
 export const CommonHistory = ({ role }: IProps) => {
+    const invalidate = useInvalidate();
     const { id: volunteerId } = useParams<{ id: string }>();
     const { result: volunteer } = useOne<VolEntity>({
         resource: 'volunteers',
@@ -213,11 +214,17 @@ export const CommonHistory = ({ role }: IProps) => {
                 await axios.delete(`${NEW_API_URL}/volunteer-group/${groupUuid}/`);
                 message.success(CANCEL_SUCCESS_TEXT);
                 await query?.refetch();
+
+                await invalidate({
+                    resource: 'volunteers',
+                    invalidates: ['detail'],
+                    id: volunteerId
+                });
             } catch {
                 message.error(CANCEL_ERROR_TEXT);
             }
         },
-        [query]
+        [query, invalidate, volunteerId]
     );
 
     if (isHistoryLoading || isLookupLoading) {
