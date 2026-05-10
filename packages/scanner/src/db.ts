@@ -2,11 +2,8 @@ import dayjs from 'dayjs';
 import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
-import type { MealPlanCell } from '@feed/admin/src/interfaces';
 
 import { getToday } from 'shared/lib/date';
-
-export type { MealPlanCell };
 
 export interface Transaction {
     ulid: string;
@@ -61,6 +58,18 @@ export const MealTime = {
 } as const;
 
 export type MealTime = (typeof MealTime)[keyof typeof MealTime];
+
+export interface MealPlanCell {
+    id?: number;
+    group_badge: number;
+    group_badge_name?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    date: string;
+    meal_time: MealTime;
+    amount_meat: number | null;
+    amount_vegan: number | null;
+}
 
 interface TimeStampedEntity {
     created_at?: string;

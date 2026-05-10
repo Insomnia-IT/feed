@@ -12,12 +12,12 @@ export const useTransactionsFilters = () => {
 
     const { result: kitchensResult } = useList<KitchenEntity>({
         resource: 'kitchens',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: groupBadgesResult } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: directionsResult } = useList<DirectionEntity>({

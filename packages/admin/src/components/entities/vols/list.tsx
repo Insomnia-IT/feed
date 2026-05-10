@@ -11,7 +11,6 @@ import { useDebouncedCallback, useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
 import type { UserData } from 'auth';
-
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 
 import { Filters } from './vol-list/filters/filters';
@@ -20,14 +19,14 @@ import type { FilterItem } from 'components/entities/vols/vol-list/filters/filte
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
 import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
-import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
-import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
+import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table/volunteer-desktop-table';
+import { VolunteerMobileList } from './vol-list/volunteer-mobile-list/volunteer-mobile-list';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
 
-import styles from './list.module.css';
+import styles from './list-page.module.css';
 
 const LS_PAGE_INDEX = 'volPageIndex';
 const LS_PAGE_SIZE = 'volPageSize';
@@ -202,14 +201,14 @@ const DesktopVolunteersContent = ({
 
     return (
         <>
-            <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
-                <Col style={{ display: 'flex', alignItems: 'center' }}>
+            <Row className={styles.desktopActionsRow} justify="end">
+                <Col className={styles.desktopResultCol}>
                     <span>
                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
                     </span>
                 </Col>
 
-                <Row style={{ gap: '12px' }}>
+                <Row className={styles.desktopButtonsRow}>
                     <ChooseColumnsButton canListCustomFields={canListCustomFields} />
                     <SaveAsXlsxButton
                         isDisabled={!volunteersData.length || isFiltersLoading}
