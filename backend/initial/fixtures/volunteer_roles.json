@@ -91,7 +91,7 @@
         "fields": {
             "created_at": "2024-03-06T20:13:51.761Z",
             "updated_at": "2024-03-06T20:13:51.761Z",
-            "name": "Аниматор",
+            "name": "Автор",
             "color": "orange",
             "is_leader": false,
             "is_team": false,
@@ -107,7 +107,8 @@
             "name": "Лектор",
             "color": "orange",
             "is_leader": false,
-            "is_team": false
+            "is_team": false,
+            "is_group_badge": true
         }
     },
     {
