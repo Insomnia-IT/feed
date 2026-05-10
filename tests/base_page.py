@@ -117,15 +117,12 @@ class BasePage:
     def _select_ant_option(self, selector, option_text=None):
         select = self.page.locator(selector)
         select.click()
-        popup_id = select.get_attribute("aria-controls")
-        options_selector = (
-            f"#{popup_id} .ant-select-item-option"
-            if popup_id
-            else ".ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option"
-        )
-        options = self.page.locator(options_selector)
+        dropdown = self.page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").last
+        dropdown.wait_for(state="visible")
+
+        options = dropdown.locator(".ant-select-item-option")
         option = options.filter(has_text=option_text).first if option_text else options.first
-        option.wait_for(state="attached")
+        option.wait_for(state="visible")
         option.click(force=True)
 
 
