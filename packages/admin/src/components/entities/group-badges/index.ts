@@ -1,4 +1,4 @@
-export * from './list';
-export * from './create';
-export * from './edit';
+export * from './list/group-badge-list';
+export * from './create/create';
+export * from './edit/group-badge-edit';
 export * from './show';

@@ -1,0 +1,12 @@
+.cursorPointer {
+    cursor: pointer;
+}
+
+.intervalColumn {
+    display: flex;
+    flex-direction: column;
+}
+
+.intervalItem {
+    white-space: nowrap;
+}

@@ -616,7 +616,7 @@ class FeedTransactionAnomalySerializer(serializers.Serializer):
     direction_name = serializers.CharField(allow_blank=True, allow_null=True)
     direction_amount = serializers.IntegerField(allow_null=True)
     calculated_amount = serializers.IntegerField(allow_null=True)
-    real_amount = serializers.IntegerField(allow_null=True)
+    real_amount = serializers.IntegerField()
     problem = serializers.CharField()
 
 class StatisticsSerializer(serializers.Serializer):

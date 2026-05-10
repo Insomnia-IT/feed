@@ -56,7 +56,7 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
     const rowSelection: TableProps<VolEntity>['rowSelection'] = {
         onSelect: onVolunteerSelection,
         selectedRowKeys,
-        getCheckboxProps: (record) => ({ name: record.name }),
+        getCheckboxProps: (record) => ({ name: record.name ?? undefined }),
         columnTitle: (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <Checkbox
