@@ -141,6 +141,24 @@ export const CommonEdit = () => {
         };
     }, [form]);
 
+    // useEffect(() => {
+    //     if (!person) {
+    //         form.setFieldsValue({
+    //             person: { banned: true }
+    //         });
+    //         return;
+    //     }
+
+    //     if (person.banned == null) {
+    //         form.setFieldsValue({
+    //             person: {
+    //                 ...person,
+    //                 banned: true
+    //             }
+    //         });
+    //     }
+    // }, [person]);
+
     return (
         <div className={styles.edit}>
             <SidebarNavigation
