@@ -245,8 +245,8 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
             
             # Приоритет: planning_cells
             if cell:
-                predict_meat = cell.get('amount_meat') or 0
-                predict_vegan = cell.get('amount_vegan') or 0
+                predict_meat = int(cell.get('amount_meat')) or 0
+                predict_vegan = int(cell.get('amount_vegan')) or 0
                 kitchen_id = str(kitchen_ids[0]) if kitchen_ids else '1'
             else:
                 predict_meat = sum(1 for v in vols if not v['is_vegan'])
@@ -414,10 +414,10 @@ def load_planning_cells_cache(group_badge):
             while current_date <= PLANNIG_DATE_TO:
                 if current_date in date_to_cell:
                     cell = date_to_cell[current_date]
-                    if cell['amount_meat'] is not None and cell['amount_vegan'] is not None:
-                        last_valid = cell
-                    else:
+                    if cell['amount_meat'] is None and cell['amount_vegan'] is None:
                         last_valid = None
+                    else:
+                        last_valid = cell
 
                 if last_valid:
                     key = (badge_id, meal_time, current_date.strftime('%Y-%m-%d'))
