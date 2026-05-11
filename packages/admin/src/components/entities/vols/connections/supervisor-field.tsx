@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Form, type FormInstance, Select } from 'antd';
+import { Button, Form, type FormInstance, Row, Select, Tooltip } from 'antd';
 import { type CrudFilters, useList } from '@refinedev/core';
+import { EyeOutlined } from '@ant-design/icons';
 import useCanAccess from '../use-can-access';
 import { useDebouncedCallback } from 'shared/hooks';
 import { AppRoles } from '../../../../auth';
-import type { VolEntity } from '../../../../interfaces';
+import type { VolEntity } from 'interfaces';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 
 export const SupervisorField = ({ form }: { form: FormInstance }) => {
@@ -66,16 +67,30 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
 
     return (
         <Form.Item label="Бригадир" name="supervisor_id" normalize={(value) => value ?? null}>
-            <Select
-                allowClear
-                showSearch
-                placeholder="Найти бригадира"
-                filterOption={false}
-                onSearch={debouncedBrigadierSearch}
-                options={supervisorOptions}
-                loading={supervisorsLoading}
-                disabled={!canEditBrigadier}
-            />
+            <Row align="middle" gutter={8}>
+                <Select
+                    allowClear
+                    showSearch
+                    placeholder="Найти бригадира"
+                    filterOption={false}
+                    onSearch={debouncedBrigadierSearch}
+                    options={supervisorOptions}
+                    loading={supervisorsLoading}
+                    disabled={!canEditBrigadier}
+                    style={{ flex: 1 }}
+                />
+                <Tooltip title="Открыть бригадира">
+                    <Button
+                        icon={<EyeOutlined />}
+                        disabled={!supervisorId}
+                        onClick={() => {
+                            if (supervisorId) {
+                                window.location.href = `${window.location.origin}/volunteers/edit/${supervisorId}`;
+                            }
+                        }}
+                    />
+                </Tooltip>
+            </Row>
         </Form.Item>
     );
 };
