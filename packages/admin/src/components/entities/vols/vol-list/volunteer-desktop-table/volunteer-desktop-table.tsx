@@ -234,31 +234,3 @@ export const VolunteerDesktopTable = ({
         </>
     );
 };
-
-// const CheckMark = ({ checked }: { checked: boolean }) => {
-//     const style = useMemo(
-//         () => ({
-//             color: checked ? 'green' : undefined
-//         }),
-//         [checked]
-//     );
-//     return <CheckOutlined style={style} />;
-// };
-
-// const StopMark = ({ checked }: { checked: boolean }) => {
-//     const style = useMemo(
-//         () => ({
-//             color: checked ? 'red' : undefined
-//         }),
-//         [checked]
-//     );
-//     return <StopOutlined style={style} />;
-// };
-
-// const ListBooleanPositive = ({ value }: { value: boolean }) => {
-//     return value ? <CheckMark checked={value} /> : null;
-// };
-
-// export const ListBooleanNegative = ({ value }: { value: boolean }) => {
-//     return value ? <StopMark checked={value} /> : null;
-// };
