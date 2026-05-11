@@ -25,7 +25,7 @@ export const VolCreate = () => {
 
     const { isDesktop } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
-    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
 
     return (
         <Create
