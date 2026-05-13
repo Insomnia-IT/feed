@@ -33,7 +33,7 @@ export const AdditionalSection = ({
 
     const currentComment = Form.useWatch('comment', form) || '';
     const isDeleted = form.getFieldValue('deleted_at');
-    const approver = form.getFieldValue('approver');
+    const approver = Form.useWatch('approver', form);
 
     const handleBanSuccess = (updatedData: Record<string, unknown>) => {
         form.setFieldsValue(updatedData);
@@ -89,11 +89,14 @@ export const AdditionalSection = ({
                 >
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
                 </Form.Item>
-                {(approver || isCreationProcess) && (
-                    <Form.Item label="Кто согласовал" name="approver" rules={Rules.required}>
-                        <Input disabled={!isCreationProcess}/>
-                    </Form.Item>
-                )}
+                <Form.Item 
+                    label="Кто согласовал" 
+                    name="approver" 
+                    rules={isCreationProcess ? Rules.required : undefined}
+                    hidden={!approver && !isCreationProcess}
+                >
+                    <Input disabled={!isCreationProcess}/>
+                </Form.Item>
             </div>
             <Divider />
 
