@@ -14,7 +14,7 @@ const ResponsibleFor = () => {
             {
                 field: 'responsible_id',
                 operator: 'eq',
-                value: vol?.id
+                value: vol ? vol.id : -1
             }
         ],
         pagination: {
