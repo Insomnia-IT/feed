@@ -88,6 +88,10 @@ services:
   #     - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
   #     # - plugins.security.disabled=true
   #     - plugins.security.ssl.http.enabled=false
+  #     - cluster.routing.allocation.disk.threshold_enabled=true
+  #     - cluster.routing.allocation.disk.watermark.low=85%
+  #     - cluster.routing.allocation.disk.watermark.high=90%
+  #     - cluster.routing.allocation.disk.watermark.flood_stage=95%
   #     - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPEN_SEARCH_PASSWORD:-qaZxsWedC1323}
   #     - node.name=opensearch
   #     # - OPENSEARCH_SSL_HTTP_ENABLED=true
@@ -101,13 +105,33 @@ services:
   #   ports:
   #     - "9200:9200"
 
+  # opensearch-init:
+  #   networks:
+  #     - internal
+  #   image: curlimages/curl:8.12.1
+  #   container_name: opensearch-init
+  #   restart: "no"
+  #   environment:
+  #     OPEN_SEARCH_PASSWORD: ${OPEN_SEARCH_PASSWORD:-qaZxsWedC1323}
+  #     OPEN_SEARCH_USER_NAME: ${OPEN_SEARCH_USER_NAME:-admin}
+  #     TRACE_RETENTION: ${TRACE_RETENTION:-48h}
+  #     ISM_JOB_INTERVAL: ${ISM_JOB_INTERVAL:-5}
+  #     ISM_JITTER: ${ISM_JITTER:-0.2}
+  #     # TRACE_RETENTION_DAYS: ${TRACE_RETENTION_DAYS:-14}
+  #   volumes:
+  #     - "./jaeger/init-opensearch-ism.sh:/scripts/init-opensearch-ism.sh:ro"
+  #   command: ["/bin/sh", "/scripts/init-opensearch-ism.sh"]
+  #   depends_on:
+  #     opensearch:
+  #       condition: service_healthy
+
   # dashboard:
   #   networks:
   #     - internal
   #   image: opensearchproject/opensearch-dashboards:latest
   #   container_name: opensearch-dashboards
   #   ports:
-  #     - 5601:5601
+  #     - 0.0.0.0:5601:5601
   #   expose:
   #     - "5601"
   #   environment:
@@ -124,7 +148,7 @@ services:
   #   volumes:
   #     - "./jaeger/prometheus.yml:/etc/prometheus/prometheus.yml"
   #   ports:
-  #     - "9090:9090"
+  #     - "0.0.0.0:9090:9090"
 
 networks:
   internal:
