@@ -1,7 +1,6 @@
 import { useMemo, useContext, type MouseEvent as ReactMouseEvent } from 'react';
 import { Table, Tag } from 'antd';
 import type { TablePaginationConfig, TableProps } from 'antd';
-import { CheckOutlined, StopOutlined } from '@ant-design/icons';
 import type { TableRowSelection } from 'antd/es/table/interface';
 
 import { RichTextPreview } from 'components/controls/rich-text-preview';
@@ -10,6 +9,7 @@ import { findClosestArrival, getFormattedArrivalIntervals, getOnFieldColors } fr
 import { ActiveColumnsContext } from 'components/entities/vols/vol-list/active-columns-context';
 
 import styles from './volunteer-desktop-table.module.css';
+import { ListBooleanNegative, ListBooleanPositive } from '../table-cells';
 
 type VolTableRow = VolEntity & {
     closestArrival: ArrivalEntity | null;
@@ -233,32 +233,4 @@ export const VolunteerDesktopTable = ({
             />
         </>
     );
-};
-
-const CheckMark = ({ checked }: { checked: boolean }) => {
-    const style = useMemo(
-        () => ({
-            color: checked ? 'green' : undefined
-        }),
-        [checked]
-    );
-    return <CheckOutlined style={style} />;
-};
-
-const StopMark = ({ checked }: { checked: boolean }) => {
-    const style = useMemo(
-        () => ({
-            color: checked ? 'red' : undefined
-        }),
-        [checked]
-    );
-    return <StopOutlined style={style} />;
-};
-
-const ListBooleanPositive = ({ value }: { value: boolean }) => {
-    return value ? <CheckMark checked={value} /> : null;
-};
-
-const ListBooleanNegative = ({ value }: { value: boolean }) => {
-    return value ? <StopMark checked={value} /> : null;
 };
