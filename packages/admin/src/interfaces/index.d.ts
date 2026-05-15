@@ -41,6 +41,7 @@ export interface VolEntity extends TimeStampedEntity {
     deleted_at?: string | null;
     supervisor_id?: number | null;
     supervisor?: { id: number; name: string } | null;
+    approver?: string | null;
     person?: PersonEntity | null;
     person_id?: string | null;
     responsible_id?: number | null;

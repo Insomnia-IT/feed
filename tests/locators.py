@@ -1,5 +1,4 @@
 import time
-from selenium.webdriver.common.by import By
 
 class registration():
     CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
@@ -82,6 +81,7 @@ class create_user():
     UNBAN_BUTTON = "//button[span[text()='Разблокировать волонтера']]"
     UNBAN_CONFIRM = "//button[@type='submit'][span[text()='Разблокировать волонтера']]"
 
+    APPROVER_INPUT = "input[id=approver]"
 
     FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
