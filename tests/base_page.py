@@ -285,15 +285,18 @@ class BasePage:
         create = self.page.locator(create_user.CREATE_USER_BUTTON)
         create.click()
 
-    def create_user(self, user_name="Test_name", supervisor_name='None'):
-        add_name = self.page.locator(create_user.USER_NAME)
-        add_name.click()
-        add_name.fill(user_name)
+    def fill_supervisor(self):
         add_supervisor = self.page.locator(create_user.SUPERVISOR)
         add_supervisor.click()
         self.page.locator(".ant-select-item-option").nth(1).click()
         self.page.wait_for_timeout(500)
         supervisor_name = add_supervisor.inner_text()
+        return supervisor_name
+
+    def create_user(self, user_name="Test_name"):
+        add_name = self.page.locator(create_user.USER_NAME)
+        add_name.click()
+        add_name.fill(user_name)
         add_kitchen = self.page.locator(create_user.KITCHEN_NUMBER)
         add_kitchen.click()
         add_kitchen.press("Tab")
@@ -309,8 +312,6 @@ class BasePage:
         add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
         add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        return supervisor_name
-
 
     def save_in_user_page(self):
         # Кликаем первую кнопку "Сохранить"
@@ -380,11 +381,6 @@ class BasePage:
             current_value = self.page.evaluate("() => document.querySelector('#name')?.value")
             if current_value == updated_name:
                 break
-        change_supervisor = self.page.locator(create_user.SUPERVISOR)
-        change_supervisor.click()
-        self.page.locator(".ant-select-item-option").nth(2).click()
-        self.page.wait_for_timeout(300)
-        supervisor_name = change_supervisor.inner_text()
         
         add_visit = self.page.locator(create_user.ADD_VISIT_BUTTON)
         add_visit.wait_for(state="visible")
@@ -407,7 +403,6 @@ class BasePage:
         today_last = self.page.locator(create_user.TODAY).last
         today_last.click()
         self.save_in_user_page()
-        return supervisor_name
 
     def change_supervisor(self, option_index=3):
         change_supervisor = self.page.locator(create_user.SUPERVISOR)
