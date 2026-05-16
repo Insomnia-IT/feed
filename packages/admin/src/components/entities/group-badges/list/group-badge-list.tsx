@@ -59,7 +59,7 @@ export const GroupBadgeList = () => {
         }) ?? [];
 
     const pagination: TablePaginationConfig = {
-        total: data.length,
+        total: data.length ?? 0,
         showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
         current: page,
         pageSize,
