@@ -53,8 +53,13 @@ export const GroupBadgeList = () => {
         }
     }, [isDesktop, groupBadges?.total, page, pageSize, setItem]);
 
+    const data =
+        groupBadges?.data.filter((item) => {
+            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
+        }) ?? [];
+
     const pagination: TablePaginationConfig = {
-        total: groupBadges?.total ?? 0,
+        total: data.length,
         showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
         current: page,
         pageSize,
@@ -66,11 +71,6 @@ export const GroupBadgeList = () => {
             setItem(LS_SIZE_KEY, String(newPageSize));
         }
     };
-
-    const data =
-        groupBadges?.data.filter((item) => {
-            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
-        }) ?? [];
 
     return (
         <List>
