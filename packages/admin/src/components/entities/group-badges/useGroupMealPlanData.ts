@@ -7,7 +7,6 @@ import type { GroupBadgeEntity, MealPlanCell } from 'interfaces';
 
 export const MESSAGES = {
     PAST_DATE: 'Нельзя редактировать прошедшие даты',
-    TODAY_DIRECTION_HEAD: 'Порции на сегодня можно редактировать только через бюро',
     AFTER_21: 'После 21:00 следующий день можно редактировать только через бюро'
 } as const;
 
@@ -43,11 +42,11 @@ export const checkDateEditability = (date: Dayjs, role?: AppRole): EditabilityRe
     }
 
     if (role === AppRoles.DIRECTION_HEAD) {
-        if (date.isSame(today, 'day')) {
-            return { editable: false, message: MESSAGES.TODAY_DIRECTION_HEAD };
-        }
         if (date.isSame(tomorrow, 'day') && currentHour >= 21) {
             return { editable: false, message: MESSAGES.AFTER_21 };
+        }
+        if (date.isSame(today, 'day')) {
+            return { editable: false };
         }
     }
 
