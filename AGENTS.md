@@ -93,3 +93,10 @@ This rule improves:
 - **Readability**: Named parameters are self-documenting
 - **Maintainability**: Adding new parameters doesn't require changing call sites
 - **Type Safety**: Easier to validate and understand parameter shapes
+
+# Documentation Requirement
+
+CRITICAL: For every code change or new feature implemented, you MUST
+simultaneously update or generate the corresponding documentation
+(e.g., README.md, JSDoc, or .md files in /docs).
+Never consider a task complete without documentation.

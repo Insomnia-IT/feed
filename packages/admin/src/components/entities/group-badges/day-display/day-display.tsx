@@ -1,6 +1,6 @@
 import React from 'react';
 import type { MealPlanRowRender } from '../useGroupMealPlanData';
-import { Card, Tag } from 'antd';
+import { Card, Button } from 'antd';
 import styles from './day-display.module.css';
 import type dayjs from 'dayjs';
 import cn from 'classnames';
@@ -40,9 +40,10 @@ export const MealCell: React.FC<MealCellProps> = ({ value, record, mealType, mea
     }
 
     return (
-        <Tag
+        <Button
+            color="default"
+            variant="outlined"
             className={cn(styles.mealCell, styles.editable)}
-            bordered={record.editable}
             onClick={() => {
                 onClick({
                     date: record.date,
@@ -55,7 +56,7 @@ export const MealCell: React.FC<MealCellProps> = ({ value, record, mealType, mea
             }}
         >
             {formatMeals(value, isMobile)}
-        </Tag>
+        </Button>
     );
 };
 

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useGetIdentity, useOne, useUpdate, useCreate } from '@refinedev/core';
+import { useDataProvider, useGetIdentity, useNotification, useOne } from '@refinedev/core';
 import type { BaseKey } from '@refinedev/core';
 import dayjs, { type Dayjs } from 'dayjs';
 import { AppRoles, isAppRole, type AppRole, type UserData } from 'auth';
@@ -263,9 +263,8 @@ const getDefaultCells = (): SimpleMealPlanCell[] => [
 
 export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlanDataReturn => {
     const { result: groupBadge, query } = useOne<GroupBadgeEntity>({ resource: 'group-badges', id });
-
-    const { mutateAsync: updateCell } = useUpdate();
-    const { mutateAsync: createCell } = useCreate();
+    const dataProvider = useDataProvider();
+    const { open = () => {} } = useNotification();
 
     const { data: user } = useGetIdentity<UserData>();
     const role = user?.roles?.find(isAppRole);
@@ -318,28 +317,34 @@ export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlan
                 setIsSaving(true);
 
                 if (existingCell) {
-                    // Update existing cell
-                    await updateCell({
+                    await dataProvider().update({
                         resource: 'group-badge-planning-cells',
-                        id: existingCell.id,
-                        values: payload
+                        id: existingCell.id as number,
+                        variables: payload
                     });
                 } else {
-                    // Create new cell
-                    await createCell({
+                    await dataProvider().create({
                         resource: 'group-badge-planning-cells',
-                        values: payload
+                        variables: payload
                     });
                 }
+
+                open({
+                    type: 'success',
+                    message: 'Групповой бейдж отредактирован'
+                });
             } catch (error) {
                 console.error('Failed to save meal plan cell:', error);
-                // Could show error notification here
+                open({
+                    type: 'error',
+                    message: 'Не удалось сохранить данные планирования'
+                });
             } finally {
                 await query.refetch();
                 setIsSaving(false);
             }
         },
-        [id, existingCellByKey, updateCell, createCell, query]
+        [id, existingCellByKey, dataProvider, open, query]
     );
 
     return {
