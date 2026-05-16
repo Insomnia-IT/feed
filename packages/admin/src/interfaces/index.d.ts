@@ -43,6 +43,7 @@ export interface VolEntity extends TimeStampedEntity {
     supervisor?: { id: number; name: string } | null;
     person?: PersonEntity | null;
     person_id?: string | null;
+    // Ответственный за волонтера
     responsible_id?: number | null;
     //  Бейдж у руководителя
     is_badge_located_at_leader?: boolean | null;

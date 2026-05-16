@@ -6,6 +6,7 @@ import { CommonEdit } from './common-edit/common-edit';
 import CommonFood from './common-food/common-food';
 import { CommonHistory } from './common-history/common-history';
 import styles from './common.module.css';
+import Connections from './connections/connections';
 
 interface IProps {
     activeKey: string;
@@ -25,16 +26,21 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
             },
             {
                 key: '2',
+                label: 'Связи',
+                children: <Connections />
+            },
+            {
+                key: '3',
                 label: 'Питание',
                 children: <CommonFood />
             },
             {
-                key: '3',
+                key: '4',
                 label: isDesktop ? 'История изменений' : 'История',
                 children: <CommonHistory role="volunteer" />
             },
             {
-                key: '4',
+                key: '5',
                 label: isDesktop ? 'История действий' : 'Действия',
                 children: <CommonHistory role="actor" />
             }
