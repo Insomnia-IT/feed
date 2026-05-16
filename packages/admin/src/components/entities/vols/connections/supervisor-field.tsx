@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Form, type FormInstance, Row, Select, Tooltip } from 'antd';
+import { Button, Form, type FormInstance, Row, Select } from 'antd';
 import { type CrudFilters, useList } from '@refinedev/core';
 import { EyeOutlined } from '@ant-design/icons';
 import useCanAccess from '../use-can-access';
@@ -58,7 +58,7 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
         if (supervisorId && !options.some((option) => option.value === supervisorId)) {
             options.unshift({
                 value: supervisorId,
-                label: supervisor?.name || `ID ${supervisorId}`
+                label: supervisor?.name ?? `ID ${supervisorId}`
             });
         }
 
@@ -66,8 +66,8 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
     }, [supervisor, supervisorId, supervisorsResult]);
 
     return (
-        <Form.Item label="Бригадир" name="supervisor_id" normalize={(value) => value ?? null}>
-            <Row align="middle" gutter={8}>
+        <Row align={'bottom'} gutter={8} style={{ gap: '4px' }}>
+            <Form.Item label="Бригадир" name="supervisor_id" normalize={(value) => value ?? null}>
                 <Select
                     allowClear
                     showSearch
@@ -77,20 +77,21 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                     options={supervisorOptions}
                     loading={supervisorsLoading}
                     disabled={!canEditBrigadier}
-                    style={{ flex: 1 }}
                 />
-                <Tooltip title="Открыть бригадира">
-                    <Button
-                        icon={<EyeOutlined />}
-                        disabled={!supervisorId}
-                        onClick={() => {
-                            if (supervisorId) {
-                                window.location.href = `${window.location.origin}/volunteers/edit/${supervisorId}`;
-                            }
-                        }}
-                    />
-                </Tooltip>
-            </Row>
-        </Form.Item>
+            </Form.Item>
+
+            <Form.Item label="">
+                <Button
+                    title={'Открыть бригадира'}
+                    icon={<EyeOutlined />}
+                    disabled={!supervisorId}
+                    onClick={() => {
+                        if (supervisorId) {
+                            window.location.href = `${window.location.origin}/volunteers/edit/${supervisorId}`;
+                        }
+                    }}
+                />
+            </Form.Item>
+        </Row>
     );
 };
