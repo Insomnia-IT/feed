@@ -42,11 +42,11 @@ export const checkDateEditability = (date: Dayjs, role?: AppRole): EditabilityRe
     }
 
     if (role === AppRoles.DIRECTION_HEAD) {
-        if (date.isSame(today, 'day')) {
-            return { editable: true };
-        }
         if (date.isSame(tomorrow, 'day') && currentHour >= 21) {
             return { editable: false, message: MESSAGES.AFTER_21 };
+        }
+        if (date.isSame(today, 'day')) {
+            return { editable: false };
         }
     }
 
