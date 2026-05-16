@@ -42,6 +42,8 @@ export const MassEdit = ({
 
         // После действия возвращаемся на первый шаг
         setSectionState(ActionSectionStates.Initial);
+        // После действия снимаем выделение
+        unselectAll();
     };
 
     return (
