@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react';
-import { Form, type FormInstance, Select } from 'antd';
+import { Button, Form, type FormInstance, Row, Select } from 'antd';
 import { type CrudFilters, useList } from '@refinedev/core';
 import useCanAccess from '../use-can-access';
 import { useDebouncedCallback } from 'shared/hooks';
 import type { VolEntity } from 'interfaces';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
+import { EyeOutlined } from '@ant-design/icons';
 
 export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     const responsibleId = Form.useWatch('responsible_id', form);
-    const responsible = Form.useWatch('responsible', form) as { id: number; name: string } | null;
+
     const [responsibleSearch, setResponsibleSearch] = useState('');
     // TODO: replace
     const canEditResponsible = useCanAccess({ action: 'brigadier_edit', resource: 'volunteers' });
@@ -50,25 +51,46 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
         if (responsibleId && !options.some((option) => option.value === responsibleId)) {
             options.unshift({
                 value: responsibleId,
-                label: responsible?.name || `ID ${responsibleId}`
+                label: `ID ${responsibleId}`
             });
         }
 
         return options;
-    }, [responsible, responsibleId, responsibleData]);
+    }, [responsibleId, responsibleData]);
 
     return (
-        <Form.Item label="Ответственный за меня" name="responsible_id" normalize={(value) => value ?? null}>
-            <Select
-                allowClear
-                showSearch
-                placeholder="Найти отвтетсвенного"
-                filterOption={false}
-                onSearch={debouncedBrigadierSearch}
-                options={responsibleOptions}
-                loading={responsibleLoading}
-                disabled={!canEditResponsible}
-            />
-        </Form.Item>
+        <Row align="bottom" style={{ gap: '4px', display: 'flex' }}>
+            <Form.Item
+                label="Ответственный за меня"
+                name="responsible_id"
+                normalize={(value) => value ?? null}
+                style={{ display: 'flex' }}
+            >
+                <Select
+                    allowClear
+                    showSearch
+                    placeholder="Найти отвтетсвенного"
+                    filterOption={false}
+                    onSearch={debouncedBrigadierSearch}
+                    options={responsibleOptions}
+                    loading={responsibleLoading}
+                    disabled={!canEditResponsible}
+                    style={{ flex: '1 1 0' }}
+                />
+            </Form.Item>
+
+            <Form.Item label="">
+                <Button
+                    title="Открыть отвтетсвенного"
+                    icon={<EyeOutlined />}
+                    disabled={!responsibleId}
+                    onClick={() => {
+                        if (responsibleId) {
+                            window.location.href = `${window.location.origin}/volunteers/edit/${responsibleId}`;
+                        }
+                    }}
+                />
+            </Form.Item>
+        </Row>
     );
 };
