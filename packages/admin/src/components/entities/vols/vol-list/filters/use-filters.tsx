@@ -121,6 +121,11 @@ export const useFilters = ({
 
     const [activeFiltersState, setActiveFiltersState] = useState<Array<FilterItem>>(getDefaultActiveFilters);
     const [visibleFiltersState, setVisibleFiltersState] = useState<Array<string>>(getDefaultVisibleFilters);
+    const shouldLoadLookup = useCallback(
+        (name: string) =>
+            visibleFiltersState.includes(name) || activeFiltersState.some((filterItem) => filterItem.name === name),
+        [activeFiltersState, visibleFiltersState]
+    );
 
     useEffect(() => {
         setItem(SEARCH_TEXT_STORAGE_ITEM_NAME, searchText);
@@ -128,39 +133,48 @@ export const useFilters = ({
 
     const { result: groupBadgesResult } = useList<GroupBadgeEntity, HttpError>({
         resource: 'group-badges',
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('group_badge') }
     });
 
     const { result: directionsResult } = useList<DirectionEntity, HttpError>({
         resource: 'directions',
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('directions') }
     });
 
     const visibleDirections = useVisibleDirections();
 
     const { result: kitchensResult, query: kitchensQuery } = useList<KitchenEntity, HttpError>({
         resource: 'kitchens',
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('kitchen') }
     });
 
     const { result: feedTypesResult, query: feedTypesQuery } = useList<FeedTypeEntity, HttpError>({
         resource: 'feed-types',
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('feed_type') }
     });
 
     const { result: accessRolesResult, query: accessRolesQuery } = useList<AccessRoleEntity, HttpError>({
         resource: 'access-roles',
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('access_role') }
     });
 
     const { result: volunteerRolesResult, query: volunteerRolesQuery } = useList<VolunteerRoleEntity, HttpError>({
         resource: 'volunteer-roles',
-        pagination: { pageSize: 10000 }
+        pagination: { pageSize: 10000 },
+        queryOptions: { enabled: shouldLoadLookup('main_role') }
     });
 
     const { result: transportsResult } = useList<TransportEntity, HttpError>({
         resource: 'transports',
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: {
+            enabled: shouldLoadLookup('arrivals.arrival_transport') || shouldLoadLookup('arrivals.departure_transport')
+        }
     });
 
     const { result: statusesResult } = useList<StatusEntity, HttpError>({
@@ -177,7 +191,8 @@ export const useFilters = ({
                 value: true
             }
         ],
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('supervisor_id') }
     });
     const directionsLookup = useMemo(
         () =>

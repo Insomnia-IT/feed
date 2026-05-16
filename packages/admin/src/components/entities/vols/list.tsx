@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useList, CanAccess, useGetIdentity, useTranslate } from '@refinedev/core';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { CanAccess, useGetIdentity, useList, useTranslate } from '@refinedev/core';
 import { List } from '@refinedev/antd';
-import { App, Button, Input, Row, Col, Segmented, Typography } from 'antd';
-import { PlusSquareOutlined } from '@ant-design/icons';
+import { App, Button, Col, Input, Row, Segmented, Spin, Typography } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
+import { PlusSquareOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 
 import { dataProvider } from 'dataProvider';
@@ -21,10 +21,10 @@ import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
 import { ChooseColumnsButton } from './vol-list/choose-columns-button';
 import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table/volunteer-desktop-table';
 import { VolunteerMobileList } from './vol-list/volunteer-mobile-list/volunteer-mobile-list';
-import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
+import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
 
 import styles from './list-page.module.css';
 
@@ -259,7 +259,7 @@ export const VolList = () => {
     });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
-    const [customFieldsLoaded, setCustomFieldsLoaded] = useState(false);
+    const [customFieldsLoaded, setCustomFieldsLoaded] = useState(() => !isDesktop);
     const [hasMyBrigade, setHasMyBrigade] = useState(false);
     const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
     const [mobileTotal, setMobileTotal] = useState(0);
@@ -343,6 +343,10 @@ export const VolList = () => {
     }, [isDesktop, userId]);
 
     useEffect(() => {
+        if (!isDesktop) {
+            return;
+        }
+
         let cancelled = false;
 
         dataProvider
@@ -363,7 +367,7 @@ export const VolList = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [isDesktop]);
 
     const isMyBrigadeAvailable = !isDesktop && Boolean(userId) && hasMyBrigade;
     const effectiveBrigadeScope: 'my' | 'all' = isMyBrigadeAvailable ? brigadeScope : 'all';
@@ -425,21 +429,23 @@ export const VolList = () => {
                     )}
 
                     {isDesktop ? (
-                        <DesktopVolunteersContent
-                            page={page}
-                            pageSize={pageSize}
-                            setPageWithStorage={setPageWithStorage}
-                            setPageSizeWithStorage={setPageSizeWithStorage}
-                            effectiveFilterQueryParams={effectiveFilterQueryParams}
-                            statusById={statusById}
-                            customFields={customFields}
-                            canBulkEdit={canBulkEdit}
-                            canListCustomFields={canListCustomFields}
-                            isFiltersLoading={isFiltersLoading}
-                            searchText={searchText}
-                            activeFilters={activeFilters}
-                            openVolunteer={openVolunteer}
-                        />
+                        <Suspense fallback={<Spin />}>
+                            <DesktopVolunteersContent
+                                page={page}
+                                pageSize={pageSize}
+                                setPageWithStorage={setPageWithStorage}
+                                setPageSizeWithStorage={setPageSizeWithStorage}
+                                effectiveFilterQueryParams={effectiveFilterQueryParams}
+                                statusById={statusById}
+                                customFields={customFields}
+                                canBulkEdit={canBulkEdit}
+                                canListCustomFields={canListCustomFields}
+                                isFiltersLoading={isFiltersLoading}
+                                searchText={searchText}
+                                activeFilters={activeFilters}
+                                openVolunteer={openVolunteer}
+                            />
+                        </Suspense>
                     ) : (
                         <VolunteerMobileList
                             filterQueryParams={effectiveFilterQueryParams}

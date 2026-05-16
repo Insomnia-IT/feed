@@ -4,6 +4,7 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django import forms
 from django.db.models import Exists, OuterRef
+from django.db.models import Prefetch
 from django.utils import timezone
 from datetime import timedelta
 import re
@@ -98,6 +99,42 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
     search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid',
                      'person__name', 'person__last_name', 'person__first_name', 'person__nickname', 'person__other_names', 'person__telegram']
     filterset_class = VolunteerFilter
+
+    def is_mobile_list_request(self):
+        return self.action == 'list' and self.request.query_params.get('mobile') == '1'
+
+    def get_serializer_class(self):
+        if self.is_mobile_list_request():
+            return serializers.VolunteerMobileListSerializer
+
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.is_mobile_list_request():
+            mobile_arrivals = models.Arrival.objects.only(
+                'id',
+                'volunteer_id',
+                'arrival_date',
+                'departure_date',
+                'status_id',
+                'arrival_transport_id',
+                'departure_transport_id',
+            ).order_by('arrival_date')
+
+            return queryset.only(
+                'id',
+                'name',
+                'first_name',
+                'last_name',
+                'is_blocked',
+                'direction_head_comment',
+                'deleted_at',
+                'supervisor_id',
+            ).prefetch_related(Prefetch('arrivals', queryset=mobile_arrivals))
+
+        return queryset
 
     @action(detail=False, methods=['get'], url_path='export-xlsx')
     def export_xlsx(self, request):
