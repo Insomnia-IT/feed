@@ -36,8 +36,7 @@
         "react-dom": "^19.2.3",
         "react-router": "^7.14.0",
         "recharts": "^3.8.1",
-        "ulid": "^3.0.2",
-        "uuid": "^13.0.0"
+        "ulid": "^3.0.2"
     },
     "devDependencies": {
         "@types/js-cookie": "^3.0.6",
