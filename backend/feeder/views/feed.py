@@ -1,4 +1,3 @@
-from django.utils import timezone
 from rest_framework import serializers, viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,7 +9,7 @@ from feeder.views.mixins import auto_tag_viewset
 from feeder.utils import get_feed_transaction_anomalies
 
 from feeder import serializers, models
-from feeder.views.xlsx import build_xlsx_response, get_xlsx_export_timezone
+from feeder.views.xlsx import build_xlsx_response, format_xlsx_datetime
 
 
 @auto_tag_viewset("Feed Type")
@@ -77,11 +76,10 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
             .prefetch_related("volunteer__directions")
         )
 
-        export_timezone = get_xlsx_export_timezone()
         rows = []
 
         for tx in queryset.iterator(chunk_size=2000):
-            local_dtime = timezone.localtime(tx.dtime, export_timezone) if tx.dtime else None
+            local_date, local_time = format_xlsx_datetime(tx.dtime)
             volunteer_full_name = " ".join(
                 [name for name in [getattr(tx.volunteer, "last_name", None), getattr(tx.volunteer, "first_name", None)] if name]
             )
@@ -91,8 +89,8 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
 
             rows.append(
                 [
-                    local_dtime.strftime("%d.%m.%Y") if local_dtime else "",
-                    local_dtime.strftime("%H:%M:%S") if local_dtime else "",
+                    local_date,
+                    local_time,
                     tx.volunteer_id or "",
                     getattr(tx.volunteer, "name", None) or "Аноним",
                     volunteer_full_name,
