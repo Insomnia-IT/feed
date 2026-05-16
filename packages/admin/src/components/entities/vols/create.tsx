@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { Create, useForm } from '@refinedev/antd';
 import { useTranslate } from '@refinedev/core';
-import { Form } from 'antd';
+import { App, Form } from 'antd';
 
 import type { VolEntity } from 'interfaces';
 
@@ -17,24 +18,26 @@ const contentStyle = {
 
 export const VolCreate = () => {
     const translate = useTranslate();
+    const { notification } = App.useApp();
 
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
-        successNotification: (response) => {
-            const data = response?.data as VolEntity | undefined;
-            const volunteerId = data?.id;
+        successNotification: false,
+        onMutationSuccess: async (response) => {
+            await onMutationSuccess(response as { data: { id: number } });
+
+            const volunteerId = response?.data?.id;
             const volunteerPath = volunteerId ? `/volunteers/edit/${volunteerId}` : '/volunteers';
-            const volunteerUrl = new URL(volunteerPath, window.location.origin).toString();
-            const resourceName = translate('volunteers.volunteers');
+            const resourceName = translate('volunteers.volunteers', translate('volunteers.label'));
             const createSuccessText = translate('notifications.createSuccess', { resource: resourceName }).trim();
 
-            return {
+            notification.success({
                 message: translate('notifications.success'),
-                description: `${createSuccessText}. Путь: ${volunteerUrl}`,
-                type: 'success'
-            };
-        },
-        onMutationSuccess: (e) => {
-            void onMutationSuccess(e);
+                description: (
+                    <>
+                        {createSuccessText}. Путь: <Link to={volunteerPath}>{volunteerPath}</Link>
+                    </>
+                )
+            });
         },
         warnWhenUnsavedChanges: true
     });
