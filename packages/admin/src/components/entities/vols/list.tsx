@@ -69,7 +69,7 @@ const VolunteerSearchInput = ({
                 }
             >
                 <Input
-                    placeholder="Поиск по волонтерам, датам, службам"
+                    placeholder="Поиск по волонтерам"
                     value={searchInputValue}
                     onChange={(e) => {
                         const nextValue = e.target.value;

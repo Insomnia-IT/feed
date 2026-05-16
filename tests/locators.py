@@ -83,7 +83,7 @@ class create_user():
     UNBAN_CONFIRM = "//button[@type='submit'][span[text()='Разблокировать волонтера']]"
 
 
-    FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
+    FIND_INPUT = "input[placeholder='Поиск по волонтерам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
 
     DELETE_USER_BUTTON = "//button[span[text()='Удалить волонтера']]"

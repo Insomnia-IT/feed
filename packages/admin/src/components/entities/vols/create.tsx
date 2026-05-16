@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { Form } from 'antd';
+import styles from './common.module.css';
 
 import type { VolEntity } from 'interfaces';
 
@@ -26,6 +27,7 @@ export const VolCreate = () => {
     const { isDesktop } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
     const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+    const person = Form.useWatch('person', form);
 
     return (
         <Create
@@ -40,6 +42,16 @@ export const VolCreate = () => {
                 ...(shouldHideFooterActions ? { actions: [] } : {}),
                 style: contentStyle
             }}
+            title={
+                <div className={styles.pageTitle}>
+                    Создание волонтера
+                    {person?.banned && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Чёрный список</span>
+                        </div>
+                    )}
+                </div>
+            }
         >
             <Form {...formProps} scrollToFirstError layout="vertical">
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />

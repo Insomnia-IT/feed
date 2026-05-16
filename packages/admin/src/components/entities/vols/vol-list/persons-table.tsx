@@ -5,6 +5,7 @@ import type { TableProps } from 'antd';
 import { useState } from 'react';
 import type { PersonEntity } from 'interfaces';
 import { useNavigate } from 'react-router';
+import { ListBooleanNegative } from './table-cells';
 
 export const PersonsTable = ({ searchText }: { searchText: string }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -46,6 +47,12 @@ export const PersonsTable = ({ searchText }: { searchText: string }) => {
             dataIndex: 'other_names',
             key: 'other_names',
             title: 'Другие имена'
+        },
+        {
+            dataIndex: 'banned',
+            key: 'banned',
+            title: 'ЧС',
+            render: (value) => <ListBooleanNegative value={Boolean(value)} />
         },
         {
             dataIndex: 'actions',
