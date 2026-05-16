@@ -5,28 +5,45 @@ import dayjs from 'dayjs';
 import styles from './group-meal-plan.module.css';
 import { type MealPlanRowRender, useGroupMealPlanData } from '../useGroupMealPlanData';
 import { useGroupMealPlanUI } from '../useGroupMealPlanUI';
+import {
+    getPlannedCountsForDate,
+    type PlannedCountsByDate,
+    type PlannedDayCounts
+} from '../calculatePlannedCountsByDate';
+import { useGroupBadgeVolunteerCounts } from '../useGroupBadgeVolunteerCounts';
 import { MealPlanEditModal } from '../meal-plan-edit-modal/meal-plan-edit-modal';
 import { useScreen } from 'shared/providers';
 import type { BaseKey } from '@refinedev/core';
 import { MealCell, MobileDayCard } from '../day-display/day-display';
 
+type MealValues = { amount_meat: number | null; amount_vegan: number | null };
+
+const getCalculatedCountsForRow = ({
+    countsByDate,
+    date
+}: {
+    countsByDate: PlannedCountsByDate;
+    date: dayjs.Dayjs;
+}): PlannedDayCounts => getPlannedCountsForDate(countsByDate, date.format('YYYY-MM-DD'));
+
 export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
-    const { displayData, showAll, setShowAll, handleSave: saveToData } = useGroupMealPlanData({ id });
+    const { displayData, handleSave: saveToData, setShowAll, showAll } = useGroupMealPlanData({ id });
+    const { countsByDate } = useGroupBadgeVolunteerCounts({ id });
 
     const { isMobile } = useScreen();
 
     const {
-        today,
-        modalOpen,
-        modalType,
-        selectedCell,
         editMeat,
         editVegan,
         handleCellClick,
         handleModalClose,
         handleSave,
+        modalOpen,
+        modalType,
+        selectedCell,
         setEditMeat,
-        setEditVegan
+        setEditVegan,
+        today
     } = useGroupMealPlanUI(saveToData);
 
     const rowClassName = (record: MealPlanRowRender) => {
@@ -67,10 +84,7 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                         title="Завтрак"
                         dataIndex="breakfast"
                         key="breakfast"
-                        render={(
-                            value: { amount_meat: number | null; amount_vegan: number | null },
-                            record: MealPlanRowRender
-                        ) => (
+                        render={(value: MealValues, record: MealPlanRowRender) => (
                             <MealCell
                                 value={value}
                                 record={record}
@@ -78,6 +92,10 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                                 mealTypeKey="breakfast"
                                 isMobile={isMobile}
                                 onClick={handleCellClick}
+                                calculatedCounts={getCalculatedCountsForRow({
+                                    countsByDate,
+                                    date: record.date
+                                })}
                             />
                         )}
                     />
@@ -85,10 +103,7 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                         title="Обед"
                         dataIndex="lunch"
                         key="lunch"
-                        render={(
-                            value: { amount_meat: number | null; amount_vegan: number | null },
-                            record: MealPlanRowRender
-                        ) => (
+                        render={(value: MealValues, record: MealPlanRowRender) => (
                             <MealCell
                                 value={value}
                                 record={record}
@@ -96,6 +111,10 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                                 mealTypeKey="lunch"
                                 isMobile={isMobile}
                                 onClick={handleCellClick}
+                                calculatedCounts={getCalculatedCountsForRow({
+                                    countsByDate,
+                                    date: record.date
+                                })}
                             />
                         )}
                     />
@@ -103,10 +122,7 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                         title="Ужин"
                         dataIndex="dinner"
                         key="dinner"
-                        render={(
-                            value: { amount_meat: number | null; amount_vegan: number | null },
-                            record: MealPlanRowRender
-                        ) => (
+                        render={(value: MealValues, record: MealPlanRowRender) => (
                             <MealCell
                                 value={value}
                                 record={record}
@@ -114,6 +130,10 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                                 mealTypeKey="dinner"
                                 isMobile={isMobile}
                                 onClick={handleCellClick}
+                                calculatedCounts={getCalculatedCountsForRow({
+                                    countsByDate,
+                                    date: record.date
+                                })}
                             />
                         )}
                     />
@@ -128,6 +148,10 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                         isToday={record.date.isSame(today, 'day')}
                         onCellClick={handleCellClick}
                         isMobile={isMobile}
+                        calculatedCounts={getCalculatedCountsForRow({
+                            countsByDate,
+                            date: record.date
+                        })}
                     />
                 ))}
             </div>

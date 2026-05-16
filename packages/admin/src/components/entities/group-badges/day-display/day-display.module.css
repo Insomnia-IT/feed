@@ -15,6 +15,10 @@
     text-align: center;
 }
 
+.calculated {
+    opacity: 0.45;
+}
+
 .editable {
     cursor: pointer;
     transition: all 0.2s ease;
