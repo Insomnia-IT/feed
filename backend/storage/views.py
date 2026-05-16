@@ -16,6 +16,7 @@ from .serializers import (
 
 
 class StoragePositionFilter(django_filters.FilterSet):
+    id = django_filters.NumberFilter(field_name='id', lookup_expr='exact')
     storage = django_filters.NumberFilter(field_name='storage_id', lookup_expr='exact')
     bin = django_filters.NumberFilter(field_name='bin_id', lookup_expr='exact')
     item = django_filters.NumberFilter(field_name='item_id', lookup_expr='exact')
@@ -30,9 +31,10 @@ class StoragePositionFilter(django_filters.FilterSet):
         if value:
             return queryset.filter(count__gt=0)
         return queryset.filter(storage__lte=0)
+
     class Meta:
         model = StorageItemPosition
-        fields = ['storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']
+        fields = ['id', 'storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']
 
 
 class ReceivingFilter(django_filters.FilterSet):
