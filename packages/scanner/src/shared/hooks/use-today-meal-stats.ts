@@ -87,7 +87,7 @@ export const useTodayMealStats = () => {
 
     return {
         lastSyncStart,
-        volsOnField,
+        volsOnFieldCount: volsOnField.length,
 
         individualFedCount,
         individualLeftCount: Math.max(individualOnFieldCount - individualFedCount, 0),
