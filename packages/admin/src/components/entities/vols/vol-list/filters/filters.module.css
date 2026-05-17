@@ -49,11 +49,6 @@
     padding-right: 40px;
 }
 
-.filterChooser {
-    min-width: 200px;
-    max-width: 350px;
-}
-
 .filterValueSelect :global(.ant-select-selector) {
     gap: 20px;
 }
