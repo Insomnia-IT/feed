@@ -8,9 +8,7 @@ import { getToday } from 'shared/lib/date';
 
 const findPlanCell = (cells: MealPlanCell[], mealTime: string, today: string): MealPlanCell | undefined => {
     const exactMatch = cells.find((c) => c.meal_time === mealTime && c.date === today);
-    if (exactMatch) {
-        return exactMatch;
-    }
+    if (exactMatch) return exactMatch;
 
     const pastCells = cells
         .filter((c) => c.meal_time === mealTime && c.date < today)
@@ -24,26 +22,24 @@ export const useTodayMealStats = () => {
 
     const volsOnField = useLiveQuery(async () => await getVolsOnField(getToday()), [mealTime, lastSyncStart], []);
 
-    const groupBadgeIds = useMemo(
-        () => [...new Set(volsOnField.filter((v) => v.group_badge != null).map((v) => v.group_badge!))],
-        [volsOnField]
-    );
-
-    const groupBadges = useLiveQuery(
-        async () => {
-            if (groupBadgeIds.length === 0) return [];
-            return db.groupBadges.where('id').anyOf(groupBadgeIds).toArray();
-        },
-        [groupBadgeIds, lastSyncStart],
-        []
-    );
+    const allGroupBadges = useLiveQuery(async () => db.groupBadges.toArray(), [lastSyncStart], []);
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
 
-    const individualOnFieldCount = useMemo(
-        () => volsOnField.filter((v) => v.group_badge == null).length,
-        [volsOnField]
-    );
+    const { individualOnFieldCount, groupBadgeVolunteersCount } = useMemo(() => {
+        let individual = 0;
+        const groupCounts = new Map<number, number>();
+
+        volsOnField.forEach((v) => {
+            if (v.group_badge == null) {
+                individual++;
+            } else {
+                groupCounts.set(v.group_badge, (groupCounts.get(v.group_badge) ?? 0) + 1);
+            }
+        });
+
+        return { individualOnFieldCount: individual, groupBadgeVolunteersCount: groupCounts };
+    }, [volsOnField]);
 
     const individualFedCount = useMemo(
         () =>
@@ -74,25 +70,26 @@ export const useTodayMealStats = () => {
             return 0;
         }
 
-        return groupBadges.reduce((total, gb) => {
+        return allGroupBadges.reduce((total, gb) => {
             const planCell = findPlanCell(gb.planning_cells, mealTime, today);
 
             if (planCell) {
                 return total + (planCell.amount_meat ?? 0) + (planCell.amount_vegan ?? 0);
             }
 
-            return total + volsOnField.filter((v) => v.group_badge === gb.id).length;
+            return total + (groupBadgeVolunteersCount.get(gb.id) ?? 0);
         }, 0);
-    }, [groupBadges, volsOnField, mealTime]);
+    }, [allGroupBadges, groupBadgeVolunteersCount, mealTime]);
 
     return {
         lastSyncStart,
-        volsOnFieldCount: volsOnField.length,
-
+        volsOnField,
+        individualOnFieldCount,
         individualFedCount,
         individualLeftCount: Math.max(individualOnFieldCount - individualFedCount, 0),
-
+        groupVolunteersCount: [...groupBadgeVolunteersCount.values()].reduce((a, b) => a + b, 0),
         groupFedCount,
+        groupPlannedCount,
         groupLeftCount: Math.max(groupPlannedCount - groupFedCount, 0)
     };
 };
