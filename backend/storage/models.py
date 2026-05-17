@@ -3,12 +3,14 @@ from feeder.mixins import TimeMixin
 from feeder.soft_delete import SoftDeleteModelMixin
 from feeder.models import Volunteer
 
+
 class Storage(TimeMixin, SoftDeleteModelMixin):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
+
 
 class Bin(TimeMixin, SoftDeleteModelMixin):
     storage = models.ForeignKey(Storage, on_delete=models.CASCADE, related_name="bins")
@@ -18,6 +20,7 @@ class Bin(TimeMixin, SoftDeleteModelMixin):
 
     def __str__(self):
         return f"{self.storage.name} - {self.name}"
+
 
 class Item(TimeMixin, SoftDeleteModelMixin):
     name = models.CharField(max_length=255)
@@ -30,6 +33,7 @@ class Item(TimeMixin, SoftDeleteModelMixin):
     def __str__(self):
         return self.name
 
+
 class StorageItemPosition(TimeMixin, SoftDeleteModelMixin):
     storage = models.ForeignKey(Storage, on_delete=models.PROTECT, related_name="positions")
     bin = models.ForeignKey(Bin, on_delete=models.PROTECT, related_name="positions")
@@ -40,11 +44,31 @@ class StorageItemPosition(TimeMixin, SoftDeleteModelMixin):
     def __str__(self):
         return f"{self.item.name} in {self.bin.name} ({self.count})"
 
+
 class Issuance(TimeMixin, SoftDeleteModelMixin):
     position = models.ForeignKey(StorageItemPosition, on_delete=models.PROTECT, related_name="issuances")
     volunteer = models.ForeignKey(Volunteer, on_delete=models.PROTECT, related_name="issuances", blank=True, null=True)
     count = models.IntegerField()
     notes = models.TextField(blank=True, null=True)
+
+
+class Movement(TimeMixin):
+    position = models.ForeignKey(StorageItemPosition, on_delete=models.PROTECT, related_name="movements")
+    count = models.IntegerField()
+    from_volunteer = models.ForeignKey(Volunteer, on_delete=models.PROTECT, related_name="outgoing_storage_movements")
+    to_volunteer = models.ForeignKey(Volunteer, on_delete=models.PROTECT, related_name="incoming_storage_movements")
+
+
+class VolunteerInventory(TimeMixin):
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, related_name="storage_inventory")
+    position = models.ForeignKey(StorageItemPosition, on_delete=models.PROTECT, related_name="volunteer_inventory")
+    count = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["volunteer", "position"], name="unique_volunteer_inventory_position")
+        ]
+
 
 class Receiving(TimeMixin, SoftDeleteModelMixin):
     position = models.ForeignKey(StorageItemPosition, on_delete=models.PROTECT, related_name="receivings")
