@@ -35,6 +35,7 @@ export const FIELD_LABELS: Record<string, string> = {
     ticket: 'Билет',
     qr: 'QR бейджа',
     supervisor: 'Бригадир',
+    approver: 'Кто согласовал',
     is_badge_located_at_leader: 'Бейдж у руководителя'
 };
 
