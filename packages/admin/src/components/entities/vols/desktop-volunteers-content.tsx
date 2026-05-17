@@ -12,6 +12,7 @@ import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table/volunt
 import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
 import { MassEdit } from './vol-list/mass-edit/mass-edit';
 import { PersonsTable } from './vol-list/persons-table';
+import styles from './list-page.module.css';
 
 type DesktopVolunteersContentProps = {
     page: number;
@@ -99,14 +100,14 @@ export const DesktopVolunteersContent = ({
 
     return (
         <>
-            <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
-                <Col style={{ display: 'flex', alignItems: 'center' }}>
+            <Row className={styles.desktopActionsRow} justify="end">
+                <Col className={styles.desktopResultCol}>
                     <span>
                         <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
                     </span>
                 </Col>
 
-                <Row style={{ gap: '12px' }}>
+                <Row className={styles.desktopButtonsRow}>
                     <ChooseColumnsButton canListCustomFields={canListCustomFields} />
                     <SaveAsXlsxButton
                         isDisabled={!volunteersData.length || isFiltersLoading}
