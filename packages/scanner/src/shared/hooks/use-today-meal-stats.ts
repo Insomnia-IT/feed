@@ -26,19 +26,16 @@ export const useTodayMealStats = () => {
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
 
-    const { individualOnFieldCount, groupBadgeVolunteersCount } = useMemo(() => {
-        let individual = 0;
+    const { groupBadgeVolunteersCount } = useMemo(() => {
         const groupCounts = new Map<number, number>();
 
         volsOnField.forEach((v) => {
-            if (v.group_badge == null) {
-                individual++;
-            } else {
+            if (v.group_badge !== null) {
                 groupCounts.set(v.group_badge, (groupCounts.get(v.group_badge) ?? 0) + 1);
             }
         });
 
-        return { individualOnFieldCount: individual, groupBadgeVolunteersCount: groupCounts };
+        return { groupBadgeVolunteersCount: groupCounts };
     }, [volsOnField]);
 
     const individualFedCount = useMemo(
@@ -83,13 +80,13 @@ export const useTodayMealStats = () => {
 
     return {
         lastSyncStart,
-        volsOnField,
-        individualOnFieldCount,
+
+        volsOnFieldCount: volsOnField.length,
+
         individualFedCount,
-        individualLeftCount: Math.max(individualOnFieldCount - individualFedCount, 0),
-        groupVolunteersCount: [...groupBadgeVolunteersCount.values()].reduce((a, b) => a + b, 0),
+        individualLeftCount: Math.max(volsOnField.length - groupPlannedCount - individualFedCount, 0),
+
         groupFedCount,
-        groupPlannedCount,
         groupLeftCount: Math.max(groupPlannedCount - groupFedCount, 0)
     };
 };
