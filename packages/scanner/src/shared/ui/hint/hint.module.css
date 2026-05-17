@@ -27,10 +27,6 @@
     background: var(--c-txt);
 }
 
-.text {
-    color: var(--c-white);
-}
-
 .backdrop {
     position: absolute;
     top: 0;
