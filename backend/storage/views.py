@@ -19,6 +19,7 @@ from .services import increase_volunteer_inventory
 
 
 class StoragePositionFilter(django_filters.FilterSet):
+    id = django_filters.NumberFilter(field_name='id', lookup_expr='exact')
     storage = django_filters.NumberFilter(field_name='storage_id', lookup_expr='exact')
     bin = django_filters.NumberFilter(field_name='bin_id', lookup_expr='exact')
     item = django_filters.NumberFilter(field_name='item_id', lookup_expr='exact')
@@ -36,7 +37,7 @@ class StoragePositionFilter(django_filters.FilterSet):
 
     class Meta:
         model = StorageItemPosition
-        fields = ['storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']
+        fields = ['id', 'storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']
 
 
 class ReceivingFilter(django_filters.FilterSet):
@@ -106,7 +107,8 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = StorageItemPosition.objects.all()
     serializer_class = StorageItemPositionSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['id']
     filterset_class = StoragePositionFilter
 
     def create(self, request, *args, **kwargs):
