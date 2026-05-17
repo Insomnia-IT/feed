@@ -169,6 +169,7 @@ class Volunteer(TimeMixin, SoftDeleteModelMixin):
         related_name='supervisees',
         verbose_name="Бригадир")
     infant = models.BooleanField('IsChild', null=True, blank=True, default=False)
+    approver = models.CharField(max_length=100, null=True, blank=True, verbose_name="Утвердивший")
 
     class Meta:
         verbose_name = "Волонтёр"
@@ -213,6 +214,7 @@ class GroupBadge(TimeMixin, SoftDeleteModelMixin, CommentMixin, NameMixin):
     qr = models.TextField(unique=True, null=True, blank=True, verbose_name="QR-код")
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
     role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
+    kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
 
     def __str__(self):
         return self.name

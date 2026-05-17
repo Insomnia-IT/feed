@@ -22,12 +22,12 @@ import type { ColumnsType } from 'antd/es/table';
 import { DownloadOutlined, WarningOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import type { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
 
 import type { FeedTransactionAnomaly, FeedTransactionEntity } from 'interfaces';
 
-import { dayjsExtended, formDateFormat } from 'shared/lib';
+import { dayjsExtended, formDateFormat, formatInAppTimeZone } from 'shared/lib';
 import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
+import { useScreen } from 'shared/providers';
 import { MEAL_MAP, NEW_API_URL } from 'const';
 import { useTransactionsFilters } from './feed-transaction-filters/use-transactions-filters';
 import type { FilterItem } from '../vols/vol-list/filters/filter-types';
@@ -160,7 +160,7 @@ interface TransformedTransaction {
     ulid: string;
     dateTime: string;
     volunteerName: string;
-    volunteerId: number;
+    volunteerId: number | null | undefined;
     feedType: string;
     isPaid: string;
     mealType: string;
@@ -178,6 +178,7 @@ interface TransformedTransaction {
 
 export const FeedTransactionList: FC = () => {
     const { filterFields, visibleFilters, setVisibleFilters } = useTransactionsFilters();
+    const { isMobile } = useScreen();
     const [activeFilters, setActiveFilters] = useState<Array<FilterItem>>([]);
     const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
@@ -320,7 +321,7 @@ export const FeedTransactionList: FC = () => {
                     (item?.group_badge_name?.trim() && item.group_badge_name) || item?.kitchen_name || '—';
                 return {
                     ulid: item.ulid,
-                    dateTime: dayjs(item.dtime).format('DD/MM/YY HH:mm:ss'),
+                    dateTime: formatInAppTimeZone(item.dtime, 'DD/MM/YY HH:mm:ss'),
                     volunteerName: item?.volunteer_name || 'Аноним',
                     volunteerId: item.volunteer,
                     feedType: item.is_vegan !== null ? (item.is_vegan ? '🥦 Веган' : '🥩 Мясоед') : '',
@@ -401,7 +402,7 @@ export const FeedTransactionList: FC = () => {
                     <Button type="default" icon={<WarningOutlined />} onClick={() => setAnomaliesModalOpen(true)}>
                         Аномалии
                     </Button>
-                    {defaultButtons}
+                    {!isMobile && defaultButtons}
                 </>
             )}
         >
@@ -445,6 +446,7 @@ export const FeedTransactionList: FC = () => {
                     visibleFilters={visibleFilters}
                     setVisibleFilters={setVisibleFilters}
                     activeFilters={activeFilters}
+                    isMobile={isMobile}
                     setActiveFilters={(next) => {
                         setActiveFilters(next);
                         setTimeout(() => searchFormProps?.form?.submit());

@@ -1,7 +1,13 @@
 import axios, { type AxiosResponse } from 'axios';
 import { useCallback } from 'react';
 
-type AuthUserResponse = { id: number };
+type AuthUserResponse = {
+    id: string;
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+    roles?: string[];
+};
 
 export const useCheckAuth = (
     baseUrl: string,

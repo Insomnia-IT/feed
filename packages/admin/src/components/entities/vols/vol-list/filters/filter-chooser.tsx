@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
-import { FilterOutlined } from '@ant-design/icons';
+import { useRef, useState, type ComponentRef } from 'react';
+import { DownOutlined, FilterOutlined } from '@ant-design/icons';
 import { Button, Popover, Select } from 'antd';
 
 import type { FilterField } from './filter-types';
-import styles from '../../list.module.css';
+import styles from './filters.module.css';
 
 interface IFilterOption {
     label: string;
@@ -28,7 +28,7 @@ export const FilterChooser = ({
     toggleVisibleFilter: (name: string) => void;
     visibleFilters: Array<string>;
 }) => {
-    const selectRef = useRef<React.ComponentRef<typeof Select>>(null);
+    const selectRef = useRef<ComponentRef<typeof Select>>(null);
     const [selectOpen, setSelectOpen] = useState(false);
     const options = filterFields.map(mapFilterFieldsToOptions);
 
@@ -40,7 +40,6 @@ export const FilterChooser = ({
         <Popover
             placement="bottomLeft"
             trigger="click"
-            /* Убирает «зависшие» порталы/скроллбар списка Select после закрытия */
             destroyOnHidden
             afterOpenChange={(open) => {
                 if (open) {
@@ -69,6 +68,21 @@ export const FilterChooser = ({
                     onClear={removeAllFilters}
                     showSearch
                     allowClear={false}
+                    suffixIcon={
+                        <span
+                            role="button"
+                            tabIndex={-1}
+                            aria-expanded={selectOpen}
+                            className={styles.filterIconToggle}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setSelectOpen((prev) => !prev);
+                            }}
+                        >
+                            <DownOutlined />
+                        </span>
+                    }
                 />
             }
         >

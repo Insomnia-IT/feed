@@ -3,9 +3,9 @@ import { useList, useSelect } from '@refinedev/core';
 import { type ChangeEvent, useEffect, useRef } from 'react';
 
 import type {
-    AccessRoleEntity,
     ColorTypeEntity,
     FeedTypeEntity,
+    GenderEntity,
     GroupBadgeEntity,
     KitchenEntity,
     StatusEntity,
@@ -87,7 +87,7 @@ export const CommonEdit = () => {
         optionLabel: 'description'
     });
 
-    const { options: genderOptions } = useSelect<AccessRoleEntity>({ resource: 'genders', optionLabel: 'name' });
+    const { options: genderOptions } = useSelect<GenderEntity>({ resource: 'genders', optionLabel: 'name' });
 
     const { options: groupBadgeOptions } = useSelect<GroupBadgeEntity>({
         resource: 'group-badges',
@@ -193,6 +193,7 @@ export const CommonEdit = () => {
                         canUnban={canUnban}
                         canDelete={canDelete}
                         volunteerId={volunteerId}
+                        isCreationProcess={isCreationProcess}
                     />
                 </section>
                 <section id="section7" className={styles.formSection}>

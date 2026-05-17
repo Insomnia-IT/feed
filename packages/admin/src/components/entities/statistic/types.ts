@@ -1,5 +1,6 @@
 export type StatisticType = 'plan' | 'fact' | 'predict';
 export type MealTime = 'breakfast' | 'lunch' | 'dinner' | 'night' | 'total';
+export type StatisticMealTime = Exclude<MealTime, 'total'>;
 export const mealTimeArr: Array<MealTime> = ['breakfast', 'lunch', 'dinner', 'night'];
 
 export type EaterType = 'vegan' | 'meatEater';
@@ -15,12 +16,13 @@ export type IEaterTypeAmount = {
 };
 
 export interface IStatisticApi {
+    id?: number;
     date: string;
     type: StatisticType;
-    is_vegan: boolean;
-    meal_time: MealTime;
+    is_vegan: boolean | null;
+    meal_time: StatisticMealTime;
     amount: number;
-    kitchen_id: number;
+    kitchen_id: number | null;
 }
 export type IStatisticResponse = Array<IStatisticApi>;
 

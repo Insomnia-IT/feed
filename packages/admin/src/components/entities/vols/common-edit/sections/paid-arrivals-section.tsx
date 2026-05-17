@@ -5,7 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
 
 import { Rules } from 'components/form';
+import { MobileDateDrawer } from 'shared/components/mobile-date-drawer/mobile-date-drawer';
 import { formDateFormat } from 'shared/lib';
+import { useScreen } from 'shared/providers';
 
 import styles from '../../common.module.css';
 
@@ -161,11 +163,15 @@ function PaidArrivalItem({
     >;
 }) {
     const form = Form.useFormInstance();
+    const { isMobile } = useScreen();
 
     const createDateChange = (fieldName: string) => (value: string | number | Date | dayjs.Dayjs | null) => {
         const normalizedValue = dayjs.isDayjs(value) ? value.format('YYYY-MM-DD') : value;
         form.setFieldValue(['paid_arrivals', index, fieldName], normalizedValue);
     };
+
+    const normalizeDateValue = (value: string | number | Date | dayjs.Dayjs | null | undefined) =>
+        dayjs.isDayjs(value) ? value.format('YYYY-MM-DD') : value;
 
     const getDateValue = (value: string | number | Date | dayjs.Dayjs | null | undefined) => ({
         value: value ? dayjs(value) : undefined
@@ -191,13 +197,18 @@ function PaidArrivalItem({
                         label="Дата начала"
                         name={[index, 'arrival_date']}
                         getValueProps={getDateValue}
+                        getValueFromEvent={normalizeDateValue}
                         rules={activeFromValidationRules(index)}
                     >
-                        <DatePicker
-                            format={formDateFormat}
-                            style={{ width: '100%' }}
-                            onChange={createDateChange('arrival_date')}
-                        />
+                        {isMobile ? (
+                            <MobileDateDrawer title="Дата начала" />
+                        ) : (
+                            <DatePicker
+                                format={formDateFormat}
+                                style={{ width: '100%' }}
+                                onChange={createDateChange('arrival_date')}
+                            />
+                        )}
                     </Form.Item>
                 </div>
                 <div className={styles.dateInput}>
@@ -205,13 +216,18 @@ function PaidArrivalItem({
                         label="Дата окончания"
                         name={[index, 'departure_date']}
                         getValueProps={getDateValue}
+                        getValueFromEvent={normalizeDateValue}
                         rules={activeToValidationRules(index)}
                     >
-                        <DatePicker
-                            format={formDateFormat}
-                            style={{ width: '100%' }}
-                            onChange={createDateChange('departure_date')}
-                        />
+                        {isMobile ? (
+                            <MobileDateDrawer title="Дата окончания" />
+                        ) : (
+                            <DatePicker
+                                format={formDateFormat}
+                                style={{ width: '100%' }}
+                                onChange={createDateChange('departure_date')}
+                            />
+                        )}
                     </Form.Item>
                 </div>
                 <div className={styles.dateInput}>

@@ -5,6 +5,7 @@ import { NEW_API_URL } from 'const';
 
 export const AppRoles = {
     ADMIN: 'ADMIN',
+    KITCHEN: 'KITCHEN',
     SENIOR: 'SENIOR',
     CAT: 'CAT',
     SOVA: 'SOVA',
@@ -13,13 +14,24 @@ export const AppRoles = {
 
 export type AppRole = (typeof AppRoles)[keyof typeof AppRoles];
 
+export const isAppRole = (role: string): role is AppRole => {
+    return Object.values(AppRoles).includes(role as AppRole);
+};
+
 export interface UserData {
-    id?: number | string;
-    exp: number;
-    iat: number;
-    roles: AppRole[];
+    id?: string;
+    exp?: number;
+    iat?: number;
+    roles: Array<AppRole | string>;
     directions?: string[];
     username: string;
+    kitchen?: {
+        id: number;
+        name: string;
+        comment?: string | null;
+    };
+    first_name?: string;
+    last_name?: string;
 }
 
 export const AUTH_COOKIE_NAME = 'auth';
