@@ -84,6 +84,7 @@ export const useTodayMealStats = () => {
         volsOnFieldCount: volsOnField.length,
 
         individualFedCount,
+        // Из всех кто на поле, вычитаем тех, что планируется поесть по ГБ и тех, кто уже поел индивидуально
         individualLeftCount: Math.max(volsOnField.length - groupPlannedCount - individualFedCount, 0),
 
         groupFedCount,
