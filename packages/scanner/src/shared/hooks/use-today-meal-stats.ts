@@ -18,11 +18,15 @@ const findPlanCell = (cells: MealPlanCell[], mealTime: string, today: string): M
 };
 
 export const useTodayMealStats = () => {
-    const { lastSyncStart, mealTime } = useApp();
+    const { lastSyncStart, mealTime, kitchenId } = useApp();
 
     const volsOnField = useLiveQuery(async () => await getVolsOnField(getToday()), [mealTime, lastSyncStart], []);
 
-    const allGroupBadges = useLiveQuery(async () => db.groupBadges.toArray(), [lastSyncStart], []);
+    const allGroupBadges = useLiveQuery(
+        async () => db.groupBadges.where('kitchen').equals(kitchenId).toArray(),
+        [lastSyncStart],
+        []
+    );
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
 

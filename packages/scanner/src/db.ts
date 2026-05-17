@@ -156,6 +156,8 @@ export interface GroupBadge extends TimeStampedEntity {
     kitchen: number | null;
     planning_cells: Array<MealPlanCell>;
     comment: string | null;
+    kitchen?: number | null;
+    kitchen_name?: string | null;
     role: string | null;
     volunteer_count: number;
     deleted_at: string | null;
