@@ -100,7 +100,8 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = StorageItemPosition.objects.all()
     serializer_class = StorageItemPositionSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['id']
     filterset_class = StoragePositionFilter
 
     def create(self, request, *args, **kwargs):
