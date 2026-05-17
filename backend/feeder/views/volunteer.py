@@ -18,6 +18,7 @@ from feeder.views.xlsx import build_xlsx_response
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
 
+
 class VolunteerFilter(django_filters.FilterSet):
     id__in = NumberInFilter(field_name='id', lookup_expr='in')
     first_name = django_filters.CharFilter(field_name="first_name", lookup_expr='icontains')
@@ -43,6 +44,7 @@ class VolunteerFilter(django_filters.FilterSet):
     supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
     has_supervisor = django_filters.BooleanFilter(method='filter_has_supervisor')
     is_supervisor = django_filters.BooleanFilter(method='filter_is_supervisor')
+    inventory_item = django_filters.NumberFilter(method='filter_inventory_item')
     infant = django_filters.BooleanFilter(field_name='infant')
 
     def filter_has_supervisor(self, queryset, name, value):
@@ -64,6 +66,12 @@ class VolunteerFilter(django_filters.FilterSet):
         if value:
             return queryset.filter(is_ticket_received=True)
         return queryset.exclude(is_ticket_received=True)
+
+    def filter_inventory_item(self, queryset, name, value):
+        return queryset.filter(
+            storage_inventory__position__item_id=value,
+            storage_inventory__count__gt=0
+        ).distinct()
 
     class Meta:
         model = models.Volunteer
