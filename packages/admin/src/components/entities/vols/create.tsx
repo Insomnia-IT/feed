@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { Create, useForm } from '@refinedev/antd';
-import { Form } from 'antd';
+import { useTranslate } from '@refinedev/core';
+import { App, Form } from 'antd';
 
 import type { VolEntity } from 'interfaces';
 
@@ -15,9 +17,27 @@ const contentStyle = {
 };
 
 export const VolCreate = () => {
+    const translate = useTranslate();
+    const { notification } = App.useApp();
+
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
-        onMutationSuccess: (e) => {
-            void onMutationSuccess(e);
+        successNotification: false,
+        onMutationSuccess: async (response) => {
+            await onMutationSuccess(response as { data: { id: number } });
+
+            const volunteerId = response?.data?.id;
+            const volunteerPath = volunteerId ? `/volunteers/edit/${volunteerId}` : '/volunteers';
+            const resourceName = translate('volunteers.volunteers', translate('volunteers.label'));
+            const createSuccessText = translate('notifications.createSuccess', { resource: resourceName }).trim();
+
+            notification.success({
+                message: translate('notifications.success'),
+                description: (
+                    <>
+                        {createSuccessText}. Путь: <Link to={volunteerPath}>{volunteerPath}</Link>
+                    </>
+                )
+            });
         },
         warnWhenUnsavedChanges: true
     });
