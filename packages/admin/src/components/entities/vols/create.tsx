@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
-import { Form } from 'antd';
+import { Form, type FormProps } from 'antd';
 
 import type { VolEntity } from 'interfaces';
 
 import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
+import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 
 const contentStyle = {
     background: 'initial',
@@ -25,6 +26,13 @@ export const VolCreate = () => {
 
     const { isDesktop } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
+
+    const { onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const handleFinishFailed: NonNullable<FormProps['onFinishFailed']> = createVolunteerFormFinishFailedHandler(
+        setActiveKey,
+        form,
+        upstreamOnFinishFailed
+    );
     const shouldHideFooterActions = !isDesktop && activeKey !== '1';
 
     return (
@@ -41,7 +49,7 @@ export const VolCreate = () => {
                 style: contentStyle
             }}
         >
-            <Form {...formProps} scrollToFirstError layout="vertical">
+            <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {renderModal()}

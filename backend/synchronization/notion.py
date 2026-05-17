@@ -25,6 +25,7 @@ MAX_DUMP_SIZE = 50000
 BACK_SYNC_ITEMS_LIMIT = 100
 MIN_SYNC_INTERVAL = 60
 
+
 class NotionSync:
     all_data = False
     error_sync = []
@@ -126,17 +127,42 @@ class NotionSync:
         }
         return serializers.get(obj_name)
 
+    @staticmethod
+    def is_missing_volunteer_error(error):
+        return "Volunteer not found" in str(error)
+
+    @staticmethod
+    def save_data_item(serializer_class, data):
+        try:
+            serializer = serializer_class(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        except Exception as error:
+            return error
+
+        return None
+
     def save_data_from_notion(self, data_list, obj_name):
         serializer_class = self.get_serializer(obj_name)
+        delayed_badges = []
+
         for data in data_list:
-            try:
-                serializer = serializer_class(data=data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-            except Exception as error:
+            error = self.save_data_item(serializer_class, data)
+            if not error:
+                continue
+
+            if obj_name == "badges" and self.is_missing_volunteer_error(error):
+                delayed_badges.append(data)
+                continue
+
+            self.error_sync.append(f"{obj_name} - {data.get('id')}: {error}")
+
+        for data in delayed_badges:
+            error = self.save_data_item(serializer_class, data)
+            if error:
                 self.error_sync.append(f"{obj_name} - {data.get('id')}: {error}")
 
-    def sync_from_notion(self, skip_badges = [], skip_arrivals = []):
+    def sync_from_notion(self, skip_badges=[], skip_arrivals=[]):
         direction = SyncModel.DIRECTION_FROM_SYSTEM
         dt = self.get_last_sync_time(direction)
 
@@ -165,7 +191,7 @@ class NotionSync:
             error = response.text
             self.save_sync_info(sync_data, success=False, error=error)
             raise APIException(f"Sync from notion field with error: {error}")
-        
+
         skip_badge_by_id = {}
         for badge in skip_badges:
             skip_badge_by_id[badge['data']['id']] = True
