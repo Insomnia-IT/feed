@@ -59,13 +59,8 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     }, [responsibleId, responsibleData]);
 
     return (
-        <Row align="bottom" style={{ gap: '4px', display: 'flex' }}>
-            <Form.Item
-                label="Ответственный за меня"
-                name="responsible_id"
-                normalize={(value) => value ?? null}
-                style={{ display: 'flex' }}
-            >
+        <Row align={'bottom'} gutter={8} style={{ gap: '4px' }}>
+            <Form.Item label="Ответственный за меня" name="responsible_id" normalize={(value) => value ?? null}>
                 <Select
                     allowClear
                     showSearch
