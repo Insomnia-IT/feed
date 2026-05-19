@@ -34,9 +34,7 @@ export const GroupBadgeList = () => {
     const { result: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         pagination: {
-            mode: 'server',
-            currentPage: isDesktop ? page : 1,
-            pageSize: isDesktop ? pageSize : 10000
+            mode: 'off'
         }
     });
 
