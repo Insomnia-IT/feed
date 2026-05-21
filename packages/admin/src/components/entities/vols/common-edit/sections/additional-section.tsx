@@ -21,7 +21,7 @@ export const AdditionalSection = ({
     canUnban: boolean;
     canDelete: boolean;
     volunteerId?: number | string;
-    isCreationProcess: boolean
+    isCreationProcess: boolean;
 }) => {
     const form = Form.useFormInstance();
     const [isBanModalVisible, setBanModalVisible] = useState(false);
@@ -89,13 +89,13 @@ export const AdditionalSection = ({
                 >
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} disabled={!canFullEditing} maxLength={255} />
                 </Form.Item>
-                <Form.Item 
-                    label="Кто согласовал" 
-                    name="approver" 
+                <Form.Item
+                    label="Кто согласовал"
+                    name="approver"
                     rules={isCreationProcess ? Rules.required : undefined}
                     hidden={!approver && !isCreationProcess}
                 >
-                    <Input disabled={!isCreationProcess}/>
+                    <Input disabled={!isCreationProcess} />
                 </Form.Item>
             </div>
             <Divider />
