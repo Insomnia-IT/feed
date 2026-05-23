@@ -8,7 +8,7 @@ from feeder.serializers import WashSerializer, WashListSerializer
 from feeder.views.mixins import auto_tag_viewset
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
-from feeder.views.xlsx import build_xlsx_response
+from feeder.views.xlsx import build_xlsx_response, get_xlsx_export_timezone
 
 class WashFilter(django_filters.FilterSet):
     volunteer = django_filters.NumberFilter(field_name="volunteer_id", lookup_expr="exact")
@@ -40,11 +40,12 @@ class WashViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
         )
 
         active_statuses = {"ARRIVED", "STARTED", "JOINED"}
+        export_timezone = get_xlsx_export_timezone()
 
         rows = []
 
         for wash in queryset.iterator(chunk_size=2000):
-            wash_date = timezone.localtime(wash.created_at).date()
+            wash_date = timezone.localtime(wash.created_at, export_timezone).date()
             current_arrival = next(
                 (
                     arrival
