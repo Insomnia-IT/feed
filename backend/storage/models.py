@@ -48,6 +48,13 @@ class StorageItemPosition(TimeMixin, SoftDeleteModelMixin):
 class Issuance(TimeMixin, SoftDeleteModelMixin):
     position = models.ForeignKey(StorageItemPosition, on_delete=models.PROTECT, related_name="issuances")
     volunteer = models.ForeignKey(Volunteer, on_delete=models.PROTECT, related_name="issuances", blank=True, null=True)
+    actor = models.ForeignKey(
+        Volunteer,
+        on_delete=models.SET_NULL,
+        related_name="storage_issuance_actions",
+        blank=True,
+        null=True,
+    )
     count = models.IntegerField()
     notes = models.TextField(blank=True, null=True)
 
@@ -57,6 +64,13 @@ class Movement(TimeMixin):
     count = models.IntegerField()
     from_volunteer = models.ForeignKey(Volunteer, on_delete=models.PROTECT, related_name="outgoing_storage_movements")
     to_volunteer = models.ForeignKey(Volunteer, on_delete=models.PROTECT, related_name="incoming_storage_movements")
+    actor = models.ForeignKey(
+        Volunteer,
+        on_delete=models.SET_NULL,
+        related_name="storage_movement_actions",
+        blank=True,
+        null=True,
+    )
 
 
 class VolunteerInventory(TimeMixin):
@@ -73,5 +87,12 @@ class VolunteerInventory(TimeMixin):
 class Receiving(TimeMixin, SoftDeleteModelMixin):
     position = models.ForeignKey(StorageItemPosition, on_delete=models.PROTECT, related_name="receivings")
     volunteer = models.ForeignKey(Volunteer, on_delete=models.PROTECT, related_name="receivings", blank=True, null=True)
+    actor = models.ForeignKey(
+        Volunteer,
+        on_delete=models.SET_NULL,
+        related_name="storage_receiving_actions",
+        blank=True,
+        null=True,
+    )
     count = models.IntegerField()
     notes = models.TextField(blank=True, null=True)
