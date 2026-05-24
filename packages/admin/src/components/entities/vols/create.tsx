@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 import { Create, useForm } from '@refinedev/antd';
 import { useTranslate } from '@refinedev/core';
 import { App, Form, type FormProps } from 'antd';
@@ -28,6 +27,7 @@ export const VolCreate = () => {
 
             const volunteerId = response?.data?.id;
             const volunteerPath = volunteerId ? `/volunteers/edit/${volunteerId}` : '/volunteers';
+            const volunteerUrl = new URL(volunteerPath, window.location.origin).toString();
             const resourceName = translate('volunteers.volunteers', translate('volunteers.label'));
             const createSuccessText = translate('notifications.createSuccess', { resource: resourceName }).trim();
 
@@ -35,7 +35,7 @@ export const VolCreate = () => {
                 message: translate('notifications.success'),
                 description: (
                     <>
-                        {createSuccessText}. Путь: <Link to={volunteerPath}>{volunteerPath}</Link>
+                        <div>{createSuccessText}.</div> Путь: <a href={volunteerPath}>{volunteerUrl}</a>
                     </>
                 )
             });
