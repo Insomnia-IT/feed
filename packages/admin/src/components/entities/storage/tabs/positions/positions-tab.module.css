@@ -1,0 +1,12 @@
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.search {
+    max-width: 320px;
+    min-width: 220px;
+}

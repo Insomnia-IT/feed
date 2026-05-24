@@ -11,16 +11,20 @@ interface UsePositionsTabParams {
     filters: CrudFilter[];
     actionForm: FormInstance;
     itemsData?: ItemEntity[];
+    search?: string;
 }
 
-export const usePositionsTab = ({ storage, filters, actionForm, itemsData }: UsePositionsTabParams) => {
+export const usePositionsTab = ({ storage, filters, actionForm, itemsData, search }: UsePositionsTabParams) => {
     const {
         tableProps: positionsTableProps,
         tableQuery: { refetch: positionsRefetch }
     } = useTable<StorageItemPositionEntity>({
         resource: 'storage-positions',
         filters: {
-            permanent: filters.concat([{ field: 'has_count', operator: 'eq', value: true }])
+            permanent: filters.concat(
+                [{ field: 'has_count', operator: 'eq', value: true }],
+                search ? [{ field: 'search', operator: 'eq', value: search }] : []
+            )
         },
         pagination: { mode: 'server' },
         queryOptions: { enabled: !!storage?.id }
