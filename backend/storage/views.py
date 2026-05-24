@@ -121,6 +121,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
         count = serializer.validated_data.get('count')
         description = serializer.validated_data.get('description')
         volunteer_id = request.data.get('volunteer')
+        actor_id = request.data.get('actor')
 
         if not item.is_unique:
             existing_position = StorageItemPosition.objects.filter(
@@ -139,6 +140,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
                     Receiving.objects.create(
                         position=existing_position,
                         volunteer_id=volunteer_id,
+                        actor_id=actor_id,
                         count=count,
                         notes=description
                     )
@@ -152,6 +154,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
             Receiving.objects.create(
                 position=position,
                 volunteer_id=self.request.data.get('volunteer'),
+                actor_id=self.request.data.get('actor'),
                 count=position.count,
                 notes=position.description
             )
@@ -161,6 +164,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
         position = self.get_object()
         count = int(request.data.get('count', 0))
         volunteer_id = request.data.get('volunteer')
+        actor_id = request.data.get('actor')
         notes = request.data.get('notes', '')
 
         if count <= 0:
@@ -173,6 +177,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
             Receiving.objects.create(
                 position=position,
                 volunteer_id=volunteer_id,
+                actor_id=actor_id,
                 count=count,
                 notes=notes
             )
@@ -184,6 +189,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
         position = self.get_object()
         count = int(request.data.get('count', 0))
         volunteer_id = request.data.get('volunteer')
+        actor_id = request.data.get('actor')
         notes = request.data.get('notes', '')
 
         if count <= 0:
@@ -207,6 +213,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
             Issuance.objects.create(
                 position=position,
                 volunteer_id=volunteer_id,
+                actor_id=actor_id,
                 count=issuance_count,
                 notes=notes
             )

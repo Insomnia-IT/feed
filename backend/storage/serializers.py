@@ -61,7 +61,7 @@ class MovementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movement
-        fields = ["id", "position", "count", "from_volunteer", "to_volunteer", "created_at", "updated_at"]
+        fields = ["id", "position", "count", "from_volunteer", "to_volunteer", "actor", "created_at", "updated_at"]
 
     def to_internal_value(self, data):
         if "from" in data or "to" in data:
