@@ -6,7 +6,7 @@ import { FilterChooser } from './filter-chooser';
 import { FilterItemControl } from './filter-item-control';
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 
-import styles from '../../list.module.css';
+import styles from './filters.module.css';
 
 import { isEffectiveFilterValue } from './is-effective-filter-value';
 
@@ -158,7 +158,7 @@ export const Filters = ({
         <div className={styles.filters}>
             <div className={`${styles.filterItems} ${isMobile ? styles.filterItemsMobile : ''}`}>
                 <div className={isMobile ? styles.mobileFiltersHeader : undefined}>
-                    <Col style={{ width: '105px' }}>
+                    <Col className={styles.filterAddButtonCol}>
                         <Row>
                             <FilterChooser
                                 removeAllFilters={removeAllFilters}

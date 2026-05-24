@@ -128,29 +128,29 @@ export const useFilters = ({
 
     const { result: groupBadgesResult } = useList<GroupBadgeEntity, HttpError>({
         resource: 'group-badges',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: directionsResult } = useList<DirectionEntity, HttpError>({
         resource: 'directions',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const visibleDirections = useVisibleDirections();
 
     const { result: kitchensResult, query: kitchensQuery } = useList<KitchenEntity, HttpError>({
         resource: 'kitchens',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: feedTypesResult, query: feedTypesQuery } = useList<FeedTypeEntity, HttpError>({
         resource: 'feed-types',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: accessRolesResult, query: accessRolesQuery } = useList<AccessRoleEntity, HttpError>({
         resource: 'access-roles',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: volunteerRolesResult, query: volunteerRolesQuery } = useList<VolunteerRoleEntity, HttpError>({
@@ -160,12 +160,12 @@ export const useFilters = ({
 
     const { result: transportsResult } = useList<TransportEntity, HttpError>({
         resource: 'transports',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: statusesResult } = useList<StatusEntity, HttpError>({
         resource: 'statuses',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity, HttpError>({
@@ -177,7 +177,7 @@ export const useFilters = ({
                 value: true
             }
         ],
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
     const directionsLookup = useMemo(
         () =>
@@ -269,6 +269,12 @@ export const useFilters = ({
             },
             { type: FilterFieldType.String, name: 'printing_batch', title: 'Партия бейджа' },
             { type: FilterFieldType.String, name: 'badge_number', title: 'Номер бейджа' },
+            {
+                type: FilterFieldType.Boolean,
+                single: true,
+                name: 'is_badge_located_at_leader',
+                title: 'Бейдж у руководителя'
+            },
             {
                 type: FilterFieldType.Lookup,
                 name: 'feed_type',

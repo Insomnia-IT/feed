@@ -67,6 +67,10 @@ export const volunteerTableCommonFields: Array<VolunteerField> = [
         title: 'Партия Бейджа'
     },
     {
+        fieldName: 'is_badge_located_at_leader',
+        title: 'Бейдж у руководителя'
+    },
+    {
         fieldName: 'supervisor',
         title: 'Бригадир'
     },

@@ -19,9 +19,6 @@ const getScannerUrl = () => {
 
 export const SCANNER_URL = getScannerUrl();
 
-// Имя кастомного поля "выдан бейдж"
-export const HAS_BADGE_FIELD_NAME = 'Бейдж у руководителя';
-
 export const MEAL_MAP: Record<string, string> = {
     breakfast: 'Завтрак',
     lunch: 'Обед',

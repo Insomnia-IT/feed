@@ -14,8 +14,6 @@ services:
       - 5678:5678
     env_file:
       - ../backend/.env.sample
-    #volumes:
-    #  - ../db/:/db
     volumes:
       - ../db/:/db
       - ../backend/:/app
@@ -28,7 +26,7 @@ services:
     build:
       context: ../
       dockerfile: ./local-dev/Dockerfile_front
-    command: sh -c "cd ./packages/admin && npm run dev"
+    command: sh -c "cd ./packages/admin && npm run dev -- --host"
     container_name: feed_admin
     ports:
       - 3002:3002

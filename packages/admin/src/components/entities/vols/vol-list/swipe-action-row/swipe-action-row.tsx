@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, type ReactNode, type PointerEvent, type MouseEvent } from 'react';
 
-import styles from '../list.module.css';
+import styles from './swipe-action-row.module.css';
 
 const SWIPE_ACTION_WIDTH = 88;
 const DIRECTION_LOCK_THRESHOLD = 6;

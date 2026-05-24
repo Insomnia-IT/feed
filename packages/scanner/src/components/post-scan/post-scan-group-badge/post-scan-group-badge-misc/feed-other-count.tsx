@@ -3,12 +3,29 @@ import { Input } from 'shared/ui/input';
 
 import css from './feed-other-count.module.css';
 
-const fixNumber = (value?: string): number => {
+const normalizeInputValue = ({ value }: { value?: string }): { nextValue: string; nextCount: number } => {
     if (typeof value === 'undefined') {
-        return 0;
+        return {
+            nextValue: '0',
+            nextCount: 0
+        };
     }
 
-    return Number(value?.replaceAll(/\D/g, ''));
+    const digitsOnlyValue = value.replace(/\D/g, '');
+
+    if (digitsOnlyValue === '') {
+        return {
+            nextValue: '0',
+            nextCount: 0
+        };
+    }
+
+    const normalizedNumber = Number(digitsOnlyValue);
+
+    return {
+        nextValue: String(normalizedNumber),
+        nextCount: normalizedNumber
+    };
 };
 
 export const FeedOtherCount = ({
@@ -36,20 +53,18 @@ export const FeedOtherCount = ({
                         style={{
                             maxWidth: '90%'
                         }}
-                        type="number"
-                        value={vegansCount}
+                        type="text"
+                        inputMode="numeric"
+                        value={String(vegansCount)}
                         onChange={(event) => {
-                            const textValue = event?.currentTarget?.value;
+                            const { nextCount, nextValue } = normalizeInputValue({
+                                value: event.currentTarget.value
+                            });
 
-                            if (textValue === '' || textValue === undefined) {
-                                setVegansCount(0);
-
-                                return;
+                            if (event.currentTarget.value !== nextValue) {
+                                event.currentTarget.value = nextValue;
                             }
-
-                            const value = fixNumber(textValue);
-
-                            setVegansCount(value);
+                            setVegansCount(nextCount);
                         }}
                     />
                 </div>
@@ -64,19 +79,18 @@ export const FeedOtherCount = ({
                         style={{
                             maxWidth: '90%'
                         }}
-                        type="number"
-                        value={nonVegansCount}
+                        type="text"
+                        inputMode="numeric"
+                        value={String(nonVegansCount)}
                         onChange={(event) => {
-                            const textValue = event?.currentTarget?.value;
+                            const { nextCount, nextValue } = normalizeInputValue({
+                                value: event.currentTarget.value
+                            });
 
-                            if (textValue === '' || textValue === undefined) {
-                                setNonVegansCount(0);
-                                return;
+                            if (event.currentTarget.value !== nextValue) {
+                                event.currentTarget.value = nextValue;
                             }
-
-                            const value = fixNumber(textValue);
-
-                            setNonVegansCount(value);
+                            setNonVegansCount(nextCount);
                         }}
                     />
                 </div>

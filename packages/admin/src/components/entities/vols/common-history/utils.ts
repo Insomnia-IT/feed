@@ -34,7 +34,9 @@ export const FIELD_LABELS: Record<string, string> = {
     batch: 'Партия бейджа',
     ticket: 'Билет',
     qr: 'QR бейджа',
-    supervisor: 'Бригадир'
+    supervisor: 'Бригадир',
+    approver: 'Кто согласовал',
+    is_badge_located_at_leader: 'Бейдж у руководителя'
 };
 
 export const STATUS_MAP: Record<string, string> = {

@@ -5,6 +5,10 @@ import type { ApiHook } from 'request/lib';
 import type { Volunteer } from 'db';
 import { db } from 'db';
 
+interface ServerVolunteer extends Omit<Volunteer, 'qr'> {
+    qr: string | null;
+}
+
 export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
     const [error, setError] = useState<unknown>(null);
     const [updated, setUpdated] = useState<number | null>(null);
@@ -20,42 +24,27 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
 
             return new Promise((res, rej) => {
                 axios
-                    .get(`${baseUrl}/volunteers/`, {
+                    .get<{ results: Array<ServerVolunteer> }>(`${baseUrl}/volunteers/`, {
                         headers: {
                             Authorization: `K-PIN-CODE ${pin}`
                         },
                         params: {
-                            ...filters,
-                            is_deleted: 'all'
+                            ...filters
                         }
                     })
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
-                        // const qrs = {};
-                        // const ids = {};
-                        // for (const v of results as Array<Volunteer>) {
-                        //     if (ids[v.id]) {
-                        //         console.log(ids[v.id], v);
-                        //     } else {
-                        //         ids[v.id] = v;
-                        //     }
-                        //     if (qrs[v.qr]) {
-                        //         console.log(qrs[v.qr], v);
-                        //     } else {
-                        //         qrs[v.qr] = v;
-                        //     }
-                        // }
 
-                        const deletedVolunteerIds = (results as Array<Volunteer>)
-                            .filter(({ deleted_at, qr }) => deleted_at || !qr)
-                            .map(({ id }) => id);
-
-                        const volunteers = (results as Array<Volunteer>).filter(
-                            ({ deleted_at, qr }) => qr && !deleted_at
+                        const volunteers = results.filter(
+                            (volunteer): volunteer is ServerVolunteer & { qr: string } => {
+                                return Boolean(volunteer.qr);
+                            }
                         );
 
+                        const skippedVolunteerIds = results.filter(({ qr }) => !qr).map(({ id }) => id);
+
                         try {
-                            await db.volunteers.bulkDelete(deletedVolunteerIds);
+                            await db.volunteers.bulkDelete(skippedVolunteerIds);
                             await db.volunteers.bulkPut(volunteers);
                         } catch (e) {
                             console.error(e);

@@ -52,7 +52,7 @@ This is a monorepo for the "Insight/Feed" system, used for managing volunteers, 
     - `packages/admin`: React 19, TypeScript, Vite, Refine 6, Ant Design, TanStack Query, React Router 7.
     - `packages/scanner`: React 19, TypeScript, Vite, PWA, Dexie.
     - Both frontend packages use Vite and `@vitejs/plugin-react`.
-- **Monorepo Tools**: npm workspaces, Lerna 9, Nx 22.
+- **Monorepo Tools**: npm workspaces.
 
 ### Key Models (Backend)
 
@@ -93,3 +93,10 @@ This rule improves:
 - **Readability**: Named parameters are self-documenting
 - **Maintainability**: Adding new parameters doesn't require changing call sites
 - **Type Safety**: Easier to validate and understand parameter shapes
+
+# Documentation Requirement
+
+CRITICAL: For every code change or new feature implemented, you MUST
+simultaneously update or generate the corresponding documentation
+(e.g., README.md, JSDoc, or .md files in /docs).
+Never consider a task complete without documentation.

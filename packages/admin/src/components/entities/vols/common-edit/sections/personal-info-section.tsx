@@ -81,9 +81,9 @@ export const PersonalInfoSection = ({
                 <Form.Item label="Партия бейджа" name="printing_batch">
                     <Input disabled={!canFullEditing} />
                 </Form.Item>
-                {/* <Form.Item name="is_badged_leader" valuePropName="checked">
+                <Form.Item name="is_badge_located_at_leader" valuePropName="checked">
                     <Checkbox>Бейдж у Руководителя</Checkbox>
-                </Form.Item> */}
+                </Form.Item>
             </div>
             <QRScannerModal open={openQrModal} onClose={() => setOpenQrModal(false)} handleQRChange={handleQRChange} />
         </>
