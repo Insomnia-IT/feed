@@ -1,8 +1,8 @@
 import React from 'react';
 import type { MealPlanRowRender } from '../useGroupMealPlanData';
-import { Card, Modal, Button } from 'antd';
+import { Card, Button } from 'antd';
 import styles from './day-display.module.css';
-import dayjs from 'dayjs';
+import type dayjs from 'dayjs';
 import cn from 'classnames';
 
 const formatMeals = (meals: { amount_meat: number | null; amount_vegan: number | null }, isMobile: boolean = false) => {
@@ -35,9 +35,7 @@ interface MealCellProps {
 }
 
 export const MealCell: React.FC<MealCellProps> = ({ value, record, mealType, mealTypeKey, isMobile, onClick }) => {
-    const showWarningMessage = record.date.isSame(dayjs(), 'day') && !record.editable;
-
-    if (!record.editable && !showWarningMessage) {
+    if (!record.editable) {
         return <span className={styles.mealCell}>{formatMeals(value, isMobile)}</span>;
     }
 
@@ -47,22 +45,14 @@ export const MealCell: React.FC<MealCellProps> = ({ value, record, mealType, mea
             variant="outlined"
             className={cn(styles.mealCell, styles.editable)}
             onClick={() => {
-                if (showWarningMessage) {
-                    Modal.warning({
-                        title: 'Невозможно редактировать',
-                        content:
-                            record.readonlyMessage || 'После 21:00 следующий день можно редактировать только через бюро'
-                    });
-                } else {
-                    onClick({
-                        date: record.date,
-                        mealType,
-                        mealTypeKey,
-                        meals: value,
-                        editable: record.editable,
-                        message: record.readonlyMessage
-                    });
-                }
+                onClick({
+                    date: record.date,
+                    mealType,
+                    mealTypeKey,
+                    meals: value,
+                    editable: record.editable,
+                    message: record.readonlyMessage
+                });
             }}
         >
             {formatMeals(value, isMobile)}
