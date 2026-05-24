@@ -14,6 +14,7 @@ import { PositionSuccessModal } from './modals/position-success-modal';
 import { useItemOptions, useItemsTab } from '../items/hooks/use-items-tab';
 import { useBinOptions } from '../bins/hooks/use-bins-tab';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
+import { useDebouncedCallback } from 'shared/hooks';
 
 import styles from './positions-tab.module.css';
 
@@ -23,6 +24,7 @@ export const PositionsTab: React.FC = () => {
     const [positionSearch, setPositionSearch] = React.useState('');
     const { itemsTableProps } = useItemsTab();
     const itemsData = itemsTableProps.dataSource as ItemEntity[] | undefined;
+    const debouncedSetPositionSearch = useDebouncedCallback(setPositionSearch, 250);
     const positions = usePositionsTab({
         storage,
         filters,
@@ -87,13 +89,16 @@ export const PositionsTab: React.FC = () => {
     return (
         <div>
             <div className={styles.toolbar}>
-                <Input.Search
+                <Input
                     allowClear
                     placeholder="Поиск по ID позиции"
                     className={styles.search}
-                    onSearch={(value) => setPositionSearch(value.trim())}
+                    onInput={(event) => {
+                        debouncedSetPositionSearch(event.currentTarget.value.trim());
+                    }}
                     onChange={(event) => {
                         if (!event.target.value) {
+                            debouncedSetPositionSearch('');
                             setPositionSearch('');
                         }
                     }}
