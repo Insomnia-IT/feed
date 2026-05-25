@@ -79,6 +79,7 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                     options={supervisorOptions}
                     loading={supervisorsLoading}
                     disabled={!canEditBrigadier}
+                    style={{ textOverflow: 'ellipsis', maxWidth: '90vw' }}
                 />
             </Form.Item>
 

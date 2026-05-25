@@ -74,6 +74,7 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
                     options={responsibleOptions}
                     loading={responsibleLoading}
                     disabled={!canEditResponsible}
+                    style={{ textOverflow: 'ellipsis', maxWidth: '90vw' }}
                 />
             </Form.Item>
 
