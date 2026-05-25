@@ -1,7 +1,7 @@
 import React from 'react';
 import type { MealPlanRowRender } from '../useGroupMealPlanData';
 import { Card, Button } from 'antd';
-import type { PlannedDayCounts } from '../calculatePlannedCountsByDate';
+import type { PlannedDayCounts } from '@feed/shared/planning';
 import styles from './day-display.module.css';
 import type dayjs from 'dayjs';
 import cn from 'classnames';
@@ -18,38 +18,34 @@ interface DisplayValue {
 
 const PLACEHOLDER = '-';
 
+const buildDisplayValue = (explicit: number | null, calculated: number | undefined): DisplayValue => {
+    if (explicit !== null) {
+        return { label: String(explicit), isCalculated: false };
+    }
+    if (calculated !== undefined) {
+        return { label: String(calculated), isCalculated: true };
+    }
+    return { label: PLACEHOLDER, isCalculated: false };
+};
+
 const getDisplayValues = ({
     calculatedCounts,
     value
 }: {
     value: MealValues;
     calculatedCounts?: PlannedDayCounts;
-}): { meat: DisplayValue; vegan: DisplayValue } => {
-    const buildDisplayValue = (explicit: number | null, calculated: number | undefined): DisplayValue => {
-        if (explicit !== null) {
-            return { label: String(explicit), isCalculated: false };
-        }
-        if (calculated !== undefined) {
-            return { label: String(calculated), isCalculated: true };
-        }
-        return { label: PLACEHOLDER, isCalculated: false };
-    };
+}): { meat: DisplayValue; vegan: DisplayValue } => ({
+    meat: buildDisplayValue(value?.amount_meat ?? null, calculatedCounts?.meat),
+    vegan: buildDisplayValue(value?.amount_vegan ?? null, calculatedCounts?.vegan)
+});
 
-    return {
-        meat: buildDisplayValue(value?.amount_meat ?? null, calculatedCounts?.meat),
-        vegan: buildDisplayValue(value?.amount_vegan ?? null, calculatedCounts?.vegan)
-    };
-};
-
-const renderMeals = ({
-    calculatedCounts,
-    isMobile = false,
-    value
-}: {
+interface RenderMealsProps {
     value: MealValues;
     calculatedCounts?: PlannedDayCounts;
     isMobile?: boolean;
-}): React.ReactNode => {
+}
+
+const RenderMeals: React.FC<RenderMealsProps> = ({ calculatedCounts, isMobile = false, value }) => {
     const { meat, vegan } = getDisplayValues({ value, calculatedCounts });
 
     const meatNode = (
@@ -106,7 +102,7 @@ export const MealCell: React.FC<MealCellProps> = ({
     record,
     value
 }) => {
-    const content = renderMeals({ value, calculatedCounts, isMobile });
+    const content = <RenderMeals value={value} calculatedCounts={calculatedCounts} isMobile={isMobile} />;
 
     if (!record.editable) {
         return <span className={styles.mealCell}>{content}</span>;

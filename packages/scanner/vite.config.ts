@@ -71,7 +71,9 @@ export default defineConfig({
             request: path.resolve(__dirname, './src/request'),
             db: path.resolve(__dirname, './src/db.ts'),
             config: path.resolve(__dirname, './src/config.ts'),
-            'request-local-db': path.resolve(__dirname, './src/request-local-db')
+            'request-local-db': path.resolve(__dirname, './src/request-local-db'),
+            '@feed/shared/planning': path.resolve(__dirname, '../shared/src/planning/index.ts'),
+            '@feed/shared': path.resolve(__dirname, '../shared/src/index.ts')
         }
     },
 

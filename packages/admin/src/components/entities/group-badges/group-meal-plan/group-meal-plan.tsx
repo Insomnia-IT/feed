@@ -5,11 +5,7 @@ import dayjs from 'dayjs';
 import styles from './group-meal-plan.module.css';
 import { type MealPlanRowRender, useGroupMealPlanData } from '../useGroupMealPlanData';
 import { useGroupMealPlanUI } from '../useGroupMealPlanUI';
-import {
-    getPlannedCountsForDate,
-    type PlannedCountsByDate,
-    type PlannedDayCounts
-} from '../calculatePlannedCountsByDate';
+import { getPlannedCountsForDate } from '@feed/shared/planning';
 import { useGroupBadgeVolunteerCounts } from '../useGroupBadgeVolunteerCounts';
 import { MealPlanEditModal } from '../meal-plan-edit-modal/meal-plan-edit-modal';
 import { useScreen } from 'shared/providers';
@@ -17,14 +13,6 @@ import type { BaseKey } from '@refinedev/core';
 import { MealCell, MobileDayCard } from '../day-display/day-display';
 
 type MealValues = { amount_meat: number | null; amount_vegan: number | null };
-
-const getCalculatedCountsForRow = ({
-    countsByDate,
-    date
-}: {
-    countsByDate: PlannedCountsByDate;
-    date: dayjs.Dayjs;
-}): PlannedDayCounts => getPlannedCountsForDate(countsByDate, date.format('YYYY-MM-DD'));
 
 export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
     const { displayData, handleSave: saveToData, setShowAll, showAll } = useGroupMealPlanData({ id });
@@ -92,10 +80,10 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                                 mealTypeKey="breakfast"
                                 isMobile={isMobile}
                                 onClick={handleCellClick}
-                                calculatedCounts={getCalculatedCountsForRow({
+                                calculatedCounts={getPlannedCountsForDate(
                                     countsByDate,
-                                    date: record.date
-                                })}
+                                    record.date.format('YYYY-MM-DD')
+                                )}
                             />
                         )}
                     />
@@ -111,10 +99,10 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                                 mealTypeKey="lunch"
                                 isMobile={isMobile}
                                 onClick={handleCellClick}
-                                calculatedCounts={getCalculatedCountsForRow({
+                                calculatedCounts={getPlannedCountsForDate(
                                     countsByDate,
-                                    date: record.date
-                                })}
+                                    record.date.format('YYYY-MM-DD')
+                                )}
                             />
                         )}
                     />
@@ -130,10 +118,10 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                                 mealTypeKey="dinner"
                                 isMobile={isMobile}
                                 onClick={handleCellClick}
-                                calculatedCounts={getCalculatedCountsForRow({
+                                calculatedCounts={getPlannedCountsForDate(
                                     countsByDate,
-                                    date: record.date
-                                })}
+                                    record.date.format('YYYY-MM-DD')
+                                )}
                             />
                         )}
                     />
@@ -148,10 +136,7 @@ export const GroupMealPlan: React.FC<{ id?: BaseKey }> = ({ id }) => {
                         isToday={record.date.isSame(today, 'day')}
                         onCellClick={handleCellClick}
                         isMobile={isMobile}
-                        calculatedCounts={getCalculatedCountsForRow({
-                            countsByDate,
-                            date: record.date
-                        })}
+                        calculatedCounts={getPlannedCountsForDate(countsByDate, record.date.format('YYYY-MM-DD'))}
                     />
                 ))}
             </div>

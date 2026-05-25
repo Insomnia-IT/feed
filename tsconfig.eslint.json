@@ -8,6 +8,11 @@
         "jsx": "react-jsx",
         "lib": ["ES2022", "DOM", "DOM.Iterable"]
     },
-    "include": ["packages/admin/src/**/*", "packages/scanner/src/**/*"],
+    "include": [
+        "packages/admin/src/**/*",
+        "packages/scanner/src/**/*",
+        "packages/shared/src/**/*",
+        "packages/shared/vitest.config.ts"
+    ],
     "exclude": ["**/dist", "**/build", "**/node_modules"]
 }

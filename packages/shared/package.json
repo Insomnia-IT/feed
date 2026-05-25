@@ -1,0 +1,23 @@
+{
+    "name": "@feed/shared",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts",
+        "./planning": "./src/planning/index.ts"
+    },
+    "scripts": {
+        "tc": "tsc --noemit --emitDeclarationOnly false",
+        "test": "vitest",
+        "test:run": "vitest run",
+        "lint:js": "eslint .",
+        "lint-fix:js": "eslint . --fix"
+    },
+    "dependencies": {
+        "dayjs": "^1.11.13"
+    },
+    "devDependencies": {
+        "vitest": "^4.1.3"
+    }
+}
