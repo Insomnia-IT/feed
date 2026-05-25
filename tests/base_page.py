@@ -12,7 +12,7 @@ class BasePage:
         self.url = url
 
     def open(self):
-        self.page.goto(self.url)
+        self.page.goto(self.url, wait_until="domcontentloaded")
 
     def wait_for_list_page(self, path, timeout=30000):
         self.page.wait_for_url(re.compile(rf"{re.escape(path)}(?:\?.*)?$"), timeout=timeout)
@@ -114,22 +114,25 @@ class BasePage:
         go_to_create.click()
 
 
+    def _select_ant_option(self, selector, option_text=None):
+        select = self.page.locator(selector)
+        select.click()
+        dropdown = self.page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").last
+        dropdown.wait_for(state="visible")
+
+        options = dropdown.locator(".ant-select-item-option")
+        option = options.filter(has_text=option_text).first if option_text else options.first
+        option.wait_for(state="visible")
+        option.click(force=True)
+
+
     def create_badge(self):
         badge_name =self.page.locator(badge_create.BADGE_NAME)
         badge_name.fill("autotest" + datetime.now().strftime("%d%m%H%M%S"))
-        department = self.page.locator(badge_create.DEPARTMENT_NAME)
-        department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
-        department_option.wait_for(state="visible")
-        department_option.click()
-        role = self.page.locator("#role")
-        role.click()
-        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
-            has_text="Волонтёр"
-        ).first
-        role_option.wait_for(state="visible")
-        role_option.click()
+        self._select_ant_option(badge_create.DEPARTMENT_NAME)
+        self._select_ant_option("#role", "Волонтёр")
+        self._select_ant_option(badge_create.KITCHEN_NAME)
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         with self.page.expect_response(
@@ -253,7 +256,10 @@ class BasePage:
             raise AssertionError("Не найден волонтёр для добавления в групповой бейдж")
 
         checkbox = selected_row.locator(group_badges.CHECKBOX).first
-        checkbox.check(force=True)
+        selected_row.locator(".ant-checkbox-wrapper").first.click()
+        checkbox.wait_for(state="attached")
+        if not checkbox.is_checked():
+            checkbox.check(force=True)
         ok = modal.locator(group_badges.OK_BUTTON)
         ok.click()
 
