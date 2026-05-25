@@ -7,10 +7,12 @@ import { useDebouncedCallback } from 'shared/hooks';
 import { AppRoles } from '../../../../auth';
 import type { VolEntity } from 'interfaces';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
+import { useScreen } from '../../../../shared/providers';
 
 export const SupervisorField = ({ form }: { form: FormInstance }) => {
     const supervisorId = Form.useWatch('supervisor_id', form);
     const supervisor = Form.useWatch('supervisor', form) as { id: number; name: string } | null;
+    const { isMobile } = useScreen();
     const [brigadierSearch, setBrigadierSearch] = useState('');
     const canEditBrigadier = useCanAccess({ action: 'brigadier_edit', resource: 'volunteers' });
     const debouncedBrigadierSearch = useDebouncedCallback((value: string) => setBrigadierSearch(value));
@@ -90,7 +92,9 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                             window.location.href = `${window.location.origin}/volunteers/edit/${supervisorId}`;
                         }
                     }}
-                />
+                >
+                    {isMobile ? 'Открыть бригадира' : ''}
+                </Button>
             </Form.Item>
         </Row>
     );

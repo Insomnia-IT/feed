@@ -6,9 +6,11 @@ import { useDebouncedCallback } from 'shared/hooks';
 import type { VolEntity } from 'interfaces';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import { EyeOutlined } from '@ant-design/icons';
+import { useScreen } from '../../../../shared/providers';
 
 export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     const responsibleId = Form.useWatch('responsible_id', form);
+    const { isMobile } = useScreen();
 
     const [responsibleSearch, setResponsibleSearch] = useState('');
     // TODO: replace
@@ -39,10 +41,12 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
             pageSize: 50
         }
     });
-    const responsibleData = responsibleResult?.data;
+
     const responsibleLoading = responsibleQuery.isLoading;
 
     const responsibleOptions = useMemo(() => {
+        const responsibleData = responsibleResult?.data;
+
         const options = responsibleData?.map((volunteer) => ({
             value: volunteer.id,
             label: formatVolunteerLabel(volunteer)
@@ -56,7 +60,7 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
         }
 
         return options;
-    }, [responsibleId, responsibleData]);
+    }, [responsibleId, responsibleResult]);
 
     return (
         <Row align={'bottom'} gutter={8} style={{ gap: '4px' }}>
@@ -64,19 +68,18 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
                 <Select
                     allowClear
                     showSearch
-                    placeholder="Найти отвтетсвенного"
+                    placeholder="Найти ответственного"
                     filterOption={false}
                     onSearch={debouncedBrigadierSearch}
                     options={responsibleOptions}
                     loading={responsibleLoading}
                     disabled={!canEditResponsible}
-                    style={{ flex: '1 1 0' }}
                 />
             </Form.Item>
 
             <Form.Item label="">
                 <Button
-                    title="Открыть отвтетсвенного"
+                    title="Открыть ответственного"
                     icon={<EyeOutlined />}
                     disabled={!responsibleId}
                     onClick={() => {
@@ -84,7 +87,9 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
                             window.location.href = `${window.location.origin}/volunteers/edit/${responsibleId}`;
                         }
                     }}
-                />
+                >
+                    {isMobile ? 'Открыть ответственного' : ''}
+                </Button>
             </Form.Item>
         </Row>
     );
