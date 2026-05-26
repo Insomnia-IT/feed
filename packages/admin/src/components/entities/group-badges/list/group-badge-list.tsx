@@ -56,20 +56,6 @@ export const GroupBadgeList = () => {
             return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
         }) ?? [];
 
-    // const pagination: TablePaginationConfig = {
-    //     total: data.length ?? 0,
-    //     showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
-    //     current: page,
-    //     pageSize,
-    //     showSizeChanger: true,
-    //     onChange: (newPage, newPageSize) => {
-    //         setPage(newPage);
-    //         setPageSize(newPageSize);
-    //         setItem(LS_PAGE_KEY, String(newPage));
-    //         setItem(LS_SIZE_KEY, String(newPageSize));
-    //     }
-    // };
-
     const pagination: TablePaginationConfig = {
         total: data.length,
         current: page,
