@@ -12,6 +12,10 @@ services:
     hostname: chrome
     privileged: true
     shm_size: 2g
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
       interval: 15s
@@ -28,6 +32,10 @@ services:
       context: .
       network: host
     command: bash -c 'python -m pytest --retries $NREPS test_regress.py'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
     depends_on:
       chrome:
         condition: service_healthy
