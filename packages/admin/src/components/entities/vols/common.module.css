@@ -101,23 +101,6 @@
     font-weight: 400;
 }
 
-.isActiveCheckboxWrap {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    width: 100%;
-}
-
-.isActiveCheckbox:not(:last-child) {
-    margin-right: 16px;
-}
-
-.photo {
-    width: 100%;
-    margin-bottom: 4px;
-    background-color: rgb(245 245 245);
-}
-
 .twoEqualColumnsWrap {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -132,54 +115,7 @@
     justify-content: flex-start;
 }
 
-.nameInput {
-    flex-grow: 1;
-}
-
-.nameInput:not(:last-child) {
-    margin-right: 12px;
-}
-
-.phoneInput {
-    flex-grow: 2;
-    margin-right: 12px;
-}
-
-.genderSelect {
-    flex-grow: 1;
-}
-
-.kitchenTypeWrap {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-}
-
-.kitchenSelect {
-    flex-grow: 1;
-    margin-right: 12px;
-}
-
-.typeMeal {
-    flex-grow: 1;
-}
-
 /* HR информация */
-
-.hrInputsWrap {
-    display: flex;
-    flex-grow: 1;
-    flex-wrap: nowrap;
-    align-items: center;
-}
-
-.hrInput {
-    width: 50%;
-}
-
-.hrInput:not(:last-child) {
-    margin-right: 12px;
-}
 
 /* Даты на поле */
 .dateWrap {
@@ -199,19 +135,6 @@
 
 /* Кастомные поля */
 
-.customDescr {
-    margin: 0;
-    padding: 60px 0;
-    font-size: 25px;
-    text-align: center;
-}
-
-/* QR - info */
-
-.badgeQR {
-    flex-grow: 1;
-}
-
 .threeColumnsWrap {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -220,19 +143,6 @@
 
 .threeColumnsWrap > * {
     align-self: start;
-}
-
-.badgeInfo:not(:last-child) {
-    margin-right: 12px;
-}
-
-.badgeInfoPart {
-    display: flex;
-    gap: 12px;
-}
-
-.badgeInfoPart > * {
-    flex: 1;
 }
 
 /* Дополнительно */
@@ -245,34 +155,6 @@
 
 /* модалка блокировки */
 
-.modalWindow {
-    display: flex;
-    flex-flow: column nowrap;
-    padding-left: 30px;
-    background-color: white;
-}
-
-.carefulIcon {
-    position: absolute;
-    top: 24px;
-    left: 24px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 22px;
-    height: 22px;
-    border: 2px solid rgb(250 173 20);
-    border-radius: 50%;
-}
-
-.carefulDescr {
-    display: block;
-    color: rgb(250 173 20);
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 150%;
-}
-
 .modalTitle {
     margin: 0;
     margin-bottom: 8px;
@@ -281,16 +163,6 @@
     font-weight: 500;
     font-size: 16px;
     line-height: 150%;
-}
-
-.modalDescr {
-    margin: 0;
-    margin-bottom: 24px;
-    padding: 0;
-    color: rgb(0 0 0 / 0.85);
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 157%;
 }
 
 .visuallyHidden {
@@ -302,10 +174,6 @@
     margin: -1px;
     padding: 0;
     border: 0;
-}
-
-.reactQuill * {
-    border-radius: 8px;
 }
 
 .blockButton {
@@ -332,14 +200,6 @@
     float: right;
 }
 
-.modalButtonWrap {
-    display: flex;
-}
-
-.onCancelButton {
-    margin-right: 10px;
-}
-
 /* ADAPTIVES */
 @media (width <= 1366px) {
     .edit__nav {
@@ -348,22 +208,6 @@
 }
 
 @media (width <= 768px) {
-    .nameInput {
-        width: 100%;
-    }
-
-    .padInp {
-        padding-right: 130px;
-    }
-
-    .phoneInput {
-        width: 100%;
-    }
-
-    .genderSelect {
-        width: 100%;
-    }
-
     .dateWrapper {
         padding-top: 20px;
         border-top: 1px solid rgb(201 201 201);
@@ -377,12 +221,6 @@
 
     .dateWrap * {
         margin-bottom: 0;
-    }
-
-    .dateCheck {
-        position: absolute;
-        top: 0;
-        right: 0;
     }
 
     .deleteButton {
@@ -407,25 +245,9 @@
 }
 
 @media (width <= 576px) {
-    .hrInputsWrap {
-        flex-direction: column;
-    }
-
-    .hrInput {
-        width: 100%;
-    }
-
     .deleteButton {
         top: 0;
         right: 12px;
-    }
-
-    .badgeInfoWrap {
-        flex-direction: column;
-    }
-
-    .badgeInfo {
-        width: 100%;
     }
 
     .blockDeleteWrap {
@@ -435,10 +257,6 @@
 
     .blockButton {
         margin-bottom: 20px;
-    }
-
-    .modalButtonWrap {
-        margin-left: -35px;
     }
 
     .resultDescr {
