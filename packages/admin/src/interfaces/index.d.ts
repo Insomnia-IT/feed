@@ -41,6 +41,7 @@ export interface VolEntity extends TimeStampedEntity {
     deleted_at?: string | null;
     supervisor_id?: number | null;
     supervisor?: { id: number; name: string } | null;
+    approver?: string | null;
     person?: PersonEntity | null;
     person_id?: string | null;
     responsible_id?: number | null;
@@ -125,6 +126,8 @@ export interface GroupBadgeEntity extends TimeStampedEntity {
     id: number;
     qr: string | null;
     direction: DirectionEntity | null;
+    kitchen?: number | null;
+    kitchen_name?: string | null;
     role: string | null;
     name: string;
     comment: string | null;

@@ -1,5 +1,4 @@
 import time
-from selenium.webdriver.common.by import By
 
 class registration():
     CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
@@ -30,6 +29,7 @@ class meal_create():
 class badge_create():
     BADGE_NAME = "#name"
     DEPARTMENT_NAME = "#direction"
+    KITCHEN_NAME = "#kitchen"
     QR_NAME = "#qr"
     SUBMIT_BUTTON = "button[type='submit']"
     COUNTER = "li.ant-pagination-total-text"
@@ -82,6 +82,7 @@ class create_user():
     UNBAN_BUTTON = "//button[span[text()='Разблокировать волонтера']]"
     UNBAN_CONFIRM = "//button[@type='submit'][span[text()='Разблокировать волонтера']]"
 
+    APPROVER_INPUT = "input[id=approver]"
 
     FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
@@ -103,4 +104,3 @@ class create_user():
     # Карточка записи (есть даже если нет diff-полей с itemDrescrNew)
     HISTORY_ITEM_CARD = "div[class*='_historyItem']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
-
