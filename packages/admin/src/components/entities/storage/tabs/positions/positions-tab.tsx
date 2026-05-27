@@ -1,8 +1,9 @@
 import React from 'react';
-import { Table, Button, Space } from 'antd';
+import { Table, Button, Input, Space } from 'antd';
 import { ArrowDownOutlined, ArrowRightOutlined, ArrowUpOutlined, PlusOutlined } from '@ant-design/icons';
-import type { StorageItemPositionEntity, ItemEntity } from 'interfaces';
 import type { ColumnsType } from 'antd/es/table';
+
+import type { StorageItemPositionEntity, ItemEntity } from 'interfaces';
 import { usePositionsTab } from './hooks/use-positions-tab';
 import { useStorageData, useStorageQrScanner } from '../../hooks';
 import { ReceiveModal } from './receive-modal';
@@ -13,17 +14,23 @@ import { PositionSuccessModal } from './modals/position-success-modal';
 import { useItemOptions, useItemsTab } from '../items/hooks/use-items-tab';
 import { useBinOptions } from '../bins/hooks/use-bins-tab';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
+import { useDebouncedCallback } from 'shared/hooks';
+
+import styles from './positions-tab.module.css';
 
 export const PositionsTab: React.FC = () => {
     const { storage, filters } = useStorageData();
     const qrScanner = useStorageQrScanner();
+    const [positionSearch, setPositionSearch] = React.useState('');
     const { itemsTableProps } = useItemsTab();
     const itemsData = itemsTableProps.dataSource as ItemEntity[] | undefined;
+    const debouncedSetPositionSearch = useDebouncedCallback(setPositionSearch, 250);
     const positions = usePositionsTab({
         storage,
         filters,
         actionForm: qrScanner.actionForm,
-        itemsData
+        itemsData,
+        search: positionSearch
     });
     const { itemOptions } = useItemOptions();
     const { binOptions } = useBinOptions(filters);
@@ -81,7 +88,21 @@ export const PositionsTab: React.FC = () => {
 
     return (
         <div>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+            <div className={styles.toolbar}>
+                <Input
+                    allowClear
+                    placeholder="Поиск по ID позиции"
+                    className={styles.search}
+                    onInput={(event) => {
+                        debouncedSetPositionSearch(event.currentTarget.value.trim());
+                    }}
+                    onChange={(event) => {
+                        if (!event.target.value) {
+                            debouncedSetPositionSearch('');
+                            setPositionSearch('');
+                        }
+                    }}
+                />
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => positions.showPositionModal()}>
                     Принять
                 </Button>

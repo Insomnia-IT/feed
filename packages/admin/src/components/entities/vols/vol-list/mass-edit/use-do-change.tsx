@@ -68,8 +68,8 @@ export const useDoChange = ({
             });
 
             open({
-                description: 'Изменения успешно применены',
-                message: 'Список волонтеров сейчас обновится',
+                description: '',
+                message: 'Изменения успешно применены',
                 type: 'success',
                 undoableTimeout: 5000
             });
