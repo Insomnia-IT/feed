@@ -14,14 +14,6 @@ export const mergeVolunteersIntoSelection = (params: {
     return [...byId.values()];
 };
 
-export const removeVolunteersFromSelection = (params: {
-    current: VolEntity[];
-    volunteerIds: Iterable<number>;
-}): VolEntity[] => {
-    const ids = new Set(volunteerIds);
-    return current.filter((vol) => !ids.has(vol.id));
-};
-
 export const getVolunteersInIndexRange = (params: {
     volunteers: VolEntity[];
     fromIndex: number;

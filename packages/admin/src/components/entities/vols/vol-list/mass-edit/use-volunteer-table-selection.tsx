@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type Dispatch,
+    type MouseEvent,
+    type SetStateAction
+} from 'react';
 import type { TableProps } from 'antd';
 
 import type { VolEntity } from 'interfaces';
@@ -29,9 +38,7 @@ export const useVolunteerTableSelection = ({
     const [isSelectionDragging, setIsSelectionDragging] = useState(false);
     const dragRef = useRef<DragState | null>(null);
     const lastClickedIndexRef = useRef<number | null>(null);
-    const selectedIdSet = useRef(new Set<number>());
-
-    selectedIdSet.current = new Set(selectedVols.map((vol) => vol.id));
+    const selectedIds = useMemo(() => new Set(selectedVols.map((vol) => vol.id)), [selectedVols]);
 
     const endDrag = useCallback(() => {
         dragRef.current = null;
@@ -99,7 +106,7 @@ export const useVolunteerTableSelection = ({
                     return;
                 }
 
-                const mode = getSelectionDragMode(selectedIdSet.current.has(record.id));
+                const mode = getSelectionDragMode(selectedIds.has(record.id));
                 dragRef.current = { active: true, mode, visited: new Set([record.id]) };
                 setIsSelectionDragging(true);
                 applyDragMode(record, mode);
@@ -119,7 +126,7 @@ export const useVolunteerTableSelection = ({
 
             return { onMouseDown, onMouseEnter };
         },
-        [applyDragMode, applyDragToVolunteer, endDrag, selectIndexRange]
+        [applyDragMode, applyDragToVolunteer, endDrag, selectIndexRange, selectedIds]
     );
 
     const renderSelectionCell = useCallback<NonNullable<TableProps<VolEntity>['rowSelection']>['renderCell']>(
