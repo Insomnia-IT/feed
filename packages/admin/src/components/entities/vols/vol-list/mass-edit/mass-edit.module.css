@@ -98,9 +98,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: default;
+    cursor: pointer;
 }
 
+/* Клики обрабатывает ячейка; hover чекбокса — через родителя */
 .selectionCellHitTarget :global(.ant-checkbox-wrapper) {
     pointer-events: none;
+}
+
+/* #1677ff / #4096ff — primary кнопки Ant Design в админке */
+.selectionCellHitTarget:hover :global(.ant-checkbox:not(.ant-checkbox-disabled) .ant-checkbox-inner) {
+    border-color: #1677ff;
+}
+
+.selectionCellHitTarget:hover
+:global(.ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner) {
+    background-color: #4096ff;
+    border-color: #4096ff;
 }
