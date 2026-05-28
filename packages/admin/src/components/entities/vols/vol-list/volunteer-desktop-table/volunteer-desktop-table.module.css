@@ -26,6 +26,11 @@
     user-select: none;
 }
 
+/* Панель массового выбора справа не перекрывает номера страниц */
+.volunteerTable :global(.ant-table-pagination) {
+    justify-content: flex-start;
+}
+
 .volunteerTable :global(.ant-table-selection-column .ant-table-selection-extra) {
     position: absolute;
     inset: 0;
