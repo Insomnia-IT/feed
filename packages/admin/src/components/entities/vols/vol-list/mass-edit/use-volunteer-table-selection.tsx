@@ -8,9 +8,11 @@ import {
     type MouseEvent,
     type SetStateAction
 } from 'react';
-import type { TableProps } from 'antd';
+import type { TableRowSelection } from 'antd/es/table/interface';
 
 import type { VolEntity } from 'interfaces';
+
+type RenderSelectionCell = NonNullable<TableRowSelection<VolEntity>['renderCell']>;
 
 import { SelectionCell } from './selection-cell';
 import {
@@ -129,7 +131,7 @@ export const useVolunteerTableSelection = ({
         [applyDragMode, applyDragToVolunteer, endDrag, selectIndexRange, selectedIds]
     );
 
-    const renderSelectionCell = useCallback<NonNullable<TableProps<VolEntity>['rowSelection']>['renderCell']>(
+    const renderSelectionCell: RenderSelectionCell = useCallback(
         (_checked, record, index, originNode) => {
             const rowIndex = index ?? visibleVolunteers.findIndex((vol) => vol.id === record.id);
             const handlers = createSelectionCellHandlers({ index: rowIndex, record });
