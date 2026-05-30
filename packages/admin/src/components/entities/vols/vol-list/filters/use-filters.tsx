@@ -71,11 +71,13 @@ const shouldKeepFilterName = ({
 export const useFilters = ({
     customFields,
     customFieldsLoaded,
+    directionsLookupResource,
     setPage
 }: {
     setPage: (page: number) => void;
     customFields: CustomFieldEntity[];
     customFieldsLoaded: boolean;
+    directionsLookupResource?: string;
 }) => {
     const { getItem, setItem } = useLocalStorage();
     const getDefaultVisibleFilters = useCallback((): Array<string> => {
@@ -132,7 +134,7 @@ export const useFilters = ({
     });
 
     const { result: directionsResult } = useList<DirectionEntity, HttpError>({
-        resource: 'directions',
+        resource: directionsLookupResource ?? 'directions',
         pagination: { mode: 'off' }
     });
 
@@ -184,8 +186,10 @@ export const useFilters = ({
             (directionsResult.data ?? [])
                 .slice()
                 .sort(getSorter('name'))
-                .filter(({ id }) => !visibleDirections || visibleDirections.includes(String(id))),
-        [directionsResult.data, visibleDirections]
+                .filter(
+                    ({ id }) => directionsLookupResource || !visibleDirections || visibleDirections.includes(String(id))
+                ),
+        [directionsLookupResource, directionsResult.data, visibleDirections]
     );
     const statusesLookup = useMemo(() => statusesResult.data ?? [], [statusesResult.data]);
     const transportsLookup = useMemo(() => transportsResult.data ?? [], [transportsResult.data]);

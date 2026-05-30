@@ -293,6 +293,11 @@ export const VolList = () => {
         resource: 'volunteer-custom-fields'
     });
     const canBulkEdit = useCanAccess({ action: 'bulk_edit', resource: 'volunteers' });
+    const userId = user?.id;
+    const directionsLookupResource =
+        !isDesktop && hasMyBrigade && brigadeScope === 'my' && userId
+            ? `directions/?supervisor_id=${userId}`
+            : undefined;
 
     const {
         activeFilters,
@@ -309,9 +314,9 @@ export const VolList = () => {
     } = useFilters({
         setPage: setPageWithStorage,
         customFields,
-        customFieldsLoaded
+        customFieldsLoaded,
+        directionsLookupResource
     });
-    const userId = user?.id;
 
     useEffect(() => {
         if (isDesktop || !userId) return;
