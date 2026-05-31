@@ -40,7 +40,8 @@ export const VolunteerDesktopTable = ({
     statusById,
     volunteersData,
     volunteersIsLoading,
-    rowSelection
+    rowSelection,
+    isSelectionDragging = false
 }: {
     openVolunteer: (id: number) => Promise<boolean>;
     volunteersData: Array<VolEntity>;
@@ -49,6 +50,7 @@ export const VolunteerDesktopTable = ({
     statusById: Record<string, string>;
     customFields?: Array<CustomFieldEntity>;
     rowSelection?: TableRowSelection<VolEntity> | undefined;
+    isSelectionDragging?: boolean;
 }) => {
     const { activeColumns = [] } = useContext(ActiveColumnsContext) ?? {};
     const tableData = useMemo<VolTableRow[]>(
@@ -74,9 +76,16 @@ export const VolunteerDesktopTable = ({
             onClick: (event): void => {
                 const target = event.target;
                 if (!(target instanceof Element)) return;
-                if (!(target.closest('button') || target.closest('input'))) {
-                    openVolunteer(id);
+                if (
+                    target.closest('.ant-table-selection-column') ||
+                    target.closest('.ant-checkbox-wrapper') ||
+                    target.closest('button') ||
+                    target.closest('input')
+                ) {
+                    return;
                 }
+
+                openVolunteer(id);
             }
         };
     };
@@ -219,6 +228,9 @@ export const VolunteerDesktopTable = ({
     return (
         <>
             <Table<VolTableRow>
+                className={[styles.volunteerTable, isSelectionDragging ? styles.volunteerTableDragging : '']
+                    .filter(Boolean)
+                    .join(' ')}
                 onRow={(record) => {
                     return getCellAction(record.id);
                 }}
