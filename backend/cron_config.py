@@ -5,6 +5,7 @@ from crontab import CronTab
 def get_crontab_tasks():
     cron = CronTab(user="root")
     command = "python /app/cron_tasks/auto_sync.py"
+    cron.remove_all(command=command)
     job = cron.new(command=command)
     frequency = int(os.environ.get("NOTION_SYNC_PERIOD", 30))
     job.minute.every(frequency)
