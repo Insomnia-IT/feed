@@ -1,7 +1,8 @@
 import { useSelect } from '@refinedev/antd';
-import { Form, InputNumber, Modal, Select } from 'antd';
+import { Form, Input, InputNumber, Modal, Select } from 'antd';
 
 import type { VolEntity } from 'interfaces';
+import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import type { InventoryRow, TransferFormValues } from './types';
 
 import styles from '../../../common.module.css';
@@ -39,18 +40,29 @@ export const InventoryTransferModal = ({
 }: InventoryTransferModalProps) => {
     const { selectProps: volunteerSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
-        optionLabel: 'name'
+        optionLabel: formatVolunteerLabel,
+        onSearch: (value) => [
+            {
+                field: 'search',
+                operator: 'eq',
+                value
+            }
+        ],
+        defaultValue: sourceVolunteerId
     });
 
     return (
         <Modal
-            title={`Передать предмет${volunteerName ? `: ${volunteerName}` : ''}`}
+            title="Передать предмет"
             open={open}
             onCancel={onClose}
             onOk={onSubmit}
             confirmLoading={isTransferLoading}
         >
             <Form form={form} layout="vertical">
+                <Form.Item label="Кому">
+                    <Input value={volunteerName || (volunteerId ? `ID ${volunteerId}` : '')} readOnly />
+                </Form.Item>
                 <Form.Item
                     name="from"
                     label="От кого"
@@ -67,13 +79,20 @@ export const InventoryTransferModal = ({
                         }
                     ]}
                 >
-                    <Select {...volunteerSelectProps} showSearch onChange={onSourceChange} />
+                    <Select
+                        {...volunteerSelectProps}
+                        showSearch
+                        filterOption={false}
+                        placeholder="Найти владельца"
+                        onChange={onSourceChange}
+                    />
                 </Form.Item>
                 <Form.Item name="position" label="Предмет" rules={[{ required: true, message: 'Выберите предмет' }]}>
                     <Select
                         options={itemOptions}
                         loading={sourceInventoryLoading}
                         disabled={!sourceVolunteerId}
+                        placeholder={sourceVolunteerId ? 'Выберите предмет' : 'Сначала выберите владельца'}
                         showSearch
                         filterOption={(input, option) =>
                             ((option?.label as string) ?? '').toLowerCase().includes(input.toLowerCase())
