@@ -67,10 +67,13 @@ export const DesktopVolunteersContent = ({
         setPageWithStorage(1);
     }, [volunteers?.total, page, pageSize, setPageWithStorage]);
 
+    const volunteersData = volunteers?.data ?? [];
+
     const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
         useMassEdit({
             totalVolunteersCount: volunteers?.total ?? 0,
-            filterQueryParams: effectiveFilterQueryParams
+            filterQueryParams: effectiveFilterQueryParams,
+            visibleVolunteers: volunteersData
         });
 
     const pagination = useMemo<TablePaginationConfig>(
@@ -95,7 +98,6 @@ export const DesktopVolunteersContent = ({
     );
 
     const noEffectiveFilters = !activeFilters.some(({ value }) => isEffectiveFilterValue(value));
-    const volunteersData = volunteers?.data ?? [];
     const showPersons = !!searchText && noEffectiveFilters && volunteersData.length === 0;
 
     return (
