@@ -35,7 +35,7 @@ export const VolCreate = () => {
                 message: translate('notifications.success'),
                 description: (
                     <>
-                        <div>{createSuccessText}.</div> Путь: <a href={volunteerPath}>{volunteerUrl}</a>
+                        {createSuccessText}.<br /> Путь: <a href={volunteerPath}>{volunteerUrl}</a>
                     </>
                 )
             });
