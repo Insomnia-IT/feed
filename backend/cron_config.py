@@ -6,8 +6,8 @@ def get_crontab_tasks():
     cron = CronTab(user="root")
     command = "python /app/cron_tasks/auto_sync.py"
     job = cron.new(command=command)
-    frequency = int(os.environ.get("NOTION_SYNC_PERIOD", 360))
-    job.minute.every(frequency)
+    frequency = int(os.environ.get("NOTION_SYNC_PERIOD", 1))
+    job.hour.every(frequency)
 
     # download_command = "python /app/cron_tasks/download_photos.py"
     # download_job = cron.new(command=download_command)
