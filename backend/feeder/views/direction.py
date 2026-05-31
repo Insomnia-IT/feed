@@ -10,10 +10,15 @@ from feeder.views.mixins import auto_tag_viewset
 
 class DirectionFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
+    supervisor_id = django_filters.NumberFilter(method='filter_supervisor_id')
+
+    def filter_supervisor_id(self, queryset, name, value):
+        return queryset.filter(volunteer__supervisor_id=value).distinct()
 
     class Meta:
         model = models.Direction
         fields = []
+
 
 @auto_tag_viewset("Direction")
 class DirectionViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
@@ -29,6 +34,7 @@ class DirectionViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     filterset_class = DirectionFilter
     search_fields = ['name', 'type', 'first_year', 'last_year']
 
+
 @auto_tag_viewset("Direction Type")
 class DirectionTypeViewSet(viewsets.ModelViewSet):
     # authentication_classes = [authentication.KitchenPinAuthentication, TokenAuthentication]
@@ -37,5 +43,3 @@ class DirectionTypeViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.DirectionTypeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', ]
-
-

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Input, Select } from 'antd';
+import { Input, Select, Tooltip } from 'antd';
 
 import { DateFilterControl } from './date-filter-control';
 import { FilterFieldType } from './filter-types';
@@ -137,6 +137,11 @@ function FilterSelect({
                     open={dropdownOpen}
                     onOpenChange={setDropdownOpen}
                     maxTagCount={1}
+                    maxTagPlaceholder={(omittedValues) => (
+                        <Tooltip title={omittedValues.map((item) => item.label).join(', ')}>
+                            <span>+ {omittedValues.length} ...</span>
+                        </Tooltip>
+                    )}
                     value={selectValue as string[] | string | number | boolean | undefined}
                     onSelect={onSelect}
                     onDeselect={onDeselect}

@@ -1,12 +1,29 @@
-export NREPS=1
+#!/usr/bin/env bash
+
+set -o pipefail
+
+export NREPS="${NREPS:-1}"
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-feed-tests-${GITHUB_RUN_ID:-local}-$$}"
+
+cleanup() {
+    docker compose down --remove-orphans --volumes
+}
+
+trap cleanup EXIT
+
+cleanup
 
 echo "Gonna explicitly build docker compose for regress-tests"
 docker compose build
+build_exitcode=$?
+if [ "$build_exitcode" -ne 0 ]; then
+    exit "$build_exitcode"
+fi
 
 echo "Gonna run regress-tests in docker compose"
 
 # docker compose run --remove-orphans easy_test |tee /tmp/tests.log
-docker compose run tests | tee /tmp/tests.log
+docker compose run --rm tests | tee /tmp/tests.log
 exitcode=${PIPESTATUS[0]}
 
 rm -rf /tmp/tests.short.log
