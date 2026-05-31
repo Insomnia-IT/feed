@@ -1,3 +1,4 @@
+import type { FC } from 'react';
 import { Button, InputNumber, Modal } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
@@ -16,7 +17,7 @@ interface MealPlanEditModalProps {
     onCancel: () => void;
 }
 
-export const MealPlanEditModal: React.FC<MealPlanEditModalProps> = ({
+export const MealPlanEditModal: FC<MealPlanEditModalProps> = ({
     open,
     title,
     dateStr,
