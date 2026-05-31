@@ -32,7 +32,7 @@ jobs:
               if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
               run: |
                   mkdir -p ${DB_DIR}
-                  cp -n /var/feed_db/feed_db.sqlite3 ${DB_DIR}/feed_db.sqlite3
+                  # cp -n /var/feed_db/feed_db.sqlite3 ${DB_DIR}/feed_db.sqlite3
             # ADMIN
             - name: build admin
               if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
