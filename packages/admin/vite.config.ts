@@ -70,5 +70,13 @@ export default defineConfig({
             assets: path.resolve(__dirname, './src/assets')
         }
     },
-    server: { port: 3002 }
+    server: {
+        port: 3002,
+        proxy: {
+            '/feedapi': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true
+            }
+        }
+    }
 });

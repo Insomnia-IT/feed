@@ -21,6 +21,7 @@
 Фронденд написан на React.
 
 Проект фронтенда сделан как монорепозиторий и состоит из двух приложений:
+
 - [Админка](#админка). Располагается в packages/admin.
 - [Сканнер/Кормитель](#сканнер). Располагается в packages/scanner.
 
@@ -29,13 +30,16 @@
 
 ### Админка
 
-Примеры Pull Request-ов: 
+- [Волонтёры](volunteers.md) — массовый выбор в таблице (drag, Shift+клик).
+
+Примеры Pull Request-ов:
+
 - Обязательный комментарий при бане волонтера. https://github.com/Insomnia-IT/feed/pull/353/files
 - Возможность банить волонтеров для руководителя локации. https://github.com/Insomnia-IT/feed/pull/363/files
 
-
 ### Сканнер
 
-Примеры Pull Request-ов: 
+Примеры Pull Request-ов:
+
 - Возможность учесть группу покормленных анонимов. https://github.com/Insomnia-IT/feed/pull/189/files
 - Фиксы сканера. https://github.com/Insomnia-IT/feed/pull/195/files
