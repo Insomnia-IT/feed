@@ -72,5 +72,13 @@ export default defineConfig({
             '@feed/shared': path.resolve(__dirname, '../shared/src/index.ts')
         }
     },
-    server: { port: 3002 }
+    server: {
+        port: 3002,
+        proxy: {
+            '/feedapi': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true
+            }
+        }
+    }
 });
