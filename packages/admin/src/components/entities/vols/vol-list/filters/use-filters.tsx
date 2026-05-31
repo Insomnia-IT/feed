@@ -7,6 +7,7 @@ import type {
     DirectionEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
+    ItemEntity,
     KitchenEntity,
     StatusEntity,
     TransportEntity,
@@ -170,6 +171,11 @@ export const useFilters = ({
         pagination: { mode: 'off' }
     });
 
+    const { result: storageItemsResult, query: storageItemsQuery } = useList<ItemEntity, HttpError>({
+        resource: 'storage-items',
+        pagination: { mode: 'off' }
+    });
+
     const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity, HttpError>({
         resource: 'volunteers',
         filters: [
@@ -198,6 +204,14 @@ export const useFilters = ({
     const feedTypesLookup = useMemo(() => feedTypesResult.data ?? [], [feedTypesResult.data]);
     const accessRolesLookup = useMemo(() => accessRolesResult.data ?? [], [accessRolesResult.data]);
     const groupBadgesLookup = useMemo(() => groupBadgesResult.data ?? [], [groupBadgesResult.data]);
+    const storageItemsLookup = useMemo(
+        () =>
+            (storageItemsResult.data ?? []).map((item) => ({
+                id: item.id,
+                name: item.storage_name ? `${item.name} (${item.storage_name})` : item.name
+            })),
+        [storageItemsResult.data]
+    );
     const supervisorsLookup = useMemo(
         () =>
             (supervisorsResult.data ?? []).map((supervisor) => ({
@@ -316,6 +330,14 @@ export const useFilters = ({
                 single: true,
                 lookup: () => supervisorsLookup
             },
+            {
+                type: FilterFieldType.Lookup,
+                name: 'inventory_item',
+                title: 'Предмет в инвентаре',
+                skipNull: true,
+                single: true,
+                lookup: () => storageItemsLookup
+            },
             { type: FilterFieldType.Boolean, single: true, name: 'is_supervisor', title: 'Является бригадиром' },
             { type: FilterFieldType.Boolean, single: true, name: 'has_supervisor', title: 'Назначен бригадир' },
             ...customFields.map<FilterField>((customField) => ({
@@ -333,6 +355,7 @@ export const useFilters = ({
             groupBadgesLookup,
             kitchensLookup,
             statusesLookup,
+            storageItemsLookup,
             supervisorsLookup,
             transportsLookup,
             volunteerRolesLookup
@@ -423,6 +446,7 @@ export const useFilters = ({
             feedTypesQuery.isLoading ||
             accessRolesQuery.isLoading ||
             volunteerRolesQuery.isLoading ||
+            storageItemsQuery.isLoading ||
             supervisorsQuery.isLoading,
         filterQueryParams,
         filterQueryParamsWithoutDefaultDirections,
