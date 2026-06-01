@@ -168,11 +168,20 @@ const DesktopVolunteersContent = ({
         setPageWithStorage(1);
     }, [volunteers?.total, page, pageSize, setPageWithStorage]);
 
-    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
-        useMassEdit({
-            totalVolunteersCount: volunteers?.total ?? 0,
-            filterQueryParams: effectiveFilterQueryParams
-        });
+    const volunteersData = volunteers?.data ?? [];
+
+    const {
+        selectedVols,
+        unselectAllSelected,
+        unselectVolunteer,
+        rowSelection,
+        reloadSelectedVolunteers,
+        isSelectionDragging
+    } = useMassEdit({
+        totalVolunteersCount: volunteers?.total ?? 0,
+        filterQueryParams: effectiveFilterQueryParams,
+        visibleVolunteers: volunteersData
+    });
 
     const pagination = useMemo<TablePaginationConfig>(
         () => ({
@@ -196,7 +205,6 @@ const DesktopVolunteersContent = ({
     );
 
     const noEffectiveFilters = !activeFilters.some(({ value }) => isEffectiveFilterValue(value));
-    const volunteersData = volunteers?.data ?? [];
     const showPersons = !!searchText && noEffectiveFilters && volunteersData.length === 0;
 
     return (
@@ -226,6 +234,7 @@ const DesktopVolunteersContent = ({
                     volunteersData={volunteersData}
                     customFields={customFields}
                     rowSelection={canBulkEdit ? rowSelection : undefined}
+                    isSelectionDragging={canBulkEdit ? isSelectionDragging : false}
                 />
             )}
             {showPersons && <PersonsTable key={searchText} searchText={searchText} />}
@@ -293,6 +302,11 @@ export const VolList = () => {
         resource: 'volunteer-custom-fields'
     });
     const canBulkEdit = useCanAccess({ action: 'bulk_edit', resource: 'volunteers' });
+    const userId = user?.id;
+    const directionsLookupResource =
+        !isDesktop && hasMyBrigade && brigadeScope === 'my' && userId
+            ? `directions/?supervisor_id=${userId}`
+            : undefined;
 
     const {
         activeFilters,
@@ -309,9 +323,9 @@ export const VolList = () => {
     } = useFilters({
         setPage: setPageWithStorage,
         customFields,
-        customFieldsLoaded
+        customFieldsLoaded,
+        directionsLookupResource
     });
-    const userId = user?.id;
 
     useEffect(() => {
         if (isDesktop || !userId) return;

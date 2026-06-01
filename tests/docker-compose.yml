@@ -1,40 +1,19 @@
 # version: '3.8'
 
 services:
-  chrome:
-    ports:
-      - 0.0.0.0:4444:4444
-    # container_name: feedtests_chrome
-    networks:
-      - tests
-    # image: selenium/standalone-chromium:latest
-    image: selenium/standalone-chromium:143.0
-    hostname: chrome
-    privileged: true
-    shm_size: 2g
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 15s
-  tests:
-    networks:
-      - tests
-    environment:
-      WEBDRIVER_REMOTE: true
-      FEED_APP_HOST: ${FEED_APP_HOST:-https://feedapp-dev.insomniafest.ru}
-    build:
-      context: .
-      network: host
-    command: bash -c 'python -m pytest --retries $NREPS test_regress.py'
-    depends_on:
-      chrome:
-        condition: service_healthy
+    tests:
+        networks:
+            - tests
+        environment:
+            FEED_APP_HOST: ${FEED_APP_HOST:-https://feedapp-dev.insomniafest.ru}
+        build:
+            context: .
+            network: host
+        command: bash -c 'python -m pytest --retries ${NREPS:-1} test_regress.py'
 
 networks:
-  tests:
+    tests:
 
 volumes:
-  db:
-  photos:
+    db:
+    photos:

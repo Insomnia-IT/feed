@@ -193,10 +193,11 @@ def process_plan_day(store, current_day, volunteers, history_by_volunteer, apply
 def calculate_predict(store, date_range, group_badge, prediction_alg, volunteers, planning_cells_cache):
     prev_day = None
     prev_prev_day = None
+    group_badge_kitchens = load_group_badge_kitchens()
     
     for current_day in date_range:
         if group_badge is not False:
-            calculate_group_badge_predict(store, current_day, volunteers, planning_cells_cache)
+            calculate_group_badge_predict(store, current_day, volunteers, planning_cells_cache, group_badge_kitchens)
         
         if group_badge is not True:
             calculate_regular_predict(store, current_day, prev_day, prev_prev_day, prediction_alg)
@@ -204,13 +205,13 @@ def calculate_predict(store, date_range, group_badge, prediction_alg, volunteers
         prev_prev_day = prev_day
         prev_day = current_day
 
-def calculate_group_badge_predict(store, current_day, volunteers, planning_cells_cache):
+def calculate_group_badge_predict(store, current_day, volunteers, planning_cells_cache, group_badge_kitchens):
     """
     Прогноз для групповых бейджей.
     Приоритет: planning_cells > подсчёт волонтёров > 0
     """
     current_date_str = current_day.format(STAT_DATE_FORMAT)
-    kitchen_ids = get_kitchen_ids()
+    
     
     # Группируем волонтёров по бейджам
     badge_volunteers = {}
@@ -242,17 +243,16 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
         for meal_time in meal_times:
             cache_key = (badge_id, meal_time, current_date_str)
             cell = planning_cells_cache.get(cache_key)
+            kitchen_id = str(group_badge_kitchens.get(badge_id)) if group_badge_kitchens.get(badge_id) else '1'
             
             # Приоритет: planning_cells
             if cell:
                 predict_meat = cell.get('amount_meat') or 0
                 predict_vegan = cell.get('amount_vegan') or 0
-                kitchen_id = str(kitchen_ids[0]) if kitchen_ids else '1'
             else:
                 predict_meat = sum(1 for v in vols if not v['is_vegan'])
                 predict_vegan = sum(1 for v in vols if v['is_vegan'])
-                kitchen_id = next((v['kitchen_id'] for v in vols if v.get('kitchen_id') is not None), '1')
-            
+
             # Добавляем meat
             store.add(
                 date=current_date_str,
@@ -428,6 +428,9 @@ def load_planning_cells_cache(group_badge):
                 current_date += timedelta(days=1)
             
     return planning_cells_cache
+
+def load_group_badge_kitchens():
+    return dict(models.GroupBadge.objects.values_list('id', 'kitchen_id'))
 
 def load_volunteers(date_from, date_to, anonymous, group_badge):
     queryset = models.Volunteer.objects.exclude(
