@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button, Form, type FormInstance, Row, Select } from 'antd';
-import { type CrudFilters, useList } from '@refinedev/core';
+import { type CrudFilters, useList, useOne } from '@refinedev/core';
 import useCanAccess from '../use-can-access';
 import { useDebouncedCallback } from 'shared/hooks';
 import type { VolEntity } from 'interfaces';
@@ -42,6 +42,14 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
         }
     });
 
+    const { result: currentResponsible } = useOne<VolEntity>({
+        resource: 'volunteers',
+        id: responsibleId,
+        queryOptions: {
+            enabled: Boolean(responsibleId)
+        }
+    });
+
     const responsibleLoading = responsibleQuery.isLoading;
 
     const responsibleOptions = useMemo(() => {
@@ -55,12 +63,12 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
         if (responsibleId && !options.some((option) => option.value === responsibleId)) {
             options.unshift({
                 value: responsibleId,
-                label: `ID ${responsibleId}`
+                label: currentResponsible ? formatVolunteerLabel(currentResponsible) : `ID ${responsibleId}`
             });
         }
 
         return options;
-    }, [responsibleId, responsibleResult]);
+    }, [responsibleId, responsibleResult, currentResponsible]);
 
     return (
         <Row align={'bottom'} gutter={8} style={{ gap: '4px' }}>
