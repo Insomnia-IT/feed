@@ -48,7 +48,7 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
         if (!isCreationProcess) {
             tabs.push(
                 {
-                    key: '3',
+                    key: '4',
                     label: 'Инвентарь',
                     children: (
                         <InventorySection
@@ -59,12 +59,12 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
                     )
                 },
                 {
-                    key: '4',
+                    key: '5',
                     label: isDesktop ? 'История изменений' : 'История',
                     children: <CommonHistory role="volunteer" />
                 },
                 {
-                    key: '5',
+                    key: '6',
                     label: isDesktop ? 'История действий' : 'Действия',
                     children: <CommonHistory role="actor" />
                 }
