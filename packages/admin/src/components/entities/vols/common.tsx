@@ -8,6 +8,7 @@ import CommonFood from './common-food/common-food';
 import { CommonHistory } from './common-history/common-history';
 import { InventorySection } from './common-edit/sections';
 import styles from './common.module.css';
+import Connections from './connections/connections';
 
 interface IProps {
     activeKey: string;
@@ -34,6 +35,11 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
             },
             {
                 key: '2',
+                label: 'Связи',
+                children: <Connections />
+            },
+            {
+                key: '3',
                 label: 'Питание',
                 children: <CommonFood />
             }
