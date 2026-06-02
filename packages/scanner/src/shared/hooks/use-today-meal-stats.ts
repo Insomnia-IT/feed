@@ -24,7 +24,14 @@ export const useTodayMealStats = () => {
 
     const allGroupBadges = useLiveQuery(
         async () =>
-            db.groupBadges.toArray().then((value) => value.filter((groupBadge) => groupBadge.kitchen === kitchenId)),
+            db.groupBadges
+                .toArray()
+                .then((value) =>
+                    value.filter(
+                        (groupBadge) =>
+                            groupBadge.kitchen === kitchenId || (groupBadge.kitchen === null && kitchenId === 1)
+                    )
+                ),
         [lastSyncStart, kitchenId],
         []
     );
