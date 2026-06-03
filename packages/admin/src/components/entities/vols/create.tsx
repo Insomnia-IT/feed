@@ -53,7 +53,8 @@ export const VolCreate = () => {
         form,
         upstreamOnFinishFailed
     );
-    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+
+    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
 
     return (
         <Create
