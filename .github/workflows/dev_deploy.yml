@@ -1,4 +1,4 @@
-name: Deploy to rumsrv
+name: Deploy to devsrv
 
 on:
   workflow_dispatch:
