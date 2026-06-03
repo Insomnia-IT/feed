@@ -1,9 +1,8 @@
 import { Form, Modal } from 'antd';
 import { useList, useSelect } from '@refinedev/core';
-import { type ChangeEvent, useEffect, useRef } from 'react';
+import { type ChangeEvent, useEffect, useMemo } from 'react';
 
 import type {
-    ColorTypeEntity,
     FeedTypeEntity,
     GenderEntity,
     GroupBadgeEntity,
@@ -12,17 +11,17 @@ import type {
     TransportEntity
 } from 'interfaces';
 import useCanAccess from '../use-can-access';
-import { useAnchorNavigation, useQrDuplicationCheck } from './hooks';
+import { useQrDuplicationCheck } from './hooks';
 import {
     AdditionalSection,
     ArrivalsSection,
+    FeedingSection,
     PersonalInfoSection,
     CustomFieldsSection,
     HrInfoSection,
     VolInfoSection,
     PaidArrivalsSection,
-    PreviousYearsSection,
-    SidebarNavigation
+    PreviousYearsSection
 } from './sections';
 
 //TODO: разнести стили по секциям
@@ -82,11 +81,6 @@ export const CommonEdit = () => {
         resource: 'feed-types',
         pagination: { pageSize: 100 }
     });
-    const { options: colorTypeOptions } = useSelect<ColorTypeEntity>({
-        resource: 'colors',
-        optionLabel: 'description'
-    });
-
     const { options: genderOptions } = useSelect<GenderEntity>({ resource: 'genders', optionLabel: 'name' });
 
     const { options: groupBadgeOptions } = useSelect<GroupBadgeEntity>({
@@ -98,7 +92,6 @@ export const CommonEdit = () => {
     const { options: transportsOptions } = useSelect<TransportEntity>({ resource: 'transports', optionLabel: 'name' });
     const { options: statusesOptions } = useSelect<StatusEntity>({ resource: 'statuses', optionLabel: 'name' });
 
-    const containerRef = useRef<HTMLDivElement | null>(null);
     const { qrDuplicateVolunteer, setQrDuplicateVolunteer, handleDuplicateQRChange, clearDuplicateQR } =
         useQrDuplicationCheck(form);
 
@@ -109,10 +102,14 @@ export const CommonEdit = () => {
             form.setFieldValue('qr', null);
         }
     };
-    const { activeAnchor } = useAnchorNavigation(containerRef);
     const showPaidArrivals = (feedTypesResult.data ?? []).some(
         ({ id, code }: FeedTypeEntity) => id === selectedFeedType && (code === 'FREE' || code === 'PAID')
     );
+    const selectedFeedTypeCode = useMemo(() => {
+        const feedType = (feedTypesResult.data ?? []).find(({ id }) => id === selectedFeedType);
+        const code = feedType?.code;
+        return code === 'FREE' || code === 'PAID' ? code : null;
+    }, [feedTypesResult.data, selectedFeedType]);
 
     const handleClear = () => {
         void clearDuplicateQR();
@@ -142,47 +139,39 @@ export const CommonEdit = () => {
     }, [form]);
 
     return (
-        <div className={styles.edit}>
-            <SidebarNavigation
-                activeAnchor={activeAnchor}
-                denyBadgeEdit={denyBadgeEdit}
-                showPaidArrivals={showPaidArrivals}
-            />
-
-            <div className={styles.formWrap} ref={containerRef}>
+        <div className={styles.formWrap}>
+            <div className={styles.formCanvas}>
                 <section id="section1" className={styles.formSection}>
                     <VolInfoSection
                         denyBadgeEdit={denyBadgeEdit}
                         canEditGroupBadge={canEditGroupBadge}
-                        colorTypeOptions={colorTypeOptions}
                         groupBadgeOptions={groupBadgeOptions}
                         person={person}
                     />
                 </section>
-                <section id="section2" className={styles.formSection}>
+                <section id="section2" className={`${styles.formSection} ${styles.formSectionWithSeparatorAction}`}>
                     <ArrivalsSection statusesOptions={statusesOptions} transportsOptions={transportsOptions} />
                 </section>
-                <section
-                    id="section2paid"
-                    className={styles.formSection}
-                    style={{ display: showPaidArrivals ? undefined : 'none' }}
-                >
-                    <PaidArrivalsSection visible={showPaidArrivals} />
+                <section id="section2feed" className={styles.formSection}>
+                    <FeedingSection
+                        denyBadgeEdit={denyBadgeEdit}
+                        denyFeedTypeEdit={denyFeedTypeEdit}
+                        feedTypeOptions={feedTypeOptions}
+                        kitchenOptions={kitchenOptions}
+                    />
+                    <PaidArrivalsSection visible={showPaidArrivals} baseFeedTypeCode={selectedFeedTypeCode} />
                 </section>
                 <section id="section3" className={styles.formSection}>
+                    <HrInfoSection canFullEditing={canFullEditing} denyBadgeEdit={denyBadgeEdit} person={person} />
+                </section>
+                <section id="section4" className={styles.formSection}>
                     <PersonalInfoSection
                         canFullEditing={canFullEditing}
                         isCreationProcess={isCreationProcess}
                         denyBadgeEdit={denyBadgeEdit}
                         handleQRChange={handleQRChange}
-                        feedTypeOptions={feedTypeOptions}
-                        kitchenOptions={kitchenOptions}
-                        denyFeedTypeEdit={denyFeedTypeEdit}
                         genderOptions={genderOptions}
                     />
-                </section>
-                <section id="section4" className={styles.formSection}>
-                    <HrInfoSection canFullEditing={canFullEditing} denyBadgeEdit={denyBadgeEdit} person={person} />
                 </section>
                 <section id="section5" className={styles.formSection}>
                     <CustomFieldsSection canBadgeEdit={canBadgeEdit} volunteerId={volunteerId} />

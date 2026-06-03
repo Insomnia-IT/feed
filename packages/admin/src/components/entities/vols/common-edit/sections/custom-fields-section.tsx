@@ -45,7 +45,9 @@ export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: IProps) => {
 
     return (
         <>
-            <p className={styles.formSection__title}>Кастомные Поля</p>
+            <div className={styles.formSection__title}>
+                <h4>Кастомные Поля</h4>
+            </div>
 
             {customFields
                 .filter((item) => item.mobile || canBadgeEdit)

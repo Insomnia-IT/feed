@@ -75,7 +75,7 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     }, [isCreationProcess, isDesktop, volunteerIdNumber, volunteerName]);
 
     return (
-        <div className={shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : undefined}>
+        <div className={`${styles.volFormTabs} ${shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : ''}`}>
             <Tabs activeKey={activeKey} onChange={setActiveKey} size={isDesktop ? 'middle' : 'small'} items={items} />
         </div>
     );

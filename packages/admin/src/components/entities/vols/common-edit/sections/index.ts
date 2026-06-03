@@ -1,9 +1,9 @@
-export { SidebarNavigation } from './sidebar-navigation';
 export { PreviousYearsSection } from './previous-years-section';
 export { AdditionalSection } from './additional-section';
 export { CustomFieldsSection } from './custom-fields-section';
 export { PersonalInfoSection } from './personal-info-section';
 export { ArrivalsSection } from './arrivals-section';
+export { FeedingSection } from './feeding-section';
 export { PaidArrivalsSection } from './paid-arrivals-section';
 export { HrInfoSection } from './hr-info-section';
 export { InventorySection } from './inventory';

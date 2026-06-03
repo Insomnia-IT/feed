@@ -2,13 +2,15 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Edit, useForm } from '@refinedev/antd';
 import { useBreadcrumb } from '@refinedev/core';
-import { Form, Breadcrumb, type FormProps } from 'antd';
+import { SaveOutlined } from '@ant-design/icons';
+import { Button, Breadcrumb, Form, type FormProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 
 import { useScreen } from 'shared/providers';
 import { useLocalStorage } from 'shared/hooks';
 import type { VolEntity } from 'interfaces';
 import CreateEdit from './common';
+import { VolunteerHeaderPhoto } from './common-edit/sections/vol-info-section/volunteer-header-photo';
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 
@@ -69,13 +71,20 @@ export const VolEdit = () => {
         upstreamOnFinishFailed
     );
 
-    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
+    const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);
 
     const name = Form.useWatch('name', form);
+    const firstName = Form.useWatch('first_name', form);
+    const lastName = Form.useWatch('last_name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
     const isDeleted = Form.useWatch('deleted_at', form);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
+
+    const pageHeading = useMemo(() => {
+        const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+        return fullName || volunteerName;
+    }, [firstName, lastName, volunteerName]);
 
     const crumbItems = useMemo(() => {
         if (!breadcrumbs?.length) return [];
@@ -91,14 +100,15 @@ export const VolEdit = () => {
 
     return (
         <Edit
+            wrapperProps={{ className: `${styles.volEditPage} vol-edit-page` }}
             headerProps={{
                 onBack: navigateBackToList,
-                extra: null
+                extra: <VolunteerHeaderPhoto form={form} />
             }}
             breadcrumb={crumbItems.length > 0 ? <Breadcrumb items={crumbItems} /> : null}
             title={
-                <div className={styles.pageTitle}>
-                    Информация о волонтере
+                <div className={styles.pageTitleMain}>
+                    {pageHeading}
                     {isBlocked && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Заблокирован</span>
@@ -115,14 +125,28 @@ export const VolEdit = () => {
                 ...saveButtonProps,
                 onClick
             }}
+            footerButtons={<> </>}
             contentProps={{
-                ...(shouldHideFooterActions ? { actions: [] } : {}),
-                style: contentStyle
+                actions: [],
+                style: contentStyle,
+                styles: { body: { paddingTop: 0 } }
             }}
         >
             <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
+            {showFloatingSave && (
+                <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    loading={saveButtonProps.loading}
+                    disabled={saveButtonProps.disabled}
+                    className={styles.floatingSaveButton}
+                    onClick={onClick}
+                >
+                    Сохранить
+                </Button>
+            )}
             {renderModal()}
         </Edit>
     );

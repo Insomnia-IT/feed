@@ -46,7 +46,9 @@ export const AdditionalSection = ({
 
     return (
         <>
-            <p className={styles.formSection__title}>Дополнительно</p>
+            <div className={styles.formSection__title}>
+                <h4>Дополнительно</h4>
+            </div>
             <div className="commentArea">
                 <Form.Item
                     label={

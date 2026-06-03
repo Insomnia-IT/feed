@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { useTranslate } from '@refinedev/core';
-import { App, Form, type FormProps } from 'antd';
+import { SaveOutlined } from '@ant-design/icons';
+import { App, Button, Form, type FormProps } from 'antd';
 
 import type { VolEntity } from 'interfaces';
 
@@ -9,6 +10,8 @@ import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
+
+import styles from './common.module.css';
 
 const contentStyle = {
     background: 'initial',
@@ -54,10 +57,11 @@ export const VolCreate = () => {
         upstreamOnFinishFailed
     );
 
-    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
+    const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);
 
     return (
         <Create
+            wrapperProps={{ className: `${styles.volEditPage} vol-edit-page` }}
             headerProps={{
                 extra: null
             }}
@@ -65,14 +69,27 @@ export const VolCreate = () => {
                 ...saveButtonProps,
                 onClick
             }}
+            footerButtons={<> </>}
             contentProps={{
-                ...(shouldHideFooterActions ? { actions: [] } : {}),
+                actions: [],
                 style: contentStyle
             }}
         >
             <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
+            {showFloatingSave && (
+                <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    loading={saveButtonProps.loading}
+                    disabled={saveButtonProps.disabled}
+                    className={styles.floatingSaveButton}
+                    onClick={onClick}
+                >
+                    Сохранить
+                </Button>
+            )}
             {renderModal()}
         </Create>
     );

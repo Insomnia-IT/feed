@@ -150,8 +150,9 @@ export const ArrivalsSection = ({
 
     return (
         <>
-            <p className={styles.formSection__title}>Даты на поле</p>
-
+            <div className={styles.formSection__title}>
+                <h4>Заезд</h4>
+            </div>
             <Form.List name="arrivals">
                 {(arrivalFields, { add, remove }) => {
                     const addArrival = () => {
@@ -161,31 +162,49 @@ export const ArrivalsSection = ({
                             departure_transport: 'UNDEFINED'
                         });
                     };
-                    return (
-                        <>
-                            <div>
-                                {arrivalFields?.map((arrivalField, index) => (
-                                    <ArrivalItem
-                                        key={arrivalField.key}
-                                        index={index}
-                                        remove={remove}
-                                        isSingle={arrivalFields.length === 1}
-                                        statusesOptions={statusesOptionsNew}
-                                        transportsOptions={transportsOptions}
-                                        activeFromValidationRules={activeFromValidationRules}
-                                        activeToValidationRules={activeToValidationRules}
-                                    />
-                                ))}
-                            </div>
+                    const isEmpty = arrivalFields.length === 0;
+                    const isSingleArrival = arrivalFields.length === 1;
+
+                    const addArrivalButton = (
+                        <div className={styles.addArrivalActions}>
                             <Button
                                 key="add"
-                                className={styles.addArrivalButton}
-                                type="primary"
+                                color="primary"
+                                variant="outlined"
                                 icon={<PlusSquareOutlined />}
                                 onClick={addArrival}
                             >
                                 Добавить заезд
                             </Button>
+                        </div>
+                    );
+
+                    return (
+                        <>
+                            {isEmpty ? (
+                                <div className={styles.arrivalsEmptyState}>
+                                    <p className={styles.arrivalsEmptyHint}>Вы ещё не добавили заездов.</p>
+                                    {addArrivalButton}
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        {arrivalFields.map((arrivalField, index) => (
+                                            <ArrivalItem
+                                                key={arrivalField.key}
+                                                index={index}
+                                                remove={remove}
+                                                isSingle={isSingleArrival}
+                                                statusesOptions={statusesOptionsNew}
+                                                transportsOptions={transportsOptions}
+                                                activeFromValidationRules={activeFromValidationRules}
+                                                activeToValidationRules={activeToValidationRules}
+                                            />
+                                        ))}
+                                    </div>
+                                    {addArrivalButton}
+                                </>
+                            )}
                         </>
                     );
                 }}
@@ -248,100 +267,127 @@ function ArrivalItem({
     };
 
     const filteredStatusesOptions = useMemo(() => statusesOptions.filter((item) => !item.disabled), [statusesOptions]);
+    const arrivalHeading = isSingle ? null : `Заезд ${index + 1}`;
+
+    const deleteButton = !isSingle ? (
+        <Button className={styles.deleteButton} danger type="link" icon={<DeleteOutlined />} onClick={deleteArrival}>
+            Удалить
+        </Button>
+    ) : null;
+
+    const statusField = (
+        <Form.Item
+            className={styles.arrivalStatusField}
+            label="Статус заезда"
+            name={[index, 'status']}
+            rules={Rules.required}
+        >
+            <Select options={filteredStatusesOptions} labelRender={renderLabel} />
+        </Form.Item>
+    );
+
+    const arrivalDateField = (
+        <Form.Item
+            className={styles.arrivalDetailField}
+            label="Дата заезда"
+            name={[index, 'arrival_date']}
+            getValueProps={getDateValue}
+            getValueFromEvent={normalizeDateValue}
+            rules={activeFromValidationRules(index)}
+        >
+            {isMobile ? (
+                <MobileDateDrawer title="Дата заезда" />
+            ) : (
+                <DatePicker
+                    format={formDateFormat}
+                    style={{ width: '100%' }}
+                    onChange={createDateChange('arrival_date')}
+                />
+            )}
+        </Form.Item>
+    );
+
+    const arrivalTransportField = (
+        <Form.Item
+            className={styles.arrivalDetailField}
+            label="Как добрался?"
+            name={[index, 'arrival_transport']}
+            rules={Rules.required}
+        >
+            <Select options={transportsOptions} />
+        </Form.Item>
+    );
+
+    const departureDateField = (
+        <Form.Item
+            className={styles.arrivalDetailField}
+            label="Дата отъезда"
+            name={[index, 'departure_date']}
+            getValueProps={getDateValue}
+            getValueFromEvent={normalizeDateValue}
+            rules={activeToValidationRules(index)}
+        >
+            {isMobile ? (
+                <MobileDateDrawer title="Дата отъезда" />
+            ) : (
+                <DatePicker
+                    format={formDateFormat}
+                    style={{ width: '100%' }}
+                    onChange={createDateChange('departure_date')}
+                />
+            )}
+        </Form.Item>
+    );
+
+    const departureTransportField = (
+        <Form.Item
+            className={styles.arrivalDetailField}
+            label="Как уехал?"
+            name={[index, 'departure_transport']}
+            rules={Rules.required}
+        >
+            <Select options={transportsOptions} />
+        </Form.Item>
+    );
 
     return (
-        <div className={index !== 0 ? `${styles.dateWrapper}` : ''}>
-            <div className={styles.dateWrap}>
-                <div className={styles.dateLabel}>
-                    <div>Заезд {index + 1}</div>
-                    <Button
-                        className={styles.deleteButton}
-                        danger
-                        type="link"
-                        icon={<DeleteOutlined />}
-                        onClick={deleteArrival}
-                        style={{
-                            visibility: isSingle ? 'hidden' : undefined
-                        }}
-                    >
-                        Удалить
-                    </Button>
-                </div>
-                <div className={styles.dateInput}>
-                    <Form.Item label="Статус заезда" name={[index, 'status']} rules={Rules.required}>
-                        <Select options={filteredStatusesOptions} style={{ width: '100%' }} labelRender={renderLabel} />
-                    </Form.Item>
-                </div>
-            </div>
-            <div className={styles.dateWrap}>
-                <div className={`${styles.dateLabel} ${styles.dateLabelEmpty}`} style={{ visibility: 'hidden' }}>
-                    <div>Заезд {index + 1}</div>
-                    <Button
-                        className={styles.deleteButton}
-                        danger
-                        type="link"
-                        icon={<DeleteOutlined />}
-                        onClick={deleteArrival}
-                    >
-                        Удалить
-                    </Button>
-                </div>
-                <div className={styles.dateInput}>
-                    <Form.Item
-                        label="Дата заезда"
-                        name={[index, 'arrival_date']}
-                        getValueProps={getDateValue}
-                        getValueFromEvent={normalizeDateValue}
-                        rules={activeFromValidationRules(index)}
-                    >
-                        {isMobile ? (
-                            <MobileDateDrawer title="Дата заезда" />
-                        ) : (
-                            <DatePicker
-                                format={formDateFormat}
-                                style={{ width: '100%' }}
-                                onChange={createDateChange('arrival_date')}
-                            />
-                        )}
-                    </Form.Item>
-                </div>
-                <div className={styles.dateInput}>
-                    <Form.Item label="Как добрался?" name={[index, 'arrival_transport']} rules={Rules.required}>
-                        <Select options={transportsOptions} style={{ width: '100%' }} />
-                    </Form.Item>
-                </div>
-            </div>
-            <div className={styles.dateWrap}>
-                <div className={`${styles.dateLabel} ${styles.dateLabelEmpty}`} style={{ visibility: 'hidden' }}>
-                    <div>Заезд {index + 1}</div>
-                    <Button className={styles.deleteButton} danger type="link" icon={<DeleteOutlined />}>
-                        Удалить
-                    </Button>
-                </div>
-                <div className={styles.dateInput}>
-                    <Form.Item
-                        label="Дата отъезда"
-                        name={[index, 'departure_date']}
-                        getValueProps={getDateValue}
-                        getValueFromEvent={normalizeDateValue}
-                        rules={activeToValidationRules(index)}
-                    >
-                        {isMobile ? (
-                            <MobileDateDrawer title="Дата отъезда" />
-                        ) : (
-                            <DatePicker
-                                format={formDateFormat}
-                                style={{ width: '100%' }}
-                                onChange={createDateChange('departure_date')}
-                            />
-                        )}
-                    </Form.Item>
-                </div>
-                <div className={styles.dateInput}>
-                    <Form.Item label="Как уехал?" name={[index, 'departure_transport']} rules={Rules.required}>
-                        <Select options={transportsOptions} style={{ width: '100%' }} />
-                    </Form.Item>
-                </div>
+        <div className={index !== 0 ? styles.arrivalBlockDivider : undefined}>
+            <div className={styles.arrivalBlock}>
+                {isMobile ? (
+                    <>
+                        {arrivalHeading ? (
+                            <div className={styles.arrivalBlockTitleRow}>
+                                <div className={styles.formSection__title}>
+                                    <h4>{arrivalHeading}</h4>
+                                </div>
+                                {deleteButton}
+                            </div>
+                        ) : null}
+                        {statusField}
+                        {arrivalDateField}
+                        {arrivalTransportField}
+                        {departureDateField}
+                        {departureTransportField}
+                    </>
+                ) : (
+                    <>
+                        {arrivalHeading ? (
+                            <div className={styles.arrivalBlockTitleRow}>
+                                <div className={styles.formSection__title}>
+                                    <h4>{arrivalHeading}</h4>
+                                </div>
+                                {deleteButton}
+                            </div>
+                        ) : null}
+                        <div className={styles.arrivalStatusRow}>{statusField}</div>
+                        <div className={styles.arrivalDetailsGrid}>
+                            {arrivalDateField}
+                            {departureDateField}
+                            {arrivalTransportField}
+                            {departureTransportField}
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

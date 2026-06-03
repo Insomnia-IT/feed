@@ -37,12 +37,14 @@ export const HrInfoSection = ({
 
     return (
         <>
-            <p className={styles.formSection__title}>HR информация</p>
-            <div className={styles.threeColumnsWrap}>
-                <Form.Item label="Должность" name="position">
-                    <Input disabled={denyBadgeEdit} />
+            <div className={styles.formSection__title}>
+                <h4>HR информация</h4>
+            </div>
+            <div className={styles.fieldRow}>
+                <Form.Item className={styles.fieldMd} label="Роль" name="main_role" rules={Rules.required}>
+                    <Select disabled={!allowRoleEdit && !!person} {...rolesSelectProps} />
                 </Form.Item>
-                <Form.Item label="Право доступа" name="access_role">
+                <Form.Item className={styles.fieldMd} label="Право доступа" name="access_role">
                     <Select
                         allowClear
                         disabled={!canFullEditing}
@@ -50,8 +52,8 @@ export const HrInfoSection = ({
                         {...accessRoleselectProps}
                     />
                 </Form.Item>
-                <Form.Item label="Роль" name="main_role" rules={Rules.required}>
-                    <Select disabled={!allowRoleEdit && !!person} {...rolesSelectProps} />
+                <Form.Item className={styles.fieldMd} label="Должность" name="position">
+                    <Input disabled={denyBadgeEdit} />
                 </Form.Item>
             </div>
         </>

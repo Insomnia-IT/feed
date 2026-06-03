@@ -1,0 +1,22 @@
+.headerPhoto {
+    display: flex;
+    flex-shrink: 0;
+    padding: 4px;
+}
+
+.photoWrap {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    background-color: rgb(240 240 240);
+    overflow: hidden;
+    cursor: default;
+    box-sizing: content-box;
+}
+
+.photoWrap :global(.ant-image) {
+    display: block;
+}
