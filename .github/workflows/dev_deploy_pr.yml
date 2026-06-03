@@ -11,7 +11,7 @@ on:
             - ready_for_review
 
 concurrency:
-    group: rum-deploy-pr-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    group: dev-deploy-pr-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -68,7 +68,7 @@ jobs:
     tests:
         needs: build
         if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
-        runs-on: [self-hosted, rumsrv]
+        runs-on: [self-hosted, insom-devserv]
         steps:
             - uses: actions/checkout@v6
             #       - name: Checkout base branch
