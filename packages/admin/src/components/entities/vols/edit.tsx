@@ -68,7 +68,8 @@ export const VolEdit = () => {
         form,
         upstreamOnFinishFailed
     );
-    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+
+    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
