@@ -60,14 +60,14 @@ export const VolunteerHeaderPhoto = ({ form }: IProps) => {
                                 imageRender: (node) => (
                                     <div
                                         className={styles.previewImageWrap}
-                                        onClick={() => setPreviewOpen(false)}
+                                        onClick={() => setPreviewPhotoUrl(null)}
                                         role="button"
                                         tabIndex={0}
                                         aria-label="Закрыть просмотр фото"
                                         onKeyDown={(event) => {
                                             if (event.key === 'Enter' || event.key === ' ') {
                                                 event.preventDefault();
-                                                setPreviewOpen(false);
+                                                setPreviewPhotoUrl(null);
                                             }
                                         }}
                                     >
