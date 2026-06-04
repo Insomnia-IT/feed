@@ -1,6 +1,6 @@
 import { Form, Modal } from 'antd';
 import { useList, useSelect } from '@refinedev/core';
-import { type ChangeEvent, useEffect, useMemo } from 'react';
+import { type ChangeEvent, useEffect } from 'react';
 
 import type {
     FeedTypeEntity,
@@ -20,7 +20,6 @@ import {
     CustomFieldsSection,
     HrInfoSection,
     VolInfoSection,
-    PaidArrivalsSection,
     PreviousYearsSection
 } from './sections';
 
@@ -73,10 +72,7 @@ export const CommonEdit = () => {
 
     const volunteerId = routeVolunteerId ?? form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);
-    const selectedFeedType = Form.useWatch('feed_type', form);
-
     const { options: kitchenOptions } = useSelect<KitchenEntity>({ resource: 'kitchens', optionLabel: 'name' });
-    const { options: feedTypeOptions } = useSelect<FeedTypeEntity>({ resource: 'feed-types', optionLabel: 'name' });
     const { result: feedTypesResult } = useList<FeedTypeEntity>({
         resource: 'feed-types',
         pagination: { pageSize: 100 }
@@ -102,15 +98,6 @@ export const CommonEdit = () => {
             form.setFieldValue('qr', null);
         }
     };
-    const showPaidArrivals = (feedTypesResult.data ?? []).some(
-        ({ id, code }: FeedTypeEntity) => id === selectedFeedType && (code === 'FREE' || code === 'PAID')
-    );
-    const selectedFeedTypeCode = useMemo(() => {
-        const feedType = (feedTypesResult.data ?? []).find(({ id }) => id === selectedFeedType);
-        const code = feedType?.code;
-        return code === 'FREE' || code === 'PAID' ? code : null;
-    }, [feedTypesResult.data, selectedFeedType]);
-
     const handleClear = () => {
         void clearDuplicateQR();
     };
@@ -156,10 +143,9 @@ export const CommonEdit = () => {
                     <FeedingSection
                         denyBadgeEdit={denyBadgeEdit}
                         denyFeedTypeEdit={denyFeedTypeEdit}
-                        feedTypeOptions={feedTypeOptions}
                         kitchenOptions={kitchenOptions}
+                        feedTypes={feedTypesResult.data ?? []}
                     />
-                    <PaidArrivalsSection visible={showPaidArrivals} baseFeedTypeCode={selectedFeedTypeCode} />
                 </section>
                 <section id="section3" className={styles.formSection}>
                     <HrInfoSection canFullEditing={canFullEditing} denyBadgeEdit={denyBadgeEdit} person={person} />

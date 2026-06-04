@@ -112,9 +112,14 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
         return options;
     }, [supervisor, supervisorId, supervisorsData]);
 
-    const onGroupBadgeClear = useCallback(() => {
-        setTimeout(() => form.setFieldValue('group_badge', ''), 0);
-    }, [form]);
+    const normalizeGroupBadge = useCallback((value: string | number | null | undefined) => {
+        if (value === undefined || value === null || value === '') {
+            return null;
+        }
+
+        const numericValue = Number(value);
+        return Number.isNaN(numericValue) ? null : numericValue;
+    }, []);
 
     return (
         <>
@@ -197,12 +202,12 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12} md={7}>
-                        <Form.Item label="Групповой бейдж" name="group_badge">
+                        <Form.Item label="Групповой бейдж" name="group_badge" normalize={normalizeGroupBadge}>
                             <Select
                                 allowClear
+                                placeholder="Не выбран"
                                 disabled={!canEditGroupBadge}
                                 options={groupBadgeOptions}
-                                onClear={onGroupBadgeClear}
                             />
                         </Form.Item>
                     </Col>

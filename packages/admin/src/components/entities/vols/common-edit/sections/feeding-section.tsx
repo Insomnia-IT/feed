@@ -1,21 +1,48 @@
-import { Form, Select, Checkbox, Tooltip } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { Form, Select, Checkbox } from 'antd';
 
 import { Rules } from 'components/form';
+import type { FeedTypeEntity } from 'interfaces';
 
 import styles from '../../common.module.css';
+import { FeedingCalendarField } from './feeding-calendar-field';
+import { resolveFeedTypeId } from './feeding-calendar-utils';
 
 export const FeedingSection = ({
     denyBadgeEdit,
     denyFeedTypeEdit,
-    feedTypeOptions,
-    kitchenOptions
+    kitchenOptions,
+    feedTypes
 }: {
     denyBadgeEdit: boolean;
     denyFeedTypeEdit: boolean;
-    feedTypeOptions: { label: string; value: string | number }[];
     kitchenOptions: { label: string; value: string | number }[];
+    feedTypes: FeedTypeEntity[];
 }) => {
+    const form = Form.useFormInstance();
+    const feedTypeId = Form.useWatch('feed_type', form);
+
+    const childFeedTypeId = feedTypes.find(({ code }) => code === 'CHILD')?.id;
+    const noFeedTypeId = feedTypes.find(({ code }) => code === 'NO')?.id;
+
+    const isChild = childFeedTypeId !== undefined && feedTypeId === childFeedTypeId;
+    const isNoFeed = noFeedTypeId !== undefined && feedTypeId === noFeedTypeId;
+    const showCalendar = !isChild && !isNoFeed;
+
+    const handleChildChange = (checked: boolean) => {
+        if (checked) {
+            if (childFeedTypeId !== undefined) {
+                form.setFieldValue('feed_type', childFeedTypeId);
+            }
+            form.setFieldValue('paid_arrivals', []);
+            return;
+        }
+
+        const defaultFreeId = resolveFeedTypeId({ feedTypes, code: 'FREE' });
+        if (defaultFreeId !== undefined) {
+            form.setFieldValue('feed_type', defaultFreeId);
+        }
+    };
+
     return (
         <>
             <div className={styles.formSection__title}>
@@ -23,21 +50,6 @@ export const FeedingSection = ({
             </div>
 
             <div className={styles.feedingFieldRow}>
-                <Form.Item
-                    className={styles.feedingFieldFeedType}
-                    label={
-                        <span>
-                            Тип питания
-                            <Tooltip title="Базовый тип на весь период. Исключения по датам задаются ниже: при бесплатном типе — платные дни, при платном — бесплатные за счёт фестиваля.">
-                                <InfoCircleOutlined className={styles.labelHint} />
-                            </Tooltip>
-                        </span>
-                    }
-                    name="feed_type"
-                    rules={Rules.required}
-                >
-                    <Select disabled={denyFeedTypeEdit} options={feedTypeOptions} />
-                </Form.Item>
                 <Form.Item className={styles.feedingFieldKitchen} label="Кухня" name="kitchen" rules={Rules.required}>
                     <Select options={kitchenOptions} disabled={denyBadgeEdit} />
                 </Form.Item>
@@ -46,12 +58,37 @@ export const FeedingSection = ({
                         <Form.Item name="is_vegan" valuePropName="checked" noStyle>
                             <Checkbox>Веган</Checkbox>
                         </Form.Item>
+                        <Checkbox
+                            checked={isChild}
+                            disabled={denyFeedTypeEdit}
+                            onChange={(event) => handleChildChange(event.target.checked)}
+                        >
+                            Ребёнок
+                        </Checkbox>
                         <Form.Item name="infant" valuePropName="checked" noStyle>
                             <Checkbox>&lt;18 лет</Checkbox>
                         </Form.Item>
                     </div>
                 </Form.Item>
             </div>
+
+            <Form.Item name="feed_type" hidden rules={Rules.required} />
+
+            {isChild ? (
+                <p className={styles.sectionHint}>
+                    Ребёнок питается бесплатно на весь период. Календарь питания не требуется.
+                </p>
+            ) : null}
+
+            {isNoFeed ? (
+                <p className={styles.sectionHint}>У волонтёра тип «без питания» — календарь недоступен.</p>
+            ) : null}
+
+            {showCalendar ? (
+                <Form.Item name="paid_arrivals" noStyle initialValue={[]}>
+                    <FeedingCalendarField feedTypes={feedTypes} disabled={denyFeedTypeEdit} />
+                </Form.Item>
+            ) : null}
         </>
     );
 };

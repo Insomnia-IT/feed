@@ -1,0 +1,190 @@
+.wrap {
+    margin-top: 12px;
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.legendHint {
+    margin: 0;
+    color: rgb(0 0 0 / 0.45);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.modeButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modeSwatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid rgb(0 0 0 / 0.15);
+}
+
+.modeSwatchFree {
+    background: #52c41a;
+}
+
+.modeSwatchPaid {
+    background: #1677ff;
+}
+
+.monthsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.monthPanel {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    padding: 8px;
+    background: #fafafa;
+}
+
+.monthTitle {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+}
+
+.weekday {
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+    color: rgb(0 0 0 / 0.45);
+}
+
+.daysGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.dayCell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: rgb(0 0 0 / 0.88);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.dayCell:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.dayCellEmpty {
+    cursor: default;
+    pointer-events: none;
+}
+
+.dayCellFree {
+    background: #52c41a;
+    color: #fff;
+}
+
+.dayCellPaid {
+    background: #1677ff;
+    color: #fff;
+}
+
+.dayCell:hover:not(:disabled, .dayCellEmpty) {
+    outline: 1px solid rgb(0 0 0 / 0.2);
+}
+
+.dayCellPainting:not(:disabled) {
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.childNote {
+    margin: 8px 0 0;
+    color: rgb(0 0 0 / 0.65);
+    font-size: 13px;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.monthsCarousel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.monthsCarouselNav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.monthsCarouselNavTitle {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.monthsCarouselViewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.monthsCarouselViewport::-webkit-scrollbar {
+    display: none;
+}
+
+.monthsCarouselTrack {
+    display: flex;
+    gap: 10px;
+    padding: 0 8vw;
+}
+
+.monthsCarouselSlide {
+    flex: 0 0 84%;
+    max-width: 84%;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+}
+
+.monthsCarouselSlide h5 {
+    display: none;
+}
+
+.wrapPainting {
+    user-select: none;
+}
