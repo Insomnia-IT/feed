@@ -17,6 +17,7 @@ import {
     ArrivalsSection,
     FeedingSection,
     PersonalInfoSection,
+    BadgeSection,
     CustomFieldsSection,
     HrInfoSection,
     VolInfoSection,
@@ -151,12 +152,14 @@ export const CommonEdit = () => {
                     <HrInfoSection canFullEditing={canFullEditing} denyBadgeEdit={denyBadgeEdit} person={person} />
                 </section>
                 <section id="section4" className={styles.formSection}>
-                    <PersonalInfoSection
+                    <PersonalInfoSection denyBadgeEdit={denyBadgeEdit} genderOptions={genderOptions} />
+                </section>
+                <section id="section4badge" className={styles.formSection}>
+                    <BadgeSection
                         canFullEditing={canFullEditing}
                         isCreationProcess={isCreationProcess}
                         denyBadgeEdit={denyBadgeEdit}
                         handleQRChange={handleQRChange}
-                        genderOptions={genderOptions}
                     />
                 </section>
                 <section id="section5" className={styles.formSection}>

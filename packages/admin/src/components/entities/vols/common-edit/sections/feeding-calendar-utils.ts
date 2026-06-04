@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 
+import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+
 /** Июнь, июль, август (0-based month index в dayjs). */
 export const FEEDING_SUMMER_MONTHS = [5, 6, 7] as const;
 
@@ -288,7 +290,28 @@ export function resolveFeedTypeId(params: {
 export type ArrivalDateInterval = {
     arrival_date?: string | null;
     departure_date?: string | null;
+    status?: string | null;
 };
+
+/** Дни активных заездов: приступил, прибился или заехал на поле (`ARRIVED` / `STARTED` / `JOINED`). */
+export function buildActiveArrivalDateKeys(arrivals: ArrivalDateInterval[]): Set<string> {
+    const keys = new Set<string>();
+
+    for (const arrival of arrivals) {
+        if (!isVolunteerActivatedStatusValue(arrival.status)) {
+            continue;
+        }
+
+        for (const key of expandIntervalToDateKeys({
+            arrival_date: arrival.arrival_date ?? '',
+            departure_date: arrival.departure_date ?? ''
+        })) {
+            keys.add(key);
+        }
+    }
+
+    return keys;
+}
 
 /** Все дни заездов (включительно) в виде ключей YYYY-MM-DD. */
 export function getDateKeysFromArrivals(arrivals: ArrivalDateInterval[]): Set<string> {

@@ -50,6 +50,9 @@ export const ArrivalsSection = ({
     transportsOptions: { label: string; value: string }[];
 }) => {
     const form = Form.useFormInstance();
+    const arrivalsValue = Form.useWatch('arrivals', form);
+    const arrivalCount = Array.isArray(arrivalsValue) ? arrivalsValue.length : 0;
+    const showSectionTitle = arrivalCount <= 1;
 
     const canArrivedAssign = useCanAccess({ action: 'status_arrived_assign', resource: 'volunteers' });
     const canStartedAssign = useCanAccess({ action: 'status_started_assign', resource: 'volunteers' });
@@ -150,9 +153,11 @@ export const ArrivalsSection = ({
 
     return (
         <>
-            <div className={styles.formSection__title}>
-                <h4>Заезд</h4>
-            </div>
+            {showSectionTitle ? (
+                <div className={styles.formSection__title}>
+                    <h4>Заезд</h4>
+                </div>
+            ) : null}
             <Form.List name="arrivals">
                 {(arrivalFields, { add, remove }) => {
                     const addArrival = () => {
@@ -379,8 +384,8 @@ function ArrivalItem({
                                 {deleteButton}
                             </div>
                         ) : null}
-                        <div className={styles.arrivalStatusRow}>{statusField}</div>
-                        <div className={styles.arrivalDetailsGrid}>
+                        <div className={styles.arrivalFieldsGrid}>
+                            {statusField}
                             {arrivalDateField}
                             {departureDateField}
                             {arrivalTransportField}

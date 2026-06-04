@@ -65,9 +65,6 @@ export const FeedingSection = ({
                         >
                             Ребёнок
                         </Checkbox>
-                        <Form.Item name="infant" valuePropName="checked" noStyle>
-                            <Checkbox>&lt;18 лет</Checkbox>
-                        </Form.Item>
                     </div>
                 </Form.Item>
             </div>

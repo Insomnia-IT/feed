@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState } from 'react';
-import { Form, Input, Select, Tooltip, Row, Col } from 'antd';
+import { Form, Input, Select, Tooltip, Row, Col, Checkbox } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { useList } from '@refinedev/core';
 import type { CrudFilters } from '@refinedev/core';
@@ -133,13 +133,13 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
                 <Input type="hidden" />
             </Form.Item>
             <div className={styles.personalInfoWrap}>
-                <Row gutter={[12, 0]}>
-                    <Col xs={24} sm={14}>
+                <Row gutter={[12, 0]} className={styles.badgeRow}>
+                    <Col xs={24} sm={12}>
                         <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>
                             <Input readOnly={denyBadgeEdit} />
                         </Form.Item>
                     </Col>
-                    <Col xs={24} sm={10}>
+                    <Col xs={24} sm={8}>
                         <Form.Item
                             className={styles.readOnlyField}
                             label={
@@ -153,6 +153,17 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
                             name="nick_name"
                         >
                             <Input readOnly disabled />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={4} className={styles.infantCheckboxCol}>
+                        <Form.Item
+                            name="infant"
+                            valuePropName="checked"
+                            className={styles.infantCheckboxItem}
+                            label=" "
+                            colon={false}
+                        >
+                            <Checkbox>&lt;18 лет</Checkbox>
                         </Form.Item>
                     </Col>
                 </Row>

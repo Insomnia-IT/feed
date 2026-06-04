@@ -2,6 +2,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 12px;
+    padding: 1px;
 }
 
 .card {
@@ -45,13 +46,6 @@
     font-size: 14px;
     color: rgb(0 0 0 / 0.45);
     text-align: center;
-}
-
-.header {
-    margin-bottom: 12px;
-    font-size: 14px;
-    font-weight: 500;
-    color: rgb(0 0 0 / 0.65);
 }
 
 @media (width <= 576px) {

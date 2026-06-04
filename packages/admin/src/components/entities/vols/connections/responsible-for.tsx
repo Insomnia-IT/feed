@@ -2,6 +2,7 @@ import { Spin } from 'antd';
 import { useNavigate } from 'react-router';
 import { useList, useShow } from '@refinedev/core';
 import type { VolEntity } from '../../../../interfaces';
+import commonStyles from '../common.module.css';
 import styles from './responsible-for.module.css';
 
 const ResponsibleFor = () => {
@@ -37,8 +38,10 @@ const ResponsibleFor = () => {
     }
 
     return (
-        <div>
-            <div className={styles.header}>Ответственен за</div>
+        <>
+            <div className={commonStyles.formSection__title}>
+                <h4>Ответственен за</h4>
+            </div>
             <div className={styles.grid}>
                 {volunteers.map((vol) => (
                     <div key={vol.id} className={styles.card} onClick={() => handleCardClick(vol.id)}>
@@ -54,7 +57,7 @@ const ResponsibleFor = () => {
                     </div>
                 ))}
             </div>
-        </div>
+        </>
     );
 };
 

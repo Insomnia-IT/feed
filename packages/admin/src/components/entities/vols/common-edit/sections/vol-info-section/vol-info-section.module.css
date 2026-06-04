@@ -15,3 +15,24 @@
     margin-left: 4px;
     color: rgb(0 0 0 / 0.45);
 }
+
+.infantCheckboxItem :global(.ant-form-item-label > label) {
+    visibility: hidden;
+}
+
+@media (width >= 576px) {
+    .infantCheckboxCol {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .infantCheckboxItem {
+        width: 100%;
+    }
+
+    .infantCheckboxItem :global(.ant-form-item-control-input) {
+        display: flex;
+        align-items: center;
+        min-height: 32px;
+    }
+}

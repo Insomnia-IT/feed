@@ -128,6 +128,18 @@
     font-size: 13px;
 }
 
+.dayCellActiveArrival {
+    box-shadow: inset 0 0 0 1px rgb(82 196 26 / 0.45);
+}
+
+.dayCellFree.dayCellActiveArrival {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.58);
+}
+
+.dayCellPaid.dayCellActiveArrival {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.52);
+}
+
 .actions {
     display: flex;
     flex-wrap: wrap;

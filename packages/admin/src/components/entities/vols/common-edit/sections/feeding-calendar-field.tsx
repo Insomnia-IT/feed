@@ -6,6 +6,7 @@ import type { ArrivalEntity, FeedTypeEntity } from 'interfaces';
 
 import { FeedingCalendar } from './feeding-calendar';
 import {
+    buildActiveArrivalDateKeys,
     dateSetsToIntervals,
     deriveFeedTypeCode,
     getDateKeysFromArrivals,
@@ -31,6 +32,7 @@ export function FeedingCalendarField({ value, onChange, disabled, feedTypes }: F
 
     const { freeDates, paidDates } = useMemo(() => intervalsToDateSets(intervals), [intervals]);
     const arrivalDateKeys = useMemo(() => getDateKeysFromArrivals(arrivals), [arrivals]);
+    const activeArrivalDates = useMemo(() => buildActiveArrivalDateKeys(arrivals), [arrivals]);
 
     const applyDateSets = (params: { freeDates: Set<string>; paidDates: Set<string> }) => {
         const nextIntervals = dateSetsToIntervals({
@@ -80,6 +82,7 @@ export function FeedingCalendarField({ value, onChange, disabled, feedTypes }: F
             <FeedingCalendar
                 freeDates={freeDates}
                 paidDates={paidDates}
+                activeArrivalDates={activeArrivalDates}
                 onChange={handleCalendarChange}
                 disabled={disabled}
             />

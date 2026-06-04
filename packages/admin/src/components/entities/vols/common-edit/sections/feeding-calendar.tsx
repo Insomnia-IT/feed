@@ -25,6 +25,7 @@ const WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 type FeedingCalendarProps = {
     freeDates: Set<string>;
     paidDates: Set<string>;
+    activeArrivalDates?: Set<string>;
     onChange: (params: FeedingDateSets) => void;
     disabled?: boolean;
     year?: number;
@@ -53,6 +54,7 @@ function MonthPanel({
     panelValue,
     freeDates,
     paidDates,
+    activeArrivalDates,
     activeMode,
     disabled,
     isPainting,
@@ -62,6 +64,7 @@ function MonthPanel({
     panelValue: Dayjs;
     freeDates: Set<string>;
     paidDates: Set<string>;
+    activeArrivalDates: Set<string>;
     activeMode: FeedingDateKind;
     disabled?: boolean;
     isPainting: boolean;
@@ -89,10 +92,12 @@ function MonthPanel({
                     const dateKey = key;
                     const isFree = freeDates.has(dateKey);
                     const isPaid = paidDates.has(dateKey);
+                    const isActiveArrival = activeArrivalDates.has(dateKey);
                     const cellClassName = [
                         styles.dayCell,
                         isFree ? styles.dayCellFree : '',
                         isPaid ? styles.dayCellPaid : '',
+                        isActiveArrival ? styles.dayCellActiveArrival : '',
                         isPainting ? styles.dayCellPainting : ''
                     ]
                         .filter(Boolean)
@@ -128,7 +133,14 @@ function MonthPanel({
     );
 }
 
-export function FeedingCalendar({ freeDates, paidDates, onChange, disabled, year }: FeedingCalendarProps) {
+export function FeedingCalendar({
+    freeDates,
+    paidDates,
+    activeArrivalDates,
+    onChange,
+    disabled,
+    year
+}: FeedingCalendarProps) {
     const { isMobile } = useScreen();
     const [activeMode, setActiveMode] = useState<FeedingDateKind>('free');
     const [paintDraft, setPaintDraft] = useState<FeedingDateSets | null>(null);
@@ -151,6 +163,7 @@ export function FeedingCalendar({ freeDates, paidDates, onChange, disabled, year
     const initialMobileMonthIndex = useMemo(() => getDefaultSummerMonthIndex({ year: calendarYear }), [calendarYear]);
 
     const displaySets = paintDraft ?? { freeDates, paidDates };
+    const resolvedActiveArrivalDates = activeArrivalDates ?? new Set<string>();
 
     const endPaint = useCallback(() => {
         if (!isPaintingRef.current) {
@@ -257,6 +270,7 @@ export function FeedingCalendar({ freeDates, paidDates, onChange, disabled, year
             panelValue={panelValue}
             freeDates={displaySets.freeDates}
             paidDates={displaySets.paidDates}
+            activeArrivalDates={resolvedActiveArrivalDates}
             activeMode={activeMode}
             disabled={disabled}
             isPainting={isPainting}

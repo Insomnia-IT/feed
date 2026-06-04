@@ -2,6 +2,7 @@ export { PreviousYearsSection } from './previous-years-section';
 export { AdditionalSection } from './additional-section';
 export { CustomFieldsSection } from './custom-fields-section';
 export { PersonalInfoSection } from './personal-info-section';
+export { BadgeSection } from './badge-section';
 export { ArrivalsSection } from './arrivals-section';
 export { FeedingSection } from './feeding-section';
 export { HrInfoSection } from './hr-info-section';

@@ -9,6 +9,7 @@ import { CommonHistory } from './common-history/common-history';
 import { InventorySection } from './common-edit/sections';
 import styles from './common.module.css';
 import Connections from './connections/connections';
+import { VolTabPaneScroll } from './vol-tab-pane-scroll';
 
 interface IProps {
     activeKey: string;
@@ -26,10 +27,7 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     const volunteerName = Form.useWatch('name', form);
     const shouldAddMobileBottomOffset = !isDesktop && activeKey !== '1';
 
-    const wrapTabPane = useCallback(
-        (content: ReactNode) => <div className={styles.volTabPaneScroll}>{content}</div>,
-        []
-    );
+    const wrapTabPane = useCallback((content: ReactNode) => <VolTabPaneScroll>{content}</VolTabPaneScroll>, []);
 
     const items = useMemo(() => {
         const tabs = [

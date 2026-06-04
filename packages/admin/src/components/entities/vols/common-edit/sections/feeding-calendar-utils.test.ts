@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     applyFeedingModeToDate,
+    buildActiveArrivalDateKeys,
     paintFeedingDate,
     resolvePaintAction,
     dateSetsToIntervals,
@@ -72,6 +73,16 @@ describe('feeding-calendar-utils', () => {
         const restored = dateSetsToIntervals({ freeDates, paidDates, existingIntervals: source });
 
         expect(restored).toEqual([source[1], source[0]]);
+    });
+
+    it('highlights only active arrival dates', () => {
+        const keys = buildActiveArrivalDateKeys([
+            { arrival_date: '2026-06-10', departure_date: '2026-06-11', status: 'STARTED' },
+            { arrival_date: '2026-07-01', departure_date: '2026-07-02', status: 'SKIPPED' },
+            { arrival_date: '2026-08-05', departure_date: '2026-08-05', status: 'ARRIVED' }
+        ]);
+
+        expect(keys).toEqual(new Set(['2026-06-10', '2026-06-11', '2026-08-05']));
     });
 
     it('picks default summer month index for carousel', () => {
