@@ -83,6 +83,16 @@
     color: rgb(0 0 0 / 0.85);
 }
 
+.inventoryHeader {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.fullWidthControl {
+    width: 100%;
+}
+
 /* personal */
 
 .bannedWrap {
