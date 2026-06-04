@@ -13,6 +13,12 @@ export const getBadgeAvatarFrameStyle = (def: ColorDef): CSSProperties => {
     return { boxShadow: `0 0 0 2px ${def.border}, 0 0 0 4px ${def.fill}` };
 };
 
+export const formatBadgeColorTooltip = (badgeColorLabel: string): string => {
+    const label = badgeColorLabel.trimEnd().replace(/\.+$/, '');
+
+    return `Цвет бейджа: ${label}. Определяется автоматически по роли и статусу волонтёра.`;
+};
+
 export const BADGE_COLOR_MAP: Record<number, ColorDef> = {
     1: '#f5222d',
     2: '#52c41a',

@@ -5,12 +5,16 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder import serializers, models
+from feeder.filters import apply_normalized_contains
 from feeder.views.mixins import auto_tag_viewset
 
 
 class DirectionFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(field_name="name", lookup_expr='icontains')
+    name = django_filters.CharFilter(method='filter_name')
     supervisor_id = django_filters.NumberFilter(method='filter_supervisor_id')
+
+    def filter_name(self, queryset, name, value):
+        return apply_normalized_contains(queryset, 'name', value, alias_prefix='_dir_name')
 
     def filter_supervisor_id(self, queryset, name, value):
         return queryset.filter(volunteer__supervisor_id=value).distinct()

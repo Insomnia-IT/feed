@@ -11,6 +11,7 @@ import useCanAccess from 'components/entities/vols/use-can-access';
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
 import type { DirectionEntity, PersonEntity, VolEntity } from 'interfaces';
 import { useDebouncedCallback } from 'shared/hooks';
+import commonStyles from '../../../common.module.css';
 import styles from './vol-info-section.module.css';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 
@@ -55,6 +56,11 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
               ]
             : []
     });
+    const directionsOnSearch = directionsSelectProps.onSearch;
+
+    const onDirectionsDropdownVisibleChange = useCallback(() => {
+        directionsOnSearch?.('');
+    }, [directionsOnSearch]);
     const shouldHideDirectionTags =
         (directionsValue?.length ?? 0) > 0 && (directionsSelectProps.options?.length ?? 0) === 0;
 
@@ -112,7 +118,7 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
 
     return (
         <>
-            <div className={styles.formSection__title}>
+            <div className={commonStyles.formSection__title}>
                 <h4>Волонтер</h4>
             </div>
             <Form.Item name="color_type" hidden>
@@ -168,6 +174,8 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
                                 mode="multiple"
                                 disabled={!allowRoleEdit && !!person}
                                 {...directionsSelectProps}
+                                autoClearSearchValue
+                                onDropdownVisibleChange={onDirectionsDropdownVisibleChange}
                                 loading={shouldHideDirectionTags || directionsSelectProps.loading}
                                 maxTagCount={shouldHideDirectionTags ? 0 : undefined}
                                 maxTagPlaceholder={shouldHideDirectionTags ? 'Загрузка...' : undefined}

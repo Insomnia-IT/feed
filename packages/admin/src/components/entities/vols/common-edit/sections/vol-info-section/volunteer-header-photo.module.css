@@ -17,6 +17,29 @@
     box-sizing: content-box;
 }
 
+.photoWrapInteractive {
+    cursor: pointer;
+}
+
 .photoWrap :global(.ant-image) {
     display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.photoWrapInteractive :global(.ant-image-mask) {
+    border-radius: 2px;
+}
+
+.previewMask {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.previewImageWrap {
+    cursor: zoom-out;
 }
