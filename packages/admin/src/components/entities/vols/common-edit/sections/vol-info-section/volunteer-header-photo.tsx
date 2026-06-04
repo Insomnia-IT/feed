@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { EyeOutlined } from '@ant-design/icons';
 import { Image, Tooltip, type FormInstance } from 'antd';
 import { useSelect } from '@refinedev/core';
@@ -16,8 +16,8 @@ interface IProps {
 }
 
 export const VolunteerHeaderPhoto = ({ form }: IProps) => {
-    const [imageError, setImageError] = useState(false);
-    const [previewOpen, setPreviewOpen] = useState(false);
+    const [failedPhotoUrl, setFailedPhotoUrl] = useState<string | null>(null);
+    const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
 
     const { options: colorTypeOptions } = useSelect<ColorTypeEntity>({
         resource: 'colors',
@@ -27,12 +27,8 @@ export const VolunteerHeaderPhoto = ({ form }: IProps) => {
     const { volPhoto, badgeColorLabel, badgeColorDef } = useVolunteerBadgeColor(form, colorTypeOptions);
     const volPhotoUrl = useMemo(() => (volPhoto ? NEW_API_URL + volPhoto : ''), [volPhoto]);
     const frameStyle = useMemo(() => getBadgeAvatarFrameStyle(badgeColorDef), [badgeColorDef]);
-    const hasPhoto = Boolean(volPhoto && !imageError);
-
-    useEffect(() => {
-        setImageError(false);
-        setPreviewOpen(false);
-    }, [volPhotoUrl]);
+    const hasPhoto = Boolean(volPhoto && failedPhotoUrl !== volPhotoUrl);
+    const previewOpen = previewPhotoUrl === volPhotoUrl && hasPhoto;
 
     const tooltipTitle = useMemo(() => formatBadgeColorTooltip(badgeColorLabel), [badgeColorLabel]);
 
@@ -51,10 +47,10 @@ export const VolunteerHeaderPhoto = ({ form }: IProps) => {
                             width={64}
                             height={64}
                             style={{ objectFit: 'cover', borderRadius: 2 }}
-                            onError={() => setImageError(true)}
+                            onError={() => setFailedPhotoUrl(volPhotoUrl)}
                             preview={{
                                 visible: previewOpen,
-                                onVisibleChange: setPreviewOpen,
+                                onVisibleChange: (visible) => setPreviewPhotoUrl(visible ? volPhotoUrl : null),
                                 toolbarRender: () => null,
                                 mask: (
                                     <span className={styles.previewMask} aria-hidden>
