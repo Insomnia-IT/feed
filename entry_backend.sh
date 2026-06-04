@@ -2,9 +2,10 @@
 
 cd /app/backend
 
-python ./cron_config.py
-
-/usr/sbin/crond -f -l 8 &
+if [ "$DISABLE_CRON" != "True" ]; then
+    python ./cron_config.py
+    /usr/sbin/crond -f -l 8 &
+fi
 
 ./manage.py migrate
 ./manage.py shell < create_user.py
