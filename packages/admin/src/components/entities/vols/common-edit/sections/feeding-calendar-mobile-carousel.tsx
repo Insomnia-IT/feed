@@ -26,8 +26,10 @@ export function FeedingCalendarMobileCarousel({
     }, []);
 
     useEffect(() => {
-        scrollToIndex(initialIndex, 'auto');
-        setActiveIndex(initialIndex);
+        const frameId = window.requestAnimationFrame(() => {
+            scrollToIndex(initialIndex, 'auto');
+        });
+        return () => window.cancelAnimationFrame(frameId);
     }, [initialIndex, scrollToIndex]);
 
     useEffect(() => {

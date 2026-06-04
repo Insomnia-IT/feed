@@ -137,19 +137,8 @@ export function FeedingCalendar({ freeDates, paidDates, onChange, disabled, year
     const isPaintingRef = useRef(false);
     const paintActionRef = useRef<'apply' | 'remove' | null>(null);
     const paintedKeysRef = useRef<Set<string>>(new Set());
-    const paintDraftRef = useRef<FeedingDateSets | null>(null);
-    const sourceSetsRef = useRef<FeedingDateSets>({ freeDates, paidDates });
-    const activeModeRef = useRef(activeMode);
-    const disabledRef = useRef(disabled);
-    const onChangeRef = useRef(onChange);
 
     const calendarYear = year ?? getFeedingCalendarYear();
-
-    sourceSetsRef.current = { freeDates, paidDates };
-    activeModeRef.current = activeMode;
-    disabledRef.current = disabled;
-    onChangeRef.current = onChange;
-    paintDraftRef.current = paintDraft;
 
     const monthPanels = useMemo(
         () =>
@@ -172,85 +161,86 @@ export function FeedingCalendar({ freeDates, paidDates, onChange, disabled, year
         setIsPainting(false);
 
         const paintedKeys = [...paintedKeysRef.current];
-        const draft = paintDraftRef.current;
-        const source = sourceSetsRef.current;
-
-        if (paintedKeys.length === 1) {
-            onChangeRef.current(
-                toggleFeedingDate({
-                    dateKey: paintedKeys[0],
-                    mode: activeModeRef.current,
-                    freeDates: source.freeDates,
-                    paidDates: source.paidDates
-                })
-            );
-        } else if (draft) {
-            onChangeRef.current(draft);
-        }
-
         paintedKeysRef.current = new Set();
         paintActionRef.current = null;
-        setPaintDraft(null);
-    }, []);
+
+        setPaintDraft((draft) => {
+            if (paintedKeys.length === 1) {
+                onChange(
+                    toggleFeedingDate({
+                        dateKey: paintedKeys[0],
+                        mode: activeMode,
+                        freeDates,
+                        paidDates
+                    })
+                );
+            } else if (draft) {
+                onChange(draft);
+            }
+
+            return null;
+        });
+    }, [activeMode, freeDates, onChange, paidDates]);
 
     useEffect(() => {
         window.addEventListener('mouseup', endPaint);
         return () => window.removeEventListener('mouseup', endPaint);
     }, [endPaint]);
 
-    const handleDatePaintStart = useCallback((dateKey: string) => {
-        if (disabledRef.current) {
-            return;
-        }
+    const handleDatePaintStart = useCallback(
+        (dateKey: string) => {
+            if (disabled) {
+                return;
+            }
 
-        isPaintingRef.current = true;
-        setIsPainting(true);
-        paintedKeysRef.current = new Set([dateKey]);
+            isPaintingRef.current = true;
+            setIsPainting(true);
+            paintedKeysRef.current = new Set([dateKey]);
 
-        const source = sourceSetsRef.current;
-        const action = resolvePaintAction({
-            dateKey,
-            mode: activeModeRef.current,
-            freeDates: source.freeDates,
-            paidDates: source.paidDates
-        });
-        paintActionRef.current = action;
-
-        const draft = paintFeedingDate({
-            dateKey,
-            mode: activeModeRef.current,
-            action,
-            freeDates: source.freeDates,
-            paidDates: source.paidDates
-        });
-        setPaintDraft(draft);
-    }, []);
-
-    const handleDatePaintEnter = useCallback((dateKey: string) => {
-        if (!isPaintingRef.current || disabledRef.current) {
-            return;
-        }
-
-        if (paintedKeysRef.current.has(dateKey)) {
-            return;
-        }
-
-        paintedKeysRef.current.add(dateKey);
-        setPaintDraft((previousDraft) => {
-            const base = cloneFeedingDateSets(
-                previousDraft ?? {
-                    freeDates: sourceSetsRef.current.freeDates,
-                    paidDates: sourceSetsRef.current.paidDates
-                }
-            );
-            return paintFeedingDate({
+            const action = resolvePaintAction({
                 dateKey,
-                mode: activeModeRef.current,
-                action: paintActionRef.current ?? 'apply',
-                ...base
+                mode: activeMode,
+                freeDates,
+                paidDates
             });
-        });
-    }, []);
+            paintActionRef.current = action;
+
+            setPaintDraft(
+                paintFeedingDate({
+                    dateKey,
+                    mode: activeMode,
+                    action,
+                    freeDates,
+                    paidDates
+                })
+            );
+        },
+        [activeMode, disabled, freeDates, paidDates]
+    );
+
+    const handleDatePaintEnter = useCallback(
+        (dateKey: string) => {
+            if (!isPaintingRef.current || disabled) {
+                return;
+            }
+
+            if (paintedKeysRef.current.has(dateKey)) {
+                return;
+            }
+
+            paintedKeysRef.current.add(dateKey);
+            setPaintDraft((previousDraft) => {
+                const base = cloneFeedingDateSets(previousDraft ?? { freeDates, paidDates });
+                return paintFeedingDate({
+                    dateKey,
+                    mode: activeMode,
+                    action: paintActionRef.current ?? 'apply',
+                    ...base
+                });
+            });
+        },
+        [activeMode, disabled, freeDates, paidDates]
+    );
 
     useEffect(() => {
         const handlePointerUp = () => endPaint();

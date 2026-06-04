@@ -199,10 +199,10 @@ function mergeSortedDateKeysToIntervals(params: {
         return [];
     }
 
-    const existingIdByRange = new Map(
+    const existingIdByRange = new Map<string, string | undefined>(
         existingIntervals
             .filter((item) => item.is_free === isFree && item.arrival_date && item.departure_date)
-            .map((item) => [`${item.arrival_date}:${item.departure_date}`, item.id] as const)
+            .map((item) => [`${item.arrival_date}:${item.departure_date}`, item.id])
     );
 
     const intervals: PaidArrivalFormInterval[] = [];
