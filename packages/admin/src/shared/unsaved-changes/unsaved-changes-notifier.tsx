@@ -1,18 +1,11 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslate, useWarnAboutChange } from '@refinedev/core';
 import { Button, Modal } from 'antd';
-import {
-    UNSAFE_NavigationContext as NavigationContext,
-    useLocation,
-    type Navigator as RouterNavigator
-} from 'react-router';
+import { UNSAFE_NavigationContext as NavigationContext, useLocation } from 'react-router';
 
+import { installNavigationBlocker, type PendingNavigation } from './block-navigation';
 import { useUnsavedChangesSaveContext } from './unsaved-changes-save-context';
 import styles from './unsaved-changes-notifier.module.css';
-
-type PendingNavigation =
-    | { type: 'push'; args: Parameters<RouterNavigator['push']> }
-    | { type: 'go'; args: Parameters<RouterNavigator['go']> };
 
 type UnsavedChangesNotifierProps = {
     translationKey?: string;
@@ -64,25 +57,13 @@ export const UnsavedChangesNotifier = ({
             return;
         }
 
-        const originalPush = navigator.push;
-        const originalGo = navigator.go;
-        originalPushRef.current = originalPush;
-        originalGoRef.current = originalGo;
+        originalPushRef.current = navigator.push.bind(navigator);
+        originalGoRef.current = navigator.go.bind(navigator);
 
-        /* eslint-disable react-hooks/immutability -- Patch navigator for SPA leave guard (Refine use-prompt-workaround pattern). */
-        navigator.push = (...args: Parameters<typeof originalPush>) => {
-            openModal({ type: 'push', args });
-        };
-
-        navigator.go = (...args: Parameters<typeof originalGo>) => {
-            openModal({ type: 'go', args });
-        };
-
-        return () => {
-            navigator.push = originalPush;
-            navigator.go = originalGo;
-        };
-        /* eslint-enable react-hooks/immutability */
+        return installNavigationBlocker({
+            navigator,
+            onBlock: openModal
+        });
     }, [navigator, openModal, warnWhen]);
 
     const handleStay = useCallback(() => {

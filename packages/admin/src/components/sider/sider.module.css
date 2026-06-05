@@ -37,7 +37,8 @@
 }
 
 /* Планшет, меню открыто: ярлычок справа от панели */
-.antLayoutSiderMobile:global(.ant-layout-sider:not(.ant-layout-sider-collapsed)) :global(.ant-layout-sider-zero-width-trigger) {
+.antLayoutSiderMobile:global(.ant-layout-sider:not(.ant-layout-sider-collapsed))
+:global(.ant-layout-sider-zero-width-trigger) {
     position: absolute;
     top: 50%;
     bottom: auto;
