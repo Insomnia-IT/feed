@@ -41,7 +41,7 @@ npm run dev:stage
 cd tests
 . venv/bin/activate
 
-FEED_APP_HOST=http://localhost:3002 python -m pytest test_regress.py::test_create_new_user
+FEED_APP_HOST=http://localhost:3002 python -m pytest --headed test_regress.py::test_create_new_user
 ```
 
 test_create_new_user заменяем на свой конкретный тест. При запуске открывается реальный браузер и видно что происходит
