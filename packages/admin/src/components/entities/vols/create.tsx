@@ -88,7 +88,7 @@ export const VolCreate = () => {
                 style: contentStyle
             }}
         >
-            <Form
+            <Form<VolEntity>
                 {...restFormProps}
                 onFinish={handleFinish}
                 scrollToFirstError

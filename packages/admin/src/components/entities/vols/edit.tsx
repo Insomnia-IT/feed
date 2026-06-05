@@ -140,7 +140,7 @@ export const VolEdit = () => {
                 styles: { body: { paddingTop: 0 } }
             }}
         >
-            <Form
+            <Form<VolEntity>
                 {...restFormProps}
                 onFinish={handleFinish}
                 scrollToFirstError
