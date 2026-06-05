@@ -1,22 +1,24 @@
-import type { FormProps } from 'antd';
-
 import type { FeedTypeEntity, VolEntity } from 'interfaces';
 
 import { intervalsToDateSets, normalizeVolunteerFeedingPayload, resolveFeedTypeId } from './feeding-calendar-utils';
 import type { PaidArrivalFormInterval } from './feeding-calendar-utils';
 
 export function createVolunteerFormOnFinish(params: {
-    upstream?: NonNullable<FormProps<VolEntity>['onFinish']>;
+    upstream?: (values: VolEntity) => void | Promise<void>;
     feedTypes: FeedTypeEntity[];
-}): NonNullable<FormProps<VolEntity>['onFinish']> {
-    return (values) => {
+}) {
+    return (values: VolEntity) => {
         const feeding = normalizeVolunteerFeedingPayload({
             paidArrivals: values.paid_arrivals ?? [],
             feedTypeId: values.feed_type,
             feedTypes: params.feedTypes
         });
 
-        return params.upstream?.({ ...values, ...feeding });
+        return params.upstream?.({
+            ...values,
+            feed_type: feeding.feed_type,
+            paid_arrivals: feeding.paid_arrivals as VolEntity['paid_arrivals']
+        });
     };
 }
 

@@ -72,7 +72,10 @@ export const VolEdit = () => {
     const [activeKey, setActiveKey] = useState('1');
 
     const { onFinish: upstreamOnFinish, onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
-    const handleFinish = createVolunteerFormOnFinish({ upstream: upstreamOnFinish, feedTypes });
+    const handleFinish = createVolunteerFormOnFinish({
+        upstream: upstreamOnFinish as ((values: VolEntity) => void | Promise<void>) | undefined,
+        feedTypes
+    });
     const handleFinishFailed: NonNullable<FormProps['onFinishFailed']> = createVolunteerFormFinishFailedHandler(
         setActiveKey,
         form,
@@ -140,9 +143,9 @@ export const VolEdit = () => {
                 styles: { body: { paddingTop: 0 } }
             }}
         >
-            <Form<VolEntity>
+            <Form
                 {...restFormProps}
-                onFinish={handleFinish}
+                onFinish={handleFinish as NonNullable<typeof upstreamOnFinish>}
                 scrollToFirstError
                 layout="vertical"
                 onFinishFailed={handleFinishFailed}
