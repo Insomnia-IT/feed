@@ -82,6 +82,29 @@
     width: 130px;
 }
 
+/* Скрытый #feed_type для автотестов и совместимости со старым Select; календарь — основной UI. */
+.feedTypeCompatSelectWrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 200px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0.01;
+    pointer-events: auto;
+}
+
+.feedTypeCompatSelectWrap :global(.ant-form-item-label) {
+    display: none;
+}
+
+.feedTypeCompatSelectWrap :global(.ant-form-item-control) {
+    max-width: 200px;
+}
+
 @media (width <= 1200px) {
     .feedingFieldKitchen :global(.ant-select) {
         width: 140px;

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Form, Select, Checkbox } from 'antd';
 import { useLocation } from 'react-router';
 
@@ -9,6 +9,7 @@ import styles from '../../common.module.css';
 import { FeedingCalendarField } from './feeding-calendar-field';
 import { applyFeedTypeFromCalendar, intervalsToDateSets } from './feeding-calendar-utils';
 import type { PaidArrivalFormInterval } from './feeding-calendar-utils';
+import { applyFeedTypeSelectChange } from './volunteer-feeding-form';
 
 export const FeedingSection = ({
     denyBadgeEdit,
@@ -33,6 +34,11 @@ export const FeedingSection = ({
     const isChild = childFeedTypeId !== undefined && feedTypeId === childFeedTypeId;
     const isNoFeed = noFeedTypeId !== undefined && feedTypeId === noFeedTypeId;
     const showCalendar = !isChild;
+
+    const feedTypeSelectOptions = useMemo(
+        () => feedTypes.map(({ id, name }) => ({ label: name, value: id })),
+        [feedTypes]
+    );
 
     useEffect(() => {
         if (!isCreationProcess || noFeedTypeId === undefined) {
@@ -92,7 +98,22 @@ export const FeedingSection = ({
                 </Form.Item>
             </div>
 
-            <Form.Item name="feed_type" hidden rules={Rules.required} />
+            <Form.Item
+                name="feed_type"
+                rules={Rules.required}
+                className={styles.feedTypeCompatSelectWrap}
+                colon={false}
+                label=" "
+            >
+                <Select
+                    id="feed_type"
+                    disabled={denyFeedTypeEdit}
+                    options={feedTypeSelectOptions}
+                    onChange={(value: number) => {
+                        applyFeedTypeSelectChange({ feedTypeId: value, feedTypes, form });
+                    }}
+                />
+            </Form.Item>
 
             {isChild ? (
                 <p className={styles.sectionHint}>

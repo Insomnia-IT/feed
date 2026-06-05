@@ -9,6 +9,7 @@ import {
     computeGristReadonlyFreeDates,
     dateSetsToIntervals,
     deriveFeedTypeCode,
+    normalizeVolunteerFeedingPayload,
     expandIntervalToDateKeys,
     getDateKeysFromArrivals,
     getDefaultSummerMonthIndex,
@@ -225,6 +226,31 @@ describe('feeding-calendar-utils', () => {
                 isChild: true
             })
         ).toBe('CHILD');
+    });
+
+    it('keeps explicit feed_type when calendar is empty (legacy select behavior)', () => {
+        const feedTypes = [
+            { id: 1, code: 'FREE' },
+            { id: 2, code: 'PAID' },
+            { id: 3, code: 'CHILD' },
+            { id: 4, code: 'NO' }
+        ];
+
+        expect(
+            normalizeVolunteerFeedingPayload({
+                paidArrivals: [],
+                feedTypeId: 1,
+                feedTypes
+            })
+        ).toEqual({ feed_type: 1, paid_arrivals: [] });
+
+        expect(
+            normalizeVolunteerFeedingPayload({
+                paidArrivals: [],
+                feedTypeId: 4,
+                feedTypes
+            })
+        ).toEqual({ feed_type: 4, paid_arrivals: [] });
     });
 
     it('marks free arrival days readonly for grist FREE volunteers', () => {

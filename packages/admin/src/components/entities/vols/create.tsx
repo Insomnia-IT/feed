@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
-import { useTranslate } from '@refinedev/core';
+import { useList, useTranslate } from '@refinedev/core';
 import { SaveOutlined } from '@ant-design/icons';
 import { App, Button, Form, type FormProps } from 'antd';
+import { useNavigate } from 'react-router';
 
-import type { VolEntity } from 'interfaces';
+import type { FeedTypeEntity, VolEntity } from 'interfaces';
 
 import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
+import { createVolunteerFormOnFinish } from './common-edit/sections/volunteer-feeding-form';
 
 import styles from './common.module.css';
 
@@ -22,8 +24,16 @@ const contentStyle = {
 export const VolCreate = () => {
     const translate = useTranslate();
     const { notification } = App.useApp();
+    const navigate = useNavigate();
+
+    const { result: feedTypesResult } = useList<FeedTypeEntity>({
+        resource: 'feed-types',
+        pagination: { pageSize: 100 }
+    });
+    const feedTypes = feedTypesResult.data ?? [];
 
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+        redirect: 'list',
         successNotification: false,
         onMutationSuccess: async (response) => {
             await onMutationSuccess(response as { data: { id: number } });
@@ -42,15 +52,18 @@ export const VolCreate = () => {
                     </>
                 )
             });
+
+            navigate('/volunteers');
         },
         warnWhenUnsavedChanges: true
     });
-    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
+    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
 
     const { isDesktop } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
 
-    const { onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const { onFinish: upstreamOnFinish, onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const handleFinish = createVolunteerFormOnFinish({ upstream: upstreamOnFinish, feedTypes });
     const handleFinishFailed: NonNullable<FormProps['onFinishFailed']> = createVolunteerFormFinishFailedHandler(
         setActiveKey,
         form,
@@ -75,7 +88,13 @@ export const VolCreate = () => {
                 style: contentStyle
             }}
         >
-            <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
+            <Form
+                {...restFormProps}
+                onFinish={handleFinish}
+                scrollToFirstError
+                layout="vertical"
+                onFinishFailed={handleFinishFailed}
+            >
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {showFloatingSave && (

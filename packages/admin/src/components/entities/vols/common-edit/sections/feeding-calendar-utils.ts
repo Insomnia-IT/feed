@@ -319,6 +319,55 @@ export function applyFeedTypeFromCalendar(params: {
     return resolveFeedTypeId({ feedTypes: params.feedTypes, code });
 }
 
+/** Приводит feed_type и paid_arrivals к формату API (как в старой форме с Select). */
+export function normalizeVolunteerFeedingPayload(params: {
+    paidArrivals: PaidArrivalFormInterval[];
+    feedTypeId: number | null | undefined;
+    feedTypes: Array<{ id: number; code: string }>;
+    isChild?: boolean;
+}): { feed_type: number | undefined; paid_arrivals: PaidArrivalFormInterval[] } {
+    const childFeedTypeId = resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'CHILD' });
+    const isChild = params.isChild ?? (childFeedTypeId !== undefined && params.feedTypeId === childFeedTypeId);
+
+    if (isChild) {
+        return {
+            feed_type: childFeedTypeId,
+            paid_arrivals: []
+        };
+    }
+
+    const { freeDates, paidDates } = intervalsToDateSets(params.paidArrivals);
+
+    if (freeDates.size === 0 && paidDates.size === 0) {
+        const explicitCode = params.feedTypes.find(({ id }) => id === params.feedTypeId)?.code as
+            | FeedTypeCode
+            | undefined;
+
+        if (explicitCode === 'FREE' || explicitCode === 'NO' || explicitCode === 'PAID') {
+            return {
+                feed_type: resolveFeedTypeId({ feedTypes: params.feedTypes, code: explicitCode }),
+                paid_arrivals: []
+            };
+        }
+    }
+
+    const code = deriveFeedTypeCode({ freeDates, paidDates, isChild: false });
+    const feed_type = resolveFeedTypeId({ feedTypes: params.feedTypes, code });
+
+    if (code === 'NO' || code === 'CHILD') {
+        return { feed_type, paid_arrivals: [] };
+    }
+
+    return {
+        feed_type,
+        paid_arrivals: dateSetsToIntervals({
+            freeDates,
+            paidDates,
+            existingIntervals: params.paidArrivals
+        })
+    };
+}
+
 export function resolveFeedTypeId(params: {
     feedTypes: Array<{ id: number; code: string }>;
     code: FeedTypeCode;

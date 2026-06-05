@@ -3,13 +3,17 @@ import { useState, type JSX } from 'react';
 import { Modal, type ButtonProps, type FormInstance } from 'antd';
 
 import { dataProvider } from 'dataProvider';
-import type { VolCustomFieldValueEntity } from 'interfaces';
+import type { FeedTypeEntity, VolCustomFieldValueEntity } from 'interfaces';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+import { syncVolunteerFeedingFields } from './common-edit/sections/volunteer-feeding-form';
 
 const useSaveConfirm = (
     form: FormInstance,
     saveButtonProps: ButtonProps & {
         onClick: () => void;
+    },
+    options?: {
+        feedTypes?: FeedTypeEntity[];
     }
 ): {
     onClick: () => void;
@@ -20,8 +24,15 @@ const useSaveConfirm = (
         null
     );
 
+    const syncFeedingBeforeSave = () => {
+        if (options?.feedTypes?.length) {
+            syncVolunteerFeedingFields({ form, feedTypes: options.feedTypes });
+        }
+    };
+
     const handleOk = () => {
         setShowConfirmationModalReason(null);
+        syncFeedingBeforeSave();
         saveButtonProps?.onClick();
     };
 
@@ -31,6 +42,8 @@ const useSaveConfirm = (
 
     return {
         onClick: () => {
+            syncFeedingBeforeSave();
+
             const arrivals = form.getFieldValue('arrivals') ?? [];
             const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
             if (!arrivals.some(({ status }: { status: string }) => isVolunteerActivatedStatusValue(status))) {
