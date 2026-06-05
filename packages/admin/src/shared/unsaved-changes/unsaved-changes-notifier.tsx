@@ -69,6 +69,7 @@ export const UnsavedChangesNotifier = ({
         originalPushRef.current = originalPush;
         originalGoRef.current = originalGo;
 
+        /* eslint-disable react-hooks/immutability -- Patch navigator for SPA leave guard (Refine use-prompt-workaround pattern). */
         navigator.push = (...args: Parameters<typeof originalPush>) => {
             openModal({ type: 'push', args });
         };
@@ -81,6 +82,7 @@ export const UnsavedChangesNotifier = ({
             navigator.push = originalPush;
             navigator.go = originalGo;
         };
+        /* eslint-enable react-hooks/immutability */
     }, [navigator, openModal, warnWhen]);
 
     const handleStay = useCallback(() => {
