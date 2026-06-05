@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Form, type FormInstance, Select } from 'antd';
+import { type CrudFilters, useList } from '@refinedev/core';
 import { EyeOutlined } from '@ant-design/icons';
 import useCanAccess from '../use-can-access';
-import { useSupervisorOptions } from '../use-supervisor-options';
 import { useDebouncedCallback } from 'shared/hooks';
+import { AppRoles } from '../../../../auth';
+import type { VolEntity } from 'interfaces';
+import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import { useScreen } from '../../../../shared/providers';
 
 import connectionsStyles from './connections.module.css';
@@ -16,11 +19,55 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
     const canEditBrigadier = useCanAccess({ action: 'brigadier_edit', resource: 'volunteers' });
     const debouncedBrigadierSearch = useDebouncedCallback((value: string) => setBrigadierSearch(value));
 
-    const { options: supervisorOptions, loading: supervisorsLoading } = useSupervisorOptions({
-        search: brigadierSearch,
-        selectedSupervisorId: supervisorId,
-        selectedSupervisor: supervisor
+    const supervisorFilters = useMemo<CrudFilters>(
+        () => [
+            {
+                field: 'access_role',
+                operator: 'eq' as const,
+                value: AppRoles.DIRECTION_HEAD
+            },
+            ...(brigadierSearch
+                ? [
+                      {
+                          field: 'search',
+                          operator: 'eq' as const,
+                          value: brigadierSearch
+                      }
+                  ]
+                : [])
+        ],
+        [brigadierSearch]
+    );
+
+    const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity>({
+        resource: 'volunteers',
+        filters: supervisorFilters,
+        pagination: {
+            mode: 'server',
+            currentPage: 1,
+            pageSize: 50
+        }
     });
+
+    const supervisorsLoading = supervisorsQuery.isLoading;
+
+    const supervisorOptions = useMemo(() => {
+        const supervisorsData = supervisorsResult.data ?? [];
+
+        const options = supervisorsData.map((volunteer) => ({
+            value: volunteer.id,
+            label: formatVolunteerLabel(volunteer)
+        }));
+
+        if (supervisorId && !options.some((option) => option.value === supervisorId)) {
+            options.unshift({
+                value: supervisorId,
+                label: supervisor?.name ?? `ID ${supervisorId}`
+            });
+        }
+
+        return options;
+    }, [supervisor, supervisorId, supervisorsResult]);
 
     return (
         <div className={connectionsStyles.fieldRow}>
