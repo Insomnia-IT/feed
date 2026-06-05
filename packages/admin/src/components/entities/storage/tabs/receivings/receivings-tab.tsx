@@ -28,6 +28,7 @@ export const ReceivingsTab: React.FC = () => {
         { dataIndex: 'item_name', title: 'Предмет' },
         { dataIndex: 'count', title: 'Кол-во' },
         { dataIndex: 'volunteer_name', title: 'От кого' },
+        { dataIndex: 'actor_name', title: 'Кем' },
         { dataIndex: 'notes', title: 'Заметки' },
         {
             dataIndex: 'created_at',
