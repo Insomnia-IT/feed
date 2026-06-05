@@ -187,7 +187,8 @@ export const useFilters = ({
 
     const { result: storageItemsResult, query: storageItemsQuery } = useList<ItemEntity, HttpError>({
         resource: 'storage-items',
-        pagination: { mode: 'off' }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('inventory_item') }
     });
 
     const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity, HttpError>({
