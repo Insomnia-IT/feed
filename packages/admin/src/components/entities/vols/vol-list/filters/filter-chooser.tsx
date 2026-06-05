@@ -1,12 +1,21 @@
-import { lazy, Suspense, useState } from 'react';
-import { FilterOutlined } from '@ant-design/icons';
-import { Button, Popover, Spin } from 'antd';
+import { useRef, useState, type ComponentRef } from 'react';
+import { DownOutlined, FilterOutlined } from '@ant-design/icons';
+import { Button, Popover, Select } from 'antd';
 
 import type { FilterField } from './filter-types';
+import styles from './filters.module.css';
 
-const FilterChooserContent = lazy(() =>
-    import('./filter-chooser-content').then((module) => ({ default: module.FilterChooserContent }))
-);
+interface IFilterOption {
+    label: string;
+    value: string;
+}
+
+const mapFilterFieldsToOptions = (item: FilterField): IFilterOption => {
+    return {
+        label: item.title,
+        value: item.name
+    };
+};
 
 export const FilterChooser = ({
     removeAllFilters,
@@ -19,32 +28,62 @@ export const FilterChooser = ({
     toggleVisibleFilter: (name: string) => void;
     visibleFilters: Array<string>;
 }) => {
-    const [popoverOpen, setPopoverOpen] = useState(false);
+    const selectRef = useRef<ComponentRef<typeof Select>>(null);
     const [selectOpen, setSelectOpen] = useState(false);
+    const options = filterFields.map(mapFilterFieldsToOptions);
+
+    const onChoiceChange = (_value: string, option: IFilterOption): void => {
+        toggleVisibleFilter(option.value);
+    };
 
     return (
         <Popover
             placement="bottomLeft"
             trigger="click"
-            open={popoverOpen}
-            onOpenChange={(open) => {
-                setPopoverOpen(open);
-                setSelectOpen(open);
-            }}
             destroyOnHidden
+            afterOpenChange={(open) => {
+                if (open) {
+                    setSelectOpen(true);
+                    selectRef.current?.focus();
+                } else {
+                    setSelectOpen(false);
+                }
+            }}
             content={
-                popoverOpen ? (
-                    <Suspense fallback={<Spin />}>
-                        <FilterChooserContent
-                            filterFields={filterFields}
-                            removeAllFilters={removeAllFilters}
-                            selectOpen={selectOpen}
-                            setSelectOpen={setSelectOpen}
-                            toggleVisibleFilter={toggleVisibleFilter}
-                            visibleFilters={visibleFilters}
-                        />
-                    </Suspense>
-                ) : null
+                <Select
+                    ref={selectRef}
+                    open={selectOpen}
+                    onOpenChange={setSelectOpen}
+                    getPopupContainer={(trigger) =>
+                        trigger.closest('.ant-popover-inner-content') ?? trigger.parentElement ?? document.body
+                    }
+                    className={styles.filterChooserSelect}
+                    style={{ minWidth: '200px', maxWidth: '350px' }}
+                    mode="multiple"
+                    value={visibleFilters}
+                    options={options}
+                    optionFilterProp="label"
+                    onSelect={onChoiceChange}
+                    onDeselect={onChoiceChange}
+                    onClear={removeAllFilters}
+                    showSearch
+                    allowClear={false}
+                    suffixIcon={
+                        <span
+                            role="button"
+                            tabIndex={-1}
+                            aria-expanded={selectOpen}
+                            className={styles.filterIconToggle}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setSelectOpen((prev) => !prev);
+                            }}
+                        >
+                            <DownOutlined />
+                        </span>
+                    }
+                />
             }
         >
             <Button icon={<FilterOutlined />}>Фильтры</Button>
