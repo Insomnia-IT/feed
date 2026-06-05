@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 import type { FeedTypeEntity, VolEntity } from 'interfaces';
 
 import { useScreen } from 'shared/providers';
+import { useRegisterUnsavedChangesSave } from 'shared/unsaved-changes';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
@@ -58,8 +59,9 @@ export const VolCreate = () => {
         warnWhenUnsavedChanges: true
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
+    useRegisterUnsavedChangesSave(onClick);
 
-    const { isDesktop } = useScreen();
+    const { isDesktop, isMobile } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
 
     const { onFinish: upstreamOnFinish, onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
@@ -103,13 +105,14 @@ export const VolCreate = () => {
             {showFloatingSave && (
                 <Button
                     type="primary"
-                    icon={<SaveOutlined />}
+                    icon={<SaveOutlined className={isMobile ? styles.floatingSaveButtonIcon : undefined} />}
                     loading={saveButtonProps.loading}
                     disabled={saveButtonProps.disabled}
-                    className={styles.floatingSaveButton}
+                    className={`${styles.floatingSaveButton} ${isMobile ? styles.floatingSaveButtonIconOnly : ''}`}
                     onClick={onClick}
+                    aria-label={isMobile ? 'Сохранить' : undefined}
                 >
-                    Сохранить
+                    {isMobile ? null : 'Сохранить'}
                 </Button>
             )}
             {renderModal()}

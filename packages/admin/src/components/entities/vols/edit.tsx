@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router';
 
 import { useScreen } from 'shared/providers';
 import { useLocalStorage } from 'shared/hooks';
+import { useRegisterUnsavedChangesSave } from 'shared/unsaved-changes';
 import type { FeedTypeEntity, VolEntity } from 'interfaces';
 import CreateEdit from './common';
 import { VolunteerHeaderPhoto } from './common-edit/sections/vol-info-section/volunteer-header-photo';
@@ -67,7 +68,8 @@ export const VolEdit = () => {
         warnWhenUnsavedChanges: true
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
-    const { isDesktop } = useScreen();
+    useRegisterUnsavedChangesSave(onClick);
+    const { isDesktop, isMobile } = useScreen();
 
     const [activeKey, setActiveKey] = useState('1');
 
@@ -155,13 +157,14 @@ export const VolEdit = () => {
             {showFloatingSave && (
                 <Button
                     type="primary"
-                    icon={<SaveOutlined />}
+                    icon={<SaveOutlined className={isMobile ? styles.floatingSaveButtonIcon : undefined} />}
                     loading={saveButtonProps.loading}
                     disabled={saveButtonProps.disabled}
-                    className={styles.floatingSaveButton}
+                    className={`${styles.floatingSaveButton} ${isMobile ? styles.floatingSaveButtonIconOnly : ''}`}
                     onClick={onClick}
+                    aria-label={isMobile ? 'Сохранить' : undefined}
                 >
-                    Сохранить
+                    {isMobile ? null : 'Сохранить'}
                 </Button>
             )}
             {renderModal()}

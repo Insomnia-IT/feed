@@ -2,10 +2,69 @@
     position: relative;
 }
 
+/* Десктоп: кнопка сворачивания внутри сайдбара внизу */
+.antLayoutSider:global(.ant-layout-sider-has-trigger) {
+    padding-bottom: 48px;
+}
+
+.antLayoutSider:global(.ant-layout-sider) :global(.ant-layout-sider-trigger) {
+    position: absolute;
+    inset-inline: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 48px;
+    line-height: 48px;
+    transform: none;
+    border-radius: 0;
+    z-index: 2;
+}
+
+.siderBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    border: none;
+    padding: 0;
+    background: rgb(0 0 0 / 45%);
+    cursor: default;
+}
+
 .antLayoutSiderMobile {
     position: fixed;
     height: 100vh;
-    z-index: 3;
+    z-index: 200;
+}
+
+/* Планшет, меню открыто: ярлычок справа от панели */
+.antLayoutSiderMobile:global(.ant-layout-sider:not(.ant-layout-sider-collapsed)) :global(.ant-layout-sider-zero-width-trigger) {
+    position: absolute;
+    top: 50%;
+    bottom: auto;
+    inset-inline: auto 0;
+    transform: translate(100%, -50%);
+    border-radius: 0 6px 6px 0;
+    z-index: 4;
+}
+
+/* Планшет, меню закрыто: ярлычок слева по центру экрана */
+.antLayoutSiderMobile:global(.ant-layout-sider-collapsed) :global(.ant-layout-sider-zero-width-trigger) {
+    position: fixed;
+    top: 50%;
+    bottom: auto;
+    inset-inline: 0 auto;
+    transform: translateY(-50%);
+    border-radius: 0 6px 6px 0;
+    z-index: 4;
+}
+
+.antLayoutSiderMobile:global(.ant-layout-sider) :global(.ant-layout-sider-zero-width-trigger-right) {
+    border-radius: 6px 0 0 6px;
+}
+
+.antLayoutSiderMobile:global(.ant-layout-sider-collapsed) :global(.ant-layout-sider-zero-width-trigger-right) {
+    inset-inline: auto 0;
+    border-radius: 6px 0 0 6px;
 }
 
 .mobileSider {

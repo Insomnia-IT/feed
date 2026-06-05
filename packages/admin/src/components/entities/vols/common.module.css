@@ -805,7 +805,47 @@
     z-index: 100;
     right: 32px;
     bottom: 32px;
-    box-shadow: 0 6px 16px rgb(0 0 0 / 0.12);
+    box-shadow:
+        0 8px 20px rgb(0 0 0 / 0.16),
+        0 3px 8px rgb(0 0 0 / 0.1);
+}
+
+.floatingSaveButtonIconOnly:global(.ant-btn) {
+    --floating-save-mobile-size: 60px;
+    --floating-save-mobile-icon-size: 32px;
+
+    width: var(--floating-save-mobile-size);
+    min-width: var(--floating-save-mobile-size);
+    max-width: var(--floating-save-mobile-size);
+    height: var(--floating-save-mobile-size);
+    min-height: var(--floating-save-mobile-size);
+    max-height: var(--floating-save-mobile-size);
+    padding: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    aspect-ratio: 1;
+}
+
+.floatingSaveButtonIconOnly:global(.ant-btn) :global(.ant-btn-icon) {
+    margin: 0;
+    line-height: 0;
+    font-size: var(--floating-save-mobile-icon-size);
+}
+
+.floatingSaveButtonIconOnly:global(.ant-btn) :global(.ant-btn-icon) :global(.anticon),
+.floatingSaveButtonIconOnly:global(.ant-btn) :global(.ant-btn-icon) :global(svg),
+.floatingSaveButtonIcon {
+    width: var(--floating-save-mobile-icon-size);
+    height: var(--floating-save-mobile-icon-size);
+    font-size: var(--floating-save-mobile-icon-size);
+}
+
+.floatingSaveButtonIcon svg {
+    width: 100%;
+    height: 100%;
 }
 
 @media (width <= 576px) {
