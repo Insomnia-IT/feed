@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type HttpError, useList } from '@refinedev/core';
 
+import { AppRoles } from 'auth';
+import { VOLUNTEER_ROLE_TEAM_LEAD } from 'shared/constants/volunteer-role';
+
 import type {
     AccessRoleEntity,
     CustomFieldEntity,
@@ -176,13 +179,28 @@ export const useFilters = ({
         pagination: { mode: 'off' }
     });
 
-    const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity, HttpError>({
+    const { result: supervisorsByMainRoleResult, query: supervisorsByMainRoleQuery } = useList<VolEntity, HttpError>({
         resource: 'volunteers',
         filters: [
             {
-                field: 'is_supervisor',
+                field: 'main_role',
                 operator: 'eq',
-                value: true
+                value: VOLUNTEER_ROLE_TEAM_LEAD
+            }
+        ],
+        pagination: { mode: 'off' }
+    });
+
+    const { result: supervisorsByAccessRoleResult, query: supervisorsByAccessRoleQuery } = useList<
+        VolEntity,
+        HttpError
+    >({
+        resource: 'volunteers',
+        filters: [
+            {
+                field: 'access_role',
+                operator: 'eq',
+                value: AppRoles.DIRECTION_HEAD
             }
         ],
         pagination: { mode: 'off' }
@@ -212,14 +230,21 @@ export const useFilters = ({
             })),
         [storageItemsResult.data]
     );
-    const supervisorsLookup = useMemo(
-        () =>
-            (supervisorsResult.data ?? []).map((supervisor) => ({
+    const supervisorsLookup = useMemo(() => {
+        const merged = new Map<number, { id: number; name: string }>();
+
+        for (const supervisor of [
+            ...(supervisorsByMainRoleResult.data ?? []),
+            ...(supervisorsByAccessRoleResult.data ?? [])
+        ]) {
+            merged.set(supervisor.id, {
                 id: supervisor.id,
                 name: supervisor.name ?? ''
-            })),
-        [supervisorsResult.data]
-    );
+            });
+        }
+
+        return Array.from(merged.values()).sort(getSorter('name'));
+    }, [supervisorsByAccessRoleResult.data, supervisorsByMainRoleResult.data]);
 
     const filterFields = useMemo<FilterField[]>(
         () => [
@@ -403,6 +428,10 @@ export const useFilters = ({
             return `custom_field_id=${customFieldId}&custom_field_value=${value}`;
         }
 
+        if (name === 'is_supervisor' && (value === true || value === 'true')) {
+            return `main_role=${VOLUNTEER_ROLE_TEAM_LEAD}`;
+        }
+
         return `${name}=${value}`;
     }, []);
 
@@ -447,7 +476,8 @@ export const useFilters = ({
             accessRolesQuery.isLoading ||
             volunteerRolesQuery.isLoading ||
             storageItemsQuery.isLoading ||
-            supervisorsQuery.isLoading,
+            supervisorsByMainRoleQuery.isLoading ||
+            supervisorsByAccessRoleQuery.isLoading,
         filterQueryParams,
         filterQueryParamsWithoutDefaultDirections,
         searchText,

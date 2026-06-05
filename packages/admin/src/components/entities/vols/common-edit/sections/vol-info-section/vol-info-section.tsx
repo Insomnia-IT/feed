@@ -1,19 +1,16 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Form, Input, Select, Tooltip, Row, Col, Checkbox } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { useList } from '@refinedev/core';
-import type { CrudFilters } from '@refinedev/core';
 import { useSelect } from '@refinedev/antd';
 
 import { Rules } from 'components/form';
-import { AppRoles } from 'auth';
 import useCanAccess from 'components/entities/vols/use-can-access';
+import { useSupervisorOptions } from 'components/entities/vols/use-supervisor-options';
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
-import type { DirectionEntity, PersonEntity, VolEntity } from 'interfaces';
+import type { DirectionEntity, PersonEntity } from 'interfaces';
 import { useDebouncedCallback } from 'shared/hooks';
 import commonStyles from '../../../common.module.css';
 import styles from './vol-info-section.module.css';
-import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 
 const PHOTO_FIELD = 'photo_local';
 
@@ -64,53 +61,11 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
     const shouldHideDirectionTags =
         (directionsValue?.length ?? 0) > 0 && (directionsSelectProps.options?.length ?? 0) === 0;
 
-    const supervisorFilters = useMemo<CrudFilters>(
-        () => [
-            {
-                field: 'access_role',
-                operator: 'eq' as const,
-                value: AppRoles.DIRECTION_HEAD
-            },
-            ...(brigadierSearch
-                ? [
-                      {
-                          field: 'search',
-                          operator: 'eq' as const,
-                          value: brigadierSearch
-                      }
-                  ]
-                : [])
-        ],
-        [brigadierSearch]
-    );
-
-    const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity>({
-        resource: 'volunteers',
-        filters: supervisorFilters,
-        pagination: {
-            mode: 'server',
-            currentPage: 1,
-            pageSize: 50
-        }
+    const { options: supervisorOptions, loading: supervisorsLoading } = useSupervisorOptions({
+        search: brigadierSearch,
+        selectedSupervisorId: supervisorId,
+        selectedSupervisor: supervisor
     });
-    const supervisorsData = supervisorsResult.data ?? [];
-    const supervisorsLoading = supervisorsQuery.isLoading;
-
-    const supervisorOptions = useMemo(() => {
-        const options = supervisorsData.map((volunteer) => ({
-            value: volunteer.id,
-            label: formatVolunteerLabel(volunteer)
-        }));
-
-        if (supervisorId && !options.some((option) => option.value === supervisorId)) {
-            options.unshift({
-                value: supervisorId,
-                label: supervisor?.name || `ID ${supervisorId}`
-            });
-        }
-
-        return options;
-    }, [supervisor, supervisorId, supervisorsData]);
 
     const normalizeGroupBadge = useCallback((value: string | number | null | undefined) => {
         if (value === undefined || value === null || value === '') {

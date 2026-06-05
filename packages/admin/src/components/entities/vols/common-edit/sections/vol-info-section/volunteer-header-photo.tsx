@@ -51,6 +51,8 @@ export const VolunteerHeaderPhoto = ({ form }: IProps) => {
                             preview={{
                                 visible: previewOpen,
                                 onVisibleChange: (visible) => setPreviewPhotoUrl(visible ? volPhotoUrl : null),
+                                rootClassName: styles.photoPreview,
+                                maskClosable: true,
                                 toolbarRender: () => null,
                                 mask: (
                                     <span className={styles.previewMask} aria-hidden>
@@ -59,7 +61,7 @@ export const VolunteerHeaderPhoto = ({ form }: IProps) => {
                                 ),
                                 imageRender: (node) => (
                                     <div
-                                        className={styles.previewImageWrap}
+                                        className={styles.previewStage}
                                         onClick={() => setPreviewPhotoUrl(null)}
                                         role="button"
                                         tabIndex={0}
@@ -71,7 +73,7 @@ export const VolunteerHeaderPhoto = ({ form }: IProps) => {
                                             }
                                         }}
                                     >
-                                        {node}
+                                        <div className={styles.previewImageFrame}>{node}</div>
                                     </div>
                                 )
                             }}
