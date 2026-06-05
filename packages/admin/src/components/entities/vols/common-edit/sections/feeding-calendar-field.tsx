@@ -1,5 +1,4 @@
-import { App, Button, Form } from 'antd';
-import { CalendarOutlined } from '@ant-design/icons';
+import { Form } from 'antd';
 import { useEffect, useMemo, useRef } from 'react';
 
 import type { ArrivalEntity, FeedTypeEntity } from 'interfaces';
@@ -17,7 +16,6 @@ import {
     type FeedTypeCode,
     type PaidArrivalFormInterval
 } from './feeding-calendar-utils';
-import styles from './feeding-calendar.module.css';
 
 type FeedingCalendarFieldProps = {
     value?: PaidArrivalFormInterval[];
@@ -28,7 +26,6 @@ type FeedingCalendarFieldProps = {
 
 export function FeedingCalendarField({ value, onChange, disabled, feedTypes }: FeedingCalendarFieldProps) {
     const form = Form.useFormInstance();
-    const { message } = App.useApp();
     const intervals = value ?? [];
     const arrivals = (Form.useWatch('arrivals', form) ?? []) as ArrivalEntity[];
     const feedTypeId = Form.useWatch('feed_type', form);
@@ -111,48 +108,14 @@ export function FeedingCalendarField({ value, onChange, disabled, feedTypes }: F
         applyDateSets(params);
     };
 
-    const handleFillFromArrivals = () => {
-        if (arrivalDateKeys.size === 0) {
-            message.warning('Укажите даты заезда и отъезда хотя бы в одном заезде');
-            return;
-        }
-
-        const {
-            freeDates: nextFreeDates,
-            paidDates: nextPaidDates,
-            addedCount
-        } = mergeArrivalDatesIntoFreeFeeding({
-            arrivals,
-            freeDates,
-            paidDates
-        });
-
-        applyDateSets({ freeDates: nextFreeDates, paidDates: nextPaidDates });
-
-        if (addedCount === 0) {
-            message.info('Все дни заездов уже отмечены как бесплатное питание');
-        }
-    };
-
     return (
-        <div>
-            <FeedingCalendar
-                freeDates={freeDates}
-                paidDates={paidDates}
-                activeArrivalDates={activeArrivalDates}
-                readonlyFreeDates={readonlyFreeDates}
-                onChange={handleCalendarChange}
-                disabled={disabled}
-            />
-            <div className={styles.actions}>
-                <Button
-                    icon={<CalendarOutlined />}
-                    disabled={disabled || arrivalDateKeys.size === 0}
-                    onClick={handleFillFromArrivals}
-                >
-                    Заполнить бесплатно по заездам
-                </Button>
-            </div>
-        </div>
+        <FeedingCalendar
+            freeDates={freeDates}
+            paidDates={paidDates}
+            activeArrivalDates={activeArrivalDates}
+            readonlyFreeDates={readonlyFreeDates}
+            onChange={handleCalendarChange}
+            disabled={disabled}
+        />
     );
 }
