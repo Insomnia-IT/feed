@@ -111,8 +111,7 @@
     border-color: #1677ff;
 }
 
-.selectionCellHitTarget:hover
-:global(.ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner) {
+.selectionCellHitTarget:hover :global(.ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner) {
     background-color: #4096ff;
     border-color: #4096ff;
 }
