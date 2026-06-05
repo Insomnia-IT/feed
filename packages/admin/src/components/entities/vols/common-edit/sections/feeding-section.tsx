@@ -1,11 +1,14 @@
+import { useEffect } from 'react';
 import { Form, Select, Checkbox } from 'antd';
+import { useLocation } from 'react-router';
 
 import { Rules } from 'components/form';
 import type { FeedTypeEntity } from 'interfaces';
 
 import styles from '../../common.module.css';
 import { FeedingCalendarField } from './feeding-calendar-field';
-import { resolveFeedTypeId } from './feeding-calendar-utils';
+import { applyFeedTypeFromCalendar, intervalsToDateSets } from './feeding-calendar-utils';
+import type { PaidArrivalFormInterval } from './feeding-calendar-utils';
 
 export const FeedingSection = ({
     denyBadgeEdit,
@@ -19,14 +22,28 @@ export const FeedingSection = ({
     feedTypes: FeedTypeEntity[];
 }) => {
     const form = Form.useFormInstance();
+    const { pathname } = useLocation();
+    const isCreationProcess = pathname.includes('create');
     const feedTypeId = Form.useWatch('feed_type', form);
+    const paidArrivals = (Form.useWatch('paid_arrivals', form) ?? []) as PaidArrivalFormInterval[];
 
     const childFeedTypeId = feedTypes.find(({ code }) => code === 'CHILD')?.id;
     const noFeedTypeId = feedTypes.find(({ code }) => code === 'NO')?.id;
 
     const isChild = childFeedTypeId !== undefined && feedTypeId === childFeedTypeId;
     const isNoFeed = noFeedTypeId !== undefined && feedTypeId === noFeedTypeId;
-    const showCalendar = !isChild && !isNoFeed;
+    const showCalendar = !isChild;
+
+    useEffect(() => {
+        if (!isCreationProcess || noFeedTypeId === undefined) {
+            return;
+        }
+
+        const currentFeedType = form.getFieldValue('feed_type');
+        if (currentFeedType == null) {
+            form.setFieldValue('feed_type', noFeedTypeId);
+        }
+    }, [form, isCreationProcess, noFeedTypeId]);
 
     const handleChildChange = (checked: boolean) => {
         if (checked) {
@@ -37,9 +54,15 @@ export const FeedingSection = ({
             return;
         }
 
-        const defaultFreeId = resolveFeedTypeId({ feedTypes, code: 'FREE' });
-        if (defaultFreeId !== undefined) {
-            form.setFieldValue('feed_type', defaultFreeId);
+        const { freeDates, paidDates } = intervalsToDateSets(paidArrivals);
+        const nextFeedTypeId = applyFeedTypeFromCalendar({
+            freeDates,
+            paidDates,
+            isChild: false,
+            feedTypes
+        });
+        if (nextFeedTypeId !== undefined) {
+            form.setFieldValue('feed_type', nextFeedTypeId);
         }
     };
 
@@ -78,7 +101,9 @@ export const FeedingSection = ({
             ) : null}
 
             {isNoFeed ? (
-                <p className={styles.sectionHint}>У волонтёра тип «без питания» — календарь недоступен.</p>
+                <p className={styles.sectionHint}>
+                    Без питания — отметьте дни в календаре, чтобы назначить бесплатное или платное питание.
+                </p>
             ) : null}
 
             {showCalendar ? (

@@ -6,6 +6,7 @@ import {
     buildActiveArrivalDateKeys,
     paintFeedingDate,
     resolvePaintAction,
+    computeGristReadonlyFreeDates,
     dateSetsToIntervals,
     deriveFeedTypeCode,
     expandIntervalToDateKeys,
@@ -187,6 +188,14 @@ describe('feeding-calendar-utils', () => {
     it('derives feed type code from calendar selection', () => {
         expect(
             deriveFeedTypeCode({
+                freeDates: new Set(),
+                paidDates: new Set(),
+                isChild: false
+            })
+        ).toBe('NO');
+
+        expect(
+            deriveFeedTypeCode({
                 freeDates: new Set(['2026-06-01']),
                 paidDates: new Set(),
                 isChild: false
@@ -216,5 +225,23 @@ describe('feeding-calendar-utils', () => {
                 isChild: true
             })
         ).toBe('CHILD');
+    });
+
+    it('marks free arrival days readonly for grist FREE volunteers', () => {
+        expect(
+            computeGristReadonlyFreeDates({
+                feedTypeCode: 'FREE',
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-11' }],
+                freeDates: new Set(['2026-06-10', '2026-08-01'])
+            })
+        ).toEqual(new Set(['2026-06-10']));
+
+        expect(
+            computeGristReadonlyFreeDates({
+                feedTypeCode: 'PAID',
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-11' }],
+                freeDates: new Set(['2026-06-10'])
+            })
+        ).toEqual(new Set());
     });
 });

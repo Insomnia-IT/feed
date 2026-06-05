@@ -277,7 +277,46 @@ export function deriveFeedTypeCode(params: {
     if (freeDates.size > 0) {
         return 'FREE';
     }
-    return 'FREE';
+    return 'NO';
+}
+
+/** Бесплатные дни внутри периодов заезда при типе FREE — только для чтения (данные из Grist). */
+export function computeGristReadonlyFreeDates(params: {
+    feedTypeCode: FeedTypeCode | null | undefined;
+    arrivals: ArrivalDateInterval[];
+    freeDates: Set<string>;
+}): Set<string> {
+    if (params.feedTypeCode !== 'FREE') {
+        return new Set();
+    }
+
+    const arrivalDateKeys = getDateKeysFromArrivals(params.arrivals);
+    if (arrivalDateKeys.size === 0) {
+        return new Set();
+    }
+
+    const readonlyDates = new Set<string>();
+    for (const dateKey of params.freeDates) {
+        if (arrivalDateKeys.has(dateKey)) {
+            readonlyDates.add(dateKey);
+        }
+    }
+
+    return readonlyDates;
+}
+
+export function applyFeedTypeFromCalendar(params: {
+    freeDates: Set<string>;
+    paidDates: Set<string>;
+    isChild: boolean;
+    feedTypes: Array<{ id: number; code: string }>;
+}): number | undefined {
+    const code = deriveFeedTypeCode({
+        freeDates: params.freeDates,
+        paidDates: params.paidDates,
+        isChild: params.isChild
+    });
+    return resolveFeedTypeId({ feedTypes: params.feedTypes, code });
 }
 
 export function resolveFeedTypeId(params: {

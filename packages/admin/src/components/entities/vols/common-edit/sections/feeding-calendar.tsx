@@ -26,6 +26,7 @@ type FeedingCalendarProps = {
     freeDates: Set<string>;
     paidDates: Set<string>;
     activeArrivalDates?: Set<string>;
+    readonlyFreeDates?: Set<string>;
     onChange: (params: FeedingDateSets) => void;
     disabled?: boolean;
     year?: number;
@@ -55,6 +56,7 @@ function MonthPanel({
     freeDates,
     paidDates,
     activeArrivalDates,
+    readonlyFreeDates,
     activeMode,
     disabled,
     isPainting,
@@ -65,6 +67,7 @@ function MonthPanel({
     freeDates: Set<string>;
     paidDates: Set<string>;
     activeArrivalDates: Set<string>;
+    readonlyFreeDates: Set<string>;
     activeMode: FeedingDateKind;
     disabled?: boolean;
     isPainting: boolean;
@@ -90,13 +93,15 @@ function MonthPanel({
                     }
 
                     const dateKey = key;
-                    const isFree = freeDates.has(dateKey);
+                    const isReadonlyFree = readonlyFreeDates.has(dateKey);
+                    const isFree = isReadonlyFree || freeDates.has(dateKey);
                     const isPaid = paidDates.has(dateKey);
                     const isActiveArrival = activeArrivalDates.has(dateKey);
                     const cellClassName = [
                         styles.dayCell,
                         isFree ? styles.dayCellFree : '',
                         isPaid ? styles.dayCellPaid : '',
+                        isReadonlyFree ? styles.dayCellReadonlyFree : '',
                         isActiveArrival ? styles.dayCellActiveArrival : '',
                         isPainting ? styles.dayCellPainting : ''
                     ]
@@ -108,10 +113,16 @@ function MonthPanel({
                             key={key}
                             type="button"
                             className={cellClassName}
-                            disabled={disabled}
+                            disabled={disabled || isReadonlyFree}
                             aria-pressed={isFree || isPaid}
                             aria-label={`${day} ${panelValue.format('MMMM')}${
-                                isFree ? ', бесплатное питание' : isPaid ? ', платное питание' : ''
+                                isReadonlyFree
+                                    ? ', бесплатное питание из Grist'
+                                    : isFree
+                                      ? ', бесплатное питание'
+                                      : isPaid
+                                        ? ', платное питание'
+                                        : ''
                             }`}
                             data-date-key={dateKey}
                             onPointerDown={(event) => {
@@ -137,6 +148,7 @@ export function FeedingCalendar({
     freeDates,
     paidDates,
     activeArrivalDates,
+    readonlyFreeDates,
     onChange,
     disabled,
     year
@@ -164,6 +176,7 @@ export function FeedingCalendar({
 
     const displaySets = paintDraft ?? { freeDates, paidDates };
     const resolvedActiveArrivalDates = activeArrivalDates ?? new Set<string>();
+    const resolvedReadonlyFreeDates = readonlyFreeDates ?? new Set<string>();
 
     const endPaint = useCallback(() => {
         if (!isPaintingRef.current) {
@@ -202,7 +215,7 @@ export function FeedingCalendar({
 
     const handleDatePaintStart = useCallback(
         (dateKey: string) => {
-            if (disabled) {
+            if (disabled || resolvedReadonlyFreeDates.has(dateKey)) {
                 return;
             }
 
@@ -228,12 +241,12 @@ export function FeedingCalendar({
                 })
             );
         },
-        [activeMode, disabled, freeDates, paidDates]
+        [activeMode, disabled, freeDates, paidDates, resolvedReadonlyFreeDates]
     );
 
     const handleDatePaintEnter = useCallback(
         (dateKey: string) => {
-            if (!isPaintingRef.current || disabled) {
+            if (!isPaintingRef.current || disabled || resolvedReadonlyFreeDates.has(dateKey)) {
                 return;
             }
 
@@ -252,7 +265,7 @@ export function FeedingCalendar({
                 });
             });
         },
-        [activeMode, disabled, freeDates, paidDates]
+        [activeMode, disabled, freeDates, paidDates, resolvedReadonlyFreeDates]
     );
 
     useEffect(() => {
@@ -271,6 +284,7 @@ export function FeedingCalendar({
             freeDates={displaySets.freeDates}
             paidDates={displaySets.paidDates}
             activeArrivalDates={resolvedActiveArrivalDates}
+            readonlyFreeDates={resolvedReadonlyFreeDates}
             activeMode={activeMode}
             disabled={disabled}
             isPainting={isPainting}

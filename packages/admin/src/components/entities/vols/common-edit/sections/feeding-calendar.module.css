@@ -108,6 +108,11 @@
     color: #fff;
 }
 
+.dayCellReadonlyFree {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
 .dayCellPaid {
     background: #1677ff;
     color: #fff;
