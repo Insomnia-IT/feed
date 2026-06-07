@@ -85,6 +85,7 @@
 
 .inventoryHeader {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     margin-bottom: 16px;
     gap: 12px;
