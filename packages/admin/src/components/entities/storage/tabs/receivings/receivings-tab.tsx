@@ -27,7 +27,14 @@ export const ReceivingsTab: React.FC = () => {
         { dataIndex: 'id', title: 'ID' },
         { dataIndex: 'item_name', title: 'Предмет' },
         { dataIndex: 'count', title: 'Кол-во' },
-        { dataIndex: 'volunteer_name', title: 'От кого' },
+        {
+            title: 'От кого',
+            render: (data: ReceivingEntity) => <a href={`/volunteers/edit/${data.volunteer}`}>{data.volunteer_name}</a>
+        },
+        {
+            title: 'Кем',
+            render: (data: ReceivingEntity) => <a href={`/volunteers/edit/${data.actor}`}>{data.actor_name}</a>
+        },
         { dataIndex: 'notes', title: 'Заметки' },
         {
             dataIndex: 'created_at',

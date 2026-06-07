@@ -1,4 +1,4 @@
-name: Deploy to rumsrv on PR
+name: Deploy to devsrv on PR
 
 on:
     pull_request:
@@ -11,12 +11,12 @@ on:
             - ready_for_review
 
 concurrency:
-    group: rum-deploy-pr-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    group: dev-deploy-pr-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
     build:
-        runs-on: [self-hosted, rumsrv]
+        runs-on: [self-hosted, insom-devserv]
         environment:
             name: PR-${{ github.event.number }}
             url: ${{ steps.create-link.outputs.app_url }}
@@ -68,7 +68,7 @@ jobs:
     tests:
         needs: build
         if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
-        runs-on: [self-hosted, rumsrv]
+        runs-on: [self-hosted, insom-devserv]
         steps:
             - uses: actions/checkout@v6
             #       - name: Checkout base branch

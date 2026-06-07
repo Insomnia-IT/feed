@@ -168,6 +168,23 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             return {"id": supervisor.id, "name": supervisor.name}
         return None
 
+
+class VolunteerMobileListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    arrivals = VolunteerListArrivalSerializer(many=True)
+
+    class Meta:
+        model = models.Volunteer
+        fields = [
+            'id',
+            'name',
+            'first_name',
+            'last_name',
+            'is_blocked',
+            'direction_head_comment',
+            'arrivals',
+        ]
+
 class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)

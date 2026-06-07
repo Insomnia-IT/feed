@@ -7,6 +7,7 @@ import { BinsTab } from './tabs/bins';
 import { ItemsTab } from './tabs/items';
 import { ReceivingsTab } from './tabs/receivings';
 import { IssuancesTab } from './tabs/issuances';
+import { MovementsTab } from './tabs/movements/movements-tab';
 
 export const StorageShow: React.FC = () => {
     const { storage, storageLoading } = useStorageData();
@@ -40,6 +41,10 @@ export const StorageShow: React.FC = () => {
 
                 <Tabs.TabPane tab="Выдано" key="issuances">
                     <IssuancesTab />
+                </Tabs.TabPane>
+
+                <Tabs.TabPane tab="Перемещения" key="movements">
+                    <MovementsTab />
                 </Tabs.TabPane>
             </Tabs>
         </Show>

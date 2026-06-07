@@ -1,4 +1,4 @@
-name: Deploy to rumsrv
+name: Deploy to devsrv
 
 on:
   workflow_dispatch:
@@ -7,12 +7,12 @@ on:
 # workflow_dispatch:
 
 concurrency:
-  group: rum-deploy-${{ github.workflow }}-${{ github.ref }}
+  group: dev-deploy-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   build:
-    runs-on: [self-hosted, rumsrv]
+    runs-on: [self-hosted, insom-devserv]
     env:
       IMAGE_NAME_BASENAME: feed-admin
       DB_DIR: /var/feed_db
