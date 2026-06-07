@@ -280,29 +280,23 @@ export function deriveFeedTypeCode(params: {
     return 'NO';
 }
 
-/** Бесплатные дни внутри периодов заезда при типе FREE — только для чтения (данные из Grist). */
-export function computeGristReadonlyFreeDates(params: {
-    feedTypeCode: FeedTypeCode | null | undefined;
+/** Все дни заездов отмечены бесплатным питанием на календаре. */
+export function isFreeFeedingDuringStayChecked(params: {
     arrivals: ArrivalDateInterval[];
     freeDates: Set<string>;
-}): Set<string> {
-    if (params.feedTypeCode !== 'FREE') {
-        return new Set();
-    }
-
+}): boolean {
     const arrivalDateKeys = getDateKeysFromArrivals(params.arrivals);
     if (arrivalDateKeys.size === 0) {
-        return new Set();
+        return false;
     }
 
-    const readonlyDates = new Set<string>();
-    for (const dateKey of params.freeDates) {
-        if (arrivalDateKeys.has(dateKey)) {
-            readonlyDates.add(dateKey);
+    for (const dateKey of arrivalDateKeys) {
+        if (!params.freeDates.has(dateKey)) {
+            return false;
         }
     }
 
-    return readonlyDates;
+    return true;
 }
 
 export function applyFeedTypeFromCalendar(params: {
@@ -319,12 +313,46 @@ export function applyFeedTypeFromCalendar(params: {
     return resolveFeedTypeId({ feedTypes: params.feedTypes, code });
 }
 
+/**
+ * Формирует `paid_arrivals` для API:
+ * - `is_free: false` — платное питание (режим «Платно»);
+ * - `is_free: true` — за счёт фестиваля (режим «За счёт фестиваля»).
+ * Дни «бесплатно на время заезда» в `paid_arrivals` не попадают — только влияют на `feed_type`.
+ */
+export function buildPaidArrivalsForApi(params: {
+    paidArrivals: PaidArrivalFormInterval[];
+    arrivals: ArrivalDateInterval[];
+    freeDuringStay: boolean;
+}): PaidArrivalFormInterval[] {
+    const { freeDates, paidDates } = intervalsToDateSets(params.paidArrivals);
+    const stayFreeDates = getStayFreeDateKeys({
+        freeDates,
+        arrivalDateKeys: getDateKeysFromArrivals(params.arrivals),
+        freeDuringStay: params.freeDuringStay
+    });
+
+    const festivalFreeDates = new Set<string>();
+    for (const dateKey of freeDates) {
+        if (!stayFreeDates.has(dateKey)) {
+            festivalFreeDates.add(dateKey);
+        }
+    }
+
+    return dateSetsToIntervals({
+        freeDates: festivalFreeDates,
+        paidDates,
+        existingIntervals: params.paidArrivals
+    });
+}
+
 /** Приводит feed_type и paid_arrivals к формату API (как в старой форме с Select). */
 export function normalizeVolunteerFeedingPayload(params: {
     paidArrivals: PaidArrivalFormInterval[];
     feedTypeId: number | null | undefined;
     feedTypes: Array<{ id: number; code: string }>;
     isChild?: boolean;
+    arrivals?: ArrivalDateInterval[];
+    freeDuringStay?: boolean;
 }): { feed_type: number | undefined; paid_arrivals: PaidArrivalFormInterval[] } {
     const childFeedTypeId = resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'CHILD' });
     const isChild = params.isChild ?? (childFeedTypeId !== undefined && params.feedTypeId === childFeedTypeId);
@@ -358,13 +386,22 @@ export function normalizeVolunteerFeedingPayload(params: {
         return { feed_type, paid_arrivals: [] };
     }
 
+    const paid_arrivals =
+        params.arrivals !== undefined && params.freeDuringStay !== undefined
+            ? buildPaidArrivalsForApi({
+                  paidArrivals: params.paidArrivals,
+                  arrivals: params.arrivals,
+                  freeDuringStay: params.freeDuringStay
+              })
+            : dateSetsToIntervals({
+                  freeDates,
+                  paidDates,
+                  existingIntervals: params.paidArrivals
+              });
+
     return {
         feed_type,
-        paid_arrivals: dateSetsToIntervals({
-            freeDates,
-            paidDates,
-            existingIntervals: params.paidArrivals
-        })
+        paid_arrivals
     };
 }
 
@@ -401,6 +438,27 @@ export function buildActiveArrivalDateKeys(arrivals: ArrivalDateInterval[]): Set
     return keys;
 }
 
+/** Бесплатные дни заезда (чекбокс «Бесплатно на время заезда») — отдельно от «за счёт фестиваля». */
+export function getStayFreeDateKeys(params: {
+    freeDates: Set<string>;
+    arrivalDateKeys: Set<string>;
+    freeDuringStay: boolean;
+}): Set<string> {
+    if (!params.freeDuringStay) {
+        return new Set();
+    }
+
+    const stayFreeDates = new Set<string>();
+
+    for (const dateKey of params.freeDates) {
+        if (params.arrivalDateKeys.has(dateKey)) {
+            stayFreeDates.add(dateKey);
+        }
+    }
+
+    return stayFreeDates;
+}
+
 /** Все дни заездов (включительно) в виде ключей YYYY-MM-DD. */
 export function getDateKeysFromArrivals(arrivals: ArrivalDateInterval[]): Set<string> {
     const keys = new Set<string>();
@@ -419,6 +477,55 @@ export function getDateKeysFromArrivals(arrivals: ArrivalDateInterval[]): Set<st
     }
 
     return keys;
+}
+
+/** Дни, которые были в предыдущих заездах, но исчезли после изменения списка заездов. */
+export function getRemovedArrivalDateKeys(params: {
+    previousArrivalDateKeys: Set<string>;
+    currentArrivalDateKeys: Set<string>;
+}): Set<string> {
+    const removedDateKeys = new Set<string>();
+
+    for (const dateKey of params.previousArrivalDateKeys) {
+        if (!params.currentArrivalDateKeys.has(dateKey)) {
+            removedDateKeys.add(dateKey);
+        }
+    }
+
+    return removedDateKeys;
+}
+
+/** Удаляет указанные даты из календаря питания (и бесплатные, и платные). */
+export function removeDatesFromFeedingCalendar(params: {
+    dateKeys: Iterable<string>;
+    freeDates: Set<string>;
+    paidDates: Set<string>;
+}): { freeDates: Set<string>; paidDates: Set<string> } {
+    const freeDates = new Set(params.freeDates);
+    const paidDates = new Set(params.paidDates);
+
+    for (const dateKey of params.dateKeys) {
+        freeDates.delete(dateKey);
+        paidDates.delete(dateKey);
+    }
+
+    return { freeDates, paidDates };
+}
+
+/** Снимает бесплатное питание с дней заездов; платные дни не меняет. */
+export function removeArrivalDatesFromFreeFeeding(params: {
+    arrivals: ArrivalDateInterval[];
+    freeDates: Set<string>;
+    paidDates: Set<string>;
+}): { freeDates: Set<string>; paidDates: Set<string> } {
+    const arrivalDateKeys = getDateKeysFromArrivals(params.arrivals);
+    const freeDates = new Set(params.freeDates);
+
+    for (const dateKey of arrivalDateKeys) {
+        freeDates.delete(dateKey);
+    }
+
+    return { freeDates, paidDates: new Set(params.paidDates) };
 }
 
 /** Добавляет дни заездов в бесплатное питание; снимает их с платных дней. */

@@ -1,19 +1,14 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Form, Input, Select, Tooltip, Row, Col, Checkbox } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { useList } from '@refinedev/core';
-import type { CrudFilters } from '@refinedev/core';
 import { useSelect } from '@refinedev/antd';
 
 import { Rules } from 'components/form';
-import { AppRoles } from 'auth';
 import useCanAccess from 'components/entities/vols/use-can-access';
 import useVisibleDirections from 'components/entities/vols/use-visible-directions';
-import type { DirectionEntity, PersonEntity, VolEntity } from 'interfaces';
-import { useDebouncedCallback } from 'shared/hooks';
+import type { DirectionEntity, PersonEntity } from 'interfaces';
 import commonStyles from '../../../common.module.css';
 import styles from './vol-info-section.module.css';
-import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 
 const PHOTO_FIELD = 'photo_local';
 
@@ -34,12 +29,6 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
     const allowEmptyDirections = ALLOW_EMPTY_DIRECTIONS_ROLES.has(mainRole);
     const allowRoleEdit = useCanAccess({ action: 'role_edit', resource: 'volunteers' });
     const visibleDirections = useVisibleDirections();
-    const canEditBrigadier = useCanAccess({ action: 'brigadier_edit', resource: 'volunteers' });
-
-    const supervisorId = Form.useWatch('supervisor_id', form);
-    const supervisor = Form.useWatch('supervisor', form) as { id: number; name: string } | null;
-    const [brigadierSearch, setBrigadierSearch] = useState('');
-    const debouncedBrigadierSearch = useDebouncedCallback((value: string) => setBrigadierSearch(value));
 
     const { selectProps: directionsSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
@@ -63,54 +52,6 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
     }, [directionsOnSearch]);
     const shouldHideDirectionTags =
         (directionsValue?.length ?? 0) > 0 && (directionsSelectProps.options?.length ?? 0) === 0;
-
-    const supervisorFilters = useMemo<CrudFilters>(
-        () => [
-            {
-                field: 'access_role',
-                operator: 'eq' as const,
-                value: AppRoles.DIRECTION_HEAD
-            },
-            ...(brigadierSearch
-                ? [
-                      {
-                          field: 'search',
-                          operator: 'eq' as const,
-                          value: brigadierSearch
-                      }
-                  ]
-                : [])
-        ],
-        [brigadierSearch]
-    );
-
-    const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity>({
-        resource: 'volunteers',
-        filters: supervisorFilters,
-        pagination: {
-            mode: 'server',
-            currentPage: 1,
-            pageSize: 50
-        }
-    });
-    const supervisorsData = supervisorsResult.data ?? [];
-    const supervisorsLoading = supervisorsQuery.isLoading;
-
-    const supervisorOptions = useMemo(() => {
-        const options = supervisorsData.map((volunteer) => ({
-            value: volunteer.id,
-            label: formatVolunteerLabel(volunteer)
-        }));
-
-        if (supervisorId && !options.some((option) => option.value === supervisorId)) {
-            options.unshift({
-                value: supervisorId,
-                label: supervisor?.name || `ID ${supervisorId}`
-            });
-        }
-
-        return options;
-    }, [supervisor, supervisorId, supervisorsData]);
 
     const normalizeGroupBadge = useCallback((value: string | number | null | undefined) => {
         if (value === undefined || value === null || value === '') {
@@ -180,7 +121,7 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
                     </Col>
                 </Row>
                 <Row gutter={[12, 0]}>
-                    <Col xs={24} sm={24} md={10}>
+                    <Col xs={24} sm={24} md={14}>
                         <Form.Item
                             label="Служба / Локация"
                             name="directions"
@@ -198,21 +139,7 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
                             />
                         </Form.Item>
                     </Col>
-                    <Col xs={24} sm={12} md={7}>
-                        <Form.Item label="Бригадир" name="supervisor_id" normalize={(value) => value ?? null}>
-                            <Select
-                                allowClear
-                                showSearch
-                                placeholder="Найти бригадира"
-                                filterOption={false}
-                                onSearch={debouncedBrigadierSearch}
-                                options={supervisorOptions}
-                                loading={supervisorsLoading}
-                                disabled={!canEditBrigadier}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12} md={7}>
+                    <Col xs={24} sm={12} md={10}>
                         <Form.Item label="Групповой бейдж" name="group_badge" normalize={normalizeGroupBadge}>
                             <Select
                                 allowClear

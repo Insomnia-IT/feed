@@ -76,5 +76,5 @@
     width: auto !important;
     height: auto !important;
     object-fit: contain;
-    cursor: zoom-out;
+    cursor: default;
 }

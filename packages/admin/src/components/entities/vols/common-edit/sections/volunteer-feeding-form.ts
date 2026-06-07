@@ -1,21 +1,40 @@
-import type { FeedTypeEntity, VolEntity } from 'interfaces';
+import type { ArrivalEntity, FeedTypeEntity, VolEntity } from 'interfaces';
 
-import { intervalsToDateSets, normalizeVolunteerFeedingPayload, resolveFeedTypeId } from './feeding-calendar-utils';
-import type { PaidArrivalFormInterval } from './feeding-calendar-utils';
+import {
+    intervalsToDateSets,
+    normalizeVolunteerFeedingPayload,
+    resolveFeedTypeId,
+    type ArrivalDateInterval,
+    type PaidArrivalFormInterval
+} from './feeding-calendar-utils';
+
+/** Поле формы, не уходит в API волонтёра. */
+export const FREE_DURING_STAY_FORM_FIELD = 'free_during_stay';
+
+type VolunteerFormValues = VolEntity & {
+    [FREE_DURING_STAY_FORM_FIELD]?: boolean;
+};
+
+const stripInternalFeedingFields = (values: VolunteerFormValues): VolEntity => {
+    const { [FREE_DURING_STAY_FORM_FIELD]: _freeDuringStay, ...rest } = values;
+    return rest;
+};
 
 export function createVolunteerFormOnFinish(params: {
     upstream?: (values: VolEntity) => void | Promise<void>;
     feedTypes: FeedTypeEntity[];
 }) {
-    return (values: VolEntity) => {
+    return (values: VolunteerFormValues) => {
         const feeding = normalizeVolunteerFeedingPayload({
             paidArrivals: values.paid_arrivals ?? [],
             feedTypeId: values.feed_type,
-            feedTypes: params.feedTypes
+            feedTypes: params.feedTypes,
+            arrivals: (values.arrivals ?? []) as ArrivalDateInterval[],
+            freeDuringStay: Boolean(values[FREE_DURING_STAY_FORM_FIELD])
         });
 
         return params.upstream?.({
-            ...values,
+            ...stripInternalFeedingFields(values),
             feed_type: feeding.feed_type,
             paid_arrivals: feeding.paid_arrivals as VolEntity['paid_arrivals']
         });
@@ -32,6 +51,7 @@ export function syncVolunteerFeedingFields(params: {
 }): void {
     const paidArrivals = (params.form.getFieldValue('paid_arrivals') ?? []) as PaidArrivalFormInterval[];
     const feedTypeId = params.form.getFieldValue('feed_type') as number | null | undefined;
+    const arrivals = (params.form.getFieldValue('arrivals') ?? []) as ArrivalEntity[];
     const childFeedTypeId = resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'CHILD' });
     const isChild = childFeedTypeId !== undefined && feedTypeId === childFeedTypeId;
 
@@ -39,10 +59,12 @@ export function syncVolunteerFeedingFields(params: {
         paidArrivals,
         feedTypeId,
         feedTypes: params.feedTypes,
-        isChild
+        isChild,
+        arrivals,
+        freeDuringStay: Boolean(params.form.getFieldValue(FREE_DURING_STAY_FORM_FIELD))
     });
 
-    params.form.setFieldsValue(feeding);
+    params.form.setFieldsValue({ feed_type: feeding.feed_type });
 }
 
 /** Обработка ручного выбора типа питания (совместимость со старым Select #feed_type). */
@@ -65,7 +87,12 @@ export function applyFeedTypeSelectChange(params: {
         const paidArrivals = (form.getFieldValue('paid_arrivals') ?? []) as PaidArrivalFormInterval[];
         const { freeDates, paidDates } = intervalsToDateSets(paidArrivals);
 
-        if (feedTypeId === childFeedTypeId || feedTypeId === noFeedTypeId) {
+        if (feedTypeId === childFeedTypeId) {
+            form.setFieldValue('paid_arrivals', []);
+            return;
+        }
+
+        if (feedTypeId === noFeedTypeId) {
             form.setFieldValue('paid_arrivals', []);
             return;
         }

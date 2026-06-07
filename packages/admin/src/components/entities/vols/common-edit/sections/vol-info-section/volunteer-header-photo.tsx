@@ -63,17 +63,14 @@ export const VolunteerHeaderPhoto = ({ form }: IProps) => {
                                     <div
                                         className={styles.previewStage}
                                         onClick={() => setPreviewPhotoUrl(null)}
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-label="Закрыть просмотр фото"
-                                        onKeyDown={(event) => {
-                                            if (event.key === 'Enter' || event.key === ' ') {
-                                                event.preventDefault();
-                                                setPreviewPhotoUrl(null);
-                                            }
-                                        }}
+                                        role="presentation"
                                     >
-                                        <div className={styles.previewImageFrame}>{node}</div>
+                                        <div
+                                            className={styles.previewImageFrame}
+                                            onClick={(event) => event.stopPropagation()}
+                                        >
+                                            {node}
+                                        </div>
                                     </div>
                                 )
                             }}

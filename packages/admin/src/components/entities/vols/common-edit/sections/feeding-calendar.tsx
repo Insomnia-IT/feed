@@ -25,8 +25,8 @@ const WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 type FeedingCalendarProps = {
     freeDates: Set<string>;
     paidDates: Set<string>;
+    stayFreeDates?: Set<string>;
     activeArrivalDates?: Set<string>;
-    readonlyFreeDates?: Set<string>;
     onChange: (params: FeedingDateSets) => void;
     disabled?: boolean;
     year?: number;
@@ -55,8 +55,8 @@ function MonthPanel({
     panelValue,
     freeDates,
     paidDates,
+    stayFreeDates,
     activeArrivalDates,
-    readonlyFreeDates,
     activeMode,
     disabled,
     isPainting,
@@ -66,8 +66,8 @@ function MonthPanel({
     panelValue: Dayjs;
     freeDates: Set<string>;
     paidDates: Set<string>;
+    stayFreeDates: Set<string>;
     activeArrivalDates: Set<string>;
-    readonlyFreeDates: Set<string>;
     activeMode: FeedingDateKind;
     disabled?: boolean;
     isPainting: boolean;
@@ -93,15 +93,15 @@ function MonthPanel({
                     }
 
                     const dateKey = key;
-                    const isReadonlyFree = readonlyFreeDates.has(dateKey);
-                    const isFree = isReadonlyFree || freeDates.has(dateKey);
+                    const isStayFree = stayFreeDates.has(dateKey);
+                    const isFestivalFree = freeDates.has(dateKey) && !isStayFree;
                     const isPaid = paidDates.has(dateKey);
                     const isActiveArrival = activeArrivalDates.has(dateKey);
                     const cellClassName = [
                         styles.dayCell,
-                        isFree ? styles.dayCellFree : '',
+                        isStayFree ? styles.dayCellFreeStay : '',
+                        isFestivalFree ? styles.dayCellFreeFestival : '',
                         isPaid ? styles.dayCellPaid : '',
-                        isReadonlyFree ? styles.dayCellReadonlyFree : '',
                         isActiveArrival ? styles.dayCellActiveArrival : '',
                         isPainting ? styles.dayCellPainting : ''
                     ]
@@ -113,15 +113,15 @@ function MonthPanel({
                             key={key}
                             type="button"
                             className={cellClassName}
-                            disabled={disabled || isReadonlyFree}
-                            aria-pressed={isFree || isPaid}
+                            disabled={disabled}
+                            aria-pressed={isStayFree || isFestivalFree || isPaid}
                             aria-label={`${day} ${panelValue.format('MMMM')}${
-                                isReadonlyFree
-                                    ? ', бесплатное питание из Grist'
-                                    : isFree
-                                      ? ', бесплатное питание'
+                                isStayFree
+                                    ? ', бесплатно на время заезда'
+                                    : isFestivalFree
+                                      ? ', за счёт фестиваля'
                                       : isPaid
-                                        ? ', платное питание'
+                                        ? ', платно'
                                         : ''
                             }`}
                             data-date-key={dateKey}
@@ -133,7 +133,7 @@ function MonthPanel({
                                 onDatePaintStart(dateKey);
                             }}
                             onPointerEnter={() => onDatePaintEnter(dateKey)}
-                            title={activeMode === 'free' ? 'Бесплатное питание' : 'Платное питание'}
+                            title={activeMode === 'free' ? 'За счёт фестиваля' : 'Платно'}
                         >
                             {day}
                         </button>
@@ -147,8 +147,8 @@ function MonthPanel({
 export function FeedingCalendar({
     freeDates,
     paidDates,
+    stayFreeDates,
     activeArrivalDates,
-    readonlyFreeDates,
     onChange,
     disabled,
     year
@@ -176,7 +176,7 @@ export function FeedingCalendar({
 
     const displaySets = paintDraft ?? { freeDates, paidDates };
     const resolvedActiveArrivalDates = activeArrivalDates ?? new Set<string>();
-    const resolvedReadonlyFreeDates = readonlyFreeDates ?? new Set<string>();
+    const resolvedStayFreeDates = stayFreeDates ?? new Set<string>();
 
     const endPaint = useCallback(() => {
         if (!isPaintingRef.current) {
@@ -215,7 +215,7 @@ export function FeedingCalendar({
 
     const handleDatePaintStart = useCallback(
         (dateKey: string) => {
-            if (disabled || resolvedReadonlyFreeDates.has(dateKey)) {
+            if (disabled) {
                 return;
             }
 
@@ -241,7 +241,7 @@ export function FeedingCalendar({
                 })
             );
         },
-        [activeMode, disabled, freeDates, paidDates, resolvedReadonlyFreeDates]
+        [activeMode, disabled, freeDates, paidDates]
     );
 
     const handleDatePaintEnter = useCallback(
@@ -265,7 +265,7 @@ export function FeedingCalendar({
                 });
             });
         },
-        [activeMode, disabled, freeDates, paidDates, resolvedReadonlyFreeDates]
+        [activeMode, disabled, freeDates, paidDates]
     );
 
     useEffect(() => {
@@ -283,8 +283,8 @@ export function FeedingCalendar({
             panelValue={panelValue}
             freeDates={displaySets.freeDates}
             paidDates={displaySets.paidDates}
+            stayFreeDates={resolvedStayFreeDates}
             activeArrivalDates={resolvedActiveArrivalDates}
-            readonlyFreeDates={resolvedReadonlyFreeDates}
             activeMode={activeMode}
             disabled={disabled}
             isPainting={isPainting}
@@ -293,32 +293,35 @@ export function FeedingCalendar({
         />
     );
 
+    const modeSelector = (
+        <div className={styles.legend}>
+            <Button
+                type="default"
+                className={`${styles.modeButton} ${activeMode === 'free' ? styles.modeButtonActiveFree : ''}`}
+                disabled={disabled}
+                onClick={() => setActiveMode('free')}
+            >
+                <span className={`${styles.modeSwatch} ${styles.modeSwatchFree}`} />
+                За счёт фестиваля
+            </Button>
+            <Button
+                type="default"
+                className={`${styles.modeButton} ${activeMode === 'paid' ? styles.modeButtonActivePaid : ''}`}
+                disabled={disabled}
+                onClick={() => setActiveMode('paid')}
+            >
+                <span className={`${styles.modeSwatch} ${styles.modeSwatchPaid}`} />
+                Платно
+            </Button>
+            <p className={styles.legendHint}>
+                Выберите режим и проведите по датам с зажатой кнопкой мыши: по пустым — выделить, по уже выделенным того
+                же цвета — снять. Один клик переключает день. Дни «за счёт фестиваля» и «платно» не пересекаются.
+            </p>
+        </div>
+    );
+
     return (
         <div className={`${styles.wrap} ${isPainting ? styles.wrapPainting : ''}`}>
-            <div className={styles.legend}>
-                <Button
-                    type={activeMode === 'free' ? 'primary' : 'default'}
-                    className={styles.modeButton}
-                    disabled={disabled}
-                    onClick={() => setActiveMode('free')}
-                >
-                    <span className={`${styles.modeSwatch} ${styles.modeSwatchFree}`} />
-                    Бесплатное
-                </Button>
-                <Button
-                    type={activeMode === 'paid' ? 'primary' : 'default'}
-                    className={styles.modeButton}
-                    disabled={disabled}
-                    onClick={() => setActiveMode('paid')}
-                >
-                    <span className={`${styles.modeSwatch} ${styles.modeSwatchPaid}`} />
-                    Платное
-                </Button>
-                <p className={styles.legendHint}>
-                    Выберите режим и проведите по датам с зажатой кнопкой мыши: по пустым — выделить, по уже выделенным
-                    того же цвета — снять. Один клик переключает день. Платные и бесплатные дни не пересекаются.
-                </p>
-            </div>
             {isMobile ? (
                 <FeedingCalendarMobileCarousel
                     monthPanels={monthPanels}
@@ -332,6 +335,7 @@ export function FeedingCalendar({
                     ))}
                 </div>
             )}
+            {modeSelector}
         </div>
     );
 }

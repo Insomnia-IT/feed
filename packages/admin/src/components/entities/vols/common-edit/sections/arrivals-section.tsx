@@ -19,27 +19,45 @@ import {
 
 type StatusItem = { label: ReactNode; value: string; disabled?: boolean };
 
-const isInsideOtherArrival = (
-    otherArrival: {
-        arrival_date?: string;
-        departure_date?: string;
-    },
-    currentArrival: {
-        arrival_date?: string;
-        departure_date?: string;
+type ArrivalDateInterval = {
+    arrival_date?: string;
+    departure_date?: string;
+};
+
+const parseArrivalInterval = (arrival: ArrivalDateInterval): { start: dayjs.Dayjs; end: dayjs.Dayjs } | null => {
+    if (!arrival.arrival_date || !arrival.departure_date) {
+        return null;
     }
-) => {
-    const arrival = dayjs(otherArrival.arrival_date);
-    const departure = dayjs(otherArrival.departure_date);
 
-    const targetStart = dayjs(currentArrival.arrival_date);
-    const targetEnd = dayjs(currentArrival.departure_date);
+    const start = dayjs(arrival.arrival_date).startOf('day');
+    const end = dayjs(arrival.departure_date).startOf('day');
 
-    return (
-        (targetStart.isBefore(departure) && targetStart.isAfter(arrival)) ||
-        (targetEnd.isAfter(arrival) && targetEnd.isBefore(departure)) ||
-        (targetStart.isBefore(arrival) && targetEnd.isAfter(departure))
-    );
+    if (!start.isValid() || !end.isValid() || end.isBefore(start, 'day')) {
+        return null;
+    }
+
+    return { start, end };
+};
+
+const doArrivalIntervalsOverlap = (
+    left: { start: dayjs.Dayjs; end: dayjs.Dayjs },
+    right: { start: dayjs.Dayjs; end: dayjs.Dayjs }
+): boolean => !left.start.isAfter(right.end, 'day') && !right.start.isAfter(left.end, 'day');
+
+const hasArrivalOverlap = (targetArrival: ArrivalDateInterval, otherArrivals: ArrivalDateInterval[]): boolean => {
+    const targetInterval = parseArrivalInterval(targetArrival);
+    if (!targetInterval) {
+        return false;
+    }
+
+    return otherArrivals.some((otherArrival) => {
+        const otherInterval = parseArrivalInterval(otherArrival);
+        if (!otherInterval) {
+            return false;
+        }
+
+        return doArrivalIntervalsOverlap(targetInterval, otherInterval);
+    });
 };
 
 export const ArrivalsSection = ({
@@ -98,7 +116,10 @@ export const ArrivalsSection = ({
                     }[];
 
                     const otherArrivals = arrivals.filter((_, ind) => ind !== index);
-                    const targetArrival = arrivals[index];
+                    const targetArrival: ArrivalDateInterval = {
+                        ...arrivals[index],
+                        arrival_date: value ? dayjs(value).format('YYYY-MM-DD') : arrivals[index]?.arrival_date
+                    };
 
                     const arrivalDates = arrivals
                         .slice()
@@ -110,7 +131,7 @@ export const ArrivalsSection = ({
                         return Promise.reject(new Error('Дата заезда не должна повторяться'));
                     }
 
-                    if (otherArrivals.some((otherArrival) => isInsideOtherArrival(otherArrival, targetArrival))) {
+                    if (hasArrivalOverlap(targetArrival, otherArrivals)) {
                         return Promise.reject(new Error('Даты заездов не должны пересекаться'));
                     }
 
@@ -134,9 +155,12 @@ export const ArrivalsSection = ({
                     }[];
 
                     const otherArrivals = arrivals.filter((_, ind) => ind !== index);
-                    const targetArrival = arrivals[index];
+                    const targetArrival: ArrivalDateInterval = {
+                        ...arrivals[index],
+                        departure_date: value ? dayjs(value).format('YYYY-MM-DD') : arrivals[index]?.departure_date
+                    };
 
-                    if (otherArrivals.some((otherArrival) => isInsideOtherArrival(otherArrival, targetArrival))) {
+                    if (hasArrivalOverlap(targetArrival, otherArrivals)) {
                         return Promise.reject(new Error('Даты заездов не должны пересекаться'));
                     }
 

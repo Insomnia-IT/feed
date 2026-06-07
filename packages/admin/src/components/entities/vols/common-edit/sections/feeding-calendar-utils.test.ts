@@ -6,12 +6,17 @@ import {
     buildActiveArrivalDateKeys,
     paintFeedingDate,
     resolvePaintAction,
-    computeGristReadonlyFreeDates,
+    isFreeFeedingDuringStayChecked,
+    removeArrivalDatesFromFreeFeeding,
     dateSetsToIntervals,
     deriveFeedTypeCode,
     normalizeVolunteerFeedingPayload,
     expandIntervalToDateKeys,
     getDateKeysFromArrivals,
+    buildPaidArrivalsForApi,
+    getRemovedArrivalDateKeys,
+    getStayFreeDateKeys,
+    removeDatesFromFeedingCalendar,
     getDefaultSummerMonthIndex,
     intervalsToDateSets,
     mergeArrivalDatesIntoFreeFeeding,
@@ -253,21 +258,158 @@ describe('feeding-calendar-utils', () => {
         ).toEqual({ feed_type: 4, paid_arrivals: [] });
     });
 
-    it('marks free arrival days readonly for grist FREE volunteers', () => {
+    it('detects when all arrival days are marked free', () => {
         expect(
-            computeGristReadonlyFreeDates({
-                feedTypeCode: 'FREE',
+            isFreeFeedingDuringStayChecked({
                 arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-11' }],
-                freeDates: new Set(['2026-06-10', '2026-08-01'])
+                freeDates: new Set(['2026-06-10', '2026-06-11'])
+            })
+        ).toBe(true);
+
+        expect(
+            isFreeFeedingDuringStayChecked({
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-11' }],
+                freeDates: new Set(['2026-06-10'])
+            })
+        ).toBe(false);
+    });
+
+    it('builds paid_arrivals for api with is_free flags and without stay-only days', () => {
+        expect(
+            buildPaidArrivalsForApi({
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }],
+                freeDuringStay: true,
+                paidArrivals: [
+                    {
+                        id: 'stay',
+                        arrival_date: '2026-06-10',
+                        departure_date: '2026-06-12',
+                        is_free: true
+                    },
+                    {
+                        id: 'festival',
+                        arrival_date: '2026-06-20',
+                        departure_date: '2026-06-21',
+                        is_free: true
+                    },
+                    {
+                        id: 'paid',
+                        arrival_date: '2026-07-01',
+                        departure_date: '2026-07-02',
+                        is_free: false
+                    }
+                ]
+            })
+        ).toEqual([
+            {
+                id: 'festival',
+                arrival_date: '2026-06-20',
+                departure_date: '2026-06-21',
+                is_free: true
+            },
+            {
+                id: 'paid',
+                arrival_date: '2026-07-01',
+                departure_date: '2026-07-02',
+                is_free: false
+            }
+        ]);
+    });
+
+    it('normalizes volunteer payload before api submit', () => {
+        const feedTypes = [
+            { id: 1, code: 'FREE' },
+            { id: 2, code: 'PAID' }
+        ];
+
+        expect(
+            normalizeVolunteerFeedingPayload({
+                feedTypes,
+                feedTypeId: 2,
+                freeDuringStay: false,
+                arrivals: [],
+                paidArrivals: [
+                    {
+                        arrival_date: '2026-06-01',
+                        departure_date: '2026-06-01',
+                        is_free: true
+                    },
+                    {
+                        arrival_date: '2026-07-01',
+                        departure_date: '2026-07-01',
+                        is_free: false
+                    }
+                ]
+            })
+        ).toEqual({
+            feed_type: 2,
+            paid_arrivals: [
+                {
+                    id: expect.any(String),
+                    arrival_date: '2026-06-01',
+                    departure_date: '2026-06-01',
+                    is_free: true
+                },
+                {
+                    id: expect.any(String),
+                    arrival_date: '2026-07-01',
+                    departure_date: '2026-07-01',
+                    is_free: false
+                }
+            ]
+        });
+    });
+
+    it('detects dates removed with deleted arrival', () => {
+        expect(
+            getRemovedArrivalDateKeys({
+                previousArrivalDateKeys: new Set(['2026-06-04', '2026-06-22', '2026-06-25']),
+                currentArrivalDateKeys: new Set(['2026-06-04', '2026-06-19'])
+            })
+        ).toEqual(new Set(['2026-06-22', '2026-06-25']));
+    });
+
+    it('removes deleted arrival dates from feeding calendar', () => {
+        expect(
+            removeDatesFromFeedingCalendar({
+                dateKeys: ['2026-06-22', '2026-06-23'],
+                freeDates: new Set(['2026-06-04', '2026-06-22', '2026-06-30']),
+                paidDates: new Set(['2026-06-23'])
+            })
+        ).toEqual({
+            freeDates: new Set(['2026-06-04', '2026-06-30']),
+            paidDates: new Set()
+        });
+    });
+
+    it('extracts stay-free dates separately from festival-free dates', () => {
+        expect(
+            getStayFreeDateKeys({
+                freeDuringStay: true,
+                arrivalDateKeys: new Set(['2026-06-10', '2026-06-11']),
+                freeDates: new Set(['2026-06-10', '2026-06-15'])
             })
         ).toEqual(new Set(['2026-06-10']));
 
         expect(
-            computeGristReadonlyFreeDates({
-                feedTypeCode: 'PAID',
-                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-11' }],
-                freeDates: new Set(['2026-06-10'])
+            getStayFreeDateKeys({
+                freeDuringStay: false,
+                arrivalDateKeys: new Set(['2026-06-10']),
+                freeDates: new Set(['2026-06-10', '2026-06-15'])
             })
         ).toEqual(new Set());
+    });
+
+    it('removes free feeding from arrival days only', () => {
+        expect(
+            removeArrivalDatesFromFreeFeeding({
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-11' }],
+                freeDates: new Set(['2026-06-10', '2026-06-11', '2026-08-01']),
+                paidDates: new Set(['2026-06-12'])
+            })
+        ).toEqual({
+            freeDates: new Set(['2026-08-01']),
+            paidDates: new Set(['2026-06-12'])
+        });
     });
 });
