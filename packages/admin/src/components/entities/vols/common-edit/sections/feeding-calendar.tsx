@@ -215,7 +215,7 @@ export function FeedingCalendar({
 
     const handleDatePaintStart = useCallback(
         (dateKey: string) => {
-            if (disabled) {
+            if (disabled || resolvedStayFreeDates.has(dateKey)) {
                 return;
             }
 
@@ -241,12 +241,12 @@ export function FeedingCalendar({
                 })
             );
         },
-        [activeMode, disabled, freeDates, paidDates]
+        [activeMode, disabled, freeDates, paidDates, resolvedStayFreeDates]
     );
 
     const handleDatePaintEnter = useCallback(
         (dateKey: string) => {
-            if (!isPaintingRef.current || disabled || resolvedReadonlyFreeDates.has(dateKey)) {
+            if (!isPaintingRef.current || disabled || resolvedStayFreeDates.has(dateKey)) {
                 return;
             }
 
@@ -265,7 +265,7 @@ export function FeedingCalendar({
                 });
             });
         },
-        [activeMode, disabled, freeDates, paidDates]
+        [activeMode, disabled, freeDates, paidDates, resolvedStayFreeDates]
     );
 
     useEffect(() => {
