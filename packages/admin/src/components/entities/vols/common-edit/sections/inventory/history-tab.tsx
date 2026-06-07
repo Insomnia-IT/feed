@@ -1,4 +1,3 @@
-import React from 'react';
 import { Table } from 'antd';
 import { useList } from '@refinedev/core';
 import type { MovementEntity } from 'interfaces';
