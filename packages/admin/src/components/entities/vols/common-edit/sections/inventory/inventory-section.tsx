@@ -7,6 +7,8 @@ import { useInventoryTransfer } from './use-inventory-transfer';
 import { useVolunteerInventory } from './use-volunteer-inventory';
 
 import styles from '../../../common.module.css';
+import { useState } from 'react';
+import { HistoryTab } from './history-tab';
 
 export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess }: InventorySectionProps) => {
     const targetInventory = useVolunteerInventory(volunteerId);
@@ -14,6 +16,7 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
         volunteerId,
         reloadTargetInventory: targetInventory.reload
     });
+    const [showHistory, setShowHistory] = useState(false);
 
     if (isCreationProcess) {
         return null;
@@ -22,16 +25,25 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
     return (
         <>
             <div className={styles.inventoryHeader}>
-                <Button
-                    type="primary"
-                    htmlType="button"
-                    onClick={transfer.openTransferModal}
-                    disabled={!volunteerId || !transfer.userId}
-                >
-                    Передать
+                <Button htmlType="button" onClick={() => setShowHistory(!showHistory)}>
+                    {showHistory ? 'Инвентарь' : 'История'}
                 </Button>
+                {!showHistory && (
+                    <Button
+                        type="primary"
+                        htmlType="button"
+                        onClick={transfer.openTransferModal}
+                        disabled={!volunteerId || !transfer.userId}
+                    >
+                        Передать
+                    </Button>
+                )}
             </div>
-            <InventoryTable inventory={targetInventory.inventory} isLoading={targetInventory.isLoading} />
+            {showHistory ? (
+                <HistoryTab userId={transfer.userId} />
+            ) : (
+                <InventoryTable inventory={targetInventory.inventory} isLoading={targetInventory.isLoading} />
+            )}
 
             <InventoryTransferModal
                 open={transfer.isTransferModalOpen}
