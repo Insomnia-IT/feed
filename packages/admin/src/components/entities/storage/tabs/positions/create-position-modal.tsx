@@ -74,11 +74,7 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
                         const itemId = getFieldValue('item');
                         const selectedItem = itemsData?.find((item: ItemEntity) => item.id === itemId);
                         return (
-                            <Form.Item
-                                name="volunteer"
-                                label="Владелец"
-                                rules={[{ required: !selectedItem?.is_anonymous }]}
-                            >
+                            <Form.Item name="volunteer" label="Владелец">
                                 <Select
                                     {...volunteerSelectProps}
                                     showSearch

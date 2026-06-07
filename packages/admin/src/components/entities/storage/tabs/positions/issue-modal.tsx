@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Form, InputNumber, Select, Input, Button, type FormInstance } from 'antd';
+import { Modal, Form, InputNumber, Select, Input, Button, type FormInstance, Checkbox } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
 import type { StorageItemPositionEntity } from 'interfaces';
 
@@ -24,6 +24,8 @@ export const IssueModal: React.FC<IssueModalProps> = ({
     isVolunteerLoading,
     onOpenQrScanner
 }) => {
+    const isShortage = Form.useWatch('is_shortage', form);
+
     return (
         <Modal title={`Выдать предмет: ${position?.item_name}`} open={open} onOk={onOk} onCancel={onClose}>
             <Form form={form} layout="vertical">
@@ -37,7 +39,11 @@ export const IssueModal: React.FC<IssueModalProps> = ({
                         <InputNumber />
                     </Form.Item>
                 )}
-                <Form.Item name="volunteer" label="Кому" rules={[{ required: !position?.item_is_anonymous }]}>
+                <Form.Item
+                    name="volunteer"
+                    label="Кому"
+                    rules={[{ required: !position?.item_is_anonymous && !isShortage }]}
+                >
                     <Select
                         {...volunteerSelectProps}
                         showSearch
@@ -54,8 +60,11 @@ export const IssueModal: React.FC<IssueModalProps> = ({
                         loading={isVolunteerLoading}
                     />
                 </Form.Item>
-                <Form.Item name="notes" label="Заметки">
+                <Form.Item name="notes" label="Заметки" rules={[{ required: isShortage }]}>
                     <Input.TextArea />
+                </Form.Item>
+                <Form.Item name="is_shortage" valuePropName="checked">
+                    <Checkbox>Списать потерю</Checkbox>
                 </Form.Item>
             </Form>
         </Modal>
