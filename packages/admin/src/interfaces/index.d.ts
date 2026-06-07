@@ -223,9 +223,12 @@ export interface ReceivingEntity {
 export interface MovementEntity {
     id: number;
     position: number;
+    item_name: number;
     count: number;
     from?: number;
+    from_name?: string;
     to?: number;
+    to_name?: string;
     actor?: number | null;
     actor_name?: string;
     created_at?: string;

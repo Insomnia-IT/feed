@@ -1,39 +1,37 @@
 import React from 'react';
 import { Table } from 'antd';
 import { useList } from '@refinedev/core';
-import { useStorageData } from '../../hooks';
-import type { MovementEntity, StorageItemPositionEntity } from 'interfaces';
+import type { MovementEntity } from 'interfaces';
 import type { ColumnsType } from 'antd/es/table';
 
-export const MovementsTab: React.FC = () => {
-    const { storage } = useStorageData();
-
-    const { result: positionsResult, query: positionsQuery } = useList<StorageItemPositionEntity>({
-        resource: 'storage-positions',
+export const HistoryTab = ({ userId }: { userId: number | undefined }) => {
+    const { result: movementsFromResult, query: movementsFromQuery } = useList<MovementEntity>({
+        resource: 'storage-movements',
         filters: [
             {
-                field: 'storage',
+                field: 'from__id',
                 operator: 'eq',
-                value: storage?.id
+                value: userId
             }
         ],
         pagination: { mode: 'off' },
-        queryOptions: { enabled: !!storage?.id }
+        queryOptions: { enabled: !!userId }
     });
 
-    const { result: movementsResult, query: movementsQuery } = useList<MovementEntity>({
+    const { result: movementsToResult, query: movementsToQuery } = useList<MovementEntity>({
         resource: 'storage-movements',
+        filters: [
+            {
+                field: 'to__id',
+                operator: 'eq',
+                value: userId
+            }
+        ],
         pagination: { mode: 'off' },
-        queryOptions: { enabled: !!storage?.id }
+        queryOptions: { enabled: !!userId }
     });
 
-    const positionsById = React.useMemo(() => {
-        return new Map((positionsResult.data ?? []).map((position) => [position.id, position]));
-    }, [positionsResult.data]);
-
-    const movements = React.useMemo(() => {
-        return (movementsResult.data ?? []).filter((movement) => positionsById.has(movement.position));
-    }, [movementsResult.data, positionsById]);
+    const movements = movementsFromResult.data.concat(movementsToResult.data).sort((a, b) => b.id - a.id);
 
     const columns: ColumnsType<MovementEntity> = [
         { dataIndex: 'id', title: 'ID' },
@@ -63,7 +61,7 @@ export const MovementsTab: React.FC = () => {
             rowKey="id"
             columns={columns}
             dataSource={movements}
-            loading={positionsQuery.isLoading || movementsQuery.isLoading}
+            loading={movementsFromQuery.isLoading || movementsToQuery.isLoading}
         />
     );
 };
