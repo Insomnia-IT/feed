@@ -1,5 +1,5 @@
 import { Form } from 'antd';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import type { ArrivalEntity, FeedTypeEntity } from 'interfaces';
 
@@ -35,8 +35,9 @@ export function FeedingCalendarField({
     freeDuringStayReady
 }: FeedingCalendarFieldProps) {
     const form = Form.useFormInstance();
-    const intervals = value ?? [];
-    const arrivals = (Form.useWatch('arrivals', form) ?? []) as ArrivalEntity[];
+    const intervals = useMemo(() => value ?? [], [value]);
+    const arrivalsWatch = Form.useWatch('arrivals', form);
+    const arrivals = useMemo(() => (arrivalsWatch ?? []) as ArrivalEntity[], [arrivalsWatch]);
     const freeDuringStay = Boolean(Form.useWatch(FREE_DURING_STAY_FORM_FIELD, form));
 
     const dateSets = useMemo(() => intervalsToDateSets(intervals), [intervals]);
@@ -64,25 +65,28 @@ export function FeedingCalendarField({
     const prevSyncSignatureRef = useRef<string | null>(null);
     const prevArrivalDateKeysRef = useRef<Set<string>>(new Set());
 
-    const applyDateSets = (params: { freeDates: Set<string>; paidDates: Set<string> }) => {
-        const nextIntervals = dateSetsToIntervals({
-            freeDates: params.freeDates,
-            paidDates: params.paidDates,
-            existingIntervals: intervals
-        });
+    const applyDateSets = useCallback(
+        (params: { freeDates: Set<string>; paidDates: Set<string> }) => {
+            const nextIntervals = dateSetsToIntervals({
+                freeDates: params.freeDates,
+                paidDates: params.paidDates,
+                existingIntervals: intervals
+            });
 
-        onChange?.(nextIntervals);
+            onChange?.(nextIntervals);
 
-        const nextFeedTypeId = applyFeedTypeFromCalendar({
-            freeDates: params.freeDates,
-            paidDates: params.paidDates,
-            isChild: false,
-            feedTypes
-        });
-        if (nextFeedTypeId !== undefined) {
-            form.setFieldValue('feed_type', nextFeedTypeId);
-        }
-    };
+            const nextFeedTypeId = applyFeedTypeFromCalendar({
+                freeDates: params.freeDates,
+                paidDates: params.paidDates,
+                isChild: false,
+                feedTypes
+            });
+            if (nextFeedTypeId !== undefined) {
+                form.setFieldValue('feed_type', nextFeedTypeId);
+            }
+        },
+        [feedTypes, form, intervals, onChange]
+    );
 
     useEffect(() => {
         if (!freeDuringStayReady) {
@@ -128,7 +132,7 @@ export function FeedingCalendarField({
         }
 
         applyDateSets({ freeDates: nextFreeDates, paidDates: nextPaidDates });
-    }, [arrivals, arrivalsSignature, freeDuringStay, freeDuringStayReady, intervals]);
+    }, [applyDateSets, arrivals, arrivalsSignature, freeDuringStay, freeDuringStayReady, intervals]);
 
     const handleCalendarChange = (params: { freeDates: Set<string>; paidDates: Set<string> }) => {
         applyDateSets(params);

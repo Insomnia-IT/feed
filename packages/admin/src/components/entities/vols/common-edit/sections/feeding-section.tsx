@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Form, Select, Checkbox } from 'antd';
 import { useLocation } from 'react-router';
 
@@ -33,8 +33,11 @@ export const FeedingSection = ({
     const isCreationProcess = pathname.includes('create');
     const feedTypeId = Form.useWatch('feed_type', form);
     const volunteerId = Form.useWatch('id', form);
-    const arrivals = (Form.useWatch('arrivals', form) ?? []) as ArrivalEntity[];
-    const paidArrivals = (Form.useWatch('paid_arrivals', form) ?? []) as PaidArrivalFormInterval[];
+    const arrivalsWatch = Form.useWatch('arrivals', form);
+    const arrivals = useMemo(() => (arrivalsWatch ?? []) as ArrivalEntity[], [arrivalsWatch]);
+    const paidArrivalsWatch = Form.useWatch('paid_arrivals', form);
+    const paidArrivals = useMemo(() => (paidArrivalsWatch ?? []) as PaidArrivalFormInterval[], [paidArrivalsWatch]);
+    const freeDuringStayValue = Form.useWatch(FREE_DURING_STAY_FORM_FIELD, form);
 
     const childFeedTypeId = feedTypes.find(({ code }) => code === 'CHILD')?.id;
     const noFeedTypeId = feedTypes.find(({ code }) => code === 'NO')?.id;
@@ -49,7 +52,6 @@ export const FeedingSection = ({
     const arrivalCount = arrivals.length;
     const freeDuringStayLabel = arrivalCount > 1 ? 'Бесплатно на время заездов' : 'Бесплатно на время заезда';
 
-    const [freeDuringStayReady, setFreeDuringStayReady] = useState(false);
     const freeDuringStayInitRef = useRef(false);
     const freeDuringStayBeforeChildRef = useRef<boolean | null>(null);
     const wasChildRef = useRef(false);
@@ -58,6 +60,30 @@ export const FeedingSection = ({
         () => feedTypes.map(({ id, name }) => ({ label: name, value: id })),
         [feedTypes]
     );
+
+    const initialFreeDuringStay = useMemo(() => {
+        if (isChild) {
+            return true;
+        }
+
+        const { freeDates } = intervalsToDateSets(paidArrivals);
+        const isGristFreeVolunteer =
+            volunteerId != null &&
+            freeFeedTypeId !== undefined &&
+            feedTypeId === freeFeedTypeId &&
+            paidArrivals.length === 0 &&
+            hasArrivals;
+
+        return (
+            isGristFreeVolunteer ||
+            isFreeFeedingDuringStayChecked({
+                arrivals,
+                freeDates
+            })
+        );
+    }, [arrivals, feedTypeId, freeFeedTypeId, hasArrivals, isChild, paidArrivals, volunteerId]);
+
+    const freeDuringStayReady = isChild || volunteerId == null || freeDuringStayValue === initialFreeDuringStay;
 
     useEffect(() => {
         if (!isCreationProcess || noFeedTypeId === undefined) {
@@ -87,25 +113,9 @@ export const FeedingSection = ({
             return;
         }
 
-        const { freeDates } = intervalsToDateSets(paidArrivals);
-        const isGristFreeVolunteer =
-            volunteerId != null &&
-            freeFeedTypeId !== undefined &&
-            feedTypeId === freeFeedTypeId &&
-            paidArrivals.length === 0 &&
-            hasArrivals;
-
-        form.setFieldValue(
-            FREE_DURING_STAY_FORM_FIELD,
-            isGristFreeVolunteer ||
-                isFreeFeedingDuringStayChecked({
-                    arrivals,
-                    freeDates
-                })
-        );
+        form.setFieldValue(FREE_DURING_STAY_FORM_FIELD, initialFreeDuringStay);
         freeDuringStayInitRef.current = true;
-        setFreeDuringStayReady(true);
-    }, [arrivals, feedTypeId, freeFeedTypeId, hasArrivals, isChild, paidArrivals, volunteerId]);
+    }, [form, initialFreeDuringStay, isChild]);
 
     const handleChildChange = (checked: boolean) => {
         if (checked) {

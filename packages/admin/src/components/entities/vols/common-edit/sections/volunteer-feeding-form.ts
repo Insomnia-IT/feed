@@ -16,8 +16,9 @@ type VolunteerFormValues = VolEntity & {
 };
 
 const stripInternalFeedingFields = (values: VolunteerFormValues): VolEntity => {
-    const { [FREE_DURING_STAY_FORM_FIELD]: _freeDuringStay, ...rest } = values;
-    return rest;
+    const result = { ...values };
+    delete result[FREE_DURING_STAY_FORM_FIELD];
+    return result;
 };
 
 export function createVolunteerFormOnFinish(params: {
