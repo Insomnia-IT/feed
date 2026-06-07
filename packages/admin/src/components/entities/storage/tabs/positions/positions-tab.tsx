@@ -116,6 +116,7 @@ export const PositionsTab: React.FC = () => {
                 itemOptions={itemOptions}
                 itemsData={itemsData}
                 volunteerSelectProps={qrScanner.volunteerSelectProps}
+                actorId={positions.actorId}
                 isVolunteerLoading={qrScanner.isVolunteerLoading}
                 onOpenQrScanner={qrScanner.handleOpenQrScanner}
             />

@@ -51,6 +51,18 @@ class ReceivingFilter(django_filters.FilterSet):
         model = Receiving
         fields = ['position', 'position__storage', 'position__bin', 'position__item', 'volunteer']
 
+class MovementFilter(django_filters.FilterSet):
+    position = django_filters.NumberFilter(field_name='position_id', lookup_expr='exact')
+    position__storage = django_filters.NumberFilter(field_name='position__storage_id', lookup_expr='exact')
+    position__bin = django_filters.NumberFilter(field_name='position__bin_id', lookup_expr='exact')
+    position__item = django_filters.NumberFilter(field_name='position__item_id', lookup_expr='exact')
+    from__id = django_filters.NumberFilter(field_name='from_volunteer__id', lookup_expr='exact')
+    to__id = django_filters.NumberFilter(field_name='to_volunteer__id', lookup_expr='exact')
+
+    class Meta:
+        model = Movement
+        fields = ['position', 'position__storage', 'position__bin', 'position__item', 'from__id', 'to__id']
+
 
 class IssuanceFilter(django_filters.FilterSet):
     position = django_filters.NumberFilter(field_name='position_id', lookup_expr='exact')
@@ -268,7 +280,8 @@ class MovementViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Ret
     ordering = ('-id')
     serializer_class = MovementSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = MovementFilter
 
 
 class VolunteerInventoryView(APIView):
