@@ -1,6 +1,6 @@
 import { Form, Modal } from 'antd';
 import { useList, useSelect } from '@refinedev/core';
-import { type ChangeEvent, useEffect } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 
 import type {
     FeedTypeEntity,
@@ -30,6 +30,7 @@ import { axios } from 'authProvider';
 import { NEW_API_URL } from 'const';
 import { useLocation, useParams } from 'react-router';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+import { useVolunteerFormReadinessGate, VOLUNTEER_FORM_READINESS_GATES } from '../volunteer-form-readiness';
 
 export const CommonEdit = () => {
     const form = Form.useFormInstance();
@@ -39,6 +40,10 @@ export const CommonEdit = () => {
     const { search, pathname } = useLocation();
 
     const isCreationProcess = pathname.includes('create');
+    const personIdFromSearch = new URLSearchParams(search).get('person_id');
+    const [personPrefillReady, setPersonPrefillReady] = useState(!personIdFromSearch);
+
+    useVolunteerFormReadinessGate(VOLUNTEER_FORM_READINESS_GATES.personPrefill, personPrefillReady);
 
     const canFullEditing = useCanAccess({ action: 'full_edit', resource: 'volunteers' });
     const denyBadgeEdit = !useCanAccess({ action: 'badge_edit', resource: 'volunteers' });
@@ -52,24 +57,30 @@ export const CommonEdit = () => {
 
     useEffect(() => {
         const loadPerson = async () => {
-            const personId = new URLSearchParams(search).get('person_id');
-            if (!personId) return;
+            if (!personIdFromSearch) {
+                setPersonPrefillReady(true);
+                return;
+            }
+
+            setPersonPrefillReady(false);
 
             try {
-                const { data } = await axios.get(`${NEW_API_URL}/persons/${personId}`);
+                const { data } = await axios.get(`${NEW_API_URL}/persons/${personIdFromSearch}`);
 
-                form.setFieldValue('person_id', personId);
+                form.setFieldValue('person_id', personIdFromSearch);
                 form.setFieldValue('person', data);
                 ['first_name', 'last_name', 'name', 'is_vegan', 'gender'].forEach((fieldName) => {
                     form.setFieldValue(fieldName, data[fieldName]);
                 });
             } catch (error) {
                 console.error('<CommonEdit> loadPerson', error);
+            } finally {
+                setPersonPrefillReady(true);
             }
         };
 
-        loadPerson();
-    }, [search, form]);
+        void loadPerson();
+    }, [form, personIdFromSearch]);
 
     const volunteerId = routeVolunteerId ?? form.getFieldValue('id');
     const isBlocked = Form.useWatch('is_blocked', form);

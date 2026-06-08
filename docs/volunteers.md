@@ -125,8 +125,11 @@
   под кнопкой (`.floatingSaveButton`). Модалка несохранённых изменений
   (`shared/unsaved-changes/unsaved-changes-notifier.tsx`) показывается **только**
   если значения формы отличаются от снимка после загрузки (`useFormUnsavedChanges`,
-  сравнение через `serializeFormValues`); снимок берётся после «успокоения» формы
-  (~300 мс без программных правок, напр. инициализация питания). Без правок уход — сразу.
+  сравнение через `serializeFormValues`). Снимок фиксируется только когда
+  `useVolunteerFormBaselineReady` возвращает `true`: загружены запись волонтёра и
+  `feed-types`, все гейты готовности (`volunteer-form-readiness/`) сняты — в т.ч.
+  инициализация питания (`free_during_stay`, синхронизация календаря), префилл person
+  при создании. Без правок уход — сразу.
   Кнопка «назад» и `navigate` проходят через `runWithUnsavedChangesGuard`. Кнопки модалки: «Выйти без сохранения» —
   отмена правок и переход в список; «Сохранить изменения» — тот же обработчик, что
   плавающая «Сохранить» (с подтверждениями активации), затем сохранение и переход
@@ -166,9 +169,12 @@
 - `common-edit/sections/vol-info-section/` — секция «Волонтёр» со своими стилями.
 - `common-edit/sections/vol-info-section/volunteer-header-photo.tsx` — аватар: в секции «Волонтёр» (≥576px, вкладка «Основное») или в шапке (остальные вкладки; на ≤575px — все вкладки).
 - `shared/unsaved-changes/` — модалка при уходе с несохранёнными изменениями;
-  `use-form-unsaved-changes.ts` — снимок формы после загрузки и сравнение значений;
+  `use-form-unsaved-changes.ts` — снимок формы после `isReady` и сравнение значений;
   `serialize-form-values.ts` — нормализация dayjs/дат для сравнения;
   `runWithUnsavedChangesGuard` — перехват кнопки «назад» при несохранённых правках.
+- `volunteer-form-readiness/` — гейты готовности формы перед фиксацией baseline
+  (`person-prefill`, `feeding-create-default-type`, `feeding-free-during-stay`,
+  `feeding-calendar-sync`).
 
 ## Список волонтёров (таблица)
 

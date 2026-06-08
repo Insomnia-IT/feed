@@ -18,6 +18,7 @@ import { VolunteerHeaderPhoto } from './common-edit/sections/vol-info-section/vo
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 import { createVolunteerFormOnFinish } from './common-edit/sections/volunteer-feeding-form';
+import { useVolunteerFormBaselineReady, VolunteerFormReadinessProvider } from './volunteer-form-readiness';
 
 import styles from './common.module.css';
 
@@ -28,7 +29,6 @@ const contentStyle = {
 };
 
 export const VolEdit = () => {
-    const { id } = useResourceParams();
     const location = useLocation();
     const navigate = useNavigate();
     const { setItem } = useLocalStorage();
@@ -57,11 +57,36 @@ export const VolEdit = () => {
         navigate(returnTo);
     };
 
-    const { result: feedTypesResult } = useList<FeedTypeEntity>({
+    const { result: feedTypesResult, query: feedTypesQuery } = useList<FeedTypeEntity>({
         resource: 'feed-types',
         pagination: { pageSize: 100 }
     });
     const feedTypes = feedTypesResult.data ?? [];
+
+    return (
+        <VolunteerFormReadinessProvider>
+            <VolEditContent
+                feedTypes={feedTypes}
+                feedTypesLoading={feedTypesQuery.isLoading}
+                navigateBackToList={navigateBackToList}
+            />
+        </VolunteerFormReadinessProvider>
+    );
+};
+
+const VolEditContent = ({
+    feedTypes,
+    feedTypesLoading,
+    navigateBackToList
+}: {
+    feedTypes: FeedTypeEntity[];
+    feedTypesLoading: boolean;
+    navigateBackToList: () => void;
+}) => {
+    const { id } = useResourceParams();
+    const { breakpoint, isDesktop, isMobile } = useScreen();
+    const isNarrowMobile = !breakpoint.sm;
+    const [activeKey, setActiveKey] = useState('1');
 
     const { form, formProps, saveButtonProps, formLoading } = useForm<VolEntity>({
         redirect: false,
@@ -73,16 +98,18 @@ export const VolEdit = () => {
         warnWhenUnsavedChanges: false
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
+    const isBaselineReady = useVolunteerFormBaselineReady({
+        formLoading,
+        feedTypesLoading,
+        feedTypesCount: feedTypes.length
+    });
     const { wrapOnValuesChange, clearWarnWhen } = useFormUnsavedChanges({
         form,
         formLoading,
+        isReady: isBaselineReady,
         resetKey: id
     });
     useRegisterUnsavedChangesSave(onClick);
-    const { breakpoint, isDesktop, isMobile } = useScreen();
-    const isNarrowMobile = !breakpoint.sm;
-
-    const [activeKey, setActiveKey] = useState('1');
 
     const {
         onFinish: upstreamOnFinish,

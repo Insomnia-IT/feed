@@ -16,6 +16,8 @@ import {
 } from './feeding-calendar-utils';
 import type { PaidArrivalFormInterval } from './feeding-calendar-utils';
 import { applyFeedTypeSelectChange, FREE_DURING_STAY_FORM_FIELD } from './volunteer-feeding-form';
+import { FeedingCalendarReadinessReporter } from '../../volunteer-form-readiness/feeding-calendar-readiness-reporter';
+import { useVolunteerFormReadinessGate, VOLUNTEER_FORM_READINESS_GATES } from '../../volunteer-form-readiness';
 
 export const FeedingSection = ({
     denyBadgeEdit,
@@ -84,6 +86,11 @@ export const FeedingSection = ({
     }, [arrivals, feedTypeId, freeFeedTypeId, hasArrivals, isChild, paidArrivals, volunteerId]);
 
     const freeDuringStayReady = isChild || volunteerId == null || freeDuringStayValue === initialFreeDuringStay;
+    const feedingFreeDuringStayGateReady = feedTypes.length > 0 && (isChild || freeDuringStayReady);
+    const createDefaultFeedTypeReady = !isCreationProcess || noFeedTypeId === undefined || feedTypeId != null;
+
+    useVolunteerFormReadinessGate(VOLUNTEER_FORM_READINESS_GATES.feedingFreeDuringStay, feedingFreeDuringStayGateReady);
+    useVolunteerFormReadinessGate(VOLUNTEER_FORM_READINESS_GATES.feedingCreateDefaultType, createDefaultFeedTypeReady);
 
     useEffect(() => {
         if (!isCreationProcess || noFeedTypeId === undefined) {
@@ -140,6 +147,7 @@ export const FeedingSection = ({
 
     return (
         <>
+            {isChild ? <FeedingCalendarReadinessReporter ready /> : null}
             <div className={styles.formSection__title}>
                 <h4>Питание</h4>
             </div>

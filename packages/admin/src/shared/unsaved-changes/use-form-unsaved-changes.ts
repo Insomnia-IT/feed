@@ -4,80 +4,57 @@ import { useWarnAboutChange } from '@refinedev/core';
 
 import { serializeFormValues } from './serialize-form-values';
 
-const BASELINE_SETTLE_MS = 300;
-
 type UseFormUnsavedChangesParams = {
     form: FormInstance;
     formLoading: boolean;
+    isReady?: boolean;
     resetKey?: string | number;
 };
 
-export const useFormUnsavedChanges = ({ form, formLoading, resetKey }: UseFormUnsavedChangesParams) => {
+export const useFormUnsavedChanges = ({ form, formLoading, isReady = true, resetKey }: UseFormUnsavedChangesParams) => {
     const { setWarnWhen } = useWarnAboutChange();
     const baselineRef = useRef<string | null>(null);
     const wasLoadingRef = useRef(formLoading);
     const prevResetKeyRef = useRef(resetKey);
-    const initializedRef = useRef(false);
-    const isSettlingRef = useRef(false);
-    const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const prevReadyRef = useRef(isReady);
+    const isReadyRef = useRef(isReady);
 
-    const clearSettleTimer = useCallback(() => {
-        if (settleTimerRef.current !== null) {
-            window.clearTimeout(settleTimerRef.current);
-            settleTimerRef.current = null;
-        }
-    }, []);
+    useEffect(() => {
+        isReadyRef.current = isReady;
+    }, [isReady]);
 
     const captureBaseline = useCallback(() => {
-        clearSettleTimer();
-        isSettlingRef.current = false;
         baselineRef.current = serializeFormValues(form.getFieldsValue(true));
         setWarnWhen(false);
-    }, [clearSettleTimer, form, setWarnWhen]);
-
-    const scheduleBaselineCapture = useCallback(() => {
-        isSettlingRef.current = true;
-        setWarnWhen(false);
-        clearSettleTimer();
-
-        settleTimerRef.current = window.setTimeout(() => {
-            settleTimerRef.current = null;
-            captureBaseline();
-        }, BASELINE_SETTLE_MS);
-    }, [captureBaseline, clearSettleTimer, setWarnWhen]);
+    }, [form, setWarnWhen]);
 
     useEffect(() => {
         const wasLoading = wasLoadingRef.current;
+        const wasReady = prevReadyRef.current;
         wasLoadingRef.current = formLoading;
+        prevReadyRef.current = isReady;
 
-        if (formLoading) {
-            isSettlingRef.current = true;
+        if (formLoading || !isReady) {
             baselineRef.current = null;
-            clearSettleTimer();
             setWarnWhen(false);
             return;
         }
 
         const finishedLoading = wasLoading && !formLoading;
+        const becameReady = !wasReady && isReady;
         const resetKeyChanged = resetKey !== undefined && prevResetKeyRef.current !== resetKey;
-        const needsInitialBaseline = !initializedRef.current;
 
-        if (!finishedLoading && !resetKeyChanged && !needsInitialBaseline) {
-            return;
-        }
-
-        initializedRef.current = true;
-        if (resetKey !== undefined) {
+        if (resetKeyChanged && resetKey !== undefined) {
             prevResetKeyRef.current = resetKey;
         }
 
-        scheduleBaselineCapture();
-
-        return clearSettleTimer;
-    }, [clearSettleTimer, formLoading, resetKey, scheduleBaselineCapture, setWarnWhen]);
+        if (finishedLoading || becameReady || resetKeyChanged || baselineRef.current === null) {
+            queueMicrotask(captureBaseline);
+        }
+    }, [captureBaseline, formLoading, isReady, resetKey, setWarnWhen]);
 
     const syncWarnWhen = useCallback(() => {
-        if (isSettlingRef.current || baselineRef.current === null) {
+        if (!isReadyRef.current || baselineRef.current === null) {
             return;
         }
 
@@ -94,14 +71,13 @@ export const useFormUnsavedChanges = ({ form, formLoading, resetKey }: UseFormUn
             (changedValues, allValues) => {
                 upstream?.(changedValues, allValues);
 
-                if (isSettlingRef.current) {
-                    scheduleBaselineCapture();
+                if (!isReadyRef.current) {
                     return;
                 }
 
                 queueMicrotask(syncWarnWhen);
             },
-        [scheduleBaselineCapture, syncWarnWhen]
+        [syncWarnWhen]
     );
 
     return { wrapOnValuesChange, clearWarnWhen, syncWarnWhen };

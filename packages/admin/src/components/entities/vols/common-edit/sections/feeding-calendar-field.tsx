@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import type { ArrivalEntity, FeedTypeEntity } from 'interfaces';
 
+import { useVolunteerFormReadinessContext } from '../../volunteer-form-readiness/volunteer-form-readiness-context';
+import { VOLUNTEER_FORM_READINESS_GATES } from '../../volunteer-form-readiness/volunteer-form-readiness-gates';
 import { FeedingCalendar } from './feeding-calendar';
 import { FREE_DURING_STAY_FORM_FIELD } from './volunteer-feeding-form';
 import {
@@ -64,6 +66,7 @@ export function FeedingCalendarField({
 
     const prevSyncSignatureRef = useRef<string | null>(null);
     const prevArrivalDateKeysRef = useRef<Set<string>>(new Set());
+    const { setGate } = useVolunteerFormReadinessContext();
 
     const applyDateSets = useCallback(
         (params: { freeDates: Set<string>; paidDates: Set<string> }) => {
@@ -90,11 +93,13 @@ export function FeedingCalendarField({
 
     useEffect(() => {
         if (!freeDuringStayReady) {
+            setGate(VOLUNTEER_FORM_READINESS_GATES.feedingCalendarSync, false);
             return;
         }
 
         const syncSignature = `${freeDuringStay}:${arrivalsSignature}`;
         if (prevSyncSignatureRef.current === syncSignature) {
+            setGate(VOLUNTEER_FORM_READINESS_GATES.feedingCalendarSync, true);
             return;
         }
 
@@ -132,20 +137,29 @@ export function FeedingCalendarField({
         }
 
         applyDateSets({ freeDates: nextFreeDates, paidDates: nextPaidDates });
-    }, [applyDateSets, arrivals, arrivalsSignature, freeDuringStay, freeDuringStayReady, intervals]);
+        setGate(VOLUNTEER_FORM_READINESS_GATES.feedingCalendarSync, true);
+    }, [applyDateSets, arrivals, arrivalsSignature, freeDuringStay, freeDuringStayReady, intervals, setGate]);
+
+    useEffect(() => {
+        return () => {
+            setGate(VOLUNTEER_FORM_READINESS_GATES.feedingCalendarSync, false);
+        };
+    }, [setGate]);
 
     const handleCalendarChange = (params: { freeDates: Set<string>; paidDates: Set<string> }) => {
         applyDateSets(params);
     };
 
     return (
-        <FeedingCalendar
-            freeDates={freeDates}
-            paidDates={paidDates}
-            stayFreeDates={stayFreeDates}
-            activeArrivalDates={arrivalOutlineDates}
-            onChange={handleCalendarChange}
-            disabled={disabled}
-        />
+        <>
+            <FeedingCalendar
+                freeDates={freeDates}
+                paidDates={paidDates}
+                stayFreeDates={stayFreeDates}
+                activeArrivalDates={arrivalOutlineDates}
+                onChange={handleCalendarChange}
+                disabled={disabled}
+            />
+        </>
     );
 }
