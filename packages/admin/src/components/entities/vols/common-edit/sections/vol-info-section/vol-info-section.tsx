@@ -28,8 +28,9 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
     const form = Form.useFormInstance();
     const { breakpoint } = useScreen();
     const fieldsRef = useRef<HTMLDivElement>(null);
-    const [photoLayout, setPhotoLayout] = useState<VolunteerPhotoFieldLayout | null>(null);
+    const [measuredPhotoLayout, setMeasuredPhotoLayout] = useState<VolunteerPhotoFieldLayout | null>(null);
     const showSectionPhoto = Boolean(breakpoint.sm);
+    const photoLayout = showSectionPhoto ? measuredPhotoLayout : null;
 
     const mainRole = Form.useWatch('main_role', form);
     const directionsValue = Form.useWatch('directions', form);
@@ -62,7 +63,6 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
 
     useLayoutEffect(() => {
         if (!showSectionPhoto) {
-            setPhotoLayout(null);
             return;
         }
 
@@ -72,7 +72,7 @@ export const VolInfoSection = ({ denyBadgeEdit, canEditGroupBadge, groupBadgeOpt
         }
 
         const updatePhotoLayout = () => {
-            setPhotoLayout(measureVolunteerPhotoFieldLayout(node));
+            setMeasuredPhotoLayout(measureVolunteerPhotoFieldLayout(node));
         };
 
         updatePhotoLayout();
