@@ -125,7 +125,8 @@
   под кнопкой (`.floatingSaveButton`). Модалка несохранённых изменений
   (`shared/unsaved-changes/unsaved-changes-notifier.tsx`) показывается **только**
   если значения формы отличаются от снимка после загрузки (`useFormUnsavedChanges`,
-  сравнение через `serializeFormValues`). Снимок фиксируется только когда
+  сравнение через `serializeFormValues` / `areFormValuesEqual`; пустые и
+  отсутствующие поля считаются одинаковыми). Снимок фиксируется только когда
   `useVolunteerFormBaselineReady` возвращает `true`: загружены запись волонтёра и
   `feed-types`, все гейты готовности (`volunteer-form-readiness/`) сняты — в т.ч.
   инициализация питания (`free_during_stay`, синхронизация календаря), префилл person

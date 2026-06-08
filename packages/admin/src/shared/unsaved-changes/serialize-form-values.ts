@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 
+const isEmptyFormValue = (value: unknown): boolean => value === undefined || value === null || value === '';
+
 const normalizeFormValue = (value: unknown): unknown => {
     if (dayjs.isDayjs(value)) {
         return value.format('YYYY-MM-DD');
@@ -14,12 +16,18 @@ const normalizeFormValue = (value: unknown): unknown => {
     }
 
     if (value !== null && typeof value === 'object') {
-        return Object.fromEntries(
-            Object.entries(value).map(([key, nestedValue]) => [key, normalizeFormValue(nestedValue)])
-        );
+        const normalizedEntries = Object.entries(value)
+            .map(([key, nestedValue]) => [key, normalizeFormValue(nestedValue)] as const)
+            .filter(([, nestedValue]) => !isEmptyFormValue(nestedValue))
+            .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+
+        return Object.fromEntries(normalizedEntries);
     }
 
     return value;
 };
 
 export const serializeFormValues = (values: unknown): string => JSON.stringify(normalizeFormValue(values));
+
+export const areFormValuesEqual = (left: unknown, right: unknown): boolean =>
+    serializeFormValues(left) === serializeFormValues(right);
