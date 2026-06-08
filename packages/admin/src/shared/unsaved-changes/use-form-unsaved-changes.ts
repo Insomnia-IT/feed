@@ -4,6 +4,8 @@ import { useWarnAboutChange } from '@refinedev/core';
 
 import { serializeFormValues } from './serialize-form-values';
 
+const BASELINE_SETTLE_MS = 300;
+
 type UseFormUnsavedChangesParams = {
     form: FormInstance;
     formLoading: boolean;
@@ -16,17 +18,43 @@ export const useFormUnsavedChanges = ({ form, formLoading, resetKey }: UseFormUn
     const wasLoadingRef = useRef(formLoading);
     const prevResetKeyRef = useRef(resetKey);
     const initializedRef = useRef(false);
+    const isSettlingRef = useRef(false);
+    const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const clearSettleTimer = useCallback(() => {
+        if (settleTimerRef.current !== null) {
+            window.clearTimeout(settleTimerRef.current);
+            settleTimerRef.current = null;
+        }
+    }, []);
 
     const captureBaseline = useCallback(() => {
+        clearSettleTimer();
+        isSettlingRef.current = false;
         baselineRef.current = serializeFormValues(form.getFieldsValue(true));
         setWarnWhen(false);
-    }, [form, setWarnWhen]);
+    }, [clearSettleTimer, form, setWarnWhen]);
+
+    const scheduleBaselineCapture = useCallback(() => {
+        isSettlingRef.current = true;
+        setWarnWhen(false);
+        clearSettleTimer();
+
+        settleTimerRef.current = window.setTimeout(() => {
+            settleTimerRef.current = null;
+            captureBaseline();
+        }, BASELINE_SETTLE_MS);
+    }, [captureBaseline, clearSettleTimer, setWarnWhen]);
 
     useEffect(() => {
         const wasLoading = wasLoadingRef.current;
         wasLoadingRef.current = formLoading;
 
         if (formLoading) {
+            isSettlingRef.current = true;
+            baselineRef.current = null;
+            clearSettleTimer();
+            setWarnWhen(false);
             return;
         }
 
@@ -43,11 +71,13 @@ export const useFormUnsavedChanges = ({ form, formLoading, resetKey }: UseFormUn
             prevResetKeyRef.current = resetKey;
         }
 
-        queueMicrotask(captureBaseline);
-    }, [captureBaseline, formLoading, resetKey]);
+        scheduleBaselineCapture();
+
+        return clearSettleTimer;
+    }, [clearSettleTimer, formLoading, resetKey, scheduleBaselineCapture, setWarnWhen]);
 
     const syncWarnWhen = useCallback(() => {
-        if (baselineRef.current === null) {
+        if (isSettlingRef.current || baselineRef.current === null) {
             return;
         }
 
@@ -63,9 +93,15 @@ export const useFormUnsavedChanges = ({ form, formLoading, resetKey }: UseFormUn
         (upstream?: FormProps['onValuesChange']): FormProps['onValuesChange'] =>
             (changedValues, allValues) => {
                 upstream?.(changedValues, allValues);
+
+                if (isSettlingRef.current) {
+                    scheduleBaselineCapture();
+                    return;
+                }
+
                 queueMicrotask(syncWarnWhen);
             },
-        [syncWarnWhen]
+        [scheduleBaselineCapture, syncWarnWhen]
     );
 
     return { wrapOnValuesChange, clearWarnWhen, syncWarnWhen };
