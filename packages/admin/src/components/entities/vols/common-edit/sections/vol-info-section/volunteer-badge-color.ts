@@ -13,6 +13,9 @@ export const getBadgeAvatarFrameStyle = (def: ColorDef): CSSProperties => {
     return { boxShadow: `0 0 0 2px ${def.border}, 0 0 0 4px ${def.fill}` };
 };
 
+/** Внешний отступ обводки бейджа (box-shadow) для расчёта выравнивания в секции формы. */
+export const BADGE_AVATAR_FRAME_OUTSET = 4;
+
 export const formatBadgeColorTooltip = (badgeColorLabel: string): string => {
     const label = badgeColorLabel.trimEnd().replace(/\.+$/, '');
 

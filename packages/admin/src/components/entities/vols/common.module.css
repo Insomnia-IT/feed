@@ -115,31 +115,64 @@
     }
 }
 
-.feedingCheckboxesFormItem :global(.ant-form-item-label > label) {
-    visibility: hidden;
-}
-
-.feedingCheckboxesFormItem {
-    flex: 0 0 auto;
-}
-
-.feedingCheckboxesFormItem :global(.ant-form-item-control-input) {
+.feedingCheckboxesGroup {
+    display: flex;
+    flex: 1 1 auto;
     align-items: center;
+    min-width: 0;
+    min-height: 32px;
+    padding-top: 22px;
 }
 
 .feedingCheckboxesRow {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px 24px;
     align-items: center;
     min-height: 32px;
+}
+
+.feedingCheckboxFreeDuringStay {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+}
+
+@media (width < 768px) {
+    .feedingFieldRow {
+        flex-wrap: wrap;
+    }
+
+    .feedingFieldKitchen {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+
+    .feedingFieldKitchen :global(.ant-select) {
+        width: 100%;
+    }
+
+    .feedingCheckboxesGroup {
+        flex: 0 0 100%;
+        padding-top: 0;
+    }
+}
+
+@media (width < 525px) {
+    .feedingCheckboxesRow {
+        flex-wrap: wrap;
+    }
+
+    .feedingCheckboxFreeDuringStay {
+        flex: 0 0 100%;
+        width: 100%;
+    }
 }
 
 .inventoryHeader {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 16px;
-    gap: 12px;
 }
 
 .fullWidthControl {
@@ -272,16 +305,10 @@
         width: 100%;
     }
 
-    .feedingFieldRow {
-        flex-wrap: wrap;
-    }
-
-    .feedingFieldKitchen,
     .feedingFieldFeedType {
         width: 100%;
     }
 
-    .feedingFieldKitchen :global(.ant-select),
     .feedingFieldFeedType :global(.ant-select) {
         width: 100%;
     }
@@ -292,10 +319,6 @@
 
     .inlineCheckbox {
         padding-top: 0;
-    }
-
-    .feedingCheckboxesFormItem :global(.ant-form-item-label) {
-        display: none;
     }
 }
 
@@ -653,6 +676,11 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 16px;
+    min-width: 0;
+}
+
+.pageTitleText {
+    min-width: 0;
 }
 
 :global(.ant-layout-content:has(.vol-edit-page)) {
@@ -709,7 +737,7 @@
     min-height: 0;
 }
 
-/* Шапка карточки: слева breadcrumbs + заголовок, справа аватар */
+/* Шапка карточки: слева заголовок, справа аватар */
 .volEditPage {
     display: flex;
     flex: 1;
@@ -733,28 +761,22 @@
     display: contents;
 }
 
-.volEditPage :global(.ant-page-header-breadcrumb) {
-    grid-column: 1;
-    grid-row: 1;
-    margin-block-end: 0;
-}
-
 .volEditPage :global(.ant-page-header-heading-left) {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 1;
     margin-block: 0;
 }
 
 .volEditPage :global(.ant-page-header-heading-extra) {
     grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-row: 1;
     align-self: start;
     margin-block: 0;
 }
 
 .volEditPage :global(.ant-page-header-content) {
     grid-column: 1 / -1;
-    grid-row: 3;
+    grid-row: 2;
     align-self: stretch;
     display: flex;
     flex-direction: column;
@@ -849,15 +871,70 @@
     height: 100%;
 }
 
+/* Планшет и мобилка (<768px): компактная шапка, табы с overflow (…) у аватара */
+.volEditPageCompactHeader {
+    --vol-header-avatar-reserve: 80px;
+}
+
+.volEditPageCompactHeader :global(.ant-page-header) {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    row-gap: 0;
+}
+
+.volEditPageCompactHeader :global(.ant-page-header-heading-left) {
+    flex-shrink: 0;
+    margin-block-end: 4px;
+    min-width: 0;
+}
+
+.volEditPageCompactHeader :global(.ant-page-header-content) {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    padding-block-start: 0 !important;
+}
+
+.volEditPageCompactHeader .pageTitleMain {
+    flex-wrap: nowrap;
+    gap: 8px;
+}
+
+.volEditPageCompactHeader .pageTitleText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 auto;
+}
+
+.volEditPageCompactHeader .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    margin-bottom: 8px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.volEditPageCompactHeader .volFormTabs :global(.ant-tabs-nav-wrap) {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-left) {
+    padding-inline-end: var(--vol-header-avatar-reserve);
+}
+
+.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    margin: 0;
+}
+
+.volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    padding-inline-end: var(--vol-header-avatar-reserve);
+}
+
 @media (width <= 576px) {
-    .pageTitleMain {
-        gap: 8px;
-    }
-
-    .volEditPage :global(.ant-page-header) {
-        column-gap: 12px;
-    }
-
     .volEditPage :global(.ant-card-body) {
         padding-bottom: 0 !important;
     }

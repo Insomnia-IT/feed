@@ -2,7 +2,8 @@ import type { Navigator as RouterNavigator } from 'react-router';
 
 export type PendingNavigation =
     | { type: 'push'; args: Parameters<RouterNavigator['push']> }
-    | { type: 'go'; args: Parameters<RouterNavigator['go']> };
+    | { type: 'go'; args: Parameters<RouterNavigator['go']> }
+    | { type: 'callback'; fn: () => void };
 
 export const installNavigationBlocker = (params: {
     navigator: RouterNavigator;

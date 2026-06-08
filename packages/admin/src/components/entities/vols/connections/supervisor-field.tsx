@@ -100,7 +100,7 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                         }
                     }}
                 >
-                    {isMobile ? 'Открыть бригадира' : ''}
+                    {!isMobile ? 'Открыть бригадира' : null}
                 </Button>
             </Form.Item>
         </div>

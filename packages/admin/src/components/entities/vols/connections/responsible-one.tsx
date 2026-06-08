@@ -103,7 +103,7 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
                         }
                     }}
                 >
-                    {isMobile ? 'Открыть ответственного' : ''}
+                    {!isMobile ? 'Открыть ответственного' : null}
                 </Button>
             </Form.Item>
         </div>

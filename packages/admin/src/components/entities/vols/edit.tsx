@@ -1,14 +1,17 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
 import { Edit, useForm } from '@refinedev/antd';
-import { useBreadcrumb, useList } from '@refinedev/core';
+import { useList, useResourceParams } from '@refinedev/core';
 import { SaveOutlined } from '@ant-design/icons';
-import { Button, Breadcrumb, Form, type FormProps } from 'antd';
+import { Button, Form, type FormProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 
 import { useScreen } from 'shared/providers';
 import { useLocalStorage } from 'shared/hooks';
-import { useRegisterUnsavedChangesSave } from 'shared/unsaved-changes';
+import {
+    runWithUnsavedChangesGuard,
+    useFormUnsavedChanges,
+    useRegisterUnsavedChangesSave
+} from 'shared/unsaved-changes';
 import type { FeedTypeEntity, VolEntity } from 'interfaces';
 import CreateEdit from './common';
 import { VolunteerHeaderPhoto } from './common-edit/sections/vol-info-section/volunteer-header-photo';
@@ -25,6 +28,7 @@ const contentStyle = {
 };
 
 export const VolEdit = () => {
+    const { id } = useResourceParams();
     const location = useLocation();
     const navigate = useNavigate();
     const { setItem } = useLocalStorage();
@@ -59,21 +63,33 @@ export const VolEdit = () => {
     });
     const feedTypes = feedTypesResult.data ?? [];
 
-    const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+    const { form, formProps, saveButtonProps, formLoading } = useForm<VolEntity>({
         redirect: false,
         onMutationSuccess: async (e) => {
             await onMutationSuccess(e);
+            clearWarnWhen();
             navigateBackToList();
         },
-        warnWhenUnsavedChanges: true
+        warnWhenUnsavedChanges: false
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
+    const { wrapOnValuesChange, clearWarnWhen } = useFormUnsavedChanges({
+        form,
+        formLoading,
+        resetKey: id
+    });
     useRegisterUnsavedChangesSave(onClick);
-    const { isDesktop, isMobile } = useScreen();
+    const { breakpoint, isDesktop, isMobile } = useScreen();
+    const isNarrowMobile = !breakpoint.sm;
 
     const [activeKey, setActiveKey] = useState('1');
 
-    const { onFinish: upstreamOnFinish, onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const {
+        onFinish: upstreamOnFinish,
+        onFinishFailed: upstreamOnFinishFailed,
+        onValuesChange: upstreamOnValuesChange,
+        ...restFormProps
+    } = formProps;
     const handleFinish = createVolunteerFormOnFinish({
         upstream: upstreamOnFinish as ((values: VolEntity) => void | Promise<void>) | undefined,
         feedTypes
@@ -84,6 +100,7 @@ export const VolEdit = () => {
         upstreamOnFinishFailed
     );
 
+    const showHeaderPhoto = isNarrowMobile || activeKey !== '1';
     const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);
 
     const name = Form.useWatch('name', form);
@@ -92,36 +109,32 @@ export const VolEdit = () => {
     const isBlocked = Form.useWatch('is_blocked', form);
     const isDeleted = Form.useWatch('deleted_at', form);
     const volunteerName = name || 'Волонтер';
-    const { breadcrumbs } = useBreadcrumb();
 
     const pageHeading = useMemo(() => {
         const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
         return fullName || volunteerName;
     }, [firstName, lastName, volunteerName]);
 
-    const crumbItems = useMemo(() => {
-        if (!breadcrumbs?.length) return [];
-
-        return breadcrumbs.map((item, idx) => {
-            const isLast = idx === breadcrumbs.length - 1;
-            return {
-                key: item.label,
-                title: isLast ? volunteerName : <Link to={item.href || '#'}>{item.label}</Link>
-            };
-        });
-    }, [breadcrumbs, volunteerName]);
-
     return (
         <Edit
-            wrapperProps={{ className: `${styles.volEditPage} vol-edit-page` }}
-            headerProps={{
-                onBack: navigateBackToList,
-                extra: <VolunteerHeaderPhoto form={form} />
+            wrapperProps={{
+                className: [
+                    styles.volEditPage,
+                    'vol-edit-page',
+                    !isDesktop ? styles.volEditPageCompactHeader : '',
+                    showHeaderPhoto ? styles.volEditPageWithHeaderPhoto : ''
+                ]
+                    .filter(Boolean)
+                    .join(' ')
             }}
-            breadcrumb={crumbItems.length > 0 ? <Breadcrumb items={crumbItems} /> : null}
+            headerProps={{
+                onBack: () => runWithUnsavedChangesGuard(navigateBackToList),
+                extra: showHeaderPhoto ? <VolunteerHeaderPhoto form={form} /> : null
+            }}
+            breadcrumb={false}
             title={
                 <div className={styles.pageTitleMain}>
-                    {pageHeading}
+                    <span className={styles.pageTitleText}>{pageHeading}</span>
                     {isBlocked && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Заблокирован</span>
@@ -148,6 +161,7 @@ export const VolEdit = () => {
             <Form
                 {...restFormProps}
                 onFinish={handleFinish as NonNullable<typeof upstreamOnFinish>}
+                onValuesChange={wrapOnValuesChange(upstreamOnValuesChange)}
                 scrollToFirstError
                 layout="vertical"
                 onFinishFailed={handleFinishFailed}

@@ -151,9 +151,6 @@ export const CommonEdit = () => {
                 <section id="section3" className={styles.formSection}>
                     <HrInfoSection canFullEditing={canFullEditing} denyBadgeEdit={denyBadgeEdit} person={person} />
                 </section>
-                <section id="section4" className={styles.formSection}>
-                    <PersonalInfoSection denyBadgeEdit={denyBadgeEdit} genderOptions={genderOptions} />
-                </section>
                 <section id="section4badge" className={styles.formSection}>
                     <BadgeSection
                         canFullEditing={canFullEditing}
@@ -161,6 +158,9 @@ export const CommonEdit = () => {
                         denyBadgeEdit={denyBadgeEdit}
                         handleQRChange={handleQRChange}
                     />
+                </section>
+                <section id="section4" className={styles.formSection}>
+                    <PersonalInfoSection denyBadgeEdit={denyBadgeEdit} genderOptions={genderOptions} />
                 </section>
                 <section id="section5" className={styles.formSection}>
                     <CustomFieldsSection canBadgeEdit={canBadgeEdit} volunteerId={volunteerId} />

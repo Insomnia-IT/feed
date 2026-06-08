@@ -2,3 +2,5 @@ export { installNavigationBlocker, type PendingNavigation } from './block-naviga
 export { UnsavedChangesNotifier } from './unsaved-changes-notifier';
 export { UnsavedChangesSaveProvider } from './unsaved-changes-save-context';
 export { useRegisterUnsavedChangesSave } from './use-register-unsaved-changes-save';
+export { useFormUnsavedChanges } from './use-form-unsaved-changes';
+export { runWithUnsavedChangesGuard } from './unsaved-changes-navigation-guard';

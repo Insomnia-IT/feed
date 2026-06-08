@@ -4,6 +4,25 @@
     padding: 4px;
 }
 
+.sectionPhoto {
+    display: flex;
+    flex-shrink: 0;
+    width: fit-content;
+    max-width: 160px;
+}
+
+.sectionPhoto > :global(span) {
+    display: inline-flex !important;
+    width: fit-content !important;
+}
+
+.sectionPhotoAligner {
+    display: flex;
+    align-items: flex-start;
+    box-sizing: border-box;
+    width: fit-content;
+}
+
 .photoWrap {
     width: 64px;
     height: 64px;
@@ -17,12 +36,21 @@
     box-sizing: content-box;
 }
 
+.photoWrap.photoWrapSection {
+    flex-shrink: 0;
+}
+
 .photoWrapInteractive {
     cursor: pointer;
 }
 
 .photoWrap :global(.ant-image) {
     display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.photoWrapSection :global(svg) {
     width: 100%;
     height: 100%;
 }

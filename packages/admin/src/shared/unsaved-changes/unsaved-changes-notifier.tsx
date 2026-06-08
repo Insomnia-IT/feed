@@ -5,6 +5,7 @@ import { UNSAFE_NavigationContext as NavigationContext, useLocation } from 'reac
 
 import { installNavigationBlocker, type PendingNavigation } from './block-navigation';
 import { useUnsavedChangesSaveContext } from './unsaved-changes-save-context';
+import { setUnsavedChangesNavigationGuard } from './unsaved-changes-navigation-guard';
 import styles from './unsaved-changes-notifier.module.css';
 
 type UnsavedChangesNotifierProps = {
@@ -24,8 +25,7 @@ export const UnsavedChangesNotifier = ({
 
     const [modalOpen, setModalOpen] = useState(false);
     const pendingNavigationRef = useRef<PendingNavigation | null>(null);
-    const originalPushRef = useRef(navigator.push);
-    const originalGoRef = useRef(navigator.go);
+    const uninstallBlockerRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
         return () => setWarnWhen?.(false);
@@ -52,19 +52,32 @@ export const UnsavedChangesNotifier = ({
         setModalOpen(true);
     }, []);
 
+    const releaseNavigationBlock = useCallback(() => {
+        uninstallBlockerRef.current?.();
+        uninstallBlockerRef.current = null;
+        setUnsavedChangesNavigationGuard((action) => action());
+    }, []);
+
     useEffect(() => {
         if (!warnWhen) {
+            releaseNavigationBlock();
             return;
         }
 
-        originalPushRef.current = navigator.push.bind(navigator);
-        originalGoRef.current = navigator.go.bind(navigator);
+        setUnsavedChangesNavigationGuard((action) => {
+            openModal({ type: 'callback', fn: action });
+        });
 
-        return installNavigationBlocker({
+        const uninstallBlocker = installNavigationBlocker({
             navigator,
             onBlock: openModal
         });
-    }, [navigator, openModal, warnWhen]);
+        uninstallBlockerRef.current = uninstallBlocker;
+
+        return () => {
+            releaseNavigationBlock();
+        };
+    }, [navigator, openModal, releaseNavigationBlock, warnWhen]);
 
     const handleStay = useCallback(() => {
         pendingNavigationRef.current = null;
@@ -75,19 +88,25 @@ export const UnsavedChangesNotifier = ({
         const pending = pendingNavigationRef.current;
         pendingNavigationRef.current = null;
         setModalOpen(false);
+        releaseNavigationBlock();
         setWarnWhen?.(false);
 
         if (!pending) {
             return;
         }
 
-        if (pending.type === 'push') {
-            originalPushRef.current.apply(navigator, pending.args);
+        if (pending.type === 'callback') {
+            pending.fn();
             return;
         }
 
-        originalGoRef.current.apply(navigator, pending.args);
-    }, [navigator, setWarnWhen]);
+        if (pending.type === 'push') {
+            navigator.push(...pending.args);
+            return;
+        }
+
+        navigator.go(...pending.args);
+    }, [navigator, releaseNavigationBlock, setWarnWhen]);
 
     const handleSave = useCallback(() => {
         pendingNavigationRef.current = null;

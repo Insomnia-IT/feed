@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router';
 import type { FeedTypeEntity, VolEntity } from 'interfaces';
 
 import { useScreen } from 'shared/providers';
-import { useRegisterUnsavedChangesSave } from 'shared/unsaved-changes';
+import { useFormUnsavedChanges, useRegisterUnsavedChangesSave } from 'shared/unsaved-changes';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
@@ -33,11 +33,12 @@ export const VolCreate = () => {
     });
     const feedTypes = feedTypesResult.data ?? [];
 
-    const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+    const { form, formProps, saveButtonProps, formLoading } = useForm<VolEntity>({
         redirect: 'list',
         successNotification: false,
         onMutationSuccess: async (response) => {
             await onMutationSuccess(response as { data: { id: number } });
+            clearWarnWhen();
 
             const volunteerId = response?.data?.id;
             const volunteerPath = volunteerId ? `/volunteers/edit/${volunteerId}` : '/volunteers';
@@ -56,15 +57,21 @@ export const VolCreate = () => {
 
             navigate('/volunteers');
         },
-        warnWhenUnsavedChanges: true
+        warnWhenUnsavedChanges: false
     });
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
+    const { wrapOnValuesChange, clearWarnWhen } = useFormUnsavedChanges({ form, formLoading });
     useRegisterUnsavedChangesSave(onClick);
 
     const { isDesktop, isMobile } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
 
-    const { onFinish: upstreamOnFinish, onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const {
+        onFinish: upstreamOnFinish,
+        onFinishFailed: upstreamOnFinishFailed,
+        onValuesChange: upstreamOnValuesChange,
+        ...restFormProps
+    } = formProps;
     const handleFinish = createVolunteerFormOnFinish({
         upstream: upstreamOnFinish as ((values: VolEntity) => void | Promise<void>) | undefined,
         feedTypes
@@ -96,6 +103,7 @@ export const VolCreate = () => {
             <Form
                 {...restFormProps}
                 onFinish={handleFinish as NonNullable<typeof upstreamOnFinish>}
+                onValuesChange={wrapOnValuesChange(upstreamOnValuesChange)}
                 scrollToFirstError
                 layout="vertical"
                 onFinishFailed={handleFinishFailed}

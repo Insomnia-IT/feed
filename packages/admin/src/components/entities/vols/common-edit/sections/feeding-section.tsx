@@ -148,7 +148,7 @@ export const FeedingSection = ({
                 <Form.Item className={styles.feedingFieldKitchen} label="Кухня" name="kitchen" rules={Rules.required}>
                     <Select options={kitchenOptions} disabled={denyBadgeEdit} />
                 </Form.Item>
-                <Form.Item label=" " colon={false} className={styles.feedingCheckboxesFormItem}>
+                <div className={styles.feedingCheckboxesGroup}>
                     <div className={styles.feedingCheckboxesRow}>
                         <Form.Item name="is_vegan" valuePropName="checked" noStyle>
                             <Checkbox>Веган</Checkbox>
@@ -160,18 +160,20 @@ export const FeedingSection = ({
                         >
                             Ребёнок
                         </Checkbox>
-                        <Form.Item
-                            name={FREE_DURING_STAY_FORM_FIELD}
-                            valuePropName="checked"
-                            noStyle
-                            initialValue={false}
-                        >
-                            <Checkbox disabled={denyFeedTypeEdit || !hasArrivals || isChild}>
-                                {freeDuringStayLabel}
-                            </Checkbox>
-                        </Form.Item>
+                        <span className={styles.feedingCheckboxFreeDuringStay}>
+                            <Form.Item
+                                name={FREE_DURING_STAY_FORM_FIELD}
+                                valuePropName="checked"
+                                noStyle
+                                initialValue={false}
+                            >
+                                <Checkbox disabled={denyFeedTypeEdit || !hasArrivals || isChild}>
+                                    {freeDuringStayLabel}
+                                </Checkbox>
+                            </Form.Item>
+                        </span>
                     </div>
-                </Form.Item>
+                </div>
             </div>
 
             <Form.Item
@@ -197,7 +199,7 @@ export const FeedingSection = ({
 
             {isNoFeed ? (
                 <p className={styles.sectionHint}>
-                    Без питания — отметьте дни в календаре, чтобы назначить бесплатное или платное питание.
+                    Этот волонтёр без питания. Если вы уверены что это не так, занесите питание в календарь ниже
                 </p>
             ) : null}
 
