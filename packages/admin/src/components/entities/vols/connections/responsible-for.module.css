@@ -21,11 +21,30 @@
     border-color: #1890ff;
 }
 
-.cardName {
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 8px;
+}
+
+.cardName {
+    flex: 1;
+    min-width: 0;
     font-size: 15px;
     font-weight: 600;
     color: rgb(0 0 0 / 0.85);
+}
+
+.cardOpenIcon {
+    flex-shrink: 0;
+    font-size: 14px;
+    color: rgb(0 0 0 / 0.45);
+}
+
+.card:hover .cardOpenIcon {
+    color: #1890ff;
 }
 
 .cardRow {
