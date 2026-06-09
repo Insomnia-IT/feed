@@ -55,11 +55,11 @@ const ResponsibleFor = () => {
                         </div>
                         <div className={styles.cardRow}>
                             <span className={styles.cardLabel}>Имя:</span>
-                            <span>{vol.first_name || '—'}</span>
+                            <span className={styles.cardValue}>{vol.first_name || '—'}</span>
                         </div>
                         <div className={styles.cardRow}>
                             <span className={styles.cardLabel}>Фамилия:</span>
-                            <span>{vol.last_name || '—'}</span>
+                            <span className={styles.cardValue}>{vol.last_name || '—'}</span>
                         </div>
                     </div>
                 ))}

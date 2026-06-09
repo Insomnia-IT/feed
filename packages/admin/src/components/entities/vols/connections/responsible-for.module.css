@@ -1,6 +1,6 @@
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 12px;
     padding: 1px;
 }
@@ -8,6 +8,10 @@
 .card {
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    width: fit-content;
+    min-width: 200px;
+    max-width: 100%;
     padding: 12px;
     background: #fff;
     border: 1px solid #f0f0f0;
@@ -30,8 +34,7 @@
 }
 
 .cardName {
-    flex: 1;
-    min-width: 0;
+    flex: 1 1 auto;
     font-size: 15px;
     font-weight: 600;
     color: rgb(0 0 0 / 0.85);
@@ -55,6 +58,10 @@
     color: rgb(0 0 0 / 0.65);
 }
 
+.cardValue {
+    overflow-wrap: anywhere;
+}
+
 .cardLabel {
     flex-shrink: 0;
     color: rgb(0 0 0 / 0.45);
@@ -68,7 +75,8 @@
 }
 
 @media (width <= 576px) {
-    .grid {
-        grid-template-columns: 1fr;
+    .card {
+        width: 100%;
+        min-width: 0;
     }
 }
