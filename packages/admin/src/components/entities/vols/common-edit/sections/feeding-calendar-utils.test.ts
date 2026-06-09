@@ -10,16 +10,21 @@ import {
     removeArrivalDatesFromFreeFeeding,
     dateSetsToIntervals,
     deriveFeedTypeCode,
+    deriveFreeDuringStayFromVolunteer,
     normalizeVolunteerFeedingPayload,
+    resolveVolunteerFeedingPayload,
     expandIntervalToDateKeys,
     getDateKeysFromArrivals,
     buildPaidArrivalsForApi,
+    coerceFeedTypeId,
+    FEED_TYPE_IDS,
     getRemovedArrivalDateKeys,
     getStayFreeDateKeys,
     removeDatesFromFeedingCalendar,
     getDefaultSummerMonthIndex,
     intervalsToDateSets,
     mergeArrivalDatesIntoFreeFeeding,
+    resolveFeedTypeId,
     toggleFeedingDate
 } from './feeding-calendar-utils';
 
@@ -233,7 +238,7 @@ describe('feeding-calendar-utils', () => {
         ).toBe('CHILD');
     });
 
-    it('keeps explicit feed_type when calendar is empty (legacy select behavior)', () => {
+    it('passes through feed_type from form like child and paid calendar', () => {
         const feedTypes = [
             { id: 1, code: 'FREE' },
             { id: 2, code: 'PAID' },
@@ -245,7 +250,8 @@ describe('feeding-calendar-utils', () => {
             normalizeVolunteerFeedingPayload({
                 paidArrivals: [],
                 feedTypeId: 1,
-                feedTypes
+                feedTypes,
+                arrivals: []
             })
         ).toEqual({ feed_type: 1, paid_arrivals: [] });
 
@@ -253,9 +259,20 @@ describe('feeding-calendar-utils', () => {
             normalizeVolunteerFeedingPayload({
                 paidArrivals: [],
                 feedTypeId: 4,
-                feedTypes
+                feedTypes,
+                arrivals: []
             })
         ).toEqual({ feed_type: 4, paid_arrivals: [] });
+
+        expect(
+            normalizeVolunteerFeedingPayload({
+                paidArrivals: [],
+                feedTypeId: 3,
+                feedTypes,
+                isChild: true,
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }]
+            })
+        ).toEqual({ feed_type: 3, paid_arrivals: [] });
     });
 
     it('detects when all arrival days are marked free', () => {
@@ -326,7 +343,6 @@ describe('feeding-calendar-utils', () => {
             normalizeVolunteerFeedingPayload({
                 feedTypes,
                 feedTypeId: 2,
-                freeDuringStay: false,
                 arrivals: [],
                 paidArrivals: [
                     {
@@ -382,15 +398,26 @@ describe('feeding-calendar-utils', () => {
         });
     });
 
-    it('extracts stay-free dates separately from festival-free dates', () => {
+    it('returns all arrival dates as stay-free when freeDuringStay=true, regardless of freeDates', () => {
+        // Все дни заездов — зелёные, даже если их нет в paid_arrivals (freeDates пуст)
+        expect(
+            getStayFreeDateKeys({
+                freeDuringStay: true,
+                arrivalDateKeys: new Set(['2026-06-10', '2026-06-11']),
+                freeDates: new Set()
+            })
+        ).toEqual(new Set(['2026-06-10', '2026-06-11']));
+
+        // freeDates содержит день не из заездов — он НЕ попадает в stayFreeDates
         expect(
             getStayFreeDateKeys({
                 freeDuringStay: true,
                 arrivalDateKeys: new Set(['2026-06-10', '2026-06-11']),
                 freeDates: new Set(['2026-06-10', '2026-06-15'])
             })
-        ).toEqual(new Set(['2026-06-10']));
+        ).toEqual(new Set(['2026-06-10', '2026-06-11']));
 
+        // freeDuringStay=false → всегда пустое множество
         expect(
             getStayFreeDateKeys({
                 freeDuringStay: false,
@@ -411,5 +438,181 @@ describe('feeding-calendar-utils', () => {
             freeDates: new Set(['2026-08-01']),
             paidDates: new Set(['2026-06-12'])
         });
+    });
+
+    it('coerces legacy feed_type aliases to numeric ids', () => {
+        expect(coerceFeedTypeId(2)).toBe(2);
+        expect(coerceFeedTypeId('3')).toBe(3);
+        expect(coerceFeedTypeId('free')).toBe(FEED_TYPE_IDS.FREE);
+        expect(coerceFeedTypeId('paid')).toBe(FEED_TYPE_IDS.PAID);
+        expect(coerceFeedTypeId('child')).toBe(FEED_TYPE_IDS.CHILD);
+        expect(coerceFeedTypeId('nofeed')).toBe(FEED_TYPE_IDS.NO);
+        expect(coerceFeedTypeId('PAID')).toBe(FEED_TYPE_IDS.PAID);
+    });
+
+    it('resolves feed_type ids without feed-types lookup', () => {
+        expect(resolveFeedTypeId({ feedTypes: [], code: 'PAID' })).toBe(2);
+        expect(
+            normalizeVolunteerFeedingPayload({
+                feedTypes: [],
+                feedTypeId: 'paid' as unknown as number,
+                arrivals: [],
+                paidArrivals: [
+                    {
+                        arrival_date: '2026-07-01',
+                        departure_date: '2026-07-01',
+                        is_free: false
+                    }
+                ]
+            })
+        ).toEqual({
+            feed_type: 2,
+            paid_arrivals: [
+                {
+                    id: expect.any(String),
+                    arrival_date: '2026-07-01',
+                    departure_date: '2026-07-01',
+                    is_free: false
+                }
+            ]
+        });
+    });
+
+    it('resolves feed_type by priority: child, free in form, paid calendar, none', () => {
+        const feedTypes = [
+            { id: 1, code: 'FREE' },
+            { id: 2, code: 'PAID' },
+            { id: 3, code: 'CHILD' },
+            { id: 4, code: 'NO' }
+        ];
+
+        expect(
+            resolveVolunteerFeedingPayload({
+                feedTypes,
+                isChild: true,
+                feedTypeId: 3,
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }],
+                paidArrivals: [
+                    {
+                        arrival_date: '2026-07-01',
+                        departure_date: '2026-07-01',
+                        is_free: false
+                    }
+                ]
+            })
+        ).toEqual({ feed_type: 3, paid_arrivals: [] });
+
+        expect(
+            resolveVolunteerFeedingPayload({
+                feedTypes,
+                isChild: false,
+                feedTypeId: 1,
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }],
+                paidArrivals: []
+            })
+        ).toEqual({ feed_type: 1, paid_arrivals: [] });
+
+        expect(
+            resolveVolunteerFeedingPayload({
+                feedTypes,
+                isChild: false,
+                feedTypeId: 2,
+                arrivals: [],
+                paidArrivals: [
+                    {
+                        arrival_date: '2026-07-01',
+                        departure_date: '2026-07-01',
+                        is_free: true
+                    }
+                ]
+            })
+        ).toEqual({
+            feed_type: 2,
+            paid_arrivals: [
+                {
+                    id: expect.any(String),
+                    arrival_date: '2026-07-01',
+                    departure_date: '2026-07-01',
+                    is_free: true
+                }
+            ]
+        });
+
+        expect(
+            resolveVolunteerFeedingPayload({
+                feedTypes,
+                isChild: false,
+                feedTypeId: 4,
+                arrivals: [],
+                paidArrivals: []
+            })
+        ).toEqual({ feed_type: 4, paid_arrivals: [] });
+    });
+
+    it('restores free-during-stay checkbox from volunteer api data', () => {
+        expect(
+            deriveFreeDuringStayFromVolunteer({
+                feedTypeId: 1,
+                paidArrivals: [],
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }]
+            })
+        ).toBe(true);
+
+        // feed_type=FREE но нет заездов → false
+        expect(
+            deriveFreeDuringStayFromVolunteer({
+                feedTypeId: 1,
+                paidArrivals: [],
+                arrivals: []
+            })
+        ).toBe(false);
+
+        // feed_type=PAID с оранжевыми на дате заезда → false (не «бесплатно на заезд»!)
+        expect(
+            deriveFreeDuringStayFromVolunteer({
+                feedTypeId: 2,
+                paidArrivals: [
+                    {
+                        arrival_date: '2026-06-10',
+                        departure_date: '2026-06-10',
+                        is_free: true
+                    }
+                ],
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }]
+            })
+        ).toBe(false);
+
+        // feed_type=PAID с оранжевыми вне заездов → false
+        expect(
+            deriveFreeDuringStayFromVolunteer({
+                feedTypeId: 2,
+                paidArrivals: [
+                    {
+                        arrival_date: '2026-07-01',
+                        departure_date: '2026-07-01',
+                        is_free: true
+                    }
+                ],
+                arrivals: []
+            })
+        ).toBe(false);
+
+        // Ребёнок всегда true
+        expect(
+            deriveFreeDuringStayFromVolunteer({
+                feedTypeId: 3,
+                paidArrivals: [],
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }]
+            })
+        ).toBe(true);
+
+        // feed_type=FREE НО paid_arrivals не пустой → false
+        expect(
+            deriveFreeDuringStayFromVolunteer({
+                feedTypeId: 1,
+                paidArrivals: [{ arrival_date: '2026-07-01', departure_date: '2026-07-01', is_free: true }],
+                arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }]
+            })
+        ).toBe(false);
     });
 });

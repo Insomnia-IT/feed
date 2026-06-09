@@ -29,6 +29,8 @@ type FeedingCalendarProps = {
     activeArrivalDates?: Set<string>;
     onChange: (params: FeedingDateSets) => void;
     disabled?: boolean;
+    /** Чекбокс «Бесплатно на время заезда» — скрывает режимы календаря и блокирует рисование. */
+    freeDuringStay?: boolean;
     year?: number;
 };
 
@@ -151,6 +153,7 @@ export function FeedingCalendar({
     activeArrivalDates,
     onChange,
     disabled,
+    freeDuringStay = false,
     year
 }: FeedingCalendarProps) {
     const { isMobile } = useScreen();
@@ -177,6 +180,7 @@ export function FeedingCalendar({
     const displaySets = paintDraft ?? { freeDates, paidDates };
     const resolvedActiveArrivalDates = activeArrivalDates ?? new Set<string>();
     const resolvedStayFreeDates = stayFreeDates ?? new Set<string>();
+    const calendarDisabled = disabled || freeDuringStay;
 
     const endPaint = useCallback(() => {
         if (!isPaintingRef.current) {
@@ -215,7 +219,7 @@ export function FeedingCalendar({
 
     const handleDatePaintStart = useCallback(
         (dateKey: string) => {
-            if (disabled || resolvedStayFreeDates.has(dateKey)) {
+            if (calendarDisabled || resolvedStayFreeDates.has(dateKey)) {
                 return;
             }
 
@@ -241,12 +245,12 @@ export function FeedingCalendar({
                 })
             );
         },
-        [activeMode, disabled, freeDates, paidDates, resolvedStayFreeDates]
+        [activeMode, calendarDisabled, freeDates, paidDates, resolvedStayFreeDates]
     );
 
     const handleDatePaintEnter = useCallback(
         (dateKey: string) => {
-            if (!isPaintingRef.current || disabled || resolvedStayFreeDates.has(dateKey)) {
+            if (!isPaintingRef.current || calendarDisabled || resolvedStayFreeDates.has(dateKey)) {
                 return;
             }
 
@@ -265,7 +269,7 @@ export function FeedingCalendar({
                 });
             });
         },
-        [activeMode, disabled, freeDates, paidDates, resolvedStayFreeDates]
+        [activeMode, calendarDisabled, freeDates, paidDates, resolvedStayFreeDates]
     );
 
     useEffect(() => {
@@ -286,14 +290,14 @@ export function FeedingCalendar({
             stayFreeDates={resolvedStayFreeDates}
             activeArrivalDates={resolvedActiveArrivalDates}
             activeMode={activeMode}
-            disabled={disabled}
+            disabled={calendarDisabled}
             isPainting={isPainting}
             onDatePaintStart={handleDatePaintStart}
             onDatePaintEnter={handleDatePaintEnter}
         />
     );
 
-    const modeSelector = (
+    const modeSelector = freeDuringStay ? null : (
         <div className={styles.legend}>
             <Button
                 type="default"

@@ -54,8 +54,7 @@ const CustomSider = () => {
     const {
         result: { data: accessRoles = [] }
     } = useList<AccessRoleEntity>({
-        resource: 'access-roles',
-        queryOptions: { enabled: !breakpoint.xs }
+        resource: 'access-roles'
     });
 
     const accessRoleName = useMemo(() => {

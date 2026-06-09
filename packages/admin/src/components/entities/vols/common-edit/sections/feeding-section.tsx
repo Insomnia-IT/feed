@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Form, Select, Checkbox } from 'antd';
 import { useLocation } from 'react-router';
 
@@ -9,13 +9,13 @@ import styles from '../../common.module.css';
 import { FeedingCalendarField } from './feeding-calendar-field';
 import {
     applyFeedTypeFromCalendar,
+    coerceFeedTypeId,
     getDateKeysFromArrivals,
     intervalsToDateSets,
-    isFreeFeedingDuringStayChecked,
     resolveFeedTypeId
 } from './feeding-calendar-utils';
 import type { PaidArrivalFormInterval } from './feeding-calendar-utils';
-import { applyFeedTypeSelectChange, FREE_DURING_STAY_FORM_FIELD } from './volunteer-feeding-form';
+import { applyFeedTypeSelectChange } from './volunteer-feeding-form';
 import { FeedingCalendarReadinessReporter } from '../../volunteer-form-readiness/feeding-calendar-readiness-reporter';
 import { useVolunteerFormReadinessGate, VOLUNTEER_FORM_READINESS_GATES } from '../../volunteer-form-readiness';
 
@@ -39,7 +39,6 @@ export const FeedingSection = ({
     const arrivals = useMemo(() => (arrivalsWatch ?? []) as ArrivalEntity[], [arrivalsWatch]);
     const paidArrivalsWatch = Form.useWatch('paid_arrivals', form);
     const paidArrivals = useMemo(() => (paidArrivalsWatch ?? []) as PaidArrivalFormInterval[], [paidArrivalsWatch]);
-    const freeDuringStayValue = Form.useWatch(FREE_DURING_STAY_FORM_FIELD, form);
 
     const childFeedTypeId = feedTypes.find(({ code }) => code === 'CHILD')?.id;
     const noFeedTypeId = feedTypes.find(({ code }) => code === 'NO')?.id;
@@ -54,39 +53,16 @@ export const FeedingSection = ({
     const arrivalCount = arrivals.length;
     const freeDuringStayLabel = arrivalCount > 1 ? 'Бесплатно на время заездов' : 'Бесплатно на время заезда';
 
-    const freeDuringStayInitRef = useRef(false);
-    const freeDuringStayBeforeChildRef = useRef<boolean | null>(null);
-    const wasChildRef = useRef(false);
+    // Как «Ребёнок»: состояние только в feed_type + paid_arrivals (поля PATCH), не в виртуальном чекбоксе.
+    const isFreeDuringStay = !isChild && feedTypeId === freeFeedTypeId && paidArrivals.length === 0 && hasArrivals;
 
     const feedTypeSelectOptions = useMemo(
         () => feedTypes.map(({ id, name }) => ({ label: name, value: id })),
         [feedTypes]
     );
 
-    const initialFreeDuringStay = useMemo(() => {
-        if (isChild) {
-            return true;
-        }
-
-        const { freeDates } = intervalsToDateSets(paidArrivals);
-        const isGristFreeVolunteer =
-            volunteerId != null &&
-            freeFeedTypeId !== undefined &&
-            feedTypeId === freeFeedTypeId &&
-            paidArrivals.length === 0 &&
-            hasArrivals;
-
-        return (
-            isGristFreeVolunteer ||
-            isFreeFeedingDuringStayChecked({
-                arrivals,
-                freeDates
-            })
-        );
-    }, [arrivals, feedTypeId, freeFeedTypeId, hasArrivals, isChild, paidArrivals, volunteerId]);
-
-    const freeDuringStayReady = isChild || volunteerId == null || freeDuringStayValue === initialFreeDuringStay;
-    const feedingFreeDuringStayGateReady = feedTypes.length > 0 && (isChild || freeDuringStayReady);
+    const feedingDataReady = isChild || volunteerId == null || coerceFeedTypeId(feedTypeId) !== undefined;
+    const feedingFreeDuringStayGateReady = feedTypes.length > 0 && feedingDataReady;
     const createDefaultFeedTypeReady = !isCreationProcess || noFeedTypeId === undefined || feedTypeId != null;
 
     useVolunteerFormReadinessGate(VOLUNTEER_FORM_READINESS_GATES.feedingFreeDuringStay, feedingFreeDuringStayGateReady);
@@ -103,26 +79,18 @@ export const FeedingSection = ({
         }
     }, [form, isCreationProcess, noFeedTypeId]);
 
-    useEffect(() => {
-        if (isChild && !wasChildRef.current) {
-            freeDuringStayBeforeChildRef.current = Boolean(form.getFieldValue(FREE_DURING_STAY_FORM_FIELD));
-            form.setFieldValue(FREE_DURING_STAY_FORM_FIELD, true);
-        } else if (!isChild && wasChildRef.current && freeDuringStayBeforeChildRef.current !== null) {
-            form.setFieldValue(FREE_DURING_STAY_FORM_FIELD, freeDuringStayBeforeChildRef.current);
-            freeDuringStayBeforeChildRef.current = null;
-        }
-
-        wasChildRef.current = isChild;
-    }, [form, isChild]);
-
-    useEffect(() => {
-        if (freeDuringStayInitRef.current || isChild) {
+    const handleFreeDuringStayChange = (checked: boolean) => {
+        if (checked) {
+            form.setFieldValue('feed_type', freeFeedTypeId);
+            form.setFieldValue('paid_arrivals', []);
             return;
         }
 
-        form.setFieldValue(FREE_DURING_STAY_FORM_FIELD, initialFreeDuringStay);
-        freeDuringStayInitRef.current = true;
-    }, [form, initialFreeDuringStay, isChild]);
+        if (noFeedTypeId !== undefined) {
+            form.setFieldValue('feed_type', noFeedTypeId);
+        }
+        form.setFieldValue('paid_arrivals', []);
+    };
 
     const handleChildChange = (checked: boolean) => {
         if (checked) {
@@ -134,15 +102,16 @@ export const FeedingSection = ({
         }
 
         const { freeDates, paidDates } = intervalsToDateSets(paidArrivals);
-        const nextFeedTypeId = applyFeedTypeFromCalendar({
-            freeDates,
-            paidDates,
-            isChild: false,
-            feedTypes
-        });
-        if (nextFeedTypeId !== undefined) {
-            form.setFieldValue('feed_type', nextFeedTypeId);
-        }
+        form.setFieldValue(
+            'feed_type',
+            applyFeedTypeFromCalendar({
+                freeDates,
+                paidDates,
+                isChild: false,
+                arrivals,
+                feedTypes
+            })
+        );
     };
 
     return (
@@ -169,16 +138,13 @@ export const FeedingSection = ({
                             Ребёнок
                         </Checkbox>
                         <span className={styles.feedingCheckboxFreeDuringStay}>
-                            <Form.Item
-                                name={FREE_DURING_STAY_FORM_FIELD}
-                                valuePropName="checked"
-                                noStyle
-                                initialValue={false}
+                            <Checkbox
+                                checked={isFreeDuringStay}
+                                disabled={denyFeedTypeEdit || !hasArrivals || isChild}
+                                onChange={(event) => handleFreeDuringStayChange(event.target.checked)}
                             >
-                                <Checkbox disabled={denyFeedTypeEdit || !hasArrivals || isChild}>
-                                    {freeDuringStayLabel}
-                                </Checkbox>
-                            </Form.Item>
+                                {freeDuringStayLabel}
+                            </Checkbox>
                         </span>
                     </div>
                 </div>
@@ -216,7 +182,8 @@ export const FeedingSection = ({
                     <FeedingCalendarField
                         feedTypes={feedTypes}
                         disabled={denyFeedTypeEdit}
-                        freeDuringStayReady={freeDuringStayReady}
+                        freeDuringStay={isFreeDuringStay}
+                        freeDuringStayReady={feedingDataReady}
                     />
                 </Form.Item>
             ) : null}

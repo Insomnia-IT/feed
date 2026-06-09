@@ -262,6 +262,136 @@ export function dateSetsToIntervals(params: {
 
 export type FeedTypeCode = 'FREE' | 'PAID' | 'CHILD' | 'NO';
 
+/** Канонические ID типов питания в БД (совпадают с `packages/scanner/src/db.ts`). */
+export const FEED_TYPE_IDS: Record<FeedTypeCode, number> = {
+    FREE: 1,
+    PAID: 2,
+    CHILD: 3,
+    NO: 4
+};
+
+const CANONICAL_FEED_TYPE_ID_SET = new Set<number>(Object.values(FEED_TYPE_IDS));
+
+const LEGACY_FEED_TYPE_ALIASES: Record<string, FeedTypeCode> = {
+    free: 'FREE',
+    paid: 'PAID',
+    child: 'CHILD',
+    no: 'NO',
+    nofeed: 'NO',
+    no_feed: 'NO'
+};
+
+/** Приводит значение формы/API к числовому `feed_type` (1–4). */
+export function coerceFeedTypeId(value: unknown): number | undefined {
+    if (typeof value === 'number' && CANONICAL_FEED_TYPE_ID_SET.has(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (!trimmed) {
+            return undefined;
+        }
+
+        const numeric = Number(trimmed);
+        if (Number.isInteger(numeric) && CANONICAL_FEED_TYPE_ID_SET.has(numeric)) {
+            return numeric;
+        }
+
+        const upper = trimmed.toUpperCase() as FeedTypeCode;
+        if (upper in FEED_TYPE_IDS) {
+            return FEED_TYPE_IDS[upper];
+        }
+
+        const alias = LEGACY_FEED_TYPE_ALIASES[trimmed.toLowerCase()];
+        if (alias) {
+            return FEED_TYPE_IDS[alias];
+        }
+    }
+
+    return undefined;
+}
+
+/**
+ * Единая логика PATCH: в запросе всегда **один** `feed_type` (1–4), не все четыре.
+ *
+ * Приоритет (как в PATCH — по полям формы, как у «Ребёнок» / календаря):
+ * 1. Ребёнок (`feed_type: 3`) → `3`, `paid_arrivals: []`
+ * 2. Бесплатно на заезд (`feed_type: 1`, `paid_arrivals` пустой) → `1`, `paid_arrivals: []`
+ * 3. Календарь: синий/оранжевый день → `2` + `paid_arrivals`
+ * 4. Ничего → `4`, `paid_arrivals: []`
+ */
+export function resolveVolunteerFeedingPayload(params: {
+    paidArrivals: PaidArrivalFormInterval[];
+    isChild: boolean;
+    feedTypeId?: number | null;
+    arrivals: ArrivalDateInterval[];
+    feedTypes: Array<{ id: number; code: string }>;
+}): { feed_type: number; paid_arrivals: PaidArrivalFormInterval[] } {
+    const feedTypeId = coerceFeedTypeId(params.feedTypeId);
+    const childFeedTypeId = resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'CHILD' });
+    const freeFeedTypeId = resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'FREE' });
+
+    if (params.isChild || feedTypeId === childFeedTypeId) {
+        return {
+            feed_type: childFeedTypeId,
+            paid_arrivals: []
+        };
+    }
+
+    if (feedTypeId === freeFeedTypeId && params.paidArrivals.length === 0) {
+        return {
+            feed_type: freeFeedTypeId,
+            paid_arrivals: []
+        };
+    }
+
+    const paid_arrivals = buildPaidArrivalsForApi({
+        paidArrivals: params.paidArrivals,
+        arrivals: params.arrivals,
+        freeDuringStay: false
+    });
+
+    if (paid_arrivals.length > 0) {
+        return {
+            feed_type: resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'PAID' }),
+            paid_arrivals
+        };
+    }
+
+    return {
+        feed_type: resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'NO' }),
+        paid_arrivals: []
+    };
+}
+
+/**
+ * Восстанавливает чекбокс «Бесплатно на время заезда» из ответа API при открытии карточки.
+ *
+ * Правило: чекбокс включён только в каноническом состоянии FREE:
+ * - feed_type = 1 (FREE)  И  paid_arrivals полностью пустой  И  есть хотя бы один заезд.
+ *
+ * Если paid_arrivals содержит интервалы (даже с is_free: true), это «за счёт фестиваля» —
+ * чекбокс должен быть выключен, иначе синк затрёт оранжевые дни на датах заезда.
+ */
+export function deriveFreeDuringStayFromVolunteer(params: {
+    feedTypeId: number | null | undefined;
+    paidArrivals: PaidArrivalFormInterval[];
+    arrivals: ArrivalDateInterval[];
+}): boolean {
+    const feedTypeId = coerceFeedTypeId(params.feedTypeId);
+
+    if (feedTypeId === FEED_TYPE_IDS.CHILD) {
+        return true;
+    }
+
+    return (
+        feedTypeId === FEED_TYPE_IDS.FREE &&
+        params.paidArrivals.length === 0 &&
+        getDateKeysFromArrivals(params.arrivals).size > 0
+    );
+}
+
 export function deriveFeedTypeCode(params: {
     freeDates: Set<string>;
     paidDates: Set<string>;
@@ -303,14 +433,20 @@ export function applyFeedTypeFromCalendar(params: {
     freeDates: Set<string>;
     paidDates: Set<string>;
     isChild: boolean;
+    arrivals: ArrivalDateInterval[];
     feedTypes: Array<{ id: number; code: string }>;
-}): number | undefined {
-    const code = deriveFeedTypeCode({
+}): number {
+    const paidArrivals = dateSetsToIntervals({
         freeDates: params.freeDates,
-        paidDates: params.paidDates,
-        isChild: params.isChild
+        paidDates: params.paidDates
     });
-    return resolveFeedTypeId({ feedTypes: params.feedTypes, code });
+
+    return resolveVolunteerFeedingPayload({
+        paidArrivals,
+        isChild: params.isChild,
+        arrivals: params.arrivals,
+        feedTypes: params.feedTypes
+    }).feed_type;
 }
 
 /**
@@ -345,71 +481,32 @@ export function buildPaidArrivalsForApi(params: {
     });
 }
 
-/** Приводит feed_type и paid_arrivals к формату API (как в старой форме с Select). */
+/** Приводит поля формы к телу PATCH волонтёра. */
 export function normalizeVolunteerFeedingPayload(params: {
     paidArrivals: PaidArrivalFormInterval[];
     feedTypeId: number | null | undefined;
     feedTypes: Array<{ id: number; code: string }>;
     isChild?: boolean;
     arrivals?: ArrivalDateInterval[];
-    freeDuringStay?: boolean;
-}): { feed_type: number | undefined; paid_arrivals: PaidArrivalFormInterval[] } {
+}): { feed_type: number; paid_arrivals: PaidArrivalFormInterval[] } {
+    const feedTypeId = coerceFeedTypeId(params.feedTypeId);
     const childFeedTypeId = resolveFeedTypeId({ feedTypes: params.feedTypes, code: 'CHILD' });
-    const isChild = params.isChild ?? (childFeedTypeId !== undefined && params.feedTypeId === childFeedTypeId);
+    const isChild = params.isChild ?? (feedTypeId === childFeedTypeId || feedTypeId === FEED_TYPE_IDS.CHILD);
 
-    if (isChild) {
-        return {
-            feed_type: childFeedTypeId,
-            paid_arrivals: []
-        };
-    }
-
-    const { freeDates, paidDates } = intervalsToDateSets(params.paidArrivals);
-
-    if (freeDates.size === 0 && paidDates.size === 0) {
-        const explicitCode = params.feedTypes.find(({ id }) => id === params.feedTypeId)?.code as
-            | FeedTypeCode
-            | undefined;
-
-        if (explicitCode === 'FREE' || explicitCode === 'NO' || explicitCode === 'PAID') {
-            return {
-                feed_type: resolveFeedTypeId({ feedTypes: params.feedTypes, code: explicitCode }),
-                paid_arrivals: []
-            };
-        }
-    }
-
-    const code = deriveFeedTypeCode({ freeDates, paidDates, isChild: false });
-    const feed_type = resolveFeedTypeId({ feedTypes: params.feedTypes, code });
-
-    if (code === 'NO' || code === 'CHILD') {
-        return { feed_type, paid_arrivals: [] };
-    }
-
-    const paid_arrivals =
-        params.arrivals !== undefined && params.freeDuringStay !== undefined
-            ? buildPaidArrivalsForApi({
-                  paidArrivals: params.paidArrivals,
-                  arrivals: params.arrivals,
-                  freeDuringStay: params.freeDuringStay
-              })
-            : dateSetsToIntervals({
-                  freeDates,
-                  paidDates,
-                  existingIntervals: params.paidArrivals
-              });
-
-    return {
-        feed_type,
-        paid_arrivals
-    };
+    return resolveVolunteerFeedingPayload({
+        paidArrivals: params.paidArrivals,
+        isChild,
+        feedTypeId: params.feedTypeId,
+        arrivals: params.arrivals ?? [],
+        feedTypes: params.feedTypes
+    });
 }
 
 export function resolveFeedTypeId(params: {
     feedTypes: Array<{ id: number; code: string }>;
     code: FeedTypeCode;
-}): number | undefined {
-    return params.feedTypes.find(({ code: feedCode }) => feedCode === params.code)?.id;
+}): number {
+    return params.feedTypes.find(({ code: feedCode }) => feedCode === params.code)?.id ?? FEED_TYPE_IDS[params.code];
 }
 
 export type ArrivalDateInterval = {
@@ -438,7 +535,13 @@ export function buildActiveArrivalDateKeys(arrivals: ArrivalDateInterval[]): Set
     return keys;
 }
 
-/** Бесплатные дни заезда (чекбокс «Бесплатно на время заезда») — отдельно от «за счёт фестиваля». */
+/**
+ * Бесплатные дни заезда (чекбокс «Бесплатно на время заезда») — отдельно от «за счёт фестиваля».
+ *
+ * Возвращает ВСЕ дни заездов когда freeDuringStay=true, независимо от того,
+ * что хранится в freeDates. Это позволяет не хранить зелёные дни в paid_arrivals формы,
+ * избегая feedback-loop с deriveFreeDuringStayFromVolunteer.
+ */
 export function getStayFreeDateKeys(params: {
     freeDates: Set<string>;
     arrivalDateKeys: Set<string>;
@@ -448,15 +551,7 @@ export function getStayFreeDateKeys(params: {
         return new Set();
     }
 
-    const stayFreeDates = new Set<string>();
-
-    for (const dateKey of params.freeDates) {
-        if (params.arrivalDateKeys.has(dateKey)) {
-            stayFreeDates.add(dateKey);
-        }
-    }
-
-    return stayFreeDates;
+    return new Set(params.arrivalDateKeys);
 }
 
 /** Все дни заездов (включительно) в виде ключей YYYY-MM-DD. */

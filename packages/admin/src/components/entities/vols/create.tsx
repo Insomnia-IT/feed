@@ -96,6 +96,7 @@ const VolCreateContent = ({
         ...restFormProps
     } = formProps;
     const handleFinish = createVolunteerFormOnFinish({
+        form,
         upstream: upstreamOnFinish as ((values: VolEntity) => void | Promise<void>) | undefined,
         feedTypes
     });

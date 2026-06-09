@@ -6,17 +6,15 @@ import type { ArrivalEntity, FeedTypeEntity } from 'interfaces';
 import { useVolunteerFormReadinessContext } from '../../volunteer-form-readiness/volunteer-form-readiness-context';
 import { VOLUNTEER_FORM_READINESS_GATES } from '../../volunteer-form-readiness/volunteer-form-readiness-gates';
 import { FeedingCalendar } from './feeding-calendar';
-import { FREE_DURING_STAY_FORM_FIELD } from './volunteer-feeding-form';
 import {
     applyFeedTypeFromCalendar,
     buildActiveArrivalDateKeys,
+    resolveFeedTypeId,
     dateSetsToIntervals,
     getDateKeysFromArrivals,
     getRemovedArrivalDateKeys,
     getStayFreeDateKeys,
     intervalsToDateSets,
-    mergeArrivalDatesIntoFreeFeeding,
-    removeArrivalDatesFromFreeFeeding,
     removeDatesFromFeedingCalendar,
     type PaidArrivalFormInterval
 } from './feeding-calendar-utils';
@@ -26,6 +24,7 @@ type FeedingCalendarFieldProps = {
     onChange?: (value: PaidArrivalFormInterval[]) => void;
     disabled?: boolean;
     feedTypes: FeedTypeEntity[];
+    freeDuringStay: boolean;
     freeDuringStayReady: boolean;
 };
 
@@ -34,14 +33,13 @@ export function FeedingCalendarField({
     onChange,
     disabled,
     feedTypes,
+    freeDuringStay,
     freeDuringStayReady
 }: FeedingCalendarFieldProps) {
     const form = Form.useFormInstance();
     const intervals = useMemo(() => value ?? [], [value]);
     const arrivalsWatch = Form.useWatch('arrivals', form);
     const arrivals = useMemo(() => (arrivalsWatch ?? []) as ArrivalEntity[], [arrivalsWatch]);
-    const freeDuringStay = Boolean(Form.useWatch(FREE_DURING_STAY_FORM_FIELD, form));
-
     const dateSets = useMemo(() => intervalsToDateSets(intervals), [intervals]);
     const { freeDates, paidDates } = dateSets;
     const arrivalOutlineDates = useMemo(() => buildActiveArrivalDateKeys(arrivals), [arrivals]);
@@ -64,9 +62,22 @@ export function FeedingCalendarField({
         [arrivals]
     );
 
-    const prevSyncSignatureRef = useRef<string | null>(null);
+    const prevFreeDuringStayRef = useRef<boolean | null>(null);
+    const prevArrivalsSignatureRef = useRef<string | null>(null);
     const prevArrivalDateKeysRef = useRef<Set<string>>(new Set());
+    const prevFreeDuringStayReadyRef = useRef(freeDuringStayReady);
     const { setGate } = useVolunteerFormReadinessContext();
+
+    // При переходе из «не готово» → «готово» сбрасываем prev-рефы,
+    // чтобы первый синк начался без предыстории (как при первом открытии).
+    useEffect(() => {
+        if (!prevFreeDuringStayReadyRef.current && freeDuringStayReady) {
+            prevFreeDuringStayRef.current = null;
+            prevArrivalsSignatureRef.current = null;
+            prevArrivalDateKeysRef.current = new Set();
+        }
+        prevFreeDuringStayReadyRef.current = freeDuringStayReady;
+    }, [freeDuringStayReady]);
 
     const applyDateSets = useCallback(
         (params: { freeDates: Set<string>; paidDates: Set<string> }) => {
@@ -78,17 +89,20 @@ export function FeedingCalendarField({
 
             onChange?.(nextIntervals);
 
-            const nextFeedTypeId = applyFeedTypeFromCalendar({
-                freeDates: params.freeDates,
-                paidDates: params.paidDates,
-                isChild: false,
-                feedTypes
-            });
-            if (nextFeedTypeId !== undefined) {
-                form.setFieldValue('feed_type', nextFeedTypeId);
-            }
+            form.setFieldValue(
+                'feed_type',
+                freeDuringStay
+                    ? resolveFeedTypeId({ feedTypes, code: 'FREE' })
+                    : applyFeedTypeFromCalendar({
+                          freeDates: params.freeDates,
+                          paidDates: params.paidDates,
+                          isChild: false,
+                          arrivals,
+                          feedTypes
+                      })
+            );
         },
-        [feedTypes, form, intervals, onChange]
+        [arrivals, feedTypes, form, freeDuringStay, intervals, onChange]
     );
 
     useEffect(() => {
@@ -97,13 +111,18 @@ export function FeedingCalendarField({
             return;
         }
 
-        const syncSignature = `${freeDuringStay}:${arrivalsSignature}`;
-        if (prevSyncSignatureRef.current === syncSignature) {
+        const prevFreeDuringStay = prevFreeDuringStayRef.current;
+        const prevArrivalsSignature = prevArrivalsSignatureRef.current;
+        const freeDuringStayChanged = prevFreeDuringStay !== freeDuringStay;
+        const arrivalsChanged = prevArrivalsSignature !== arrivalsSignature;
+
+        if (!freeDuringStayChanged && !arrivalsChanged) {
             setGate(VOLUNTEER_FORM_READINESS_GATES.feedingCalendarSync, true);
             return;
         }
 
-        prevSyncSignatureRef.current = syncSignature;
+        prevFreeDuringStayRef.current = freeDuringStay;
+        prevArrivalsSignatureRef.current = arrivalsSignature;
 
         const currentArrivalDateKeys = getDateKeysFromArrivals(arrivals);
         const removedArrivalDateKeys = getRemovedArrivalDateKeys({
@@ -112,25 +131,18 @@ export function FeedingCalendarField({
         });
         prevArrivalDateKeysRef.current = currentArrivalDateKeys;
 
+        if (freeDuringStayChanged && freeDuringStay) {
+            // Режим «фри»: календарные интервалы не храним, только зелёные дни заезда.
+            applyDateSets({ freeDates: new Set(), paidDates: new Set() });
+            setGate(VOLUNTEER_FORM_READINESS_GATES.feedingCalendarSync, true);
+            return;
+        }
+
         let { freeDates: nextFreeDates, paidDates: nextPaidDates } = intervalsToDateSets(intervals);
 
         if (removedArrivalDateKeys.size > 0) {
             ({ freeDates: nextFreeDates, paidDates: nextPaidDates } = removeDatesFromFeedingCalendar({
                 dateKeys: removedArrivalDateKeys,
-                freeDates: nextFreeDates,
-                paidDates: nextPaidDates
-            }));
-        }
-
-        if (freeDuringStay) {
-            ({ freeDates: nextFreeDates, paidDates: nextPaidDates } = mergeArrivalDatesIntoFreeFeeding({
-                arrivals,
-                freeDates: nextFreeDates,
-                paidDates: nextPaidDates
-            }));
-        } else {
-            ({ freeDates: nextFreeDates, paidDates: nextPaidDates } = removeArrivalDatesFromFreeFeeding({
-                arrivals,
                 freeDates: nextFreeDates,
                 paidDates: nextPaidDates
             }));
@@ -159,6 +171,7 @@ export function FeedingCalendarField({
                 activeArrivalDates={arrivalOutlineDates}
                 onChange={handleCalendarChange}
                 disabled={disabled}
+                freeDuringStay={freeDuringStay}
             />
         </>
     );
