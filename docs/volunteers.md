@@ -24,6 +24,16 @@
 > При **`NO`** («без питания») календарь остаётся доступным — пустой календарь
 > означает отсутствие питания; подсказка (`.sectionHint`): «Этот волонтёр без питания…».
 
+## Статус заезда
+
+Выпадашка «Статус заезда» в `arrivals-section.tsx` берёт справочник `GET /statuses/` и
+фильтрует по `VOLUNTEER_STATUSES` (`shared/constants/volunteer-status.ts`). Код уходит в
+`arrivals[].status` при сохранении карточки. Доступные значения: `ARRIVED`, `STARTED`,
+`COMPLETE`, `JOINED`, `PLANNED`, `SKIPPED`, `LEFT`. Положительные (`VOLUNTEER_COMPLETED_STATUSES`)
+— с ✅ вверху списка; нейтральные (`PLANNED`, `SKIPPED`, `LEFT`) — внизу. Права:
+`ARRIVED` — `status_arrived_assign` (кроме роли `DIRECTION_HEAD`), `STARTED` —
+`status_started_assign`; `PLANNED` доступен без отдельного права.
+
 ## Питание и календарь
 
 - **Кухня** (`kitchen`) — как раньше.
