@@ -10,17 +10,15 @@
     margin-top: 12px;
 }
 
-.legendHint {
-    margin: 0;
-    color: rgb(0 0 0 / 0.45);
-    font-size: 12px;
-    line-height: 1.5;
-}
-
 .modeButton {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+}
+
+.legendDescription {
+    color: rgb(0 0 0 / 0.45);
+    font-size: 13px;
 }
 
 .modeSwatch {
@@ -107,6 +105,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
     min-height: 28px;
     border: none;
     border-radius: 6px;
@@ -117,7 +116,7 @@
     padding: 0;
 }
 
-.dayCell:disabled {
+.dayCell:disabled:not(.dayCellOutsideArrival) {
     cursor: not-allowed;
     opacity: 0.45;
 }
@@ -167,8 +166,13 @@
 }
 
 .dayCellOutsideArrival:disabled:not(.dayCellFreeFestival, .dayCellPaid) {
-    color: rgb(0 0 0 / 0.35);
-    opacity: 0.55;
+    color: rgb(0 0 0 / 0.55);
+    opacity: 0.82;
+    cursor: not-allowed;
+}
+
+.dayCellPlannedArrival {
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.72);
 }
 
 .dayCellActiveArrival {

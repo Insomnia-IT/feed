@@ -9,6 +9,8 @@ import { FeedingCalendar } from './feeding-calendar';
 import {
     applyFeedTypeFromCalendar,
     buildActiveArrivalDateKeys,
+    buildPlannedArrivalDateKeys,
+    buildPaintableArrivalDateKeys,
     resolveFeedTypeId,
     dateSetsToIntervals,
     getDateKeysFromArrivals,
@@ -43,6 +45,8 @@ export function FeedingCalendarField({
     const dateSets = useMemo(() => intervalsToDateSets(intervals), [intervals]);
     const { freeDates, paidDates } = dateSets;
     const arrivalOutlineDates = useMemo(() => buildActiveArrivalDateKeys(arrivals), [arrivals]);
+    const plannedArrivalDates = useMemo(() => buildPlannedArrivalDateKeys(arrivals), [arrivals]);
+    const paintableArrivalDates = useMemo(() => buildPaintableArrivalDateKeys(arrivals), [arrivals]);
     const arrivalDateKeys = useMemo(() => getDateKeysFromArrivals(arrivals), [arrivals]);
     const stayFreeDates = useMemo(
         () =>
@@ -169,6 +173,8 @@ export function FeedingCalendarField({
                 paidDates={paidDates}
                 stayFreeDates={stayFreeDates}
                 activeArrivalDates={arrivalOutlineDates}
+                plannedArrivalDates={plannedArrivalDates}
+                paintableArrivalDates={paintableArrivalDates}
                 onChange={handleCalendarChange}
                 disabled={disabled}
                 freeDuringStay={freeDuringStay}

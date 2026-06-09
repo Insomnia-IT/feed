@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import {
     applyFeedingModeToDate,
     buildActiveArrivalDateKeys,
+    buildPlannedArrivalDateKeys,
+    buildPaintableArrivalDateKeys,
     canApplyFeedingPaintToDate,
     canInteractWithFeedingCalendarDate,
     paintFeedingDate,
@@ -97,6 +99,34 @@ describe('feeding-calendar-utils', () => {
         ]);
 
         expect(keys).toEqual(new Set(['2026-06-10', '2026-06-11', '2026-08-05']));
+    });
+
+    it('outlines only planned arrival dates', () => {
+        const keys = buildPlannedArrivalDateKeys([
+            { arrival_date: '2026-07-08', departure_date: '2026-07-13', status: 'PLANNED' },
+            { arrival_date: '2026-06-10', departure_date: '2026-06-11', status: 'STARTED' },
+            { arrival_date: '2026-08-01', departure_date: '2026-08-02', status: 'SKIPPED' }
+        ]);
+
+        expect(keys).toEqual(
+            new Set(['2026-07-08', '2026-07-09', '2026-07-10', '2026-07-11', '2026-07-12', '2026-07-13'])
+        );
+    });
+
+    it('allows painting on active and planned arrival dates', () => {
+        const keys = buildPaintableArrivalDateKeys([
+            { arrival_date: '2026-07-08', departure_date: '2026-07-10', status: 'PLANNED' },
+            { arrival_date: '2026-06-10', departure_date: '2026-06-11', status: 'STARTED' },
+            { arrival_date: '2026-08-01', departure_date: '2026-08-02', status: 'SKIPPED' }
+        ]);
+
+        expect(keys).toEqual(new Set(['2026-06-10', '2026-06-11', '2026-07-08', '2026-07-09', '2026-07-10']));
+        expect(
+            canApplyFeedingPaintToDate({
+                dateKey: '2026-07-09',
+                paintableArrivalDates: keys
+            })
+        ).toBe(true);
     });
 
     it('picks default summer month index for carousel', () => {

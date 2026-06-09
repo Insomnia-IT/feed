@@ -50,6 +50,7 @@ export const FeedingSection = ({
 
     // Как «Ребёнок»: состояние только в feed_type + paid_arrivals (поля PATCH), не в виртуальном чекбоксе.
     const isFreeDuringStay = !isChild && feedTypeId === freeFeedTypeId && paidArrivals.length === 0 && hasArrivals;
+    const freeDuringStayCheckboxChecked = isChild || isFreeDuringStay;
 
     const feedTypeSelectOptions = useMemo(
         () => feedTypes.map(({ id, name }) => ({ label: name, value: id })),
@@ -122,7 +123,7 @@ export const FeedingSection = ({
                         </Checkbox>
                         <span className={styles.feedingCheckboxFreeDuringStay}>
                             <Checkbox
-                                checked={isFreeDuringStay}
+                                checked={freeDuringStayCheckboxChecked}
                                 disabled={denyFeedTypeEdit || !hasArrivals || isChild}
                                 onChange={(event) => handleFreeDuringStayChange(event.target.checked)}
                             >

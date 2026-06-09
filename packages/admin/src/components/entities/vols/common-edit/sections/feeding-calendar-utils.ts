@@ -534,6 +534,37 @@ export type ArrivalDateInterval = {
     status?: string | null;
 };
 
+/** Дни заездов со статусом «Планируется» (`PLANNED`) — только обводка на календаре, без раскраски. */
+export function buildPlannedArrivalDateKeys(arrivals: ArrivalDateInterval[]): Set<string> {
+    const keys = new Set<string>();
+
+    for (const arrival of arrivals) {
+        if (arrival.status !== 'PLANNED') {
+            continue;
+        }
+
+        for (const key of expandIntervalToDateKeys({
+            arrival_date: arrival.arrival_date ?? '',
+            departure_date: arrival.departure_date ?? ''
+        })) {
+            keys.add(key);
+        }
+    }
+
+    return keys;
+}
+
+/** Дни заездов, на которых можно выставить «за счёт фестиваля» или «платно» (активный + планируемый). */
+export function buildPaintableArrivalDateKeys(arrivals: ArrivalDateInterval[]): Set<string> {
+    const keys = buildActiveArrivalDateKeys(arrivals);
+
+    for (const key of buildPlannedArrivalDateKeys(arrivals)) {
+        keys.add(key);
+    }
+
+    return keys;
+}
+
 /** Дни активных заездов: приступил, прибился или заехал на поле (`ARRIVED` / `STARTED` / `JOINED`). */
 export function buildActiveArrivalDateKeys(arrivals: ArrivalDateInterval[]): Set<string> {
     const keys = new Set<string>();

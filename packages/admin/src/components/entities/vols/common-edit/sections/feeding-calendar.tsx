@@ -29,6 +29,8 @@ type FeedingCalendarProps = {
     paidDates: Set<string>;
     stayFreeDates?: Set<string>;
     activeArrivalDates?: Set<string>;
+    plannedArrivalDates?: Set<string>;
+    paintableArrivalDates?: Set<string>;
     onChange: (params: FeedingDateSets) => void;
     disabled?: boolean;
     /** Чекбокс «Бесплатно на время заезда» — скрывает режимы календаря и блокирует рисование. */
@@ -61,6 +63,7 @@ function MonthPanel({
     paidDates,
     stayFreeDates,
     activeArrivalDates,
+    plannedArrivalDates,
     paintableArrivalDates,
     activeMode,
     disabled,
@@ -73,6 +76,7 @@ function MonthPanel({
     paidDates: Set<string>;
     stayFreeDates: Set<string>;
     activeArrivalDates: Set<string>;
+    plannedArrivalDates: Set<string>;
     paintableArrivalDates: Set<string>;
     activeMode: FeedingDateKind;
     disabled?: boolean;
@@ -103,6 +107,7 @@ function MonthPanel({
                     const isFestivalFree = freeDates.has(dateKey) && !isStayFree;
                     const isPaid = paidDates.has(dateKey);
                     const isActiveArrival = activeArrivalDates.has(dateKey);
+                    const isPlannedArrival = plannedArrivalDates.has(dateKey);
                     const isPaintableArrival = paintableArrivalDates.has(dateKey);
                     const canInteract = canInteractWithFeedingCalendarDate({
                         dateKey,
@@ -117,11 +122,14 @@ function MonthPanel({
                         isFestivalFree ? styles.dayCellFreeFestival : '',
                         isPaid ? styles.dayCellPaid : '',
                         isActiveArrival ? styles.dayCellActiveArrival : '',
+                        isPlannedArrival && !isActiveArrival ? styles.dayCellPlannedArrival : '',
                         !isPaintableArrival && !isFestivalFree && !isPaid ? styles.dayCellOutsideArrival : '',
                         isPainting ? styles.dayCellPainting : ''
                     ]
                         .filter(Boolean)
                         .join(' ');
+
+                    const isOutsideArrival = !isPaintableArrival && !isFestivalFree && !isPaid && !isStayFree;
 
                     return (
                         <button
@@ -137,7 +145,11 @@ function MonthPanel({
                                       ? ', за счёт фестиваля'
                                       : isPaid
                                         ? ', платно'
-                                        : ''
+                                        : isPlannedArrival
+                                          ? ', заезд планируется'
+                                          : isOutsideArrival
+                                            ? ', вне дат заезда'
+                                            : ''
                             }`}
                             data-date-key={dateKey}
                             onPointerDown={(event) => {
@@ -148,7 +160,7 @@ function MonthPanel({
                                 onDatePaintStart(dateKey);
                             }}
                             onPointerEnter={() => onDatePaintEnter(dateKey)}
-                            title={activeMode === 'free' ? 'За счёт фестиваля' : 'Платно'}
+                            title={canInteract ? (activeMode === 'free' ? 'За счёт фестиваля' : 'Платно') : undefined}
                         >
                             {day}
                         </button>
@@ -164,6 +176,8 @@ export function FeedingCalendar({
     paidDates,
     stayFreeDates,
     activeArrivalDates,
+    plannedArrivalDates,
+    paintableArrivalDates,
     onChange,
     disabled,
     freeDuringStay = false,
@@ -192,6 +206,8 @@ export function FeedingCalendar({
 
     const displaySets = paintDraft ?? { freeDates, paidDates };
     const resolvedActiveArrivalDates = activeArrivalDates ?? new Set<string>();
+    const resolvedPlannedArrivalDates = plannedArrivalDates ?? new Set<string>();
+    const resolvedPaintableArrivalDates = paintableArrivalDates ?? resolvedActiveArrivalDates;
     const resolvedStayFreeDates = stayFreeDates ?? new Set<string>();
     const calendarDisabled = disabled || freeDuringStay;
 
@@ -240,7 +256,7 @@ export function FeedingCalendar({
                 !canInteractWithFeedingCalendarDate({
                     dateKey,
                     mode: activeMode,
-                    paintableArrivalDates: resolvedActiveArrivalDates,
+                    paintableArrivalDates: resolvedPaintableArrivalDates,
                     freeDates,
                     paidDates
                 })
@@ -270,7 +286,7 @@ export function FeedingCalendar({
                 })
             );
         },
-        [activeMode, calendarDisabled, freeDates, paidDates, resolvedActiveArrivalDates, resolvedStayFreeDates]
+        [activeMode, calendarDisabled, freeDates, paidDates, resolvedPaintableArrivalDates, resolvedStayFreeDates]
     );
 
     const handleDatePaintEnter = useCallback(
@@ -288,7 +304,7 @@ export function FeedingCalendar({
                 action === 'apply' &&
                 !canApplyFeedingPaintToDate({
                     dateKey,
-                    paintableArrivalDates: resolvedActiveArrivalDates
+                    paintableArrivalDates: resolvedPaintableArrivalDates
                 })
             ) {
                 return;
@@ -305,7 +321,7 @@ export function FeedingCalendar({
                 });
             });
         },
-        [activeMode, calendarDisabled, freeDates, paidDates, resolvedActiveArrivalDates, resolvedStayFreeDates]
+        [activeMode, calendarDisabled, freeDates, paidDates, resolvedPaintableArrivalDates, resolvedStayFreeDates]
     );
 
     useEffect(() => {
@@ -325,7 +341,8 @@ export function FeedingCalendar({
             paidDates={displaySets.paidDates}
             stayFreeDates={resolvedStayFreeDates}
             activeArrivalDates={resolvedActiveArrivalDates}
-            paintableArrivalDates={resolvedActiveArrivalDates}
+            plannedArrivalDates={resolvedPlannedArrivalDates}
+            paintableArrivalDates={resolvedPaintableArrivalDates}
             activeMode={activeMode}
             disabled={calendarDisabled}
             isPainting={isPainting}
@@ -354,11 +371,7 @@ export function FeedingCalendar({
                 <span className={`${styles.modeSwatch} ${styles.modeSwatchPaid}`} />
                 Платно
             </Button>
-            <p className={styles.legendHint}>
-                Выберите режим и проведите по датам с зажатой кнопкой мыши: по пустым — выделить, по уже выделенным того
-                же цвета — снять. Один клик переключает день. Дни «за счёт фестиваля» и «платно» не пересекаются.
-                Раскрашивать можно только даты заезда с обводкой на календаре.
-            </p>
+            <span className={styles.legendDescription}>Добавить питание можно только на даты заездов</span>
         </div>
     );
 
