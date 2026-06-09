@@ -162,6 +162,15 @@
     font-size: 13px;
 }
 
+.dayCellOutsideArrival:not(:disabled) {
+    cursor: not-allowed;
+}
+
+.dayCellOutsideArrival:disabled:not(.dayCellFreeFestival, .dayCellPaid) {
+    color: rgb(0 0 0 / 0.35);
+    opacity: 0.55;
+}
+
 .dayCellActiveArrival {
     box-shadow: inset 0 0 0 1px rgb(82 196 26 / 0.45);
 }

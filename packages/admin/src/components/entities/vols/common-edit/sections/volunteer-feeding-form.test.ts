@@ -1,7 +1,12 @@
 import type { FormInstance } from 'antd';
 import { describe, expect, it, vi } from 'vitest';
 
-import { buildVolunteerSubmitValues } from './volunteer-feeding-form';
+import {
+    applyChildFeedingToggle,
+    buildVolunteerSubmitValues,
+    captureFeedingFormSnapshot,
+    type FeedingFormSnapshot
+} from './volunteer-feeding-form';
 
 const feedTypes = [
     { id: 1, code: 'FREE', name: 'фри', paid: false, daily_amount: 4 },
@@ -13,7 +18,10 @@ const feedTypes = [
 const createMockForm = (snapshot: Record<string, unknown>): FormInstance =>
     ({
         getFieldsValue: vi.fn(() => snapshot),
-        getFieldValue: vi.fn((name: string) => snapshot[name])
+        getFieldValue: vi.fn((name: string) => snapshot[name]),
+        setFieldValue: vi.fn((name: string, value: unknown) => {
+            snapshot[name] = value;
+        })
     }) as unknown as FormInstance;
 
 describe('volunteer-feeding-form', () => {
@@ -73,6 +81,83 @@ describe('volunteer-feeding-form', () => {
                 ]
             })
         );
+    });
+
+    it('restores feeding snapshot after child checkbox is toggled off', () => {
+        const form = createMockForm({
+            feed_type: 1,
+            paid_arrivals: [],
+            arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }]
+        });
+
+        const savedSnapshot = applyChildFeedingToggle({
+            checked: true,
+            form,
+            feedTypes,
+            childFeedTypeId: 3,
+            snapshot: null
+        });
+
+        expect(form.getFieldValue('feed_type')).toBe(3);
+        expect(form.getFieldValue('paid_arrivals')).toEqual([]);
+        expect(savedSnapshot).toEqual({
+            feed_type: 1,
+            paid_arrivals: []
+        } satisfies FeedingFormSnapshot);
+
+        applyChildFeedingToggle({
+            checked: false,
+            form,
+            feedTypes,
+            childFeedTypeId: 3,
+            snapshot: savedSnapshot
+        });
+
+        expect(form.getFieldValue('feed_type')).toBe(1);
+        expect(form.getFieldValue('paid_arrivals')).toEqual([]);
+    });
+
+    it('restores paid calendar configuration after accidental child toggle', () => {
+        const paidArrivals = [
+            {
+                id: 'paid-1',
+                arrival_date: '2026-07-15',
+                departure_date: '2026-07-16',
+                is_free: false
+            },
+            {
+                id: 'free-1',
+                arrival_date: '2026-06-20',
+                departure_date: '2026-06-20',
+                is_free: true
+            }
+        ];
+        const form = createMockForm({
+            feed_type: 2,
+            paid_arrivals: paidArrivals,
+            arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-19', status: 'ARRIVED' }]
+        });
+
+        const savedSnapshot = captureFeedingFormSnapshot(form);
+
+        applyChildFeedingToggle({
+            checked: true,
+            form,
+            feedTypes,
+            childFeedTypeId: 3,
+            snapshot: null
+        });
+
+        applyChildFeedingToggle({
+            checked: false,
+            form,
+            feedTypes,
+            childFeedTypeId: 3,
+            snapshot: savedSnapshot
+        });
+
+        expect(form.getFieldValue('feed_type')).toBe(2);
+        expect(form.getFieldValue('paid_arrivals')).toEqual(paidArrivals);
     });
 
     it('passes through CHILD from feed_type in form', () => {

@@ -7,6 +7,8 @@ import { useScreen } from 'shared/providers';
 
 import { FeedingCalendarMobileCarousel } from './feeding-calendar-mobile-carousel';
 import {
+    canApplyFeedingPaintToDate,
+    canInteractWithFeedingCalendarDate,
     cloneFeedingDateSets,
     FEEDING_SUMMER_MONTHS,
     formatFeedingDateKey,
@@ -59,6 +61,7 @@ function MonthPanel({
     paidDates,
     stayFreeDates,
     activeArrivalDates,
+    paintableArrivalDates,
     activeMode,
     disabled,
     isPainting,
@@ -70,6 +73,7 @@ function MonthPanel({
     paidDates: Set<string>;
     stayFreeDates: Set<string>;
     activeArrivalDates: Set<string>;
+    paintableArrivalDates: Set<string>;
     activeMode: FeedingDateKind;
     disabled?: boolean;
     isPainting: boolean;
@@ -99,12 +103,21 @@ function MonthPanel({
                     const isFestivalFree = freeDates.has(dateKey) && !isStayFree;
                     const isPaid = paidDates.has(dateKey);
                     const isActiveArrival = activeArrivalDates.has(dateKey);
+                    const isPaintableArrival = paintableArrivalDates.has(dateKey);
+                    const canInteract = canInteractWithFeedingCalendarDate({
+                        dateKey,
+                        mode: activeMode,
+                        paintableArrivalDates,
+                        freeDates,
+                        paidDates
+                    });
                     const cellClassName = [
                         styles.dayCell,
                         isStayFree ? styles.dayCellFreeStay : '',
                         isFestivalFree ? styles.dayCellFreeFestival : '',
                         isPaid ? styles.dayCellPaid : '',
                         isActiveArrival ? styles.dayCellActiveArrival : '',
+                        !isPaintableArrival && !isFestivalFree && !isPaid ? styles.dayCellOutsideArrival : '',
                         isPainting ? styles.dayCellPainting : ''
                     ]
                         .filter(Boolean)
@@ -115,7 +128,7 @@ function MonthPanel({
                             key={key}
                             type="button"
                             className={cellClassName}
-                            disabled={disabled}
+                            disabled={disabled || !canInteract}
                             aria-pressed={isStayFree || isFestivalFree || isPaid}
                             aria-label={`${day} ${panelValue.format('MMMM')}${
                                 isStayFree
@@ -223,6 +236,18 @@ export function FeedingCalendar({
                 return;
             }
 
+            if (
+                !canInteractWithFeedingCalendarDate({
+                    dateKey,
+                    mode: activeMode,
+                    paintableArrivalDates: resolvedActiveArrivalDates,
+                    freeDates,
+                    paidDates
+                })
+            ) {
+                return;
+            }
+
             isPaintingRef.current = true;
             setIsPainting(true);
             paintedKeysRef.current = new Set([dateKey]);
@@ -245,7 +270,7 @@ export function FeedingCalendar({
                 })
             );
         },
-        [activeMode, calendarDisabled, freeDates, paidDates, resolvedStayFreeDates]
+        [activeMode, calendarDisabled, freeDates, paidDates, resolvedActiveArrivalDates, resolvedStayFreeDates]
     );
 
     const handleDatePaintEnter = useCallback(
@@ -258,18 +283,29 @@ export function FeedingCalendar({
                 return;
             }
 
+            const action = paintActionRef.current ?? 'apply';
+            if (
+                action === 'apply' &&
+                !canApplyFeedingPaintToDate({
+                    dateKey,
+                    paintableArrivalDates: resolvedActiveArrivalDates
+                })
+            ) {
+                return;
+            }
+
             paintedKeysRef.current.add(dateKey);
             setPaintDraft((previousDraft) => {
                 const base = cloneFeedingDateSets(previousDraft ?? { freeDates, paidDates });
                 return paintFeedingDate({
                     dateKey,
                     mode: activeMode,
-                    action: paintActionRef.current ?? 'apply',
+                    action,
                     ...base
                 });
             });
         },
-        [activeMode, calendarDisabled, freeDates, paidDates, resolvedStayFreeDates]
+        [activeMode, calendarDisabled, freeDates, paidDates, resolvedActiveArrivalDates, resolvedStayFreeDates]
     );
 
     useEffect(() => {
@@ -289,6 +325,7 @@ export function FeedingCalendar({
             paidDates={displaySets.paidDates}
             stayFreeDates={resolvedStayFreeDates}
             activeArrivalDates={resolvedActiveArrivalDates}
+            paintableArrivalDates={resolvedActiveArrivalDates}
             activeMode={activeMode}
             disabled={calendarDisabled}
             isPainting={isPainting}
@@ -320,6 +357,7 @@ export function FeedingCalendar({
             <p className={styles.legendHint}>
                 Выберите режим и проведите по датам с зажатой кнопкой мыши: по пустым — выделить, по уже выделенным того
                 же цвета — снять. Один клик переключает день. Дни «за счёт фестиваля» и «платно» не пересекаются.
+                Раскрашивать можно только даты заезда с обводкой на календаре.
             </p>
         </div>
     );

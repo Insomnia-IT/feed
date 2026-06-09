@@ -50,6 +50,25 @@ export function isDateInFeedingMode(params: {
     return params.mode === 'free' ? params.freeDates.has(params.dateKey) : params.paidDates.has(params.dateKey);
 }
 
+/** Можно закрасить день в активном режиме (только даты заезда с обводкой на календаре). */
+export function canApplyFeedingPaintToDate(params: { dateKey: string; paintableArrivalDates: Set<string> }): boolean {
+    return params.paintableArrivalDates.has(params.dateKey);
+}
+
+/** Можно взаимодействовать с днём: закрасить в диапазоне заезда или снять уже выставленную отметку. */
+export function canInteractWithFeedingCalendarDate(params: {
+    dateKey: string;
+    mode: FeedingDateKind;
+    paintableArrivalDates: Set<string>;
+    freeDates: Set<string>;
+    paidDates: Set<string>;
+}): boolean {
+    return (
+        canApplyFeedingPaintToDate({ dateKey: params.dateKey, paintableArrivalDates: params.paintableArrivalDates }) ||
+        isDateInFeedingMode(params)
+    );
+}
+
 /** Действие протягивания: снять отметку, если начали с уже выделенного дня. */
 export function resolvePaintAction(params: {
     dateKey: string;

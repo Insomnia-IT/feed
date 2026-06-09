@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import {
     applyFeedingModeToDate,
     buildActiveArrivalDateKeys,
+    canApplyFeedingPaintToDate,
+    canInteractWithFeedingCalendarDate,
     paintFeedingDate,
     resolvePaintAction,
     isFreeFeedingDuringStayChecked,
@@ -612,6 +614,57 @@ describe('feeding-calendar-utils', () => {
                 feedTypeId: 1,
                 paidArrivals: [{ arrival_date: '2026-07-01', departure_date: '2026-07-01', is_free: true }],
                 arrivals: [{ arrival_date: '2026-06-10', departure_date: '2026-06-12' }]
+            })
+        ).toBe(false);
+    });
+
+    it('allows painting only inside arrival outline dates', () => {
+        const paintableArrivalDates = new Set(['2026-06-10', '2026-06-11']);
+
+        expect(
+            canApplyFeedingPaintToDate({
+                dateKey: '2026-06-10',
+                paintableArrivalDates
+            })
+        ).toBe(true);
+        expect(
+            canApplyFeedingPaintToDate({
+                dateKey: '2026-06-20',
+                paintableArrivalDates
+            })
+        ).toBe(false);
+    });
+
+    it('allows interaction outside arrival only to remove existing marks', () => {
+        const paintableArrivalDates = new Set(['2026-06-10']);
+        const freeDates = new Set(['2026-06-20']);
+        const paidDates = new Set<string>();
+
+        expect(
+            canInteractWithFeedingCalendarDate({
+                dateKey: '2026-06-10',
+                mode: 'free',
+                paintableArrivalDates,
+                freeDates,
+                paidDates
+            })
+        ).toBe(true);
+        expect(
+            canInteractWithFeedingCalendarDate({
+                dateKey: '2026-06-20',
+                mode: 'free',
+                paintableArrivalDates,
+                freeDates,
+                paidDates
+            })
+        ).toBe(true);
+        expect(
+            canInteractWithFeedingCalendarDate({
+                dateKey: '2026-06-21',
+                mode: 'free',
+                paintableArrivalDates,
+                freeDates,
+                paidDates
             })
         ).toBe(false);
     });

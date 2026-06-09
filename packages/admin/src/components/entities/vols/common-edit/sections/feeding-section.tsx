@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Form, Select, Checkbox } from 'antd';
 import { useLocation } from 'react-router';
 
@@ -7,15 +7,9 @@ import type { ArrivalEntity, FeedTypeEntity } from 'interfaces';
 
 import styles from '../../common.module.css';
 import { FeedingCalendarField } from './feeding-calendar-field';
-import {
-    applyFeedTypeFromCalendar,
-    coerceFeedTypeId,
-    getDateKeysFromArrivals,
-    intervalsToDateSets,
-    resolveFeedTypeId
-} from './feeding-calendar-utils';
+import { coerceFeedTypeId, getDateKeysFromArrivals, resolveFeedTypeId } from './feeding-calendar-utils';
 import type { PaidArrivalFormInterval } from './feeding-calendar-utils';
-import { applyFeedTypeSelectChange } from './volunteer-feeding-form';
+import { applyChildFeedingToggle, applyFeedTypeSelectChange, type FeedingFormSnapshot } from './volunteer-feeding-form';
 import { FeedingCalendarReadinessReporter } from '../../volunteer-form-readiness/feeding-calendar-readiness-reporter';
 import { useVolunteerFormReadinessGate, VOLUNTEER_FORM_READINESS_GATES } from '../../volunteer-form-readiness';
 
@@ -31,6 +25,7 @@ export const FeedingSection = ({
     feedTypes: FeedTypeEntity[];
 }) => {
     const form = Form.useFormInstance();
+    const feedingSnapshotBeforeChildRef = useRef<FeedingFormSnapshot | null>(null);
     const { pathname } = useLocation();
     const isCreationProcess = pathname.includes('create');
     const feedTypeId = Form.useWatch('feed_type', form);
@@ -93,25 +88,13 @@ export const FeedingSection = ({
     };
 
     const handleChildChange = (checked: boolean) => {
-        if (checked) {
-            if (childFeedTypeId !== undefined) {
-                form.setFieldValue('feed_type', childFeedTypeId);
-            }
-            form.setFieldValue('paid_arrivals', []);
-            return;
-        }
-
-        const { freeDates, paidDates } = intervalsToDateSets(paidArrivals);
-        form.setFieldValue(
-            'feed_type',
-            applyFeedTypeFromCalendar({
-                freeDates,
-                paidDates,
-                isChild: false,
-                arrivals,
-                feedTypes
-            })
-        );
+        feedingSnapshotBeforeChildRef.current = applyChildFeedingToggle({
+            checked,
+            form,
+            feedTypes,
+            childFeedTypeId,
+            snapshot: feedingSnapshotBeforeChildRef.current
+        });
     };
 
     return (
