@@ -3,6 +3,8 @@ import { useTranslate, useWarnAboutChange } from '@refinedev/core';
 import { Button, Modal } from 'antd';
 import { UNSAFE_NavigationContext as NavigationContext, useLocation } from 'react-router';
 
+import { useModalEnterSubmit } from 'shared/hooks';
+
 import { installNavigationBlocker, type PendingNavigation } from './block-navigation';
 import { useUnsavedChangesSaveContext } from './unsaved-changes-save-context';
 import { setUnsavedChangesNavigationGuard } from './unsaved-changes-navigation-guard';
@@ -114,6 +116,8 @@ export const UnsavedChangesNotifier = ({
         getSaveHandler()?.();
     }, [getSaveHandler]);
 
+    useModalEnterSubmit({ open: modalOpen, onSubmit: handleSave });
+
     return (
         <Modal
             title="Несохранённые изменения"
@@ -126,10 +130,14 @@ export const UnsavedChangesNotifier = ({
             wrapClassName={styles.modalWrap}
             footer={
                 <div className={styles.footer}>
-                    <Button onClick={handleLeaveWithoutSaving}>Выйти без сохранения</Button>
+                    <Button htmlType="button" onClick={handleLeaveWithoutSaving}>
+                        Выйти без сохранения
+                    </Button>
                     <div className={styles.footerRight}>
-                        <Button onClick={handleStay}>Остаться в карточке</Button>
-                        <Button type="primary" onClick={handleSave}>
+                        <Button htmlType="button" onClick={handleStay}>
+                            Остаться в карточке
+                        </Button>
+                        <Button type="primary" htmlType="button" onClick={handleSave}>
                             Сохранить изменения
                         </Button>
                     </div>

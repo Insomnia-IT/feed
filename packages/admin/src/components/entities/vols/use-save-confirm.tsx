@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
-import { useState, type JSX } from 'react';
+import { useCallback, useState, type JSX } from 'react';
 import { Modal, type ButtonProps, type FormInstance } from 'antd';
 
 import { dataProvider } from 'dataProvider';
+import { useModalEnterSubmit } from 'shared/hooks';
 import type { FeedTypeEntity, VolCustomFieldValueEntity } from 'interfaces';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
 import { syncVolunteerFeedingFields } from './common-edit/sections/volunteer-feeding-form';
@@ -30,15 +31,20 @@ const useSaveConfirm = (
         }
     };
 
-    const handleOk = () => {
+    const handleOk = useCallback(() => {
         setShowConfirmationModalReason(null);
         syncFeedingBeforeSave();
         saveButtonProps?.onClick();
-    };
+    }, [form, options?.feedTypes, saveButtonProps]);
 
-    const handleCancel = () => {
+    const handleCancel = useCallback(() => {
         setShowConfirmationModalReason(null);
-    };
+    }, []);
+
+    useModalEnterSubmit({
+        open: showConfirmationModalReason !== null,
+        onSubmit: handleOk
+    });
 
     return {
         onClick: () => {
@@ -111,7 +117,7 @@ const useSaveConfirm = (
                     open={showConfirmationModalReason !== null}
                     onOk={handleOk}
                     onCancel={handleCancel}
-                    okText="Сохранить"
+                    okText="Всё равно сохранить"
                 >
                     {showConfirmationModalReason === 'is_active' && (
                         <>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Button, Form, type FormInstance, Select } from 'antd';
 import { type CrudFilters, useList } from '@refinedev/core';
-import { EyeOutlined } from '@ant-design/icons';
+import { ExportOutlined } from '@ant-design/icons';
 import useCanAccess from '../use-can-access';
 import { useDebouncedCallback } from 'shared/hooks';
 import { AppRoles } from '../../../../auth';
@@ -91,12 +91,16 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
 
             <Form.Item className={connectionsStyles.fieldAction} label=" " colon={false}>
                 <Button
-                    title="Открыть бригадира"
-                    icon={<EyeOutlined />}
+                    title="Открыть бригадира в новой вкладке"
+                    icon={<ExportOutlined />}
                     disabled={!supervisorId}
                     onClick={() => {
                         if (supervisorId) {
-                            window.location.href = `${window.location.origin}/volunteers/edit/${supervisorId}`;
+                            window.open(
+                                `${window.location.origin}/volunteers/edit/${supervisorId}`,
+                                '_blank',
+                                'noopener,noreferrer'
+                            );
                         }
                     }}
                 >
