@@ -7,6 +7,9 @@ import {
     type CompletedVolunteerStatus
 } from '../constants/volunteer-status';
 
+type VolunteerStatusOrderWithArrived = typeof VOLUNTEER_STATUS_ORDER_WITH_ARRIVED;
+type VolunteerStatusOrderBase = typeof VOLUNTEER_STATUS_ORDER_BASE;
+
 const ALL_STATUSES = new Set<VolunteerStatus>(VOLUNTEER_STATUSES);
 
 export const isVolunteerStatus = (value: unknown): value is VolunteerStatus =>
@@ -27,5 +30,8 @@ export const isVolunteerActivatedStatus = (status: VolunteerStatus): boolean => 
 export const isVolunteerActivatedStatusValue = (value: unknown): boolean =>
     isVolunteerStatus(value) && isVolunteerActivatedStatus(value);
 
-export const getVolunteerStatusOrder = (includeArrived: boolean) =>
-    includeArrived ? VOLUNTEER_STATUS_ORDER_WITH_ARRIVED : VOLUNTEER_STATUS_ORDER_BASE;
+export function getVolunteerStatusOrder(includeArrived: true): VolunteerStatusOrderWithArrived;
+export function getVolunteerStatusOrder(includeArrived: false): VolunteerStatusOrderBase;
+export function getVolunteerStatusOrder(includeArrived: boolean) {
+    return includeArrived ? VOLUNTEER_STATUS_ORDER_WITH_ARRIVED : VOLUNTEER_STATUS_ORDER_BASE;
+}
