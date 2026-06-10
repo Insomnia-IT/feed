@@ -81,12 +81,17 @@ class StorageViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     serializer_class = StorageSerializer
     permission_classes = [IsAuthenticated]
 
+class BinFilter(django_filters.FilterSet):
+    class Meta:
+        model = Bin
+        fields = ['storage']
 
 class BinViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = Bin.objects.all()
     serializer_class = BinSerializer
     permission_classes = [IsAuthenticated]
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = BinFilter
 
 class ItemFilter(django_filters.FilterSet):
     storage = django_filters.NumberFilter(method='filter_storage')
