@@ -14,7 +14,7 @@ export default defineConfig({
         // visualizer({ open: true }), // Uncomment to visualize bundle size
         VitePWA({
             registerType: 'autoUpdate',
-            injectRegister: 'inline',
+            injectRegister: null,
             includeAssets: ['favicon.ico', 'favicon-96x96.png', 'apple-touch-icon.png'],
             manifest: {
                 name: 'Admin Front',

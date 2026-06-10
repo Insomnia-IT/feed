@@ -31,6 +31,7 @@ import { ScreenProvider } from 'shared/providers';
 import { authProvider } from 'authProvider';
 import { dataProvider } from 'dataProvider';
 import { AppRoles, type UserData } from 'auth';
+import { useCheckVersion } from 'shared/hooks';
 import { AppRoutes } from './app-routes';
 import { buildDocumentTitle } from './i18n/document-title';
 import { i18nProvider } from './i18n/provider';
@@ -46,6 +47,8 @@ const InitialNavigation = () => {
 };
 
 const App = () => {
+    useCheckVersion();
+
     return (
         <BrowserRouter>
             <ConfigProvider locale={antdLocale} theme={{ token: { borderRadius: 6 } }}>
