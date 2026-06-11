@@ -1,5 +1,5 @@
 service:
-  extensions: [jaeger_storage, jaeger_query]
+  extensions: [jaeger_storage, jaeger_query, healthcheckv2]
   pipelines:
     traces:
       receivers: [otlp]
@@ -28,11 +28,12 @@ extensions:
     storage:
       traces: some_storage
       metrics: some_metrics_storage
+      # traces_archive: another_storage
 
   jaeger_storage:
     backends:
       some_storage:
-        elasticsearch:
+        opensearch:
           tls:
             insecure: true
             insecure_skip_verify: true
@@ -64,7 +65,7 @@ extensions:
               shards: 1
               replicas: 0
       another_storage:
-        elasticsearch:
+        opensearch:
           tls:
             insecure: true
             insecure_skip_verify: true
