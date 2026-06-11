@@ -84,7 +84,7 @@ class create_user():
 
     APPROVER_INPUT = "input[id=approver]"
 
-    FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
+    FIND_INPUT = "input[placeholder='Поиск по волонтерам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
 
     DELETE_USER_BUTTON = "//button[span[text()='Удалить волонтера']]"
