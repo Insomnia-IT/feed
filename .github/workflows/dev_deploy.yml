@@ -28,7 +28,7 @@ jobs:
 # ADMIN
     - name: build admin
       run: |
-          docker compose build \
+          docker compose -f docker-compose.opensearch.yml build \
             --build-arg NEW_API_URL=/feedapi/v1 \
             --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
             --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
