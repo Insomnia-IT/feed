@@ -31,11 +31,11 @@ services:
       context: .
       dockerfile: ./Dockerfile_front
       args:
-        NEW_API_URL: http://localhost:${PORT:-80}/feedapi/v1
+        NEW_API_URL: /feedapi/v1
     container_name: feed_front
     restart: always
     ports:
-      - 0.0.0.0:80:80
+      - ${PORT:-80}:80
     depends_on:
       - backend
   jaeger:
