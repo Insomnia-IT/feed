@@ -39,8 +39,8 @@ extensions:
           server_urls: ["http://opensearch:9200/"]
           auth:
             basic:
-              username: ${env:OPEN_SEARCH_USER_NAME}
-              password: ${env:OPEN_SEARCH_PASSWORD}
+              username: ${OPEN_SEARCH_USER_NAME}
+              password: ${OPEN_SEARCH_PASSWORD}
           indices:
             index_prefix: "jaeger-main"
             spans:
@@ -71,8 +71,8 @@ extensions:
           server_urls: ["http://opensearch:9200/"]
           auth:
             basic:
-              username: ${env:OPEN_SEARCH_USER_NAME}
-              password: ${env:OPEN_SEARCH_PASSWORD}
+              username: ${OPEN_SEARCH_USER_NAME}
+              password: ${OPEN_SEARCH_PASSWORD}
           indices:
             index_prefix: "jaeger-archive"
 
