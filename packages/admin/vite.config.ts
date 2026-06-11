@@ -13,6 +13,7 @@ export default defineConfig({
         }),
         // visualizer({ open: true }), // Uncomment to visualize bundle size
         VitePWA({
+            disable: true,
             registerType: 'autoUpdate',
             injectRegister: 'inline',
             includeAssets: ['favicon.ico', 'favicon-96x96.png', 'apple-touch-icon.png'],
