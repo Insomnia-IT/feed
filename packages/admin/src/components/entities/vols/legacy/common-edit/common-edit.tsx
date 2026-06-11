@@ -59,10 +59,14 @@ export const CommonEdit = () => {
             try {
                 const { data } = await axios.get(`${NEW_API_URL}/persons/${personId}`);
 
-                form.setFieldValue('person_id', personId);
-                form.setFieldValue('person', data);
-                ['first_name', 'last_name', 'name', 'is_vegan', 'gender'].forEach((fieldName) => {
-                    form.setFieldValue(fieldName, data[fieldName]);
+                form.setFieldsValue({
+                    person_id: personId,
+                    person: data,
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    name: data.name,
+                    is_vegan: data.is_vegan,
+                    gender: data.gender
                 });
             } catch (error) {
                 console.error('<CommonEdit> loadPerson', error);

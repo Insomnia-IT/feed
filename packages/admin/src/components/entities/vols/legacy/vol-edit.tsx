@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Edit, useForm } from '@refinedev/antd';
 import { useBreadcrumb } from '@refinedev/core';
@@ -13,6 +13,8 @@ import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 
 import { useRegisterVolunteerCardUiBannerForm } from '../volunteer-card-ui-banner-context';
+import { VolunteerPersonBannedSync } from '../volunteer-person-banned-sync';
+import { VolunteerPersonBlacklistBadge } from '../volunteer-person-blacklist-badge';
 
 import styles from './common.module.css';
 
@@ -75,8 +77,11 @@ export const VolEditLegacy = () => {
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
-    const person = Form.useWatch('person', form);
     const isDeleted = Form.useWatch('deleted_at', form);
+    const [personBanned, setPersonBanned] = useState(false);
+    const handlePersonBannedChange = useCallback((banned: boolean) => {
+        setPersonBanned(banned);
+    }, []);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
 
@@ -107,11 +112,7 @@ export const VolEditLegacy = () => {
                             <span className={styles.bannedDescr}>Заблокирован</span>
                         </div>
                     )}
-                    {person?.banned && (
-                        <div className={styles.bannedWrap}>
-                            <span className={styles.bannedDescr}>Чёрный список</span>
-                        </div>
-                    )}
+                    {personBanned && <VolunteerPersonBlacklistBadge />}
                     {isDeleted && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Удален</span>
@@ -129,6 +130,7 @@ export const VolEditLegacy = () => {
             }}
         >
             <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
+                <VolunteerPersonBannedSync onBannedChange={handlePersonBannedChange} />
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {renderModal()}

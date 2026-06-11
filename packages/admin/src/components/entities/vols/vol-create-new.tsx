@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { useList, useTranslate } from '@refinedev/core';
 import { SaveOutlined } from '@ant-design/icons';
@@ -15,6 +15,8 @@ import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed
 import { createVolunteerFormOnFinish } from './common-edit/sections/volunteer-feeding-form';
 import { useVolunteerFormBaselineReady, VolunteerFormReadinessProvider } from './volunteer-form-readiness';
 import { useRegisterVolunteerCardUiBannerForm } from './volunteer-card-ui-banner-context';
+import { VolunteerPersonBannedSync } from './volunteer-person-banned-sync';
+import { VolunteerPersonBlacklistBadge } from './volunteer-person-blacklist-badge';
 
 import styles from './common.module.css';
 
@@ -109,7 +111,10 @@ const VolCreateContent = ({
     );
 
     const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);
-    const person = Form.useWatch('person', form);
+    const [personBanned, setPersonBanned] = useState(false);
+    const handlePersonBannedChange = useCallback((banned: boolean) => {
+        setPersonBanned(banned);
+    }, []);
 
     return (
         <Create
@@ -120,11 +125,7 @@ const VolCreateContent = ({
             title={
                 <div className={styles.pageTitleMain}>
                     <span className={styles.pageTitleText}>Создание волонтера</span>
-                    {person?.banned && (
-                        <div className={styles.bannedWrap}>
-                            <span className={styles.bannedDescr}>Чёрный список</span>
-                        </div>
-                    )}
+                    {personBanned && <VolunteerPersonBlacklistBadge />}
                 </div>
             }
             saveButtonProps={{
@@ -145,6 +146,7 @@ const VolCreateContent = ({
                 layout="vertical"
                 onFinishFailed={handleFinishFailed}
             >
+                <VolunteerPersonBannedSync onBannedChange={handlePersonBannedChange} />
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {showFloatingSave && (

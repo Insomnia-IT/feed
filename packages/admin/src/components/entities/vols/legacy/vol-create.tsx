@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { Form, type FormProps } from 'antd';
 
@@ -9,6 +9,8 @@ import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 import { useRegisterVolunteerCardUiBannerForm } from '../volunteer-card-ui-banner-context';
+import { VolunteerPersonBannedSync } from '../volunteer-person-banned-sync';
+import { VolunteerPersonBlacklistBadge } from '../volunteer-person-blacklist-badge';
 
 import styles from './common.module.css';
 
@@ -38,7 +40,10 @@ export const VolCreateLegacy = () => {
         upstreamOnFinishFailed
     );
     const shouldHideFooterActions = !isDesktop && activeKey !== '1';
-    const person = Form.useWatch('person', form);
+    const [personBanned, setPersonBanned] = useState(false);
+    const handlePersonBannedChange = useCallback((banned: boolean) => {
+        setPersonBanned(banned);
+    }, []);
 
     return (
         <Create
@@ -56,15 +61,12 @@ export const VolCreateLegacy = () => {
             title={
                 <div className={styles.pageTitle}>
                     Создание волонтера
-                    {person?.banned && (
-                        <div className={styles.bannedWrap}>
-                            <span className={styles.bannedDescr}>Чёрный список</span>
-                        </div>
-                    )}
+                    {personBanned && <VolunteerPersonBlacklistBadge />}
                 </div>
             }
         >
             <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
+                <VolunteerPersonBannedSync onBannedChange={handlePersonBannedChange} />
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {renderModal()}

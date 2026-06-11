@@ -250,6 +250,20 @@
 (новый UI), `legacy/*` (снимок с `main`), `volunteer-card-legacy-ui.ts`,
 `volunteer-card-ui-switch.tsx`, `volunteer-card-ui-banner-context.tsx`.
 
+## Плашка «Чёрный список» (ЧС)
+
+Если у связанной **person** поле `banned === true`, в заголовке карточки (создание и
+редактирование, новый и прежний UI) показывается красная плашка «Чёрный список». В
+таблице поиска person в колонке «ЧС» — та же логика (иконка запрета).
+
+При создании волонтёра из таблицы person (`/volunteers/create?person_id=…`) данные person
+подгружаются асинхронно в `CommonEdit`. Плашка синхронизируется через
+`VolunteerPersonBannedSync` внутри `<Form>` (скрытый `Form.Item name="person"`), потому что
+`Form.useWatch` в заголовке `<Create>`/`<Edit>` вне формы не получает обновление после
+`setFieldsValue`.
+
+Файлы: `volunteer-person-banned-sync.tsx`, `volunteer-person-blacklist-badge.tsx`.
+
 ## Список волонтёров (таблица)
 
 Страница `/volunteers`, desktop-таблица с массовым выбором (`bulk_edit`).
