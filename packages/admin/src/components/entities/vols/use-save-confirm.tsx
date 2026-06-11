@@ -25,17 +25,19 @@ const useSaveConfirm = (
         null
     );
 
-    const syncFeedingBeforeSave = () => {
-        if (options?.feedTypes?.length) {
-            syncVolunteerFeedingFields({ form, feedTypes: options.feedTypes });
+    const feedTypes = options?.feedTypes;
+
+    const syncFeedingBeforeSave = useCallback(() => {
+        if (feedTypes?.length) {
+            syncVolunteerFeedingFields({ form, feedTypes });
         }
-    };
+    }, [feedTypes, form]);
 
     const handleOk = useCallback(() => {
         setShowConfirmationModalReason(null);
         syncFeedingBeforeSave();
         saveButtonProps?.onClick();
-    }, [form, options?.feedTypes, saveButtonProps]);
+    }, [saveButtonProps, syncFeedingBeforeSave]);
 
     const handleCancel = useCallback(() => {
         setShowConfirmationModalReason(null);

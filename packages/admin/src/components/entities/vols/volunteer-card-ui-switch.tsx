@@ -90,7 +90,7 @@ export const VolunteerCardUiTopBanner = ({ mode }: VolunteerCardUiTopBannerProps
                         size="small"
                         icon={<SwapOutlined />}
                         className={styles.topBannerAction}
-                        onClick={() => requestSwitch(!isLegacyMode, bannerFormContext?.formRef.current)}
+                        onClick={() => requestSwitch(!isLegacyMode, bannerFormContext?.getForm())}
                     >
                         {actionLabel}
                     </Button>
