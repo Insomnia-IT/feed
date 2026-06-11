@@ -1,10 +1,6 @@
 import { useEffect } from 'react';
 import { Form } from 'antd';
 
-import type { PersonEntity } from 'interfaces';
-
-const HiddenPersonField = (_props: { value?: PersonEntity | null }) => null;
-
 type VolunteerPersonBannedSyncProps = {
     onBannedChange: (banned: boolean) => void;
 };
@@ -24,7 +20,7 @@ export const VolunteerPersonBannedSync = ({ onBannedChange }: VolunteerPersonBan
 
     return (
         <Form.Item name="person" hidden noStyle preserve>
-            <HiddenPersonField />
+            <span aria-hidden="true" />
         </Form.Item>
     );
 };
