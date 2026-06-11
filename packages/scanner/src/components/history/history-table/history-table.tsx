@@ -1,11 +1,11 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import dayjs from 'dayjs';
 import { WarningFilled } from '@ant-design/icons';
 
-import { Text } from '~/shared/ui/typography';
-import type { TransactionJoined } from '~/db';
-import { Cell, HeadCell, Row, Table, TBody, THead } from '~/shared/ui/table';
-import { mealTimes } from '~/shared/lib/utils';
+import { Text } from 'shared/ui/typography';
+import type { TransactionJoined } from 'db';
+import { Cell, HeadCell, Row, Table, TBody, THead } from 'shared/ui/table';
+import { mealTimes } from 'shared/lib/utils';
 
 import css from './history-table.module.css';
 
@@ -29,12 +29,12 @@ export const HistoryTable = memo(function HistoryTable({ transactions }: History
             <Table className={css.table}>
                 <THead>
                     <Row>
-                        <HeadCell className={css.first} scope='col'>
+                        <HeadCell className={css.first} scope="col">
                             Волонтер
                         </HeadCell>
-                        <HeadCell scope='col'>Приём пищи</HeadCell>
-                        <HeadCell scope='col'>Тип и кол-во</HeadCell>
-                        <HeadCell scope='col'>Время</HeadCell>
+                        <HeadCell scope="col">Приём пищи</HeadCell>
+                        <HeadCell scope="col">Тип и кол-во</HeadCell>
+                        <HeadCell scope="col">Время</HeadCell>
                     </Row>
                 </THead>
                 <TBody>

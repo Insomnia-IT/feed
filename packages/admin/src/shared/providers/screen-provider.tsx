@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useMemo } from 'react';
+import { createContext, type PropsWithChildren, useContext, useMemo } from 'react';
 import { Grid } from 'antd';
-import { Breakpoint } from 'antd/es/_util/responsiveObserver';
+import type { Breakpoint } from 'antd/es/_util/responsiveObserver';
 
 interface ScreenCtx {
     isMobile: boolean;
@@ -23,7 +23,7 @@ function calcFlags(breakpoint: Partial<Record<Breakpoint, boolean>>): ScreenCtx 
     return { breakpoint, isMobile, isTablet, isDesktop };
 }
 
-export const ScreenProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const ScreenProvider = ({ children }: PropsWithChildren) => {
     const breakpoint = Grid.useBreakpoint();
     const value = useMemo(() => calcFlags(breakpoint), [breakpoint]);
     return <ScreenContext.Provider value={value}>{children}</ScreenContext.Provider>;

@@ -1,8 +1,6 @@
-import type { FC } from 'react';
-import React from 'react';
 import cn from 'classnames';
 
-import { Text } from '~/shared/ui/typography';
+import { Text } from 'shared/ui/typography';
 
 import { ScannerComment } from '../scanner-comment/scanner-comment';
 
@@ -13,7 +11,7 @@ interface BureauCommentProps {
     variant?: 'white' | 'red';
 }
 
-export const BureauComment: FC<BureauCommentProps> = ({ text, variant = 'red' }) => (
+export const BureauComment = ({ text, variant = 'red' }: BureauCommentProps) => (
     <div className={cn(css.bureauComment, css[variant])}>
         <Text className={css.title}>От Бюро:</Text>
         <ScannerComment text={text} variant={variant} />

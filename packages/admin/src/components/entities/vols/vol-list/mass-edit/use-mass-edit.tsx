@@ -1,13 +1,17 @@
 import { useCallback, useState } from 'react';
-import { Checkbox, TableProps } from 'antd';
+import { Checkbox, type TableProps } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 import type { VolEntity } from 'interfaces';
 import { dataProvider } from 'dataProvider';
 
+import styles from './mass-edit.module.css';
+import { useVolunteerTableSelection } from './use-volunteer-table-selection';
+
 interface UseMassEditParams {
     totalVolunteersCount: number;
     filterQueryParams: string;
+    visibleVolunteers: VolEntity[];
 }
 
 interface UseMassEditResult {
@@ -16,9 +20,14 @@ interface UseMassEditResult {
     unselectAllSelected: () => void;
     unselectVolunteer: (volunteer: VolEntity) => void;
     rowSelection: TableProps<VolEntity>['rowSelection'];
+    isSelectionDragging: boolean;
 }
 
-export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMassEditParams): UseMassEditResult => {
+export const useMassEdit = ({
+    totalVolunteersCount,
+    filterQueryParams,
+    visibleVolunteers
+}: UseMassEditParams): UseMassEditResult => {
     const [selectedVols, setSelectedVols] = useState<VolEntity[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -30,9 +39,11 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
         setSelectedVols([]);
     };
 
-    const onVolunteerSelection = useCallback((vol: VolEntity, isSelected: boolean) => {
-        setSelectedVols((prev) => (isSelected ? [...prev, vol] : prev.filter((v) => v.id !== vol.id)));
-    }, []);
+    const { isSelectionDragging, renderSelectionCell } = useVolunteerTableSelection({
+        selectedVols,
+        setSelectedVols,
+        visibleVolunteers
+    });
 
     const handleSelectAllToggle = useCallback(async () => {
         if (isAllSelected) {
@@ -44,7 +55,7 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
         try {
             const { data } = await dataProvider.getList<VolEntity>({
                 resource: `volunteers/${filterQueryParams}`,
-                pagination: { current: 1, pageSize: 0 }
+                pagination: { currentPage: 1, pageSize: 0 }
             });
 
             setSelectedVols(data);
@@ -54,11 +65,11 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
     }, [isAllSelected, filterQueryParams]);
 
     const rowSelection: TableProps<VolEntity>['rowSelection'] = {
-        onSelect: onVolunteerSelection,
         selectedRowKeys,
-        getCheckboxProps: (record) => ({ name: record.name }),
+        getCheckboxProps: (record) => ({ name: record.name ?? undefined }),
+        renderCell: renderSelectionCell,
         columnTitle: (
-            <>
+            <span className={styles.selectionColumnTitle}>
                 <Checkbox
                     style={isLoading ? { display: 'none' } : undefined}
                     checked={isAllSelected}
@@ -68,7 +79,7 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
                     onChange={handleSelectAllToggle}
                 />
                 {isLoading ? <LoadingOutlined /> : null}
-            </>
+            </span>
         )
     };
 
@@ -91,6 +102,9 @@ export const useMassEdit = ({ totalVolunteersCount, filterQueryParams }: UseMass
         rowSelection,
         selectedVols,
         unselectAllSelected,
-        unselectVolunteer: (vol) => onVolunteerSelection(vol, false)
+        isSelectionDragging,
+        unselectVolunteer: (vol) => {
+            setSelectedVols((prev) => prev.filter((item) => item.id !== vol.id));
+        }
     };
 };

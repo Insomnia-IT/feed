@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
-import { BaseKey, useGetIdentity, useOne, useUpdate, useCreate } from '@refinedev/core';
+import { useDataProvider, useGetIdentity, useNotification, useOne } from '@refinedev/core';
+import type { BaseKey } from '@refinedev/core';
 import dayjs, { type Dayjs } from 'dayjs';
-import { AppRoles, type UserData } from 'auth';
-import { type GroupBadgeEntity, MealPlanCell } from '../../../interfaces';
+import { AppRoles, isAppRole, type AppRole, type UserData } from 'auth';
+import type { GroupBadgeEntity, MealPlanCell } from 'interfaces';
 
 export const MESSAGES = {
     PAST_DATE: 'Нельзя редактировать прошедшие даты',
-    AFTER_21: 'После 21:00 следующий день можно редактировать только через бюро',
-    DEFAULT: 'Редактирование недоступно'
+    AFTER_21: 'После 21:00 следующий день можно редактировать только через бюро'
 } as const;
 
 const DISPLAY_END_DAYS_AHEAD = 3;
@@ -15,9 +15,9 @@ const JULY_MONTH_INDEX = 6;
 
 export type MealTypeKey = 'breakfast' | 'lunch' | 'dinner';
 
-export type MealAmounts = { amount_meat: number | null; amount_vegan: number | null } | null;
+type MealAmounts = { amount_meat: number | null; amount_vegan: number | null } | null;
 
-export interface EditabilityResult {
+interface EditabilityResult {
     editable: boolean;
     message?: string;
 }
@@ -34,7 +34,7 @@ export const createDateHelpers = () => {
     };
 };
 
-export const checkDateEditability = (date: Dayjs, role?: AppRoles): EditabilityResult => {
+export const checkDateEditability = (date: Dayjs, role?: AppRole): EditabilityResult => {
     const { yesterday, today, tomorrow, currentHour } = createDateHelpers();
 
     if (date.isSame(yesterday, 'day') || date.isBefore(yesterday, 'day')) {
@@ -42,11 +42,11 @@ export const checkDateEditability = (date: Dayjs, role?: AppRoles): EditabilityR
     }
 
     if (role === AppRoles.DIRECTION_HEAD) {
-        if (date.isSame(today, 'day')) {
-            return { editable: true };
-        }
         if (date.isSame(tomorrow, 'day') && currentHour >= 21) {
             return { editable: false, message: MESSAGES.AFTER_21 };
+        }
+        if (date.isSame(today, 'day')) {
+            return { editable: false };
         }
     }
 
@@ -86,7 +86,7 @@ export const forwardFillMeals = ({
     grouped: Map<string, SimpleMealPlanCell[]>;
     firstDate: Dayjs;
     lastDate: Dayjs;
-    role?: AppRoles;
+    role?: AppRole;
 }): MealPlanRowRender[] => {
     const lastMealValues: Record<MealTypeKey, MealAmounts> = {
         breakfast: getDefaultMealValue(),
@@ -100,10 +100,14 @@ export const forwardFillMeals = ({
     while (!currentDate.isAfter(lastDate, 'day')) {
         const dateStr = currentDate.format('YYYY-MM-DD');
         const existingRows = grouped.get(dateStr) || [];
+        const rowsByMealTime: Partial<Record<MealTypeKey, SimpleMealPlanCell>> = {};
+        for (const row of existingRows) {
+            rowsByMealTime[row.meal_time as MealTypeKey] = row;
+        }
 
-        const breakfast = existingRows.find((row) => row.meal_time === 'breakfast');
-        const lunch = existingRows.find((row) => row.meal_time === 'lunch');
-        const dinner = existingRows.find((row) => row.meal_time === 'dinner');
+        const breakfast = rowsByMealTime.breakfast;
+        const lunch = rowsByMealTime.lunch;
+        const dinner = rowsByMealTime.dinner;
 
         const filledBreakfast = breakfast
             ? { amount_meat: breakfast.amount_meat, amount_vegan: breakfast.amount_vegan }
@@ -145,7 +149,7 @@ export const forwardFillMeals = ({
     return result;
 };
 
-export const transformToRenderData = (data: SimpleMealPlanCell[], role?: AppRoles): MealPlanRowRender[] => {
+export const transformToRenderData = (data: SimpleMealPlanCell[], role?: AppRole): MealPlanRowRender[] => {
     let tempData = data;
 
     if (data.length === 0) {
@@ -165,7 +169,7 @@ export const transformToRenderData = (data: SimpleMealPlanCell[], role?: AppRole
     return forwardFillMeals({ grouped, firstDate, lastDate, role });
 };
 
-export const fillMissingDates = (data: MealPlanRowRender[], role?: AppRoles): MealPlanRowRender[] => {
+export const fillMissingDates = (data: MealPlanRowRender[], role?: AppRole): MealPlanRowRender[] => {
     if (data.length === 0) {
         return data;
     }
@@ -257,19 +261,26 @@ const getDefaultCells = (): SimpleMealPlanCell[] => [
 ];
 
 export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlanDataReturn => {
-    const { data, refetch } = useOne<GroupBadgeEntity>({ resource: 'group-badges', id });
-
-    const { mutateAsync: updateCell, isLoading: isUpdating } = useUpdate();
-    const { mutateAsync: createCell, isLoading: isCreating } = useCreate();
+    const { result: groupBadge, query } = useOne<GroupBadgeEntity>({ resource: 'group-badges', id });
+    const dataProvider = useDataProvider();
+    const { open = () => {} } = useNotification();
 
     const { data: user } = useGetIdentity<UserData>();
-    const role = user?.roles?.[0];
+    const role = user?.roles?.find(isAppRole);
 
     const [showAll, setShowAll] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const existingCellByKey = useMemo(
+        () =>
+            new Map(
+                (groupBadge?.planning_cells ?? []).map((cell) => [`${cell.date}:${cell.meal_time}`, cell] as const)
+            ),
+        [groupBadge?.planning_cells]
+    );
 
     const renderData = useMemo(
-        () => fillMissingDates(transformToRenderData(data?.data?.planning_cells ?? []), role),
-        [data, role]
+        () => fillMissingDates(transformToRenderData(groupBadge?.planning_cells ?? [], role), role),
+        [groupBadge, role]
     );
 
     const displayData = useMemo(() => filterDisplayData(renderData, showAll), [renderData, showAll]);
@@ -291,10 +302,7 @@ export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlan
             }
 
             const dateStr = date.format('YYYY-MM-DD');
-            const planningCells = data?.data?.planning_cells ?? [];
-
-            // Find existing cell
-            const existingCell = planningCells.find((cell) => cell.date === dateStr && cell.meal_time === mealTypeKey);
+            const existingCell = existingCellByKey.get(`${dateStr}:${mealTypeKey}`);
 
             const payload = {
                 group_badge: id as number,
@@ -305,28 +313,37 @@ export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlan
             };
 
             try {
+                setIsSaving(true);
+
                 if (existingCell) {
-                    // Update existing cell
-                    await updateCell({
+                    await dataProvider().update({
                         resource: 'group-badge-planning-cells',
-                        id: existingCell.id,
-                        values: payload
+                        id: existingCell.id as number,
+                        variables: payload
                     });
                 } else {
-                    // Create new cell
-                    await createCell({
+                    await dataProvider().create({
                         resource: 'group-badge-planning-cells',
-                        values: payload
+                        variables: payload
                     });
                 }
+
+                open({
+                    type: 'success',
+                    message: 'Групповой бейдж отредактирован'
+                });
             } catch (error) {
                 console.error('Failed to save meal plan cell:', error);
-                // Could show error notification here
+                open({
+                    type: 'error',
+                    message: 'Не удалось сохранить данные планирования'
+                });
             } finally {
-                await refetch();
+                await query.refetch();
+                setIsSaving(false);
             }
         },
-        [id, data?.data?.planning_cells, updateCell, createCell]
+        [id, existingCellByKey, dataProvider, open, query]
     );
 
     return {
@@ -335,7 +352,7 @@ export const useGroupMealPlanData = ({ id }: { id?: BaseKey }): UseGroupMealPlan
         displayData,
         setShowAll,
         handleSave,
-        isLoading: isCreating || isUpdating,
-        isSaving: isCreating || isUpdating
+        isLoading: isSaving,
+        isSaving
     };
 };

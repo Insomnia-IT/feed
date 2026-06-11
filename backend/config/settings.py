@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'feeder',
     'history',
     'synchronization',
+    'storage',
 ]
 
 MIDDLEWARE = [

@@ -1,34 +1,43 @@
 import { useEffect } from 'react';
-import axios from 'axios';
+import { registerSW } from 'virtual:pwa-register';
 
-import { clearCache } from '~/shared/lib/utils';
-import ver from 'pwa-ver.txt';
-
-console.log(`pwa-ver.txt: ${ver}`);
-
-export const useCheckVersion = (): void => {
+export const useCheckVersion = () => {
     useEffect(() => {
-        const checkVer = (): void => {
-            console.log('online, check ver..');
-            const hash = new Date().toISOString();
-            void axios.get(`public/pwa-ver.txt?h=${hash}`).then(({ data }: any): void => {
-                console.log(`remote app ver: ${data}`);
-                if (data !== ver) {
-                    console.log('new version, reloading...');
-                    alert('Доступно обновление, приложение перезагрузится');
-                    clearCache();
-                }
-            });
+        if (import.meta.env.DEV) return;
+
+        let isReloading = false;
+        let swRegistration: ServiceWorkerRegistration | undefined;
+        const updateSW = registerSW({
+            immediate: true,
+            onNeedRefresh() {
+                void updateSW?.(true);
+            },
+            onRegisteredSW(_swUrl, registration) {
+                if (!registration) return;
+
+                swRegistration = registration;
+                void registration.update();
+            }
+        });
+
+        const checkVersion = () => {
+            if (!navigator.onLine || !swRegistration) return;
+
+            void swRegistration.update();
         };
 
-        if (navigator.onLine) {
-            checkVer();
-        }
+        const reloadPage = () => {
+            if (isReloading) return;
+            isReloading = true;
+            window.location.reload();
+        };
 
-        window.addEventListener('online', checkVer);
+        navigator.serviceWorker.addEventListener('controllerchange', reloadPage);
+        window.addEventListener('online', checkVersion);
 
         return () => {
-            window.removeEventListener('online', checkVer);
+            navigator.serviceWorker.removeEventListener('controllerchange', reloadPage);
+            window.removeEventListener('online', checkVersion);
         };
     }, []);
 };

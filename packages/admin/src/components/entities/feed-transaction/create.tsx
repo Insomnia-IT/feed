@@ -1,12 +1,11 @@
 import { Checkbox, DatePicker, Form, Input, Select } from 'antd';
 import { Create, useForm, useSelect } from '@refinedev/antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
-import { useEffect, useCallback, FC } from 'react';
+import { useCallback, useEffect } from 'react';
+import { type Dayjs } from 'dayjs';
 import { ulid } from 'ulid';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { Rules } from 'components/form/rules';
-import type { Dayjs } from 'dayjs';
 
 const mealTimeOptions = [
     { value: 'breakfast', label: 'Завтрак' },
@@ -15,8 +14,9 @@ const mealTimeOptions = [
     { value: 'night', label: 'Дожор' }
 ];
 
-export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
+export const FeedTransactionCreate = () => {
     const { form, formProps, saveButtonProps } = useForm<FeedTransactionEntity>();
+
     const { selectProps: volSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
         optionLabel: 'name'
@@ -28,9 +28,9 @@ export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
 
     useEffect(() => {
         form.setFieldsValue({ amount: 1, is_vegan: false });
-    }, []);
+    }, [form]);
 
-    const onTimeChange = useCallback(
+    const updateUlid = useCallback(
         (value: Dayjs | null) => form.setFieldValue('ulid', value ? ulid(value.valueOf()) : undefined),
         [form]
     );
@@ -41,9 +41,11 @@ export const FeedTransactionCreate: FC<IResourceComponentsProps> = () => {
                 <Form.Item label="id" name="ulid" hidden>
                     <Input />
                 </Form.Item>
+
                 <Form.Item label="Время" name="dtime" rules={Rules.required}>
-                    <DatePicker showTime style={{ width: '100%' }} onChange={onTimeChange} />
+                    <DatePicker showTime style={{ width: '100%' }} onChange={(value) => updateUlid(value)} />
                 </Form.Item>
+
                 <Form.Item label="Прием пищи" name="meal_time" rules={Rules.required}>
                     <Select options={mealTimeOptions} />
                 </Form.Item>

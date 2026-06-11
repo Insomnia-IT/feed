@@ -1,20 +1,30 @@
-import React, { useContext, useMemo, useState } from 'react';
+import {
+    createContext,
+    type Dispatch,
+    type ReactNode,
+    type SetStateAction,
+    useContext,
+    useMemo,
+    useState
+} from 'react';
 
 interface IViewContext {
     currentView: AppViews;
-    setCurrentView: (any) => void;
+    setCurrentView: Dispatch<SetStateAction<AppViews>>;
 }
 
-const ViewContext = React.createContext<IViewContext | null>(null);
+const ViewContext = createContext<IViewContext | null>(null);
 
-export enum AppViews {
-    MAIN = 'main',
-    HISTORY = 'history',
-    STATS = 'stats',
-    SETTINGS = 'settings'
-}
+export const AppViews = {
+    MAIN: 'main',
+    HISTORY: 'history',
+    STATS: 'stats',
+    SETTINGS: 'settings'
+} as const;
 
-export const ViewProvider = (props) => {
+export type AppViews = (typeof AppViews)[keyof typeof AppViews];
+
+export const ViewProvider = (props: { children: ReactNode }) => {
     const { children } = props;
 
     const [currentView, setCurrentView] = useState<AppViews>(AppViews.MAIN);

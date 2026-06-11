@@ -3,17 +3,17 @@ import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import type { IndexableType } from 'dexie';
 
-import type { ApiHook } from '~/request/lib';
-import { db } from '~/db';
-import type { ServerTransaction, Transaction } from '~/db';
+import type { ApiHook } from 'request/lib';
+import { db } from 'db';
+import type { ServerTransaction, Transaction } from 'db';
 
 export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
-    const [error, setError] = useState<any>(null);
-    const [updated, setUpdated] = useState<any>(null);
-    const [fetching, setFetching] = useState<any>(false);
+    const [error, setError] = useState<unknown>(null);
+    const [updated, setUpdated] = useState<number | null>(null);
+    const [fetching, setFetching] = useState<boolean>(false);
 
     const send = useCallback(
-        async ({ kitchenId }) => {
+        async ({ kitchenId }: { kitchenId: number }) => {
             if (fetching) {
                 return Promise.resolve(false);
             }
@@ -70,7 +70,7 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
         [baseUrl, error, fetching, pin, setAuth]
     );
 
-    return <ApiHook>useMemo(
+    return useMemo(
         () => ({
             fetching,
             error,
@@ -78,7 +78,7 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
             send
         }),
         [error, fetching, send, updated]
-    );
+    ) as ApiHook;
 };
 
 const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
@@ -88,20 +88,24 @@ const getNewClientTransactions = async (): Promise<Array<Transaction>> => {
 };
 
 const formatClientTransactionsToServer = (trans: Array<Transaction>) => {
-    return trans.map(({ amount, group_badge, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
-        volunteer: vol_id,
-        is_vegan,
-        amount,
-        dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
-        ulid,
-        meal_time: mealTime,
-        kitchen,
-        reason,
-        group_badge
-    }));
+    return trans.map(
+        ({ amount, group_badge, is_anomaly, is_paid, is_vegan, kitchen, mealTime, reason, ts, ulid, vol_id }) => ({
+            volunteer: vol_id,
+            is_vegan,
+            is_anomaly,
+            is_paid,
+            amount,
+            dtime: typeof ts === 'number' ? new Date(ts * 1000).toISOString() : ts,
+            ulid,
+            meal_time: mealTime,
+            kitchen,
+            reason,
+            group_badge
+        })
+    );
 };
 
-const markTransactionsAsUpdated = async (trans): Promise<IndexableType> => {
+const markTransactionsAsUpdated = async (trans: Array<Transaction>): Promise<IndexableType> => {
     return db.transactions.bulkPut(
         trans.map((transaction) => ({
             ...transaction,
@@ -110,18 +114,32 @@ const markTransactionsAsUpdated = async (trans): Promise<IndexableType> => {
     );
 };
 
-const putNewServerTransactions = async (data): Promise<IndexableType> => {
-    const serverTransactions = data as Array<ServerTransaction>;
+const putNewServerTransactions = async (serverTransactions: Array<ServerTransaction>): Promise<IndexableType> => {
     const transactions = serverTransactions.map(
-        ({ amount, dtime, group_badge, is_vegan, kitchen, meal_time, ulid, volunteer }) => ({
+        ({
+            amount,
+            dtime,
+            group_badge,
+            is_anomaly,
+            is_paid,
+            is_vegan,
+            kitchen,
+            meal_time,
+            reason,
+            ulid,
+            volunteer
+        }) => ({
             vol_id: volunteer,
             is_vegan,
+            is_anomaly,
+            is_paid,
             mealTime: meal_time,
             ulid,
             amount,
             ts: Math.floor(new Date(dtime).valueOf() / 1000),
             is_new: false,
             kitchen,
+            reason,
             group_badge
         })
     );

@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 
-export const useAnchorNavigation = (containerRef: React.RefObject<HTMLElement>) => {
+export const useAnchorNavigation = (containerRef: RefObject<HTMLDivElement | null>) => {
     const [activeAnchor, setActiveAnchor] = useState('section1');
     const isScrolling = useRef(false);
-    const activeTimeout = useRef<NodeJS.Timeout | null>(null);
+    const activeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         const container = containerRef.current;

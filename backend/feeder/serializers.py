@@ -168,6 +168,23 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
             return {"id": supervisor.id, "name": supervisor.name}
         return None
 
+
+class VolunteerMobileListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    arrivals = VolunteerListArrivalSerializer(many=True)
+
+    class Meta:
+        model = models.Volunteer
+        fields = [
+            'id',
+            'name',
+            'first_name',
+            'last_name',
+            'is_blocked',
+            'direction_head_comment',
+            'arrivals',
+        ]
+
 class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     custom_field_values = VolunteerCustomFieldValueNestedSerializer(many=True, required=False)
@@ -218,6 +235,7 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         exclude = ['person']
 
     def update(self, instance, validated_data):
+        validated_data.pop('approver', None)
         arrivals_data = None
         if 'arrivals' in validated_data:
             arrivals_data = validated_data.pop('arrivals')
@@ -605,6 +623,18 @@ class FilterStatisticsSerializer(serializers.Serializer):
     group_badge = serializers.BooleanField(allow_null=True, default=None)
     prediction_alg = serializers.CharField(allow_null=True, default=None)
     apply_history = serializers.BooleanField(allow_null=True, default=None)
+
+class FeedTransactionAnomaliesFilterSerializer(serializers.Serializer):
+    dtime_from = serializers.DateTimeField()
+    dtime_to = serializers.DateTimeField()
+
+class FeedTransactionAnomalySerializer(serializers.Serializer):
+    group_badge_name = serializers.CharField(allow_blank=True, allow_null=True)
+    direction_name = serializers.CharField(allow_blank=True, allow_null=True)
+    direction_amount = serializers.IntegerField(allow_null=True)
+    calculated_amount = serializers.IntegerField(allow_null=True)
+    real_amount = serializers.IntegerField()
+    problem = serializers.CharField()
 
 class StatisticsSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)

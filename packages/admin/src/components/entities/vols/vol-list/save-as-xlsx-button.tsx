@@ -1,15 +1,17 @@
-import { Button } from 'antd';
+﻿import { Button } from 'antd';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
 import { downloadBlob, getFilenameFromContentDisposition } from 'shared/lib/saveXLSX';
 
-export const SaveAsXlsxButton: FC<{
+type SaveAsXlsxButtonProps = {
     isDisabled: boolean;
     filterQueryParams: string;
-}> = ({ filterQueryParams, isDisabled }) => {
+};
+
+export const SaveAsXlsxButton = ({ filterQueryParams, isDisabled }: SaveAsXlsxButtonProps) => {
     const [isExporting, setIsExporting] = useState(false);
 
     const onClick = async (): Promise<void> => {

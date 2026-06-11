@@ -1,0 +1,13 @@
+.container {
+    margin-bottom: 24px;
+}
+
+.description {
+    display: block;
+}
+
+.mealControls {
+    display: flex;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}

@@ -1,5 +1,5 @@
 import QrScanner from 'qr-scanner';
-import { Dispatch } from 'react';
+import type { Dispatch } from 'react';
 
 export interface ScannerController {
     handleScan: (qr: string) => Promise<void>;

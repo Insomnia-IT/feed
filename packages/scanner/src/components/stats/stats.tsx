@@ -1,55 +1,51 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { StatsTable } from '~/components/stats/stats-table';
-import { useLocalStats } from '~/request-local-db';
-import { getStatsDates } from '~/shared/lib/date';
-import { Selector } from '~/shared/ui/selector/selector';
+import { StatsTable } from 'components/stats/stats-table';
+import { useLocalStats } from 'request-local-db';
+import { getStatsDates } from 'shared/lib/date';
+import { Selector } from 'shared/ui/selector/selector';
 
 import css from './stats.module.css';
 
-export enum StatsDateEnum {
-    today = 'today',
-    yesterday = 'yesterday',
-    tomorrow = 'tomorrow'
-}
+export const StatsDate = {
+    today: 'today',
+    yesterday: 'yesterday',
+    tomorrow: 'tomorrow'
+} as const;
+export type StatsDate = (typeof StatsDate)[keyof typeof StatsDate];
 
-export enum TableType {
-    default = 'default',
-    predict = 'predict'
-}
+export const TableType = {
+    default: 'default',
+    predict: 'predict'
+} as const;
+export type TableType = (typeof TableType)[keyof typeof TableType];
 
-export const Stats = React.memo(function Stats() {
+const getTableTypeByDate = (d: string): TableType => (d === StatsDate.tomorrow ? TableType.predict : TableType.default);
+
+export const Stats = memo(function Stats() {
     const { today, tomorrow, yesterday } = getStatsDates();
     const { error, progress, stats, update } = useLocalStats();
-    const [selected, setSelected] = useState(StatsDateEnum.today);
 
-    const [tableType, setTableType] = useState<TableType>(TableType.default);
+    const [selected, setSelected] = useState<string>(StatsDate.today);
 
-    const updateStats = (statsDate): void => {
-        if (statsDate === StatsDateEnum.today) {
-            setTableType(TableType.default);
-            void update(today);
-        }
-        if (statsDate === StatsDateEnum.yesterday) {
-            setTableType(TableType.default);
-            void update(yesterday);
-        }
-        if (statsDate === StatsDateEnum.tomorrow) {
-            setTableType(TableType.predict);
-            void update(tomorrow, true);
-        }
-    };
-    useEffect(() => {
-        updateStats(StatsDateEnum.today);
-    }, []);
+    const tableType = useMemo(() => getTableTypeByDate(selected), [selected]);
 
-    const handleChangeDate = useCallback(
-        (value) => {
-            setSelected(value);
-            updateStats(value);
+    const runUpdate = useCallback(
+        (date: string) => {
+            if (date === StatsDate.today) return update(today);
+            if (date === StatsDate.yesterday) return update(yesterday);
+            return update(tomorrow, true);
         },
-        [updateStats]
+        [today, yesterday, tomorrow, update]
     );
+
+    useEffect(() => {
+        void runUpdate(selected);
+    }, [runUpdate, selected]);
+
+    const handleChangeDate = useCallback((value: string) => {
+        setSelected(value);
+    }, []);
 
     return (
         <div className={css.stats}>
@@ -61,9 +57,9 @@ export const Stats = React.memo(function Stats() {
                         onChangeSelected={handleChangeDate}
                         value={selected}
                         selectorList={[
-                            { id: StatsDateEnum.yesterday, title: 'Вчера', subTitle: yesterday },
-                            { id: StatsDateEnum.today, title: 'Сегодня', subTitle: today },
-                            { id: StatsDateEnum.tomorrow, title: 'Завтра', subTitle: tomorrow }
+                            { id: StatsDate.yesterday, title: 'Вчера', subTitle: yesterday },
+                            { id: StatsDate.today, title: 'Сегодня', subTitle: today },
+                            { id: StatsDate.tomorrow, title: 'Завтра', subTitle: tomorrow }
                         ]}
                     />
                     <StatsTable stats={stats} tableType={tableType} progress={progress} />

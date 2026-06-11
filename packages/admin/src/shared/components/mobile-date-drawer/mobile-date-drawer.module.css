@@ -1,0 +1,10 @@
+.trigger {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.triggerError,
+.triggerError:hover,
+.triggerError:focus {
+    border: 1px solid #ff4d4f !important;
+}

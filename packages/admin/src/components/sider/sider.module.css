@@ -16,6 +16,8 @@
     justify-content: space-around;
     z-index: 5;
     background-color: #fff;
+    min-height: 56px;
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .siderButton {

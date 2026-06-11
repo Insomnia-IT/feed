@@ -1,6 +1,6 @@
 import { RadarChartOutlined } from '@ant-design/icons';
 
-import { PersonEntity } from 'interfaces';
+import type { PersonEntity } from 'interfaces';
 
 import styles from '../../common.module.css';
 

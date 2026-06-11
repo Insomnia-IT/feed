@@ -6,9 +6,12 @@ import { getSorter } from 'utils';
 
 import type { FilterField } from './filters/filter-types';
 
-export const getOnFieldColors = (vol: VolEntity): 'green' | 'red' | 'orange' | undefined => {
+export const getOnFieldColors = (
+    vol: VolEntity,
+    currentArrivalParam?: ArrivalEntity | null
+): 'green' | 'red' | 'orange' | undefined => {
     const day = dayjs();
-    const currentArrival = findClosestArrival(vol.arrivals);
+    const currentArrival = currentArrivalParam === undefined ? findClosestArrival(vol.arrivals) : currentArrivalParam;
     const currentArrivalArray: Array<ArrivalEntity> = [];
     if (currentArrival !== null) {
         currentArrivalArray.push(currentArrival);

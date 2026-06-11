@@ -4,6 +4,7 @@ from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django import forms
 from django.db.models import Exists, OuterRef
+from django.db.models import Prefetch
 from django.utils import timezone
 from datetime import timedelta
 import re
@@ -17,6 +18,7 @@ from feeder.views.xlsx import build_xlsx_response
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
+
 
 class VolunteerFilter(django_filters.FilterSet):
     id__in = NumberInFilter(field_name='id', lookup_expr='in')
@@ -32,6 +34,7 @@ class VolunteerFilter(django_filters.FilterSet):
     is_blocked = django_filters.BooleanFilter(field_name='is_blocked')
     is_ticket_received = django_filters.BooleanFilter(method='filter_is_ticket_received')
     is_vegan = django_filters.BooleanFilter(field_name='is_vegan')
+    is_badge_located_at_leader = django_filters.BooleanFilter(field_name='is_badge_located_at_leader')
     updated_at__from = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr='gte')
 
     direction_id = django_filters.CharFilter(field_name="directions__id", lookup_expr='iexact')
@@ -42,6 +45,7 @@ class VolunteerFilter(django_filters.FilterSet):
     supervisor_id = django_filters.CharFilter(field_name="supervisor_id", lookup_expr='exact')
     has_supervisor = django_filters.BooleanFilter(method='filter_has_supervisor')
     is_supervisor = django_filters.BooleanFilter(method='filter_is_supervisor')
+    inventory_item = django_filters.NumberFilter(method='filter_inventory_item')
     infant = django_filters.BooleanFilter(field_name='infant')
 
     def filter_has_supervisor(self, queryset, name, value):
@@ -63,6 +67,12 @@ class VolunteerFilter(django_filters.FilterSet):
         if value:
             return queryset.filter(is_ticket_received=True)
         return queryset.exclude(is_ticket_received=True)
+
+    def filter_inventory_item(self, queryset, name, value):
+        return queryset.filter(
+            storage_inventory__position__item_id=value,
+            storage_inventory__count__gt=0
+        ).distinct()
 
     class Meta:
         model = models.Volunteer
@@ -97,6 +107,42 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
     search_fields = ['first_name', 'last_name', 'name', 'phone', 'email', 'qr', 'uuid',
                      'person__name', 'person__last_name', 'person__first_name', 'person__nickname', 'person__other_names', 'person__telegram']
     filterset_class = VolunteerFilter
+
+    def is_mobile_list_request(self):
+        return self.action == 'list' and self.request.query_params.get('mobile') == '1'
+
+    def get_serializer_class(self):
+        if self.is_mobile_list_request():
+            return serializers.VolunteerMobileListSerializer
+
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.is_mobile_list_request():
+            mobile_arrivals = models.Arrival.objects.only(
+                'id',
+                'volunteer_id',
+                'arrival_date',
+                'departure_date',
+                'status_id',
+                'arrival_transport_id',
+                'departure_transport_id',
+            ).order_by('arrival_date')
+
+            return queryset.only(
+                'id',
+                'name',
+                'first_name',
+                'last_name',
+                'is_blocked',
+                'direction_head_comment',
+                'deleted_at',
+                'supervisor_id',
+            ).prefetch_related(Prefetch('arrivals', queryset=mobile_arrivals))
+
+        return queryset
 
     @action(detail=False, methods=['get'], url_path='export-xlsx')
     def export_xlsx(self, request):
@@ -170,6 +216,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                     1 if volunteer.is_blocked else 0,
                     volunteer.kitchen.name if volunteer.kitchen else "",
                     volunteer.printing_batch or "",
+                    1 if volunteer.is_badge_located_at_leader else 0,
                     volunteer.feed_type.name if volunteer.feed_type else "",
                     "веган" if volunteer.is_vegan else "мясоед",
                     1 if volunteer.is_ticket_received else 0,
@@ -203,6 +250,7 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
                 "Заблокирован",
                 "Кухня",
                 "Партия бейджа",
+                "Бейдж у руководителя",
                 "Тип питания",
                 "Веган/мясоед",
                 "Выдан билет",

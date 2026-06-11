@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { VolEntity } from 'interfaces';
 import { Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { SingleField } from './single-field';
 import { useNotification } from '@refinedev/core';
-import { ChangeMassEditField } from './mass-edit-types';
+import type { ChangeMassEditField } from './mass-edit-types';
 import { ConfirmModal } from './confirm-modal/confirm-modal';
 import { canBeVolunteerArrivalChanged, findTargetArrival } from './utils';
 import { useArrivalDates } from './arrival-dates-context/arrival-dates-context';
@@ -12,13 +12,15 @@ import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
-enum ArrivalField {
-    ArrivalDate = 'ArrivalDate',
-    DepartureDate = 'DepartureDate',
-    ArrivalStatus = 'ArrivalStatus',
-    ArrivalTransport = 'ArrivalTransport',
-    DepartureTransport = 'DepartureTransport'
-}
+const ArrivalField = {
+    ArrivalDate: 'ArrivalDate',
+    DepartureDate: 'DepartureDate',
+    ArrivalStatus: 'ArrivalStatus',
+    ArrivalTransport: 'ArrivalTransport',
+    DepartureTransport: 'DepartureTransport'
+} as const;
+
+type ArrivalField = (typeof ArrivalField)[keyof typeof ArrivalField];
 
 interface ISingleFiled {
     title: string;
@@ -45,11 +47,15 @@ const fieldsDictionary: Record<ArrivalField, ISingleFiled> = {
     }
 };
 
-export const ArrivalsFrame: React.FC<{
+export const ArrivalsFrame = ({
+    selectedVolunteers,
+    goBack,
+    doChange
+}: {
     selectedVolunteers: VolEntity[];
     goBack: () => void;
     doChange: ChangeMassEditField;
-}> = ({ selectedVolunteers, goBack, doChange }) => {
+}) => {
     const [isWarningModalOpen, setIsWarningModalOpen] = useState<boolean>(false);
     const [currentValue, setCurrentValue] = useState<string | undefined>(undefined);
     const [currentField, setCurrentField] = useState<ArrivalField | undefined>();

@@ -1,28 +1,41 @@
 name: Tests
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 #   push:
 #     branches: [main]
 
+concurrency:
+    group: tests-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
-  tests:
-    runs-on: ubuntu-latest
+    tests:
+        runs-on: ubuntu-latest
 
-    container:
-      image: ubuntu:latest
-      
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        container:
+            image: ubuntu:latest
 
-      - name: ⌛ Do Testing
-        env:
-          FEED_APP_HOST: https://feedapp-dev.insomniafest.ru 
-        run: |
-          cd tests
-          bash run_tests.sh
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
 
-      - name: 🍏 Shorter Log
-        if: always()
-        run: cat /tmp/tests.short.log
+            - name: ⌛ Do Testing
+              env:
+                  FEED_APP_HOST: https://feedapp-dev.insomniafest.ru
+                  COMPOSE_PROJECT_NAME: feed-manual-${{ github.run_id }}-tests
+              run: |
+                  cd tests
+                  bash run_tests.sh
+
+            - name: Cleanup regress docker compose
+              if: always()
+              env:
+                  COMPOSE_PROJECT_NAME: feed-manual-${{ github.run_id }}-tests
+              run: |
+                  cd tests
+                  docker compose down --remove-orphans --volumes
+
+            - name: 🍏 Shorter Log
+              if: always()
+              run: cat /tmp/tests.short.log

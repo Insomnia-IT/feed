@@ -1,14 +1,14 @@
-import React, { forwardRef } from 'react';
+import { type ComponentProps, forwardRef } from 'react';
 import cn from 'classnames';
 
 import css from './input.module.css';
 
-interface InputProps extends React.ComponentProps<'input'> {
+interface InputProps extends ComponentProps<'input'> {
     error?: boolean;
     focus?: boolean;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(props, ref): React.ReactElement {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(props, ref) {
     const { className, error = false, focus = false, ...restProps } = props;
     return (
         <>

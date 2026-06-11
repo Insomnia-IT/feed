@@ -6,6 +6,5 @@ Dockerfile
 node_modules
 **/.temp_cache
 **/node_modules
-**/build
-**/.next
+**/dist
 run.sh

@@ -12,7 +12,7 @@ import {
     MESSAGES
 } from './useGroupMealPlanData';
 import { AppRoles } from 'auth';
-import { MealPlanCell } from '../../../interfaces';
+import type { MealPlanCell } from 'interfaces';
 
 const TEST_DATES = {
     EARLY: '2026-02-20',

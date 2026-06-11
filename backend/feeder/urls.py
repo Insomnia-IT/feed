@@ -34,6 +34,7 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
 
     path('', include(router.urls)),
+    path('feed-transaction/anomalies', feed.FeedTransactionAnomalies.as_view()),
     path('feed-transaction/bulk', feed.FeedTransactionBulk.as_view()),
     path('feed-transaction/sync', sync.SyncWithFeeder.as_view()),
     path('statistics/', statistic.Statistics.as_view()),
@@ -43,4 +44,3 @@ urlpatterns = [
     path('volunteer-photo-sync', photo_sync.DownloadVolunteerPhotos.as_view()),
     # path('notion-sync', sync.SyncWithNotion.as_view()),
 ]
-

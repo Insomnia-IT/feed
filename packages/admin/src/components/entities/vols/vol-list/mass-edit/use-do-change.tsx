@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useApiUrl, useNotification } from '@refinedev/core';
 import type { VolEntity } from 'interfaces';
-import { ChangeMassEditField, VolunteerField } from './mass-edit-types';
+import type { ChangeMassEditField, VolunteerField } from './mass-edit-types';
 
 interface FieldItem {
     field: string;
@@ -68,8 +68,8 @@ export const useDoChange = ({
             });
 
             open({
-                description: 'Изменения успешно применены',
-                message: 'Список волонтеров сейчас обновится',
+                description: '',
+                message: 'Изменения успешно применены',
                 type: 'success',
                 undoableTimeout: 5000
             });

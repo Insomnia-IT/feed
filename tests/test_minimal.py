@@ -13,16 +13,16 @@ def test_internet():
 def no_test_chrome_available():
     assert 0==os.system("type chrome")
 
-def chance(thresh:int=50):
-    r = random.randint(1,100)
-    time.sleep(.1)
-    return (r > 100-thresh)
+def chance(thresh: int = 50, randint=random.randint, delay=time.sleep):
+    r = randint(1, 100)
+    delay(.1)
+    return r > 100 - thresh
 
 def test_high_chance():
-    assert (chance(90) and chance(90))
+    assert chance(90, randint=lambda *_: 95, delay=lambda _: None)
 
 def test_mid_chance():
-    assert (chance(70) and chance(70))
+    assert chance(70, randint=lambda *_: 31, delay=lambda _: None)
 
 # def test_low_chance():
 #     assert (chance(60) and chance(50))

@@ -8,16 +8,24 @@ export type FilterField = {
     getter?: (value: unknown) => unknown;
 };
 
-export enum FilterFieldType {
-    Date = 'date',
-    String = 'string',
-    Custom = 'custom',
-    Boolean = 'boolean',
-    Lookup = 'lookup'
-}
+export const FilterFieldType = {
+    Date: 'date',
+    String: 'string',
+    Custom: 'custom',
+    Boolean: 'boolean',
+    Lookup: 'lookup'
+} as const;
+
+export type FilterFieldType = (typeof FilterFieldType)[keyof typeof FilterFieldType];
 
 export type FilterItem = { name: string; op: 'include' | 'exclude'; value: unknown };
 
-export type FilterListItem = { selected: boolean; value: FilterListItemValue; text: string; count: number };
+export type FilterListItem = {
+    selected: boolean;
+    value: FilterListItemValue;
+    text: string;
+    label?: string;
+    count: number;
+};
 
 export type FilterListItemValue = Array<boolean | string> | boolean | string | unknown;

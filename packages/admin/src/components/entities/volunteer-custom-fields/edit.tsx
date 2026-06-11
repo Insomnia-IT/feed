@@ -1,27 +1,25 @@
-import { FC } from 'react';
 import { Form } from 'antd';
-import { IResourceComponentsProps, useNavigation } from '@refinedev/core';
-
-import type { VolunteerCustomFieldEntity } from 'interfaces';
-
-import { CreateEdit } from './common';
+import { useNavigation } from '@refinedev/core';
 import { Edit, useForm } from '@refinedev/antd';
 
-export const VolunteerCustomFieldEdit: FC<IResourceComponentsProps> = () => {
-    const { goBack } = useNavigation();
+import type { VolunteerCustomFieldEntity } from 'interfaces';
+import { CreateEdit } from './common';
+
+export const VolunteerCustomFieldEdit = () => {
+    const { list } = useNavigation();
 
     const { formProps, saveButtonProps } = useForm<VolunteerCustomFieldEntity>({
+        redirect: false,
         onMutationSuccess: () => {
-            goBack();
-        },
-        redirect: false
+            list('volunteer-custom-fields');
+        }
     });
 
     return (
         <div style={{ padding: '24px' }}>
             <Edit
                 saveButtonProps={saveButtonProps}
-                canDelete={true}
+                canDelete
                 footerButtonProps={{
                     style: {
                         float: 'left',
@@ -30,7 +28,7 @@ export const VolunteerCustomFieldEdit: FC<IResourceComponentsProps> = () => {
                 }}
             >
                 <Form {...formProps} layout="vertical">
-                    <CreateEdit isEdit={true} />
+                    <CreateEdit isEdit />
                 </Form>
             </Edit>
         </div>

@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import { Button, List } from 'antd';
 
 import { axios } from 'authProvider';
@@ -7,7 +7,7 @@ import useCanAccess from '../entities/vols/use-can-access';
 
 import styles from './sync.module.css';
 
-export const Sync: FC = () => {
+export const Sync = () => {
     const [disabled, setDisabled] = useState(false);
     const canFullEditing = useCanAccess({
         action: 'full_edit',
@@ -22,11 +22,13 @@ export const Sync: FC = () => {
             if (response.status === 202) {
                 alert('Данные из Notion получены успешно. Отправить список активированных не удалось.');
 
+                // eslint-disable-next-line no-console
                 console.log(response.data);
             }
         } catch (e) {
             alert('При синхронизации возникла ошибка');
 
+            // eslint-disable-next-line no-console
             console.log(e);
         } finally {
             setDisabled(false);

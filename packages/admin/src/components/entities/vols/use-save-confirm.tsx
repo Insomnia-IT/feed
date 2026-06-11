@@ -1,6 +1,6 @@
-import { Modal, ButtonProps, FormInstance } from 'antd';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
+import { Modal, type ButtonProps, type FormInstance } from 'antd';
 
 import { dataProvider } from 'dataProvider';
 import type { VolCustomFieldValueEntity } from 'interfaces';

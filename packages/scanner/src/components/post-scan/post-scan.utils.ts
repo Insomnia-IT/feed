@@ -1,18 +1,12 @@
 import dayjs from 'dayjs';
 import { useCallback } from 'react';
 
-import { getTodayTrans, db, dbIncFeed, FeedType, isActivatedStatus, MealTime } from '~/db';
-import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from '~/db';
-import { getMealTimeText } from '~/shared/lib/utils';
+import { getTodayTrans, db, dbIncFeed, FeedType, getFeedingPermissionForNow, isActivatedStatus, MealTime } from 'db';
+import type { Transaction, TransactionJoined, Volunteer, GroupBadge } from 'db';
+import type { GroupBadgeAnomalyMeta } from 'components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
+import { getMealTimeText } from 'shared/lib/utils';
 
-const isVolExpired = (vol: Volunteer): boolean => {
-    return vol.arrivals.every(
-        ({ arrival_date, departure_date, status }) =>
-            !isActivatedStatus(status) ||
-            dayjs() < dayjs(arrival_date).startOf('day').add(7, 'hours') ||
-            dayjs() > dayjs(departure_date).endOf('day').add(7, 'hours')
-    );
-};
+const isVolExpired = (vol: Volunteer): boolean => !getFeedingPermissionForNow(vol).allowed;
 
 export const validateVol = ({
     isGroupScan = false,
@@ -30,6 +24,8 @@ export const validateVol = ({
     const msg: Array<string> = [];
     let isRed = false;
     let isActivated = true;
+    const feedingPermission = getFeedingPermissionForNow(vol);
+    const shouldSkipActivationCheck = vol.feed_type === FeedType.Paid || feedingPermission.byPaidArrivals;
 
     if (
         vol.kitchen?.toString() !== kitchenId.toString() &&
@@ -43,7 +39,7 @@ export const validateVol = ({
         }
     }
 
-    if (!vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
+    if (!shouldSkipActivationCheck && !vol.arrivals.some(({ status }) => isActivatedStatus(status))) {
         isActivated = false;
         msg.push('Бейдж не активирован в штабе');
     }
@@ -53,13 +49,14 @@ export const validateVol = ({
         msg.push('Волонтер заблокирован');
     }
 
-    if (isVolExpired(vol)) {
-        msg.push('Даты активности не совпадают');
-    }
-
     if (vol.feed_type === FeedType.NoFeed) {
         isRed = true;
         msg.push('НЕТ ПИТАНИЯ, СХОДИ В ИЦ');
+        return { msg, isRed, isActivated };
+    }
+
+    if (isVolExpired(vol)) {
+        msg.push('Даты активности не совпадают');
     }
 
     if (
@@ -71,15 +68,12 @@ export const validateVol = ({
 
         if (vol.group_badge && !isGroupScan) {
             // Считаем, что волонтер имеет долг, если его кормили за один приём пищи больше, чем один раз
-            const hasDebt = Object.values(
-                volTransactions.reduce(
-                    (acc, { mealTime }) => ({
-                        ...acc,
-                        [mealTime]: (acc[mealTime] || 0) + 1
-                    }),
-                    <Record<string, number>>{}
-                )
-            ).some((count) => count > 1);
+            const counts: Record<string, number> = {};
+            for (const t of volTransactions) {
+                const key = t.mealTime;
+                counts[key] = (counts[key] ?? 0) + 1;
+            }
+            const hasDebt = Object.values(counts).some((count) => count > 1);
 
             if (hasDebt) {
                 isRed = true;
@@ -114,8 +108,11 @@ export const validateVol = ({
     return { msg, isRed, isActivated };
 };
 
+const CALCULATED_AMOUNT_PREFIX = 'Рассчитанное кол-во:';
+
 // Кормим большое количество анонимов, если введено "другое число"
 export const massFeedAnons = async ({
+    anomalyMeta,
     comment = '',
     groupBadge,
     kitchenId,
@@ -129,6 +126,7 @@ export const massFeedAnons = async ({
     nonVegansCount: number;
     mealTime?: MealTime | null;
     comment?: string;
+    anomalyMeta?: GroupBadgeAnomalyMeta;
 }): Promise<void> => {
     if (!mealTime) {
         return;
@@ -145,6 +143,7 @@ export const massFeedAnons = async ({
         vol: null;
         mealTime: MealTime;
         isVegan?: boolean;
+        isAnomaly?: boolean;
         log: {
             error: boolean;
             reason: string;
@@ -157,7 +156,17 @@ export const massFeedAnons = async ({
             vol: null,
             mealTime,
             isVegan: Boolean(isVegan),
-            log: { error: false, reason: comment },
+            isAnomaly: isVegan ? anomalyMeta?.vegans.edited : anomalyMeta?.nonVegans.edited,
+            log: {
+                error: false,
+                reason: isVegan
+                    ? anomalyMeta?.vegans.edited
+                        ? `${CALCULATED_AMOUNT_PREFIX} ${anomalyMeta.vegans.calculatedAmount}`
+                        : comment
+                    : anomalyMeta?.nonVegans.edited
+                      ? `${CALCULATED_AMOUNT_PREFIX} ${anomalyMeta.nonVegans.calculatedAmount}`
+                      : comment
+            },
             kitchenId,
             group_badge: groupBadge?.id
         };
@@ -202,7 +211,7 @@ export const useFeedVol = (
     );
 
     const doFeed = (isVegan?: boolean, reason?: string): void => {
-        let log;
+        let log: { error: boolean; reason: string } | undefined;
 
         if (reason) {
             log = { error: false, reason };

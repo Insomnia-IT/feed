@@ -1,5 +1,3 @@
-
-from django.utils import timezone
 from rest_framework import serializers, viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,9 +6,10 @@ from drf_spectacular.utils import extend_schema
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from feeder.views.mixins import auto_tag_viewset
+from feeder.utils import get_feed_transaction_anomalies
 
 from feeder import serializers, models
-from feeder.views.xlsx import build_xlsx_response
+from feeder.views.xlsx import build_xlsx_response, format_xlsx_datetime
 
 
 @auto_tag_viewset("Feed Type")
@@ -27,6 +26,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
     dtime_to = django_filters.IsoDateTimeFilter(field_name="dtime", lookup_expr='lte')
     meal_time = django_filters.CharFilter(field_name="meal_time", lookup_expr="exact")
     group_badge = django_filters.NumberFilter(field_name="group_badge")
+    direction = django_filters.UUIDFilter(field_name="volunteer__directions__id")
     anonymous = django_filters.BooleanFilter(method="filter_anonymous")
     is_group_badge = django_filters.BooleanFilter(method="filter_is_group_badge")
     is_paid = django_filters.BooleanFilter(field_name="is_paid")
@@ -44,7 +44,7 @@ class FeedTransactionFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.FeedTransaction
-        fields = ['kitchen', 'volunteer', 'is_paid', 'is_anomaly']
+        fields = ['kitchen', 'volunteer', 'direction', 'is_paid', 'is_anomaly']
 
 @auto_tag_viewset("Feed Transaction")
 class FeedTransactionViewSet(viewsets.ModelViewSet):
@@ -79,7 +79,7 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
         rows = []
 
         for tx in queryset.iterator(chunk_size=2000):
-            local_dtime = timezone.localtime(tx.dtime) if tx.dtime else None
+            local_date, local_time = format_xlsx_datetime(tx.dtime)
             volunteer_full_name = " ".join(
                 [name for name in [getattr(tx.volunteer, "last_name", None), getattr(tx.volunteer, "first_name", None)] if name]
             )
@@ -89,8 +89,8 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
 
             rows.append(
                 [
-                    local_dtime.strftime("%d.%m.%Y") if local_dtime else "",
-                    local_dtime.strftime("%H:%M:%S") if local_dtime else "",
+                    local_date,
+                    local_time,
                     tx.volunteer_id or "",
                     getattr(tx.volunteer, "name", None) or "Аноним",
                     volunteer_full_name,
@@ -122,6 +122,27 @@ class FeedTransactionViewSet(viewsets.ModelViewSet):
                 "Службы",
             ],
             rows=rows,
+        )
+
+
+class FeedTransactionAnomalies(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @extend_schema(
+        tags=["Feed Transaction"],
+        parameters=[serializers.FeedTransactionAnomaliesFilterSerializer],
+        responses={200: serializers.FeedTransactionAnomalySerializer(many=True)},
+    )
+    def get(self, request):
+        serializer = serializers.FeedTransactionAnomaliesFilterSerializer(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        result = get_feed_transaction_anomalies(
+            serializer.validated_data['dtime_from'],
+            serializer.validated_data['dtime_to'],
+        )
+
+        return Response(
+            serializers.FeedTransactionAnomalySerializer(result, many=True).data
         )
 
 

@@ -1,21 +1,30 @@
-import { Button } from '~/shared/ui/button';
-import { Modal } from '~/shared/ui/modal';
-import { Text } from '~/shared/ui/typography';
-import type { ValidatedVol } from '~/components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
-import type { TransactionJoined } from '~/db';
-import { getPlural } from '~/shared/lib/utils';
-import { calculateAlreadyFedCount } from '~/components/post-scan/post-scan.utils';
+import { Button } from 'shared/ui/button';
+import { Modal } from 'shared/ui/modal';
+import { Text } from 'shared/ui/typography';
+import type {
+    GroupBadgeFeedAnonsPayload,
+    ValidatedVol
+} from 'components/post-scan/post-scan-group-badge/post-scan-group-badge.lib';
+import type { TransactionJoined } from 'db';
+import { getPlural } from 'shared/lib/utils';
+import { calculateAlreadyFedCount } from 'components/post-scan/post-scan.utils';
 
 import style from './warning-partially-fed-modal.module.css';
 
 // Уже покормленные волонтеры
-const WarningPartiallyFedModal: React.FC<{
+const WarningPartiallyFedModal = ({
+    alreadyFedTransactions,
+    doFeedAnons,
+    greenVols,
+    setShowModal,
+    showModal
+}: {
     showModal: boolean;
     setShowModal: (isShown: boolean) => void;
     greenVols: Array<ValidatedVol>;
     alreadyFedTransactions: Array<TransactionJoined>;
-    doFeedAnons: (value: { vegansCount: number; nonVegansCount: number }) => void;
-}> = ({ alreadyFedTransactions, doFeedAnons, greenVols, setShowModal, showModal }) => {
+    doFeedAnons: (value: GroupBadgeFeedAnonsPayload) => void;
+}) => {
     const onClose = (): void => {
         setShowModal(false);
     };
@@ -43,12 +52,19 @@ const WarningPartiallyFedModal: React.FC<{
     const finalMeats = Math.max(leftMeats - vegansOverFed, 0);
 
     const primaryAction = (): void => {
-        doFeedAnons({ vegansCount: finalVegans, nonVegansCount: finalMeats });
+        doFeedAnons({
+            vegansCount: finalVegans,
+            nonVegansCount: finalMeats,
+            anomalyMeta: {
+                vegans: { edited: false, calculatedAmount: finalVegans },
+                nonVegans: { edited: false, calculatedAmount: finalMeats }
+            }
+        });
         onClose();
     };
 
     return (
-        <Modal title='Часть уже покормили' active={showModal} onClose={onClose} classModal={style.modal}>
+        <Modal title="Часть уже покормили" active={showModal} onClose={onClose} classModal={style.modal}>
             <div className={style.body}>
                 <div>
                     <Text>Покормлены {alreadyFedVegansCount + alreadyFedNonVegansCount}:</Text>
@@ -78,7 +94,7 @@ const WarningPartiallyFedModal: React.FC<{
                         </Text>
                     )}
                 </div>
-                <Button variant='secondary' onClick={onClose}>
+                <Button variant="secondary" onClick={onClose}>
                     Отмена
                 </Button>
                 <Button onClick={primaryAction}>Покормить</Button>
@@ -87,7 +103,7 @@ const WarningPartiallyFedModal: React.FC<{
     );
 };
 
-const reduceVegans = <T extends { is_vegan?: boolean }>(
+const reduceVegans = <T extends { is_vegan?: boolean | null }>(
     values: Array<T>
 ): { vegans: Array<T>; nonVegans: Array<T> } => {
     return values.reduce<{ vegans: Array<T>; nonVegans: Array<T> }>(

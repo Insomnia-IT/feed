@@ -1,18 +1,45 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
-import type { IResourceComponentsProps } from '@refinedev/core';
-import { Form } from 'antd';
+import styles from './common.module.css';
+import { useTranslate } from '@refinedev/core';
+import { App, Form, type FormProps } from 'antd';
 
 import type { VolEntity } from 'interfaces';
 
 import { useScreen } from 'shared/providers';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
+import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 
-export const VolCreate: FC<IResourceComponentsProps> = () => {
+const contentStyle = {
+    background: 'initial',
+    boxShadow: 'initial',
+    height: '100%'
+};
+
+export const VolCreate = () => {
+    const translate = useTranslate();
+    const { notification } = App.useApp();
+
     const { form, formProps, saveButtonProps } = useForm<VolEntity>({
-        onMutationSuccess: (e) => {
-            void onMutationSuccess(e);
+        successNotification: false,
+        onMutationSuccess: async (response) => {
+            await onMutationSuccess(response as { data: { id: number } });
+
+            const volunteerId = response?.data?.id;
+            const volunteerPath = volunteerId ? `/volunteers/edit/${volunteerId}` : '/volunteers';
+            const volunteerUrl = new URL(volunteerPath, window.location.origin).toString();
+            const resourceName = translate('volunteers.volunteers', translate('volunteers.label'));
+            const createSuccessText = translate('notifications.createSuccess', { resource: resourceName }).trim();
+
+            notification.success({
+                message: translate('notifications.success'),
+                description: (
+                    <>
+                        {createSuccessText}.<br /> Путь: <a href={volunteerPath}>{volunteerUrl}</a>
+                    </>
+                )
+            });
         },
         warnWhenUnsavedChanges: true
     });
@@ -21,22 +48,40 @@ export const VolCreate: FC<IResourceComponentsProps> = () => {
     const { isDesktop } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
 
+    const { onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const handleFinishFailed: NonNullable<FormProps['onFinishFailed']> = createVolunteerFormFinishFailedHandler(
+        setActiveKey,
+        form,
+        upstreamOnFinishFailed
+    );
+    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+    const person = Form.useWatch('person', form);
+
     return (
         <Create
+            headerProps={{
+                extra: null
+            }}
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick,
-                hidden: !isDesktop && activeKey !== '1'
+                onClick
             }}
             contentProps={{
-                style: {
-                    background: 'initial',
-                    boxShadow: 'initial',
-                    height: '100%'
-                }
+                ...(shouldHideFooterActions ? { actions: [] } : {}),
+                style: contentStyle
             }}
+            title={
+                <div className={styles.pageTitle}>
+                    Создание волонтера
+                    {person?.banned && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Чёрный список</span>
+                        </div>
+                    )}
+                </div>
+            }
         >
-            <Form {...formProps} scrollToFirstError layout="vertical">
+            <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {renderModal()}

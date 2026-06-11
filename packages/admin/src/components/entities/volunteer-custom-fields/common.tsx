@@ -1,10 +1,9 @@
 import { Checkbox, Form, Input, Select } from 'antd';
-import { FC } from 'react';
 
 import { Rules } from 'components/form/rules';
 import { TextEditor } from 'components/controls/text-editor';
 
-export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => (
+export const CreateEdit = ({ isEdit }: { isEdit?: boolean }) => (
     <>
         <Form.Item
             label="Название"
@@ -23,7 +22,7 @@ export const CreateEdit: FC<{ isEdit?: boolean }> = ({ isEdit }) => (
             </Select>
         </Form.Item>
         <Form.Item label="Комментарий" name="comment">
-            <TextEditor />
+            <TextEditor whiteEditor />
         </Form.Item>
         <Form.Item name="mobile" valuePropName="checked">
             <Checkbox>Показывать в мобильной админке?</Checkbox>

@@ -1,0 +1,3 @@
+.tabsWithMobileOffset :global(.ant-tabs-content-holder) {
+    padding-bottom: calc(var(--mobile-sider-height) + env(safe-area-inset-bottom));
+}

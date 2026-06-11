@@ -1,5 +1,6 @@
 import re
 import time
+import re
 from datetime import datetime
 from playwright.sync_api import Page
 
@@ -11,7 +12,7 @@ class BasePage:
         self.url = url
 
     def open(self):
-        self.page.goto(self.url)
+        self.page.goto(self.url, wait_until="domcontentloaded")
 
     def wait_for_list_page(self, path, timeout=30000):
         self.page.wait_for_url(re.compile(rf"{re.escape(path)}(?:\?.*)?$"), timeout=timeout)
@@ -113,25 +114,33 @@ class BasePage:
         go_to_create.click()
 
 
+    def _select_ant_option(self, selector, option_text=None):
+        select = self.page.locator(selector)
+        select.click()
+        dropdown = self.page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").last
+        dropdown.wait_for(state="visible")
+
+        options = dropdown.locator(".ant-select-item-option")
+        option = options.filter(has_text=option_text).first if option_text else options.first
+        option.wait_for(state="visible")
+        option.click(force=True)
+
+
     def create_badge(self):
         badge_name =self.page.locator(badge_create.BADGE_NAME)
         badge_name.fill("autotest" + datetime.now().strftime("%d%m%H%M%S"))
-        department = self.page.locator(badge_create.DEPARTMENT_NAME)
-        department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
-        department_option.wait_for(state="visible")
-        department_option.click()
-        role = self.page.locator("#role")
-        role.click()
-        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
-            has_text="Волонтёр"
-        ).first
-        role_option.wait_for(state="visible")
-        role_option.click()
+        self._select_ant_option(badge_create.DEPARTMENT_NAME)
+        self._select_ant_option("#role", "Волонтёр")
+        self._select_ant_option(badge_create.KITCHEN_NAME)
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        self.page.locator(badge_create.SUBMIT_BUTTON).click()
+        with self.page.expect_response(
+            lambda response: response.request.method == "POST"
+            and "/group-badges/" in response.url
+            and response.ok
+        ):
+            self.page.locator(badge_create.SUBMIT_BUTTON).click()
 
     def badges_counter(self):
         # Ждем пока счетчик стабилизируется (не меняется 2 итерации подряд)
@@ -156,6 +165,11 @@ class BasePage:
         first_row = self.page.locator("tbody.ant-table-tbody tr:first-child td:first-child")
         first_row.wait_for(state="visible")
         return first_row.inner_text()
+
+    def meal_table_rows(self):
+        rows = self.page.locator("tbody.ant-table-tbody tr td:first-child")
+        rows.first.wait_for(state="visible", timeout=30000)
+        return rows.all_inner_texts()
 
     def open_meal(self):
         first_row = self.page.locator("tr.ant-table-row").first
@@ -203,22 +217,50 @@ class BasePage:
     def receive_count_of_volunteers_in_group_badge(self):
         element_raw = self.page.locator(group_badges.VOLONTEER_COUNTER).first
         text = element_raw.inner_text()
-        element = int(text.strip("()"))
-        return element
+        match = re.search(r"\d+", text)
+        if not match:
+            raise ValueError(f"Could not parse volunteer count from text: {text}")
+        return int(match.group())
 
     def go_to_edit_badge(self):
         edit = self.page.locator(group_badges.EDIT_LAST_BUTTON).last
         edit.click()
 
+    def open_group_badge_volunteers_tab(self):
+        tab = self.page.locator(group_badges.VOLUNTEERS_TAB).first
+        tab.click()
+
     def add_volunteer_in_group_badge(self):
+        existing_volunteers = {
+            name.strip()
+            for name in self.page.locator("table").first.locator("tbody tr td:nth-child(1)").all_inner_texts()
+            if name.strip()
+        }
         add_new = self.page.locator(group_badges.ADD_VOLUNTEER)
         add_new.click()
-        insert_name = self.page.locator(group_badges.SEARCH_FIELD).last
+        modal = self.page.locator(".ant-modal-content").last
+        insert_name = modal.locator(group_badges.SEARCH_FIELD).first
         insert_name.click()
         insert_name.fill("Корица")
-        checkbox = self.page.locator(group_badges.CHECKBOX).last
-        checkbox.click()
-        ok = self.page.locator(group_badges.OK_BUTTON)
+        modal_rows = modal.locator("tbody tr")
+        modal_rows.first.wait_for(state="visible")
+        selected_row = None
+        for index in range(modal_rows.count()):
+            row = modal_rows.nth(index)
+            volunteer_name = row.locator("td").nth(1).inner_text().strip()
+            if volunteer_name and volunteer_name not in existing_volunteers:
+                selected_row = row
+                break
+
+        if selected_row is None:
+            raise AssertionError("Не найден волонтёр для добавления в групповой бейдж")
+
+        checkbox = selected_row.locator(group_badges.CHECKBOX).first
+        selected_row.locator(".ant-checkbox-wrapper").first.click()
+        checkbox.wait_for(state="attached")
+        if not checkbox.is_checked():
+            checkbox.check(force=True)
+        ok = modal.locator(group_badges.OK_BUTTON)
         ok.click()
 
 
@@ -249,15 +291,18 @@ class BasePage:
         create = self.page.locator(create_user.CREATE_USER_BUTTON)
         create.click()
 
-    def create_user(self, user_name="Test_name", supervisor_name='None'):
-        add_name = self.page.locator(create_user.USER_NAME)
-        add_name.click()
-        add_name.fill(user_name)
+    def fill_supervisor(self):
         add_supervisor = self.page.locator(create_user.SUPERVISOR)
         add_supervisor.click()
         self.page.locator(".ant-select-item-option").nth(1).click()
         self.page.wait_for_timeout(500)
         supervisor_name = add_supervisor.inner_text()
+        return supervisor_name
+
+    def create_user(self, user_name="Test_name"):
+        add_name = self.page.locator(create_user.USER_NAME)
+        add_name.click()
+        add_name.fill(user_name)
         add_kitchen = self.page.locator(create_user.KITCHEN_NUMBER)
         add_kitchen.click()
         add_kitchen.press("Tab")
@@ -273,7 +318,7 @@ class BasePage:
         add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
         add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        return supervisor_name
+        self.fill_approver_field()
 
 
     def save_in_user_page(self):
@@ -294,6 +339,11 @@ class BasePage:
         except Exception:
             # если нет модалки, иди дальше
             pass
+
+    def fill_approver_field(self, approver_name="Test Approver"):
+        approver_input = self.page.locator(create_user.APPROVER_INPUT)
+        approver_input.wait_for(state="visible", timeout=5000)
+        approver_input.fill(approver_name)
 
     def find_user(self, user_name="Test_name"):
         find = self.page.locator(create_user.FIND_INPUT)
@@ -344,11 +394,6 @@ class BasePage:
             current_value = self.page.evaluate("() => document.querySelector('#name')?.value")
             if current_value == updated_name:
                 break
-        change_supervisor = self.page.locator(create_user.SUPERVISOR)
-        change_supervisor.click()
-        self.page.locator(".ant-select-item-option").nth(2).click()
-        self.page.wait_for_timeout(300)
-        supervisor_name = change_supervisor.inner_text()
         
         add_visit = self.page.locator(create_user.ADD_VISIT_BUTTON)
         add_visit.wait_for(state="visible")
@@ -371,7 +416,6 @@ class BasePage:
         today_last = self.page.locator(create_user.TODAY).last
         today_last.click()
         self.save_in_user_page()
-        return supervisor_name
 
     def change_supervisor(self, option_index=3):
         change_supervisor = self.page.locator(create_user.SUPERVISOR)
@@ -408,6 +452,13 @@ class BasePage:
     def check_username_after_deleting(self, expected_name="Test_updated_name"):
         find = self.page.locator(create_user.FIND_INPUT)
         find.fill(expected_name)
+        try:
+            self.page.wait_for_function(
+                '() => parseInt(document.querySelector("span[data-testid=volunteer-count]")?.innerText || "0") === 0',
+                timeout=5000
+            )
+        except Exception:
+            pass
 
 
     def delete_user(self):
@@ -430,10 +481,10 @@ class BasePage:
 
     def clear_input_field(self):
         find = self.page.locator(create_user.FIND_INPUT)
-        find.press("End")  # Перемещаем курсор в конец строки
-        val = find.input_value()
-        for _ in range(len(val)):
-            find.press("Backspace")  # Удаляем символы один за другим
+        find.click()
+        find.fill("")
+        find.press("Enter")
+        self.page.wait_for_timeout(1000)
 
     def ban_user(self):
         ban = self.page.locator(create_user.BAN_BUTTON)
@@ -441,34 +492,70 @@ class BasePage:
         reason = self.page.locator(create_user.BAN_REASON)
         reason.fill("Причина бана")
         confirm = self.page.locator(create_user.BAN_CONFIRM)
-        confirm.click()
+        confirm.click(force=True)
+        self.page.wait_for_timeout(500)
 
     def unban_user(self):
         unban = self.page.locator(create_user.UNBAN_BUTTON)
-        unban.wait_for(state="visible", timeout=5000)
+        unban.wait_for(state="visible", timeout=15000)
         unban.click()
         reason = self.page.locator(create_user.BAN_REASON)
         reason.fill("Причина разбана")
         confirm = self.page.locator(create_user.UNBAN_CONFIRM)
-        confirm.click()
+        confirm.click(force=True)
+        self.page.wait_for_timeout(500)
+
+    @staticmethod
+    def _block_status_from_new_value_span_text(t: str) -> str | None:
+        """Только новое значение поля (как в UI), не весь innerText карточки: в diff на одной строке есть и old, и new."""
+        t = t.strip()
+        if t in ("Разблокирован", "Заблокирован"):
+            return t
+        return None
+
+    def _block_action_from_card(self, card) -> str | None:
+        """Статус блокировки из span нового значения (common-history itemDrescrNew)."""
+        news = card.locator("span[class*='itemDrescrNew']")
+        for i in range(news.count()):
+            w = self._block_status_from_new_value_span_text(news.nth(i).inner_text())
+            if w:
+                return w
+        return None
 
     def check_history_actions(self):
-        # Кликаем по вкладке "История действий"
+        # Вкладка «История изменений» / «История» (volunteer_uuid)
         self.page.locator(create_user.HISTORY_TAB).click()
         # Даем истории время прогрузиться (асинхронные логи)
         self.page.wait_for_timeout(1000)
-        # Ждем появления элементов в списке истории
-        self.page.locator(create_user.HISTORY_LOG_ITEM).first.wait_for(state="visible", timeout=5000)
+        # Ждём карточки истории (бан/разбан может не давать span itemDrescrNew)
+        self.page.locator(create_user.HISTORY_ITEM_CARD).first.wait_for(
+            state="visible", timeout=15000
+        )
 
-
+    def _list_block_actions_from_cards(self) -> list[str]:
+        """Карточки сверху вниз; по каждой — новое значение is_blocked, если оно в этом изменении."""
+        items = self.page.locator(create_user.HISTORY_ITEM_CARD)
+        out: list[str] = []
+        for i in range(items.count()):
+            w = self._block_action_from_card(items.nth(i))
+            if w:
+                out.append(w)
+        return out
 
     def check_last_action(self):
-        # Возвращаем текст последнего действия
-        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(1).inner_text().strip()
+        # Самое свежее событие бана/разбана среди карточек с этим полем
+        actions = self._list_block_actions_from_cards()
+        return actions[0] if actions else None
 
     def check_second_last_action(self):
-        # Возвращаем текст предпоследнего действия
-        return self.page.locator(create_user.HISTORY_LOG_ITEM).nth(3).inner_text().strip()
+        # После серии «Разблокирован» (дубликаты/старые записи) ищем предшествующий бан
+        actions = self._list_block_actions_from_cards()
+        if len(actions) < 2:
+            return None
+        i = 1
+        while i < len(actions) and actions[i] == "Разблокирован":
+            i += 1
+        return actions[i] if i < len(actions) else None
 
     def get_current_volunteer_name(self):
         # Получаем имя из поля #name
@@ -501,4 +588,3 @@ class BasePage:
         self.save_in_user_page()
         # Ждем возврата в список волонтеров
         self.page.wait_for_timeout(5000)
-
