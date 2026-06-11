@@ -57,7 +57,7 @@ const VolunteerSearchInput = ({
 
     return (
         <div className={styles.volSearchBlock}>
-            <Typography.Text type="secondary">Поиск по волонтёрам (тест)</Typography.Text>
+            <Typography.Text type="secondary">Поиск по волонтёрам</Typography.Text>
             <div
                 className={
                     [styles.volSearchWrap, searchInputValue.trim().length > 0 && styles.volActiveControlRing]
