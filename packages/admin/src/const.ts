@@ -1,4 +1,5 @@
-export const NEW_API_URL = import.meta.env.VITE_NEW_API_URL_ENV || '';
+/** В dev по умолчанию `/feedapi/v1` — запросы идут через proxy Vite (vite.config.ts). */
+export const NEW_API_URL = import.meta.env.VITE_NEW_API_URL_ENV || (import.meta.env.DEV ? '/feedapi/v1' : '');
 
 const getScannerUrl = () => {
     const envUrl = import.meta.env.VITE_SCANNER_URL_ENV;
@@ -18,9 +19,6 @@ const getScannerUrl = () => {
 };
 
 export const SCANNER_URL = getScannerUrl();
-
-// Имя кастомного поля "выдан бейдж"
-export const HAS_BADGE_FIELD_NAME = 'Бейдж у руководителя';
 
 export const MEAL_MAP: Record<string, string> = {
     breakfast: 'Завтрак',

@@ -1,7 +1,7 @@
 import { AccessControl } from 'accesscontrol';
 import type { AccessControlProvider } from '@refinedev/core';
 
-import { AppRoles, getUserData, type AppRole } from 'auth';
+import { AppRoles, getUserData, isAppRole, type AppRole } from 'auth';
 
 const ac = new AccessControl();
 
@@ -14,20 +14,49 @@ ac
     // Кот
     .grant(AppRoles.CAT)
     .extend(AppRoles.DIRECTION_HEAD)
-    .read(['wash', 'directions', 'feed-transaction', 'sync', 'stats', 'scanner-page'])
+    .read([
+        'wash',
+        'directions',
+        'feed-transaction',
+        'sync',
+        'stats',
+        'scanner-page',
+        'storages',
+        'storage-bins',
+        'storage-items',
+        'storage-positions',
+        'storage-issuances',
+        'storage-receivings'
+    ])
     .create(['volunteers'])
     // Старший смены
     .grant(AppRoles.SENIOR)
     .extend(AppRoles.CAT)
     .read(['volunteer-custom-fields'])
-    .create(['group-badges', 'volunteer-custom-fields'])
-    .update(['volunteer-custom-fields'])
+    .create([
+        'group-badges',
+        'volunteer-custom-fields',
+        'storages',
+        'storage-bins',
+        'storage-items',
+        'storage-positions'
+    ])
+    .update(['volunteer-custom-fields', 'storages', 'storage-bins', 'storage-items', 'storage-positions'])
     // Администратор
     .grant(AppRoles.ADMIN)
     .extend(AppRoles.SENIOR)
     .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash'])
     .update(['group-badges', 'volunteer-custom-fields'])
-    .delete(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'volunteers'])
+    .delete([
+        'group-badges',
+        'volunteer-custom-fields',
+        'feed-transaction',
+        'volunteers',
+        'storages',
+        'storage-bins',
+        'storage-items',
+        'storage-positions'
+    ])
     // Сова
     .grant(AppRoles.SOVA)
     .read('wash')
@@ -41,6 +70,7 @@ type Action =
     | 'delete'
     | 'full_list'
     | 'badge_edit'
+    | 'storage_edit'
     | 'bulk_edit'
     | 'feed_type_edit'
     | 'unban'
@@ -53,6 +83,7 @@ type Action =
 
 const checkCustomPermission = (role: AppRole, action: Action): boolean => {
     switch (action) {
+        case 'storage_edit':
         case 'badge_edit':
         case 'full_list':
         case 'bulk_edit': // массовые изменения
@@ -81,7 +112,11 @@ const checkCustomPermission = (role: AppRole, action: Action): boolean => {
     }
 };
 
-export const canAccessByRole = (role: AppRole, action: string, resource: string): boolean => {
+export const canAccessByRole = (role: string, action: string, resource: string): boolean => {
+    if (!isAppRole(role)) {
+        return false;
+    }
+
     if (action === 'list' || action === 'show') {
         return canRole(role).read(resource).granted;
     }

@@ -20,7 +20,7 @@ export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: IProps) => {
 
     const { result: customFieldsResult } = useList<CustomFieldEntity>({
         resource: 'volunteer-custom-fields',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
     });
 
     const { result: volunteer } = useOne<VolEntity>({

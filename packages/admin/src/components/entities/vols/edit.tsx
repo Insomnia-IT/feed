@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Edit, useForm } from '@refinedev/antd';
 import { useBreadcrumb } from '@refinedev/core';
-import { Form, Breadcrumb } from 'antd';
+import { Form, Breadcrumb, type FormProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 
 import { useScreen } from 'shared/providers';
@@ -10,8 +10,15 @@ import { useLocalStorage } from 'shared/hooks';
 import type { VolEntity } from 'interfaces';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
+import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 
 import styles from './common.module.css';
+
+const contentStyle = {
+    background: 'initial',
+    boxShadow: 'initial',
+    height: '100%'
+};
 
 export const VolEdit = () => {
     const location = useLocation();
@@ -55,6 +62,15 @@ export const VolEdit = () => {
 
     const [activeKey, setActiveKey] = useState('1');
 
+    const { onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const handleFinishFailed: NonNullable<FormProps['onFinishFailed']> = createVolunteerFormFinishFailedHandler(
+        setActiveKey,
+        form,
+        upstreamOnFinishFailed
+    );
+
+    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
+
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
     const isDeleted = Form.useWatch('deleted_at', form);
@@ -76,7 +92,8 @@ export const VolEdit = () => {
     return (
         <Edit
             headerProps={{
-                onBack: navigateBackToList
+                onBack: navigateBackToList,
+                extra: null
             }}
             breadcrumb={crumbItems.length > 0 ? <Breadcrumb items={crumbItems} /> : null}
             title={
@@ -96,14 +113,14 @@ export const VolEdit = () => {
             }
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick,
-                hidden: !isDesktop && activeKey !== '1'
+                onClick
             }}
             contentProps={{
-                style: { background: 'initial', boxShadow: 'initial', height: '100%' }
+                ...(shouldHideFooterActions ? { actions: [] } : {}),
+                style: contentStyle
             }}
         >
-            <Form {...formProps} scrollToFirstError layout="vertical">
+            <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {renderModal()}

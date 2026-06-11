@@ -1,0 +1,35 @@
+.modal {
+    top: calc(100% - 450px);
+}
+
+.content {
+    padding: 16px 0;
+}
+
+.inputRow {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.inputRow label {
+    min-width: 80px;
+    font-weight: 500;
+}
+
+.buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.meat {
+    color: #dd2e4e;
+}
+
+.vegan {
+    color: #1a9a6b;
+}

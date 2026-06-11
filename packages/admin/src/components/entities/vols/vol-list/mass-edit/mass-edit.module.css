@@ -80,3 +80,38 @@
 .customFields > * {
     margin-bottom: 12px;
 }
+
+/* Заголовок колонки «выбрать всех» — растягивается на всю th вместе с .volunteerTable selection styles */
+.selectionColumnTitle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+}
+
+.selectionCellHitTarget {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Клики обрабатывает ячейка; hover чекбокса — через родителя */
+.selectionCellHitTarget :global(.ant-checkbox-wrapper) {
+    pointer-events: none;
+}
+
+/* #1677ff / #4096ff — primary кнопки Ant Design в админке */
+.selectionCellHitTarget:hover :global(.ant-checkbox:not(.ant-checkbox-disabled) .ant-checkbox-inner) {
+    border-color: #1677ff;
+}
+
+.selectionCellHitTarget:hover :global(.ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner) {
+    background-color: #4096ff;
+    border-color: #4096ff;
+}

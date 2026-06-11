@@ -10,7 +10,6 @@ import { ScanProvider } from 'model/scan-provider';
 import { Screens } from './screens';
 
 import 'shared/common/colors.css';
-import 'shared/common/media.css';
 import 'shared/common/vars.css';
 
 const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {

@@ -7,6 +7,7 @@ import type {
     DirectionEntity,
     FeedTypeEntity,
     GroupBadgeEntity,
+    ItemEntity,
     KitchenEntity,
     StatusEntity,
     TransportEntity,
@@ -71,11 +72,13 @@ const shouldKeepFilterName = ({
 export const useFilters = ({
     customFields,
     customFieldsLoaded,
+    directionsLookupResource,
     setPage
 }: {
     setPage: (page: number) => void;
     customFields: CustomFieldEntity[];
     customFieldsLoaded: boolean;
+    directionsLookupResource?: string;
 }) => {
     const { getItem, setItem } = useLocalStorage();
     const getDefaultVisibleFilters = useCallback((): Array<string> => {
@@ -121,6 +124,11 @@ export const useFilters = ({
 
     const [activeFiltersState, setActiveFiltersState] = useState<Array<FilterItem>>(getDefaultActiveFilters);
     const [visibleFiltersState, setVisibleFiltersState] = useState<Array<string>>(getDefaultVisibleFilters);
+    const shouldLoadLookup = useCallback(
+        (name: string) =>
+            visibleFiltersState.includes(name) || activeFiltersState.some((filterItem) => filterItem.name === name),
+        [activeFiltersState, visibleFiltersState]
+    );
 
     useEffect(() => {
         setItem(SEARCH_TEXT_STORAGE_ITEM_NAME, searchText);
@@ -128,44 +136,59 @@ export const useFilters = ({
 
     const { result: groupBadgesResult } = useList<GroupBadgeEntity, HttpError>({
         resource: 'group-badges',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('group_badge') }
     });
 
     const { result: directionsResult } = useList<DirectionEntity, HttpError>({
-        resource: 'directions',
-        pagination: { pageSize: 0 }
+        resource: directionsLookupResource ?? 'directions',
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('directions') }
     });
 
     const visibleDirections = useVisibleDirections();
 
     const { result: kitchensResult, query: kitchensQuery } = useList<KitchenEntity, HttpError>({
         resource: 'kitchens',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('kitchen') }
     });
 
     const { result: feedTypesResult, query: feedTypesQuery } = useList<FeedTypeEntity, HttpError>({
         resource: 'feed-types',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('feed_type') }
     });
 
     const { result: accessRolesResult, query: accessRolesQuery } = useList<AccessRoleEntity, HttpError>({
         resource: 'access-roles',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('access_role') }
     });
 
     const { result: volunteerRolesResult, query: volunteerRolesQuery } = useList<VolunteerRoleEntity, HttpError>({
         resource: 'volunteer-roles',
-        pagination: { pageSize: 10000 }
+        pagination: { pageSize: 10000 },
+        queryOptions: { enabled: shouldLoadLookup('main_role') }
     });
 
     const { result: transportsResult } = useList<TransportEntity, HttpError>({
         resource: 'transports',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' },
+        queryOptions: {
+            enabled: shouldLoadLookup('arrivals.arrival_transport') || shouldLoadLookup('arrivals.departure_transport')
+        }
     });
 
     const { result: statusesResult } = useList<StatusEntity, HttpError>({
         resource: 'statuses',
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' }
+    });
+
+    const { result: storageItemsResult, query: storageItemsQuery } = useList<ItemEntity, HttpError>({
+        resource: 'storage-items',
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('inventory_item') }
     });
 
     const { result: supervisorsResult, query: supervisorsQuery } = useList<VolEntity, HttpError>({
@@ -177,15 +200,18 @@ export const useFilters = ({
                 value: true
             }
         ],
-        pagination: { pageSize: 0 }
+        pagination: { mode: 'off' },
+        queryOptions: { enabled: shouldLoadLookup('supervisor_id') }
     });
     const directionsLookup = useMemo(
         () =>
             (directionsResult.data ?? [])
                 .slice()
                 .sort(getSorter('name'))
-                .filter(({ id }) => !visibleDirections || visibleDirections.includes(String(id))),
-        [directionsResult.data, visibleDirections]
+                .filter(
+                    ({ id }) => directionsLookupResource || !visibleDirections || visibleDirections.includes(String(id))
+                ),
+        [directionsLookupResource, directionsResult.data, visibleDirections]
     );
     const statusesLookup = useMemo(() => statusesResult.data ?? [], [statusesResult.data]);
     const transportsLookup = useMemo(() => transportsResult.data ?? [], [transportsResult.data]);
@@ -194,6 +220,14 @@ export const useFilters = ({
     const feedTypesLookup = useMemo(() => feedTypesResult.data ?? [], [feedTypesResult.data]);
     const accessRolesLookup = useMemo(() => accessRolesResult.data ?? [], [accessRolesResult.data]);
     const groupBadgesLookup = useMemo(() => groupBadgesResult.data ?? [], [groupBadgesResult.data]);
+    const storageItemsLookup = useMemo(
+        () =>
+            (storageItemsResult.data ?? []).map((item) => ({
+                id: item.id,
+                name: item.storage_name ? `${item.name} (${item.storage_name})` : item.name
+            })),
+        [storageItemsResult.data]
+    );
     const supervisorsLookup = useMemo(
         () =>
             (supervisorsResult.data ?? []).map((supervisor) => ({
@@ -270,6 +304,12 @@ export const useFilters = ({
             { type: FilterFieldType.String, name: 'printing_batch', title: 'Партия бейджа' },
             { type: FilterFieldType.String, name: 'badge_number', title: 'Номер бейджа' },
             {
+                type: FilterFieldType.Boolean,
+                single: true,
+                name: 'is_badge_located_at_leader',
+                title: 'Бейдж у руководителя'
+            },
+            {
                 type: FilterFieldType.Lookup,
                 name: 'feed_type',
                 title: 'Тип питания',
@@ -306,6 +346,14 @@ export const useFilters = ({
                 single: true,
                 lookup: () => supervisorsLookup
             },
+            {
+                type: FilterFieldType.Lookup,
+                name: 'inventory_item',
+                title: 'Предмет в инвентаре',
+                skipNull: true,
+                single: true,
+                lookup: () => storageItemsLookup
+            },
             { type: FilterFieldType.Boolean, single: true, name: 'is_supervisor', title: 'Является бригадиром' },
             { type: FilterFieldType.Boolean, single: true, name: 'has_supervisor', title: 'Назначен бригадир' },
             ...customFields.map<FilterField>((customField) => ({
@@ -323,6 +371,7 @@ export const useFilters = ({
             groupBadgesLookup,
             kitchensLookup,
             statusesLookup,
+            storageItemsLookup,
             supervisorsLookup,
             transportsLookup,
             volunteerRolesLookup
@@ -413,6 +462,7 @@ export const useFilters = ({
             feedTypesQuery.isLoading ||
             accessRolesQuery.isLoading ||
             volunteerRolesQuery.isLoading ||
+            storageItemsQuery.isLoading ||
             supervisorsQuery.isLoading,
         filterQueryParams,
         filterQueryParamsWithoutDefaultDirections,

@@ -15,7 +15,15 @@ export const DepartmentList = () => {
 
     return (
         <List>
-            <Table rowKey="id" dataSource={directions} loading={query.isLoading}>
+            <Table
+                rowKey="id"
+                dataSource={directions}
+                loading={query.isLoading}
+                pagination={{
+                    total: directions.length,
+                    showTotal: (total) => `Всего: ${total}`
+                }}
+            >
                 <Table.Column
                     dataIndex="name"
                     title="Название"

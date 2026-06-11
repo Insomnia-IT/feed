@@ -30,6 +30,7 @@ export const AutoSync = () => {
             const syncSend = syncSendRef.current;
 
             if (navigator.onLine && !isSyncFetching) {
+                // eslint-disable-next-line no-console
                 console.log('online, updating...');
                 void syncSend();
             }

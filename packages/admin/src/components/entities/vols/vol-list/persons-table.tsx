@@ -73,6 +73,7 @@ export const PersonsTable = ({ searchText }: { searchText: string }) => {
                 current: currentPage,
                 pageSize,
                 total: result.total,
+                showTotal: (total) => `Всего: ${total}`,
                 onChange: (page, size) => {
                     setCurrentPage(page);
                     setPageSize(size);

@@ -22,7 +22,7 @@ export const CreateEdit = ({ isEdit }: { isEdit?: boolean }) => (
             </Select>
         </Form.Item>
         <Form.Item label="Комментарий" name="comment">
-            <TextEditor />
+            <TextEditor whiteEditor />
         </Form.Item>
         <Form.Item name="mobile" valuePropName="checked">
             <Checkbox>Показывать в мобильной админке?</Checkbox>

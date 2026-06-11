@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useList, CanAccess, useGetIdentity } from '@refinedev/core';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { CanAccess, useGetIdentity, useTranslate } from '@refinedev/core';
 import { List } from '@refinedev/antd';
-import { Input, Row, Col, Segmented } from 'antd';
-import type { TablePaginationConfig } from 'antd/es/table';
+import { App, Button, Input, Segmented, Spin, Typography } from 'antd';
+import { PlusSquareOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 
 import { dataProvider } from 'dataProvider';
@@ -10,157 +10,112 @@ import { useDebouncedCallback, useLocalStorage } from 'shared/hooks';
 import { useScreen } from 'shared/providers';
 import useCanAccess from './use-can-access';
 import type { UserData } from 'auth';
-
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 
 import { Filters } from './vol-list/filters/filters';
+import { isEffectiveFilterValue } from './vol-list/filters/is-effective-filter-value';
+import type { FilterItem } from 'components/entities/vols/vol-list/filters/filter-types';
 import { useFilters } from 'components/entities/vols/vol-list/filters/use-filters';
-import { SaveAsXlsxButton } from './vol-list/save-as-xlsx-button';
-import { ChooseColumnsButton } from './vol-list/choose-columns-button';
-import { VolunteerDesktopTable } from './vol-list/volunteer-desktop-table';
-import { VolunteerMobileList } from './vol-list/volunteer-mobile-list';
+import { VolunteerMobileList } from './vol-list/volunteer-mobile-list/volunteer-mobile-list';
 import { ActiveColumnsContextProvider } from './vol-list/active-columns-context';
-import { useMassEdit } from './vol-list/mass-edit/use-mass-edit';
-import { MassEdit } from './vol-list/mass-edit/mass-edit';
-import { PersonsTable } from './vol-list/persons-table';
+
+import styles from './list-page.module.css';
 
 const LS_PAGE_INDEX = 'volPageIndex';
 const LS_PAGE_SIZE = 'volPageSize';
+
+const DesktopVolunteersContent = lazy(() =>
+    import('./desktop-volunteers-content').then((module) => ({ default: module.DesktopVolunteersContent }))
+);
 
 const getPositiveNumber = (value: string | null, fallback: number) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-const DesktopVolunteersContent = ({
-    page,
-    pageSize,
-    setPageWithStorage,
-    setPageSizeWithStorage,
-    effectiveFilterQueryParams,
-    statusById,
-    customFields,
-    canBulkEdit,
-    canListCustomFields,
-    isFiltersLoading,
-    searchText,
-    activeFilters,
-    openVolunteer
+const VolunteerSearchInput = ({
+    onSearchTextChange,
+    searchText
 }: {
-    page: number;
-    pageSize: number;
-    setPageWithStorage: (value: number) => void;
-    setPageSizeWithStorage: (value: number) => void;
-    effectiveFilterQueryParams: string;
-    statusById: Record<string, string>;
-    customFields: Array<CustomFieldEntity>;
-    canBulkEdit: boolean;
-    canListCustomFields: boolean;
-    isFiltersLoading: boolean;
+    onSearchTextChange: (value: string) => void;
     searchText: string;
-    activeFilters: unknown[];
-    openVolunteer: (id: number) => Promise<boolean>;
 }) => {
-    const { result: volunteersResult, query: volunteersQuery } = useList<VolEntity>({
-        resource: `volunteers/${effectiveFilterQueryParams}`,
-        pagination: {
-            mode: 'server',
-            currentPage: page,
-            pageSize
-        }
-    });
-    const volunteers = volunteersResult;
-    const volunteersIsLoading = volunteersQuery.isLoading;
-    const reloadVolunteers = volunteersQuery.refetch;
+    const [searchState, setSearchState] = useState(() => ({
+        syncedSearchText: searchText,
+        inputValue: searchText
+    }));
+    const debouncedSetSearchText = useDebouncedCallback(onSearchTextChange, 250);
 
-    useEffect(() => {
-        const total = volunteers?.total;
-        if (!total) return;
-
-        const outOfRange = (page - 1) * pageSize >= total;
-        if (!outOfRange) return;
-
-        setPageWithStorage(1);
-    }, [volunteers?.total, page, pageSize, setPageWithStorage]);
-
-    const { selectedVols, unselectAllSelected, unselectVolunteer, rowSelection, reloadSelectedVolunteers } =
-        useMassEdit({
-            totalVolunteersCount: volunteers?.total ?? 0,
-            filterQueryParams: effectiveFilterQueryParams
+    if (searchState.syncedSearchText !== searchText) {
+        setSearchState({
+            syncedSearchText: searchText,
+            inputValue: searchText
         });
+    }
 
-    const pagination = useMemo<TablePaginationConfig>(
-        () => ({
-            total: volunteers?.total ?? 1,
-            showTotal: (total) => (
-                <>
-                    <span data-testid="volunteer-count-caption">Волонтёров:</span>{' '}
-                    <span data-testid="volunteer-count-value">{total}</span>
-                </>
-            ),
-            hideOnSinglePage: false,
-            current: page,
-            pageSize,
-            showSizeChanger: true,
-            onChange: (newPage, newSize) => {
-                setPageWithStorage(newPage);
-                setPageSizeWithStorage(newSize);
-            }
-        }),
-        [volunteers?.total, page, pageSize, setPageWithStorage, setPageSizeWithStorage]
-    );
-
-    const noActiveFilters = activeFilters.length === 0;
-    const volunteersData = volunteers?.data ?? [];
-    const showPersons = !!searchText && noActiveFilters && volunteersData.length === 0;
+    const searchInputValue = searchState.inputValue;
 
     return (
-        <>
-            <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
-                <Col style={{ display: 'flex', alignItems: 'center' }}>
-                    <span>
-                        <b>Результат:</b> <span data-testid="volunteer-count">{volunteers?.total}</span> волонтеров
-                    </span>
-                </Col>
-
-                <Row style={{ gap: '12px' }}>
-                    <ChooseColumnsButton canListCustomFields={canListCustomFields} />
-                    <SaveAsXlsxButton
-                        isDisabled={!volunteersData.length || isFiltersLoading}
-                        filterQueryParams={effectiveFilterQueryParams}
-                    />
-                </Row>
-            </Row>
-
-            {!showPersons && (
-                <VolunteerDesktopTable
-                    openVolunteer={openVolunteer}
-                    pagination={pagination}
-                    statusById={statusById}
-                    volunteersIsLoading={volunteersIsLoading}
-                    volunteersData={volunteersData}
-                    customFields={customFields}
-                    rowSelection={canBulkEdit ? rowSelection : undefined}
-                />
-            )}
-            {showPersons && <PersonsTable key={searchText} searchText={searchText} />}
-            {canBulkEdit && (
-                <MassEdit
-                    selectedVolunteers={selectedVols}
-                    unselectAll={unselectAllSelected}
-                    unselectVolunteer={unselectVolunteer}
-                    reloadVolunteers={async () => {
-                        await reloadVolunteers();
-                        await reloadSelectedVolunteers();
+        <div className={styles.volSearchBlock}>
+            <Typography.Text type="secondary">Поиск по волонтёрам</Typography.Text>
+            <div
+                className={
+                    [styles.volSearchWrap, searchInputValue.trim().length > 0 && styles.volActiveControlRing]
+                        .filter(Boolean)
+                        .join(' ') || undefined
+                }
+            >
+                <Input
+                    placeholder="Поиск по волонтерам, датам, службам"
+                    value={searchInputValue}
+                    onChange={(e) => {
+                        const nextValue = e.target.value;
+                        setSearchState({
+                            syncedSearchText: searchText,
+                            inputValue: nextValue
+                        });
+                        debouncedSetSearchText(nextValue);
                     }}
+                    allowClear
                 />
-            )}
-        </>
+            </div>
+        </div>
+    );
+};
+
+const VolunteersListCreateButton = ({ activeFilters }: { activeFilters: FilterItem[] }) => {
+    const navigate = useNavigate();
+    const translate = useTranslate();
+    const canCreateVolunteer = useCanAccess({ action: 'create', resource: 'volunteers' });
+    const { modal } = App.useApp();
+
+    if (!canCreateVolunteer) {
+        return null;
+    }
+
+    return (
+        <Button
+            type="primary"
+            icon={<PlusSquareOutlined />}
+            onClick={() => {
+                if (activeFilters.some(({ value }) => isEffectiveFilterValue(value))) {
+                    modal.warning({
+                        title: 'Применены фильтры',
+                        content:
+                            'Список сейчас может быть неполным: при активных фильтрах волонтёр может не отображаться, хотя он уже есть в базе. Сбросьте фильтры и ещё раз поищите, прежде чем создавать новую запись.'
+                    });
+                    return;
+                }
+                void navigate('/volunteers/create');
+            }}
+        >
+            {translate('buttons.create', 'Создать')}
+        </Button>
     );
 };
 
 export const VolList = () => {
-    const { isDesktop } = useScreen();
+    const { isDesktop, isMobile } = useScreen();
     const navigate = useNavigate();
     const { data: user } = useGetIdentity<UserData>();
     const { getItem, setItem } = useLocalStorage();
@@ -174,7 +129,7 @@ export const VolList = () => {
     });
 
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
-    const [customFieldsLoaded, setCustomFieldsLoaded] = useState(false);
+    const [customFieldsLoaded, setCustomFieldsLoaded] = useState(() => !isDesktop);
     const [hasMyBrigade, setHasMyBrigade] = useState(false);
     const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
     const [mobileTotal, setMobileTotal] = useState(0);
@@ -208,6 +163,11 @@ export const VolList = () => {
         resource: 'volunteer-custom-fields'
     });
     const canBulkEdit = useCanAccess({ action: 'bulk_edit', resource: 'volunteers' });
+    const userId = user?.id;
+    const directionsLookupResource =
+        !isDesktop && hasMyBrigade && brigadeScope === 'my' && userId
+            ? `directions/?supervisor_id=${userId}`
+            : undefined;
 
     const {
         activeFilters,
@@ -224,16 +184,9 @@ export const VolList = () => {
     } = useFilters({
         setPage: setPageWithStorage,
         customFields,
-        customFieldsLoaded
+        customFieldsLoaded,
+        directionsLookupResource
     });
-    const [searchInputValue, setSearchInputValue] = useState(searchText);
-    const debouncedSetSearchText = useDebouncedCallback((value: string) => setSearchText(value), 250);
-
-    const userId = user?.id;
-
-    useEffect(() => {
-        setSearchInputValue(searchText);
-    }, [searchText]);
 
     useEffect(() => {
         if (isDesktop || !userId) return;
@@ -265,6 +218,10 @@ export const VolList = () => {
     }, [isDesktop, userId]);
 
     useEffect(() => {
+        if (!isDesktop) {
+            return;
+        }
+
         let cancelled = false;
 
         dataProvider
@@ -285,7 +242,7 @@ export const VolList = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [isDesktop]);
 
     const isMyBrigadeAvailable = !isDesktop && Boolean(userId) && hasMyBrigade;
     const effectiveBrigadeScope: 'my' | 'all' = isMyBrigadeAvailable ? brigadeScope : 'all';
@@ -320,30 +277,19 @@ export const VolList = () => {
         return Promise.resolve(true);
     };
 
-    const noActiveFilters = activeFilters.length === 0;
-
     return (
-        <List canCreate={noActiveFilters}>
+        <List canCreate headerButtons={() => <VolunteersListCreateButton activeFilters={activeFilters} />}>
             <CanAccess fallback="У вас нет доступа к этой странице">
                 <ActiveColumnsContextProvider customFields={customFields}>
-                    <Input
-                        placeholder="Поиск по волонтерам, датам, службам"
-                        value={searchInputValue}
-                        onChange={(e) => {
-                            const nextValue = e.target.value;
-                            setSearchInputValue(nextValue);
-                            debouncedSetSearchText(nextValue);
-                        }}
-                        allowClear
-                    />
+                    <VolunteerSearchInput searchText={searchText} onSearchTextChange={setSearchText} />
                     <Filters
                         activeFilters={activeFilters}
                         setActiveFilters={setActiveFilters}
                         visibleFilters={visibleFilters}
                         setVisibleFilters={setVisibleFilters}
                         filterFields={filterFields}
-                        searchText={searchText}
-                        setSearchText={setSearchText}
+                        isMobile={isMobile}
+                        mobileSummary={!isDesktop ? <span>Найдено: {mobileTotal}</span> : undefined}
                     />
                     {isMyBrigadeAvailable && (
                         <Segmented
@@ -358,33 +304,30 @@ export const VolList = () => {
                     )}
 
                     {isDesktop ? (
-                        <DesktopVolunteersContent
-                            page={page}
-                            pageSize={pageSize}
-                            setPageWithStorage={setPageWithStorage}
-                            setPageSizeWithStorage={setPageSizeWithStorage}
-                            effectiveFilterQueryParams={effectiveFilterQueryParams}
-                            statusById={statusById}
-                            customFields={customFields}
-                            canBulkEdit={canBulkEdit}
-                            canListCustomFields={canListCustomFields}
-                            isFiltersLoading={isFiltersLoading}
-                            searchText={searchText}
-                            activeFilters={activeFilters}
-                            openVolunteer={openVolunteer}
-                        />
-                    ) : (
-                        <>
-                            <Row style={{ padding: '10px 0', gap: '24px' }} justify="end">
-                                <span>Найдено: {mobileTotal}</span>
-                            </Row>
-                            <VolunteerMobileList
-                                filterQueryParams={effectiveFilterQueryParams}
+                        <Suspense fallback={<Spin />}>
+                            <DesktopVolunteersContent
+                                page={page}
+                                pageSize={pageSize}
+                                setPageWithStorage={setPageWithStorage}
+                                setPageSizeWithStorage={setPageSizeWithStorage}
+                                effectiveFilterQueryParams={effectiveFilterQueryParams}
                                 statusById={statusById}
+                                customFields={customFields}
+                                canBulkEdit={canBulkEdit}
+                                canListCustomFields={canListCustomFields}
+                                isFiltersLoading={isFiltersLoading}
+                                searchText={searchText}
+                                activeFilters={activeFilters}
                                 openVolunteer={openVolunteer}
-                                onTotalChange={setMobileTotal}
                             />
-                        </>
+                        </Suspense>
+                    ) : (
+                        <VolunteerMobileList
+                            filterQueryParams={effectiveFilterQueryParams}
+                            statusById={statusById}
+                            openVolunteer={openVolunteer}
+                            onTotalChange={setMobileTotal}
+                        />
                     )}
                 </ActiveColumnsContextProvider>
             </CanAccess>

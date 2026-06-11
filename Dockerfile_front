@@ -1,29 +1,16 @@
-# syntax=docker/dockerfile:experimental
+# syntax=docker/dockerfile:1
 
-FROM node:24-alpine as base
+FROM node:24-alpine AS base
 
-# ENV NODE_ENV=development
 ENV husky_skip_init="1"
 ENV HUSKY="0"
-ENV HUSKY_DEBUG="1"
-#ENV NODE_OPTIONS="--max_old_space_size=4000 --openssl-legacy-provider"
 ENV NODE_OPTIONS="--max_old_space_size=4000"
-
-#TODO review env varables
-
-ARG HOST
-ENV HOST=${HOST}
-
-ARG CI
-ENV CI_ENV=${CI}
 
 WORKDIR /app
 
-FROM base as deps
+FROM base AS deps
 
-RUN apk add --no-cache curl python3 py3-setuptools build-base
-RUN curl -sf https://gobinaries.com/tj/node-prune | sh
-RUN echo "npm cache clean --force && node-prune" > /usr/local/bin/node-clean && chmod +x /usr/local/bin/node-clean
+RUN apk add --no-cache python3 py3-setuptools build-base
 
 COPY ./package.json /app/package.json
 COPY ./package-lock.json /app/package-lock.json
@@ -33,7 +20,7 @@ COPY ./packages/scanner/package.json /app/packages/scanner/package.json
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm ci
 
-FROM deps as admin-builder
+FROM deps AS admin-builder
 
 COPY ./tsconfig.json /app/tsconfig.json
 COPY ./packages/admin /app/packages/admin
@@ -42,9 +29,10 @@ ARG NEW_API_URL
 ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
 ARG APP_VERSION
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    --mount=type=cache,target=/app/packages/admin/node_modules/.tmp \
     VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm --workspace @feed/admin run build
 
-FROM deps as scanner-builder
+FROM deps AS scanner-builder
 
 COPY ./tsconfig.json /app/tsconfig.json
 COPY ./packages/scanner /app/packages/scanner
@@ -53,29 +41,16 @@ ARG NEW_API_URL
 ENV VITE_NEW_API_URL_ENV=${NEW_API_URL}
 ARG APP_VERSION
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
+    --mount=type=cache,target=/app/packages/scanner/node_modules/.tmp \
     VITE_APP_VERSION=${APP_VERSION:-$(date +"%Y-%m-%dT%H:%M:%S")} npm --workspace @feed/scanner run build
 
-# RUN RUN npm prune --production
-
-# RUN /usr/local/bin/node-clean
-
-FROM base as runner
+FROM nginx:1.29-alpine AS runner
 
 EXPOSE 80
 
-RUN apk add --no-cache nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-ARG NEW_API_URL
-ENV NEW_API_URL_ENV=${NEW_API_URL}
-ARG ADMIN_BASE_PATH
-ENV ADMIN_BASE_PATH_ENV=${ADMIN_BASE_PATH}
-
-COPY --from=admin-builder /app/tsconfig.json /app/
-COPY --from=admin-builder /app/package.json /app/
 COPY --from=admin-builder /app/packages/admin/dist/ /app/packages/admin/dist/
-
-COPY --from=scanner-builder /app/packages/scanner/package.json /app/packages/scanner/
 COPY --from=scanner-builder /app/packages/scanner/dist/ /app/packages/scanner/dist/
 
-CMD nginx
+CMD ["nginx"]

@@ -1,0 +1,49 @@
+.header {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.title {
+    margin-bottom: 0 !important;
+}
+
+.total {
+    font-size: 0.875rem;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.search {
+    width: 240px;
+}
+
+.directions {
+    white-space: pre-wrap;
+}
+
+@media (width <= 576px) {
+    .header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .actions {
+        justify-content: stretch;
+    }
+
+    .search {
+        width: 100%;
+    }
+
+    .actions > * {
+        flex: 1;
+    }
+}

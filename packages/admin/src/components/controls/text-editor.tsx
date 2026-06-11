@@ -29,6 +29,7 @@ interface IProps {
     readOnly?: boolean;
     placeholder?: string;
     className?: string;
+    whiteEditor?: boolean;
 }
 
 export const TextEditor = memo(function TextEditor({
@@ -37,7 +38,8 @@ export const TextEditor = memo(function TextEditor({
     theme = 'snow',
     readOnly = false,
     placeholder,
-    className
+    className,
+    whiteEditor
 }: IProps) {
     const editorId = useId();
 
@@ -131,5 +133,12 @@ export const TextEditor = memo(function TextEditor({
         }
     }, [value]);
 
-    return <div id={editorId} ref={containerRef} className={className ?? 'quill'} />;
+    return (
+        <div
+            id={editorId}
+            ref={containerRef}
+            className={className ?? 'quill'}
+            style={whiteEditor ? { backgroundColor: '#FFF' } : undefined}
+        />
+    );
 });

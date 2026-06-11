@@ -22,7 +22,8 @@ export const FIELD_LABELS: Record<string, string> = {
     status: 'Статус',
     departure_date: 'Дата отъезда',
     arrival_date: 'Дата приезда',
-    is_free: 'Бесплатно',
+    paid_arrivals: 'Платные питания',
+    is_free: 'За счёт фестиваля',
     is_blocked: 'Статус блокировки',
     person: 'Персона',
     deleted: 'Удален',
@@ -33,7 +34,9 @@ export const FIELD_LABELS: Record<string, string> = {
     batch: 'Партия бейджа',
     ticket: 'Билет',
     qr: 'QR бейджа',
-    supervisor: 'Бригадир'
+    supervisor: 'Бригадир',
+    approver: 'Кто согласовал',
+    is_badge_located_at_leader: 'Бейдж у руководителя'
 };
 
 export const STATUS_MAP: Record<string, string> = {

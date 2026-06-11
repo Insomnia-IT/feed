@@ -47,10 +47,21 @@ const DepartmentList = lazyNamed(() => import('components/entities/directions/li
 const DepartmentCreate = lazyNamed(() => import('components/entities/directions/create'), 'DepartmentCreate');
 const DirectionEdit = lazyNamed(() => import('components/entities/directions/edit'), 'DirectionEdit');
 const DirectionShow = lazyNamed(() => import('components/entities/directions/show'), 'DirectionShow');
-const GroupBadgeList = lazyNamed(() => import('components/entities/group-badges/list'), 'GroupBadgeList');
-const GroupBadgeCreate = lazyNamed(() => import('components/entities/group-badges/create'), 'GroupBadgeCreate');
-const GroupBadgeEdit = lazyNamed(() => import('components/entities/group-badges/edit'), 'GroupBadgeEdit');
+const GroupBadgeList = lazyNamed(
+    () => import('components/entities/group-badges/list/group-badge-list'),
+    'GroupBadgeList'
+);
+const GroupBadgeCreate = lazyNamed(() => import('components/entities/group-badges/create/create'), 'GroupBadgeCreate');
+const GroupBadgeEdit = lazyNamed(
+    () => import('components/entities/group-badges/edit/group-badge-edit'),
+    'GroupBadgeEdit'
+);
 const GroupBadgeShow = lazyNamed(() => import('components/entities/group-badges/show'), 'GroupBadgeShow');
+const StorageList = lazyNamed(() => import('components/entities/storage/list'), 'StorageList');
+const StorageCreate = lazyNamed(() => import('components/entities/storage/create'), 'StorageCreate');
+const StorageEdit = lazyNamed(() => import('components/entities/storage/edit'), 'StorageEdit');
+const StorageShow = lazyNamed(() => import('components/entities/storage/show'), 'StorageShow');
+
 const FeedTransactionList = lazyNamed(() => import('components/entities/feed-transaction/list'), 'FeedTransactionList');
 const FeedTransactionCreate = lazyNamed(
     () => import('components/entities/feed-transaction/create'),
@@ -127,6 +138,13 @@ export const AppRoutes = ({ initial }: IProps) => {
                     <Route path="/feed-transaction">
                         <Route index element={<FeedTransactionList />} />
                         <Route path="create" element={<FeedTransactionCreate />} />
+                    </Route>
+
+                    <Route path="/storages">
+                        <Route index element={<StorageList />} />
+                        <Route path="create" element={<StorageCreate />} />
+                        <Route path="edit/:id" element={<StorageEdit />} />
+                        <Route path="show/:id" element={<StorageShow />} />
                     </Route>
 
                     <Route path="/stats" element={<PublicStatistic />} />

@@ -2,11 +2,8 @@ import dayjs from 'dayjs';
 import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
-import type { MealPlanCell } from '@feed/admin/src/interfaces';
 
 import { getToday } from 'shared/lib/date';
-
-export type { MealPlanCell };
 
 export interface Transaction {
     ulid: string;
@@ -15,8 +12,9 @@ export interface Transaction {
     ts: number;
     mealTime: MealTime;
     is_new: boolean;
-    is_vegan?: boolean;
+    is_vegan?: boolean | null;
     is_anomaly?: boolean;
+    is_paid?: boolean;
     reason?: string | null;
     kitchen: number;
     group_badge?: number | null;
@@ -24,15 +22,19 @@ export interface Transaction {
 
 export interface ServerTransaction {
     ulid: string;
-    volunteer: number;
+    volunteer: number | null;
     amount: number;
     dtime: string;
     meal_time: MealTime;
-    is_vegan: boolean;
+    is_vegan: boolean | null;
+    is_paid?: boolean;
     is_anomaly?: boolean;
     reason?: string | null;
+    comment?: string | null;
     kitchen: number;
     group_badge?: number | null;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface TransactionJoined extends Transaction {
@@ -57,38 +59,96 @@ export const MealTime = {
 
 export type MealTime = (typeof MealTime)[keyof typeof MealTime];
 
-export interface Volunteer {
+export interface MealPlanCell {
+    id?: number;
+    group_badge: number;
+    group_badge_name?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    date: string;
+    meal_time: MealTime;
+    amount_meat: number | null;
+    amount_vegan: number | null;
+}
+
+interface TimeStampedEntity {
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface VolunteerDirection extends TimeStampedEntity {
+    id: string;
+    name: string;
+    comment?: string | null;
+    type?: {
+        id: string;
+        name: string;
+        is_federal?: boolean;
+    } | null;
+    first_year?: number | null;
+    last_year?: number | null;
+}
+
+export interface Volunteer extends TimeStampedEntity {
     qr: string;
     id: number;
-    first_name: string;
-    name: string;
+    uuid?: string;
+    gender?: string | null;
+    first_name: string | null;
+    last_name?: string | null;
+    name: string | null;
+    position?: string | null;
     is_blocked: boolean;
     is_vegan: boolean;
+    is_ticket_received?: boolean | null;
+    comment?: string | null;
+    direction_head_comment?: string | null;
+    badge_number?: string | null;
+    printing_batch?: number | null;
     deleted_at: string | null;
     arrivals: Array<Arrival>;
-    feed_type: FeedType;
-    infant: boolean;
-    directions: Array<{ name: string }>;
-    kitchen: number;
+    paid_arrivals?: Array<PaidArrival>;
+    feed_type: FeedType | null;
+    infant: boolean | null;
+    directions: Array<VolunteerDirection>;
+    kitchen: number | null;
     group_badge: number | null;
     scanner_comment: string | null;
-    transactions: Array<Transaction> | null;
+    access_role?: string | null;
+    main_role?: string | null;
+    responsible_id?: number | null;
+    supervisor_id?: number | null;
+    supervisor?: { id: number; name: string } | null;
 }
 
-export interface Arrival {
+export interface Arrival extends TimeStampedEntity {
     id: string;
-    status: string;
+    status: string | null;
     arrival_date: string;
-    arrival_transport: string;
+    arrival_transport: string | null;
     departure_date: string;
-    departure_transport: string;
+    departure_transport: string | null;
+    comment?: string | null;
 }
 
-export interface GroupBadge {
+export interface PaidArrival extends TimeStampedEntity {
+    id: string;
+    arrival_date: string;
+    departure_date: string;
+    is_free: boolean;
+    comment?: string | null;
+}
+
+export interface GroupBadge extends TimeStampedEntity {
     id: number;
     name: string;
     qr: string;
     planning_cells: Array<MealPlanCell>;
+    comment: string | null;
+    role: string | null;
+    volunteer_count: number;
+    deleted_at: string | null;
+    direction: VolunteerDirection | null;
 }
 
 export class MySubClassedDexie extends Dexie {
@@ -125,8 +185,10 @@ export class MySubClassedDexie extends Dexie {
                 groupBadges: 'id, &qr'
             })
             .upgrade(() => {
+                // eslint-disable-next-line no-console
                 console.log('upgrade');
                 setTimeout(() => {
+                    // eslint-disable-next-line no-console
                     console.log('reset and reload');
                     localStorage.removeItem('lastSyncStart');
                     window.location.reload();
@@ -173,6 +235,7 @@ export const addTransaction = async ({
     await db.transactions.add({
         vol_id: vol ? vol.id : null,
         is_vegan: vol ? vol.is_vegan : isVegan,
+        is_paid: vol ? shouldMarkTransactionAsPaid(vol) : false,
         ts,
         kitchen: kitchenId,
         amount: amountInner,
@@ -225,9 +288,74 @@ export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<A
     });
 }
 
-export function isActivatedStatus(status: string): boolean {
-    return ['ARRIVED', 'STARTED', 'JOINED'].includes(status);
+export function isActivatedStatus(status: string | null | undefined): boolean {
+    return Boolean(status && ['ARRIVED', 'STARTED', 'JOINED'].includes(status));
 }
+
+type DateInterval = {
+    arrival_date: string;
+    departure_date: string;
+};
+
+const isDateWithinInterval = ({ interval, statsDate }: { interval: DateInterval; statsDate: string }): boolean => {
+    const statsDateUnix = dayjs(statsDate).startOf('day').unix();
+    return (
+        dayjs(interval.departure_date).startOf('day').unix() >= statsDateUnix &&
+        dayjs(interval.arrival_date).startOf('day').unix() <= statsDateUnix
+    );
+};
+
+const isNowWithinInterval = (interval: DateInterval): boolean => {
+    const now = dayjs();
+    return (
+        now >= dayjs(interval.arrival_date).startOf('day').add(7, 'hours') &&
+        now <= dayjs(interval.departure_date).endOf('day').add(7, 'hours')
+    );
+};
+
+const getActivatedArrivals = (vol: Volunteer): Array<Arrival> =>
+    vol.arrivals.filter(({ status }) => isActivatedStatus(status));
+
+const getPaidArrivals = (vol: Volunteer): Array<PaidArrival> => vol.paid_arrivals ?? [];
+
+export const getFeedingPermissionForDate = (
+    vol: Volunteer,
+    statsDate: string
+): { allowed: boolean; byArrivals: boolean; byPaidArrivals: boolean } => {
+    const byArrivals = getActivatedArrivals(vol).some((interval) => isDateWithinInterval({ interval, statsDate }));
+    const byPaidArrivals = getPaidArrivals(vol).some((interval) => isDateWithinInterval({ interval, statsDate }));
+
+    if (vol.feed_type === FeedType.NoFeed) {
+        return { allowed: false, byArrivals, byPaidArrivals };
+    }
+    if (vol.feed_type === FeedType.Paid) {
+        return { allowed: byPaidArrivals, byArrivals, byPaidArrivals };
+    }
+
+    return { allowed: byArrivals || byPaidArrivals, byArrivals, byPaidArrivals };
+};
+
+export const getFeedingPermissionForNow = (
+    vol: Volunteer
+): { allowed: boolean; byArrivals: boolean; byPaidArrivals: boolean; paidArrival: PaidArrival | null } => {
+    const byArrivals = getActivatedArrivals(vol).some((interval) => isNowWithinInterval(interval));
+    const matchedPaidArrival = getPaidArrivals(vol).find((interval) => isNowWithinInterval(interval)) ?? null;
+    const byPaidArrivals = Boolean(matchedPaidArrival);
+
+    if (vol.feed_type === FeedType.NoFeed) {
+        return { allowed: false, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
+    }
+    if (vol.feed_type === FeedType.Paid) {
+        return { allowed: byPaidArrivals, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
+    }
+
+    return { allowed: byArrivals || byPaidArrivals, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
+};
+
+const shouldMarkTransactionAsPaid = (vol: Volunteer): boolean => {
+    const permission = getFeedingPermissionForNow(vol);
+    return Boolean(permission.byPaidArrivals && permission.paidArrival && !permission.paidArrival.is_free);
+};
 
 export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
     const kitchenId = localStorage.getItem('kitchenId');
@@ -236,14 +364,7 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
             return (
                 vol.kitchen?.toString() === kitchenId &&
                 !vol.is_blocked &&
-                vol.feed_type !== FeedType.NoFeed &&
-                vol.arrivals.some(({ arrival_date, departure_date, status }) => {
-                    return (
-                        dayjs(departure_date).startOf('day').unix() >= dayjs(statsDate).unix() &&
-                        dayjs(arrival_date).startOf('day').unix() <= dayjs(statsDate).unix() &&
-                        isActivatedStatus(status)
-                    );
-                })
+                getFeedingPermissionForDate(vol, statsDate).allowed
             );
         })
         .toArray();

@@ -38,17 +38,22 @@ class HistorySerializer(serializers.ModelSerializer):
     
     def get_data(self, obj):
         extendedData = {}
-        supervisor_id = obj.data.get("supervisor_id")
-        if supervisor_id:
-            try:
-                volunteer = Volunteer.objects.get(uuid=supervisor_id)
-                extendedData['supervisor'] = {
-                    "id": volunteer.pk,
-                    "name": volunteer.name
-                }
-            except Exception:
-                pass
+        self._extend_related_volunteer(extendedData, obj.data, "supervisor_id", "supervisor")
+        self._extend_related_volunteer(extendedData, obj.data, "responsible_id", "responsible")
         return dict(obj.data, **extendedData)
+
+    def _extend_related_volunteer(self, extended_data, data, id_key, result_key):
+        volunteer_uuid = data.get(id_key)
+        if not volunteer_uuid:
+            return
+        try:
+            volunteer = Volunteer.objects.get(uuid=volunteer_uuid)
+            extended_data[result_key] = {
+                "id": volunteer.pk,
+                "name": volunteer.name
+            }
+        except Exception:
+            pass
 
 
 class HistorySyncSerializer(serializers.ModelSerializer):

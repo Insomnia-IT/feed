@@ -26,12 +26,12 @@ export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth:
         try {
             const yesterday = dayjs().startOf('day').subtract(1, 'day').add(7, 'hours').toISOString();
 
-            const { data: resp } = await axios.get(`${baseUrl}/feed-transaction/`, {
+            const { data: resp } = await axios.get<{ results: ServerTransaction[] }>(`${baseUrl}/feed-transaction/`, {
                 params: { limit: 100000, kitchen: kitchenId, dtime_from: yesterday },
                 headers: { Authorization: `K-PIN-CODE ${pin}` }
             });
 
-            const serverTransactions = resp.results as ServerTransaction[];
+            const serverTransactions = resp.results;
             setData(serverTransactions);
 
             await db.transactions.clear();
@@ -42,6 +42,7 @@ export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth:
                     dtime,
                     group_badge,
                     is_anomaly,
+                    is_paid,
                     is_vegan,
                     kitchen,
                     meal_time,
@@ -52,6 +53,7 @@ export const useGetTrans = (baseUrl: string, pin: string | null, setAuth: (auth:
                     vol_id: volunteer,
                     is_vegan,
                     is_anomaly,
+                    is_paid,
                     mealTime: meal_time,
                     ulid,
                     amount,

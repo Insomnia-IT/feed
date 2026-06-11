@@ -1,5 +1,4 @@
 import time
-from selenium.webdriver.common.by import By
 
 class registration():
     CHOOSE_LOGIN_TYPE = ".ant-segmented-item:has-text('Логин и пароль')"
@@ -30,6 +29,7 @@ class meal_create():
 class badge_create():
     BADGE_NAME = "#name"
     DEPARTMENT_NAME = "#direction"
+    KITCHEN_NAME = "#kitchen"
     QR_NAME = "#qr"
     SUBMIT_BUTTON = "button[type='submit']"
     COUNTER = "li.ant-pagination-total-text"
@@ -38,15 +38,17 @@ class feed_history_pagination():
     NEXT_PAGE = ".anticon.anticon-right"
 
 class group_badges():
-    VOLONTEER_COUNTER = "span.ant-typography.ant-typography-secondary"
-    DELETE_VOLUNTEER_BUTTON = "div:nth-child(2) > button"
+    VOLONTEER_COUNTER = '[data-testid="group-badge-volunteer-count"]'
+    DELETE_VOLUNTEER_BUTTON = '[data-testid^="group-badge-remove-volunteer-"]'
     DELETE_VOLUNTEER_BUTTON_2 = "//button[span[text()='Удалить']]"
     SAVE_BUTTON = "//button[span[text()='Сохранить']]"
-    ADD_VOLUNTEER = "//button[span[text()='Добавить волонтера']]"
-    SEARCH_FIELD = ".ant-modal-body input[type='text']"
+    ADD_VOLUNTEER = '[data-testid="group-badge-add-volunteer"]'
+    SEARCH_FIELD = '[data-testid="group-badge-add-volunteer-search"]'
     CHECKBOX = "input.ant-checkbox-input"
-    OK_BUTTON = "//button[span[text()='OK']]"
-    EDIT_LAST_BUTTON = "button.refine-edit-button"
+    OK_BUTTON = '[data-testid="group-badge-add-volunteer-confirm"]'
+    EDIT_LAST_BUTTON = '[data-testid^="group-badge-edit-"]'
+    VOLUNTEERS_TAB = '[data-testid="group-badge-volunteers-tab"]'
+    VOLUNTEERS_TABLE_ROWS = "tbody tr"
 
 class custom_field():
     DELETE_ROW = "//div/div[3]/button"
@@ -80,6 +82,7 @@ class create_user():
     UNBAN_BUTTON = "//button[span[text()='Разблокировать волонтера']]"
     UNBAN_CONFIRM = "//button[@type='submit'][span[text()='Разблокировать волонтера']]"
 
+    APPROVER_INPUT = "input[id=approver]"
 
     FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
@@ -95,7 +98,9 @@ class create_user():
     RIGHTS_FIELD = "#access_role"
     COMMENT_FIELD = "#comment"
 
-    # История действий
-    HISTORY_TAB = "//*[text()='История действий']"
+    # «История изменений» / «История» — role=volunteer, фильтр volunteer_uuid (бан/разбан карточки).
+    # Не путать с «История действий» / «Действия» (actor_badge — действия от имени этого волонтёра).
+    HISTORY_TAB = "//*[@role='tab' and (normalize-space(.)='История изменений' or normalize-space(.)='История')]"
+    # Карточка записи (есть даже если нет diff-полей с itemDrescrNew)
+    HISTORY_ITEM_CARD = "div[class*='_historyItem']"
     HISTORY_LOG_ITEM = "span[class*='_itemDrescrNew']"
-

@@ -32,7 +32,14 @@ export const VolunteerCustomFieldList = () => {
 
     return (
         <List>
-            <Table {...tableProps} rowKey="id">
+            <Table
+                {...tableProps}
+                rowKey="id"
+                pagination={{
+                    total: tableProps.dataSource?.length ?? 0,
+                    showTotal: (total) => `Всего: ${total}`
+                }}
+            >
                 <Table.Column
                     dataIndex="name"
                     key="name"

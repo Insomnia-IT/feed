@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "cross-env VITE_NEW_API_URL_ENV='http://localhost:8000/feedapi/v1' vite",
+        "dev": "vite",
         "dev:stage": "cross-env VITE_NEW_API_URL_ENV='https://feedapp-dev.insomniafest.ru/feedapi/v1' vite",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
@@ -18,12 +18,15 @@
         "test:run": "vitest run"
     },
     "dependencies": {
+        "@ant-design/icons": "^5.6.1",
         "@refinedev/antd": "^6.0.3",
         "@refinedev/core": "^5.0.12",
         "@refinedev/react-router": "^2.0.3",
         "@tanstack/react-query": "^5.96.2",
         "accesscontrol": "^2.2.1",
-        "axios": "^1.14.0",
+        "antd": "^5.29.3",
+        "axios": "^1.15.0",
+        "classnames": "^2.5.1",
         "dayjs": "^1.11.13",
         "js-cookie": "^3.0.5",
         "onscan.js": "^1.5.2",
