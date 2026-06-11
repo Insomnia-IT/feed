@@ -37,13 +37,13 @@ jobs:
             - name: build admin
               if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
               run: |
-                  docker compose -f docker-compose.pr.yml -p $PROJECT_NAME build \
+                  docker compose -f docker-compose.opensearch.yml -p $PROJECT_NAME build \
                     --build-arg NEW_API_URL=/feedapi/v1 \
                     --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
                     --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
                     --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
             - name: stop feed_admin
-              run: docker compose -f docker-compose.pr.yml -p $PROJECT_NAME down
+              run: docker compose -f docker-compose.opensearch.yml -p $PROJECT_NAME down
             - name: run admin
               if: ${{ github.event.action != 'closed' && github.event.pull_request.draft == false }}
               run: |
