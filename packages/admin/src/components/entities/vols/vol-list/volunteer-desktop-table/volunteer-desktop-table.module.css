@@ -2,6 +2,43 @@
     cursor: pointer;
 }
 
+/* Колонка массового выбора: кликабельная зона = вся ячейка, визуальный чекбокс без изменений */
+.volunteerTable :global(td.ant-table-selection-column),
+.volunteerTable :global(th.ant-table-selection-column) {
+    position: relative;
+    padding: 0;
+    vertical-align: middle;
+}
+
+/* Заголовок «выбрать всех» — hit area на всю th */
+.volunteerTable :global(th.ant-table-selection-column .ant-checkbox-wrapper) {
+    position: absolute;
+    inset: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    margin-inline-end: 0;
+}
+
+.volunteerTableDragging {
+    user-select: none;
+}
+
+/* Панель массового выбора справа не перекрывает номера страниц */
+.volunteerTable :global(.ant-table-pagination) {
+    justify-content: flex-start;
+}
+
+.volunteerTable :global(.ant-table-selection-column .ant-table-selection-extra) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .intervalColumn {
     display: flex;
     flex-direction: column;

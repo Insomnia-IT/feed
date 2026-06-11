@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Edit, useForm } from '@refinedev/antd';
 import { useBreadcrumb } from '@refinedev/core';
-import { Form, Breadcrumb } from 'antd';
+import { Form, Breadcrumb, type FormProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 
 import { useScreen } from 'shared/providers';
@@ -10,6 +10,7 @@ import { useLocalStorage } from 'shared/hooks';
 import type { VolEntity } from 'interfaces';
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
+import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 
 import styles from './common.module.css';
 
@@ -60,7 +61,15 @@ export const VolEdit = () => {
     const { isDesktop } = useScreen();
 
     const [activeKey, setActiveKey] = useState('1');
-    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+
+    const { onFinishFailed: upstreamOnFinishFailed, ...restFormProps } = formProps;
+    const handleFinishFailed: NonNullable<FormProps['onFinishFailed']> = createVolunteerFormFinishFailedHandler(
+        setActiveKey,
+        form,
+        upstreamOnFinishFailed
+    );
+
+    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
@@ -117,7 +126,7 @@ export const VolEdit = () => {
                 style: contentStyle
             }}
         >
-            <Form {...formProps} scrollToFirstError layout="vertical">
+            <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />
             </Form>
             {renderModal()}

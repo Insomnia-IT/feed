@@ -41,8 +41,10 @@ export interface VolEntity extends TimeStampedEntity {
     deleted_at?: string | null;
     supervisor_id?: number | null;
     supervisor?: { id: number; name: string } | null;
+    approver?: string | null;
     person?: PersonEntity | null;
     person_id?: string | null;
+    // Ответственный за волонтера
     responsible_id?: number | null;
     //  Бейдж у руководителя
     is_badge_located_at_leader?: boolean | null;
@@ -125,6 +127,8 @@ export interface GroupBadgeEntity extends TimeStampedEntity {
     id: number;
     qr: string | null;
     direction: DirectionEntity | null;
+    kitchen?: number | null;
+    kitchen_name?: string | null;
     role: string | null;
     name: string;
     comment: string | null;
@@ -187,24 +191,48 @@ export interface StorageItemPositionEntity {
     storage_name?: string;
 }
 
+export interface VolunteerInventoryEntity {
+    position: number;
+    count: number;
+}
+
 export interface IssuanceEntity {
     id: number;
     position: number;
-    volunteer: number;
+    volunteer?: number | null;
+    actor?: number | null;
     count: number;
     notes?: string;
     volunteer_name?: string;
+    actor_name?: string;
     item_name?: string;
 }
 
 export interface ReceivingEntity {
     id: number;
     position: number;
-    volunteer: number;
+    volunteer?: number | null;
+    actor?: number | null;
     count: number;
     notes?: string;
     volunteer_name?: string;
+    actor_name?: string;
     item_name?: string;
+}
+
+export interface MovementEntity {
+    id: number;
+    position: number;
+    item_name: number;
+    count: number;
+    from?: number;
+    from_name?: string;
+    to?: number;
+    to_name?: string;
+    actor?: number | null;
+    actor_name?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface DirectionEntity extends TimeStampedEntity {

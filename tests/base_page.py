@@ -12,7 +12,7 @@ class BasePage:
         self.url = url
 
     def open(self):
-        self.page.goto(self.url)
+        self.page.goto(self.url, wait_until="domcontentloaded")
 
     def wait_for_list_page(self, path, timeout=30000):
         self.page.wait_for_url(re.compile(rf"{re.escape(path)}(?:\?.*)?$"), timeout=timeout)
@@ -114,22 +114,25 @@ class BasePage:
         go_to_create.click()
 
 
+    def _select_ant_option(self, selector, option_text=None):
+        select = self.page.locator(selector)
+        select.click()
+        dropdown = self.page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").last
+        dropdown.wait_for(state="visible")
+
+        options = dropdown.locator(".ant-select-item-option")
+        option = options.filter(has_text=option_text).first if option_text else options.first
+        option.wait_for(state="visible")
+        option.click(force=True)
+
+
     def create_badge(self):
         badge_name =self.page.locator(badge_create.BADGE_NAME)
         badge_name.fill("autotest" + datetime.now().strftime("%d%m%H%M%S"))
-        department = self.page.locator(badge_create.DEPARTMENT_NAME)
-        department.click()
         # Ждем пока выпадашка раскроется и в ней появятся элементы
-        department_option = self.page.locator(".ant-select-dropdown .ant-select-item-option").first
-        department_option.wait_for(state="visible")
-        department_option.click()
-        role = self.page.locator("#role")
-        role.click()
-        role_option = self.page.locator(".ant-select-dropdown .ant-select-item-option-content").filter(
-            has_text="Волонтёр"
-        ).first
-        role_option.wait_for(state="visible")
-        role_option.click()
+        self._select_ant_option(badge_create.DEPARTMENT_NAME)
+        self._select_ant_option("#role", "Волонтёр")
+        self._select_ant_option(badge_create.KITCHEN_NAME)
         qr = self.page.locator(badge_create.QR_NAME)
         qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
         with self.page.expect_response(
@@ -253,7 +256,10 @@ class BasePage:
             raise AssertionError("Не найден волонтёр для добавления в групповой бейдж")
 
         checkbox = selected_row.locator(group_badges.CHECKBOX).first
-        checkbox.check(force=True)
+        selected_row.locator(".ant-checkbox-wrapper").first.click()
+        checkbox.wait_for(state="attached")
+        if not checkbox.is_checked():
+            checkbox.check(force=True)
         ok = modal.locator(group_badges.OK_BUTTON)
         ok.click()
 
@@ -285,15 +291,18 @@ class BasePage:
         create = self.page.locator(create_user.CREATE_USER_BUTTON)
         create.click()
 
-    def create_user(self, user_name="Test_name", supervisor_name='None'):
-        add_name = self.page.locator(create_user.USER_NAME)
-        add_name.click()
-        add_name.fill(user_name)
+    def fill_supervisor(self):
         add_supervisor = self.page.locator(create_user.SUPERVISOR)
         add_supervisor.click()
         self.page.locator(".ant-select-item-option").nth(1).click()
         self.page.wait_for_timeout(500)
         supervisor_name = add_supervisor.inner_text()
+        return supervisor_name
+
+    def create_user(self, user_name="Test_name"):
+        add_name = self.page.locator(create_user.USER_NAME)
+        add_name.click()
+        add_name.fill(user_name)
         add_kitchen = self.page.locator(create_user.KITCHEN_NUMBER)
         add_kitchen.click()
         add_kitchen.press("Tab")
@@ -309,7 +318,7 @@ class BasePage:
         add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
         add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        return supervisor_name
+        self.fill_approver_field()
 
 
     def save_in_user_page(self):
@@ -330,6 +339,11 @@ class BasePage:
         except Exception:
             # если нет модалки, иди дальше
             pass
+
+    def fill_approver_field(self, approver_name="Test Approver"):
+        approver_input = self.page.locator(create_user.APPROVER_INPUT)
+        approver_input.wait_for(state="visible", timeout=5000)
+        approver_input.fill(approver_name)
 
     def find_user(self, user_name="Test_name"):
         find = self.page.locator(create_user.FIND_INPUT)
@@ -380,11 +394,6 @@ class BasePage:
             current_value = self.page.evaluate("() => document.querySelector('#name')?.value")
             if current_value == updated_name:
                 break
-        change_supervisor = self.page.locator(create_user.SUPERVISOR)
-        change_supervisor.click()
-        self.page.locator(".ant-select-item-option").nth(2).click()
-        self.page.wait_for_timeout(300)
-        supervisor_name = change_supervisor.inner_text()
         
         add_visit = self.page.locator(create_user.ADD_VISIT_BUTTON)
         add_visit.wait_for(state="visible")
@@ -407,7 +416,6 @@ class BasePage:
         today_last = self.page.locator(create_user.TODAY).last
         today_last.click()
         self.save_in_user_page()
-        return supervisor_name
 
     def change_supervisor(self, option_index=3):
         change_supervisor = self.page.locator(create_user.SUPERVISOR)

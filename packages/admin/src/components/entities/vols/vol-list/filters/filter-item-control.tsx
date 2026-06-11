@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Input, Select } from 'antd';
+import { Input, Select, Tooltip } from 'antd';
 
 import { DateFilterControl } from './date-filter-control';
 import { FilterFieldType } from './filter-types';
 import type { FilterField, FilterItem, FilterListItem } from './filter-types';
 import { FilterFieldShell } from './filter-field-shell';
 import { getFilterListItems } from './get-filter-list-items';
+import { filterSelectOptionMatches } from './filter-select-search';
 import { isEffectiveFilterValue } from './is-effective-filter-value';
 import styles from './filters.module.css';
 
@@ -136,16 +137,21 @@ function FilterSelect({
                     open={dropdownOpen}
                     onOpenChange={setDropdownOpen}
                     maxTagCount={1}
+                    maxTagPlaceholder={(omittedValues) => (
+                        <Tooltip title={omittedValues.map((item) => item.label).join(', ')}>
+                            <span>+ {omittedValues.length} ...</span>
+                        </Tooltip>
+                    )}
                     value={selectValue as string[] | string | number | boolean | undefined}
                     onSelect={onSelect}
                     onDeselect={onDeselect}
                     onClear={onClear}
                     options={values}
                     placeholder={SELECT_PLACEHOLDER}
-                    optionFilterProp="label"
+                    filterOption={filterSelectOptionMatches}
                     mode={isMultiple ? 'multiple' : undefined}
                     showSearch
-                    allowClear={false}
+                    allowClear={true}
                     suffixIcon={
                         <span
                             role="button"

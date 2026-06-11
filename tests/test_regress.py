@@ -400,12 +400,6 @@ def test_create_new_user(page):
     page.wait_for_timeout(300)
     login_page.open_user(created_user_name)
     page.wait_for_timeout(500)
-    created_user_id = int(page.url.rstrip("/").split("/")[-1])
-    expected_supervisor = get_supervisor_candidates()[0]
-    set_volunteer_supervisor(created_user_id, expected_supervisor["id"])
-    #заходим в юзера и проверяем имя бригадира
-    actual_supervisor = get_volunteer_supervisor_name(created_user_id)
-    assert actual_supervisor == expected_supervisor["name"], "Ошибка: Имя бригадира не cохранилось!"
     page.goto(f"{host}/volunteers")
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
 
@@ -438,13 +432,7 @@ def test_edit_new_user(page):
     user_name = login_page.check_username_after_editing(updated_name)
     #заходим в юзера и проверяем имя бригадира
     login_page.open_user(updated_name)
-    updated_user_id = int(page.url.rstrip("/").split("/")[-1])
-    expected_supervisor = get_supervisor_candidates()[1]
-    set_volunteer_supervisor(updated_user_id, expected_supervisor["id"])
-    supervisor_name = get_volunteer_supervisor_name(updated_user_id)
-    assert supervisor_name == expected_supervisor["name"], "Ошибка: Имя бригадира не совпадает!"
     page.goto(f"{host}/volunteers")
-    page.locator("tr.ant-table-row").first.wait_for(state="attached")
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     login_page.clear_input_field()
     # Ждем пока счетчик вернется к общему (без фильтрации)

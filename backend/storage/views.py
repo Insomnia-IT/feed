@@ -1,21 +1,25 @@
 from django.db import transaction
 from django.db.models import Q
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from feeder.views.mixins import SoftDeleteViewSetMixin
-from .models import Storage, Bin, Item, StorageItemPosition, Issuance, Receiving
+from .models import Storage, Bin, Item, StorageItemPosition, Issuance, Receiving, Movement, VolunteerInventory
 from .serializers import (
     StorageSerializer, BinSerializer, ItemSerializer,
-    StorageItemPositionSerializer, IssuanceSerializer, ReceivingSerializer
+    StorageItemPositionSerializer, IssuanceSerializer, ReceivingSerializer,
+    MovementSerializer, VolunteerInventorySerializer
 )
+from .services import increase_volunteer_inventory
 
 
 class StoragePositionFilter(django_filters.FilterSet):
+    id = django_filters.NumberFilter(field_name='id', lookup_expr='exact')
     storage = django_filters.NumberFilter(field_name='storage_id', lookup_expr='exact')
     bin = django_filters.NumberFilter(field_name='bin_id', lookup_expr='exact')
     item = django_filters.NumberFilter(field_name='item_id', lookup_expr='exact')
@@ -30,9 +34,10 @@ class StoragePositionFilter(django_filters.FilterSet):
         if value:
             return queryset.filter(count__gt=0)
         return queryset.filter(storage__lte=0)
+
     class Meta:
         model = StorageItemPosition
-        fields = ['storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']
+        fields = ['id', 'storage', 'bin', 'item', 'storage_name', 'bin_name', 'item_name', 'is_unique', 'is_anonymous']
 
 
 class ReceivingFilter(django_filters.FilterSet):
@@ -46,6 +51,18 @@ class ReceivingFilter(django_filters.FilterSet):
         model = Receiving
         fields = ['position', 'position__storage', 'position__bin', 'position__item', 'volunteer']
 
+class MovementFilter(django_filters.FilterSet):
+    position = django_filters.NumberFilter(field_name='position_id', lookup_expr='exact')
+    position__storage = django_filters.NumberFilter(field_name='position__storage_id', lookup_expr='exact')
+    position__bin = django_filters.NumberFilter(field_name='position__bin_id', lookup_expr='exact')
+    position__item = django_filters.NumberFilter(field_name='position__item_id', lookup_expr='exact')
+    from__id = django_filters.NumberFilter(field_name='from_volunteer__id', lookup_expr='exact')
+    to__id = django_filters.NumberFilter(field_name='to_volunteer__id', lookup_expr='exact')
+
+    class Meta:
+        model = Movement
+        fields = ['position', 'position__storage', 'position__bin', 'position__item', 'from__id', 'to__id']
+
 
 class IssuanceFilter(django_filters.FilterSet):
     position = django_filters.NumberFilter(field_name='position_id', lookup_expr='exact')
@@ -58,15 +75,23 @@ class IssuanceFilter(django_filters.FilterSet):
         model = Issuance
         fields = ['position', 'position__storage', 'position__bin', 'position__item', 'volunteer']
 
+
 class StorageViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = Storage.objects.all()
     serializer_class = StorageSerializer
     permission_classes = [IsAuthenticated]
 
+class BinFilter(django_filters.FilterSet):
+    class Meta:
+        model = Bin
+        fields = ['storage']
+
 class BinViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = Bin.objects.all()
     serializer_class = BinSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = BinFilter
 
 class ItemFilter(django_filters.FilterSet):
     storage = django_filters.NumberFilter(method='filter_storage')
@@ -76,7 +101,7 @@ class ItemFilter(django_filters.FilterSet):
 
     def filter_storage(self, queryset, name, value):
         return queryset.filter(Q(storage__isnull=True) | Q(storage__exact=value))
-    
+
     def filter_has_storage(self, queryset, name, value):
         if value:
             return queryset.filter(storage__isnull=False)
@@ -94,11 +119,13 @@ class ItemViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ItemFilter
 
+
 class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     queryset = StorageItemPosition.objects.all()
     serializer_class = StorageItemPositionSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['id']
     filterset_class = StoragePositionFilter
 
     def create(self, request, *args, **kwargs):
@@ -111,6 +138,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
         count = serializer.validated_data.get('count')
         description = serializer.validated_data.get('description')
         volunteer_id = request.data.get('volunteer')
+        actor_id = request.data.get('actor')
 
         if not item.is_unique:
             existing_position = StorageItemPosition.objects.filter(
@@ -129,6 +157,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
                     Receiving.objects.create(
                         position=existing_position,
                         volunteer_id=volunteer_id,
+                        actor_id=actor_id,
                         count=count,
                         notes=description
                     )
@@ -142,6 +171,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
             Receiving.objects.create(
                 position=position,
                 volunteer_id=self.request.data.get('volunteer'),
+                actor_id=self.request.data.get('actor'),
                 count=position.count,
                 notes=position.description
             )
@@ -151,6 +181,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
         position = self.get_object()
         count = int(request.data.get('count', 0))
         volunteer_id = request.data.get('volunteer')
+        actor_id = request.data.get('actor')
         notes = request.data.get('notes', '')
 
         if count <= 0:
@@ -163,6 +194,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
             Receiving.objects.create(
                 position=position,
                 volunteer_id=volunteer_id,
+                actor_id=actor_id,
                 count=count,
                 notes=notes
             )
@@ -174,6 +206,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
         position = self.get_object()
         count = int(request.data.get('count', 0))
         volunteer_id = request.data.get('volunteer')
+        actor_id = request.data.get('actor')
         notes = request.data.get('notes', '')
 
         if count <= 0:
@@ -193,12 +226,15 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
 
             position.save()
 
+            issuance_count = count if not position.item.is_unique else 1
             Issuance.objects.create(
                 position=position,
                 volunteer_id=volunteer_id,
-                count=count if not position.item.is_unique else 1,
+                actor_id=actor_id,
+                count=issuance_count,
                 notes=notes
             )
+            increase_volunteer_inventory(volunteer_id, position, issuance_count)
 
             if position.item.is_anonymous and position.count == 0:
                 position.delete()
@@ -225,6 +261,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
 
         return Response(self.get_serializer(position).data)
 
+
 class IssuanceViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Issuance.objects.all()
     ordering = ('-id')
@@ -233,6 +270,7 @@ class IssuanceViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = IssuanceFilter
 
+
 class ReceivingViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Receiving.objects.all()
     ordering = ('-id')
@@ -240,3 +278,20 @@ class ReceivingViewSet(SoftDeleteViewSetMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = ReceivingFilter
+
+
+class MovementViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = Movement.objects.all()
+    ordering = ('-id')
+    serializer_class = MovementSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = MovementFilter
+
+
+class VolunteerInventoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, volunteer_id):
+        inventory = VolunteerInventory.objects.filter(volunteer_id=volunteer_id, count__gt=0).order_by("position_id")
+        return Response(VolunteerInventorySerializer(inventory, many=True).data)

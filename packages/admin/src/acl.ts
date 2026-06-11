@@ -70,6 +70,7 @@ type Action =
     | 'delete'
     | 'full_list'
     | 'badge_edit'
+    | 'storage_edit'
     | 'bulk_edit'
     | 'feed_type_edit'
     | 'unban'
@@ -82,6 +83,7 @@ type Action =
 
 const checkCustomPermission = (role: AppRole, action: Action): boolean => {
     switch (action) {
+        case 'storage_edit':
         case 'badge_edit':
         case 'full_list':
         case 'bulk_edit': // массовые изменения
