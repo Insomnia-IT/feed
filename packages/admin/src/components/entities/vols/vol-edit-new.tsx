@@ -138,6 +138,7 @@ const VolEditContent = ({
     const lastName = Form.useWatch('last_name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
     const isDeleted = Form.useWatch('deleted_at', form);
+    const person = Form.useWatch('person', form);
     const volunteerName = name || 'Волонтер';
 
     const pageHeading = useMemo(() => {
@@ -168,6 +169,11 @@ const VolEditContent = ({
                     {isBlocked && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Заблокирован</span>
+                        </div>
+                    )}
+                    {person?.banned && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Чёрный список</span>
                         </div>
                     )}
                     {isDeleted && (

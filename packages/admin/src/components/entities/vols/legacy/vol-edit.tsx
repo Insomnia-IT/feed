@@ -75,6 +75,7 @@ export const VolEditLegacy = () => {
 
     const name = Form.useWatch('name', form);
     const isBlocked = Form.useWatch('is_blocked', form);
+    const person = Form.useWatch('person', form);
     const isDeleted = Form.useWatch('deleted_at', form);
     const volunteerName = name || 'Волонтер';
     const { breadcrumbs } = useBreadcrumb();
@@ -104,6 +105,11 @@ export const VolEditLegacy = () => {
                     {isBlocked && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Заблокирован</span>
+                        </div>
+                    )}
+                    {person?.banned && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Чёрный список</span>
                         </div>
                     )}
                     {isDeleted && (

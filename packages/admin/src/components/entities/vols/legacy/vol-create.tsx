@@ -10,6 +10,8 @@ import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
 import { useRegisterVolunteerCardUiBannerForm } from '../volunteer-card-ui-banner-context';
 
+import styles from './common.module.css';
+
 const contentStyle = {
     background: 'initial',
     boxShadow: 'initial',
@@ -36,6 +38,7 @@ export const VolCreateLegacy = () => {
         upstreamOnFinishFailed
     );
     const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+    const person = Form.useWatch('person', form);
 
     return (
         <Create
@@ -50,6 +53,16 @@ export const VolCreateLegacy = () => {
                 ...(shouldHideFooterActions ? { actions: [] } : {}),
                 style: contentStyle
             }}
+            title={
+                <div className={styles.pageTitle}>
+                    Создание волонтера
+                    {person?.banned && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Чёрный список</span>
+                        </div>
+                    )}
+                </div>
+            }
         >
             <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />

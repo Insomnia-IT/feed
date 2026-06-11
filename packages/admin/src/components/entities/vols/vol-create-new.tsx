@@ -109,6 +109,7 @@ const VolCreateContent = ({
     );
 
     const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);
+    const person = Form.useWatch('person', form);
 
     return (
         <Create
@@ -116,6 +117,16 @@ const VolCreateContent = ({
             headerProps={{
                 extra: null
             }}
+            title={
+                <div className={styles.pageTitleMain}>
+                    <span className={styles.pageTitleText}>Создание волонтера</span>
+                    {person?.banned && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Чёрный список</span>
+                        </div>
+                    )}
+                </div>
+            }
             saveButtonProps={{
                 ...saveButtonProps,
                 onClick

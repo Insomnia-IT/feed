@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@ant-design/icons": "^5.6.1",
+        "@feed/shared": "*",
         "axios": "^1.15.0",
         "classnames": "^2.5.1",
         "dayjs": "^1.11.13",
