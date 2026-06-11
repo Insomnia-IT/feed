@@ -42,28 +42,28 @@ extensions:
             basic:
               username: ${OPEN_SEARCH_USER_NAME}
               password: ${OPEN_SEARCH_PASSWORD}
-          indices:
-            index_prefix: "jaeger-main"
-            spans:
-              date_layout: "2006-01-02-15-04"
-              rollover_frequency: "minute"
-              shards: 1
-              replicas: 0
-            services:
-              date_layout: "2006-01-02-15-04"
-              rollover_frequency: "minute"
-              shards: 1
-              replicas: 0
-            dependencies:
-              date_layout: "2006-01-02-15-04"
-              rollover_frequency: "minute"
-              shards: 1
-              replicas: 0
-            sampling:
-              date_layout: "2006-01-02-15-04"
-              rollover_frequency: "minute"
-              shards: 1
-              replicas: 0
+          # indices:
+          #   index_prefix: "jaeger-main"
+          #   spans:
+          #     date_layout: "2006-01-02-15-04"
+          #     rollover_frequency: "minute"
+          #     shards: 1
+          #     replicas: 0
+          #   services:
+          #     date_layout: "2006-01-02-15-04"
+          #     rollover_frequency: "minute"
+          #     shards: 1
+          #     replicas: 0
+          #   dependencies:
+          #     date_layout: "2006-01-02-15-04"
+          #     rollover_frequency: "minute"
+          #     shards: 1
+          #     replicas: 0
+          #   sampling:
+          #     date_layout: "2006-01-02-15-04"
+          #     rollover_frequency: "minute"
+          #     shards: 1
+          #     replicas: 0
       another_storage:
         opensearch:
           tls:
