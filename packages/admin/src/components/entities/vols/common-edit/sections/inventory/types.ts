@@ -15,3 +15,10 @@ export interface InventorySectionProps {
     volunteerName?: string | null;
     isCreationProcess: boolean;
 }
+
+export interface StorageIssueFormValues {
+    storage: number;
+    position: number;
+    count: number;
+    notes?: string;
+}

@@ -151,7 +151,7 @@ function FilterSelect({
                     filterOption={filterSelectOptionMatches}
                     mode={isMultiple ? 'multiple' : undefined}
                     showSearch
-                    allowClear={false}
+                    allowClear={true}
                     suffixIcon={
                         <span
                             role="button"

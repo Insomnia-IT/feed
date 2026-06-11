@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
+import styles from './common.module.css';
 import { useTranslate } from '@refinedev/core';
 import { App, Form, type FormProps } from 'antd';
 
@@ -53,8 +54,8 @@ export const VolCreate = () => {
         form,
         upstreamOnFinishFailed
     );
-
-    const shouldHideFooterActions = !isDesktop && !['1', '2'].includes(activeKey);
+    const shouldHideFooterActions = !isDesktop && activeKey !== '1';
+    const person = Form.useWatch('person', form);
 
     return (
         <Create
@@ -69,6 +70,16 @@ export const VolCreate = () => {
                 ...(shouldHideFooterActions ? { actions: [] } : {}),
                 style: contentStyle
             }}
+            title={
+                <div className={styles.pageTitle}>
+                    Создание волонтера
+                    {person?.banned && (
+                        <div className={styles.bannedWrap}>
+                            <span className={styles.bannedDescr}>Чёрный список</span>
+                        </div>
+                    )}
+                </div>
+            }
         >
             <Form {...restFormProps} scrollToFirstError layout="vertical" onFinishFailed={handleFinishFailed}>
                 <CreateEdit activeKey={activeKey} setActiveKey={setActiveKey} />

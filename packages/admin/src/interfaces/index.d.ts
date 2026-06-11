@@ -199,21 +199,40 @@ export interface VolunteerInventoryEntity {
 export interface IssuanceEntity {
     id: number;
     position: number;
-    volunteer: number;
+    volunteer?: number | null;
+    actor?: number | null;
     count: number;
     notes?: string;
     volunteer_name?: string;
+    actor_name?: string;
     item_name?: string;
 }
 
 export interface ReceivingEntity {
     id: number;
     position: number;
-    volunteer: number;
+    volunteer?: number | null;
+    actor?: number | null;
     count: number;
     notes?: string;
     volunteer_name?: string;
+    actor_name?: string;
     item_name?: string;
+}
+
+export interface MovementEntity {
+    id: number;
+    position: number;
+    item_name: number;
+    count: number;
+    from?: number;
+    from_name?: string;
+    to?: number;
+    to_name?: string;
+    actor?: number | null;
+    actor_name?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface DirectionEntity extends TimeStampedEntity {

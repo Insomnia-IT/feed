@@ -117,6 +117,9 @@ export const VolInfoSection = ({
                 <Form.Item name={PHOTO_FIELD} noStyle>
                     <Input type="hidden" />
                 </Form.Item>
+                <Form.Item name="person" noStyle>
+                    <Input type="hidden" />
+                </Form.Item>
                 <div className={styles.personalInfoWrap}>
                     <div className={styles.twoColumnsWrap}>
                         <Form.Item label="Надпись на бейдже" name="name" rules={Rules.required}>

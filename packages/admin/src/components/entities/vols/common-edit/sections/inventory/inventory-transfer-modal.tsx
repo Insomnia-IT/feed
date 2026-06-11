@@ -6,6 +6,7 @@ import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import type { InventoryRow, TransferFormValues } from './types';
 
 import styles from '../../../common.module.css';
+import useVisibleDirections from '../../../use-visible-directions';
 
 interface InventoryTransferModalProps {
     open: boolean;
@@ -38,9 +39,16 @@ export const InventoryTransferModal = ({
     onSourceChange,
     onPositionChange
 }: InventoryTransferModalProps) => {
+    const visibleDirections = useVisibleDirections();
+
     const { selectProps: volunteerSelectProps } = useSelect<VolEntity>({
         resource: 'volunteers',
         optionLabel: formatVolunteerLabel,
+        filters: visibleDirections?.map((value) => ({
+            field: 'directions',
+            operator: 'eq',
+            value
+        })),
         onSearch: (value) => [
             {
                 field: 'search',
