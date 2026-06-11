@@ -40,6 +40,7 @@ services:
     networks:
       - internal
     image: jaegertracing/jaeger:${JAEGER_VERSION:-latest}
+    restart: always
     environment:
       OPEN_SEARCH_PASSWORD: ${OPEN_SEARCH_PASSWORD:-qaZxsWedC1323}
       OPEN_SEARCH_USER_NAME: ${OPEN_SEARCH_USER_NAME:-admin}  
