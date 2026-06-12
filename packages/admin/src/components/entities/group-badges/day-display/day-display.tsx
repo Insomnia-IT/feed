@@ -1,42 +1,111 @@
 import React from 'react';
 import type { MealPlanRowRender } from '../useGroupMealPlanData';
 import { Card, Button } from 'antd';
+import type { PlannedDayCounts } from '@feed/shared/planning';
 import styles from './day-display.module.css';
 import type dayjs from 'dayjs';
 import cn from 'classnames';
 
-const formatMeals = (meals: { amount_meat: number | null; amount_vegan: number | null }, isMobile: boolean = false) => {
-    if (meals?.amount_meat === null && meals?.amount_vegan === null) {
-        return '-/-';
+interface MealValues {
+    amount_meat: number | null;
+    amount_vegan: number | null;
+}
+
+interface DisplayValue {
+    label: string;
+    isCalculated: boolean;
+}
+
+const PLACEHOLDER = '-';
+
+const buildDisplayValue = (explicit: number | null, calculated: number | undefined): DisplayValue => {
+    if (explicit !== null) {
+        return { label: String(explicit), isCalculated: false };
+    }
+    if (calculated !== undefined) {
+        return { label: String(calculated), isCalculated: true };
+    }
+    return { label: PLACEHOLDER, isCalculated: false };
+};
+
+const getDisplayValues = ({
+    calculatedCounts,
+    value
+}: {
+    value: MealValues;
+    calculatedCounts?: PlannedDayCounts;
+}): { meat: DisplayValue; vegan: DisplayValue } => ({
+    meat: buildDisplayValue(value?.amount_meat ?? null, calculatedCounts?.meat),
+    vegan: buildDisplayValue(value?.amount_vegan ?? null, calculatedCounts?.vegan)
+});
+
+interface RenderMealsProps {
+    value: MealValues;
+    calculatedCounts?: PlannedDayCounts;
+    isMobile?: boolean;
+}
+
+const RenderMeals: React.FC<RenderMealsProps> = ({ calculatedCounts, isMobile = false, value }) => {
+    const { meat, vegan } = getDisplayValues({ value, calculatedCounts });
+
+    const meatNode = (
+        <span className={cn({ [styles.calculated]: meat.isCalculated })} data-testid="meal-cell-meat">
+            {meat.label}
+        </span>
+    );
+    const veganNode = (
+        <span className={cn({ [styles.calculated]: vegan.isCalculated })} data-testid="meal-cell-vegan">
+            {vegan.label}
+        </span>
+    );
+
+    if (isMobile) {
+        return (
+            <>
+                {meatNode}/{veganNode}
+            </>
+        );
     }
 
-    const meat = meals?.amount_meat ?? '-';
-    const vegan = meals?.amount_vegan ?? '-';
-
-    return isMobile ? `${meat}/${vegan}` : `🥩 ${meat}/${vegan} 🥦`;
+    return (
+        <>
+            🥩 {meatNode}/{veganNode} 🥦
+        </>
+    );
 };
 
 type OnCellClick = (params: {
     date: dayjs.Dayjs;
     mealType: string;
     mealTypeKey: 'breakfast' | 'lunch' | 'dinner';
-    meals: { amount_meat: number | null; amount_vegan: number | null };
+    meals: MealValues;
     editable: boolean;
     message?: string;
 }) => void;
 
 interface MealCellProps {
-    value: { amount_meat: number | null; amount_vegan: number | null };
+    value: MealValues;
     record: MealPlanRowRender;
     mealType: string;
     mealTypeKey: 'breakfast' | 'lunch' | 'dinner';
     isMobile: boolean;
     onClick: OnCellClick;
+    calculatedCounts?: PlannedDayCounts;
 }
 
-export const MealCell: React.FC<MealCellProps> = ({ value, record, mealType, mealTypeKey, isMobile, onClick }) => {
+export const MealCell: React.FC<MealCellProps> = ({
+    calculatedCounts,
+    isMobile,
+    mealType,
+    mealTypeKey,
+    onClick,
+    record,
+    value
+}) => {
+    const content = <RenderMeals value={value} calculatedCounts={calculatedCounts} isMobile={isMobile} />;
+
     if (!record.editable) {
-        return <span className={styles.mealCell}>{formatMeals(value, isMobile)}</span>;
+        return <span className={styles.mealCell}>{content}</span>;
     }
 
     return (
@@ -55,17 +124,26 @@ export const MealCell: React.FC<MealCellProps> = ({ value, record, mealType, mea
                 });
             }}
         >
-            {formatMeals(value, isMobile)}
+            {content}
         </Button>
     );
 };
 
-export const MobileDayCard: React.FC<{
+interface MobileDayCardProps {
     record: MealPlanRowRender;
     isToday: boolean;
     onCellClick: OnCellClick;
     isMobile: boolean;
-}> = ({ record, isToday, onCellClick, isMobile }) => (
+    calculatedCounts?: PlannedDayCounts;
+}
+
+export const MobileDayCard: React.FC<MobileDayCardProps> = ({
+    calculatedCounts,
+    isMobile,
+    isToday,
+    onCellClick,
+    record
+}) => (
     <Card className={`${styles.mobileCard} ${isToday ? styles.todayCard : ''}`} size="small">
         <div className={styles.mobileCardHeader}>
             <span className={styles.dayName}>{record.date.format('dddd')}</span>
@@ -81,6 +159,7 @@ export const MobileDayCard: React.FC<{
                     mealTypeKey="breakfast"
                     isMobile={isMobile}
                     onClick={onCellClick}
+                    calculatedCounts={calculatedCounts}
                 />
             </div>
             <div className={styles.mobileMealCell}>
@@ -92,6 +171,7 @@ export const MobileDayCard: React.FC<{
                     mealTypeKey="lunch"
                     isMobile={isMobile}
                     onClick={onCellClick}
+                    calculatedCounts={calculatedCounts}
                 />
             </div>
             <div className={styles.mobileMealCell}>
@@ -103,6 +183,7 @@ export const MobileDayCard: React.FC<{
                     mealTypeKey="dinner"
                     isMobile={isMobile}
                     onClick={onCellClick}
+                    calculatedCounts={calculatedCounts}
                 />
             </div>
         </div>

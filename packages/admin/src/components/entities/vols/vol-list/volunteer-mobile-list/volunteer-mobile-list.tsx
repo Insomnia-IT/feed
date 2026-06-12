@@ -15,6 +15,11 @@ const PAGE_SIZE = 50;
 
 const formatDate = (value?: string) => (value ? dayjs(value).format('D MMMM') : '');
 
+const appendQueryParam = ({ queryParams, param }: { queryParams: string; param: string }) => {
+    if (!queryParams) return `?${param}`;
+    return `${queryParams}&${param}`;
+};
+
 const checkArrivalStatus = (arrival: ArrivalEntity | null) => {
     if (!arrival) return false;
     const arrivalDate = dayjs(arrival.arrival_date);
@@ -108,7 +113,7 @@ export const VolunteerMobileList = ({
     const invalidate = useInvalidate();
 
     const { query, result } = useInfiniteList<VolEntity>({
-        resource: `volunteers/${filterQueryParams}`,
+        resource: `volunteers/${appendQueryParam({ queryParams: filterQueryParams, param: 'mobile=1' })}`,
         pagination: { pageSize: PAGE_SIZE }
     });
 

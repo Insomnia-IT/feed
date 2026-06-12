@@ -59,12 +59,30 @@ class ReceivingSerializer(serializers.ModelSerializer):
 
 class MovementSerializer(serializers.ModelSerializer):
     from_volunteer = serializers.PrimaryKeyRelatedField(queryset=Volunteer.objects.all(), write_only=True)
+    from_name = serializers.ReadOnlyField(source='from_volunteer.name')
     to_volunteer = serializers.PrimaryKeyRelatedField(queryset=Volunteer.objects.all(), write_only=True)
+    to_name = serializers.ReadOnlyField(source='to_volunteer.name')
     actor_name = serializers.ReadOnlyField(source='actor.name')
+    item_name = serializers.ReadOnlyField(source='position.item.name')
+    storage_name = serializers.ReadOnlyField(source='position.storage.name')
 
     class Meta:
         model = Movement
-        fields = ["id", "position", "count", "from_volunteer", "to_volunteer", "actor",  "actor_name", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "position",
+            "count",
+            "from_volunteer",
+            "from_name",
+            "to_volunteer",
+            "to_name",
+            "actor",
+            "actor_name",
+            "item_name",
+            "storage_name",
+            "created_at",
+            "updated_at",
+        ]
 
     def to_internal_value(self, data):
         if "from" in data or "to" in data:

@@ -1,11 +1,15 @@
+import { ExportOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
-import { useNavigate } from 'react-router';
 import { useList, useShow } from '@refinedev/core';
 import type { VolEntity } from '../../../../interfaces';
+import commonStyles from '../common.module.css';
 import styles from './responsible-for.module.css';
 
+const openVolunteerInNewTab = (id: number) => {
+    window.open(`${window.location.origin}/volunteers/edit/${id}`, '_blank', 'noopener,noreferrer');
+};
+
 const ResponsibleFor = () => {
-    const navigate = useNavigate();
     const { result: vol } = useShow<VolEntity>();
 
     const { result: data, query } = useList<VolEntity>({
@@ -24,10 +28,6 @@ const ResponsibleFor = () => {
 
     const volunteers = data?.data ?? [];
 
-    const handleCardClick = (id: number) => {
-        navigate(`/volunteers/edit/${id}`);
-    };
-
     if (query.isLoading) {
         return <Spin />;
     }
@@ -37,24 +37,34 @@ const ResponsibleFor = () => {
     }
 
     return (
-        <div>
-            <div className={styles.header}>Ответственен за</div>
+        <>
+            <div className={commonStyles.formSection__title}>
+                <h4>Ответственен за</h4>
+            </div>
             <div className={styles.grid}>
                 {volunteers.map((vol) => (
-                    <div key={vol.id} className={styles.card} onClick={() => handleCardClick(vol.id)}>
-                        <div className={styles.cardName}>{vol.name || '—'}</div>
+                    <div
+                        key={vol.id}
+                        className={styles.card}
+                        title="Открыть в новой вкладке"
+                        onClick={() => openVolunteerInNewTab(vol.id)}
+                    >
+                        <div className={styles.cardHeader}>
+                            <div className={styles.cardName}>{vol.name || '—'}</div>
+                            <ExportOutlined className={styles.cardOpenIcon} aria-hidden />
+                        </div>
                         <div className={styles.cardRow}>
                             <span className={styles.cardLabel}>Имя:</span>
-                            <span>{vol.first_name || '—'}</span>
+                            <span className={styles.cardValue}>{vol.first_name || '—'}</span>
                         </div>
                         <div className={styles.cardRow}>
                             <span className={styles.cardLabel}>Фамилия:</span>
-                            <span>{vol.last_name || '—'}</span>
+                            <span className={styles.cardValue}>{vol.last_name || '—'}</span>
                         </div>
                     </div>
                 ))}
             </div>
-        </div>
+        </>
     );
 };
 

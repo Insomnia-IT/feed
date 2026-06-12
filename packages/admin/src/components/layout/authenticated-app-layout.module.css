@@ -1,0 +1,22 @@
+.appLayout,
+.appLayoutWithBanner {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+.appLayoutBody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.appLayoutBody > :global(.ant-layout) {
+    flex: 1;
+    min-height: 0 !important;
+    height: auto !important;
+}
