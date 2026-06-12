@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Button, Form, type FormInstance, Select } from 'antd';
+import { Button, Form, type FormInstance, Input, Select } from 'antd';
 import { type CrudFilters, useList } from '@refinedev/core';
 import { ExportOutlined } from '@ant-design/icons';
 import useCanAccess from '../use-can-access';
 import { useDebouncedCallback } from 'shared/hooks';
-import { AppRoles } from '../../../../auth';
 import type { VolEntity } from 'interfaces';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import { useScreen } from '../../../../shared/providers';
@@ -20,13 +19,8 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
     const debouncedBrigadierSearch = useDebouncedCallback((value: string) => setBrigadierSearch(value));
 
     const supervisorFilters = useMemo<CrudFilters>(
-        () => [
-            {
-                field: 'access_role',
-                operator: 'eq' as const,
-                value: AppRoles.DIRECTION_HEAD
-            },
-            ...(brigadierSearch
+        () =>
+            brigadierSearch
                 ? [
                       {
                           field: 'search',
@@ -34,8 +28,7 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                           value: brigadierSearch
                       }
                   ]
-                : [])
-        ],
+                : [],
         [brigadierSearch]
     );
 
@@ -71,6 +64,9 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
 
     return (
         <div className={connectionsStyles.fieldRow}>
+            <Form.Item name="supervisor" noStyle>
+                <Input type="hidden" />
+            </Form.Item>
             <Form.Item
                 className={connectionsStyles.fieldGrow}
                 label="Бригадир"
