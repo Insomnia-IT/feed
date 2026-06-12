@@ -1,0 +1,25 @@
+.buttonsWrap {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.resultDescr {
+    margin-right: 16px;
+    font-size: 14px;
+}
+
+@media (width <= 576px) {
+    .resultDescr {
+        display: block;
+        margin-bottom: 5px;
+    }
+}
+
+.reasonCell {
+    white-space: normal;
+    overflow-wrap: break-word;
+    max-width: 160px;
+}

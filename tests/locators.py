@@ -66,6 +66,7 @@ class create_user():
     DEPARTMENT = "#directions"
     QR_NUMBER = "#qr"
     SAVE_BUTTON = "//button[span[text()='Сохранить']]"
+    CONFIRM_SAVE_BUTTON = "//button[span[text()='Всё равно сохранить']]"
 
     ADD_VISIT_BUTTON = "//button[span[text()='Добавить заезд']]"
     VISIT_STATUS = "#arrivals_0_status"

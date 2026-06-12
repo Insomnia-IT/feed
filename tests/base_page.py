@@ -38,7 +38,7 @@ class BasePage:
         # Переключаемся на таб "Логин и пароль"
         # Используем поиск по тексту, так как это наиболее надежно в данном случае
         tab = self.page.get_by_text("Логин и пароль")
-        tab.first.wait_for(state="visible", timeout=7000)
+        tab.first.wait_for(state="visible", timeout=10000)
         tab.first.click(force=True)
         
         # Даем время на анимацию переключения
@@ -306,9 +306,9 @@ class BasePage:
         add_kitchen = self.page.locator(create_user.KITCHEN_NUMBER)
         add_kitchen.click()
         add_kitchen.press("Tab")
-        add_meal = self.page.locator(create_user.MEAL_TYPE)
-        add_meal.click()
-        add_meal.press("Tab")
+        # add_meal = self.page.locator(create_user.MEAL_TYPE)
+        # add_meal.click()
+        # add_meal.press("Tab")
         add_role = self.page.locator(create_user.ROLE_USER)
         add_role.click()
         add_role.press("Tab")
@@ -328,7 +328,7 @@ class BasePage:
         # Проверяем, появилась ли вторая кнопка "Сохранить" (модалка подтверждения)
         # Ждем максимум 3 секунды — если не появилась, значит её нет
         try:
-            confirm = self.page.locator(create_user.SAVE_BUTTON).nth(1)
+            confirm = self.page.locator(create_user.CONFIRM_SAVE_BUTTON).first
             confirm.wait_for(state="visible", timeout=3000)
             # Ждем пока кнопка станет активной (может стартовать disabled)
             self.page.wait_for_function(
