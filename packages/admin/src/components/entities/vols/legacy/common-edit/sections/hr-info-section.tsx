@@ -21,12 +21,14 @@ export const HrInfoSection = ({
 
     const { selectProps: rolesSelectProps } = useSelect<VolunteerRoleEntity>({
         resource: 'volunteer-roles',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        pagination: { mode: 'off' }
     });
 
     const { selectProps: accessRoleselectProps } = useSelect<AccessRoleEntity>({
         resource: 'access-roles',
-        optionLabel: 'name'
+        optionLabel: 'name',
+        pagination: { mode: 'off' }
     });
 
     const onAccessRoleClear = (): void => {
