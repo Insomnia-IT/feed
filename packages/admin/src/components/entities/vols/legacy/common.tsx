@@ -1,11 +1,14 @@
-import { Tabs } from 'antd';
-import { useMemo } from 'react';
+import { Form, Tabs } from 'antd';
+import { type ReactNode, useCallback, useMemo } from 'react';
+import { useLocation, useParams } from 'react-router';
 
 import { useScreen } from 'shared/providers';
 import { CommonEdit } from './common-edit/common-edit';
-import CommonFood from './common-food/common-food';
-import { CommonHistory } from './common-history/common-history';
+import CommonFood from '../common-food/common-food';
+import { CommonHistory } from '../common-history/common-history';
+import { InventorySection } from '../common-edit/sections';
 import styles from './common.module.css';
+import Connections from '../connections/connections';
 
 interface IProps {
     activeKey: string;
@@ -14,33 +17,64 @@ interface IProps {
 
 const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     const { isDesktop } = useScreen();
+    const form = Form.useFormInstance();
+    const { id: routeVolunteerId } = useParams<{ id: string }>();
+    const { pathname } = useLocation();
+    const isCreationProcess = pathname.includes('create');
+    const volunteerId = routeVolunteerId ?? form.getFieldValue('id');
+    const volunteerIdNumber = volunteerId ? Number(volunteerId) : undefined;
+    const volunteerName = Form.useWatch('name', form);
     const shouldAddMobileBottomOffset = !isDesktop && activeKey !== '1';
 
-    const items = useMemo(
-        () => [
+    const wrapTabPane = useCallback((content: ReactNode) => content, []);
+
+    const items = useMemo(() => {
+        const tabs = [
             {
                 key: '1',
                 label: isDesktop ? 'Основное' : 'Инфо',
-                children: <CommonEdit />
+                children: wrapTabPane(<CommonEdit />)
             },
             {
                 key: '2',
-                label: 'Питание',
-                children: <CommonFood />
+                label: 'Связи',
+                children: wrapTabPane(<Connections />)
             },
             {
                 key: '3',
-                label: isDesktop ? 'История изменений' : 'История',
-                children: <CommonHistory role="volunteer" />
-            },
-            {
-                key: '4',
-                label: isDesktop ? 'История действий' : 'Действия',
-                children: <CommonHistory role="actor" />
+                label: 'Питание',
+                children: wrapTabPane(<CommonFood />)
             }
-        ],
-        [isDesktop]
-    );
+        ];
+
+        if (!isCreationProcess) {
+            tabs.push(
+                {
+                    key: '4',
+                    label: 'Инвентарь',
+                    children: wrapTabPane(
+                        <InventorySection
+                            volunteerId={volunteerIdNumber}
+                            volunteerName={volunteerName}
+                            isCreationProcess={isCreationProcess}
+                        />
+                    )
+                },
+                {
+                    key: '5',
+                    label: isDesktop ? 'История изменений' : 'История',
+                    children: wrapTabPane(<CommonHistory role="volunteer" />)
+                },
+                {
+                    key: '6',
+                    label: isDesktop ? 'История действий' : 'Действия',
+                    children: wrapTabPane(<CommonHistory role="actor" />)
+                }
+            );
+        }
+
+        return tabs;
+    }, [isCreationProcess, isDesktop, volunteerIdNumber, volunteerName, wrapTabPane]);
 
     return (
         <div className={shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : undefined}>
