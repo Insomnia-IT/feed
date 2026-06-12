@@ -9,7 +9,9 @@ export const PreviousYearsSection = ({ person }: { person: PersonEntity | null }
 
     return (
         <>
-            <p className={styles.formSection__title}>Участие в прошлых годах</p>
+            <div className={styles.formSection__title}>
+                <h4>Участие в прошлых годах</h4>
+            </div>
             <div className={styles.engagementsWrap}>
                 {engagements.length > 0 &&
                     engagements.map((item) => (

@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: [self-hosted, insom-devserv]
     env:
-      IMAGE_NAME_BASENAME: feed-admin
+      PROJECT_NAME: feed-dev
       DB_DIR: /var/feed_db
       PHOTO_STORAGE_PATH: /var/feed_db/photos/
       PHOTO_AUTH_TOKEN: ${{ secrets.PHOTO_AUTH_TOKEN }}
@@ -28,16 +28,16 @@ jobs:
 # ADMIN
     - name: build admin
       run: |
-          docker compose build \
+          docker compose -f docker-compose.opensearch.yml -p $PROJECT_NAME build \
             --build-arg NEW_API_URL=/feedapi/v1 \
             --build-arg SYNC_URL=https://agreemod-dev.insomniafest.ru/api/v1/feeder/ \
-            --build-arg SYNC_LOGIN=${{ secrets.SYNC_LOGIN }} \
+            --build-arg SYNC_LOGIN=${{ vars.SYNC_LOGIN }} \
             --build-arg SYNC_PASSWORD=${{ secrets.SYNC_PASSWORD }}
-    - name: stop feed_admin
-      run: docker rm -f $IMAGE_NAME_BASENAME
+    # - name: stop feed_admin
+    #   run: docker compose -f docker-compose.opensearch.yml down
     - name: run admin
       run: |
-        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=8888 docker compose up -d --remove-orphans --force-recreate
+        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=8888 docker compose -f docker-compose.opensearch.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
 # CLEANUP
     - name: cleanup docker containers
       run: docker container prune --filter "until=168h" -f

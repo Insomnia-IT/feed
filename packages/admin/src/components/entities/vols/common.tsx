@@ -1,5 +1,5 @@
 import { Form, Tabs } from 'antd';
-import { useMemo } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router';
 
 import { useScreen } from 'shared/providers';
@@ -9,6 +9,7 @@ import { CommonHistory } from './common-history/common-history';
 import { InventorySection } from './common-edit/sections';
 import styles from './common.module.css';
 import Connections from './connections/connections';
+import { VolTabPaneScroll } from './vol-tab-pane-scroll';
 
 interface IProps {
     activeKey: string;
@@ -26,22 +27,24 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     const volunteerName = Form.useWatch('name', form);
     const shouldAddMobileBottomOffset = !isDesktop && activeKey !== '1';
 
+    const wrapTabPane = useCallback((content: ReactNode) => <VolTabPaneScroll>{content}</VolTabPaneScroll>, []);
+
     const items = useMemo(() => {
         const tabs = [
             {
                 key: '1',
                 label: isDesktop ? 'Основное' : 'Инфо',
-                children: <CommonEdit />
+                children: wrapTabPane(<CommonEdit />)
             },
             {
                 key: '2',
                 label: 'Связи',
-                children: <Connections />
+                children: wrapTabPane(<Connections />)
             },
             {
                 key: '3',
                 label: 'Питание',
-                children: <CommonFood />
+                children: wrapTabPane(<CommonFood />)
             }
         ];
 
@@ -50,7 +53,7 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
                 {
                     key: '4',
                     label: 'Инвентарь',
-                    children: (
+                    children: wrapTabPane(
                         <InventorySection
                             volunteerId={volunteerIdNumber}
                             volunteerName={volunteerName}
@@ -61,21 +64,21 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
                 {
                     key: '5',
                     label: isDesktop ? 'История изменений' : 'История',
-                    children: <CommonHistory role="volunteer" />
+                    children: wrapTabPane(<CommonHistory role="volunteer" />)
                 },
                 {
                     key: '6',
                     label: isDesktop ? 'История действий' : 'Действия',
-                    children: <CommonHistory role="actor" />
+                    children: wrapTabPane(<CommonHistory role="actor" />)
                 }
             );
         }
 
         return tabs;
-    }, [isCreationProcess, isDesktop, volunteerIdNumber, volunteerName]);
+    }, [isCreationProcess, isDesktop, volunteerIdNumber, volunteerName, wrapTabPane]);
 
     return (
-        <div className={shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : undefined}>
+        <div className={`${styles.volFormTabs} ${shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : ''}`}>
             <Tabs activeKey={activeKey} onChange={setActiveKey} size={isDesktop ? 'middle' : 'small'} items={items} />
         </div>
     );

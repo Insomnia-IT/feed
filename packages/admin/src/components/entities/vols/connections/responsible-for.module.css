@@ -1,20 +1,23 @@
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 12px;
+    padding: 1px;
 }
 
 .card {
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    width: fit-content;
+    min-width: 200px;
+    max-width: 100%;
     padding: 12px;
     background: #fff;
     border: 1px solid #f0f0f0;
     border-radius: 8px;
     cursor: pointer;
-    transition:
-        box-shadow 0.2s,
-        border-color 0.2s;
+    transition: box-shadow 0.2s, border-color 0.2s;
 }
 
 .card:hover {
@@ -22,11 +25,29 @@
     border-color: #1890ff;
 }
 
-.cardName {
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 8px;
+}
+
+.cardName {
+    flex: 1 1 auto;
     font-size: 15px;
     font-weight: 600;
     color: rgb(0 0 0 / 0.85);
+}
+
+.cardOpenIcon {
+    flex-shrink: 0;
+    font-size: 14px;
+    color: rgb(0 0 0 / 0.45);
+}
+
+.card:hover .cardOpenIcon {
+    color: #1890ff;
 }
 
 .cardRow {
@@ -35,6 +56,10 @@
     margin-bottom: 4px;
     font-size: 13px;
     color: rgb(0 0 0 / 0.65);
+}
+
+.cardValue {
+    overflow-wrap: anywhere;
 }
 
 .cardLabel {
@@ -49,15 +74,9 @@
     text-align: center;
 }
 
-.header {
-    margin-bottom: 12px;
-    font-size: 14px;
-    font-weight: 500;
-    color: rgb(0 0 0 / 0.65);
-}
-
 @media (width <= 576px) {
-    .grid {
-        grid-template-columns: 1fr;
+    .card {
+        width: 100%;
+        min-width: 0;
     }
 }

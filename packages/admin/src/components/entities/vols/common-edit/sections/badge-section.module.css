@@ -1,0 +1,26 @@
+.badgeCheckboxesRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    align-items: center;
+}
+
+.badgeCheckboxItem {
+    margin-bottom: 0;
+}
+
+.badgeAtLeaderCheckbox :global(.ant-checkbox-label) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badgeAtLeaderHint {
+    color: rgb(0 0 0 / 0.45);
+}
+
+.badgeAtLeaderHint:global(.anticon) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

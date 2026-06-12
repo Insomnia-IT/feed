@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Button, Form, type FormInstance, Row, Select } from 'antd';
+import { Button, Form, type FormInstance, Select } from 'antd';
 import { type CrudFilters, useList, useOne } from '@refinedev/core';
 import useCanAccess from '../use-can-access';
 import { useDebouncedCallback } from 'shared/hooks';
 import type { VolEntity } from 'interfaces';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
-import { EyeOutlined } from '@ant-design/icons';
+import { ExportOutlined } from '@ant-design/icons';
 import { useScreen } from '../../../../shared/providers';
+
+import connectionsStyles from './connections.module.css';
 
 export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     const responsibleId = Form.useWatch('responsible_id', form);
@@ -74,8 +76,13 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     }, [responsibleResult?.data, responsibleId, volId, currentResponsible]);
 
     return (
-        <Row align={'bottom'} gutter={8} style={{ gap: '4px' }}>
-            <Form.Item label="Ответственный за меня" name="responsible_id" normalize={(value) => value ?? null}>
+        <div className={connectionsStyles.fieldRow}>
+            <Form.Item
+                className={connectionsStyles.fieldGrow}
+                label="Ответственный за меня"
+                name="responsible_id"
+                normalize={(value) => value ?? null}
+            >
                 <Select
                     allowClear
                     showSearch
@@ -85,24 +92,27 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
                     options={responsibleOptions}
                     loading={responsibleLoading}
                     disabled={!canEditResponsible}
-                    style={{ textOverflow: 'ellipsis', maxWidth: '90vw' }}
                 />
             </Form.Item>
 
-            <Form.Item label="">
+            <Form.Item className={connectionsStyles.fieldAction} label=" " colon={false}>
                 <Button
-                    title="Открыть ответственного"
-                    icon={<EyeOutlined />}
+                    title="Открыть ответственного в новой вкладке"
+                    icon={<ExportOutlined />}
                     disabled={!responsibleId}
                     onClick={() => {
                         if (responsibleId) {
-                            window.location.href = `${window.location.origin}/volunteers/edit/${responsibleId}`;
+                            window.open(
+                                `${window.location.origin}/volunteers/edit/${responsibleId}`,
+                                '_blank',
+                                'noopener,noreferrer'
+                            );
                         }
                     }}
                 >
-                    {isMobile ? 'Открыть ответственного' : ''}
+                    {!isMobile ? 'Открыть ответственного' : null}
                 </Button>
             </Form.Item>
-        </Row>
+        </div>
     );
 };

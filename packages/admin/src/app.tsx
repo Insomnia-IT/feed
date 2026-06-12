@@ -1,11 +1,7 @@
 import type { ComponentProps } from 'react';
 import { BrowserRouter } from 'react-router';
 import { Refine, useGetIdentity } from '@refinedev/core';
-import routerProvider, {
-    DocumentTitleHandler,
-    NavigateToResource,
-    UnsavedChangesNotifier
-} from '@refinedev/react-router';
+import routerProvider, { DocumentTitleHandler, NavigateToResource } from '@refinedev/react-router';
 import { useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
@@ -34,6 +30,7 @@ import { AppRoles, type UserData } from 'auth';
 import { AppRoutes } from './app-routes';
 import { buildDocumentTitle } from './i18n/document-title';
 import { i18nProvider } from './i18n/provider';
+import { UnsavedChangesNotifier, UnsavedChangesSaveProvider } from 'shared/unsaved-changes';
 
 const antdLocale = ('default' in antdLocaleModule ? antdLocaleModule.default : antdLocaleModule) as NonNullable<
     ComponentProps<typeof ConfigProvider>['locale']
@@ -138,8 +135,10 @@ const App = () => {
                                 }
                             ]}
                         >
-                            <AppRoutes initial={<InitialNavigation />} />
-                            <UnsavedChangesNotifier />
+                            <UnsavedChangesSaveProvider>
+                                <AppRoutes initial={<InitialNavigation />} />
+                                <UnsavedChangesNotifier />
+                            </UnsavedChangesSaveProvider>
                             <DocumentTitleHandler handler={buildDocumentTitle} />
                         </Refine>
                     </AntdApp>
