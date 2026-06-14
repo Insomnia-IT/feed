@@ -12,7 +12,7 @@ import connectionsStyles from './connections.module.css';
 
 export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     const responsibleId = Form.useWatch('responsible_id', form);
-    const volId = Form.useWatch('id', form);
+    const volId = form.getFieldValue('id');
     const { isMobile } = useScreen();
 
     const [responsibleSearch, setResponsibleSearch] = useState('');
