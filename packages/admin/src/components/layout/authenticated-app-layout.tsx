@@ -13,19 +13,25 @@ const isVolunteerCardRoute = (pathname: string) => /^\/volunteers\/(create|edit\
 export const AuthenticatedAppLayout = () => {
     const location = useLocation();
     const legacyUiEnabled = useVolunteerCardLegacyUi();
-    const showVolunteerCardBanner = isVolunteerCardRoute(location.pathname);
-    const bannerMode = showVolunteerCardBanner ? (legacyUiEnabled ? 'legacy' : 'new') : null;
+    const isCardRoute = isVolunteerCardRoute(location.pathname);
+    const bannerMode = isCardRoute ? (legacyUiEnabled ? 'legacy' : 'new') : null;
+
+    const layout = (
+        <ThemedLayout Sider={() => <CustomSider />}>
+            <Outlet />
+        </ThemedLayout>
+    );
 
     return (
         <VolunteerCardUiBannerProvider>
-            <div className={bannerMode ? styles.appLayoutWithBanner : styles.appLayout}>
-                {bannerMode ? <VolunteerCardUiTopBanner mode={bannerMode} /> : null}
-                <div className={styles.appLayoutBody}>
-                    <ThemedLayout Sider={() => <CustomSider />}>
-                        <Outlet />
-                    </ThemedLayout>
+            {isCardRoute && bannerMode ? (
+                <div className={styles.appLayoutWithBanner}>
+                    <VolunteerCardUiTopBanner mode={bannerMode} />
+                    <div className={styles.appLayoutBody}>{layout}</div>
                 </div>
-            </div>
+            ) : (
+                layout
+            )}
         </VolunteerCardUiBannerProvider>
     );
 };

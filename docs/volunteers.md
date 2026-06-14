@@ -245,7 +245,9 @@
 Код прежнего UI лежит в `legacy/` и не развивается — это временный запасной выход до
 стабилизации новой карточки.
 
-Файлы: `components/layout/authenticated-app-layout.tsx` (баннер над всем layout),
+Файлы: `components/layout/authenticated-app-layout.tsx` (баннер и viewport-shell только
+на `/volunteers/create` и `/volunteers/edit/:id`; остальные страницы — обычный скролл
+документа),
 `edit.tsx` / `create.tsx` (обёртка), `vol-edit-new.tsx` / `vol-create-new.tsx`
 (новый UI), `legacy/*` (снимок с `main`), `volunteer-card-legacy-ui.ts`,
 `volunteer-card-ui-switch.tsx`, `volunteer-card-ui-banner-context.tsx`.
