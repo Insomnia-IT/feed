@@ -1,4 +1,4 @@
-.appLayout,
+/* Viewport-constrained shell only for volunteer create/edit (internal tab scroll). */
 .appLayoutWithBanner {
     display: flex;
     flex-direction: column;
