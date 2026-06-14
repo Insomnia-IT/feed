@@ -143,9 +143,13 @@ export function buildVolunteerSubmitValues(params: {
         ...formSnapshot,
         ...params.values
     };
+    const personId = Object.prototype.hasOwnProperty.call(merged, 'person_id') ? merged.person_id : merged.person?.id;
+    const submitValues = { ...merged };
+    delete submitValues.person;
 
     return {
-        ...merged,
+        ...submitValues,
+        person_id: personId,
         feed_type: feeding.feed_type,
         paid_arrivals: feeding.paid_arrivals as VolEntity['paid_arrivals']
     };

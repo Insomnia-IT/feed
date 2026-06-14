@@ -6,9 +6,8 @@ type VolunteerPersonBannedSyncProps = {
 };
 
 /**
- * Keeps the page title in sync with person.banned.
- * person is prefilled via setFieldValue in CommonEdit without a visible Form.Item,
- * so useWatch in the Create/Edit title (outside Form) does not re-render.
+ * Registers hidden person fields and keeps the page title in sync with person.banned.
+ * The fields are prefilled via setFieldsValue in CommonEdit without visible Form.Items.
  */
 export const VolunteerPersonBannedSync = ({ onBannedChange }: VolunteerPersonBannedSyncProps) => {
     const form = Form.useFormInstance();
@@ -19,8 +18,13 @@ export const VolunteerPersonBannedSync = ({ onBannedChange }: VolunteerPersonBan
     }, [onBannedChange, personBanned]);
 
     return (
-        <Form.Item name="person" hidden noStyle preserve>
-            <span aria-hidden="true" />
-        </Form.Item>
+        <>
+            <Form.Item name="person_id" hidden noStyle preserve>
+                <span aria-hidden="true" />
+            </Form.Item>
+            <Form.Item name="person" hidden noStyle preserve>
+                <span aria-hidden="true" />
+            </Form.Item>
+        </>
     );
 };
