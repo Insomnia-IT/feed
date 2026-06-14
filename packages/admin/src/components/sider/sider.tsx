@@ -27,6 +27,8 @@ import { useScreen } from 'shared/providers';
 import { AppRoles, type UserData } from 'auth';
 import type { AccessRoleEntity } from 'interfaces';
 
+import SyncStatus from 'components/sync-status/sync-status';
+
 import styles from './sider.module.css';
 
 const MOBILE_PATHS = {
@@ -212,6 +214,7 @@ const CustomSider = () => {
                         if (info.key === 'logout') handleLogout();
                     }}
                 />
+                <SyncStatus collapsed={collapsed} />
             </Layout.Sider>
         </>
     );
