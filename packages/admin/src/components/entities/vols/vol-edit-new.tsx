@@ -101,7 +101,6 @@ const VolEditContent = ({
         },
         warnWhenUnsavedChanges: false
     });
-    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
     const isBaselineReady = useVolunteerFormBaselineReady({
         formLoading,
         feedTypesLoading,
@@ -113,7 +112,6 @@ const VolEditContent = ({
         isReady: isBaselineReady,
         resetKey: id
     });
-    useRegisterUnsavedChangesSave(onClick);
     useRegisterVolunteerCardUiBannerForm(form);
 
     const {
@@ -132,6 +130,11 @@ const VolEditContent = ({
         form,
         upstreamOnFinishFailed
     );
+    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, {
+        feedTypes,
+        onValidationFailed: handleFinishFailed
+    });
+    useRegisterUnsavedChangesSave(onClick);
 
     const showHeaderPhoto = isNarrowMobile || activeKey !== '1';
     const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);

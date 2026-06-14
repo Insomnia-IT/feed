@@ -80,7 +80,6 @@ const VolCreateContent = ({
         },
         warnWhenUnsavedChanges: false
     });
-    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
     const isBaselineReady = useVolunteerFormBaselineReady({
         formLoading,
         feedTypesLoading,
@@ -91,7 +90,6 @@ const VolCreateContent = ({
         formLoading,
         isReady: isBaselineReady
     });
-    useRegisterUnsavedChangesSave(onClick);
     useRegisterVolunteerCardUiBannerForm(form);
 
     const {
@@ -110,6 +108,11 @@ const VolCreateContent = ({
         form,
         upstreamOnFinishFailed
     );
+    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, {
+        feedTypes,
+        onValidationFailed: handleFinishFailed
+    });
+    useRegisterUnsavedChangesSave(onClick);
 
     const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);
     const [personBanned, setPersonBanned] = useState(false);
