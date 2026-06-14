@@ -1,0 +1,47 @@
+.syncStatus {
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    padding: 8px 16px;
+    text-align: center;
+    color: rgb(255 255 255 / 0.65);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.label {
+    display: block;
+}
+
+.date {
+    display: block;
+}
+
+.dateError {
+    color: #ff4d4f;
+}
+
+.syncStatusCollapsed {
+    position: absolute;
+    bottom: 56px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.dotOk {
+    background: #52c41a;
+}
+
+.dotError {
+    background: #ff4d4f;
+}
