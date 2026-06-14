@@ -12,6 +12,7 @@ import connectionsStyles from './connections.module.css';
 
 export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     const responsibleId = Form.useWatch('responsible_id', form);
+    const volId = form.getFieldValue('id');
     const { isMobile } = useScreen();
 
     const [responsibleSearch, setResponsibleSearch] = useState('');
@@ -55,12 +56,14 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     const responsibleLoading = responsibleQuery.isLoading;
 
     const responsibleOptions = useMemo(() => {
-        const responsibleData = responsibleResult?.data;
+        const responsibleData = responsibleResult?.data ?? [];
 
-        const options = responsibleData?.map((volunteer) => ({
-            value: volunteer.id,
-            label: formatVolunteerLabel(volunteer)
-        }));
+        const options = responsibleData
+            .filter((vol) => !vol.infant && vol.id !== volId)
+            .map((volunteer) => ({
+                value: volunteer.id,
+                label: formatVolunteerLabel(volunteer)
+            }));
 
         if (responsibleId && !options.some((option) => option.value === responsibleId)) {
             options.unshift({
@@ -70,7 +73,7 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
         }
 
         return options;
-    }, [responsibleId, responsibleResult, currentResponsible]);
+    }, [responsibleResult?.data, responsibleId, volId, currentResponsible]);
 
     return (
         <div className={connectionsStyles.fieldRow}>
