@@ -18,6 +18,7 @@ services:
             PHOTO_DOWNLOAD_LIMIT: ${PHOTO_DOWNLOAD_LIMIT:-100}
             PHOTO_AUTH_TOKEN: ${PHOTO_AUTH_TOKEN}
             ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+            CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
         volumes:
             - ${DB_DIR:-./db}:/app/db
             - ${PHOTO_STORAGE_PATH:-./db/photos}:/app/photos
