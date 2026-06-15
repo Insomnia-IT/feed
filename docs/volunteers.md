@@ -180,7 +180,7 @@
   **всех** вкладках карточки («Основное», «Связи», «Питание», «Инвентарь»,
   «История изменений», «История действий»); снизу отступ под плавающую кнопку.
   При ошибке валидации по «Сохранить» Ant Design Form (`scrollToFirstError`,
-  `form.scrollToField` с `block: 'center'`) переключает на нужную вкладку;
+  `form.scrollToField` с `block: 'center'`) переключает на вкладку «Инфо»;
   на мобилке дополнительно прокручивается внутренний контейнер `VolTabPaneScroll`
   (глобальный класс `.vol-tab-pane-scroll`, `scroll-form-field-in-vol-tab-pane.ts`);
   поиск поля — по `namePath`, `.ant-form-item-has-error` и `aria-invalid` у `MobileDateDrawer`.
