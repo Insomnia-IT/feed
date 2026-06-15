@@ -25,6 +25,17 @@ class SynchronizationSystemActions(models.Model):
     class Meta:
         verbose_name = "Синхронизация"
         verbose_name_plural = "Синхронизация"
+        indexes = [
+            models.Index(
+                fields=["system", "direction", "-date", "-id"],
+                name="sync_sys_dir_date_idx",
+            ),
+            models.Index(
+                fields=["system", "direction", "-date", "-id"],
+                name="sync_sys_dir_ok_date_idx",
+                condition=models.Q(success=True),
+            ),
+        ]
 
     def __str__(self):
         return self.system
