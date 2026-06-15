@@ -40,7 +40,9 @@ export const createFormMainTabFinishFailedHandler = (params: {
             }
 
             if (scrollInVolTabPane) {
-                scrollToFormErrorInVolTabPane({ form, namePath, errorFields });
+                window.requestAnimationFrame(() => {
+                    scrollToFormErrorInVolTabPane({ form, namePath, errorFields });
+                });
             }
         }, scrollDelayMs);
 

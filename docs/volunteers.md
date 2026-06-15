@@ -182,8 +182,8 @@
   При ошибке валидации по «Сохранить» Ant Design Form (`scrollToFirstError`,
   `form.scrollToField` с `block: 'center'`) переключает на нужную вкладку;
   на мобилке дополнительно прокручивается внутренний контейнер `VolTabPaneScroll`
-  (`scroll-form-field-in-vol-tab-pane.ts`), иначе поля вроде «Дата отъезда» остаются
-  вне экрана. Подсветка — стандартная `.ant-form-item-has-error`.
+  (глобальный класс `.vol-tab-pane-scroll`, `scroll-form-field-in-vol-tab-pane.ts`);
+  поиск поля — по `namePath`, `.ant-form-item-has-error` и `aria-invalid` у `MobileDateDrawer`.
   На «Основном» внутри — `.formWrap` с серым фоном и карточками секций.
   Хлебные крошки в шапке карточки отключены (`breadcrumb={false}` в `edit.tsx`).
   На планшете и мобилке (`&lt;768px`, класс `.volEditPageCompactHeader`) — компактная
