@@ -54,7 +54,13 @@ export function scrollFormFieldInVolTabPane(params: {
 }): boolean {
     const resolvedNamePath =
         params.namePath ??
-        (params.errorFields ? pickTopmostErrorNamePath({ ...params, container: params.container }) : undefined);
+        (params.errorFields
+            ? pickTopmostErrorNamePath({
+                  container: params.container,
+                  errorFields: params.errorFields,
+                  form: params.form
+              })
+            : undefined);
 
     const formItem =
         (resolvedNamePath ? findFormItemElement(params.form, resolvedNamePath) : null) ??
