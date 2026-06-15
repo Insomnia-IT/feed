@@ -1,5 +1,38 @@
 .antLayoutSider {
-    position: relative;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+/* Volunteer card banner shell: sidebar matches the layout body, not full viewport. */
+:global(.app-layout-body) .antLayoutSider:global(.ant-layout-sider) {
+    height: 100%;
+    max-height: 100%;
+}
+
+.antLayoutSider:global(.ant-layout-sider) :global(.ant-layout-sider-children),
+.antLayoutSiderMobile:global(.ant-layout-sider) :global(.ant-layout-sider-children) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.antLayoutSider:global(.ant-layout-sider-has-trigger) :global(.ant-layout-sider-children),
+.antLayoutSiderMobile:global(.ant-layout-sider-has-trigger) :global(.ant-layout-sider-children) {
+    height: calc(100% - 48px);
+    max-height: calc(100% - 48px);
+}
+
+.antLayoutSider:global(.ant-layout-sider) :global(.ant-menu),
+.antLayoutSiderMobile:global(.ant-layout-sider) :global(.ant-menu) {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden auto;
 }
 
 /* Десктоп: кнопка сворачивания внутри сайдбара внизу */
@@ -32,7 +65,10 @@
 
 .antLayoutSiderMobile {
     position: fixed;
+    top: 0;
     height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
     z-index: 200;
 }
 
