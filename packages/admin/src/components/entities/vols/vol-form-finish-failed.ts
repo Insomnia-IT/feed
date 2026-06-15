@@ -19,5 +19,6 @@ export const createVolunteerFormFinishFailedHandler = (
         form,
         setActiveKey,
         upstream,
-        resolveTabKey: resolveVolunteerFormTabKey
+        resolveTabKey: resolveVolunteerFormTabKey,
+        scrollInVolTabPane: true
     });

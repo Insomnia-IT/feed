@@ -1,6 +1,7 @@
 import type { FormInstance, FormProps } from 'antd';
 
 import { FORM_SCROLL_TO_ERROR_OPTIONS } from './form-scroll-to-error-options';
+import { scrollToFormErrorInVolTabPane } from './scroll-form-field-in-vol-tab-pane';
 
 /**
  * При ошибке валидации переключает на вкладку с полями формы и прокручивает к первому полю с ошибкой.
@@ -13,22 +14,35 @@ export const createFormMainTabFinishFailedHandler = (params: {
     setActiveKey: (key: string) => void;
     upstream?: FormProps['onFinishFailed'];
     scrollDelayMs?: number;
+    scrollInVolTabPane?: boolean;
 }): NonNullable<FormProps['onFinishFailed']> => {
-    const { form, mainTabKey = '1', resolveTabKey, setActiveKey, upstream, scrollDelayMs = 150 } = params;
+    const {
+        form,
+        mainTabKey = '1',
+        resolveTabKey,
+        setActiveKey,
+        upstream,
+        scrollDelayMs = 150,
+        scrollInVolTabPane = false
+    } = params;
 
     return (errorInfo) => {
-        const sorted = [...(errorInfo.errorFields ?? [])].sort((a, b) =>
-            JSON.stringify(a.name).localeCompare(JSON.stringify(b.name))
-        );
-        const first = sorted.find((field) => field.name?.length);
-        const namePath = first?.name;
+        const errorFields = errorInfo.errorFields ?? [];
+        const namePath = errorFields.find((field) => field.name?.length)?.name;
 
         if (namePath?.length) {
             setActiveKey(resolveTabKey?.(namePath) ?? mainTabKey);
-            window.setTimeout(() => {
-                void form.scrollToField(namePath, FORM_SCROLL_TO_ERROR_OPTIONS);
-            }, scrollDelayMs);
         }
+
+        window.setTimeout(() => {
+            if (namePath?.length) {
+                void form.scrollToField(namePath, FORM_SCROLL_TO_ERROR_OPTIONS);
+            }
+
+            if (scrollInVolTabPane) {
+                scrollToFormErrorInVolTabPane({ form, namePath, errorFields });
+            }
+        }, scrollDelayMs);
 
         upstream?.(errorInfo);
     };
