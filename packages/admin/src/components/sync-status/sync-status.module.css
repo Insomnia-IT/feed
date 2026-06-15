@@ -1,13 +1,11 @@
 .syncStatus {
-    position: absolute;
-    inset-inline: 0;
-    bottom: 48px;
-    z-index: 1;
+    flex-shrink: 0;
     padding: 4px 12px;
     text-align: center;
     color: rgb(255 255 255 / 0.65);
     font-size: 12px;
     line-height: 1.2;
+    border-top: 1px solid rgb(255 255 255 / 0.08);
 }
 
 .label {
@@ -23,13 +21,11 @@
 }
 
 .syncStatusCollapsed {
-    position: absolute;
-    inset-inline: 0;
-    bottom: 56px;
-    z-index: 1;
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     padding: 4px 0;
+    border-top: 1px solid rgb(255 255 255 / 0.08);
 }
 
 .dot {
