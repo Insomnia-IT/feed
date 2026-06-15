@@ -1,3 +1,4 @@
+from django.db.models import Subquery
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
@@ -30,11 +31,20 @@ class SyncStatus(APIView):
             system=SynchronizationSystemActions.SYSTEM_NOTION,
             direction=SynchronizationSystemActions.DIRECTION_FROM_SYSTEM,
         )
-        last_successful_sync = syncs.filter(success=True).order_by("-date", "-id").first()
-        last_sync_attempt = syncs.order_by("-date", "-id").first()
+        last_successful_date = (
+            syncs.filter(success=True)
+            .order_by("-date", "-id")
+            .values("date")[:1]
+        )
+        last_sync_attempt = (
+            syncs.annotate(last_successful_date=Subquery(last_successful_date))
+            .order_by("-date", "-id")
+            .values("success", "last_successful_date")
+            .first()
+        )
 
         serializer = SyncStatusSerializer({
-            "lastSyncDate": last_successful_sync.date if last_successful_sync else None,
-            "isError": bool(last_sync_attempt and not last_sync_attempt.success),
+            "lastSyncDate": last_sync_attempt["last_successful_date"] if last_sync_attempt else None,
+            "isError": bool(last_sync_attempt and not last_sync_attempt["success"]),
         })
         return Response(serializer.data)
