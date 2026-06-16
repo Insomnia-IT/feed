@@ -434,7 +434,7 @@ export function FeedingCalendar({
                 onClick={() => setActiveMode('free')}
             >
                 <span className={`${styles.modeSwatch} ${styles.modeSwatchFree}`} />
-                За счёт фестиваля
+                За счёт фестиваля{displaySets.freeDates.size ? ` (${displaySets.freeDates.size})` : ''}
             </Button>
             <Button
                 type="default"
@@ -443,7 +443,7 @@ export function FeedingCalendar({
                 onClick={() => setActiveMode('paid')}
             >
                 <span className={`${styles.modeSwatch} ${styles.modeSwatchPaid}`} />
-                Платно
+                Платно{displaySets.paidDates.size ? ` (${displaySets.paidDates.size})` : ''}
             </Button>
             <span className={styles.legendDescription}>Добавить питание можно только на даты заездов</span>
         </div>
