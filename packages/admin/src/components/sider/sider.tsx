@@ -203,18 +203,22 @@ const CustomSider = () => {
                 onCollapse={setCollapsed}
                 trigger={siderTrigger}
             >
-                <Menu
-                    theme="dark"
-                    mode="inline"
-                    selectedKeys={selectedKey ? [selectedKey] : []}
-                    defaultOpenKeys={defaultOpenKeys}
-                    items={userMenuItems}
-                    onClick={(info) => {
-                        if (!isDesktop) setCollapsed(true);
-                        if (info.key === 'logout') handleLogout();
-                    }}
-                />
-                <SyncStatus collapsed={collapsed} />
+                <div className={styles.siderShell}>
+                    <div className={styles.siderMenuArea}>
+                        <Menu
+                            theme="dark"
+                            mode="inline"
+                            selectedKeys={selectedKey ? [selectedKey] : []}
+                            defaultOpenKeys={defaultOpenKeys}
+                            items={userMenuItems}
+                            onClick={(info) => {
+                                if (!isDesktop) setCollapsed(true);
+                                if (info.key === 'logout') handleLogout();
+                            }}
+                        />
+                    </div>
+                    <SyncStatus collapsed={collapsed} />
+                </div>
             </Layout.Sider>
         </>
     );

@@ -27,7 +27,7 @@ export const AuthenticatedAppLayout = () => {
             {isCardRoute && bannerMode ? (
                 <div className={styles.appLayoutWithBanner}>
                     <VolunteerCardUiTopBanner mode={bannerMode} />
-                    <div className={styles.appLayoutBody}>{layout}</div>
+                    <div className={`${styles.appLayoutBody} app-layout-body`}>{layout}</div>
                 </div>
             ) : (
                 layout
