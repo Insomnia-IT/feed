@@ -34,8 +34,7 @@ jobs:
     #   run: docker compose -f docker-compose.opensearch.yml down
     - name: run admin
       run: |
-        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=8888 docker compose -f docker-compose.opensearch.yml -p $PROJECT_NAME up -d --remove-orphans --force-recreate
-# CLEANUP
+        DB_DIR=${DB_DIR} PHOTO_STORAGE_PATH=${PHOTO_STORAGE_PATH} PHOTO_AUTH_TOKEN=${PHOTO_AUTH_TOKEN} SKIP_BACK_SYNC=False PORT=8888 docker compose -f docker-compose.opensearch.yml -p $PROJECT_NAME up -d --remove-orphans
     # - name: cleanup docker containers
     #   run: docker container prune --filter "until=168h" -f
     # - name: cleanup docker images
