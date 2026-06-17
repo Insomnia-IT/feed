@@ -94,7 +94,7 @@ class NotionSync:
             data["arrivals"] = serializer(arrivals, many=True).data
 
         if not data:
-            return data
+            return data, True
 
         sync_data = {
             "system": SyncModel.SYSTEM_NOTION,
@@ -125,7 +125,7 @@ class NotionSync:
 
         self.save_sync_info(sync_data, success=True, error=dump)
 
-        return data
+        return data, new_partial_offset is None
 
     @staticmethod
     def get_serializer(obj_name):
@@ -241,7 +241,8 @@ class NotionSync:
         self.all_data = all_data
 
         if not settings.SKIP_BACK_SYNC:
-            sync_data = self.sync_to_notion()
-            self.sync_from_notion(sync_data.get('badges', []), sync_data.get('arrivals', []))
+            sync_data, is_back_sync_complete = self.sync_to_notion()
+            if is_back_sync_complete:
+                self.sync_from_notion(sync_data.get('badges', []), sync_data.get('arrivals', []))
         else:
             self.sync_from_notion()
