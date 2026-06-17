@@ -60,26 +60,38 @@ class NotionSync:
         dt_start = self.get_last_sync_time(direction)
         partial_offset = self.get_last_sync_partial_offset(direction) or 0
 
-        dt_end = datetime.utcnow()
+        dt_end = datetime.now(timezone.utc)
 
-        qs = History.objects.filter(action_at__gte=dt_start, action_at__lt=dt_end).exclude(actor_badge=None)
-        badges = qs.filter(object_name="volunteer")
-        arrivals = qs.filter(object_name="arrival")
+        histories = (
+            History.objects.filter(
+                action_at__gte=dt_start,
+                action_at__lt=dt_end,
+                object_name__in=["volunteer", "arrival"],
+            )
+            .exclude(actor_badge=None)
+            .order_by("action_at", "id")
+        )
         serializer = HistorySyncSerializer
         data = {}
-        new_partial_offset = None
+        total_count = histories.count()
+        if partial_offset >= total_count:
+            partial_offset = 0
+
+        batch = list(histories[partial_offset:partial_offset + BACK_SYNC_ITEMS_LIMIT])
+        new_partial_offset = (
+            partial_offset + BACK_SYNC_ITEMS_LIMIT
+            if total_count - partial_offset > BACK_SYNC_ITEMS_LIMIT
+            else None
+        )
+
+        badges = [history for history in batch if history.object_name == "volunteer"]
+        arrivals = [history for history in batch if history.object_name == "arrival"]
+
         if badges:
-            badges_data = serializer(badges, many=True).data
-            data.update({"badges": badges_data[partial_offset:partial_offset + BACK_SYNC_ITEMS_LIMIT]})
-            if len(badges_data) - partial_offset > BACK_SYNC_ITEMS_LIMIT:
-                new_partial_offset = partial_offset + BACK_SYNC_ITEMS_LIMIT
+            data["badges"] = serializer(badges, many=True).data
 
         if arrivals:
-            arrivals_data = serializer(arrivals, many=True).data
-            offset = partial_offset - len(badges)
-            data.update({"arrivals": arrivals_data[max(0, offset):max(0, offset + BACK_SYNC_ITEMS_LIMIT)]})
-            if len(arrivals_data) - offset > BACK_SYNC_ITEMS_LIMIT:
-                new_partial_offset = partial_offset + BACK_SYNC_ITEMS_LIMIT
+            data["arrivals"] = serializer(arrivals, many=True).data
 
         if not data:
             return data
