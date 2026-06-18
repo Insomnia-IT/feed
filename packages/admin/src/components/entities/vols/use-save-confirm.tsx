@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { useCallback, useState, type JSX } from 'react';
-import { Modal, type ButtonProps, type FormInstance } from 'antd';
+import { Modal, type ButtonProps, type FormInstance, type FormProps } from 'antd';
 
 import { dataProvider } from 'dataProvider';
 import { useModalEnterSubmit } from 'shared/hooks';
@@ -15,6 +15,7 @@ const useSaveConfirm = (
     },
     options?: {
         feedTypes?: FeedTypeEntity[];
+        onValidationFailed?: FormProps['onFinishFailed'];
     }
 ): {
     onClick: () => void;
@@ -26,6 +27,7 @@ const useSaveConfirm = (
     );
 
     const feedTypes = options?.feedTypes;
+    const onValidationFailed = options?.onValidationFailed;
 
     const syncFeedingBeforeSave = useCallback(() => {
         if (feedTypes?.length) {
@@ -48,19 +50,30 @@ const useSaveConfirm = (
         onSubmit: handleOk
     });
 
+    const runSaveConfirmationFlow = useCallback(async () => {
+        syncFeedingBeforeSave();
+
+        try {
+            await form.validateFields();
+        } catch (errorInfo) {
+            onValidationFailed?.(errorInfo as Parameters<NonNullable<FormProps['onFinishFailed']>>[0]);
+            return;
+        }
+
+        const arrivals = form.getFieldValue('arrivals') ?? [];
+        const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
+        if (!arrivals.some(({ status }: { status: string }) => isVolunteerActivatedStatusValue(status))) {
+            setShowConfirmationModalReason('is_active');
+        } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
+            setShowConfirmationModalReason('active_from');
+        } else {
+            saveButtonProps?.onClick();
+        }
+    }, [form, onValidationFailed, saveButtonProps, syncFeedingBeforeSave]);
+
     return {
         onClick: () => {
-            syncFeedingBeforeSave();
-
-            const arrivals = form.getFieldValue('arrivals') ?? [];
-            const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
-            if (!arrivals.some(({ status }: { status: string }) => isVolunteerActivatedStatusValue(status))) {
-                setShowConfirmationModalReason('is_active');
-            } else if (activeFrom && dayjs(activeFrom).valueOf() >= dayjs().startOf('day').add(1, 'day').valueOf()) {
-                setShowConfirmationModalReason('active_from');
-            } else {
-                saveButtonProps?.onClick();
-            }
+            void runSaveConfirmationFlow();
         },
         onMutationSuccess: async ({ data: { id } }) => {
             const updatedCustomFields = form.getFieldValue('updated_custom_fields');

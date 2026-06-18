@@ -12,6 +12,7 @@ import { useFormUnsavedChanges, useRegisterUnsavedChangesSave } from 'shared/uns
 import CreateEdit from './common';
 import useSaveConfirm from './use-save-confirm';
 import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed';
+import { FORM_SCROLL_TO_ERROR_OPTIONS } from 'shared/utils/form-scroll-to-error-options';
 import { createVolunteerFormOnFinish } from './common-edit/sections/volunteer-feeding-form';
 import { useVolunteerFormBaselineReady, VolunteerFormReadinessProvider } from './volunteer-form-readiness';
 import { useRegisterVolunteerCardUiBannerForm } from './volunteer-card-ui-banner-context';
@@ -79,7 +80,6 @@ const VolCreateContent = ({
         },
         warnWhenUnsavedChanges: false
     });
-    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
     const isBaselineReady = useVolunteerFormBaselineReady({
         formLoading,
         feedTypesLoading,
@@ -90,7 +90,6 @@ const VolCreateContent = ({
         formLoading,
         isReady: isBaselineReady
     });
-    useRegisterUnsavedChangesSave(onClick);
     useRegisterVolunteerCardUiBannerForm(form);
 
     const {
@@ -109,6 +108,11 @@ const VolCreateContent = ({
         form,
         upstreamOnFinishFailed
     );
+    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, {
+        feedTypes,
+        onValidationFailed: handleFinishFailed
+    });
+    useRegisterUnsavedChangesSave(onClick);
 
     const showFloatingSave = isDesktop || ['1', '2'].includes(activeKey);
     const [personBanned, setPersonBanned] = useState(false);
@@ -142,7 +146,7 @@ const VolCreateContent = ({
                 {...restFormProps}
                 onFinish={handleFinish as NonNullable<typeof upstreamOnFinish>}
                 onValuesChange={wrapOnValuesChange(upstreamOnValuesChange)}
-                scrollToFirstError
+                scrollToFirstError={FORM_SCROLL_TO_ERROR_OPTIONS}
                 layout="vertical"
                 onFinishFailed={handleFinishFailed}
             >

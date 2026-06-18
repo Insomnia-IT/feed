@@ -27,7 +27,6 @@ export const VolCreateLegacy = () => {
         },
         warnWhenUnsavedChanges: true
     });
-    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
     useRegisterVolunteerCardUiBannerForm(form);
 
     const { isDesktop } = useScreen();
@@ -39,6 +38,9 @@ export const VolCreateLegacy = () => {
         form,
         upstreamOnFinishFailed
     );
+    const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, {
+        onValidationFailed: handleFinishFailed
+    });
     const shouldHideFooterActions = !isDesktop && activeKey !== '1';
     const [personBanned, setPersonBanned] = useState(false);
     const handlePersonBannedChange = useCallback((banned: boolean) => {

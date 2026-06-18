@@ -130,7 +130,7 @@ export function VolTabPaneScroll({ children }: { children: ReactNode }) {
 
     return (
         <div className={`${styles.wrap} vol-tab-pane-scroll-wrap`}>
-            <div ref={scrollRef} className={styles.scroll}>
+            <div ref={scrollRef} className={`${styles.scroll} vol-tab-pane-scroll`}>
                 {children}
             </div>
             {metrics.show ? (
