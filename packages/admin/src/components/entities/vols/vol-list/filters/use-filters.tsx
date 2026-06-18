@@ -314,7 +314,7 @@ export const useFilters = ({
                 name: 'feed_type',
                 title: 'Тип питания',
                 skipNull: true,
-                single: true,
+                single: false,
                 lookup: () => feedTypesLookup
             },
             { type: FilterFieldType.Boolean, single: true, name: 'is_vegan', title: 'Веган' },
