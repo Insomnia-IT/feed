@@ -1,11 +1,10 @@
 import { DatePicker, Form, Select, Button } from 'antd';
 import { type ReactNode, useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
-import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
 import { Rules } from 'components/form';
 import { MobileDateDrawer } from 'shared/components/mobile-date-drawer/mobile-date-drawer';
-import { formDateFormat } from 'shared/lib';
+import { createClientId, formDateFormat } from 'shared/lib';
 import { useScreen } from 'shared/providers';
 
 import styles from '../../common.module.css';
@@ -156,7 +155,7 @@ export const ArrivalsSection = ({
                 {(arrivalFields, { add, remove }) => {
                     const addArrival = () => {
                         add({
-                            id: uuidv4(),
+                            id: createClientId(),
                             arrival_transport: 'UNDEFINED',
                             departure_transport: 'UNDEFINED'
                         });
