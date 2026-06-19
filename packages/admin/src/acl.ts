@@ -1,20 +1,30 @@
-import { AccessControl } from 'accesscontrol';
 import type { AccessControlProvider } from '@refinedev/core';
 
 import { AppRoles, getUserData, isAppRole, type AppRole } from 'auth';
 
-const ac = new AccessControl();
+type ResourceAction = 'read' | 'create' | 'update' | 'delete';
+type RolePermissions = Record<ResourceAction, ReadonlySet<string>>;
 
-const canRole = (role: AppRole) => ac.can(role as string);
-ac
-    // Руководитель локации
-    .grant(AppRoles.DIRECTION_HEAD)
-    .read(['dashboard', 'volunteers', 'group-badges'])
-    .update(['group-badges', 'volunteers'])
-    // Кот
-    .grant(AppRoles.CAT)
-    .extend(AppRoles.DIRECTION_HEAD)
-    .read([
+const permissions = (params: {
+    read?: string[];
+    create?: string[];
+    update?: string[];
+    delete?: string[];
+}): RolePermissions => ({
+    read: new Set(params.read),
+    create: new Set(params.create),
+    update: new Set(params.update),
+    delete: new Set(params.delete)
+});
+
+const directionHeadPermissions = permissions({
+    read: ['dashboard', 'volunteers', 'group-badges'],
+    update: ['group-badges', 'volunteers']
+});
+
+const catPermissions = permissions({
+    read: [
+        ...directionHeadPermissions.read,
         'wash',
         'directions',
         'feed-transaction',
@@ -27,27 +37,37 @@ ac
         'storage-positions',
         'storage-issuances',
         'storage-receivings'
-    ])
-    .create(['volunteers'])
-    // Старший смены
-    .grant(AppRoles.SENIOR)
-    .extend(AppRoles.CAT)
-    .read(['volunteer-custom-fields'])
-    .create([
+    ],
+    create: ['volunteers'],
+    update: [...directionHeadPermissions.update]
+});
+
+const seniorPermissions = permissions({
+    read: [...catPermissions.read, 'volunteer-custom-fields'],
+    create: [
+        ...catPermissions.create,
         'group-badges',
         'volunteer-custom-fields',
         'storages',
         'storage-bins',
         'storage-items',
         'storage-positions'
-    ])
-    .update(['volunteer-custom-fields', 'storages', 'storage-bins', 'storage-items', 'storage-positions'])
-    // Администратор
-    .grant(AppRoles.ADMIN)
-    .extend(AppRoles.SENIOR)
-    .create(['group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash'])
-    .update(['group-badges', 'volunteer-custom-fields'])
-    .delete([
+    ],
+    update: [
+        ...catPermissions.update,
+        'volunteer-custom-fields',
+        'storages',
+        'storage-bins',
+        'storage-items',
+        'storage-positions'
+    ]
+});
+
+const adminPermissions = permissions({
+    read: [...seniorPermissions.read],
+    create: [...seniorPermissions.create, 'group-badges', 'volunteer-custom-fields', 'feed-transaction', 'wash'],
+    update: [...seniorPermissions.update, 'group-badges', 'volunteer-custom-fields'],
+    delete: [
         'group-badges',
         'volunteer-custom-fields',
         'feed-transaction',
@@ -56,11 +76,17 @@ ac
         'storage-bins',
         'storage-items',
         'storage-positions'
-    ])
-    // Сова
-    .grant(AppRoles.SOVA)
-    .read('wash')
-    .create('wash');
+    ]
+});
+
+const rolePermissions: Record<AppRole, RolePermissions> = {
+    [AppRoles.DIRECTION_HEAD]: directionHeadPermissions,
+    [AppRoles.CAT]: catPermissions,
+    [AppRoles.SENIOR]: seniorPermissions,
+    [AppRoles.ADMIN]: adminPermissions,
+    [AppRoles.SOVA]: permissions({ read: ['wash'], create: ['wash'] }),
+    [AppRoles.KITCHEN]: permissions({})
+};
 
 type Action =
     | 'list'
@@ -118,16 +144,16 @@ export const canAccessByRole = (role: string, action: string, resource: string):
     }
 
     if (action === 'list' || action === 'show') {
-        return canRole(role).read(resource).granted;
+        return rolePermissions[role].read.has(resource);
     }
     if (action === 'create') {
-        return canRole(role).create(resource).granted;
+        return rolePermissions[role].create.has(resource);
     }
     if (action === 'edit') {
-        return canRole(role).update(resource).granted;
+        return rolePermissions[role].update.has(resource);
     }
     if (action === 'delete') {
-        return canRole(role).delete(resource).granted;
+        return rolePermissions[role].delete.has(resource);
     }
 
     return checkCustomPermission(role, action as Action);

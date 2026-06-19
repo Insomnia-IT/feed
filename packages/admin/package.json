@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "dev:stage": "cross-env VITE_NEW_API_URL_ENV='https://feedapp-dev.insomniafest.ru/feedapi/v1' vite",
+        "dev:stage": "vite --mode stage",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "lint:js": "eslint .",
@@ -24,12 +24,10 @@
         "@refinedev/core": "^5.0.12",
         "@refinedev/react-router": "^2.0.3",
         "@tanstack/react-query": "^5.101.0",
-        "accesscontrol": "^2.2.1",
         "antd": "^5.29.3",
         "axios": "^1.18.0",
         "classnames": "^2.5.1",
         "dayjs": "^1.11.13",
-        "js-cookie": "^3.0.5",
         "onscan.js": "^1.5.2",
         "qr-scanner": "^1.4.1",
         "quill": "^2.0.3",
@@ -40,11 +38,8 @@
         "ulid": "^3.0.2"
     },
     "devDependencies": {
-        "@types/js-cookie": "^3.0.6",
         "@types/onscan.js": "^1.5.6",
-        "@vitest/ui": "^4.1.9",
         "jsdom": "^29.0.2",
-        "rollup-plugin-visualizer": "^7.0.1",
         "vitest": "^4.1.9"
     }
 }
