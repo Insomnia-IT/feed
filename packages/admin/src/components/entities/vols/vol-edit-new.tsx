@@ -108,6 +108,8 @@ const VolEditContent = ({
         warnWhenUnsavedChanges: false
     });
     const isSaving = mutation.isPending;
+    const isSaveButtonDisabled = Boolean(saveButtonProps.disabled) && !isSaving;
+    const volunteerSaveButtonClassName = isSaving ? styles.volunteerSaveButtonSaving : undefined;
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
     const isBaselineReady = useVolunteerFormBaselineReady({
         formLoading,
@@ -195,7 +197,9 @@ const VolEditContent = ({
             saveButtonProps={{
                 ...saveButtonProps,
                 onClick,
-                loading: isSaving
+                loading: isSaving,
+                disabled: isSaveButtonDisabled,
+                className: [styles.volunteerSaveButton, volunteerSaveButtonClassName].filter(Boolean).join(' ')
             }}
             footerButtons={<> </>}
             contentProps={{
@@ -220,8 +224,15 @@ const VolEditContent = ({
                     type="primary"
                     icon={<SaveOutlined className={isMobile ? styles.floatingSaveButtonIcon : undefined} />}
                     loading={isSaving}
-                    disabled={saveButtonProps.disabled}
-                    className={`${styles.floatingSaveButton} ${isMobile ? styles.floatingSaveButtonIconOnly : ''}`}
+                    disabled={isSaveButtonDisabled}
+                    className={[
+                        styles.floatingSaveButton,
+                        styles.volunteerSaveButton,
+                        isMobile ? styles.floatingSaveButtonIconOnly : '',
+                        volunteerSaveButtonClassName
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
                     onClick={onClick}
                     aria-label={isMobile ? 'Сохранить' : undefined}
                 >

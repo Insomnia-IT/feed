@@ -157,8 +157,9 @@
   нижнем углу); на мобилке — квадратная кнопка только с иконкой дискеты
   (60×60px, иконка 32px, `.floatingSaveButtonIconOnly`); лёгкая двухслойная тень
   под кнопкой (`.floatingSaveButton`). Пока идёт PATCH (`mutation.isPending`),
-  на кнопке показывается спиннер Ant Design (`loading`), а не только `disabled`.
-  При ошибке сохранения всплывашка не исчезает сама (`duration: 0` в
+  на кнопке показывается спиннер Ant Design (`loading`), без серого `disabled` —
+  кнопка остаётся приглушённо-синей (`.volunteerSaveButtonSaving`, `#69b1ff`);
+  при загрузке формы disabled — тоже синий, не серый (`.volunteerSaveButton`, `#91caff`). При ошибке сохранения всплывашка не исчезает сама (`duration: 0` в
   `volunteer-save-feedback.ts`); закрывается только по крестику. Модалка несохранённых изменений
   (`shared/unsaved-changes/unsaved-changes-notifier.tsx`) показывается **только**
   если значения формы отличаются от снимка после загрузки (`useFormUnsavedChanges`,
