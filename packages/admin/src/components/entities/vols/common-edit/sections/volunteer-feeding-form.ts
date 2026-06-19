@@ -143,9 +143,12 @@ export function buildVolunteerSubmitValues(params: {
         ...formSnapshot,
         ...params.values
     };
+    const personId = merged.person_id ?? merged.person?.id;
 
     return {
         ...merged,
+        person: undefined,
+        person_id: personId,
         feed_type: feeding.feed_type,
         paid_arrivals: feeding.paid_arrivals as VolEntity['paid_arrivals']
     };

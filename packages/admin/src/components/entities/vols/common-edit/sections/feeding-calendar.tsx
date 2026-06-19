@@ -1,6 +1,6 @@
 import { Button } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
 import 'shared/lib/dateHelper';
 import { useScreen } from 'shared/providers';
@@ -23,6 +23,11 @@ import {
 import styles from './feeding-calendar.module.css';
 
 const WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+function resolveDateKeyFromPointerEvent(event: ReactPointerEvent<HTMLElement>): string | null {
+    const target = document.elementFromPoint(event.clientX, event.clientY);
+    return target?.closest<HTMLElement>('[data-date-key]')?.dataset.dateKey ?? null;
+}
 
 type FeedingCalendarProps = {
     freeDates: Set<string>;
@@ -68,8 +73,9 @@ function MonthPanel({
     activeMode,
     disabled,
     isPainting,
-    onDatePaintStart,
-    onDatePaintEnter
+    onGridPointerDown,
+    onGridPointerMove,
+    onGridPointerUp
 }: {
     panelValue: Dayjs;
     freeDates: Set<string>;
@@ -81,8 +87,9 @@ function MonthPanel({
     activeMode: FeedingDateKind;
     disabled?: boolean;
     isPainting: boolean;
-    onDatePaintStart: (dateKey: string) => void;
-    onDatePaintEnter: (dateKey: string) => void;
+    onGridPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
+    onGridPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
+    onGridPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
 }) {
     const cells = useMemo(() => buildMonthCells({ year: panelValue.year(), month: panelValue.month() }), [panelValue]);
 
@@ -96,7 +103,12 @@ function MonthPanel({
                     </span>
                 ))}
             </div>
-            <div className={styles.daysGrid}>
+            <div
+                className={styles.daysGrid}
+                onPointerDown={onGridPointerDown}
+                onPointerMove={onGridPointerMove}
+                onPointerUp={onGridPointerUp}
+            >
                 {cells.map(({ key, day }) => {
                     if (day === null) {
                         return <span key={key} className={`${styles.dayCell} ${styles.dayCellEmpty}`} />;
@@ -152,14 +164,6 @@ function MonthPanel({
                                             : ''
                             }`}
                             data-date-key={dateKey}
-                            onPointerDown={(event) => {
-                                if (event.pointerType === 'mouse' && event.button !== 0) {
-                                    return;
-                                }
-                                event.preventDefault();
-                                onDatePaintStart(dateKey);
-                            }}
-                            onPointerEnter={() => onDatePaintEnter(dateKey)}
                             title={canInteract ? (activeMode === 'free' ? 'За счёт фестиваля' : 'Платно') : undefined}
                         >
                             {day}
@@ -191,6 +195,8 @@ export function FeedingCalendar({
     const isPaintingRef = useRef(false);
     const paintActionRef = useRef<'apply' | 'remove' | null>(null);
     const paintedKeysRef = useRef<Set<string>>(new Set());
+    const paintFrameRef = useRef<number | null>(null);
+    const pendingPaintDateKeyRef = useRef<string | null>(null);
 
     const calendarYear = year ?? getFeedingCalendarYear();
 
@@ -215,6 +221,12 @@ export function FeedingCalendar({
         if (!isPaintingRef.current) {
             return;
         }
+
+        if (paintFrameRef.current !== null) {
+            window.cancelAnimationFrame(paintFrameRef.current);
+            paintFrameRef.current = null;
+        }
+        pendingPaintDateKeyRef.current = null;
 
         isPaintingRef.current = false;
         setIsPainting(false);
@@ -242,8 +254,13 @@ export function FeedingCalendar({
     }, [activeMode, freeDates, onChange, paidDates]);
 
     useEffect(() => {
-        window.addEventListener('mouseup', endPaint);
-        return () => window.removeEventListener('mouseup', endPaint);
+        const handleGlobalPointerUp = () => endPaint();
+        window.addEventListener('pointerup', handleGlobalPointerUp);
+        window.addEventListener('pointercancel', handleGlobalPointerUp);
+        return () => {
+            window.removeEventListener('pointerup', handleGlobalPointerUp);
+            window.removeEventListener('pointercancel', handleGlobalPointerUp);
+        };
     }, [endPaint]);
 
     const handleDatePaintStart = useCallback(
@@ -289,7 +306,7 @@ export function FeedingCalendar({
         [activeMode, calendarDisabled, freeDates, paidDates, resolvedPaintableArrivalDates, resolvedStayFreeDates]
     );
 
-    const handleDatePaintEnter = useCallback(
+    const applyDatePaintEnter = useCallback(
         (dateKey: string) => {
             if (!isPaintingRef.current || calendarDisabled || resolvedStayFreeDates.has(dateKey)) {
                 return;
@@ -324,15 +341,71 @@ export function FeedingCalendar({
         [activeMode, calendarDisabled, freeDates, paidDates, resolvedPaintableArrivalDates, resolvedStayFreeDates]
     );
 
-    useEffect(() => {
-        const handlePointerUp = () => endPaint();
-        window.addEventListener('pointerup', handlePointerUp);
-        window.addEventListener('pointercancel', handlePointerUp);
-        return () => {
-            window.removeEventListener('pointerup', handlePointerUp);
-            window.removeEventListener('pointercancel', handlePointerUp);
-        };
-    }, [endPaint]);
+    const flushPendingPaintEnter = useCallback(() => {
+        paintFrameRef.current = null;
+        const dateKey = pendingPaintDateKeyRef.current;
+        pendingPaintDateKeyRef.current = null;
+        if (!dateKey) {
+            return;
+        }
+        applyDatePaintEnter(dateKey);
+    }, [applyDatePaintEnter]);
+
+    const scheduleDatePaintEnter = useCallback(
+        (dateKey: string) => {
+            if (!isPaintingRef.current) {
+                return;
+            }
+            pendingPaintDateKeyRef.current = dateKey;
+            if (paintFrameRef.current !== null) {
+                return;
+            }
+            paintFrameRef.current = window.requestAnimationFrame(flushPendingPaintEnter);
+        },
+        [flushPendingPaintEnter]
+    );
+
+    const handleGridPointerDown = useCallback(
+        (event: ReactPointerEvent<HTMLDivElement>) => {
+            if (calendarDisabled || (event.pointerType === 'mouse' && event.button !== 0)) {
+                return;
+            }
+
+            const dateKey = resolveDateKeyFromPointerEvent(event);
+            if (!dateKey) {
+                return;
+            }
+
+            event.preventDefault();
+            event.currentTarget.setPointerCapture(event.pointerId);
+            handleDatePaintStart(dateKey);
+        },
+        [calendarDisabled, handleDatePaintStart]
+    );
+
+    const handleGridPointerMove = useCallback(
+        (event: ReactPointerEvent<HTMLDivElement>) => {
+            if (!isPaintingRef.current) {
+                return;
+            }
+
+            const dateKey = resolveDateKeyFromPointerEvent(event);
+            if (dateKey) {
+                scheduleDatePaintEnter(dateKey);
+            }
+        },
+        [scheduleDatePaintEnter]
+    );
+
+    const handleGridPointerUp = useCallback(
+        (event: ReactPointerEvent<HTMLDivElement>) => {
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+            endPaint();
+        },
+        [endPaint]
+    );
 
     const renderMonthPanel = (panelValue: Dayjs) => (
         <MonthPanel
@@ -346,8 +419,9 @@ export function FeedingCalendar({
             activeMode={activeMode}
             disabled={calendarDisabled}
             isPainting={isPainting}
-            onDatePaintStart={handleDatePaintStart}
-            onDatePaintEnter={handleDatePaintEnter}
+            onGridPointerDown={handleGridPointerDown}
+            onGridPointerMove={handleGridPointerMove}
+            onGridPointerUp={handleGridPointerUp}
         />
     );
 
@@ -360,7 +434,7 @@ export function FeedingCalendar({
                 onClick={() => setActiveMode('free')}
             >
                 <span className={`${styles.modeSwatch} ${styles.modeSwatchFree}`} />
-                За счёт фестиваля
+                За счёт фестиваля{displaySets.freeDates.size ? ` (${displaySets.freeDates.size})` : ''}
             </Button>
             <Button
                 type="default"
@@ -369,7 +443,7 @@ export function FeedingCalendar({
                 onClick={() => setActiveMode('paid')}
             >
                 <span className={`${styles.modeSwatch} ${styles.modeSwatchPaid}`} />
-                Платно
+                Платно{displaySets.paidDates.size ? ` (${displaySets.paidDates.size})` : ''}
             </Button>
             <span className={styles.legendDescription}>Добавить питание можно только на даты заездов</span>
         </div>
