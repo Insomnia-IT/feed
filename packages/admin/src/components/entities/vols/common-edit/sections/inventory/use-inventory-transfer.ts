@@ -77,7 +77,7 @@ export const useInventoryTransfer = ({ volunteerId, reloadTargetInventory }: Use
         if (!volunteerId || !actorId) return;
 
         try {
-            const values = await transferForm.validateFields(['to', 'position', 'count']);
+            const values = await transferForm.validateFields();
             setIsTransferLoading(true);
 
             await createInventoryMovement({

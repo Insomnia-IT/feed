@@ -47,7 +47,7 @@ export const InventoryTransferModal = ({
         >
             <Form form={form} layout="vertical">
                 <Form.Item label="От кого">
-                    <Input value={volunteerName || (volunteerId ? `ID ${volunteerId}` : '')} readOnly disabled />
+                    <Input value={volunteerName || (volunteerId ? `ID ${volunteerId}` : '')} readOnly />
                 </Form.Item>
                 <Form.Item
                     name="to"
