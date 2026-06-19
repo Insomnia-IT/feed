@@ -6,6 +6,7 @@ export interface InventoryRow extends VolunteerInventoryEntity {
 
 export interface TransferFormValues {
     from: number;
+    to: number;
     position: number;
     count: number;
 }

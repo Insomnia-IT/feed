@@ -52,15 +52,15 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
                             type="primary"
                             htmlType="button"
                             onClick={transfer.openTransferModal}
-                            disabled={!volunteerId || !transfer.userId}
+                            disabled={!volunteerId}
                         >
-                            Передать из личного инвентаря
+                            Передать из инвентаря
                         </Button>
                     </>
                 )}
             </div>
             {showHistory ? (
-                <HistoryTab userId={transfer.userId} />
+                <HistoryTab userId={volunteerId} />
             ) : (
                 <InventoryTable inventory={targetInventory.inventory} isLoading={targetInventory.isLoading} />
             )}
@@ -70,11 +70,12 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
                 volunteerId={volunteerId}
                 volunteerName={volunteerName}
                 form={transfer.transferForm}
+                targetVolunteerId={transfer.targetVolunteerId}
                 isTransferLoading={transfer.isTransferLoading}
-                sourceVolunteerId={transfer.sourceVolunteerId}
                 sourceInventoryLoading={transfer.sourceInventory.isLoading}
                 selectedSourceInventoryItem={transfer.selectedSourceInventoryItem}
                 itemOptions={transfer.itemOptions}
+                volunteerSelectProps={transfer.volunteerSelectProps}
                 onClose={transfer.closeTransferModal}
                 onSubmit={transfer.handleTransfer}
                 onSourceChange={transfer.handleSourceChange}
