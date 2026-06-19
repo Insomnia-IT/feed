@@ -19,7 +19,7 @@ class SynchronizationAdmin(admin.ModelAdmin):
         return True
 
     def has_change_permission(self, request, obj=None):
-        return False
+        return True
 
 
 admin_site.register(SynchronizationSystemActions, SynchronizationAdmin)

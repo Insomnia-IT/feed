@@ -1,0 +1,318 @@
+.edit {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.edit__nav {
+    max-width: 230px;
+    margin-right: 24px;
+    background-color: white;
+}
+
+.navList {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.navList__item {
+    display: flex;
+    align-items: center;
+    width: 230px;
+    height: 40px;
+    padding: 0 24px 0 16px;
+    color: rgb(0 0 0 / 0.85);
+    font-size: 14px;
+    line-height: 157%;
+    cursor: pointer;
+}
+
+.navList__item:not(:last-child) {
+    margin-bottom: 8px;
+}
+
+.active {
+    border-right: 3px solid rgb(24 144 255);
+    background: rgb(230 247 255);
+}
+
+.formWrap {
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    width: 100%;
+    height: calc(100vh - 290px);
+}
+
+.formWrap::-webkit-scrollbar {
+    width: 4px;
+}
+
+.formWrap::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: rgb(24 144 255);
+}
+
+.formWrap::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(14 93 167);
+}
+
+.formSection {
+    position: relative;
+    padding: 16px;
+    background-color: white;
+}
+
+.formSection:not(:last-child) {
+    margin-bottom: 16px;
+}
+
+.formSection__title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.formSection__title h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgb(0 0 0 / 0.85);
+}
+
+/* personal */
+
+.bannedWrap {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: #fff1f0;
+    border: 1px solid #ffa39e;
+    border-radius: 2px;
+}
+
+.bannedDescr {
+    font-size: 12px;
+    line-height: 20px;
+    color: #cf1322;
+    font-weight: 400;
+}
+
+.twoEqualColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.twoColumnsStartWrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* HR информация */
+
+/* Даты на поле */
+.dateWrap {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+}
+
+.dateLabel {
+    color: rgb(141 149 158);
+    font-weight: 500;
+}
+
+.dateInput {
+    flex: 1;
+}
+
+/* Кастомные поля */
+
+.threeColumnsWrap {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.threeColumnsWrap > * {
+    align-self: start;
+}
+
+/* Дополнительно */
+
+.blockDeleteWrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* модалка блокировки */
+
+.modalTitle {
+    margin: 0;
+    margin-bottom: 8px;
+    padding: 0;
+    color: rgb(0 0 0 / 0.85);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 150%;
+}
+
+.visuallyHidden {
+    position: absolute;
+    overflow: hidden;
+    clip-path: inset(0 0 0 0);
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+}
+
+.blockButton {
+    display: flex;
+    align-items: center;
+}
+
+.engagementsDescr {
+    font-size: 14px;
+    line-height: 157%;
+    color: black;
+}
+
+.engagementsDescr:first-child {
+    margin-right: 16px;
+}
+
+.deleteButton {
+    margin-top: 7px;
+    padding: 0;
+}
+
+.addArrivalButton {
+    float: right;
+}
+
+/* ADAPTIVES */
+@media (width <= 1366px) {
+    .edit__nav {
+        display: none;
+    }
+}
+
+@media (width <= 768px) {
+    .dateWrapper {
+        padding-top: 20px;
+        border-top: 1px solid rgb(201 201 201);
+    }
+
+    .dateWrap {
+        margin-bottom: 22px;
+        position: relative;
+        flex-direction: column;
+    }
+
+    .dateWrap * {
+        margin-bottom: 0;
+    }
+
+    .deleteButton {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 1000;
+    }
+
+    .dateLabelEmpty {
+        display: none;
+    }
+
+    .threeColumnsWrap {
+        grid-template-columns: 100%;
+        margin: 14px 0;
+    }
+
+    .threeColumnsWrap > * {
+        margin-bottom: 0;
+    }
+}
+
+@media (width <= 576px) {
+    .deleteButton {
+        top: 0;
+        right: 12px;
+    }
+
+    .blockDeleteWrap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .blockButton {
+        margin-bottom: 20px;
+    }
+
+    .resultDescr {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .formWrap {
+        height: calc(100vh - 280px);
+    }
+}
+
+.pageTitle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.pageTitle h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    color: rgb(0 0 0 / 0.85);
+}
+
+@media (width <= 576px) {
+    .pageTitle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .mobileTabsWithOffset :global(.ant-tabs-content-holder) {
+        padding-bottom: calc(var(--mobile-sider-height) + env(safe-area-inset-bottom));
+    }
+}
+
+@media (width <= 576px) {
+    :global(.ant-page-header-content) {
+        padding: 0 !important;
+    }
+
+    :global(.ant-card-body) {
+        padding: 5px !important;
+    }
+
+    :global(.ant-card-actions) {
+        margin: 11px 5px 56px !important;
+        position: sticky;
+        bottom: 50px;
+    }
+}
+
+@media (width >= 577px) {
+    :global(.ant-card-actions) {
+        margin: 0 24px !important;
+        position: static;
+    }
+}

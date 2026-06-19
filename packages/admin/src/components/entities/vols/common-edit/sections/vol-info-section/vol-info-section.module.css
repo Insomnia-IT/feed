@@ -1,112 +1,119 @@
-.formSection__title {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.formSection__title h4 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-    color: rgb(0 0 0 / 0.85);
-}
-
-.personalWrap {
-    display: flex;
-    flex-wrap: nowrap;
-}
-
-.photoWrap {
-    width: 112px;
-    height: 112px;
-    margin-right: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 2px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    background-color: rgb(240 240 240);
-}
-
-@media (width <= 768px) {
-    .photoWrap {
-        position: absolute;
-        margin-right: 0;
-        top: 83px;
-        right: 16px;
-        z-index: 1000;
-    }
-
-    .twoColumnsWrap {
-        display: grid;
-        grid-template-columns: calc(100% - 136px);
-    }
-
-    .twoColumnsWrap > * {
-        margin-bottom: 0;
-    }
-
-    .threeColumnsWrap {
-        grid-template-columns: 100%;
-        margin: 14px 0;
-    }
-
-    .threeColumnsWrap > * {
-        margin-bottom: 0;
-    }
-}
-
 .personalInfoWrap {
+    min-width: 0;
+}
+
+.personalInfoPhotoSlot {
     display: flex;
-    flex-grow: 1;
-    flex-flow: column nowrap;
+    flex-shrink: 0;
+    align-items: flex-start;
+    width: fit-content;
+    max-width: 160px;
 }
 
-.twoColumnsWrap {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 12px;
+.personalInfoFieldsSecondary :global(.ant-row .ant-form-item) {
+    margin-bottom: 0;
 }
 
-@media (width <= 576px) {
-    .twoColumnsWrap {
+.secondaryFieldsRow {
+    flex-wrap: wrap;
+}
+
+.secondaryFieldCol {
+    min-width: 0;
+}
+
+@media (width < 768px) {
+    .directionsFieldCol {
+        flex: 0 0 100% !important;
+        max-width: 100%;
+    }
+}
+
+@media (width >= 768px) {
+    .secondaryFieldsRow {
+        flex-wrap: nowrap;
+    }
+}
+
+@media (width <= 575px) {
+    .personalInfoLayout {
+        display: block;
+        width: 100%;
+    }
+
+    .personalInfoFieldsColumn {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* Планшет и десктоп: фото слева в одном ряду с двумя верхними рядами, служба+бейдж — на всю ширину */
+@media (width >= 576px) {
+    .personalInfoLayout {
         display: grid;
-        grid-template-columns: calc(100% - 128px);
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+            'photo primary'
+            'secondary secondary';
+        gap: 12px 16px;
+        align-items: start;
+    }
+
+    .personalInfoPhotoSlot {
+        grid-area: photo;
+    }
+
+    .personalInfoFieldsColumn {
+        display: contents;
+    }
+
+    .personalInfoFieldsPrimary {
+        grid-area: primary;
+        min-width: 0;
+    }
+
+    .personalInfoFieldsSecondary {
+        grid-area: secondary;
+        min-width: 0;
     }
 }
 
-.twoVariableColumnsWrap {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+.readOnlyField :global(.ant-form-item-label > label) {
+    color: rgb(0 0 0 / 0.45);
 }
 
-.twoVariableColumnsWrap > * {
-    align-self: start;
+.readOnlyField :global(.ant-input[disabled]) {
+    color: rgb(0 0 0 / 0.65);
+    background: rgb(0 0 0 / 0.02);
 }
 
-@media (width <= 576px) {
-    .twoVariableColumnsWrap {
-        margin-top: 6px;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-    }
-
-    .twoVariableColumnsWrap > * {
-        align-self: stretch;
-    }
+.labelHint {
+    margin-left: 4px;
+    color: rgb(0 0 0 / 0.45);
 }
 
-.threeColumnsWrap {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+.infantCheckboxItem :global(.ant-form-item-label > label) {
+    visibility: hidden;
 }
 
-.threeColumnsWrap > * {
-    align-self: start;
+.infantCheckboxItem :global(.ant-checkbox-wrapper) {
+    white-space: nowrap;
+}
+
+.infantCheckboxCol {
+    display: flex;
+    align-self: flex-start;
+    align-items: flex-start;
+    min-width: max-content;
+    flex-shrink: 0;
+}
+
+.infantCheckboxItem {
+    width: 100%;
+}
+
+.infantCheckboxItem :global(.ant-form-item-control-input) {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
 }

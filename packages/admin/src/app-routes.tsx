@@ -1,12 +1,12 @@
 import { Suspense, lazy, type ComponentType, type ReactNode } from 'react';
-import { Route, Routes, Outlet } from 'react-router';
+import { Route, Routes } from 'react-router';
 import { Authenticated } from '@refinedev/core';
-import { ThemedLayout, ErrorComponent } from '@refinedev/antd';
+import { ErrorComponent } from '@refinedev/antd';
 import { CatchAllNavigate } from '@refinedev/react-router';
 import { Spin } from 'antd';
 
 import { useScreen } from 'shared/providers';
-import CustomSider from 'components/sider/sider';
+import { AuthenticatedAppLayout } from 'components/layout/authenticated-app-layout';
 
 interface IProps {
     initial: ReactNode;
@@ -88,9 +88,7 @@ export const AppRoutes = ({ initial }: IProps) => {
                 <Route
                     element={
                         <Authenticated key="authenticated-inner" fallback={<CatchAllNavigate to="/login" />}>
-                            <ThemedLayout Sider={() => <CustomSider />}>
-                                <Outlet />
-                            </ThemedLayout>
+                            <AuthenticatedAppLayout />
                         </Authenticated>
                     }
                 >

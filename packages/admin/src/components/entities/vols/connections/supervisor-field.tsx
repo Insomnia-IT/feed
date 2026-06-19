@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Button, Form, type FormInstance, Row, Select } from 'antd';
+import { Button, Form, type FormInstance, Input, Select } from 'antd';
 import { type CrudFilters, useList } from '@refinedev/core';
-import { EyeOutlined } from '@ant-design/icons';
+import { ExportOutlined } from '@ant-design/icons';
 import useCanAccess from '../use-can-access';
 import { useDebouncedCallback } from 'shared/hooks';
-import { AppRoles } from '../../../../auth';
 import type { VolEntity } from 'interfaces';
 import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import { useScreen } from '../../../../shared/providers';
+
+import connectionsStyles from './connections.module.css';
 
 export const SupervisorField = ({ form }: { form: FormInstance }) => {
     const supervisorId = Form.useWatch('supervisor_id', form);
@@ -18,13 +19,8 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
     const debouncedBrigadierSearch = useDebouncedCallback((value: string) => setBrigadierSearch(value));
 
     const supervisorFilters = useMemo<CrudFilters>(
-        () => [
-            {
-                field: 'access_role',
-                operator: 'eq' as const,
-                value: AppRoles.DIRECTION_HEAD
-            },
-            ...(brigadierSearch
+        () =>
+            brigadierSearch
                 ? [
                       {
                           field: 'search',
@@ -32,8 +28,7 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                           value: brigadierSearch
                       }
                   ]
-                : [])
-        ],
+                : [],
         [brigadierSearch]
     );
 
@@ -68,8 +63,16 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
     }, [supervisor, supervisorId, supervisorsResult]);
 
     return (
-        <Row align={'bottom'} gutter={8} style={{ gap: '4px' }}>
-            <Form.Item label="Бригадир" name="supervisor_id" normalize={(value) => value ?? null}>
+        <div className={connectionsStyles.fieldRow}>
+            <Form.Item name="supervisor" noStyle>
+                <Input type="hidden" />
+            </Form.Item>
+            <Form.Item
+                className={connectionsStyles.fieldGrow}
+                label="Бригадир"
+                name="supervisor_id"
+                normalize={(value) => value ?? null}
+            >
                 <Select
                     allowClear
                     showSearch
@@ -79,24 +82,27 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                     options={supervisorOptions}
                     loading={supervisorsLoading}
                     disabled={!canEditBrigadier}
-                    style={{ textOverflow: 'ellipsis', maxWidth: '90vw' }}
                 />
             </Form.Item>
 
-            <Form.Item label="">
+            <Form.Item className={connectionsStyles.fieldAction} label=" " colon={false}>
                 <Button
-                    title={'Открыть бригадира'}
-                    icon={<EyeOutlined />}
+                    title="Открыть бригадира в новой вкладке"
+                    icon={<ExportOutlined />}
                     disabled={!supervisorId}
                     onClick={() => {
                         if (supervisorId) {
-                            window.location.href = `${window.location.origin}/volunteers/edit/${supervisorId}`;
+                            window.open(
+                                `${window.location.origin}/volunteers/edit/${supervisorId}`,
+                                '_blank',
+                                'noopener,noreferrer'
+                            );
                         }
                     }}
                 >
-                    {isMobile ? 'Открыть бригадира' : ''}
+                    {!isMobile ? 'Открыть бригадира' : null}
                 </Button>
             </Form.Item>
-        </Row>
+        </div>
     );
 };

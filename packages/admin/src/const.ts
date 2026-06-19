@@ -20,6 +20,13 @@ const getScannerUrl = () => {
 
 export const SCANNER_URL = getScannerUrl();
 
+/** localStorage: `'true'` — карточка волонтёра в интерфейсе с main до редизайна. */
+export const VOLUNTEER_CARD_LEGACY_UI_STORAGE_KEY = 'volunteerCardLegacyUi';
+
+/** sessionStorage: баннер переключения интерфейса скрыт до конца сессии вкладки. */
+export const VOLUNTEER_CARD_NEW_UI_BANNER_DISMISSED_KEY = 'volunteerCardNewUiBannerDismissed';
+export const VOLUNTEER_CARD_LEGACY_UI_BANNER_DISMISSED_KEY = 'volunteerCardLegacyUiBannerDismissed';
+
 export const MEAL_MAP: Record<string, string> = {
     breakfast: 'Завтрак',
     lunch: 'Обед',
