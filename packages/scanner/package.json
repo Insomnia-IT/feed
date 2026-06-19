@@ -11,8 +11,8 @@
         "lint-fix:css": "stylelint --fix ./src/**/*.css",
         "lint:js": "eslint .",
         "lint-fix:js": "eslint . --fix",
-        "lint": "npm-run-all -s lint:*",
-        "lint-fix": "npm-run-all -s lint-fix:*",
+        "lint": "npm run lint:css && npm run lint:js",
+        "lint-fix": "npm run lint-fix:css && npm run lint-fix:js",
         "tc": "tsc --noemit --emitDeclarationOnly false",
         "preview": "vite preview"
     },
