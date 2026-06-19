@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { BrowserRouter } from 'react-router';
 import { Refine, useGetIdentity } from '@refinedev/core';
 import routerProvider, { DocumentTitleHandler, NavigateToResource } from '@refinedev/react-router';
-import { useNotificationProvider } from '@refinedev/antd';
+import { useNotificationProvider } from 'notificationProvider';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
 

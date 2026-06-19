@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { useList, useTranslate } from '@refinedev/core';
 import { SaveOutlined } from '@ant-design/icons';
@@ -17,6 +17,7 @@ import { useVolunteerFormBaselineReady, VolunteerFormReadinessProvider } from '.
 import { useRegisterVolunteerCardUiBannerForm } from './volunteer-card-ui-banner-context';
 import { VolunteerPersonBannedSync } from './volunteer-person-banned-sync';
 import { VolunteerPersonBlacklistBadge } from './volunteer-person-blacklist-badge';
+import { createVolunteerFormErrorNotification } from './volunteer-save-feedback';
 
 import styles from './common.module.css';
 
@@ -53,9 +54,15 @@ const VolCreateContent = ({
     const { isDesktop, isMobile } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
 
-    const { form, formProps, saveButtonProps, formLoading } = useForm<VolEntity>({
+    const volunteerSaveErrorNotification = useMemo(
+        () => createVolunteerFormErrorNotification({ translate, action: 'create' }),
+        [translate]
+    );
+
+    const { form, formProps, saveButtonProps, formLoading, mutation } = useForm<VolEntity>({
         redirect: 'list',
         successNotification: false,
+        errorNotification: volunteerSaveErrorNotification,
         onMutationSuccess: async (response) => {
             await onMutationSuccess(response as { data: { id: number } });
             clearWarnWhen();
@@ -79,6 +86,9 @@ const VolCreateContent = ({
         },
         warnWhenUnsavedChanges: false
     });
+    const isSaving = mutation.isPending;
+    const isSaveButtonDisabled = Boolean(saveButtonProps.disabled) && !isSaving;
+    const volunteerSaveButtonClassName = isSaving ? styles.volunteerSaveButtonSaving : undefined;
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
     const isBaselineReady = useVolunteerFormBaselineReady({
         formLoading,
@@ -130,7 +140,10 @@ const VolCreateContent = ({
             }
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick
+                onClick,
+                loading: isSaving,
+                disabled: isSaveButtonDisabled,
+                className: [styles.volunteerSaveButton, volunteerSaveButtonClassName].filter(Boolean).join(' ')
             }}
             footerButtons={<> </>}
             contentProps={{
@@ -153,9 +166,16 @@ const VolCreateContent = ({
                 <Button
                     type="primary"
                     icon={<SaveOutlined className={isMobile ? styles.floatingSaveButtonIcon : undefined} />}
-                    loading={saveButtonProps.loading}
-                    disabled={saveButtonProps.disabled}
-                    className={`${styles.floatingSaveButton} ${isMobile ? styles.floatingSaveButtonIconOnly : ''}`}
+                    loading={isSaving}
+                    disabled={isSaveButtonDisabled}
+                    className={[
+                        styles.floatingSaveButton,
+                        styles.volunteerSaveButton,
+                        isMobile ? styles.floatingSaveButtonIconOnly : '',
+                        volunteerSaveButtonClassName
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
                     onClick={onClick}
                     aria-label={isMobile ? 'Сохранить' : undefined}
                 >

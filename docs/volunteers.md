@@ -156,11 +156,15 @@
   «Сохранить» — плавающая (`.floatingSaveButton`, `position: fixed` в правом
   нижнем углу); на мобилке — квадратная кнопка только с иконкой дискеты
   (60×60px, иконка 32px, `.floatingSaveButtonIconOnly`); лёгкая двухслойная тень
-  под кнопкой (`.floatingSaveButton`). Пока идёт PATCH (`mutation.isPending`),
+  под кнопкой (`.floatingSaveButton`). Тот же паттерн кнопки и уведомлений об
+  ошибке — в форме **создания** (`vol-create-new.tsx`) и legacy create/edit.
+  Пока идёт PATCH (`mutation.isPending`),
   на кнопке показывается спиннер Ant Design (`loading`), без серого `disabled` —
   кнопка остаётся приглушённо-синей (`.volunteerSaveButtonSaving`, `#69b1ff`);
-  при загрузке формы disabled — тоже синий, не серый (`.volunteerSaveButton`, `#91caff`). При ошибке сохранения всплывашка не исчезает сама (`duration: 0` в
-  `volunteer-save-feedback.ts`); закрывается только по крестику. Модалка несохранённых изменений
+  при загрузке формы disabled — тоже синий, не серый (`.volunteerSaveButton`, `#91caff`). При ошибке сохранения
+  `useForm` задаёт `errorNotification` с `metaData.duration: 0` (`createVolunteerFormErrorNotification` в
+  `volunteer-save-feedback.ts`, action `create` | `edit`);
+  провайдер `notificationProvider.ts` передаёт duration в Ant Design — всплывашка закрывается только по крестику. Модалка несохранённых изменений
   (`shared/unsaved-changes/unsaved-changes-notifier.tsx`) показывается **только**
   если значения формы отличаются от снимка после загрузки (`useFormUnsavedChanges`,
   сравнение через `serializeFormValues` / `areFormValuesEqual`; пустые и
