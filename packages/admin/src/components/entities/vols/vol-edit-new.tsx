@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Edit, useForm } from '@refinedev/antd';
-import { useList, useResourceParams } from '@refinedev/core';
+import { useList, useResourceParams, useTranslate } from '@refinedev/core';
 import { SaveOutlined } from '@ant-design/icons';
-import { Button, Form, type FormProps } from 'antd';
+import { App, Button, Form, type FormProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 
 import { useScreen } from 'shared/providers';
@@ -22,6 +22,7 @@ import { useVolunteerFormBaselineReady, VolunteerFormReadinessProvider } from '.
 import { useRegisterVolunteerCardUiBannerForm } from './volunteer-card-ui-banner-context';
 import { VolunteerPersonBannedSync } from './volunteer-person-banned-sync';
 import { VolunteerPersonBlacklistBadge } from './volunteer-person-blacklist-badge';
+import { showVolunteerSaveErrorNotification } from './volunteer-save-feedback';
 
 import styles from './common.module.css';
 
@@ -87,12 +88,18 @@ const VolEditContent = ({
     navigateBackToList: () => void;
 }) => {
     const { id } = useResourceParams();
+    const translate = useTranslate();
+    const { notification } = App.useApp();
     const { breakpoint, isDesktop, isMobile } = useScreen();
     const isNarrowMobile = !breakpoint.sm;
     const [activeKey, setActiveKey] = useState('1');
 
-    const { form, formProps, saveButtonProps, formLoading } = useForm<VolEntity>({
+    const { form, formProps, saveButtonProps, formLoading, mutation } = useForm<VolEntity>({
         redirect: false,
+        errorNotification: false,
+        onMutationError: (error) => {
+            showVolunteerSaveErrorNotification({ error, notification, translate, volunteerId: id });
+        },
         onMutationSuccess: async (e) => {
             await onMutationSuccess(e);
             clearWarnWhen();
@@ -100,6 +107,7 @@ const VolEditContent = ({
         },
         warnWhenUnsavedChanges: false
     });
+    const isSaving = mutation.isPending;
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
     const isBaselineReady = useVolunteerFormBaselineReady({
         formLoading,
@@ -186,7 +194,8 @@ const VolEditContent = ({
             }
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick
+                onClick,
+                loading: isSaving
             }}
             footerButtons={<> </>}
             contentProps={{
@@ -210,7 +219,7 @@ const VolEditContent = ({
                 <Button
                     type="primary"
                     icon={<SaveOutlined className={isMobile ? styles.floatingSaveButtonIcon : undefined} />}
-                    loading={saveButtonProps.loading}
+                    loading={isSaving}
                     disabled={saveButtonProps.disabled}
                     className={`${styles.floatingSaveButton} ${isMobile ? styles.floatingSaveButtonIconOnly : ''}`}
                     onClick={onClick}

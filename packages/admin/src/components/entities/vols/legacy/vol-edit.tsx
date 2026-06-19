@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Edit, useForm } from '@refinedev/antd';
-import { useBreadcrumb } from '@refinedev/core';
-import { Form, Breadcrumb, type FormProps } from 'antd';
+import { useBreadcrumb, useResourceParams, useTranslate } from '@refinedev/core';
+import { App, Form, Breadcrumb, type FormProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 
 import { useScreen } from 'shared/providers';
@@ -15,6 +15,7 @@ import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed
 import { useRegisterVolunteerCardUiBannerForm } from '../volunteer-card-ui-banner-context';
 import { VolunteerPersonBannedSync } from '../volunteer-person-banned-sync';
 import { VolunteerPersonBlacklistBadge } from '../volunteer-person-blacklist-badge';
+import { showVolunteerSaveErrorNotification } from '../volunteer-save-feedback';
 
 import styles from './common.module.css';
 
@@ -53,14 +54,23 @@ export const VolEditLegacy = () => {
         navigate(returnTo);
     };
 
-    const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+    const { id } = useResourceParams();
+    const translate = useTranslate();
+    const { notification } = App.useApp();
+
+    const { form, formProps, saveButtonProps, mutation } = useForm<VolEntity>({
         redirect: false,
+        errorNotification: false,
+        onMutationError: (error) => {
+            showVolunteerSaveErrorNotification({ error, notification, translate, volunteerId: id });
+        },
         onMutationSuccess: async (e) => {
             await onMutationSuccess(e);
             navigateBackToList();
         },
         warnWhenUnsavedChanges: true
     });
+    const isSaving = mutation.isPending;
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
     useRegisterVolunteerCardUiBannerForm(form);
     const { isDesktop } = useScreen();
@@ -122,7 +132,8 @@ export const VolEditLegacy = () => {
             }
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick
+                onClick,
+                loading: isSaving
             }}
             contentProps={{
                 ...(shouldHideFooterActions ? { actions: [] } : {}),
