@@ -24,7 +24,7 @@ export const useNotificationProvider = (): NotificationProvider => {
                         key: params.key,
                         description: params.message,
                         message: params.description ?? null,
-                        type: params.type,
+                        type: type as 'success' | 'error' | 'info' | 'warning',
                         duration: metaData.duration
                     });
                     return;
