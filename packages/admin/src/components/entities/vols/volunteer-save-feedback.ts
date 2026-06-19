@@ -1,7 +1,7 @@
-import type { HttpError } from '@refinedev/core';
+import type { HttpError, useTranslate } from '@refinedev/core';
 import type { NotificationInstance } from 'antd/es/notification/interface';
 
-type TranslateFn = (key: string, options?: Record<string, unknown>, defaultMessage?: string) => string;
+type TranslateFn = ReturnType<typeof useTranslate>;
 
 export function showVolunteerSaveErrorNotification(params: {
     error: HttpError;
