@@ -99,10 +99,7 @@ class BasePage:
         time_field.click()
         choose_time = self.page.locator(meal_create.TIME_CHOOSE)
         choose_time.click()
-        choose_meal = self.page.locator(meal_create.MEAL_FIELD)
-        choose_meal.click()
-        choose_meal_type = self.page.locator(meal_create.MEAL_TYPE)
-        choose_meal_type.click()
+        self._select_ant_option(meal_create.MEAL_FIELD, "Завтрак")
         self._select_ant_option(meal_create.KITCHEN_FIELD, "Кухня №2")
         with self.page.expect_response(
             lambda response: response.request.method == "POST"
@@ -174,6 +171,15 @@ class BasePage:
         rows = self.page.locator("tbody.ant-table-tbody tr td:first-child")
         rows.first.wait_for(state="visible", timeout=30000)
         return rows.all_inner_texts()
+
+    def wait_for_meal_date_in_table(self, date_fragment, timeout_ms=30000):
+        self.page.wait_for_function(
+            f"""() => {{
+                const cells = document.querySelectorAll('tbody.ant-table-tbody tr td:first-child');
+                return Array.from(cells).some((el) => el.textContent.includes('{date_fragment}'));
+            }}""",
+            timeout=timeout_ms,
+        )
 
     def open_meal(self):
         first_row = self.page.locator("tr.ant-table-row").first
