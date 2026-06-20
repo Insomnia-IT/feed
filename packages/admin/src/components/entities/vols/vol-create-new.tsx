@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
 import { useList, useTranslate } from '@refinedev/core';
 import { SaveOutlined } from '@ant-design/icons';
@@ -17,7 +17,6 @@ import { useVolunteerFormBaselineReady, VolunteerFormReadinessProvider } from '.
 import { useRegisterVolunteerCardUiBannerForm } from './volunteer-card-ui-banner-context';
 import { VolunteerPersonBannedSync } from './volunteer-person-banned-sync';
 import { VolunteerPersonBlacklistBadge } from './volunteer-person-blacklist-badge';
-import { createVolunteerFormErrorNotification } from './volunteer-save-feedback';
 
 import styles from './common.module.css';
 
@@ -54,15 +53,9 @@ const VolCreateContent = ({
     const { isDesktop, isMobile } = useScreen();
     const [activeKey, setActiveKey] = useState('1');
 
-    const volunteerSaveErrorNotification = useMemo(
-        () => createVolunteerFormErrorNotification({ translate, action: 'create' }),
-        [translate]
-    );
-
     const { form, formProps, saveButtonProps, formLoading, mutation } = useForm<VolEntity>({
         redirect: 'list',
         successNotification: false,
-        errorNotification: volunteerSaveErrorNotification,
         onMutationSuccess: async (response) => {
             await onMutationSuccess(response as { data: { id: number } });
             clearWarnWhen();

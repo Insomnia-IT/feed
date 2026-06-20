@@ -162,9 +162,8 @@
   на кнопке показывается спиннер Ant Design (`loading`), без серого `disabled` —
   кнопка остаётся приглушённо-синей (`.volunteerSaveButtonSaving`, `#69b1ff`);
   при загрузке формы disabled — тоже синий, не серый (`.volunteerSaveButton`, `#91caff`). При ошибке сохранения
-  `useForm` задаёт `errorNotification` с `metaData.duration: 0` (`createVolunteerFormErrorNotification` в
-  `volunteer-save-feedback.ts`, action `create` | `edit`);
-  провайдер `notificationProvider.ts` передаёт duration в Ant Design — всплывашка закрывается только по крестику. Модалка несохранённых изменений
+  используются стандартные Refine-уведомления; в `app.tsx` для `type: 'error'` задано `duration: 0` — всплывашка
+  закрывается только по крестику. Модалка несохранённых изменений
   (`shared/unsaved-changes/unsaved-changes-notifier.tsx`) показывается **только**
   если значения формы отличаются от снимка после загрузки (`useFormUnsavedChanges`,
   сравнение через `serializeFormValues` / `areFormValuesEqual`; пустые и

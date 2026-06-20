@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Edit, useForm } from '@refinedev/antd';
-import { useList, useResourceParams, useTranslate } from '@refinedev/core';
+import { useList, useResourceParams } from '@refinedev/core';
 import { SaveOutlined } from '@ant-design/icons';
 import { Button, Form, type FormProps } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
@@ -22,7 +22,6 @@ import { useVolunteerFormBaselineReady, VolunteerFormReadinessProvider } from '.
 import { useRegisterVolunteerCardUiBannerForm } from './volunteer-card-ui-banner-context';
 import { VolunteerPersonBannedSync } from './volunteer-person-banned-sync';
 import { VolunteerPersonBlacklistBadge } from './volunteer-person-blacklist-badge';
-import { createVolunteerFormErrorNotification } from './volunteer-save-feedback';
 
 import styles from './common.module.css';
 
@@ -88,18 +87,12 @@ const VolEditContent = ({
     navigateBackToList: () => void;
 }) => {
     const { id } = useResourceParams();
-    const translate = useTranslate();
     const { breakpoint, isDesktop, isMobile } = useScreen();
     const isNarrowMobile = !breakpoint.sm;
     const [activeKey, setActiveKey] = useState('1');
-    const volunteerSaveErrorNotification = useMemo(
-        () => createVolunteerFormErrorNotification({ translate, action: 'edit', volunteerId: id }),
-        [translate, id]
-    );
 
     const { form, formProps, saveButtonProps, formLoading, mutation } = useForm<VolEntity>({
         redirect: false,
-        errorNotification: volunteerSaveErrorNotification,
         onMutationSuccess: async (e) => {
             await onMutationSuccess(e);
             clearWarnWhen();

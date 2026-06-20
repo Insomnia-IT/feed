@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Create, useForm } from '@refinedev/antd';
-import { useTranslate } from '@refinedev/core';
 import { Form, type FormProps } from 'antd';
 
 import type { VolEntity } from 'interfaces';
@@ -12,7 +11,6 @@ import { createVolunteerFormFinishFailedHandler } from './vol-form-finish-failed
 import { useRegisterVolunteerCardUiBannerForm } from '../volunteer-card-ui-banner-context';
 import { VolunteerPersonBannedSync } from '../volunteer-person-banned-sync';
 import { VolunteerPersonBlacklistBadge } from '../volunteer-person-blacklist-badge';
-import { createVolunteerFormErrorNotification } from '../volunteer-save-feedback';
 
 import styles from './common.module.css';
 
@@ -23,14 +21,7 @@ const contentStyle = {
 };
 
 export const VolCreateLegacy = () => {
-    const translate = useTranslate();
-    const volunteerSaveErrorNotification = useMemo(
-        () => createVolunteerFormErrorNotification({ translate, action: 'create' }),
-        [translate]
-    );
-
     const { form, formProps, saveButtonProps, mutation } = useForm<VolEntity>({
-        errorNotification: volunteerSaveErrorNotification,
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
         },
