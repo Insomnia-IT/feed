@@ -199,6 +199,13 @@ export const VolunteerDesktopTable = ({
                 render: (value) => <ListBooleanPositive value={Boolean(value)} />
             },
             {
+                dataIndex: 'inventory',
+                key: 'inventory',
+                title: 'Инвентарь',
+                render: (value: VolEntity['inventory']) =>
+                    value.map(({ name, count }) => `${name} (${count})`).join('\n')
+            },
+            {
                 dataIndex: 'comment',
                 key: 'comment',
                 title: 'Комментарий',

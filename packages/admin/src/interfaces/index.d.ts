@@ -32,6 +32,7 @@ export interface VolEntity extends TimeStampedEntity {
     arrivals: Array<ArrivalEntity>;
     paid_arrivals: Array<PaidArrivalEntity>;
     custom_field_values: Array<{ custom_field: number; value: string }>;
+    inventory: Array<{ name: string; count: number }>;
     direction_head_comment?: string | null;
     is_ticket_received?: boolean | null;
     badge_number?: string | null;
