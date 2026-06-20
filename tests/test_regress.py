@@ -405,7 +405,7 @@ def test_create_new_user(page):
 
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     login_page.clear_input_field()
-    page.wait_for_timeout(500)
+    login_page.wait_for_volunteers_count(counter1 + 1)
     counter2 = login_page.receive_volunteers_count()
     login_page.find_user(created_user_name)
     user_name = login_page.check_username_after_editing(created_user_name)

@@ -321,24 +321,40 @@ class BasePage:
         self.fill_approver_field()
 
 
+    def _volunteer_save_button(self):
+        save = self.page.locator(create_user.SAVE_BUTTON)
+        if save.count() > 0:
+            return save.last
+        return self.page.locator(create_user.SAVE_BUTTON_FALLBACK).last
+
+    def _wait_for_button_enabled(self, button, timeout_ms=15000):
+        button.wait_for(state="visible", timeout=timeout_ms)
+        import time
+
+        deadline = time.time() + timeout_ms / 1000
+        while time.time() < deadline:
+            if not button.is_disabled():
+                return
+            time.sleep(0.25)
+        raise TimeoutError("Кнопка «Сохранить» осталась disabled")
+
     def save_in_user_page(self):
-        # Кликаем первую кнопку "Сохранить"
-        save = self.page.locator(create_user.SAVE_BUTTON).first
+        save = self._volunteer_save_button()
+        self._wait_for_button_enabled(save)
         save.click()
-        # Проверяем, появилась ли вторая кнопка "Сохранить" (модалка подтверждения)
-        # Ждем максимум 3 секунды — если не появилась, значит её нет
+
         try:
             confirm = self.page.locator(create_user.CONFIRM_SAVE_BUTTON).first
             confirm.wait_for(state="visible", timeout=3000)
-            # Ждем пока кнопка станет активной (может стартовать disabled)
-            self.page.wait_for_function(
-                "() => !Array.from(document.querySelectorAll('button.refine-save-button')).at(-1)?.disabled",
-                timeout=5000
-            )
-            confirm.click(force=True)
         except Exception:
-            # если нет модалки, иди дальше
-            pass
+            confirm = self.page.locator(create_user.CONFIRM_SAVE_BUTTON_FALLBACK).first
+            try:
+                confirm.wait_for(state="visible", timeout=1000)
+            except Exception:
+                return
+
+        self._wait_for_button_enabled(confirm, timeout_ms=5000)
+        confirm.click(force=True)
 
     def fill_approver_field(self, approver_name="Test Approver"):
         approver_input = self.page.locator(create_user.APPROVER_INPUT)
@@ -467,16 +483,27 @@ class BasePage:
         delete2 = self.page.locator(create_user.DELETE_CONFIRM)
         delete2.click()
 
+    def wait_for_volunteers_count(self, expected_count, timeout_ms=15000):
+        self.page.wait_for_function(
+            """(expected) => {
+                const el = document.querySelector('[data-testid="volunteer-count"]');
+                if (!el) return false;
+                const value = parseInt(el.textContent.trim(), 10);
+                return !Number.isNaN(value) && value === expected;
+            }""",
+            expected_count,
+            timeout=timeout_ms,
+        )
+
     def receive_volunteers_count(self):
         amount = self.page.locator(create_user.USERS_COUNTER)
-        # Ждём, пока в счётчике появится текст
+        amount.wait_for(state="visible", timeout=10000)
         import time
-        for _ in range(10):
+        for _ in range(20):
             text = amount.inner_text().strip()
-            if text and text.isdigit():
+            if text.isdigit():
                 return int(text)
             time.sleep(0.5)
-        # Fallback if it still fails
         return int(amount.inner_text().strip())
 
     def clear_input_field(self):

@@ -158,6 +158,7 @@ const VolCreateContent = ({
             {showFloatingSave && (
                 <Button
                     type="primary"
+                    data-testid="volunteer-save-button"
                     icon={<SaveOutlined className={isMobile ? styles.floatingSaveButtonIcon : undefined} />}
                     loading={isSaving}
                     disabled={isSaveButtonDisabled}
