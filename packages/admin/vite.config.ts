@@ -57,6 +57,7 @@ export default defineConfig({
         })
     ],
     resolve: {
+        dedupe: ['react', 'react-dom', 'react-router'],
         alias: {
             utils: path.resolve(__dirname, './src/utils.ts'),
             auth: path.resolve(__dirname, './src/auth.ts'),
