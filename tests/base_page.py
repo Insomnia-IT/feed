@@ -103,10 +103,14 @@ class BasePage:
         choose_meal.click()
         choose_meal_type = self.page.locator(meal_create.MEAL_TYPE)
         choose_meal_type.click()
-        kitchen = self.page.locator(meal_create.KITCHEN_FIELD)
-        kitchen.fill("Кухня №2")
-        kitchen.press("Tab")
-        self.page.locator(meal_create.SAVE_BUTTON).click()
+        self._select_ant_option(meal_create.KITCHEN_FIELD, "Кухня №2")
+        with self.page.expect_response(
+            lambda response: response.request.method == "POST"
+            and "/feed-transaction" in response.url
+            and response.ok,
+            timeout=30000,
+        ):
+            self.page.locator(meal_create.SAVE_BUTTON).click()
 
 
     def go_to_create_badge(self):
@@ -485,13 +489,12 @@ class BasePage:
 
     def wait_for_volunteers_count(self, expected_count, timeout_ms=15000):
         self.page.wait_for_function(
-            """(expected) => {
+            f"""() => {{
                 const el = document.querySelector('[data-testid="volunteer-count"]');
                 if (!el) return false;
                 const value = parseInt(el.textContent.trim(), 10);
-                return !Number.isNaN(value) && value === expected;
-            }""",
-            expected_count,
+                return !Number.isNaN(value) && value === {expected_count};
+            }}""",
             timeout=timeout_ms,
         )
 

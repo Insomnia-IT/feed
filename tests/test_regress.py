@@ -220,7 +220,7 @@ def test_create_new_meal(page):
     login_page.login_admin()
     login_page.go_to_create_new_meal()
     login_page.create_new_meal()
-    page.wait_for_url(f"{host}/feed-transaction**", timeout=15000)
+    login_page.wait_for_list_page(f"{host}/feed-transaction")
     meal_rows = login_page.meal_table_rows()
     today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
