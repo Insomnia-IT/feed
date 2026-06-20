@@ -517,6 +517,9 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                             'kitchen_id': kitchen_id
                         })
                         if prediction_alg == '3':
+                            if current_plan > prev_plan and prev_plan > prev_prev_plan and prev_fact < prev_prev_fact:
+                                prev_fact = prev_prev_fact
+                                prev_plan = prev_prev_plan
                             predict_amount = 0 if prev_plan == 0 else current_plan * prev_fact / prev_plan
                         else:
                             prev_prev_fact = get_stat_amount(stat, {
