@@ -21,12 +21,15 @@ const contentStyle = {
 };
 
 export const VolCreateLegacy = () => {
-    const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+    const { form, formProps, saveButtonProps, mutation } = useForm<VolEntity>({
         onMutationSuccess: (e) => {
             void onMutationSuccess(e);
         },
         warnWhenUnsavedChanges: true
     });
+    const isSaving = mutation.isPending;
+    const isSaveButtonDisabled = Boolean(saveButtonProps.disabled) && !isSaving;
+    const volunteerSaveButtonClassName = isSaving ? styles.volunteerSaveButtonSaving : undefined;
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
     useRegisterVolunteerCardUiBannerForm(form);
 
@@ -52,7 +55,10 @@ export const VolCreateLegacy = () => {
             }}
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick
+                onClick,
+                loading: isSaving,
+                disabled: isSaveButtonDisabled,
+                className: [styles.volunteerSaveButton, volunteerSaveButtonClassName].filter(Boolean).join(' ')
             }}
             contentProps={{
                 ...(shouldHideFooterActions ? { actions: [] } : {}),

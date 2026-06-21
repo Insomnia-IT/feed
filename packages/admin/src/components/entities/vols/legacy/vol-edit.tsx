@@ -53,7 +53,7 @@ export const VolEditLegacy = () => {
         navigate(returnTo);
     };
 
-    const { form, formProps, saveButtonProps } = useForm<VolEntity>({
+    const { form, formProps, saveButtonProps, mutation } = useForm<VolEntity>({
         redirect: false,
         onMutationSuccess: async (e) => {
             await onMutationSuccess(e);
@@ -61,6 +61,9 @@ export const VolEditLegacy = () => {
         },
         warnWhenUnsavedChanges: true
     });
+    const isSaving = mutation.isPending;
+    const isSaveButtonDisabled = Boolean(saveButtonProps.disabled) && !isSaving;
+    const volunteerSaveButtonClassName = isSaving ? styles.volunteerSaveButtonSaving : undefined;
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps);
     useRegisterVolunteerCardUiBannerForm(form);
     const { isDesktop } = useScreen();
@@ -122,7 +125,10 @@ export const VolEditLegacy = () => {
             }
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick
+                onClick,
+                loading: isSaving,
+                disabled: isSaveButtonDisabled,
+                className: [styles.volunteerSaveButton, volunteerSaveButtonClassName].filter(Boolean).join(' ')
             }}
             contentProps={{
                 ...(shouldHideFooterActions ? { actions: [] } : {}),

@@ -120,6 +120,7 @@ const useSaveConfirm = (
                     onOk={handleOk}
                     onCancel={handleCancel}
                     okText="Всё равно сохранить"
+                    okButtonProps={{ 'data-testid': 'volunteer-save-confirm' }}
                 >
                     {showConfirmationModalReason === 'is_active' && (
                         <>
