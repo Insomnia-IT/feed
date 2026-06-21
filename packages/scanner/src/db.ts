@@ -153,6 +153,7 @@ export interface GroupBadge extends TimeStampedEntity {
     id: number;
     name: string;
     qr: string;
+    kitchen: number | null;
     planning_cells: Array<MealPlanCell>;
     comment: string | null;
     role: string | null;
