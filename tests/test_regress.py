@@ -6,6 +6,7 @@ import requests
 from functools import lru_cache
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
+from zoneinfo import ZoneInfo
 
 # Добавляем папку tests в sys.path, чтобы pytest мог находить локаторы и базовые страницы
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -16,6 +17,7 @@ from locators import *
 skip = pytest.mark.skip
 
 host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
+APP_TIMEZONE = ZoneInfo("Europe/Moscow")
 created_user_name = "Test_name"
 admin_login = "admin"
 admin_password = "Kolombina25"
@@ -220,9 +222,10 @@ def test_create_new_meal(page):
     login_page.login_admin()
     login_page.go_to_create_new_meal()
     login_page.create_new_meal()
-    page.wait_for_url(f"{host}/feed-transaction**", timeout=15000)
+    login_page.wait_for_list_page(f"{host}/feed-transaction")
+    today_date = datetime.now(APP_TIMEZONE).strftime("%d/%m/%y")
+    login_page.wait_for_meal_date_in_table(today_date)
     meal_rows = login_page.meal_table_rows()
-    today_date = datetime.now().strftime("%d/%m/%y")
     # приверка урла
     parsed_url = urlparse(page.url)
     params = parse_qs(parsed_url.query)
@@ -405,7 +408,7 @@ def test_create_new_user(page):
 
     page.locator("tr.ant-table-row").first.wait_for(state="attached")
     login_page.clear_input_field()
-    page.wait_for_timeout(500)
+    login_page.wait_for_volunteers_count(counter1 + 1)
     counter2 = login_page.receive_volunteers_count()
     login_page.find_user(created_user_name)
     user_name = login_page.check_username_after_editing(created_user_name)

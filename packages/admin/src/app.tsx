@@ -1,8 +1,9 @@
 import type { ComponentProps } from 'react';
+import { useMemo } from 'react';
 import { BrowserRouter } from 'react-router';
-import { Refine, useGetIdentity } from '@refinedev/core';
+import { Refine, useGetIdentity, type NotificationProvider, type OpenNotificationParams } from '@refinedev/core';
 import routerProvider, { DocumentTitleHandler, NavigateToResource } from '@refinedev/react-router';
-import { useNotificationProvider } from '@refinedev/antd';
+import { useNotificationProvider as useRefineNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { App as AntdApp, ConfigProvider } from 'antd';
 
@@ -42,105 +43,136 @@ const InitialNavigation = () => {
     return <NavigateToResource resource={user.roles[0] === AppRoles.SOVA ? 'wash' : 'volunteers'} />;
 };
 
+/** Refine antd provider + error toasts stay open until dismissed (duration: 0). */
+const useNotificationProvider = (): NotificationProvider => {
+    const refineProvider = useRefineNotificationProvider();
+    const { notification } = AntdApp.useApp();
+
+    return useMemo(
+        () => ({
+            open: (params: OpenNotificationParams) => {
+                if (params.type === 'error') {
+                    notification.open({
+                        key: params.key,
+                        description: params.message,
+                        message: params.description ?? null,
+                        type: 'error',
+                        duration: 0
+                    });
+                    return;
+                }
+
+                refineProvider.open(params);
+            },
+            close: refineProvider.close
+        }),
+        [notification, refineProvider]
+    );
+};
+
+const RefineApp = () => (
+    <Refine
+        routerProvider={routerProvider}
+        notificationProvider={useNotificationProvider}
+        dataProvider={dataProvider}
+        i18nProvider={i18nProvider}
+        authProvider={authProvider}
+        accessControlProvider={ACL}
+        options={{ syncWithLocation: true, disableTelemetry: true }}
+        resources={[
+            {
+                name: 'dashboard',
+                list: '/dashboard',
+                meta: { icon: <DashboardOutlined /> }
+            },
+            {
+                name: 'volunteers',
+                list: '/volunteers',
+                create: '/volunteers/create',
+                edit: '/volunteers/edit/:id',
+                show: '/volunteers/show/:id',
+                meta: { icon: <UserOutlined /> }
+            },
+            {
+                name: 'volunteer-custom-fields',
+                list: '/volunteer-custom-fields',
+                create: '/volunteer-custom-fields/create',
+                edit: '/volunteer-custom-fields/edit/:id',
+                show: '/volunteer-custom-fields/show/:id',
+                meta: {
+                    icon: <InsertRowRightOutlined />,
+                    hide: true
+                }
+            },
+            {
+                name: 'directions',
+                list: '/directions',
+                create: '/directions/create',
+                edit: '/directions/edit/:id',
+                show: '/directions/show/:id',
+                meta: { icon: <FormatPainterOutlined /> }
+            },
+            {
+                name: 'group-badges',
+                list: '/group-badges',
+                create: '/group-badges/create',
+                edit: '/group-badges/edit/:id',
+                show: '/group-badges/show/:id',
+                meta: { icon: <ProfileOutlined /> }
+            },
+            {
+                name: 'feed-transaction',
+                list: '/feed-transaction',
+                create: '/feed-transaction/create',
+                meta: { icon: <HistoryOutlined /> }
+            },
+            {
+                name: 'stats',
+                list: '/stats',
+                meta: { icon: <LineChartOutlined /> }
+            },
+            {
+                name: 'scanner-page',
+                list: '/scanner-page',
+                meta: { icon: <MobileOutlined /> }
+            },
+            {
+                name: 'storages',
+                list: '/storages',
+                create: '/storages/create',
+                edit: '/storages/edit/:id',
+                show: '/storages/show/:id',
+                meta: {
+                    icon: <AuditOutlined />
+                }
+            },
+            {
+                name: 'wash',
+                list: '/wash',
+                meta: { icon: <ExperimentOutlined /> }
+            },
+            {
+                name: 'sync',
+                list: '/sync',
+                meta: { icon: <SyncOutlined /> }
+            }
+        ]}
+    >
+        <UnsavedChangesSaveProvider>
+            <AppRoutes initial={<InitialNavigation />} />
+            <UnsavedChangesNotifier />
+        </UnsavedChangesSaveProvider>
+        <DocumentTitleHandler handler={buildDocumentTitle} />
+    </Refine>
+);
+
 const App = () => {
     return (
         <BrowserRouter>
             <ConfigProvider locale={antdLocale} theme={{ token: { borderRadius: 6 } }}>
                 <ScreenProvider>
                     <AntdApp>
-                        <Refine
-                            routerProvider={routerProvider}
-                            notificationProvider={useNotificationProvider}
-                            dataProvider={dataProvider}
-                            i18nProvider={i18nProvider}
-                            authProvider={authProvider}
-                            accessControlProvider={ACL}
-                            options={{ syncWithLocation: true, disableTelemetry: true }}
-                            resources={[
-                                {
-                                    name: 'dashboard',
-                                    list: '/dashboard',
-                                    meta: { icon: <DashboardOutlined /> }
-                                },
-                                {
-                                    name: 'volunteers',
-                                    list: '/volunteers',
-                                    create: '/volunteers/create',
-                                    edit: '/volunteers/edit/:id',
-                                    show: '/volunteers/show/:id',
-                                    meta: { icon: <UserOutlined /> }
-                                },
-                                {
-                                    name: 'volunteer-custom-fields',
-                                    list: '/volunteer-custom-fields',
-                                    create: '/volunteer-custom-fields/create',
-                                    edit: '/volunteer-custom-fields/edit/:id',
-                                    show: '/volunteer-custom-fields/show/:id',
-                                    meta: {
-                                        icon: <InsertRowRightOutlined />,
-                                        hide: true
-                                    }
-                                },
-                                {
-                                    name: 'directions',
-                                    list: '/directions',
-                                    create: '/directions/create',
-                                    edit: '/directions/edit/:id',
-                                    show: '/directions/show/:id',
-                                    meta: { icon: <FormatPainterOutlined /> }
-                                },
-                                {
-                                    name: 'group-badges',
-                                    list: '/group-badges',
-                                    create: '/group-badges/create',
-                                    edit: '/group-badges/edit/:id',
-                                    show: '/group-badges/show/:id',
-                                    meta: { icon: <ProfileOutlined /> }
-                                },
-                                {
-                                    name: 'feed-transaction',
-                                    list: '/feed-transaction',
-                                    create: '/feed-transaction/create',
-                                    meta: { icon: <HistoryOutlined /> }
-                                },
-                                {
-                                    name: 'stats',
-                                    list: '/stats',
-                                    meta: { icon: <LineChartOutlined /> }
-                                },
-                                {
-                                    name: 'scanner-page',
-                                    list: '/scanner-page',
-                                    meta: { icon: <MobileOutlined /> }
-                                },
-                                {
-                                    name: 'storages',
-                                    list: '/storages',
-                                    create: '/storages/create',
-                                    edit: '/storages/edit/:id',
-                                    show: '/storages/show/:id',
-                                    meta: {
-                                        icon: <AuditOutlined />
-                                    }
-                                },
-                                {
-                                    name: 'wash',
-                                    list: '/wash',
-                                    meta: { icon: <ExperimentOutlined /> }
-                                },
-                                {
-                                    name: 'sync',
-                                    list: '/sync',
-                                    meta: { icon: <SyncOutlined /> }
-                                }
-                            ]}
-                        >
-                            <UnsavedChangesSaveProvider>
-                                <AppRoutes initial={<InitialNavigation />} />
-                                <UnsavedChangesNotifier />
-                            </UnsavedChangesSaveProvider>
-                            <DocumentTitleHandler handler={buildDocumentTitle} />
-                        </Refine>
+                        <RefineApp />
                     </AntdApp>
                 </ScreenProvider>
             </ConfigProvider>

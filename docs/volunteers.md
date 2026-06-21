@@ -154,9 +154,16 @@
   «Заезд» — `min-height: 100px`, уменьшенные отступы у заголовка и снизу секции.
 - **Сохранение.** Футер карточки Refine отключён (`actions: []`); кнопка
   «Сохранить» — плавающая (`.floatingSaveButton`, `position: fixed` в правом
-  нижнем углу); на мобилке — квадратная кнопка только с иконкой дискеты
+  нижнем углу, `data-testid="volunteer-save-button"` для e2e); на мобилке — квадратная кнопка только с иконкой дискеты
   (60×60px, иконка 32px, `.floatingSaveButtonIconOnly`); лёгкая двухслойная тень
-  под кнопкой (`.floatingSaveButton`). Модалка несохранённых изменений
+  под кнопкой (`.floatingSaveButton`). Тот же паттерн кнопки и уведомлений об
+  ошибке — в форме **создания** (`vol-create-new.tsx`) и legacy create/edit.
+  Пока идёт PATCH (`mutation.isPending`),
+  на кнопке показывается спиннер Ant Design (`loading`), без серого `disabled` —
+  кнопка остаётся приглушённо-синей (`.volunteerSaveButtonSaving`, `#69b1ff`);
+  при загрузке формы disabled — тоже синий, не серый (`.volunteerSaveButton`, `#91caff`). При ошибке сохранения
+  используются стандартные Refine-уведомления; в `app.tsx` для `type: 'error'` задано `duration: 0` — всплывашка
+  закрывается только по крестику. Модалка несохранённых изменений
   (`shared/unsaved-changes/unsaved-changes-notifier.tsx`) показывается **только**
   если значения формы отличаются от снимка после загрузки (`useFormUnsavedChanges`,
   сравнение через `serializeFormValues` / `areFormValuesEqual`; пустые и
@@ -170,7 +177,7 @@
   отмена правок и переход в список; «Сохранить изменения» — тот же обработчик, что
   плавающая «Сохранить» (с подтверждениями активации в `use-save-confirm.tsx`:
   неактивированный волонтёр или дата активности в будущем — модалка «Сохранение»,
-  primary «Всё равно сохранить», Enter — тот же submit через `useModalEnterSubmit`),
+  primary «Всё равно сохранить» (`data-testid="volunteer-save-confirm"`), Enter — тот же submit через `useModalEnterSubmit`),
   затем сохранение и переход
   в список; «Остаться в карточке» / Escape / клик по затемнению — закрыть модалку;
   Enter — «Сохранить изменения» (`useModalEnterSubmit`).
