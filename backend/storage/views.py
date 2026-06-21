@@ -150,6 +150,7 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
             if existing_position:
                 with transaction.atomic():
                     existing_position.count += count
+                    existing_position.deleted_at = None
                     if description:
                         existing_position.description = (existing_position.description + "\n" + description).strip() if existing_position.description else description
                     existing_position.save()
