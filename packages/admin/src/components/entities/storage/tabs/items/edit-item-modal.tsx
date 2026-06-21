@@ -1,6 +1,7 @@
 import React from 'react';
-import { Modal, Form, Input, Checkbox, Space } from 'antd';
+import { Modal, Form, Input, Checkbox, Space, Tooltip } from 'antd';
 import type { ModalProps } from 'antd';
+import { ANONYMOUS_ITEM_TOOLTIP, UNIQUE_ITEM_TOOLTIP } from './item-tooltips';
 
 interface EditItemModalProps {
     modalProps: ModalProps;
@@ -19,10 +20,14 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ modalProps, formPr
                 </Form.Item>
                 <Space size="large">
                     <Form.Item name="is_unique" valuePropName="checked">
-                        <Checkbox>Уникальный</Checkbox>
+                        <Tooltip title={UNIQUE_ITEM_TOOLTIP}>
+                            <Checkbox>Уникальный</Checkbox>
+                        </Tooltip>
                     </Form.Item>
                     <Form.Item name="is_anonymous" valuePropName="checked">
-                        <Checkbox>Анонимный</Checkbox>
+                        <Tooltip title={ANONYMOUS_ITEM_TOOLTIP}>
+                            <Checkbox>Анонимный</Checkbox>
+                        </Tooltip>
                     </Form.Item>
                 </Space>
             </Form>
