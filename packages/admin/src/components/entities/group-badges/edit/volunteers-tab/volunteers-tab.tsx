@@ -22,6 +22,7 @@ export const VolunteersTab = ({ groupBadgeId }: VolunteersTabProps) => {
 
     const { tableProps, setFilters } = useTable<VolEntity, HttpError>({
         resource: 'volunteers',
+        syncWithLocation: false,
         filters: {
             initial: [{ field: 'group_badge', operator: 'eq', value: groupBadgeId }]
         },
