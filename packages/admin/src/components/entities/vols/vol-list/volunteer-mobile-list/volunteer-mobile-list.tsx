@@ -92,6 +92,12 @@ const VolunteerMobileCard = memo(
                         <span className={styles.bold}>Заметка: </span>
                         {vol.direction_head_comment || '-'}
                     </div>
+                    {vol.inventory.length > 0 && (
+                        <div className={styles.textRow}>
+                            <span className={styles.bold}>Инвентарь: </span>
+                            {vol.inventory.map(({ name, count }) => `${name} (${count})`).join(', ') || '-'}
+                        </div>
+                    )}
                 </div>
             </SwipeActionRow>
         );

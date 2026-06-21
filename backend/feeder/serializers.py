@@ -8,6 +8,7 @@ from feeder.utils import StatisticType
 from feeder.views.mixins import get_request_user_id
 
 from history.models import History
+from storage.models import VolunteerInventory
 
 from uuid import UUID
 from datetime import date
@@ -139,6 +140,17 @@ class VolunteerListPaidArrivalSerializer(serializers.ModelSerializer):
         model = models.PaidArrival
         fields = ['id', 'arrival_date', 'departure_date', 'is_free']
 
+class VolunteerListInventory(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    class Meta:
+        model = VolunteerInventory
+        fields = ['name', 'count']
+
+    def get_name(self, obj):
+        position = getattr(obj, "position", None)
+        if position:
+            return position.item.name
+        return None
 
 class SortArrivalsMixin:
     def to_representation(self, instance):
@@ -157,6 +169,7 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     arrivals = VolunteerListArrivalSerializer(many=True)
     paid_arrivals = VolunteerListPaidArrivalSerializer(many=True)
     supervisor = serializers.SerializerMethodField()
+    inventory = VolunteerListInventory(source='storage_inventory', many=True)
 
     class Meta:
         model = models.Volunteer
@@ -172,6 +185,7 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
 class VolunteerMobileListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     arrivals = VolunteerListArrivalSerializer(many=True)
+    inventory = VolunteerListInventory(source='storage_inventory', many=True)
 
     class Meta:
         model = models.Volunteer
@@ -183,6 +197,7 @@ class VolunteerMobileListSerializer(SortArrivalsMixin, serializers.ModelSerializ
             'is_blocked',
             'direction_head_comment',
             'arrivals',
+            'inventory',
         ]
 
 class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
