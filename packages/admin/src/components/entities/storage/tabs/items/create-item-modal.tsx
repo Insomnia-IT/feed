@@ -1,7 +1,6 @@
 import React from 'react';
-import { Modal, Form, Input, Checkbox, Space, Tooltip } from 'antd';
+import { Modal, Form, Input, Checkbox, Space } from 'antd';
 import type { ModalProps } from 'antd';
-import { ANONYMOUS_ITEM_TOOLTIP, UNIQUE_ITEM_TOOLTIP } from './item-tooltips';
 
 interface CreateItemModalProps {
     storageId: number;
@@ -21,14 +20,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({ storageId, mod
                 </Form.Item>
                 <Space size="large">
                     <Form.Item name="is_unique" valuePropName="checked">
-                        <Tooltip title={UNIQUE_ITEM_TOOLTIP}>
-                            <Checkbox>Уникальный</Checkbox>
-                        </Tooltip>
+                        <Checkbox>Уникальный</Checkbox>
                     </Form.Item>
                     <Form.Item name="is_anonymous" valuePropName="checked">
-                        <Tooltip title={ANONYMOUS_ITEM_TOOLTIP}>
-                            <Checkbox>Анонимный</Checkbox>
-                        </Tooltip>
+                        <Checkbox>Анонимный</Checkbox>
                     </Form.Item>
                 </Space>
                 <Form.Item name="storage" hidden initialValue={storageId}>
