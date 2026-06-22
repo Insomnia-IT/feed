@@ -360,8 +360,8 @@ def calculate_regular_predict(store, current_day, prev_day, prev_prev_day, algo)
                 )
 
                 if algo == PredictAlgo.SIMPLE_RATIO:
-                    predict_amount = predict_simple_ratio(
-                        store, current_plan, prev_fact, prev_day,
+                    predict_amount = predict_trend_simple_ratio(
+                        store, current_plan, prev_fact, prev_day, prev_prev_day,
                         meal_time, is_vegan, kitchen_id
                     )
                 elif algo == PredictAlgo.FALLBACK_PREV:
@@ -391,29 +391,55 @@ def predict_simple_ratio(store, current_plan, prev_fact, prev_day, meal_time, is
     )
     return 0 if prev_plan == 0 else current_plan * prev_fact / prev_plan
 
+def predict_adjusted_ratio(store, current_plan, prev_fact, prev_day, meal_time, is_vegan, kitchen_id):
+    prev_plan = store.get_amount(
+        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+    )
+    return 0 if prev_plan == 0 else (current_plan ** 0.5) * prev_fact / (prev_plan ** 0.5)
 
 def predict_fallback_prev(store, current_plan, prev_fact, prev_day, prev_prev_day, 
                            meal_time, is_vegan, kitchen_id):
     if not prev_prev_day:
-        return predict_simple_ratio(store, current_plan, prev_fact, prev_day, 
+        return predict_adjusted_ratio(store, current_plan, prev_fact, prev_day, 
                                      meal_time, is_vegan, kitchen_id)
-
     prev_prev_fact = store.get_amount(
         prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id
     )
 
     if 2 * prev_fact < prev_prev_fact:
-        prev_plan = store.get_amount(
+        prev_prev_plan = store.get_amount(
             prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
         )
-        return 0 if prev_plan == 0 else current_plan * prev_prev_fact / prev_plan
-
-    return predict_simple_ratio(store, current_plan, prev_fact, prev_day, 
-                                 meal_time, is_vegan, kitchen_id)
+        return 0 if prev_prev_plan == 0 else current_plan * prev_prev_fact / prev_prev_plan
+    
+    return predict_adjusted_ratio(store, current_plan, prev_fact, prev_day, 
+                                    meal_time, is_vegan, kitchen_id)
 
 
 def predict_trend_adjusted(store, current_plan, prev_fact, prev_day, prev_prev_day,
                           meal_time, is_vegan, kitchen_id):
+    if not prev_prev_day:
+        return predict_adjusted_ratio(store, current_plan, prev_fact, prev_day,
+                                     meal_time, is_vegan, kitchen_id)
+    
+    prev_prev_fact = store.get_amount(
+        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id
+    )
+    prev_prev_plan = store.get_amount(
+        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+    )
+    prev_plan = store.get_amount(
+        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+    )
+    
+    if current_plan > prev_plan > prev_prev_plan and prev_fact < prev_prev_fact:
+        prev_fact = prev_prev_fact
+        prev_plan = prev_prev_plan
+    
+    return predict_adjusted_ratio(store, current_plan, prev_fact, prev_day, 
+                                    meal_time, is_vegan, kitchen_id)
+
+def predict_trend_simple_ratio(store, current_plan, prev_fact, prev_day, prev_prev_day, meal_time, is_vegan, kitchen_id):
     if not prev_prev_day:
         return predict_simple_ratio(store, current_plan, prev_fact, prev_day,
                                      meal_time, is_vegan, kitchen_id)
@@ -431,8 +457,9 @@ def predict_trend_adjusted(store, current_plan, prev_fact, prev_day, prev_prev_d
     if current_plan > prev_plan > prev_prev_plan and prev_fact < prev_prev_fact:
         prev_fact = prev_prev_fact
         prev_plan = prev_prev_plan
-
-    return 0 if prev_plan == 0 else (current_plan ** 0.5) * prev_fact / (prev_plan ** 0.5)
+    
+    return predict_simple_ratio(store, current_plan, prev_fact, prev_day, 
+                                    meal_time, is_vegan, kitchen_id)
 
 
 def load_history(date_from):

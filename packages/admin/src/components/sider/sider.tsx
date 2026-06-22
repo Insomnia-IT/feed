@@ -27,6 +27,8 @@ import { useScreen } from 'shared/providers';
 import { AppRoles, type UserData } from 'auth';
 import type { AccessRoleEntity } from 'interfaces';
 
+import SyncStatus from 'components/sync-status/sync-status';
+
 import styles from './sider.module.css';
 
 const MOBILE_PATHS = {
@@ -201,17 +203,22 @@ const CustomSider = () => {
                 onCollapse={setCollapsed}
                 trigger={siderTrigger}
             >
-                <Menu
-                    theme="dark"
-                    mode="inline"
-                    selectedKeys={selectedKey ? [selectedKey] : []}
-                    defaultOpenKeys={defaultOpenKeys}
-                    items={userMenuItems}
-                    onClick={(info) => {
-                        if (!isDesktop) setCollapsed(true);
-                        if (info.key === 'logout') handleLogout();
-                    }}
-                />
+                <div className={styles.siderShell}>
+                    <div className={styles.siderMenuArea}>
+                        <Menu
+                            theme="dark"
+                            mode="inline"
+                            selectedKeys={selectedKey ? [selectedKey] : []}
+                            defaultOpenKeys={defaultOpenKeys}
+                            items={userMenuItems}
+                            onClick={(info) => {
+                                if (!isDesktop) setCollapsed(true);
+                                if (info.key === 'logout') handleLogout();
+                            }}
+                        />
+                    </div>
+                    <SyncStatus collapsed={collapsed} />
+                </div>
             </Layout.Sider>
         </>
     );

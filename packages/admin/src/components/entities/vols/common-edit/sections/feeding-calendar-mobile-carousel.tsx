@@ -38,31 +38,46 @@ export function FeedingCalendarMobileCarousel({
             return undefined;
         }
 
+        let scrollFrameId: number | null = null;
+
         const handleScroll = () => {
-            const slides = [...viewport.querySelectorAll<HTMLElement>('[data-month-index]')];
-            if (slides.length === 0) {
+            if (scrollFrameId !== null) {
                 return;
             }
 
-            const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
-            let closestIndex = 0;
-            let closestDistance = Number.POSITIVE_INFINITY;
+            scrollFrameId = window.requestAnimationFrame(() => {
+                scrollFrameId = null;
 
-            slides.forEach((slide) => {
-                const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-                const distance = Math.abs(slideCenter - viewportCenter);
-                const index = Number(slide.dataset.monthIndex);
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestIndex = index;
+                const slides = [...viewport.querySelectorAll<HTMLElement>('[data-month-index]')];
+                if (slides.length === 0) {
+                    return;
                 }
-            });
 
-            setActiveIndex(closestIndex);
+                const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
+                let closestIndex = 0;
+                let closestDistance = Number.POSITIVE_INFINITY;
+
+                slides.forEach((slide) => {
+                    const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+                    const distance = Math.abs(slideCenter - viewportCenter);
+                    const index = Number(slide.dataset.monthIndex);
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestIndex = index;
+                    }
+                });
+
+                setActiveIndex((previousIndex) => (previousIndex === closestIndex ? previousIndex : closestIndex));
+            });
         };
 
         viewport.addEventListener('scroll', handleScroll, { passive: true });
-        return () => viewport.removeEventListener('scroll', handleScroll);
+        return () => {
+            viewport.removeEventListener('scroll', handleScroll);
+            if (scrollFrameId !== null) {
+                window.cancelAnimationFrame(scrollFrameId);
+            }
+        };
     }, []);
 
     const canGoPrev = activeIndex > 0;

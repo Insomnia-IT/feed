@@ -150,9 +150,17 @@
     outline: 1px solid rgb(0 0 0 / 0.2);
 }
 
+.wrapPainting .dayCell:hover:not(:disabled, .dayCellEmpty) {
+    outline: none;
+}
+
 .dayCellPainting:not(:disabled) {
     touch-action: none;
     cursor: crosshair;
+}
+
+.wrapPainting .daysGrid {
+    touch-action: none;
 }
 
 .childNote {

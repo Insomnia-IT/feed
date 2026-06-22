@@ -835,6 +835,32 @@
         0 3px 8px rgb(0 0 0 / 0.1);
 }
 
+/* Карточка волонтёра: primary остаётся синим в loading/disabled, без серого ant-disabled */
+.volunteerSaveButtonSaving:global(.ant-btn-loading),
+.volunteerSaveButtonSaving:global(.ant-btn-primary.ant-btn-loading),
+.volunteerSaveButtonSaving:global(.ant-btn-color-primary.ant-btn-loading) {
+    background-color: #69b1ff !important;
+    border-color: #69b1ff !important;
+    color: #fff !important;
+    cursor: wait;
+    box-shadow:
+        0 8px 20px rgb(0 0 0 / 0.1),
+        0 3px 8px rgb(0 0 0 / 0.06);
+}
+
+.volunteerSaveButtonSaving:global(.ant-btn-loading) :global(.ant-btn-loading-icon) {
+    color: #fff;
+}
+
+.volunteerSaveButton:global(.ant-btn-primary:disabled:not(.ant-btn-loading)),
+.volunteerSaveButton:global(.ant-btn-color-primary:disabled:not(.ant-btn-loading)) {
+    background-color: #91caff !important;
+    border-color: #91caff !important;
+    color: #fff !important;
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
 .floatingSaveButtonIconOnly:global(.ant-btn) {
     --floating-save-mobile-size: 60px;
     --floating-save-mobile-icon-size: 32px;

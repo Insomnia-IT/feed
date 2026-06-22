@@ -22,6 +22,7 @@ import { GroupBadgeWarningCard } from './post-scan-group-badge-misc';
 export const Views = {
     LOADING: 'LOADING',
     YELLOW: 'YELLOW',
+    WRONG_KITCHEN: 'WRONG_KITCHEN',
     ERROR_VALIDATION: 'ERROR_VALIDATION'
 } as const;
 
@@ -112,6 +113,13 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
     const alreadyFedTransactions = alreadyFedTransactionsRaw ?? [];
 
     const { view, validationGroups } = useMemo(() => {
+        if (groupBadge.kitchen?.toString() !== kitchenId.toString()) {
+            return {
+                view: Views.WRONG_KITCHEN as Views,
+                validationGroups: { greens: [], reds: [] } as ValidationGroups
+            };
+        }
+
         // loading
         if (isLoading) {
             return {
@@ -157,7 +165,7 @@ export const PostScanGroupBadge = ({ closeFeed, groupBadge }: { closeFeed: () =>
             view: Views.YELLOW as Views,
             validationGroups: validationGroupsNext
         };
-    }, [isLoading, vols, kitchenId, mealTime]);
+    }, [groupBadge.kitchen, isLoading, vols, kitchenId, mealTime]);
 
     const doFeed = (volsToFeed: Array<ValidatedVol>): void => {
         void incFeedAsync({ vols: volsToFeed, mealTime, kitchenId, groupBadge });
@@ -213,6 +221,17 @@ const ResultScreen = ({
                 <ErrorCard
                     msg={`Упс.. Ошибка при проверке волонтеров в бейдже "${name}". Сделай скриншот и передай в бюро!`}
                     close={closeFeed}
+                />
+            );
+        case Views.WRONG_KITCHEN:
+            return (
+                <ErrorCard
+                    close={closeFeed}
+                    msg={
+                        groupBadge.kitchen === null
+                            ? `Для группового бейджа "${name}" не указана кухня`
+                            : `Групповой бейдж "${name}" кормится на кухне №${groupBadge.kitchen}`
+                    }
                 />
             );
         case Views.YELLOW:
