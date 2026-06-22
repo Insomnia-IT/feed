@@ -1,4 +1,4 @@
-import { useRef, useState, type ComponentRef } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { DownOutlined, FilterOutlined } from '@ant-design/icons';
 import { Button, Popover, Select } from 'antd';
 
@@ -20,17 +20,35 @@ const mapFilterFieldsToOptions = (item: FilterField): IFilterOption => {
 export const FilterChooser = ({
     removeAllFilters,
     filterFields,
+    isMobile,
     toggleVisibleFilter,
     visibleFilters
 }: {
     removeAllFilters: () => void;
     filterFields: Array<FilterField>;
+    isMobile?: boolean;
     toggleVisibleFilter: (name: string) => void;
     visibleFilters: Array<string>;
 }) => {
     const selectRef = useRef<ComponentRef<typeof Select>>(null);
+    const [popoverOpen, setPopoverOpen] = useState(false);
     const [selectOpen, setSelectOpen] = useState(false);
     const options = filterFields.map(mapFilterFieldsToOptions);
+
+    useEffect(() => {
+        if (!isMobile || !popoverOpen) return;
+
+        const previousBodyOverflow = document.body.style.overflow;
+        const previousDocumentOverflow = document.documentElement.style.overflow;
+
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = previousBodyOverflow;
+            document.documentElement.style.overflow = previousDocumentOverflow;
+        };
+    }, [isMobile, popoverOpen]);
 
     const onChoiceChange = (_value: string, option: IFilterOption): void => {
         toggleVisibleFilter(option.value);
@@ -41,6 +59,8 @@ export const FilterChooser = ({
             placement="bottomLeft"
             trigger="click"
             destroyOnHidden
+            classNames={{ root: styles.filterChooserPopover }}
+            onOpenChange={setPopoverOpen}
             afterOpenChange={(open) => {
                 if (open) {
                     setSelectOpen(true);
@@ -58,6 +78,7 @@ export const FilterChooser = ({
                         trigger.closest('.ant-popover-inner-content') ?? trigger.parentElement ?? document.body
                     }
                     className={styles.filterChooserSelect}
+                    classNames={{ popup: { root: styles.filterChooserPopup } }}
                     style={{ minWidth: '200px', maxWidth: '350px' }}
                     mode="multiple"
                     value={visibleFilters}
