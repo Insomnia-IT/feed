@@ -970,6 +970,31 @@
 }
 
 @media (width <= 576px) {
+    :global(.ant-layout-content:has(.vol-edit-page) > div) {
+        padding-inline-end: 24px !important;
+    }
+
+    .volEditPage :global(.ant-page-header) {
+        padding-inline-end: 0;
+    }
+
+    .volEditPage :global(.ant-page-header-content) {
+        width: 100%;
+        margin-inline-end: 0;
+    }
+
+    .volEditPage .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+        padding-inline-end: 0;
+    }
+
+    .volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
+        inset-inline-end: 0;
+    }
+
+    .volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+        padding-inline-end: var(--vol-header-avatar-reserve);
+    }
+
     .volEditPage :global(.ant-card-body) {
         padding-bottom: 0 !important;
     }

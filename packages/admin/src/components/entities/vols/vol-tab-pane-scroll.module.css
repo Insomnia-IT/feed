@@ -38,3 +38,14 @@
     background: rgb(14 93 167);
     background-clip: padding-box;
 }
+
+@media (width <= 576px) {
+    .wrap {
+        margin-inline-end: -24px;
+        width: calc(100% + 24px);
+    }
+
+    .scroll {
+        scrollbar-gutter: auto;
+    }
+}
