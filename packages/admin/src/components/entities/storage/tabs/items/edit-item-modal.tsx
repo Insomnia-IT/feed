@@ -19,20 +19,20 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ modalProps, formPr
                     <Input />
                 </Form.Item>
                 <Space size="large">
-                    <Tooltip title={UNIQUE_ITEM_TOOLTIP}>
-                        <span>
-                            <Form.Item name="is_unique" valuePropName="checked">
-                                <Checkbox>Уникальный</Checkbox>
-                            </Form.Item>
-                        </span>
-                    </Tooltip>
-                    <Tooltip title={ANONYMOUS_ITEM_TOOLTIP}>
-                        <span>
-                            <Form.Item name="is_anonymous" valuePropName="checked">
-                                <Checkbox>Анонимный</Checkbox>
-                            </Form.Item>
-                        </span>
-                    </Tooltip>
+                    <Form.Item name="is_unique" valuePropName="checked">
+                        <Checkbox>
+                            <Tooltip title={UNIQUE_ITEM_TOOLTIP}>
+                                <span>Уникальный</span>
+                            </Tooltip>
+                        </Checkbox>
+                    </Form.Item>
+                    <Form.Item name="is_anonymous" valuePropName="checked">
+                        <Checkbox>
+                            <Tooltip title={ANONYMOUS_ITEM_TOOLTIP}>
+                                <span>Анонимный</span>
+                            </Tooltip>
+                        </Checkbox>
+                    </Form.Item>
                 </Space>
             </Form>
         </Modal>
