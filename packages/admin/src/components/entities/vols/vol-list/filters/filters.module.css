@@ -57,6 +57,7 @@
 
 .filterChooserPopup :global(.rc-virtual-list-holder) {
     touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 
 .filterValueSelect :global(.ant-select-selector) {
