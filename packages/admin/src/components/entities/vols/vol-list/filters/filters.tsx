@@ -166,6 +166,7 @@ export const Filters = ({
                             <FilterChooser
                                 removeAllFilters={removeAllFilters}
                                 filterFields={filterFields}
+                                isMobile={isMobile}
                                 toggleVisibleFilter={toggleVisibleFilter}
                                 visibleFilters={visibleFilters}
                             />

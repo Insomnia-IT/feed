@@ -288,6 +288,16 @@
     font-weight: 500 !important;
 }
 
+.volEditPage :global(.commentArea + .ant-divider) {
+    margin: 8px 0 12px !important;
+}
+
+@media (width <= 576px) {
+    .volEditPage :global(.commentArea + .ant-divider) {
+        display: none;
+    }
+}
+
 .optionalToggle {
     margin-bottom: 12px;
     padding: 0;
