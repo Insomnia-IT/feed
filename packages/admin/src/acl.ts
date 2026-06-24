@@ -79,7 +79,8 @@ type Action =
     | 'status_started_assign'
     | 'status_arrived_assign'
     | 'direction_head_comment_edit'
-    | 'brigadier_edit';
+    | 'brigadier_edit'
+    | 'brigadier_role_edit';
 
 const checkCustomPermission = (role: AppRole, action: Action): boolean => {
     switch (action) {
@@ -100,6 +101,8 @@ const checkCustomPermission = (role: AppRole, action: Action): boolean => {
             return role === AppRoles.DIRECTION_HEAD;
         case 'brigadier_edit':
             return role !== AppRoles.SOVA;
+        case 'brigadier_role_edit':
+            return role === AppRoles.DIRECTION_HEAD;
         case 'feed_type_edit':
         case 'unban':
             return role !== AppRoles.CAT;
