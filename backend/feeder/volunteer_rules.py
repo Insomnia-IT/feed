@@ -44,6 +44,7 @@ def get_supervisor_candidates(direction_ids):
 
     return (
         models.Volunteer.objects.filter(
+            deleted_at=None,
             main_role_id__in=SUPERVISOR_ROLE_IDS,
             directions__id__in=direction_ids,
         )

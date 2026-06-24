@@ -11,8 +11,6 @@ export const useSupervisorOptions = ({ form }: { form: FormInstance }) => {
     const { id: routeVolunteerId } = useParams<{ id: string }>();
     const formVolunteerId = Form.useWatch('id', form);
     const directions = Form.useWatch('directions', form) as Array<string | { id: string }> | undefined;
-    const supervisorId = Form.useWatch('supervisor_id', form);
-    const supervisor = Form.useWatch('supervisor', form) as { id: number; name: string } | null;
     const [search, setSearch] = useState('');
     const onSearch = useDebouncedCallback((value: string) => setSearch(value));
     const targetId = routeVolunteerId ?? formVolunteerId;
@@ -68,21 +66,14 @@ export const useSupervisorOptions = ({ form }: { form: FormInstance }) => {
         }
     });
 
-    const options = useMemo(() => {
-        const candidateOptions = (result.data ?? []).map((volunteer) => ({
-            value: volunteer.id,
-            label: formatVolunteerLabel(volunteer)
-        }));
-
-        if (supervisorId && !candidateOptions.some((option) => option.value === supervisorId)) {
-            candidateOptions.unshift({
-                value: supervisorId,
-                label: supervisor?.name ?? `ID ${supervisorId}`
-            });
-        }
-
-        return candidateOptions;
-    }, [result.data, supervisor, supervisorId]);
+    const options = useMemo(
+        () =>
+            (result.data ?? []).map((volunteer) => ({
+                value: volunteer.id,
+                label: formatVolunteerLabel(volunteer)
+            })),
+        [result.data]
+    );
 
     return {
         loading: query.isLoading,
