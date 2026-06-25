@@ -8,6 +8,7 @@ import { db } from 'db';
 import type { ServerTransaction, Transaction } from 'db';
 
 export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth: (auth: boolean) => void): ApiHook => {
+    const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
     const [error, setError] = useState<unknown>(null);
     const [updated, setUpdated] = useState<number | null>(null);
     const [fetching, setFetching] = useState<boolean>(false);
@@ -39,7 +40,8 @@ export const useSyncTransactions = (baseUrl: string, pin: string | null, setAuth
                     },
                     {
                         headers: {
-                            Authorization: `K-PIN-CODE ${pin}`
+                            Authorization: `K-PIN-CODE ${pin}`,
+                            'App-Version': appVersion
                         }
                     }
                 );
