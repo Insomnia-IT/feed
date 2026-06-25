@@ -9,7 +9,6 @@ import { ExportOutlined } from '@ant-design/icons';
 import { useScreen } from '../../../../shared/providers';
 
 import connectionsStyles from './connections.module.css';
-import { clearVolunteerRelationSelect, handleVolunteerRelationSelectChange } from './connections-select-handlers';
 
 export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
     const responsibleId = Form.useWatch('responsible_id', form);
@@ -76,14 +75,6 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
         return options;
     }, [responsibleResult?.data, responsibleId, volId, currentResponsible]);
 
-    const clearResponsible = () => {
-        clearVolunteerRelationSelect({
-            form,
-            field: 'responsible_id',
-            onAfterClear: () => setResponsibleSearch('')
-        });
-    };
-
     return (
         <div className={connectionsStyles.fieldRow}>
             <Form.Item
@@ -99,15 +90,7 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
                     placeholder="Найти ответственного"
                     filterOption={false}
                     onSearch={debouncedBrigadierSearch}
-                    onClear={clearResponsible}
-                    onChange={(value) =>
-                        handleVolunteerRelationSelectChange({
-                            form,
-                            field: 'responsible_id',
-                            value,
-                            onAfterClear: () => setResponsibleSearch('')
-                        })
-                    }
+                    onClear={() => setResponsibleSearch('')}
                     options={responsibleOptions}
                     loading={responsibleLoading}
                     disabled={!canEditResponsible}
