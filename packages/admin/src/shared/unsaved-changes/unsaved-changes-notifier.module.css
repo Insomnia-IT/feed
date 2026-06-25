@@ -23,7 +23,7 @@
 
 @media (width <= 768px) {
     .modalWrap:global(.ant-modal-wrap) {
-        display: flex !important;
+        display: flex;
         align-items: flex-end !important;
         justify-content: center !important;
         padding: 0 24px 24px;
