@@ -9,6 +9,7 @@ import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import { useScreen } from '../../../../shared/providers';
 
 import connectionsStyles from './connections.module.css';
+import { clearVolunteerRelationSelect, handleVolunteerRelationSelectChange } from './connections-select-handlers';
 
 export const SupervisorField = ({ form }: { form: FormInstance }) => {
     const supervisorId = Form.useWatch('supervisor_id', form);
@@ -62,6 +63,15 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
         return options;
     }, [supervisor, supervisorId, supervisorsResult]);
 
+    const clearSupervisor = () => {
+        clearVolunteerRelationSelect({
+            form,
+            field: 'supervisor_id',
+            extraValues: { supervisor: null },
+            onAfterClear: () => setBrigadierSearch('')
+        });
+    };
+
     return (
         <div className={connectionsStyles.fieldRow}>
             <Form.Item name="supervisor" noStyle>
@@ -74,11 +84,22 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                 normalize={(value) => value ?? null}
             >
                 <Select
+                    id="supervisor_id"
                     allowClear
                     showSearch
                     placeholder="Найти бригадира"
                     filterOption={false}
                     onSearch={debouncedBrigadierSearch}
+                    onClear={clearSupervisor}
+                    onChange={(value) =>
+                        handleVolunteerRelationSelectChange({
+                            form,
+                            field: 'supervisor_id',
+                            value,
+                            extraValuesOnClear: { supervisor: null },
+                            onAfterClear: () => setBrigadierSearch('')
+                        })
+                    }
                     options={supervisorOptions}
                     loading={supervisorsLoading}
                     disabled={!canEditBrigadier}

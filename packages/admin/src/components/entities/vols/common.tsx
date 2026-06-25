@@ -17,7 +17,8 @@ interface IProps {
 }
 
 const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
-    const { isDesktop, isMobile } = useScreen();
+    const { isDesktop } = useScreen();
+    const useSwipeableTabs = !isDesktop;
     const form = Form.useFormInstance();
     const { id: routeVolunteerId } = useParams<{ id: string }>();
     const { pathname } = useLocation();
@@ -81,7 +82,7 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
         <div
             className={[
                 styles.volFormTabs,
-                isMobile ? styles.volFormTabsMobile : '',
+                useSwipeableTabs ? styles.volFormTabsMobile : '',
                 shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : ''
             ]
                 .filter(Boolean)
