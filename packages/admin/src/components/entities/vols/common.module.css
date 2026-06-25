@@ -695,6 +695,20 @@
     min-width: 0;
 }
 
+.pageTitleTextStacked {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.pageTitleLine {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
 :global(.ant-layout-content:has(.vol-edit-page)) {
     display: flex;
     flex-direction: column;
@@ -718,7 +732,22 @@
     display: flex;
     flex: 1;
     flex-direction: column;
+    min-width: 0;
     min-height: 0;
+}
+
+.volFormTabsMobile :global(> .ant-tabs > .ant-tabs-nav) {
+    min-width: 0;
+}
+
+.volFormTabsMobile :global(.ant-tabs-nav-wrap) {
+    min-width: 0;
+    touch-action: pan-x pinch-zoom;
+    overscroll-behavior-x: contain;
+}
+
+.volFormTabsMobile :global(.ant-tabs-nav-list) {
+    flex-wrap: nowrap;
 }
 
 .volFormTabs :global(> .ant-tabs) {
@@ -916,7 +945,7 @@
     height: 100%;
 }
 
-/* Планшет и мобилка (<768px): компактная шапка, табы с overflow (…) у аватара */
+/* Планшет и мобилка (<768px): компактная шапка, табы под строкой заголовка */
 .volEditPageCompactHeader {
     --vol-header-avatar-reserve: 80px;
 }
@@ -928,10 +957,26 @@
     row-gap: 0;
 }
 
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: start;
+}
+
 .volEditPageCompactHeader :global(.ant-page-header-heading-left) {
     flex-shrink: 0;
     margin-block-end: 4px;
     min-width: 0;
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-left) {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    margin-block-end: 8px;
+    padding-inline-end: 0;
 }
 
 .volEditPageCompactHeader :global(.ant-page-header-content) {
@@ -939,6 +984,13 @@
     min-width: 0;
     min-height: 0;
     padding-block-start: 0 !important;
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header-content) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    margin-inline-end: 0;
 }
 
 .volEditPageCompactHeader .pageTitleMain {
@@ -953,6 +1005,10 @@
     flex: 1 1 auto;
 }
 
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto .pageTitleTextStacked {
+    flex: 1 1 auto;
+}
+
 .volEditPageCompactHeader .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
     margin-bottom: 8px;
     max-width: 100%;
@@ -960,8 +1016,7 @@
 }
 
 .volEditPageCompactHeader .volFormTabs :global(.ant-tabs-nav-wrap) {
-    max-width: 100%;
-    overflow: hidden;
+    min-width: 0;
 }
 
 .volEditPageWithHeaderPhoto :global(.ant-page-header-heading-left) {
@@ -975,8 +1030,21 @@
     margin: 0;
 }
 
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    inset: auto;
+    margin: 0;
+}
+
 .volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
     padding-inline-end: var(--vol-header-avatar-reserve);
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    padding-inline-end: 0;
 }
 
 @media (width <= 576px) {
@@ -999,10 +1067,6 @@
 
     .volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
         inset-inline-end: 0;
-    }
-
-    .volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
-        padding-inline-end: var(--vol-header-avatar-reserve);
     }
 
     .volEditPage :global(.ant-card-body) {

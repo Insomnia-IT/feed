@@ -17,7 +17,7 @@ interface IProps {
 }
 
 const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
-    const { isDesktop } = useScreen();
+    const { isDesktop, isMobile } = useScreen();
     const form = Form.useFormInstance();
     const { id: routeVolunteerId } = useParams<{ id: string }>();
     const { pathname } = useLocation();
@@ -63,12 +63,12 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
                 },
                 {
                     key: '5',
-                    label: isDesktop ? 'История изменений' : 'История',
+                    label: isDesktop ? 'История изменений' : 'Изменения',
                     children: wrapTabPane(<CommonHistory role="volunteer" />)
                 },
                 {
                     key: '6',
-                    label: isDesktop ? 'История действий' : 'Действия',
+                    label: isDesktop ? 'История действий' : 'Ист. действий',
                     children: wrapTabPane(<CommonHistory role="actor" />)
                 }
             );
@@ -78,7 +78,15 @@ const CreateEdit = ({ activeKey, setActiveKey }: IProps) => {
     }, [isCreationProcess, isDesktop, volunteerIdNumber, volunteerName, wrapTabPane]);
 
     return (
-        <div className={`${styles.volFormTabs} ${shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : ''}`}>
+        <div
+            className={[
+                styles.volFormTabs,
+                isMobile ? styles.volFormTabsMobile : '',
+                shouldAddMobileBottomOffset ? styles.mobileTabsWithOffset : ''
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        >
             <Tabs activeKey={activeKey} onChange={setActiveKey} size={isDesktop ? 'middle' : 'small'} items={items} />
         </div>
     );
