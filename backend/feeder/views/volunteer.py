@@ -179,6 +179,8 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
             target_direction_ids &= actor_direction_ids
 
         queryset = get_supervisor_candidates(target_direction_ids)
+        if target_id:
+            queryset = queryset.exclude(pk=target_id)
         queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
 

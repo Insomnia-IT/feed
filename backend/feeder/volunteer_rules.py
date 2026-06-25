@@ -52,7 +52,12 @@ def get_supervisor_candidates(direction_ids):
     )
 
 
-def validate_supervisor(supervisor, target_direction_ids):
+def validate_supervisor(supervisor, target_direction_ids, target_id=None):
+    if target_id is not None and supervisor.pk == target_id:
+        raise serializers.ValidationError(
+            {"supervisor_id": "Нельзя назначить волонтёра бригадиром самому себе."}
+        )
+
     if supervisor.main_role_id not in SUPERVISOR_ROLE_IDS:
         raise serializers.ValidationError(
             {"supervisor_id": "У выбранного бригадира неподходящая роль."}

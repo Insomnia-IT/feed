@@ -306,7 +306,11 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
                         )
                     target_direction_ids &= actor_direction_ids
 
-                validate_supervisor(supervisor, target_direction_ids)
+                validate_supervisor(
+                    supervisor,
+                    target_direction_ids,
+                    target_id=instance.pk if instance else None,
+                )
 
         return super().validate(attrs)
 
