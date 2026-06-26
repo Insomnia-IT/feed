@@ -4,6 +4,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import type { VolEntity } from 'interfaces';
 import { SelectedVolunteerList } from './selected-volunteer-list/selected-volunteer-list';
 import { GroupBadgeFrame } from './group-badge-frame';
+import { BrigadierFrame } from './brigadier-frame';
 import { ArrivalsFrame } from './arrivals-frame';
 import { KitchenFrame } from './kitchen-frame';
 import { InitialFrame } from './initial-frame';
@@ -113,6 +114,9 @@ const ActionsSection = ({
             ) : null}
             {sectionState === ActionSectionStates.GroupBadge ? (
                 <GroupBadgeFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
+            ) : null}
+            {sectionState === ActionSectionStates.Brigadier ? (
+                <BrigadierFrame selectedVolunteers={selectedVolunteers} doChange={doChange} />
             ) : null}
             {sectionState === ActionSectionStates.Arrivals ? (
                 <ArrivalsFrame

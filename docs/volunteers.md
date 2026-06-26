@@ -287,4 +287,18 @@
 
 Логика: `use-volunteer-table-selection.tsx`, `volunteer-selection-utils.ts`.
 
+### Множественный выбор (панель справа)
+
+Панель `MassEdit` (`vol-list/mass-edit/`): список выбранных волонтёров и «Быстрые действия». Изменения уходят в `POST /volunteer-group/` (`use-do-change.tsx`).
+
+| Действие        | Поле API        | UI-фрейм              |
+| --------------- | --------------- | --------------------- |
+| Групповой бейдж | `group_badge`   | `group-badge-frame`   |
+| Бригадир        | `supervisor_id` | `brigadier-frame`     |
+| Кухня           | `kitchen`       | `kitchen-frame`       |
+| Заезды          | arrival fields  | `arrivals-frame`      |
+| Кастомные поля  | custom fields   | `custom-fields-frame` |
+
+«Бригадир» — поиск по волонтёрам (как на вкладке «Связи»), подтверждение и «Очистить поле»; из списка кандидатов исключаются выбранные в пакете. Кнопка видна при праве `brigadier_edit`.
+
 Пагинация таблицы выровнена по левому краю (`.ant-table-pagination`), чтобы при открытой панели «Множественный выбор» справа оставались доступны номера страниц.

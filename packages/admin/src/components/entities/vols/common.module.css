@@ -288,6 +288,16 @@
     font-weight: 500 !important;
 }
 
+.volEditPage :global(.commentArea + .ant-divider) {
+    margin: 8px 0 12px !important;
+}
+
+@media (width <= 576px) {
+    .volEditPage :global(.commentArea + .ant-divider) {
+        display: none;
+    }
+}
+
 .optionalToggle {
     margin-bottom: 12px;
     padding: 0;
@@ -701,7 +711,7 @@
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    padding: 24px 24px 0 !important;
+    padding: 24px 0 0 24px !important;
 }
 
 .volFormTabs {
@@ -716,6 +726,10 @@
     flex: 1;
     flex-direction: column;
     min-height: 0;
+}
+
+.volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    padding-inline-end: 24px;
 }
 
 .volFormTabs :global(.ant-tabs-content-holder) {
@@ -757,6 +771,7 @@
     align-items: start;
     min-height: 0;
     overflow: visible;
+    padding-inline-end: 24px;
 }
 
 .volEditPage :global(.ant-page-header-heading) {
@@ -782,7 +797,9 @@
     align-self: stretch;
     display: flex;
     flex-direction: column;
+    width: calc(100% + 24px);
     min-height: 0;
+    margin-inline-end: -24px;
     overflow: hidden;
     padding-block-start: 0;
 }
@@ -828,7 +845,7 @@
 .floatingSaveButton {
     position: fixed;
     z-index: 100;
-    right: 32px;
+    right: 24px;
     bottom: 32px;
     box-shadow:
         0 8px 20px rgb(0 0 0 / 0.16),
@@ -954,7 +971,7 @@
 .volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
     position: absolute;
     inset-block-start: 0;
-    inset-inline-end: 0;
+    inset-inline-end: 24px;
     margin: 0;
 }
 
@@ -963,6 +980,31 @@
 }
 
 @media (width <= 576px) {
+    :global(.ant-layout-content:has(.vol-edit-page) > div) {
+        padding-inline-end: 24px !important;
+    }
+
+    .volEditPage :global(.ant-page-header) {
+        padding-inline-end: 0;
+    }
+
+    .volEditPage :global(.ant-page-header-content) {
+        width: 100%;
+        margin-inline-end: 0;
+    }
+
+    .volEditPage .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+        padding-inline-end: 0;
+    }
+
+    .volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
+        inset-inline-end: 0;
+    }
+
+    .volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+        padding-inline-end: var(--vol-header-avatar-reserve);
+    }
+
     .volEditPage :global(.ant-card-body) {
         padding-bottom: 0 !important;
     }
