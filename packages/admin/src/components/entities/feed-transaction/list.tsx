@@ -71,14 +71,14 @@ const anomalyModalColumns: ColumnsType<FeedTransactionAnomaly> = [
         ellipsis: true,
         render: (v: string) => v || '—'
     },
-    { dataIndex: 'direction_amount', title: 'Размер службы', width: 120 },
+    { dataIndex: 'direction_amount', title: 'Размер службы', width: 100 },
     {
         dataIndex: 'calculated_amount',
         title: 'Ожидаемое кол-во порций',
-        width: 160,
+        width: 100,
         render: (v: number | null) => (v != null ? v : '—')
     },
-    { dataIndex: 'real_amount', title: 'Выданное кол-во порций', width: 160 },
+    { dataIndex: 'real_amount', title: 'Выданное кол-во порций', width: 100 },
     { dataIndex: 'problem', title: 'Проблема', ellipsis: true }
 ];
 
@@ -257,7 +257,6 @@ export const FeedTransactionList: FC = () => {
         ],
         enabled: Boolean(anomaliesModalOpen && anomaliesModalDtimeFrom && anomaliesModalDtimeTo),
         queryFn: async (): Promise<FeedTransactionAnomaly[]> => {
-            debugger;
             const { data } = await axios.get<FeedTransactionAnomaly[]>(`${NEW_API_URL}/feed-transaction/anomalies`, {
                 params: {
                     dtime_from: anomaliesModalDtimeFrom,
@@ -478,7 +477,7 @@ export const FeedTransactionList: FC = () => {
                 open={anomaliesModalOpen}
                 onCancel={() => setAnomaliesModalOpen(false)}
                 footer={null}
-                width={isCompactAnomalies ? 'min(calc(100vw - 16px), 900px)' : 900}
+                width="min(calc(100vw - 16px), 1200px)"
                 style={{ maxWidth: '100vw' }}
                 centered
                 styles={{
