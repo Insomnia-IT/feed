@@ -183,9 +183,8 @@ export const FeedTransactionList: FC = () => {
     const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
     const [anomaliesRange, setAnomaliesRange] = useState<[Dayjs, Dayjs]>(() => {
-        const to = dayjsExtended();
-        const from = to.subtract(24, 'hour');
-        return [from, to];
+        const d = dayjsExtended();
+        return [[d.startOf('day'), d.endOf('day')]];
     });
 
     const { searchFormProps, tableProps, filters } = useTable<FeedTransactionEntity, HttpError, SearchFormValues>({
