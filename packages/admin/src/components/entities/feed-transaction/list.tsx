@@ -183,8 +183,8 @@ export const FeedTransactionList: FC = () => {
     const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
     const [anomaliesRange, setAnomaliesRange] = useState<[Dayjs, Dayjs]>(() => {
-        const d = dayjsExtended();
-        return [[d.startOf('day'), d.endOf('day')]];
+        const d = dayjsExtended().subtract(1, 'day');
+        return [d.startOf('day'), d.endOf('day')];
     });
 
     const { searchFormProps, tableProps, filters } = useTable<FeedTransactionEntity, HttpError, SearchFormValues>({
@@ -257,6 +257,7 @@ export const FeedTransactionList: FC = () => {
         ],
         enabled: Boolean(anomaliesModalOpen && anomaliesModalDtimeFrom && anomaliesModalDtimeTo),
         queryFn: async (): Promise<FeedTransactionAnomaly[]> => {
+            debugger;
             const { data } = await axios.get<FeedTransactionAnomaly[]>(`${NEW_API_URL}/feed-transaction/anomalies`, {
                 params: {
                     dtime_from: anomaliesModalDtimeFrom,
@@ -475,13 +476,6 @@ export const FeedTransactionList: FC = () => {
             <Modal
                 title="Аномалии"
                 open={anomaliesModalOpen}
-                afterOpenChange={(open) => {
-                    if (!open) return;
-                    const to = dayjsExtended();
-                    const from = to.subtract(24, 'hour');
-                    setAnomaliesRange([from, to]);
-                    setAnomalyPage(1);
-                }}
                 onCancel={() => setAnomaliesModalOpen(false)}
                 footer={null}
                 width={isCompactAnomalies ? 'min(calc(100vw - 16px), 900px)' : 900}
