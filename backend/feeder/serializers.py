@@ -6,6 +6,14 @@ from django.utils import timezone
 from feeder import models
 from feeder.utils import StatisticType
 from feeder.views.mixins import get_request_user_id
+from feeder.volunteer_rules import (
+    get_direction_ids,
+    get_request_volunteer,
+    have_shared_direction,
+    is_direction_head,
+    validate_direction_head_changes,
+    validate_supervisor,
+)
 
 from history.models import History
 from storage.models import VolunteerInventory
@@ -182,6 +190,23 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         return None
 
 
+class SupervisorCandidateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    directions = DirectionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.Volunteer
+        fields = [
+            "id",
+            "name",
+            "first_name",
+            "last_name",
+            "directions",
+            "main_role",
+            "access_role",
+        ]
+
+
 class VolunteerMobileListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     arrivals = VolunteerListArrivalSerializer(many=True)
@@ -248,6 +273,46 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     class Meta:
         model = models.Volunteer
         exclude = ['person']
+
+    def validate(self, attrs):
+        instance = self.instance
+        request = self.context.get("request")
+
+        if instance and request:
+            validate_direction_head_changes(
+                user=request.user,
+                instance=instance,
+                attrs=attrs,
+            )
+
+        if "supervisor_id" in attrs:
+            supervisor = attrs["supervisor_id"]
+            supervisor_changed = not instance or supervisor != instance.supervisor_id
+
+            if supervisor and supervisor_changed:
+                directions = attrs.get("directions")
+                target_direction_ids = (
+                    {direction.id for direction in directions}
+                    if directions is not None
+                    else get_direction_ids(instance)
+                )
+
+                if request and is_direction_head(request.user):
+                    actor = get_request_volunteer(request.user)
+                    actor_direction_ids = get_direction_ids(actor)
+                    if not have_shared_direction(target_direction_ids, actor_direction_ids):
+                        raise serializers.ValidationError(
+                            {"supervisor_id": "Нельзя назначать бригадира волонтёру из другой службы."}
+                        )
+                    target_direction_ids &= actor_direction_ids
+
+                validate_supervisor(
+                    supervisor,
+                    target_direction_ids,
+                    target_id=instance.pk if instance else None,
+                )
+
+        return super().validate(attrs)
 
     def update(self, instance, validated_data):
         validated_data.pop('approver', None)
