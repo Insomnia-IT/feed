@@ -1,10 +1,11 @@
 import type { VolEntity } from 'interfaces';
 import styles from './mass-edit.module.css';
 import { Button, Typography } from 'antd';
-import { CalendarOutlined, CoffeeOutlined, MoreOutlined, TeamOutlined } from '@ant-design/icons';
+import { CalendarOutlined, CoffeeOutlined, MoreOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { HasBadgeButton } from './has-badge-button';
 import { ActionSectionStates, type ActionSectionState } from './action-section-states';
 import type { ChangeMassEditField } from './mass-edit-types';
+import useCanAccess from '../../use-can-access';
 
 const { Title } = Typography;
 
@@ -17,6 +18,8 @@ export const InitialFrame = ({
     selectedVolunteers: VolEntity[];
     doChange: ChangeMassEditField;
 }) => {
+    const canEditBrigadier = useCanAccess({ action: 'brigadier_edit', resource: 'volunteers' });
+
     return (
         <>
             <header>
@@ -31,6 +34,12 @@ export const InitialFrame = ({
                     <TeamOutlined />
                     Групповой бейдж
                 </Button>
+                {canEditBrigadier ? (
+                    <Button onClick={() => setSectionState(ActionSectionStates.Brigadier)}>
+                        <UserOutlined />
+                        Бригадир
+                    </Button>
+                ) : null}
                 <Button
                     onClick={() => {
                         setSectionState(ActionSectionStates.Kitchen);
