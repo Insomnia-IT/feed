@@ -111,7 +111,7 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
 
     transactions_by_group_badge = {}
     real_amount_by_group_badge = {}
-    real_amount_by_direction = {}
+    real_amount_by_direction_and_meal_time = {}
     used_meal_times_by_group_badge = {}
     anomaly_transactions = []
 
@@ -133,9 +133,12 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         used_meal_times_by_group_badge[group_badge.id].add(txn.meal_time)
 
         if group_badge.direction_id:
-            if group_badge.direction_id not in real_amount_by_direction:
-                real_amount_by_direction[group_badge.direction_id] = 0
-            real_amount_by_direction[group_badge.direction_id] += txn.amount
+            if group_badge.direction_id not in real_amount_by_direction_and_meal_time:
+                real_amount_by_direction_and_meal_time[group_badge.direction_id] = {}
+            meal_time_with_date = f"{txn.dtime:%Y-%m-%d}_{txn.meal_time}"
+            if txn.meal_time not in real_amount_by_direction_and_meal_time[group_badge.direction_id]:
+                real_amount_by_direction_and_meal_time[group_badge.direction_id][meal_time_with_date] = 0
+            real_amount_by_direction_and_meal_time[group_badge.direction_id][meal_time_with_date] += txn.amount
 
         if txn.is_anomaly:
             anomaly_transactions.append(txn)
@@ -146,7 +149,7 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         'anomaly_transactions': anomaly_transactions,
         'transactions_by_group_badge': transactions_by_group_badge,
         'real_amount_by_group_badge': real_amount_by_group_badge,
-        'real_amount_by_direction': real_amount_by_direction,
+        'real_amount_by_direction_and_meal_time': real_amount_by_direction_and_meal_time,
         'used_meal_times_by_group_badge': used_meal_times_by_group_badge,
     }
 
@@ -259,7 +262,8 @@ def get_overfeeding_direction_anomalies(dtime_from, dtime_to, context=None):
 
     for direction_id, direction in directions_by_id.items():
         direction_amount = direction_amount_by_id.get(direction_id, 0)
-        real_amount = data['real_amount_by_direction'].get(direction_id, 0)
+        real_amount_values = data['real_amount_by_direction_and_meal_time'].get(direction_id, {}).values()
+        real_amount = 0 if not real_amount_values else max(real_amount_values)
 
         if real_amount <= direction_amount:
             continue
