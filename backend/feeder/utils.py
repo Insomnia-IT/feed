@@ -93,7 +93,10 @@ def get_kitchen_id_by_history(history_by_volunteer, volunteer_uuid, current_date
 def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
     group_badges = list(
         models.GroupBadge.objects
-        .filter(deleted_at=None)
+        .filter(
+            deleted_at=None,
+            created_at__gte=dtime_from
+        )
         .select_related('direction')
         .prefetch_related('group_badge_planning_cells')
     )
