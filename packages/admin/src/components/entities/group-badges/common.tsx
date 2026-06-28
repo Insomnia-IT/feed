@@ -124,7 +124,7 @@ export const CreateEdit = () => {
                 <Checkbox disabled={!canDisableGroupBadge} />
             </Form.Item>
             <Form.Item label="Комментарий" name="comment">
-                <TextEditor />
+                <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} readOnly={!canDisableGroupBadge} />
             </Form.Item>
             <QRScannerModal open={openQrModal} onClose={() => setOpenQrModal(false)} />
         </>
