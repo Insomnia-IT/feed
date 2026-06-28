@@ -136,6 +136,7 @@ export interface GroupBadgeEntity extends TimeStampedEntity {
     volunteer_count: number;
     planning_cells: MealPlanCell[];
     deleted_at: string | null;
+    is_disabled: boolean;
 }
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'night';
@@ -193,6 +194,7 @@ export interface StorageItemPositionEntity {
 export interface VolunteerInventoryEntity {
     position: number;
     count: number;
+    position_item?: number;
 }
 
 export interface IssuanceEntity {

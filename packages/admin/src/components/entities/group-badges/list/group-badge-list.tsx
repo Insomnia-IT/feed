@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, startTransition } from 'react';
 import { DeleteButton, EditButton, List } from '@refinedev/antd';
 import { Space, Table, type TablePaginationConfig, Tooltip } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useList, useNavigation } from '@refinedev/core';
 
 import { RichTextPreview } from 'components/controls/rich-text-preview';
@@ -49,7 +50,8 @@ export const GroupBadgeList = () => {
             mode: 'server',
             currentPage: isDesktop ? page : 1,
             pageSize: isDesktop ? pageSize : 10000
-        }
+        },
+        filters: [{ field: 'with_disabled', operator: 'eq', value: true }]
     });
     const { result: kitchensResult } = useList<KitchenEntity>({
         resource: 'kitchens',
@@ -132,6 +134,10 @@ export const GroupBadgeList = () => {
                                 <span className={styles.label}>Кухня:</span>
                                 <span>{getKitchenName(badge, kitchenNameById)}</span>
                             </div>
+                            <div className={styles.row}>
+                                <span className={styles.label}>Выключен:</span>
+                                <span>{badge.is_disabled ? '✗' : '✓'}</span>
+                            </div>
                             {badge.comment && (
                                 <div className={styles.comment}>
                                     <span className={styles.label}>Комментарий:</span>
@@ -190,6 +196,18 @@ export const GroupBadgeList = () => {
                             </Tooltip>
                         )}
                         ellipsis
+                    />
+                    <Table.Column
+                        dataIndex="is_disabled"
+                        key="is_disabled"
+                        title="Включен"
+                        render={(isDisabled: boolean) =>
+                            isDisabled ? (
+                                <CloseCircleOutlined style={{ color: 'red' }} />
+                            ) : (
+                                <CheckCircleOutlined style={{ color: 'green' }} />
+                            )
+                        }
                     />
                 </Table>
             )}

@@ -75,8 +75,11 @@ export const useSupervisorOptions = ({ form }: { form: FormInstance }) => {
         [result.data]
     );
 
+    const onClear = () => setSearch('');
+
     return {
         loading: query.isLoading,
+        onClear,
         onSearch,
         options
     };

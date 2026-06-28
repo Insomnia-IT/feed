@@ -51,3 +51,17 @@ export const issueFromStorage = (params: {
         notes: params.notes,
         actor: params.actor
     });
+
+export const returnToStorage = (params: {
+    position: number;
+    count: number;
+    volunteer: number;
+    notes?: string;
+    actor?: number;
+}) =>
+    axios.post(`${NEW_API_URL}/storage-positions/${params.position}/receive/`, {
+        count: params.count,
+        volunteer: params.volunteer,
+        notes: params.notes,
+        actor: params.actor
+    });

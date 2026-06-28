@@ -5,6 +5,44 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
 import styles from './feeding-calendar.module.css';
 
+function clampScrollLeft(viewport: HTMLElement, scrollLeft: number): number {
+    const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    return Math.min(Math.max(0, scrollLeft), maxScrollLeft);
+}
+
+function getCenteredScrollLeft(viewport: HTMLElement, slide: HTMLElement): number {
+    const viewportRect = viewport.getBoundingClientRect();
+    const slideRect = slide.getBoundingClientRect();
+    const slideCenter = slideRect.left + slideRect.width / 2;
+    const viewportCenter = viewportRect.left + viewportRect.width / 2;
+    return viewport.scrollLeft + (slideCenter - viewportCenter);
+}
+
+function getClosestSlideIndex(viewport: HTMLElement): number {
+    const slides = [...viewport.querySelectorAll<HTMLElement>('[data-month-index]')];
+    if (slides.length === 0) {
+        return 0;
+    }
+
+    const viewportRect = viewport.getBoundingClientRect();
+    const viewportCenter = viewportRect.left + viewportRect.width / 2;
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    slides.forEach((slide) => {
+        const slideRect = slide.getBoundingClientRect();
+        const slideCenter = slideRect.left + slideRect.width / 2;
+        const distance = Math.abs(slideCenter - viewportCenter);
+        const index = Number(slide.dataset.monthIndex);
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = index;
+        }
+    });
+
+    return closestIndex;
+}
+
 type FeedingCalendarMobileCarouselProps = {
     monthPanels: Dayjs[];
     initialIndex: number;
@@ -21,8 +59,19 @@ export function FeedingCalendarMobileCarousel({
 
     const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
         const viewport = viewportRef.current;
-        const slide = viewport?.querySelector<HTMLElement>(`[data-month-index="${index}"]`);
-        slide?.scrollIntoView({ inline: 'center', block: 'nearest', behavior });
+        if (!viewport) {
+            return;
+        }
+
+        const slide = viewport.querySelector<HTMLElement>(`[data-month-index="${index}"]`);
+        if (!slide) {
+            return;
+        }
+
+        // Scroll only the carousel viewport horizontally. scrollIntoView also scrolls
+        // ancestor containers (e.g. VolTabPaneScroll) and jumps the volunteer card to Питание.
+        const scrollLeft = clampScrollLeft(viewport, getCenteredScrollLeft(viewport, slide));
+        viewport.scrollTo({ left: scrollLeft, behavior });
     }, []);
 
     useEffect(() => {
@@ -47,26 +96,7 @@ export function FeedingCalendarMobileCarousel({
 
             scrollFrameId = window.requestAnimationFrame(() => {
                 scrollFrameId = null;
-
-                const slides = [...viewport.querySelectorAll<HTMLElement>('[data-month-index]')];
-                if (slides.length === 0) {
-                    return;
-                }
-
-                const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
-                let closestIndex = 0;
-                let closestDistance = Number.POSITIVE_INFINITY;
-
-                slides.forEach((slide) => {
-                    const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-                    const distance = Math.abs(slideCenter - viewportCenter);
-                    const index = Number(slide.dataset.monthIndex);
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestIndex = index;
-                    }
-                });
-
+                const closestIndex = getClosestSlideIndex(viewport);
                 setActiveIndex((previousIndex) => (previousIndex === closestIndex ? previousIndex : closestIndex));
             });
         };
