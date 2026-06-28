@@ -281,6 +281,41 @@ Positions (inventory) are managed on the "Positions" tab:
     - Triggered in the `usePositionsTab` hook's `onMutationSuccess` callback.
     - Only shown if `Item.is_anonymous=True`, as unique/regular positions usually require more detailed handling or are already labeled.
 
+### Volunteer Inventory Validation and Transfer on Receive
+
+- **Feature**: When receiving items from a volunteer (via the "Принять" button or "Принять" modal with "От кого" field), the system validates and transfers items from the volunteer's inventory to the warehouse.
+- **Workflow**:
+    - When a volunteer is selected in the "От кого" field, the system fetches their inventory for the current item.
+    - The `InputNumber` for quantity is limited to the volunteer's available inventory count.
+    - Upon submission, the system:
+        1. Validates that the volunteer has sufficient inventory
+        2. Decrements the volunteer's inventory count
+        3. Increments the warehouse position count
+        4. Creates a `Receiving` record
+    - If the volunteer has no inventory for this item, the backend returns an error.
+    - If the entered count exceeds the volunteer's inventory, the backend rejects the request.
+- **Backend Implementation** (`backend/storage/views.py`, `backend/storage/services.py`):
+    - The `receive` action calls `decrease_volunteer_inventory()` to transfer items from volunteer to warehouse.
+    - The `create` action (for new positions) also calls `decrease_volunteer_inventory()` when a volunteer is specified.
+    - The `decrease_volunteer_inventory()` function:
+        - Searches `VolunteerInventory` by volunteer and item (across all positions with that item).
+        - Validates sufficient count exists.
+        - Decrements or deletes the inventory record.
+        - Raises `ValidationError` if insufficient inventory.
+    - Returns `400 Bad Request` if volunteer lacks sufficient inventory.
+- **Frontend Implementation**:
+    - `usePositionsTab` hook fetches volunteer inventory via `/volunteer-inventory/{volunteerId}/` endpoint.
+    - `ReceiveModal` component receives `volunteerInventoryCount` prop and applies it as `max` to `InputNumber`.
+    - `CreatePositionModal` also receives `volunteerInventoryCount` prop and applies the same logic.
+    - Placeholder text shows maximum available count when volunteer is selected.
+    - Field label changed from "Владелец" to "От кого" to clarify the volunteer's role.
+- **Benefits**:
+    - Prevents receiving more items than the volunteer actually has.
+    - Automatically transfers inventory from volunteer to warehouse.
+    - Ensures data consistency between warehouse and volunteer inventory.
+    - Provides immediate feedback to operators.
+    - Works for both existing positions (merge case) and new positions.
+
 ### Verification already completed
 
 - `backend/venv/bin/python backend/manage.py check`

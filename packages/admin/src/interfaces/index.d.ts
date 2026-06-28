@@ -195,6 +195,7 @@ export interface StorageItemPositionEntity {
 export interface VolunteerInventoryEntity {
     position: number;
     count: number;
+    position_item?: number;
 }
 
 export interface IssuanceEntity {

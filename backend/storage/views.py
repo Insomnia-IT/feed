@@ -15,7 +15,7 @@ from .serializers import (
     StorageItemPositionSerializer, IssuanceSerializer, ReceivingSerializer,
     MovementSerializer, VolunteerInventorySerializer
 )
-from .services import increase_volunteer_inventory
+from .services import increase_volunteer_inventory, decrease_volunteer_inventory
 
 
 class StoragePositionFilter(django_filters.FilterSet):
@@ -149,6 +149,9 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
 
             if existing_position:
                 with transaction.atomic():
+                    if volunteer_id:
+                        decrease_volunteer_inventory(volunteer_id, existing_position, count)
+
                     existing_position.count += count
                     existing_position.deleted_at = None
                     if description:
@@ -169,6 +172,12 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         with transaction.atomic():
             position = serializer.save()
+            volunteer_id = self.request.data.get('volunteer')
+            count = position.count
+
+            if volunteer_id:
+                decrease_volunteer_inventory(volunteer_id, position, count)
+
             Receiving.objects.create(
                 position=position,
                 volunteer_id=self.request.data.get('volunteer'),
@@ -189,6 +198,9 @@ class StoragePositionViewSet(SoftDeleteViewSetMixin, viewsets.ModelViewSet):
             return Response({'error': 'Count must be positive'}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
+            if volunteer_id:
+                decrease_volunteer_inventory(volunteer_id, position, count)
+
             position.count += count
             position.save()
 

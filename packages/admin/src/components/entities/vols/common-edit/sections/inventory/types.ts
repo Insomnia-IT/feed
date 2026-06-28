@@ -23,3 +23,9 @@ export interface StorageIssueFormValues {
     count: number;
     notes?: string;
 }
+
+export interface StorageReturnFormValues {
+    position: number;
+    count: number;
+    notes?: string;
+}
