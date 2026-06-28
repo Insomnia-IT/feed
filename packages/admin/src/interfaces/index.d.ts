@@ -163,14 +163,12 @@ export interface BinEntity {
     id: number;
     storage: number;
     name: string;
-    capacity?: number;
     description?: string;
 }
 
 export interface ItemEntity {
     id: number;
     name: string;
-    sku?: string;
     is_unique: boolean;
     is_anonymous: boolean;
     storage?: number;

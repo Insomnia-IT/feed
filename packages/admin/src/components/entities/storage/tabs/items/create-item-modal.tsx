@@ -15,9 +15,6 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({ storageId, mod
                 <Form.Item name="name" label="Название" rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item name="sku" label="Артикул / SKU">
-                    <Input />
-                </Form.Item>
                 <Space size="large">
                     <Form.Item name="is_unique" valuePropName="checked">
                         <Checkbox>Уникальный</Checkbox>
