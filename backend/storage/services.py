@@ -17,6 +17,29 @@ def increase_volunteer_inventory(volunteer_id, position: StorageItemPosition, co
     inventory.save(update_fields=["count", "updated_at"])
 
 
+def decrease_volunteer_inventory(volunteer_id, position: StorageItemPosition, count: int):
+    if not volunteer_id or count <= 0:
+        return
+
+    with transaction.atomic():
+        try:
+            inventory = VolunteerInventory.objects.select_for_update().get(
+                volunteer_id=volunteer_id,
+                position__item=position.item
+            )
+        except VolunteerInventory.DoesNotExist as exc:
+            raise ValidationError({"volunteer": "Volunteer does not have this item in inventory"}) from exc
+
+        if inventory.count < count:
+            raise ValidationError({"count": "Insufficient inventory in volunteer possession"})
+
+        inventory.count -= count
+        if inventory.count > 0:
+            inventory.save(update_fields=["count", "updated_at"])
+        else:
+            inventory.delete()
+
+
 def transfer_volunteer_inventory(position: StorageItemPosition, from_volunteer_id: int, to_volunteer_id: int, count: int):
     if count <= 0:
         raise ValidationError({"count": "Count must be positive"})

@@ -74,7 +74,7 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
                         const itemId = getFieldValue('item');
                         const selectedItem = itemsData?.find((item: ItemEntity) => item.id === itemId);
                         return (
-                            <Form.Item name="volunteer" label="Владелец">
+                            <Form.Item name="volunteer" label="От кого (из инвентаря)">
                                 <Select
                                     {...volunteerSelectProps}
                                     showSearch
