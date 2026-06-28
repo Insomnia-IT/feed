@@ -21,6 +21,11 @@
     margin-bottom: 0;
 }
 
+/* Как в filters.module.css: selector не перекрывает clear/arrow на touch (antd#28917). */
+.fieldGrow :global(.ant-select-selector) {
+    padding-inline-end: 40px;
+}
+
 .fieldAction {
     flex: 0 0 auto;
     margin-bottom: 0;

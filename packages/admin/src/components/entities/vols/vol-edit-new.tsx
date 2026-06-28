@@ -153,6 +153,7 @@ const VolEditContent = ({
         const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
         return fullName || volunteerName;
     }, [firstName, lastName, volunteerName]);
+    const showStackedMobileTitle = !isDesktop && showHeaderPhoto && Boolean(firstName || lastName);
 
     return (
         <Edit
@@ -173,7 +174,14 @@ const VolEditContent = ({
             breadcrumb={false}
             title={
                 <div className={styles.pageTitleMain}>
-                    <span className={styles.pageTitleText}>{pageHeading}</span>
+                    {showStackedMobileTitle ? (
+                        <span className={styles.pageTitleTextStacked}>
+                            {firstName ? <span className={styles.pageTitleLine}>{firstName}</span> : null}
+                            {lastName ? <span className={styles.pageTitleLine}>{lastName}</span> : null}
+                        </span>
+                    ) : (
+                        <span className={styles.pageTitleText}>{pageHeading}</span>
+                    )}
                     {isBlocked && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Заблокирован</span>

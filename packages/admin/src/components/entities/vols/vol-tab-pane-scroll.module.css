@@ -3,12 +3,15 @@
     flex: 1;
     flex-direction: column;
     width: 100%;
+    min-width: 0;
     min-height: 0;
+    overflow-x: clip;
 }
 
 .scroll {
     flex: 1;
     width: 100%;
+    min-width: 0;
     min-height: 0;
     overflow: hidden auto;
     padding-right: 24px;
