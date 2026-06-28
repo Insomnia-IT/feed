@@ -3,7 +3,8 @@ export const ActionSectionStates = {
     GroupBadge: 1,
     Arrivals: 2,
     Kitchen: 3,
-    CustomFields: 4
+    CustomFields: 4,
+    Brigadier: 5
 } as const;
 
 export type ActionSectionState = (typeof ActionSectionStates)[keyof typeof ActionSectionStates];

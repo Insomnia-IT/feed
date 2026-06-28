@@ -93,7 +93,10 @@ def get_kitchen_id_by_history(history_by_volunteer, volunteer_uuid, current_date
 def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
     group_badges = list(
         models.GroupBadge.objects
-        .filter(deleted_at=None)
+        .filter(
+            deleted_at=None,
+            created_at__lte=dtime_to
+        )
         .select_related('direction')
         .prefetch_related('group_badge_planning_cells')
     )
@@ -211,7 +214,11 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
         used_meal_times = data['used_meal_times_by_group_badge'].get(group_badge.id, set())
         planning_cells = list(group_badge.group_badge_planning_cells.all())
 
+
         for meal_time in meal_times:
+            if meal_time == 'night':
+                continue
+
             if meal_time in used_meal_times:
                 continue
 
@@ -222,12 +229,10 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
                 if latest_planning_cell is None or planning_cell.date > latest_planning_cell.date:
                     latest_planning_cell = planning_cell
 
-            if latest_planning_cell is None:
-                continue
-
-            planned_amount = (latest_planning_cell.amount_meat or 0) + (latest_planning_cell.amount_vegan or 0)
-            if planned_amount == 0:
-                continue
+            if latest_planning_cell:
+                planned_amount = (latest_planning_cell.amount_meat or 0) + (latest_planning_cell.amount_vegan or 0)
+                if planned_amount == 0:
+                    continue
 
             missing_meal_times.append(meal_time_names.get(meal_time, meal_time))
 

@@ -23,8 +23,14 @@ class NormalizedSearchFilter(SearchFilter):
                 output_field=TextField(),
             )
 
+        lowercase_expression = Lower(Cast(F(field_name), TextField()), output_field=TextField())
         return Replace(
-            Lower(Cast(F(field_name), TextField()), output_field=TextField()),
+            Replace(
+                lowercase_expression,
+                Value("Ё"),
+                Value("Е"),
+                output_field=TextField(),
+            ),
             Value("ё"),
             Value("е"),
             output_field=TextField(),
@@ -69,7 +75,7 @@ class NormalizedSearchFilter(SearchFilter):
         for term in normalized_terms:
             term_query = Q()
             for alias in aliases.values():
-                term_query |= Q(**{f"{alias}__contains": term})
+                term_query |= Q(**{f"{alias}__icontains": term})
             queryset = queryset.filter(term_query)
 
         if self.must_call_distinct(queryset, search_fields):

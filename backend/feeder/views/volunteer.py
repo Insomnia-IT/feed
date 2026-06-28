@@ -1,4 +1,6 @@
 from rest_framework import viewsets, permissions, filters
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,6 +16,13 @@ from feeder.filters import NormalizedSearchFilter
 from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMixin, \
     SaveHistoryDataViewSetMixin, VolunteerExtraFilterMixin, auto_tag_viewset
 from feeder.views.xlsx import build_xlsx_response
+from feeder.volunteer_rules import (
+    get_direction_ids,
+    get_request_volunteer,
+    get_supervisor_candidates,
+    have_shared_direction,
+    is_direction_head,
+)
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
@@ -144,6 +153,43 @@ class VolunteerViewSet(VolunteerExtraFilterMixin, SoftDeleteViewSetMixin,
             ).prefetch_related(Prefetch('arrivals', queryset=mobile_arrivals))
 
         return queryset
+
+    @action(detail=False, methods=['get'], url_path='supervisor-candidates')
+    def supervisor_candidates(self, request):
+        target_id = request.query_params.get("target_id")
+
+        if target_id:
+            target = models.Volunteer.objects.filter(pk=target_id, deleted_at=None).first()
+            if not target:
+                raise ValidationError({"target_id": "Волонтёр не найден."})
+            target_direction_ids = get_direction_ids(target)
+        else:
+            raw_direction_ids = request.query_params.get("direction_ids", "")
+            target_direction_ids = {
+                direction_id
+                for direction_id in raw_direction_ids.split(",")
+                if direction_id
+            }
+
+        if is_direction_head(request.user):
+            actor = get_request_volunteer(request.user)
+            actor_direction_ids = get_direction_ids(actor)
+            if not actor or not have_shared_direction(actor_direction_ids, target_direction_ids):
+                raise PermissionDenied("Нет доступа к волонтёру из другой службы.")
+            target_direction_ids &= actor_direction_ids
+
+        queryset = get_supervisor_candidates(target_direction_ids)
+        if target_id:
+            queryset = queryset.exclude(pk=target_id)
+        queryset = self.filter_queryset(queryset)
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = serializers.SupervisorCandidateSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = serializers.SupervisorCandidateSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='export-xlsx')
     def export_xlsx(self, request):
