@@ -52,7 +52,6 @@ export const CreateEdit = () => {
     const directionValue = Form.useWatch('direction', form);
     const shouldHideDirectionValue = directionValue != null && (directionSelectProps.options?.length ?? 0) === 0;
     const isDisabledValue = Form.useWatch('is_disabled', form);
-    const commentValue = Form.useWatch('comment', form);
     const prevIsDisabledRef = useRef<boolean | undefined>(undefined);
 
     const [openQrModal, setOpenQrModal] = useState(false);
@@ -78,14 +77,14 @@ export const CreateEdit = () => {
         ) {
             const timestamp = new Date().toLocaleString('ru-RU');
             const statusText = isDisabledValue ? 'выключен' : 'включен';
-            const currentComment = commentValue || '';
+            const currentComment = form.getFieldValue('comment') || '';
             const newComment = currentComment
                 ? `${currentComment}\n${timestamp} ${statusText}`
                 : `${timestamp} ${statusText}`;
             form.setFieldValue('comment', newComment);
         }
         prevIsDisabledRef.current = isDisabledValue;
-    }, [isDisabledValue, form, commentValue]);
+    }, [isDisabledValue, form]);
 
     return (
         <>
