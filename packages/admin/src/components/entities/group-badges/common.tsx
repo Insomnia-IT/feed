@@ -1,4 +1,4 @@
-import { Button, Form, Input, Select } from 'antd';
+import { Alert, Button, Checkbox, Form, Input, Select } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
 import { useSelect } from '@refinedev/antd';
 import { useEffect, useMemo, useState } from 'react';
@@ -8,9 +8,11 @@ import { TextEditor } from 'components/controls/text-editor';
 import type { DirectionEntity, KitchenEntity, VolunteerRoleEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
+import useCanAccess from '../vols/use-can-access';
 
 export const CreateEdit = () => {
     const form = Form.useFormInstance();
+    const canDisableGroupBadge = useCanAccess({ action: 'group_badge_disable_edit', resource: 'group-badges' });
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name',
@@ -49,6 +51,7 @@ export const CreateEdit = () => {
 
     const directionValue = Form.useWatch('direction', form);
     const shouldHideDirectionValue = directionValue != null && (directionSelectProps.options?.length ?? 0) === 0;
+    const isDisabledValue = Form.useWatch('is_disabled', form);
 
     const [openQrModal, setOpenQrModal] = useState(false);
 
@@ -67,6 +70,7 @@ export const CreateEdit = () => {
 
     return (
         <>
+            {isDisabledValue && <Alert message="Бейдж выключен" type="warning" showIcon style={{ marginBottom: 16 }} />}
             <Form.Item label="Название" name="name" rules={Rules.required}>
                 <Input />
             </Form.Item>
@@ -90,6 +94,9 @@ export const CreateEdit = () => {
                     onSearch={() => setOpenQrModal(true)}
                     enterButton={<Button icon={<QrcodeOutlined />}></Button>}
                 />
+            </Form.Item>
+            <Form.Item label="Выключен" name="is_disabled" valuePropName="checked">
+                <Checkbox disabled={!canDisableGroupBadge} />
             </Form.Item>
             <Form.Item label="Комментарий" name="comment">
                 <TextEditor />

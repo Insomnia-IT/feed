@@ -8,6 +8,12 @@ from feeder.views.mixins import MultiSerializerViewSetMixin, SoftDeleteViewSetMi
 
 class GroupBadgeFilter(django_filters.FilterSet):
     created_at__from = django_filters.IsoDateTimeFilter(field_name="created_at", lookup_expr='gte')
+    with_disabled = django_filters.BooleanFilter(method='filter_with_disabled')
+    
+    def filter_with_disabled(self, queryset, name, value):
+        if value:
+            return queryset
+        return queryset.filter(is_disabled=False)
 
 
 @auto_tag_viewset("GroupBadges")
