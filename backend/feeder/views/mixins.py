@@ -166,6 +166,14 @@ class SoftDeleteViewSetMixin(ModelViewSet):
     # def perform_hard_destroy(self, instance: SoftDeleteModelMixin):
     #     instance.hard_delete()
 
+class DisabledViewSetMixin(ModelViewSet):
+    def get_queryset(self):
+        pk = self.kwargs.get("pk", None)
+        qs = super().get_queryset()
+        with_disabled = self.request.query_params.getlist("with_disabled", None)
+        if not with_disabled and not pk:
+            qs = qs.filter(is_disabled=False)
+        return qs
 
 def get_request_user_id(user):
     if hasattr(user, "uuid"):

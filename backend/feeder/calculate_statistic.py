@@ -529,7 +529,7 @@ def load_planning_cells_cache():
 
 
 def load_group_badge_kitchens():
-    return dict(models.GroupBadge.objects.values_list('id', 'kitchen_id'))
+    return dict(models.GroupBadge.objects.filter(is_disabled=False).values_list('id', 'kitchen_id'))
 
 
 def load_volunteers(date_from, date_to, anonymous, group_badge):
@@ -548,9 +548,10 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
 
     result = []
     for vol in queryset:
-        if group_badge is True and not vol.group_badge:
+        vol_group_badge = vol.group_badge and not vol.group_badge.is_disabled
+        if group_badge is True and not vol_group_badge:
             continue
-        if group_badge is False and vol.group_badge:
+        if group_badge is False and vol_group_badge:
             continue
 
         for arrival in vol.relevant_arrivals or []:
@@ -567,7 +568,7 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
                 'is_paid': vol.feed_type.paid if vol.feed_type else False,
                 'is_vegan': vol.is_vegan,
                 'kitchen_id': vol.kitchen.id if vol.kitchen else None,
-                'group_badge_id': vol.group_badge_id if vol.group_badge else None,
+                'group_badge_id': vol.group_badge_id if vol.group_badge and not vol.group_badge.is_disabled else None,
             })
 
     return result
