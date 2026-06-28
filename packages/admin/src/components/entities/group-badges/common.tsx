@@ -4,7 +4,6 @@ import { useSelect } from '@refinedev/antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
-import { TextEditor } from 'components/controls/text-editor';
 import type { DirectionEntity, KitchenEntity, VolunteerRoleEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
