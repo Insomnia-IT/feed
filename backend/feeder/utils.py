@@ -95,7 +95,7 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         models.GroupBadge.objects
         .filter(
             deleted_at=None,
-            created_at__lte=dtime_to
+            created_at__lte=dtime_from
         )
         .select_related('direction')
         .prefetch_related('group_badge_planning_cells')
