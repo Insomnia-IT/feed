@@ -70,7 +70,14 @@ export const CreateEdit = () => {
 
     return (
         <>
-            {isDisabledValue && <Alert message="Бейдж выключен" type="warning" showIcon style={{ marginBottom: 16 }} />}
+            {isDisabledValue && (
+                <Alert
+                    message="Бейдж выключен. Бюро выключает бейдж, если им не воспользовались 2 раза. Иди в бюро, если нужно включить его обратно."
+                    type="error"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                />
+            )}
             <Form.Item label="Название" name="name" rules={Rules.required}>
                 <Input />
             </Form.Item>
