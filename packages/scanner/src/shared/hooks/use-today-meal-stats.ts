@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import type { GroupBadge, MealPlanCell, Transaction } from 'db';
+import type { GroupBadge, MealPlanCell, Transaction, Volunteer } from 'db';
 import { db, getTodayTrans, getVolsOnField } from 'db';
 import { useApp } from 'model/app-provider';
 import { getToday } from 'shared/lib/date';
@@ -48,40 +48,47 @@ export const useTodayMealStats = () => {
         );
     }, [allGroupBadges]);
 
+    const hasGroupBadge = useCallback(
+        (group_badge?: number | null) => {
+            return group_badge && groupBadgeById[group_badge];
+        },
+        [groupBadgeById]
+    );
+
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
 
     const { groupBadgeVolunteersCount } = useMemo(() => {
         const groupCounts = new Map<number, number>();
 
         volsOnField.forEach((v) => {
-            if (v.group_badge !== null) {
+            if (v.group_badge !== null && hasGroupBadge(v.group_badge)) {
                 groupCounts.set(v.group_badge, (groupCounts.get(v.group_badge) ?? 0) + 1);
             }
         });
 
         return { groupBadgeVolunteersCount: groupCounts };
-    }, [volsOnField]);
+    }, [volsOnField, hasGroupBadge]);
 
     const individualFedCount = useMemo(
         () =>
             todayTxs.reduce((acc, curr) => {
-                if (curr.mealTime === mealTime && (curr.group_badge == null || !groupBadgeById[curr.group_badge])) {
+                if (curr.mealTime === mealTime && !hasGroupBadge(curr.group_badge)) {
                     return acc + curr.amount;
                 }
                 return acc;
             }, 0),
-        [mealTime, todayTxs, groupBadgeById]
+        [mealTime, todayTxs, hasGroupBadge]
     );
 
     const groupFedCount = useMemo(
         () =>
             todayTxs.reduce((acc, curr) => {
-                if (curr.mealTime === mealTime && curr.group_badge != null && groupBadgeById[curr.group_badge]) {
+                if (curr.mealTime === mealTime && hasGroupBadge(curr.group_badge)) {
                     return acc + curr.amount;
                 }
                 return acc;
             }, 0),
-        [mealTime, todayTxs, groupBadgeById]
+        [mealTime, todayTxs, hasGroupBadge]
     );
 
     const groupPlannedCount = useMemo(() => {
