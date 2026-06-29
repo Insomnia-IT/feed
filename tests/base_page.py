@@ -1,9 +1,10 @@
+import os
 import re
 import time
-import re
 from datetime import datetime
 from playwright.sync_api import Page
 
+from constants import ADMIN_LOGIN, ADMIN_PASSWORD
 from locators import registration, meal_create, badge_create, feed_history_pagination, group_badges, custom_field, create_user
 
 class BasePage:
@@ -54,27 +55,26 @@ class BasePage:
         first_button.wait_for(state="visible", timeout=7000)
         first_button.click(force=True)
 
-    def scan_user(self, qr_code="20635ffe1ad2496f8cfc5668d7e8b34d"):
+    def scan_user(self, qr_code=None):
         # login.tsx вешает слушатель 'scan' на document внутри useEffect.
         # Даем React время зарегистрировать его после рендера страницы.
         self.page.wait_for_timeout(500)
         # Диспатчим в точности так же как onscan.js: с bubbles:true
+        code = qr_code or os.getenv("TEST_QR_CODE", "")
         self.page.evaluate(f"""
             document.dispatchEvent(new CustomEvent("scan", {{
                 bubbles: true,
-                detail: {{ scanCode: "{qr_code}" }}
+                detail: {{ scanCode: "{code}" }}
             }}));
         """)
 
     def login_admin(self):
-        login = "admin"
-        password = "Kolombina25"
         # Всегда ждем появления поля перед вводом
         self.page.locator(registration.LOGIN).wait_for(state="visible", timeout=7000)
         login_input = self.page.locator(registration.LOGIN)
         password_input = self.page.locator(registration.PASSWORD)
-        login_input.fill(login)
-        password_input.fill(password)
+        login_input.fill(ADMIN_LOGIN)
+        password_input.fill(ADMIN_PASSWORD)
         prod_link = self.page.locator(registration.BUTTONREG)
         prod_link.click()
 
@@ -88,6 +88,7 @@ class BasePage:
 
     def pagination(self):
         page_link = self.page.locator(".ant-pagination-item-2")
+        page_link.wait_for(state="visible", timeout=5000)
         page_link.click()
 
     def go_to_create_new_meal(self):
@@ -127,8 +128,9 @@ class BasePage:
 
 
     def create_badge(self):
-        badge_name =self.page.locator(badge_create.BADGE_NAME)
-        badge_name.fill("autotest" + datetime.now().strftime("%d%m%H%M%S"))
+        name = "autotest" + datetime.now().strftime("%d%m%H%M%S")
+        badge_name = self.page.locator(badge_create.BADGE_NAME)
+        badge_name.fill(name)
         # Ждем пока выпадашка раскроется и в ней появятся элементы
         self._select_ant_option(badge_create.DEPARTMENT_NAME)
         self._select_ant_option("#role", "Волонтёр")
@@ -141,6 +143,7 @@ class BasePage:
             and response.ok
         ):
             self.page.locator(badge_create.SUBMIT_BUTTON).click()
+        return name
 
     def badges_counter(self):
         # Ждем пока счетчик стабилизируется (не меняется 2 итерации подряд)
@@ -177,12 +180,15 @@ class BasePage:
         first_row = self.page.locator("tr.ant-table-row").first
         column = first_row.locator("td").nth(1)
         column.click()
+        self.page.screenshot(path="open_meal.png", full_page=True)
 
     def meal_deleting(self):
         delete_buttons = self.page.locator("button.refine-delete-button")
         if delete_buttons.count() > 0:
             delete_button = delete_buttons.first
             delete_button.click()
+
+        self.page.screenshot(path="mmeal_delete.png", full_page=True)
         confirm_button = self.page.locator("//button[span[text()='Удалить']]")
         confirm_button.click()
 
@@ -200,15 +206,17 @@ class BasePage:
 
 
     def create_custom_field(self):
+        field_name = "user" + datetime.now().strftime("H%M%S")
         name = self.page.locator(registration.CUSTOM_NAME)
         name.click()
-        name.fill("user" + datetime.now().strftime("H%M%S"))
+        name.fill(field_name)
         type = self.page.locator(registration.CUSTOM_TYPE)
         type.click()
         type.press("Enter")
         type.press("Enter")
         save_button = self.page.locator(registration.SAVE_BUTTON)
         save_button.click()
+        return field_name
 
     def delete_row(self):
         delete_row = self.page.locator(custom_field.DELETE_ROW).last
@@ -232,7 +240,7 @@ class BasePage:
         tab = self.page.locator(group_badges.VOLUNTEERS_TAB).first
         tab.click()
 
-    def add_volunteer_in_group_badge(self):
+    def add_volunteer_in_group_badge(self, volunteer_name=None):
         existing_volunteers = {
             name.strip()
             for name in self.page.locator("table").first.locator("tbody tr td:nth-child(1)").all_inner_texts()
@@ -243,7 +251,7 @@ class BasePage:
         modal = self.page.locator(".ant-modal-content").last
         insert_name = modal.locator(group_badges.SEARCH_FIELD).first
         insert_name.click()
-        insert_name.fill("Корица")
+        insert_name.fill(volunteer_name)
         modal_rows = modal.locator("tbody tr")
         modal_rows.first.wait_for(state="visible")
         selected_row = None
@@ -306,7 +314,11 @@ class BasePage:
         supervisor_name = add_supervisor.inner_text()
         return supervisor_name
 
-    def create_user(self, user_name="Test_name"):
+    def create_user(self, user_data=None):
+        user_data = user_data or {}
+        user_name = user_data.get("username", f"TestUser_{int(time.time())}")
+        approver = user_data.get("approver", "Test Approver")
+
         add_name = self.page.locator(create_user.USER_NAME)
         add_name.click()
         add_name.fill(user_name)
@@ -325,7 +337,8 @@ class BasePage:
         add_qr = self.page.locator(create_user.QR_NUMBER)
         add_qr.click()
         add_qr.fill("qr" + datetime.now().strftime("%d%m%H%M%S"))
-        self.fill_approver_field(test_user_data["approver"])
+        self.fill_approver_field(approver)
+        supervisor_name = self.fill_supervisor()
         return supervisor_name
 
 
