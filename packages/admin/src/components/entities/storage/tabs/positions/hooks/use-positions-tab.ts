@@ -53,7 +53,7 @@ export const usePositionsTab = ({ storage, filters, actionForm, itemsData, searc
             const itemId = positionFormProps.form?.getFieldValue('item');
             const selectedItem = itemsData?.find((item) => item.id === itemId);
 
-            if (selectedItem?.is_anonymous && createdPosition?.id) {
+            if (selectedItem?.is_unique && createdPosition?.id) {
                 setCreatedPositionId(createdPosition.id);
                 setIsSuccessModalVisible(true);
             }
