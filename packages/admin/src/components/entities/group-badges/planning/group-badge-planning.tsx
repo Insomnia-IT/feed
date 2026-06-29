@@ -48,18 +48,17 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
                 .filter((c) => c.meal_time === meal && c.date <= tomorrowDate)
                 .reduce(
                     (lastestCell, cell) => {
-                        return lastestCell && cell.date > lastestCell.date ? cell : lastestCell;
+                        return lastestCell && lastestCell.date > cell.date ? lastestCell : cell;
                     },
                     null as MealPlanCell | null
                 );
 
-            return lastestCell ? lastestCell.amount_meat === 0 && lastestCell.amount_vegan === 0 : false;
+            return lastestCell ? lastestCell.amount_meat !== 0 || lastestCell.amount_vegan !== 0 : true;
         },
         [groupBadge?.planning_cells, tomorrowDate]
     );
 
     const updatePlanningCell = async (meal: PlanningMealType, nextChecked: boolean) => {
-        const isEnabled = isMealEnabled(meal);
         const futureCells = getFuturePlanningCells({
             planningCells: groupBadge?.planning_cells ?? [],
             meal,
@@ -90,7 +89,7 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
                     )
             );
 
-            if (isEnabled && !nextChecked) {
+            if (!futureCells.some((c) => c.date === tomorrowDate)) {
                 await dataProvider().create<GroupBadgePlanningCellEntity>({
                     resource: 'group-badge-planning-cells',
                     variables: {
