@@ -180,15 +180,12 @@ class BasePage:
         first_row = self.page.locator("tr.ant-table-row").first
         column = first_row.locator("td").nth(1)
         column.click()
-        self.page.screenshot(path="open_meal.png", full_page=True)
 
     def meal_deleting(self):
         delete_buttons = self.page.locator("button.refine-delete-button")
         if delete_buttons.count() > 0:
             delete_button = delete_buttons.first
             delete_button.click()
-
-        self.page.screenshot(path="mmeal_delete.png", full_page=True)
         confirm_button = self.page.locator("//button[span[text()='Удалить']]")
         confirm_button.click()
 
