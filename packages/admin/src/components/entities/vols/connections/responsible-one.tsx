@@ -84,11 +84,13 @@ export const ResponsibleOne = ({ form }: { form: FormInstance }) => {
                 normalize={(value) => value ?? null}
             >
                 <Select
+                    id="responsible_id"
                     allowClear
                     showSearch
                     placeholder="Найти ответственного"
                     filterOption={false}
                     onSearch={debouncedBrigadierSearch}
+                    onClear={() => setResponsibleSearch('')}
                     options={responsibleOptions}
                     loading={responsibleLoading}
                     disabled={!canEditResponsible}

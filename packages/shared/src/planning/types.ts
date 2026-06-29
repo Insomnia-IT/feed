@@ -25,4 +25,5 @@ export interface PlanningVolunteer {
     arrivals?: ReadonlyArray<PlanningArrival>;
     paid_arrivals?: ReadonlyArray<PlanningPaidArrival> | null;
     feed_type_code?: FeedTypeCode | string | null;
+    qr: string;
 }

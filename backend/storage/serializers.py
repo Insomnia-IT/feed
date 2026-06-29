@@ -113,6 +113,8 @@ class MovementSerializer(serializers.ModelSerializer):
 
 
 class VolunteerInventorySerializer(serializers.ModelSerializer):
+    position_item = serializers.ReadOnlyField(source='position.item_id')
+
     class Meta:
         model = VolunteerInventory
-        fields = ["position", "count"]
+        fields = ["position", "count", "position_item"]
