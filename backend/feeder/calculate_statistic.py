@@ -560,10 +560,10 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
 
             if active_to < date_from or active_from > date_to:
                 continue
-
             result.append({
                 'uuid': str(vol.uuid),
                 'active_from': active_from,
+                'activated': arrival.activated,
                 'active_to': active_to,
                 'is_paid': vol.feed_type.paid if vol.feed_type else False,
                 'is_vegan': vol.is_vegan,
@@ -587,6 +587,9 @@ def get_meal_times_for_day(vol, current_day):
 
     if vol['active_from'] == current_day and vol['active_to'] != current_day:
         return [m.value for m in all_meals if m != MealTime.BREAKFAST]
+    
+    if not vol['activated'] and vol['group_badge_id']:
+        return []
 
     if vol['active_from'] != current_day and vol['active_to'] == current_day:
         return [m.value for m in all_meals if m in (MealTime.BREAKFAST, MealTime.LUNCH)]
