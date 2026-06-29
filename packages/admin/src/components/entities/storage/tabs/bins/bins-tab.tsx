@@ -25,7 +25,6 @@ export const BinsTab: React.FC = () => {
 
     const columns: ColumnsType<BinEntity> = [
         { dataIndex: 'name', title: 'Название' },
-        { dataIndex: 'capacity', title: 'Вместимость' },
         { dataIndex: 'description', title: 'Описание' },
         {
             title: 'Действия',

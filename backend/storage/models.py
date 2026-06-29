@@ -15,7 +15,6 @@ class Storage(TimeMixin, SoftDeleteModelMixin):
 class Bin(TimeMixin, SoftDeleteModelMixin):
     storage = models.ForeignKey(Storage, on_delete=models.CASCADE, related_name="bins")
     name = models.CharField(max_length=255)
-    capacity = models.IntegerField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -24,7 +23,6 @@ class Bin(TimeMixin, SoftDeleteModelMixin):
 
 class Item(TimeMixin, SoftDeleteModelMixin):
     name = models.CharField(max_length=255)
-    sku = models.CharField(max_length=64, blank=True, null=True)
     is_unique = models.BooleanField(default=False)
     is_anonymous = models.BooleanField(default=False)
     storage = models.ForeignKey(Storage, on_delete=models.SET_NULL, blank=True, null=True, related_name="items")

@@ -15,13 +15,11 @@ Add a comprehensive storage management feature to the Insomnia Feed admin applic
     - `id`: AutoField (PK)
     - `storage`: ForeignKey(Storage, on_delete=CASCADE, related_name="bins")
     - `name`: CharField(max_length=255)
-    - `capacity`: IntegerField(blank=True, null=True) # optional maximum count
     - `description`: TextField(blank=True, null=True)
     - Inherit `TimeMixin` and `SoftDeleteModelMixin`
 - **Item**
     - `id`: AutoField (PK)
     - `name`: CharField(max_length=255)
-    - `sku`: CharField(max_length=64, blank=True, null=True) # optional identifier
     - `is_unique`: BooleanField(default=False) # true → count always 1
     - `is_anonymous`: BooleanField(default=False) # true → volunteer field is optional
     - `metadata`: JSONField(blank=True, null=True) # optional free-form data
@@ -203,7 +201,7 @@ All models use the existing `TimeMixin` (created_at/updated_at) and `SoftDeleteM
 
 Bins are managed on the "Bins" tab and represent specific locations within the current storage:
 
-- **Add Bin**: Create a new bin with a **Name**, **Capacity** (optional limit), and **Description**.
+- **Add Bin**: Create a new bin with a **Name** and **Description**.
 - **Context**: Bins created on this page are automatically linked to the current storage.
 - **Usage**: Once created, bins appear in the selection dropdown when adding new positions.
 
@@ -214,7 +212,6 @@ The "Items" tab provides a global catalog of items available for all storages:
 - **Global Catalog**: Items created here can be used in any storage through the "Positions" tab.
 - **Item Properties**:
     - **Name**: Main identifier for the item.
-    - **SKU**: Optional secondary identifier.
     - **Unique**: If checked, each position for this item must have a count of 1.
     - **Anonymous**: If checked, no volunteer/owner is required when receiving or issuing this item.
 - **Actions**:
