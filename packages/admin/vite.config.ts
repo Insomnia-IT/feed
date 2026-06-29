@@ -78,12 +78,7 @@ export default defineConfig({
         port: 3002,
         proxy: {
             '/feedapi': {
-                target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8000',
-                configure: (proxy, options) => {
-                    proxy.on('proxyReq', (proxyReq, req, res) => {
-                        proxyReq.setHeader('host', 'localhost');
-                    });
-                }
+                target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8000'
             }
         }
     }
