@@ -24,6 +24,7 @@ export const usePositionsTab = ({ storage, filters, actionForm, itemsData, searc
         tableQuery: { refetch: positionsRefetch }
     } = useTable<StorageItemPositionEntity>({
         resource: 'storage-positions',
+        syncWithLocation: false,
         filters: {
             permanent: filters.concat(
                 [{ field: 'has_count', operator: 'eq', value: true }],
