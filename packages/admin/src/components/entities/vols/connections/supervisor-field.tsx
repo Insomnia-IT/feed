@@ -10,7 +10,12 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
     const supervisorId = Form.useWatch('supervisor_id', form);
     const { isMobile } = useScreen();
     const canEditBrigadier = useCanAccess({ action: 'brigadier_edit', resource: 'volunteers' });
-    const { loading: supervisorsLoading, onSearch, options: supervisorOptions } = useSupervisorOptions({ form });
+    const {
+        loading: supervisorsLoading,
+        onClear: onClearSupervisorSearch,
+        onSearch,
+        options: supervisorOptions
+    } = useSupervisorOptions({ form });
 
     return (
         <div className={connectionsStyles.fieldRow}>
@@ -24,11 +29,18 @@ export const SupervisorField = ({ form }: { form: FormInstance }) => {
                 normalize={(value) => value ?? null}
             >
                 <Select
+                    id="supervisor_id"
                     allowClear
                     showSearch
                     placeholder="Найти бригадира"
                     filterOption={false}
                     onSearch={onSearch}
+                    onClear={onClearSupervisorSearch}
+                    onChange={(value) => {
+                        if (value == null) {
+                            form.setFieldValue('supervisor', null);
+                        }
+                    }}
                     options={supervisorOptions}
                     loading={supervisorsLoading}
                     disabled={!canEditBrigadier}

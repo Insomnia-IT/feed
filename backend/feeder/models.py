@@ -215,6 +215,7 @@ class GroupBadge(TimeMixin, SoftDeleteModelMixin, CommentMixin, NameMixin):
     direction = models.ForeignKey(Direction, on_delete=models.PROTECT, null=True, blank=True)
     role = models.ForeignKey(VolunteerRole, on_delete=models.PROTECT, null=True, blank=True)
     kitchen = models.ForeignKey('Kitchen', null=True, blank=True, on_delete=models.PROTECT, verbose_name="Кухня")
+    is_disabled = models.BooleanField(default=False, verbose_name="Выключен")
 
     def __str__(self):
         return self.name

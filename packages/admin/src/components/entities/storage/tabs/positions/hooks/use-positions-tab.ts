@@ -24,6 +24,7 @@ export const usePositionsTab = ({ storage, filters, actionForm, itemsData, searc
         tableQuery: { refetch: positionsRefetch }
     } = useTable<StorageItemPositionEntity>({
         resource: 'storage-positions',
+        syncWithLocation: false,
         filters: {
             permanent: filters.concat(
                 [{ field: 'has_count', operator: 'eq', value: true }],
@@ -53,7 +54,7 @@ export const usePositionsTab = ({ storage, filters, actionForm, itemsData, searc
             const itemId = positionFormProps.form?.getFieldValue('item');
             const selectedItem = itemsData?.find((item) => item.id === itemId);
 
-            if (selectedItem?.is_anonymous && createdPosition?.id) {
+            if (selectedItem?.is_unique && createdPosition?.id) {
                 setCreatedPositionId(createdPosition.id);
                 setIsSuccessModalVisible(true);
             }

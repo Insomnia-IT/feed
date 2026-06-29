@@ -11,6 +11,7 @@ export const useItemsTab = () => {
         tableQuery: { refetch: itemsRefetch }
     } = useTable<ItemEntity>({
         resource: 'storage-items',
+        syncWithLocation: false,
         filters: {
             initial: [{ field: 'storage', operator: 'eq', value: storageId }]
         },

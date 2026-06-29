@@ -136,6 +136,7 @@ export interface GroupBadgeEntity extends TimeStampedEntity {
     volunteer_count: number;
     planning_cells: MealPlanCell[];
     deleted_at: string | null;
+    is_disabled: boolean;
 }
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'night';
@@ -163,14 +164,12 @@ export interface BinEntity {
     id: number;
     storage: number;
     name: string;
-    capacity?: number;
     description?: string;
 }
 
 export interface ItemEntity {
     id: number;
     name: string;
-    sku?: string;
     is_unique: boolean;
     is_anonymous: boolean;
     storage?: number;
@@ -195,6 +194,7 @@ export interface StorageItemPositionEntity {
 export interface VolunteerInventoryEntity {
     position: number;
     count: number;
+    position_item?: number;
 }
 
 export interface IssuanceEntity {
