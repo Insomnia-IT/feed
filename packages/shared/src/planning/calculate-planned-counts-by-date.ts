@@ -5,8 +5,8 @@ import { getActivatedArrivals, getFeedingPermissionForDate, getPaidArrivals } fr
 import { FeedTypeCode, type PlanningVolunteer } from './types';
 
 export interface PlannedDayCounts {
-    meat: number;
-    vegan: number;
+    meat: string[];
+    vegan: string[];
 }
 
 export type PlannedCountsByDate = Map<string, PlannedDayCounts>;
@@ -50,11 +50,11 @@ export const calculatePlannedCountsByDate = ({
                 continue;
             }
 
-            const bucket = result.get(statsDate) ?? { meat: 0, vegan: 0 };
+            const bucket = result.get(statsDate) ?? { meat: [], vegan: [] };
             if (vol.is_vegan) {
-                bucket.vegan += 1;
+                bucket.vegan.push(vol.qr ?? '-');
             } else {
-                bucket.meat += 1;
+                bucket.meat.push(vol.qr ?? '-');
             }
             result.set(statsDate, bucket);
         }
@@ -64,4 +64,4 @@ export const calculatePlannedCountsByDate = ({
 };
 
 export const getPlannedCountsForDate = (countsByDate: PlannedCountsByDate, date: string): PlannedDayCounts =>
-    countsByDate.get(date) ?? { meat: 0, vegan: 0 };
+    countsByDate.get(date) ?? { meat: [], vegan: [] };
