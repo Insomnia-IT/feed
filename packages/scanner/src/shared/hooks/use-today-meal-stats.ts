@@ -48,47 +48,40 @@ export const useTodayMealStats = () => {
         );
     }, [allGroupBadges]);
 
-    const hasGroupBadge = useCallback(
-        (group_badge?: number | null) => {
-            return group_badge && groupBadgeById[group_badge];
-        },
-        [groupBadgeById]
-    );
-
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
 
     const { groupBadgeVolunteersCount } = useMemo(() => {
         const groupCounts = new Map<number, number>();
 
         volsOnField.forEach((v) => {
-            if (v.group_badge !== null && hasGroupBadge(v.group_badge)) {
+            if (v.group_badge !== null && groupBadgeById[v.group_badge]) {
                 groupCounts.set(v.group_badge, (groupCounts.get(v.group_badge) ?? 0) + 1);
             }
         });
 
         return { groupBadgeVolunteersCount: groupCounts };
-    }, [volsOnField, hasGroupBadge]);
+    }, [volsOnField, groupBadgeById]);
 
     const individualFedCount = useMemo(
         () =>
             todayTxs.reduce((acc, curr) => {
-                if (curr.mealTime === mealTime && !hasGroupBadge(curr.group_badge)) {
+                if (curr.mealTime === mealTime && curr.group_badge == null) {
                     return acc + curr.amount;
                 }
                 return acc;
             }, 0),
-        [mealTime, todayTxs, hasGroupBadge]
+        [mealTime, todayTxs]
     );
 
     const groupFedCount = useMemo(
         () =>
             todayTxs.reduce((acc, curr) => {
-                if (curr.mealTime === mealTime && hasGroupBadge(curr.group_badge)) {
+                if (curr.mealTime === mealTime && curr.group_badge != null) {
                     return acc + curr.amount;
                 }
                 return acc;
             }, 0),
-        [mealTime, todayTxs, hasGroupBadge]
+        [mealTime, todayTxs]
     );
 
     const groupPlannedCount = useMemo(() => {
