@@ -529,7 +529,7 @@ def load_planning_cells_cache():
 
 
 def load_group_badge_kitchens():
-    return dict(models.GroupBadge.objects.filter(is_disabled=False).values_list('id', 'kitchen_id'))
+    return dict(models.GroupBadge.objects.filter(is_disabled=False, deleted_at=None).values_list('id', 'kitchen_id'))
 
 
 def load_volunteers(date_from, date_to, anonymous, group_badge):
