@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Form, Input, InputNumber } from 'antd';
+import { Modal, Form, Input } from 'antd';
 import type { ModalProps } from 'antd';
 
 interface BinModalProps {
@@ -15,9 +15,6 @@ export const BinModal: React.FC<BinModalProps> = ({ modalProps, formProps, stora
             <Form {...formProps} layout="vertical">
                 <Form.Item name="name" label="Название" rules={[{ required: true }]}>
                     <Input />
-                </Form.Item>
-                <Form.Item name="capacity" label="Вместимость">
-                    <InputNumber min={0} style={{ width: '100%' }} />
                 </Form.Item>
                 <Form.Item name="description" label="Описание">
                     <Input.TextArea />
