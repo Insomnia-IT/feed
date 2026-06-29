@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import type { GroupBadge, MealPlanCell, Transaction, Volunteer } from 'db';
+import type { GroupBadge, MealPlanCell, Transaction } from 'db';
 import { db, getTodayTrans, getVolsOnField } from 'db';
 import { useApp } from 'model/app-provider';
 import { getToday } from 'shared/lib/date';
