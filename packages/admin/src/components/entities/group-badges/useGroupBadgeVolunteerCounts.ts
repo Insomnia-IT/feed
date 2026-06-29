@@ -21,6 +21,7 @@ const buildFeedTypeCodeById = (feedTypes: FeedTypeEntity[]): Map<number, string>
 };
 
 const mapVolunteerToPlanning = (vol: VolEntity, feedTypeCodeById: Map<number, string>): PlanningVolunteer => ({
+    qr: vol.qr ?? '-',
     is_blocked: vol.is_blocked ?? false,
     is_vegan: vol.is_vegan ?? false,
     arrivals: vol.arrivals ?? [],
