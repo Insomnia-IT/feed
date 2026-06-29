@@ -1,10 +1,9 @@
 import { Alert, Button, Checkbox, Form, Input, Select } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
 import { useSelect } from '@refinedev/antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
-import { TextEditor } from 'components/controls/text-editor';
 import type { DirectionEntity, KitchenEntity, VolunteerRoleEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
@@ -52,6 +51,7 @@ export const CreateEdit = () => {
     const directionValue = Form.useWatch('direction', form);
     const shouldHideDirectionValue = directionValue != null && (directionSelectProps.options?.length ?? 0) === 0;
     const isDisabledValue = Form.useWatch('is_disabled', form);
+    const prevIsDisabledRef = useRef<boolean | undefined>(undefined);
 
     const [openQrModal, setOpenQrModal] = useState(false);
 
@@ -67,6 +67,23 @@ export const CreateEdit = () => {
             document.removeEventListener('scan', onHardwareScan);
         };
     }, [form]);
+
+    useEffect(() => {
+        if (
+            isDisabledValue !== undefined &&
+            prevIsDisabledRef.current !== undefined &&
+            prevIsDisabledRef.current !== isDisabledValue
+        ) {
+            const timestamp = new Date().toLocaleString('ru-RU');
+            const statusText = isDisabledValue ? 'выключен' : 'включен';
+            const currentComment = form.getFieldValue('comment') || '';
+            const newComment = currentComment
+                ? `${currentComment}\n${timestamp} ${statusText}`
+                : `${timestamp} ${statusText}`;
+            form.setFieldValue('comment', newComment);
+        }
+        prevIsDisabledRef.current = isDisabledValue;
+    }, [isDisabledValue, form]);
 
     return (
         <>
@@ -106,7 +123,7 @@ export const CreateEdit = () => {
                 <Checkbox disabled={!canDisableGroupBadge} />
             </Form.Item>
             <Form.Item label="Комментарий" name="comment">
-                <TextEditor />
+                <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} readOnly={!canDisableGroupBadge} />
             </Form.Item>
             <QRScannerModal open={openQrModal} onClose={() => setOpenQrModal(false)} />
         </>
