@@ -34,11 +34,9 @@ const getDisplayValues = ({
 }: {
     value: MealValues;
     calculatedCounts?: PlannedDayCounts;
-}): { meat: DisplayValue; vegan: DisplayValue; calculatedMeat?: string[]; calculatedVegan?: string[] } => ({
+}): { meat: DisplayValue; vegan: DisplayValue } => ({
     meat: buildDisplayValue(value?.amount_meat ?? null, calculatedCounts?.meat.length),
-    vegan: buildDisplayValue(value?.amount_vegan ?? null, calculatedCounts?.vegan.length),
-    calculatedMeat: calculatedCounts?.meat,
-    calculatedVegan: calculatedCounts?.vegan
+    vegan: buildDisplayValue(value?.amount_vegan ?? null, calculatedCounts?.vegan.length)
 });
 
 interface RenderMealsProps {
@@ -48,7 +46,7 @@ interface RenderMealsProps {
 }
 
 const RenderMeals: React.FC<RenderMealsProps> = ({ calculatedCounts, isMobile = false, value }) => {
-    const { meat, vegan, calculatedMeat, calculatedVegan } = getDisplayValues({ value, calculatedCounts });
+    const { meat, vegan } = getDisplayValues({ value, calculatedCounts });
 
     const meatNode = (
         <span
@@ -56,7 +54,7 @@ const RenderMeals: React.FC<RenderMealsProps> = ({ calculatedCounts, isMobile = 
             data-testid="meal-cell-meat"
             onMouseOver={() => {
                 // eslint-disable-next-line no-console
-                console.log('Мясоеды', calculatedMeat);
+                console.log('Мясоеды', calculatedCounts?.meat);
             }}
         >
             {meat.label}
@@ -68,7 +66,7 @@ const RenderMeals: React.FC<RenderMealsProps> = ({ calculatedCounts, isMobile = 
             data-testid="meal-cell-vegan"
             onMouseOver={() => {
                 // eslint-disable-next-line no-console
-                console.log('Веганы', calculatedVegan);
+                console.log('Веганы', calculatedCounts?.vegan);
             }}
         >
             {vegan.label}
