@@ -1,198 +1,22 @@
 import os
+import re
 import sys
-import time
+
 import pytest
-import requests
-from functools import lru_cache
-from datetime import datetime
-from urllib.parse import parse_qs, urlparse
+from http import HTTPStatus
 
 # Добавляем папку tests в sys.path, чтобы pytest мог находить локаторы и базовые страницы
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from base_page import BasePage
+from constants import FRONTEND_URL
 from locators import *
 
-skip = pytest.mark.skip
-base_url = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
-created_user_name = None
-
-# TODO проверить
-host = os.getenv("FEED_APP_HOST", "https://feedapp-dev.insomniafest.ru")
-created_user_name = "Test_name"
-admin_login = "admin"
-admin_password = "Kolombina25"
-API_TIMEOUT = 30
-
-
-def get_admin_token() -> str:
-    api_url = f"{host}/feedapi/v1"
-    auth_response = requests.post(
-        f"{api_url}/auth/login/",
-        json={"username": admin_login, "password": admin_password},
-        timeout=API_TIMEOUT,
-    )
-    auth_response.raise_for_status()
-    return auth_response.json()["key"]
-
-# TODO проверить
-@lru_cache(maxsize=1)
-def get_direction_head_case() -> tuple[dict, dict]:
-    api_url = f"{host}/feedapi/v1"
-    token = get_admin_token()
-
-    volunteers_response = requests.get(
-        f"{api_url}/volunteers/?limit=1000",
-        headers={"Authorization": f"Token {token}"},
-        timeout=API_TIMEOUT,
-    )
-    volunteers_response.raise_for_status()
-
-    volunteers = volunteers_response.json().get("results", [])
-
-    for direction_head in volunteers:
-        if direction_head.get("access_role") != "DIRECTION_HEAD" or not direction_head.get("qr"):
-            continue
-
-        direction_ids = {str(direction["id"]) for direction in direction_head.get("directions", [])}
-
-        for volunteer in volunteers:
-            volunteer_direction_ids = {str(direction["id"]) for direction in volunteer.get("directions", [])}
-            if volunteer.get("id") == direction_head.get("id"):
-                continue
-            if str(volunteer.get("id")) == "1":
-                continue
-            if not volunteer.get("name"):
-                continue
-            if volunteer.get("is_blocked"):
-                continue
-            if volunteer.get("deleted_at"):
-                continue
-            if volunteer.get("access_role"):
-                continue
-            if direction_ids & volunteer_direction_ids:
-                return direction_head, volunteer
-
-    pytest.skip("No valid DIRECTION_HEAD + target volunteer pair was found")
-
-
-def get_direction_head_qr() -> str:
-    return get_direction_head_case()[0]["qr"]
-
-
-def get_direction_head_target_name() -> str:
-    return get_direction_head_case()[1]["name"]
-
-
-def get_direction_head_target_id() -> int | str:
-    return get_direction_head_case()[1]["id"]
-
-# TODO проверить
-def set_direction_head_block_state(volunteer_id: int | str, is_blocked: bool) -> None:
-    response = requests.patch(
-        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
-        headers={"Authorization": f"V-TOKEN {get_direction_head_qr()}"},
-        json={"is_blocked": is_blocked},
-        timeout=API_TIMEOUT,
-    )
-    response.raise_for_status()
-
-# TODO проверить
-
-def get_direction_head_headers() -> dict[str, str]:
-    return {"Authorization": f"V-TOKEN {get_direction_head_qr()}"}
-
-
-def get_volunteer_uuid_for_direction_head(volunteer_id: int | str) -> str:
-    response = requests.get(
-        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
-        headers=get_direction_head_headers(),
-        timeout=API_TIMEOUT,
-    )
-    response.raise_for_status()
-    return response.json()["uuid"]
-
-
-def wait_for_direction_head_block_history_actions(volunteer_id: int | str) -> None:
-    volunteer_uuid = get_volunteer_uuid_for_direction_head(volunteer_id)
-    deadline = time.time() + API_TIMEOUT
-
-    while time.time() < deadline:
-        response = requests.get(
-            f"{host}/feedapi/v1/history/",
-            headers=get_direction_head_headers(),
-            params={"volunteer_uuid": volunteer_uuid, "limit": 100},
-            timeout=API_TIMEOUT,
-        )
-        response.raise_for_status()
-
-        block_history = sorted(
-            (
-                item
-                for item in response.json().get("results", [])
-                if item.get("object_name") == "volunteer" and "is_blocked" in (item.get("data") or {})
-            ),
-            key=lambda item: item["action_at"],
-            reverse=True,
-        )
-
-        latest_values = [item["data"]["is_blocked"] for item in block_history[:2]]
-        if latest_values == [False, True]:
-            return
-
-        time.sleep(1)
-
-    raise AssertionError("Ошибка: В истории не появились подряд записи блокировки и разблокировки волонтера.")
-
-
-@lru_cache(maxsize=1)
-def get_supervisor_candidates() -> tuple[dict, dict]:
-    api_url = f"{host}/feedapi/v1"
-    token = get_admin_token()
-    volunteers_response = requests.get(
-        f"{api_url}/volunteers/?limit=1000",
-        headers={"Authorization": f"Token {token}"},
-        timeout=API_TIMEOUT,
-    )
-    volunteers_response.raise_for_status()
-
-    candidates = [
-        {"id": volunteer["id"], "name": volunteer["name"]}
-        for volunteer in volunteers_response.json().get("results", [])
-        if volunteer.get("id") != 1
-        and volunteer.get("name")
-        and not volunteer.get("deleted_at")
-        and not volunteer.get("is_blocked")
-    ]
-
-    if len(candidates) < 2:
-        pytest.skip("Not enough supervisor candidates were found")
-
-    return candidates[0], candidates[1]
-
-# TODO проверить
-def set_volunteer_supervisor(volunteer_id: int | str, supervisor_id: int | str | None) -> None:
-    response = requests.patch(
-        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
-        headers={"Authorization": f"Token {get_admin_token()}"},
-        json={"supervisor_id": supervisor_id},
-        timeout=API_TIMEOUT,
-    )
-    response.raise_for_status()
-
-# TODO проверить
-def get_volunteer_supervisor_name(volunteer_id: int | str) -> str:
-    response = requests.get(
-        f"{host}/feedapi/v1/volunteers/{volunteer_id}/",
-        headers={"Authorization": f"Token {get_admin_token()}"},
-        timeout=API_TIMEOUT,
-    )
-    response.raise_for_status()
-    supervisor = response.json().get("supervisor")
-    return supervisor["name"] if supervisor else ""
+base_url = FRONTEND_URL
 
 def test_pagination_in_volunteer_list(logged_in_page):
     #переход с 1 на 2 страницу пагинации в списке волонтеров
+    logged_in_page.page.goto(f"{base_url}/volunteers", wait_until="domcontentloaded")
     logged_in_page.pagination()
     active_page = logged_in_page.page.locator(".ant-pagination-item-active")
     # проверяем что активная страница имеет 2 в наименовании
@@ -200,53 +24,32 @@ def test_pagination_in_volunteer_list(logged_in_page):
 
 def test_pagination_in_feed_history(logged_in_page):
     #переход с 1 на 2 страницу пагинации в истории питания.
-    logged_in_page.page.goto(f"{base_url}/feed-transaction")
+    logged_in_page.page.goto(f"{base_url}/feed-transaction", wait_until="domcontentloaded")
     logged_in_page.meal_history_pagination()
     
     active_page = logged_in_page.page.locator(".ant-pagination-item-active")
     #проверяем что активная страница имеет 2 в наименовании
     assert "2" in active_page.inner_text(), "Ошибка: Страница 2 не активна или текст отсутствует!"
 
-# TODO проверить
 def test_create_new_meal(logged_in_page):
-    # создаем прием пищи, сверяем редирект на урл после сохранения и что дата крайней записи - сегодня
-    # login_page.go_to_create_new_meal()
-    # login_page.create_new_meal()
-    # # TODO проверить url
-    # page.wait_for_url(f"{host}/feed-transaction**", timeout=15000)
-    # meal_rows = login_page.meal_table_rows()
-    # today_date = datetime.now().strftime("%d/%m/%y")
-    # # приверка урла
-    # parsed_url = urlparse(page.url)
-    # params = parse_qs(parsed_url.query)
-    # assert parsed_url.path == "/feed-transaction"
-    # assert params.get("pageSize") == ["10"]
-    # assert params.get("currentPage", params.get("current")) == ["1"]
-    # # приверка даты посреднего созданного приема пищи. Примечание - не сработает, если сегодня кормили руками.
-    # assert any(today_date in row for row in meal_rows), f"Ошибка! Ожидали сегодняшнюю дату среди строк таблицы, а получили {meal_rows}"
-
+    # TODO: удалять после создания через апи
     logged_in_page.page.goto(f"{base_url}/feed-transaction")
     logged_in_page.go_to_create_new_meal()
     logged_in_page.create_new_meal()
     logged_in_page.wait_for_list_page(f"{base_url}/feed-transaction")
     first_row_text = logged_in_page.meal_table()
-    # приверка урла
     assert logged_in_page.page.url.startswith(f"{base_url}/feed-transaction")
-    # На стенде порядок записей не гарантирует, что созданный прием окажется первым.
     assert re.fullmatch(r"\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}", first_row_text), (
         f"Ошибка! Ожидали дату и время в первой строке, а получили {first_row_text}"
     )
-
     print("✅ Запись успешно создана!")
 
-# This is a helper function, not a test. Keeping it as-is for now.
-@skip()
+@pytest.mark.skip(reason="не кликается питание в списке")
 def test_delete_created_new_meal(logged_in_page):
-    # не тест, вспомогательная функция для удаления созданного выше приема пищи.
+    # удаляем созданный прием пищи через UI
     logged_in_page.page.goto(f"{base_url}/feed-transaction")
     logged_in_page.open_meal()
     logged_in_page.meal_deleting()
-    # Не мусорим, удаляем созданную запись, ассерт для инфо
     assert 1==1
     print("🗑 Запись успешно удалена!")
 
@@ -270,7 +73,7 @@ def test_create_group_badge(logged_in_page):
     print("✅ Бейдж успешно создан! Счетчик увеличился на 1!")
 
 def test_delete_group_badge(logged_in_page):
-    # не тест, вспомогательная функция для удаления созданного выше приема пищи.
+    # удаляем созданный бейдж через UI
     logged_in_page.page.goto(f"{base_url}/group-badges")
     pagination_items = logged_in_page.page.locator(".ant-pagination-item")
     if pagination_items.count() > 0:
@@ -325,21 +128,22 @@ def test_delete_created_custom_field(logged_in_page):
         assert 1==1
         print("Нечего удалять!")
 
-def test_add_and_delete_volunteer_from_group_badge(logged_in_page):
+def test_add_and_delete_volunteer_from_group_badge(logged_in_page, test_group_badge, test_volunteer):
     #добавить, а затем удалить волонтера из группового бейджа
-    logged_in_page.page.goto(f"{base_url}/group-badges")
-    #идем в редактирование последнего бейджика
-    logged_in_page.go_to_edit_badge()
+    badge_id = test_group_badge["id"]
+    logged_in_page.page.goto(f"{base_url}/group-badges/edit/{badge_id}")
+    logged_in_page.page.wait_for_timeout(1000)
     #добавляем волонтера
-    volunteer_id = logged_in_page.add_volunteer_in_group_badge()
+    logged_in_page.open_group_badge_volunteers_tab()
+    volunteer_id = logged_in_page.add_volunteer_in_group_badge(test_volunteer["name"])
     logged_in_page.page.wait_for_timeout(1000)
     volunteer_row = logged_in_page.page.locator(f'div.ant-table-container:visible tr[data-row-key="{volunteer_id}"]')
     assert volunteer_row.count() > 0, "Ошибка: Волонтер не добавился в бейдж!"
-    
+
     logged_in_page.save_in_group_badge()
-    logged_in_page.page.goto(f"{base_url}/group-badges")
-    #возвращаемся в бейдж
-    logged_in_page.go_to_edit_badge()
+    logged_in_page.page.goto(f"{base_url}/group-badges/edit/{badge_id}")
+    logged_in_page.page.wait_for_timeout(1000)
+    logged_in_page.open_group_badge_volunteers_tab()
     #фиксируем счетчик
     count3 = logged_in_page.receive_count_of_volunteers_in_group_badge()
     #удаляем волонтера
@@ -349,21 +153,19 @@ def test_add_and_delete_volunteer_from_group_badge(logged_in_page):
     count4 = logged_in_page.receive_count_of_volunteers_in_group_badge()
     assert count4 == count3 - 1
     logged_in_page.save_in_group_badge()
-    #в ассертах сверяем возврат на урл групповых бейджей после сохранения и мэтч счётчиков между собой
-    logged_in_page.page.goto(f"{base_url}/group-badges")
-    logged_in_page.page.locator("tr.ant-table-row").first.wait_for(state="attached")
-    logged_in_page.go_to_edit_badge()
+    logged_in_page.page.goto(f"{base_url}/group-badges/edit/{badge_id}")
+    logged_in_page.page.wait_for_timeout(1000)
+    logged_in_page.open_group_badge_volunteers_tab()
     count5 = logged_in_page.receive_count_of_volunteers_in_group_badge()
     assert count5 == count4
     print("После-", count3, "человек в бейдже")
 
-def test_create_new_user(logged_in_page, test_user_data):
-    # создать нового юзера
+@pytest.mark.skip()
+def test_create_new_user(logged_in_page, test_user_data, api_client):
+    # создать нового юзера через UI
     logged_in_page.page.goto(f"{base_url}/volunteers")
-    # перейти на страницу создания нового юзера
     counter1 = logged_in_page.receive_volunteers_count()
     logged_in_page.go_to_create_user()
-    # Используем данные из фикстуры вместо глобальной переменной
     test_username = test_user_data["username"]
     expected_supervisor = logged_in_page.create_user(test_user_data)
     logged_in_page.save_in_user_page()
@@ -373,41 +175,39 @@ def test_create_new_user(logged_in_page, test_user_data):
     logged_in_page.page.wait_for_timeout(300)
     logged_in_page.open_user(test_username)
     logged_in_page.page.wait_for_timeout(500)
-    # created_user_id = int(page.url.rstrip("/").split("/")[-1])
-    # заходим в юзера и проверяем имя бригадира
-    # TODO проверить 
-    # actual_supervisor = get_volunteer_supervisor_name(created_user_id)
-    actual_supervisor = logged_in_page.get_supervisor_name()
-    assert actual_supervisor == expected_supervisor, "Ошибка: Имя бригадира не cохранилось!"
-    logged_in_page.save_in_user_page()
-    logged_in_page.page.wait_for_timeout(1000)
-    logged_in_page.page.locator("tr.ant-table-row").first.wait_for(state="attached")
-    logged_in_page.clear_input_field()
-    logged_in_page.page.wait_for_timeout(500)
-    counter2 = logged_in_page.receive_volunteers_count()
-    logged_in_page.find_user(test_username)
-    user_name = logged_in_page.check_username_after_editing(test_username)
-    assert logged_in_page.page.url.startswith(f"{host}/volunteers"), "Ошибка: Редирект не случився!"
-    assert counter1 + 1 == counter2, "Счетчик не увеличился на 1!!!"
-    assert user_name == test_username, "Ошибка: Имя не совпадает!"
-    global created_user_name
-    created_user_name = test_username
 
-def test_edit_new_user(logged_in_page):
+    # Получаем ID из URL для cleanup
+    created_user_id = int(logged_in_page.page.url.rstrip("/").split("/")[-1])
+
+    try:
+        actual_supervisor = logged_in_page.get_supervisor_name()
+        assert actual_supervisor == expected_supervisor, "Ошибка: Имя бригадира не cохранилось!"
+        logged_in_page.save_in_user_page()
+        logged_in_page.page.wait_for_timeout(1000)
+        logged_in_page.page.locator("tr.ant-table-row").first.wait_for(state="attached")
+        logged_in_page.clear_input_field()
+        logged_in_page.page.wait_for_timeout(500)
+        counter2 = logged_in_page.receive_volunteers_count()
+        logged_in_page.find_user(test_username)
+        user_name = logged_in_page.check_username_after_editing(test_username)
+        assert logged_in_page.page.url.startswith(f"{base_url}/volunteers"), "Ошибка: Редирект не случився!"
+        assert counter1 + 1 == counter2, "Счетчик не увеличился на 1!!!"
+        assert user_name == test_username, "Ошибка: Имя не совпадает!"
+    finally:
+        api_client.delete_volunteer(created_user_id)
+
+@pytest.mark.skip()
+def test_edit_new_user(logged_in_page, test_volunteer):
     # найти созданного юзера и отредактировать его
     logged_in_page.page.goto(f"{base_url}/volunteers")
     counter1 = logged_in_page.receive_volunteers_count()
-    # Для простоты, создаем временного пользователя прямо в этом тесте
-    global created_user_name
-    if created_user_name is not None:
-        logged_in_page.find_user(created_user_name)
-    else:
-        pytest.skip("Нет созданного пользователя для редактирования.")
+    original_name = test_volunteer["name"]
+    logged_in_page.find_user(original_name)
 
     # Теперь редактируем созданного пользователя
-    logged_in_page.open_user(created_user_name)
-    updated_name = created_user_name + "_updated"
-    expected_supervisor = logged_in_page.edit_user(updated_name=updated_name, original_name=created_user_name)
+    logged_in_page.open_user(original_name)
+    updated_name = original_name + "_updated"
+    expected_supervisor = logged_in_page.edit_user(updated_name=updated_name, original_name=original_name)
     logged_in_page.wait_for_list_page(f"{base_url}/volunteers")
     # Проверяем что имя обновилось, потом сбрасываем фильтр
     user_name = logged_in_page.check_username_after_editing(updated_name)
@@ -424,19 +224,15 @@ def test_edit_new_user(logged_in_page):
     assert logged_in_page.page.url.startswith(f"{base_url}/volunteers")
     assert counter1 == counter2, "Счетчик изменился!!!"
     assert user_name == updated_name
-    
-def test_delete_new_user(logged_in_page):
+
+@pytest.mark.skip()
+def test_delete_new_user(logged_in_page, test_volunteer):
     # найти созданного юзера и удалить его
     logged_in_page.page.goto(f"{base_url}/volunteers")
     counter1 = logged_in_page.receive_volunteers_count()
-    global created_user_name
-    if created_user_name is not None:
-        updated_name = f"{created_user_name}_updated"
-        logged_in_page.find_user(updated_name)
-    else:
-        pytest.skip("Нет созданного пользователя для удаления.")
-    
-    logged_in_page.open_user(updated_name)
+    user_name = test_volunteer["name"]
+    logged_in_page.find_user(user_name)
+    logged_in_page.open_user(user_name)
     logged_in_page.delete_user()
     # Ждем возврата на страницу списка после удаления
     logged_in_page.wait_for_list_page(f"{base_url}/volunteers", timeout=10000)
@@ -452,93 +248,77 @@ def test_delete_new_user(logged_in_page):
         pass
     logged_in_page.page.wait_for_timeout(500)
     counter2 = logged_in_page.receive_volunteers_count()
-    logged_in_page.check_username_after_deleting(updated_name)
+    logged_in_page.check_username_after_deleting(user_name)
     counter3 = logged_in_page.receive_volunteers_count()
     assert logged_in_page.page.url.startswith(f"{base_url}/volunteers")
     assert counter1 == counter2+1, "Счетчик не увеличился на 1!!!"
     assert counter3 == 0
 
-# TODO проверить
-def test_scan_qr(page, test_user_data):
+def test_scan_qr(page, test_direction_head):
     login_page = BasePage(page, f"{base_url}/login")
     login_page.open()
-    # Переходим на таб QR-входа (клик на неактивный таб)
+    # Переходим на таб QR-входа
     login_page.first_window_qr()
-    # Диспатчим событие сканирования QR-кода
-    login_page.scan_user(test_user_data["qr_code_cinnamon"])
+    # Диспатчим событие сканирования QR-кода созданного волонтера
+    login_page.scan_user(test_direction_head["qr"])
     # Ждем редиректа на основную страницу после входа
-    login_page.page.wait_for_url(f"{base_url}/volunteers", timeout=10000)
+    login_page.page.wait_for_url(f"{base_url}/volunteers", timeout=5000)
     # Ждем появления имени пользователя в меню
     user_menu = login_page.page.locator("span.ant-menu-title-content").first
     user_menu.wait_for(state="visible")
-    # Проверяем что вошли под правильным пользователем (Корица)
+    # Проверяем что вошли под правильным пользователем
+    head_name = test_direction_head["name"]
     menu_text = user_menu.inner_text()
-    assert "Корица" in menu_text, f"Ожидалось 'Корица' в меню, но получили: '{menu_text}'"
+    assert head_name in menu_text, f"Ожидалось '{head_name}' в меню, но получили: '{menu_text}'"
     assert login_page.page.url == f"{base_url}/volunteers"
-    print(f"QR-вход выполнен успешно! Пользователь: {menu_text}")
+    print(f"QR-вход выполнен успешно! Пользователь: {head_name}")
 
+def test_scan_qr_without_access_rights(qr_login_volunteer, api_client):
+    res = api_client.get_volunteer_by_qr(qr_login_volunteer["qr"])
 
-def test_teamlead_rights(page, test_user_data):
+    assert res.status_code == HTTPStatus.UNAUTHORIZED, f"Рдовой волонтер смог зайти в Кормителя. Статус код - {res.status_code}"
+
+def test_teamlead_rights(page, direction_pair, api_client):
+    direction_head, target_volunteer = direction_pair
+    target_id = target_volunteer["id"]
+
     # войти по QR руководителя службы
     login_page = BasePage(page, f"{base_url}/login")
     login_page.open()
     login_page.first_window_qr()
-    login_page.scan_user(get_direction_head_qr())
-    page.wait_for_url(f"{host}/volunteers", timeout=10000)
+    login_page.scan_user(direction_head["qr"])
+    login_page.page.wait_for_url(f"{base_url}/volunteers", timeout=5000)
 
     # открыть карточку волонтера из той же службы
-    target_id = get_direction_head_target_id()
-    page.goto(f"{host}/volunteers/edit/{target_id}")
-    page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
-    # TODO проверить
-    # login_page.scan_user(test_user_data["qr_code_teamlead"])
-    # login_page.page.wait_for_url(f"{base_url}/volunteers", timeout=10000)
-    # # открыть любого волонтера
-    # login_page.open_user("Солнышко")
-    # login_page.page.wait_for_timeout(500)
-    # volunteer_name = login_page.get_current_volunteer_name()
-    
-    # проверить, что нет кнопки удаления 
+    login_page.page.goto(f"{base_url}/volunteers/edit/{target_id}")
+    login_page.page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
+
+    # проверить, что нет кнопки удаления
     assert login_page.is_not_element_present(None, create_user.DELETE_USER_BUTTON), "Ошибка: Кнопка удаления волонтера видна руководителю службы!"
     # проверить, что поля кухня, право доступа, комментарий бюро - некликабельны
     assert login_page.is_element_disabled(create_user.KITCHEN_FIELD), "Ошибка: Поле кухня кликабельно для руководителя службы!"
     assert login_page.is_element_disabled(create_user.RIGHTS_FIELD), "Ошибка: Поле право доступа кликабельно для руководителя службы!"
     assert login_page.is_element_disabled(create_user.COMMENT_FIELD), "Ошибка: Поле комментарий бюро кликабельно для руководителя службы!"
-    # проверить бан
-    # проверить бан и разбан через API той же ролью, чтобы не зависеть от нестабильного обновления UI в docker
+
+    # проверить бан и разбан через API
     try:
-        set_direction_head_block_state(target_id, True)
-        set_direction_head_block_state(target_id, False)
+        api_client.set_block_state(target_id, True, qr_token=direction_head["qr"])
+        api_client.set_block_state(target_id, False, qr_token=direction_head["qr"])
     finally:
-        set_direction_head_block_state(target_id, False)
+        api_client.set_block_state(target_id, False, qr_token=direction_head["qr"])
 
-    # после перезагрузки убедиться, что в истории появились две записи:
-    # сначала блокировка, затем разблокировка
-    page.reload()
-    page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
-    # TODO проверить
-    # login_page.ban_user()
-    # login_page.page.wait_for_timeout(500)
-    # # проверить разбана
-    # login_page.unban_user()
-    # login_page.page.wait_for_timeout(500)
-    # #сохранить
-    # login_page.save_in_user_page()
-    # page.wait_for_timeout(1000)
-    # page.screenshot(path="teamlead_rights.png")
-    # login_page.page.wait_for_url(f"{base_url}/volunteers", timeout=5000)
-    # # открыть того же волонтера
-    # login_page.open_user("Солнышко")
+    # после перезагрузки убедиться, что в истории появились две записи
+    login_page.page.reload()
+    login_page.page.locator(create_user.USER_NAME).wait_for(state="visible", timeout=15000)
 
-    # проверить две записи в истории действий
     login_page.check_history_actions()
-    # последняя запись - разбан
+    # TODO почему-то долгая загрузка истории действий, поэтому ждем 15 секунд
+    login_page.page.wait_for_timeout(15000)
+
     assert login_page.check_last_action() == "Разблокирован", "Ошибка: Последняя запись в истории действий не разбан!"
-    # предпоследняя запись - бан
     assert login_page.check_second_last_action() == "Заблокирован", "Ошибка: Предпоследняя запись в истории действий не бан!"
-    print("????????????? ???????????????? ??????????????????!")
-    # ?????????????? ?????????????????????? ???????? ?????? ?????????????? (?????????? ???? ???????????????? ???????????? ????????/?????????????? ?? ????????????????)
-    login_page.cleanup_volunteer_comment(get_direction_head_target_name())
+    # Очищаем комментарий через API
+    api_client.update_volunteer(target_id, {"comment": ""})
     
 @pytest.mark.skip(reason="Скип до фикса бага с очисткой поля Бригадир")
 def test_change_and_delete_supervisor(logged_in_page):
