@@ -13,6 +13,7 @@ export default defineConfig({
         }),
         // visualizer({ open: true }), // Uncomment to visualize bundle size
         VitePWA({
+            disable: true,
             registerType: 'autoUpdate',
             injectRegister: 'inline',
             includeAssets: ['favicon.ico', 'favicon-96x96.png', 'apple-touch-icon.png'],
@@ -68,7 +69,9 @@ export default defineConfig({
             shared: path.resolve(__dirname, './src/shared'),
             acl: path.resolve(__dirname, './src/acl.ts'),
             dataProvider: path.resolve(__dirname, './src/dataProvider.ts'),
-            assets: path.resolve(__dirname, './src/assets')
+            assets: path.resolve(__dirname, './src/assets'),
+            '@feed/shared/planning': path.resolve(__dirname, '../shared/src/planning/index.ts'),
+            '@feed/shared': path.resolve(__dirname, '../shared/src/index.ts')
         }
     },
     server: {

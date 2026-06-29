@@ -49,6 +49,17 @@
     padding-right: 40px;
 }
 
+.filterChooserPopover,
+.filterChooserPopup,
+.filterChooserPopup :global(.rc-virtual-list-holder) {
+    overscroll-behavior: contain;
+}
+
+.filterChooserPopup :global(.rc-virtual-list-holder) {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
 .filterValueSelect :global(.ant-select-selector) {
     gap: 20px;
 }

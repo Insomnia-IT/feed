@@ -3,6 +3,16 @@ import type { Collection, Table } from 'dexie';
 import Dexie from 'dexie';
 import { ulid } from 'ulid';
 
+import {
+    FeedTypeCode,
+    getFeedingPermissionForDate as coreGetFeedingPermissionForDate,
+    getFeedingPermissionForNow as coreGetFeedingPermissionForNow,
+    isActivatedArrivalStatus,
+    type FeedingPermissionForDate,
+    type FeedingPermissionForNow,
+    type PlanningVolunteer
+} from '@feed/shared/planning';
+
 import { getToday } from 'shared/lib/date';
 
 export interface Transaction {
@@ -143,6 +153,7 @@ export interface GroupBadge extends TimeStampedEntity {
     id: number;
     name: string;
     qr: string;
+    kitchen: number | null;
     planning_cells: Array<MealPlanCell>;
     comment: string | null;
     role: string | null;
@@ -288,69 +299,28 @@ export function joinTxs(txsCollection: Collection<TransactionJoined>): Promise<A
     });
 }
 
-export function isActivatedStatus(status: string | null | undefined): boolean {
-    return Boolean(status && ['ARRIVED', 'STARTED', 'JOINED'].includes(status));
-}
+export const isActivatedStatus = isActivatedArrivalStatus;
 
-type DateInterval = {
-    arrival_date: string;
-    departure_date: string;
-};
+const FEED_TYPE_CODE_BY_ID = new Map<FeedType, FeedTypeCode>([
+    [FeedType.Free, FeedTypeCode.Free],
+    [FeedType.Paid, FeedTypeCode.Paid],
+    [FeedType.Child, FeedTypeCode.Child],
+    [FeedType.NoFeed, FeedTypeCode.NoFeed]
+]);
 
-const isDateWithinInterval = ({ interval, statsDate }: { interval: DateInterval; statsDate: string }): boolean => {
-    const statsDateUnix = dayjs(statsDate).startOf('day').unix();
-    return (
-        dayjs(interval.departure_date).startOf('day').unix() >= statsDateUnix &&
-        dayjs(interval.arrival_date).startOf('day').unix() <= statsDateUnix
-    );
-};
+const toPlanningVolunteer = (vol: Volunteer): PlanningVolunteer => ({
+    is_blocked: vol.is_blocked,
+    is_vegan: vol.is_vegan,
+    arrivals: vol.arrivals,
+    paid_arrivals: vol.paid_arrivals ?? [],
+    feed_type_code: vol.feed_type !== null ? (FEED_TYPE_CODE_BY_ID.get(vol.feed_type) ?? null) : null
+});
 
-const isNowWithinInterval = (interval: DateInterval): boolean => {
-    const now = dayjs();
-    return (
-        now >= dayjs(interval.arrival_date).startOf('day').add(7, 'hours') &&
-        now <= dayjs(interval.departure_date).endOf('day').add(7, 'hours')
-    );
-};
+export const getFeedingPermissionForDate = (vol: Volunteer, statsDate: string): FeedingPermissionForDate =>
+    coreGetFeedingPermissionForDate(toPlanningVolunteer(vol), statsDate);
 
-const getActivatedArrivals = (vol: Volunteer): Array<Arrival> =>
-    vol.arrivals.filter(({ status }) => isActivatedStatus(status));
-
-const getPaidArrivals = (vol: Volunteer): Array<PaidArrival> => vol.paid_arrivals ?? [];
-
-export const getFeedingPermissionForDate = (
-    vol: Volunteer,
-    statsDate: string
-): { allowed: boolean; byArrivals: boolean; byPaidArrivals: boolean } => {
-    const byArrivals = getActivatedArrivals(vol).some((interval) => isDateWithinInterval({ interval, statsDate }));
-    const byPaidArrivals = getPaidArrivals(vol).some((interval) => isDateWithinInterval({ interval, statsDate }));
-
-    if (vol.feed_type === FeedType.NoFeed) {
-        return { allowed: false, byArrivals, byPaidArrivals };
-    }
-    if (vol.feed_type === FeedType.Paid) {
-        return { allowed: byPaidArrivals, byArrivals, byPaidArrivals };
-    }
-
-    return { allowed: byArrivals || byPaidArrivals, byArrivals, byPaidArrivals };
-};
-
-export const getFeedingPermissionForNow = (
-    vol: Volunteer
-): { allowed: boolean; byArrivals: boolean; byPaidArrivals: boolean; paidArrival: PaidArrival | null } => {
-    const byArrivals = getActivatedArrivals(vol).some((interval) => isNowWithinInterval(interval));
-    const matchedPaidArrival = getPaidArrivals(vol).find((interval) => isNowWithinInterval(interval)) ?? null;
-    const byPaidArrivals = Boolean(matchedPaidArrival);
-
-    if (vol.feed_type === FeedType.NoFeed) {
-        return { allowed: false, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
-    }
-    if (vol.feed_type === FeedType.Paid) {
-        return { allowed: byPaidArrivals, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
-    }
-
-    return { allowed: byArrivals || byPaidArrivals, byArrivals, byPaidArrivals, paidArrival: matchedPaidArrival };
-};
+export const getFeedingPermissionForNow = (vol: Volunteer): FeedingPermissionForNow =>
+    coreGetFeedingPermissionForNow(toPlanningVolunteer(vol));
 
 const shouldMarkTransactionAsPaid = (vol: Volunteer): boolean => {
     const permission = getFeedingPermissionForNow(vol);

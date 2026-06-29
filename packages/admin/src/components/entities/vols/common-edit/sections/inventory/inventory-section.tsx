@@ -3,10 +3,12 @@ import { Button } from 'antd';
 import { InventoryTable } from './inventory-table';
 import { InventoryTransferModal } from './inventory-transfer-modal';
 import { StorageIssueModal } from './storage-issue-modal';
+import { StorageReturnModal } from './storage-return-modal';
 import type { InventorySectionProps } from './types';
 import { useInventoryTransfer } from './use-inventory-transfer';
 import { useVolunteerInventory } from './use-volunteer-inventory';
 import { useStorageIssue } from './use-storage-issue';
+import { useStorageReturn } from './use-storage-return';
 
 import styles from '../../../common.module.css';
 import { useState } from 'react';
@@ -24,6 +26,11 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
         volunteerId,
         reloadInventory: targetInventory.reload
     });
+    const storageReturn = useStorageReturn({
+        volunteerId,
+        inventory: targetInventory.inventory,
+        reloadInventory: targetInventory.reload
+    });
     const [showHistory, setShowHistory] = useState(false);
 
     if (isCreationProcess) {
@@ -39,28 +46,38 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
                 {!showHistory && (
                     <>
                         {canStorageEdit && (
-                            <Button
-                                type="primary"
-                                htmlType="button"
-                                onClick={storageIssue.openModal}
-                                disabled={!volunteerId}
-                            >
-                                Выдать со склада
-                            </Button>
+                            <>
+                                <Button
+                                    type="primary"
+                                    htmlType="button"
+                                    onClick={storageIssue.openModal}
+                                    disabled={!volunteerId}
+                                >
+                                    Выдать со склада
+                                </Button>
+                                <Button
+                                    type="primary"
+                                    htmlType="button"
+                                    onClick={storageReturn.openModal}
+                                    disabled={!volunteerId || targetInventory.inventory.length === 0}
+                                >
+                                    Вернуть на склад
+                                </Button>
+                            </>
                         )}
                         <Button
                             type="primary"
                             htmlType="button"
                             onClick={transfer.openTransferModal}
-                            disabled={!volunteerId || !transfer.userId}
+                            disabled={!volunteerId}
                         >
-                            Передать из личного инвентаря
+                            Передать
                         </Button>
                     </>
                 )}
             </div>
             {showHistory ? (
-                <HistoryTab userId={transfer.userId} />
+                <HistoryTab userId={volunteerId} />
             ) : (
                 <InventoryTable inventory={targetInventory.inventory} isLoading={targetInventory.isLoading} />
             )}
@@ -70,11 +87,12 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
                 volunteerId={volunteerId}
                 volunteerName={volunteerName}
                 form={transfer.transferForm}
+                targetVolunteerId={transfer.targetVolunteerId}
                 isTransferLoading={transfer.isTransferLoading}
-                sourceVolunteerId={transfer.sourceVolunteerId}
                 sourceInventoryLoading={transfer.sourceInventory.isLoading}
                 selectedSourceInventoryItem={transfer.selectedSourceInventoryItem}
                 itemOptions={transfer.itemOptions}
+                volunteerSelectProps={transfer.volunteerSelectProps}
                 onClose={transfer.closeTransferModal}
                 onSubmit={transfer.handleTransfer}
                 onSourceChange={transfer.handleSourceChange}
@@ -94,6 +112,19 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
                 onIssue={storageIssue.handleIssue}
                 onStorageChange={storageIssue.handleStorageChange}
                 onPositionChange={storageIssue.handlePositionChange}
+            />
+
+            <StorageReturnModal
+                open={storageReturn.isOpen}
+                volunteerId={volunteerId}
+                volunteerName={volunteerName}
+                form={storageReturn.form}
+                isLoading={storageReturn.isLoading}
+                positionOptions={storageReturn.positionOptions}
+                selectedPosition={storageReturn.selectedPosition}
+                onClose={storageReturn.closeModal}
+                onReturn={storageReturn.handleReturn}
+                onPositionChange={storageReturn.handlePositionChange}
             />
         </>
     );

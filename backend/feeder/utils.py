@@ -93,7 +93,10 @@ def get_kitchen_id_by_history(history_by_volunteer, volunteer_uuid, current_date
 def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
     group_badges = list(
         models.GroupBadge.objects
-        .filter(deleted_at=None)
+        .filter(
+            deleted_at=None,
+            created_at__lte=dtime_from
+        )
         .select_related('direction')
         .prefetch_related('group_badge_planning_cells')
     )
@@ -111,7 +114,7 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
 
     transactions_by_group_badge = {}
     real_amount_by_group_badge = {}
-    real_amount_by_direction = {}
+    real_amount_by_direction_and_meal_time = {}
     used_meal_times_by_group_badge = {}
     anomaly_transactions = []
 
@@ -133,9 +136,12 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         used_meal_times_by_group_badge[group_badge.id].add(txn.meal_time)
 
         if group_badge.direction_id:
-            if group_badge.direction_id not in real_amount_by_direction:
-                real_amount_by_direction[group_badge.direction_id] = 0
-            real_amount_by_direction[group_badge.direction_id] += txn.amount
+            if group_badge.direction_id not in real_amount_by_direction_and_meal_time:
+                real_amount_by_direction_and_meal_time[group_badge.direction_id] = {}
+            meal_time_with_date = f"{txn.dtime:%Y-%m-%d}_{txn.meal_time}"
+            if txn.meal_time not in real_amount_by_direction_and_meal_time[group_badge.direction_id]:
+                real_amount_by_direction_and_meal_time[group_badge.direction_id][meal_time_with_date] = 0
+            real_amount_by_direction_and_meal_time[group_badge.direction_id][meal_time_with_date] += txn.amount
 
         if txn.is_anomaly:
             anomaly_transactions.append(txn)
@@ -146,7 +152,7 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         'anomaly_transactions': anomaly_transactions,
         'transactions_by_group_badge': transactions_by_group_badge,
         'real_amount_by_group_badge': real_amount_by_group_badge,
-        'real_amount_by_direction': real_amount_by_direction,
+        'real_amount_by_direction_and_meal_time': real_amount_by_direction_and_meal_time,
         'used_meal_times_by_group_badge': used_meal_times_by_group_badge,
     }
 
@@ -208,7 +214,11 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
         used_meal_times = data['used_meal_times_by_group_badge'].get(group_badge.id, set())
         planning_cells = list(group_badge.group_badge_planning_cells.all())
 
+
         for meal_time in meal_times:
+            if meal_time == 'night':
+                continue
+
             if meal_time in used_meal_times:
                 continue
 
@@ -219,12 +229,10 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
                 if latest_planning_cell is None or planning_cell.date > latest_planning_cell.date:
                     latest_planning_cell = planning_cell
 
-            if latest_planning_cell is None:
-                continue
-
-            planned_amount = (latest_planning_cell.amount_meat or 0) + (latest_planning_cell.amount_vegan or 0)
-            if planned_amount == 0:
-                continue
+            if latest_planning_cell:
+                planned_amount = (latest_planning_cell.amount_meat or 0) + (latest_planning_cell.amount_vegan or 0)
+                if planned_amount == 0:
+                    continue
 
             missing_meal_times.append(meal_time_names.get(meal_time, meal_time))
 
@@ -259,7 +267,8 @@ def get_overfeeding_direction_anomalies(dtime_from, dtime_to, context=None):
 
     for direction_id, direction in directions_by_id.items():
         direction_amount = direction_amount_by_id.get(direction_id, 0)
-        real_amount = data['real_amount_by_direction'].get(direction_id, 0)
+        real_amount_values = data['real_amount_by_direction_and_meal_time'].get(direction_id, {}).values()
+        real_amount = 0 if not real_amount_values else max(real_amount_values)
 
         if real_amount <= direction_amount:
             continue
@@ -517,6 +526,9 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, p
                             'kitchen_id': kitchen_id
                         })
                         if prediction_alg == '3':
+                            if current_plan > prev_plan and prev_plan > prev_prev_plan and prev_fact < prev_prev_fact:
+                                prev_fact = prev_prev_fact
+                                prev_plan = prev_prev_plan
                             predict_amount = 0 if prev_plan == 0 else current_plan * prev_fact / prev_plan
                         else:
                             prev_prev_fact = get_stat_amount(stat, {

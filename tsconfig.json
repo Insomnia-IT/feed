@@ -1,4 +1,4 @@
 {
     "files": [],
-    "references": [{ "path": "./packages/admin" }, { "path": "./packages/scanner" }]
+    "references": [{ "path": "./packages/shared" }, { "path": "./packages/admin" }, { "path": "./packages/scanner" }]
 }

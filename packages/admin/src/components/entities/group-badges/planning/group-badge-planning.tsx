@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import dayjs from 'dayjs';
 import { Checkbox, Space, Spin, Typography } from 'antd';
 import { useDataProvider, useInvalidate, useNotification, useOne } from '@refinedev/core';
@@ -14,8 +14,6 @@ type PlanningMealType = Exclude<MealType, 'night'>;
 const PLANNING_MEALS: PlanningMealType[] = ['breakfast', 'lunch', 'dinner'];
 
 const isPlanningMeal = (meal: string): meal is PlanningMealType => PLANNING_MEALS.includes(meal as PlanningMealType);
-
-const isDisabledMealCell = (cell?: GroupBadgePlanningCellEntity) => cell?.amount_meat === 0 && cell?.amount_vegan === 0;
 
 const getFuturePlanningCells = ({
     planningCells,
@@ -44,22 +42,23 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
         id: groupBadgeId
     });
 
-    const tomorrowCellsByMeal = useMemo(() => {
-        const result = new Map<PlanningMealType, GroupBadgePlanningCellEntity>();
+    const isMealEnabled = useCallback(
+        (meal: PlanningMealType) => {
+            const lastestCell = (groupBadge?.planning_cells ?? [])
+                .filter((c) => c.meal_time === meal && c.date <= tomorrowDate)
+                .reduce(
+                    (lastestCell, cell) => {
+                        return lastestCell && lastestCell.date > cell.date ? lastestCell : cell;
+                    },
+                    null as MealPlanCell | null
+                );
 
-        (groupBadge?.planning_cells ?? []).forEach((cell) => {
-            if (cell.date === tomorrowDate && isPlanningMeal(cell.meal_time)) {
-                result.set(cell.meal_time, cell as GroupBadgePlanningCellEntity);
-            }
-        });
-
-        return result;
-    }, [groupBadge?.planning_cells, tomorrowDate]);
-
-    const isMealEnabled = (meal: PlanningMealType) => !isDisabledMealCell(tomorrowCellsByMeal.get(meal));
+            return lastestCell ? lastestCell.amount_meat !== 0 || lastestCell.amount_vegan !== 0 : true;
+        },
+        [groupBadge?.planning_cells, tomorrowDate]
+    );
 
     const updatePlanningCell = async (meal: PlanningMealType, nextChecked: boolean) => {
-        const tomorrowCell = tomorrowCellsByMeal.get(meal);
         const futureCells = getFuturePlanningCells({
             planningCells: groupBadge?.planning_cells ?? [],
             meal,
@@ -90,7 +89,7 @@ export const GroupBadgePlanning = ({ groupBadgeId }: { groupBadgeId: number }) =
                     )
             );
 
-            if (!tomorrowCell?.id && !nextChecked) {
+            if (!futureCells.some((c) => c.date === tomorrowDate)) {
                 await dataProvider().create<GroupBadgePlanningCellEntity>({
                     resource: 'group-badge-planning-cells',
                     variables: {

@@ -1,11 +1,109 @@
 .antLayoutSider {
-    position: relative;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
 }
 
 .antLayoutSiderMobile {
     position: fixed;
+    top: 0;
     height: 100vh;
-    z-index: 3;
+    max-height: 100vh;
+    overflow: hidden;
+    z-index: 200;
+}
+
+.antLayoutSider:global(.ant-layout-sider-has-trigger),
+.antLayoutSiderMobile:global(.ant-layout-sider-has-trigger) {
+    padding-bottom: 0 !important;
+}
+
+/* Volunteer card banner shell: sidebar matches the layout body, not full viewport. */
+:global(.app-layout-body) .antLayoutSider:global(.ant-layout-sider) {
+    height: 100%;
+    max-height: 100%;
+}
+
+.antLayoutSider:global(.ant-layout-sider) :global(.ant-layout-sider-children),
+.antLayoutSiderMobile:global(.ant-layout-sider) :global(.ant-layout-sider-children) {
+    position: absolute;
+    inset: 0 0 48px;
+    display: flex;
+    flex-direction: column;
+    height: auto !important;
+    overflow: hidden;
+}
+
+.siderShell {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.siderMenuArea {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden auto;
+}
+
+.antLayoutSider:global(.ant-layout-sider) :global(.ant-layout-sider-trigger),
+.antLayoutSiderMobile:global(.ant-layout-sider) :global(.ant-layout-sider-trigger) {
+    position: absolute !important;
+    inset-inline: 0;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    height: 48px;
+    line-height: 48px;
+    transform: none;
+    border-radius: 0;
+    z-index: 2;
+}
+
+.siderBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    border: none;
+    padding: 0;
+    background: rgb(0 0 0 / 45%);
+    cursor: default;
+}
+
+/* Планшет, меню открыто: ярлычок справа от панели */
+.antLayoutSiderMobile:global(.ant-layout-sider:not(.ant-layout-sider-collapsed))
+:global(.ant-layout-sider-zero-width-trigger) {
+    position: absolute;
+    top: 50%;
+    bottom: auto;
+    inset-inline: auto 0;
+    transform: translate(100%, -50%);
+    border-radius: 0 6px 6px 0;
+    z-index: 4;
+}
+
+/* Планшет, меню закрыто: ярлычок слева по центру экрана */
+.antLayoutSiderMobile:global(.ant-layout-sider-collapsed) :global(.ant-layout-sider-zero-width-trigger) {
+    position: fixed;
+    top: 50%;
+    bottom: auto;
+    inset-inline: 0 auto;
+    transform: translateY(-50%);
+    border-radius: 0 6px 6px 0;
+    z-index: 4;
+}
+
+.antLayoutSiderMobile:global(.ant-layout-sider) :global(.ant-layout-sider-zero-width-trigger-right) {
+    border-radius: 6px 0 0 6px;
+}
+
+.antLayoutSiderMobile:global(.ant-layout-sider-collapsed) :global(.ant-layout-sider-zero-width-trigger-right) {
+    inset-inline: auto 0;
+    border-radius: 6px 0 0 6px;
 }
 
 .mobileSider {

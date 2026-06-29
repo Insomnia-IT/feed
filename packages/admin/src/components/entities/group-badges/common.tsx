@@ -1,16 +1,17 @@
-import { Button, Form, Input, Select } from 'antd';
+import { Alert, Button, Checkbox, Form, Input, Select } from 'antd';
 import { QrcodeOutlined } from '@ant-design/icons';
 import { useSelect } from '@refinedev/antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Rules } from 'components/form/rules';
-import { TextEditor } from 'components/controls/text-editor';
 import type { DirectionEntity, KitchenEntity, VolunteerRoleEntity } from 'interfaces';
 import useVisibleDirections from '../vols/use-visible-directions';
 import { QRScannerModal } from 'shared/components/qr-scanner-modal';
+import useCanAccess from '../vols/use-can-access';
 
 export const CreateEdit = () => {
     const form = Form.useFormInstance();
+    const canDisableGroupBadge = useCanAccess({ action: 'group_badge_disable_edit', resource: 'group-badges' });
     const { selectProps: directionSelectProps } = useSelect<DirectionEntity>({
         resource: 'directions',
         optionLabel: 'name',
@@ -49,6 +50,8 @@ export const CreateEdit = () => {
 
     const directionValue = Form.useWatch('direction', form);
     const shouldHideDirectionValue = directionValue != null && (directionSelectProps.options?.length ?? 0) === 0;
+    const isDisabledValue = Form.useWatch('is_disabled', form);
+    const prevIsDisabledRef = useRef<boolean | undefined>(undefined);
 
     const [openQrModal, setOpenQrModal] = useState(false);
 
@@ -65,8 +68,33 @@ export const CreateEdit = () => {
         };
     }, [form]);
 
+    useEffect(() => {
+        if (
+            isDisabledValue !== undefined &&
+            prevIsDisabledRef.current !== undefined &&
+            prevIsDisabledRef.current !== isDisabledValue
+        ) {
+            const timestamp = new Date().toLocaleString('ru-RU');
+            const statusText = isDisabledValue ? 'выключен' : 'включен';
+            const currentComment = form.getFieldValue('comment') || '';
+            const newComment = currentComment
+                ? `${currentComment}\n${timestamp} ${statusText}`
+                : `${timestamp} ${statusText}`;
+            form.setFieldValue('comment', newComment);
+        }
+        prevIsDisabledRef.current = isDisabledValue;
+    }, [isDisabledValue, form]);
+
     return (
         <>
+            {isDisabledValue && (
+                <Alert
+                    message="Бейдж выключен. Бюро выключает бейдж, если им не воспользовались 2 раза. Иди в бюро, если нужно включить его обратно."
+                    type="error"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                />
+            )}
             <Form.Item label="Название" name="name" rules={Rules.required}>
                 <Input />
             </Form.Item>
@@ -91,8 +119,11 @@ export const CreateEdit = () => {
                     enterButton={<Button icon={<QrcodeOutlined />}></Button>}
                 />
             </Form.Item>
+            <Form.Item label="Выключен" name="is_disabled" valuePropName="checked">
+                <Checkbox disabled={!canDisableGroupBadge} />
+            </Form.Item>
             <Form.Item label="Комментарий" name="comment">
-                <TextEditor />
+                <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} readOnly={!canDisableGroupBadge} />
             </Form.Item>
             <QRScannerModal open={openQrModal} onClose={() => setOpenQrModal(false)} />
         </>
