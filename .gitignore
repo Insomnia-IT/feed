@@ -63,3 +63,5 @@ dist
 .playwright-cli
 # Superpowers Plans
 /docs/superpowers/plans/
+
+scripts

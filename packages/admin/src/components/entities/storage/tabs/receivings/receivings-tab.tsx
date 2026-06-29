@@ -10,6 +10,7 @@ export const ReceivingsTab: React.FC = () => {
 
     const { tableProps: receivingsTableProps } = useTable<ReceivingEntity>({
         resource: 'storage-receivings',
+        syncWithLocation: false,
         filters: {
             initial: [
                 {
