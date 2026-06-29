@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import type { MealPlanCell, Transaction } from 'db';
+import type { GroupBadge, MealPlanCell, Transaction } from 'db';
 import { db, getTodayTrans, getVolsOnField } from 'db';
 import { useApp } from 'model/app-provider';
 import { getToday } from 'shared/lib/date';
@@ -27,14 +27,26 @@ export const useTodayMealStats = () => {
             db.groupBadges
                 .toArray()
                 .then((value) =>
-                    value.filter(
-                        (groupBadge) =>
-                            groupBadge.kitchen === kitchenId || (groupBadge.kitchen === null && kitchenId === 1)
-                    )
+                    value
+                        .filter((b) => !b.is_disabled)
+                        .filter(
+                            (groupBadge) =>
+                                groupBadge.kitchen === kitchenId || (groupBadge.kitchen === null && kitchenId === 1)
+                        )
                 ),
         [lastSyncStart, kitchenId],
         []
     );
+
+    const groupBadgeById = useMemo(() => {
+        return allGroupBadges.reduce(
+            (acc, b) => {
+                acc[b.id] = b;
+                return acc;
+            },
+            {} as Record<string, GroupBadge>
+        );
+    }, [allGroupBadges]);
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
 
@@ -53,23 +65,23 @@ export const useTodayMealStats = () => {
     const individualFedCount = useMemo(
         () =>
             todayTxs.reduce((acc, curr) => {
-                if (curr.mealTime === mealTime && curr.group_badge == null) {
+                if (curr.mealTime === mealTime && (curr.group_badge == null || !groupBadgeById[curr.group_badge])) {
                     return acc + curr.amount;
                 }
                 return acc;
             }, 0),
-        [mealTime, todayTxs]
+        [mealTime, todayTxs, groupBadgeById]
     );
 
     const groupFedCount = useMemo(
         () =>
             todayTxs.reduce((acc, curr) => {
-                if (curr.mealTime === mealTime && curr.group_badge != null) {
+                if (curr.mealTime === mealTime && curr.group_badge != null && groupBadgeById[curr.group_badge]) {
                     return acc + curr.amount;
                 }
                 return acc;
             }, 0),
-        [mealTime, todayTxs]
+        [mealTime, todayTxs, groupBadgeById]
     );
 
     const groupPlannedCount = useMemo(() => {

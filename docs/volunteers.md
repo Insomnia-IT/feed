@@ -365,4 +365,4 @@
 - **`is_disabled`** — флаг выключения (Boolean, default=False)
 - `comment` — комментарий
 
-API: `GET /group-badges/` поддерживает параметр `with_disabled=true` для получения всех бейджей (включая выключенные). По умолчанию возвращаются только включенные.
+API: `GET /group-badges/`
