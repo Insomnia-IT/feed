@@ -283,6 +283,8 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
     for vol in volunteers:
         if not vol.get('group_badge_id'):
             continue
+        if not vol.get('activated') and vol['active_from'] != current_day:
+            continue
         if not (vol['active_from'] <= current_day <= vol['active_to']):
             continue
 
