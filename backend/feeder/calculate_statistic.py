@@ -59,8 +59,8 @@ class StatStore:
     def __init__(self):
         self._data = {}
 
-    def add(self, date, stat_type, meal_time, is_vegan, kitchen_id, amount, **extra):
-        key = f"{date},{stat_type},{meal_time},{is_vegan},{kitchen_id}"
+    def add(self, date, stat_type, meal_time, is_vegan, kitchen_id, group_badge, amount, **extra):
+        key = f"{date},{stat_type},{meal_time},{is_vegan},{kitchen_id},{group_badge}"
         if key in self._data:
             self._data[key]['amount'] += amount
         else:
@@ -70,12 +70,13 @@ class StatStore:
                 'meal_time': meal_time,
                 'is_vegan': is_vegan,
                 'kitchen_id': kitchen_id,
+                'group_badge': group_badge,
                 'amount': amount,
                 **extra
             }
 
-    def get_amount(self, date, stat_type, meal_time, is_vegan, kitchen_id):
-        key = f"{date},{stat_type},{meal_time},{is_vegan},{kitchen_id}"
+    def get_amount(self, date, stat_type, meal_time, is_vegan, kitchen_id, group_badge):
+        key = f"{date},{stat_type},{meal_time},{is_vegan},{kitchen_id},{group_badge}"
         return self._data.get(key, {}).get('amount', 0)
 
     def values(self):
@@ -122,7 +123,12 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None,
         history_by_volunteer = load_history(stat_date_from)
 
     # 1. Факт
-    calculate_fact(store, stat_date_from, stat_date_to, anonymous, group_badge)
+    if group_badge is None:
+        calculate_fact(store, stat_date_from, stat_date_to, anonymous, False)
+        calculate_fact(store, stat_date_from, stat_date_to, anonymous, True)
+    else:
+        calculate_fact(store, stat_date_from, stat_date_to, anonymous, group_badge)
+
     print(f'Fact calculated: {time.time() - start_time:.2f}s')
 
     # 2. План
@@ -180,6 +186,7 @@ def calculate_fact(store, date_from, date_to, anonymous, group_badge):
             meal_time=txn['meal_time'],
             is_vegan=txn['is_vegan'],
             kitchen_id=txn['kitchen_id'],
+            group_badge=group_badge,
             amount=txn['amount']
         )
 
@@ -194,6 +201,7 @@ def calculate_plan_from_volunteers(store, date_from, date_to, volunteers, histor
 
 def process_plan_day(store, current_day, volunteers, history_by_volunteer, apply_history):
     for vol in volunteers:
+        group_badge = vol['group_badge_id'] != None
         if not (vol['active_from'] <= current_day <= vol['active_to']):
             continue
 
@@ -212,6 +220,7 @@ def process_plan_day(store, current_day, volunteers, history_by_volunteer, apply
                 meal_time=meal_time,
                 is_vegan=vol['is_vegan'],
                 kitchen_id=kitchen_id,
+                group_badge=group_badge,
                 amount=1
             )
 
@@ -251,6 +260,7 @@ def add_group_badge_excess_to_regular_plan(
                 meal_time=meal_time,
                 is_vegan=is_vegan,
                 kitchen_id=kitchen_id,
+                group_badge=False,
                 amount=excess_amount
             )
 
@@ -282,6 +292,8 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
     badge_volunteers = {}
     for vol in volunteers:
         if not vol.get('group_badge_id'):
+            continue
+        if not vol.get('activated') and vol['active_from'] != current_day:
             continue
         if not (vol['active_from'] <= current_day <= vol['active_to']):
             continue
@@ -325,6 +337,7 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
                 meal_time=meal_time,
                 is_vegan=False,
                 kitchen_id=kitchen_id,
+                group_badge=True,
                 amount=predict_meat,
                 group_badge_id=badge_id
             )
@@ -336,6 +349,7 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
                 meal_time=meal_time,
                 is_vegan=True,
                 kitchen_id=kitchen_id,
+                group_badge=True,
                 amount=predict_vegan,
                 group_badge_id=badge_id
             )
@@ -352,11 +366,11 @@ def calculate_regular_predict(store, current_day, prev_day, prev_prev_day, algo)
             for kitchen_id in kitchen_ids:
                 current_plan = store.get_amount(
                     current_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, 
-                    meal_time, is_vegan, kitchen_id
+                    meal_time, is_vegan, kitchen_id, False
                 )
                 prev_fact = store.get_amount(
                     prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT,
-                    meal_time, is_vegan, kitchen_id
+                    meal_time, is_vegan, kitchen_id, False
                 )
 
                 if algo == PredictAlgo.SIMPLE_RATIO:
@@ -381,19 +395,20 @@ def calculate_regular_predict(store, current_day, prev_day, prev_prev_day, algo)
                     meal_time=meal_time,
                     is_vegan=is_vegan,
                     kitchen_id=kitchen_id,
+                    group_badge=False,
                     amount=round(predict_amount)
                 )
 
 
 def predict_simple_ratio(store, current_plan, prev_fact, prev_day, meal_time, is_vegan, kitchen_id):
     prev_plan = store.get_amount(
-        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id, False
     )
     return 0 if prev_plan == 0 else current_plan * prev_fact / prev_plan
 
 def predict_adjusted_ratio(store, current_plan, prev_fact, prev_day, meal_time, is_vegan, kitchen_id):
     prev_plan = store.get_amount(
-        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id, False
     )
     return 0 if prev_plan == 0 else (current_plan ** 0.5) * prev_fact / (prev_plan ** 0.5)
 
@@ -403,12 +418,12 @@ def predict_fallback_prev(store, current_plan, prev_fact, prev_day, prev_prev_da
         return predict_adjusted_ratio(store, current_plan, prev_fact, prev_day, 
                                      meal_time, is_vegan, kitchen_id)
     prev_prev_fact = store.get_amount(
-        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id
+        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id, False
     )
 
     if 2 * prev_fact < prev_prev_fact:
         prev_prev_plan = store.get_amount(
-            prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+            prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id, False
         )
         return 0 if prev_prev_plan == 0 else current_plan * prev_prev_fact / prev_prev_plan
     
@@ -423,13 +438,13 @@ def predict_trend_adjusted(store, current_plan, prev_fact, prev_day, prev_prev_d
                                      meal_time, is_vegan, kitchen_id)
     
     prev_prev_fact = store.get_amount(
-        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id
+        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id, False
     )
     prev_prev_plan = store.get_amount(
-        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id, False
     )
     prev_plan = store.get_amount(
-        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id, False
     )
     
     if current_plan > prev_plan > prev_prev_plan and prev_fact < prev_prev_fact:
@@ -445,13 +460,13 @@ def predict_trend_simple_ratio(store, current_plan, prev_fact, prev_day, prev_pr
                                      meal_time, is_vegan, kitchen_id)
 
     prev_prev_fact = store.get_amount(
-        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id
+        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT, meal_time, is_vegan, kitchen_id, False
     )
     prev_prev_plan = store.get_amount(
-        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+        prev_prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id, False
     )
     prev_plan = store.get_amount(
-        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id
+        prev_day.format(STAT_DATE_FORMAT), StatisticType.PLAN, meal_time, is_vegan, kitchen_id, False
     )
 
     if current_plan > prev_plan > prev_prev_plan and prev_fact < prev_prev_fact:
@@ -529,7 +544,7 @@ def load_planning_cells_cache():
 
 
 def load_group_badge_kitchens():
-    return dict(models.GroupBadge.objects.filter(is_disabled=False).values_list('id', 'kitchen_id'))
+    return dict(models.GroupBadge.objects.filter(is_disabled=False, deleted_at=None).values_list('id', 'kitchen_id'))
 
 
 def load_volunteers(date_from, date_to, anonymous, group_badge):
@@ -560,10 +575,10 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
 
             if active_to < date_from or active_from > date_to:
                 continue
-
             result.append({
                 'uuid': str(vol.uuid),
                 'active_from': active_from,
+                'activated': arrival.activated,
                 'active_to': active_to,
                 'is_paid': vol.feed_type.paid if vol.feed_type else False,
                 'is_vegan': vol.is_vegan,
@@ -587,6 +602,9 @@ def get_meal_times_for_day(vol, current_day):
 
     if vol['active_from'] == current_day and vol['active_to'] != current_day:
         return [m.value for m in all_meals if m != MealTime.BREAKFAST]
+    
+    if not vol['activated'] and vol['group_badge_id']:
+        return []
 
     if vol['active_from'] != current_day and vol['active_to'] == current_day:
         return [m.value for m in all_meals if m in (MealTime.BREAKFAST, MealTime.LUNCH)]

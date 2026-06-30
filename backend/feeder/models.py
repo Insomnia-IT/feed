@@ -34,7 +34,7 @@ class Arrival(TimeMixin, CommentMixin):
 
     @property
     def activated(self):
-        return self.status and self.status.id in ['ARRIVED', 'STARTED', 'JOINED']
+        return self.status and self.status.id in ['ARRIVED', 'STARTED', 'JOINED', 'COMPLETE']
 
 
 class PaidArrival(TimeMixin, CommentMixin):

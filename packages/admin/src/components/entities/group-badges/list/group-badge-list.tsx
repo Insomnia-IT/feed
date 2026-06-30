@@ -50,8 +50,7 @@ export const GroupBadgeList = () => {
             mode: 'server',
             currentPage: isDesktop ? page : 1,
             pageSize: isDesktop ? pageSize : 10000
-        },
-        filters: [{ field: 'with_disabled', operator: 'eq', value: true }]
+        }
     });
     const { result: kitchensResult } = useList<KitchenEntity>({
         resource: 'kitchens',
