@@ -95,6 +95,7 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         models.GroupBadge.objects
         .filter(
             deleted_at=None,
+            is_disabled=False,
             created_at__lte=dtime_from
         )
         .select_related('direction')
@@ -128,8 +129,10 @@ def collect_feed_transaction_anomalies_data(dtime_from, dtime_to):
         transactions_by_group_badge[group_badge.id].append(txn)
 
         if group_badge.id not in real_amount_by_group_badge:
-            real_amount_by_group_badge[group_badge.id] = 0
-        real_amount_by_group_badge[group_badge.id] += txn.amount
+            real_amount_by_group_badge[group_badge.id] = {}
+        if txn.is_vegan not in real_amount_by_group_badge[group_badge.id]:
+            real_amount_by_group_badge[group_badge.id][txn.is_vegan] = 0
+        real_amount_by_group_badge[group_badge.id][txn.is_vegan] = max(real_amount_by_group_badge[group_badge.id][txn.is_vegan], txn.amount)
 
         if group_badge.id not in used_meal_times_by_group_badge:
             used_meal_times_by_group_badge[group_badge.id] = set()
@@ -244,7 +247,7 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
             'direction_name': group_badge.direction and group_badge.direction.name or None,
             'direction_amount': group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
             'calculated_amount': None,
-            'real_amount': data['real_amount_by_group_badge'].get(group_badge.id, 0),
+            'real_amount': sum(data['real_amount_by_group_badge'].get(group_badge.id, []).values()),
             'problem': 'Бейдж не использовался на {0}'.format('/'.join(missing_meal_times)),
         })
 
@@ -310,7 +313,7 @@ def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=None):
 
     for txn in data['anomaly_transactions']:
         group_badge = txn.group_badge
-        if group_badge is None:
+        if group_badge is None or group_badge.is_disabled:
             continue
 
         if group_badge.id not in grouped_transactions:
@@ -331,7 +334,7 @@ def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=None):
             'direction_name': group_badge and group_badge.direction and group_badge.direction.name or None,
             'direction_amount': group_badge and group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
             'calculated_amount': calculated_amount,
-            'real_amount': data['real_amount_by_group_badge'].get(group_badge_id, 0),
+            'real_amount': sum(data['real_amount_by_group_badge'].get(group_badge_id, []).values()),
             'problem': 'Неверный план',
         })
 
