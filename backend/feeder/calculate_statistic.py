@@ -201,7 +201,7 @@ def calculate_plan_from_volunteers(store, date_from, date_to, volunteers, histor
 
 def process_plan_day(store, current_day, volunteers, history_by_volunteer, apply_history):
     for vol in volunteers:
-        group_badge = vol['group_badge_id'] != None
+        group_badge = vol['group_badge_id'] != None and vol['group_badge_created_at'] >= current_day
         if not (vol['active_from'] <= current_day <= vol['active_to']):
             continue
 
@@ -291,7 +291,7 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
     # Группируем волонтёров по бейджам
     badge_volunteers = {}
     for vol in volunteers:
-        if not vol.get('group_badge_id'):
+        if not vol.get('group_badge_id') or vol.get('group_badge_created_at') < current_day:
             continue
         if not vol.get('activated') and vol['active_from'] != current_day:
             continue
@@ -584,6 +584,7 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
                 'is_vegan': vol.is_vegan,
                 'kitchen_id': vol.kitchen.id if vol.kitchen else None,
                 'group_badge_id': vol.group_badge_id if vol.group_badge and not vol.group_badge.is_disabled else None,
+                'group_badge_created_at': arrow.get(vol.group_badge.created_at).to(TZ).floor('day') if vol.group_badge and not vol.group_badge.is_disabled else None,
             })
 
     return result
@@ -603,7 +604,7 @@ def get_meal_times_for_day(vol, current_day):
     if vol['active_from'] == current_day and vol['active_to'] != current_day:
         return [m.value for m in all_meals if m != MealTime.BREAKFAST]
     
-    if not vol['activated'] and vol['group_badge_id']:
+    if not vol['activated'] and vol['group_badge_id'] and vol['group_badge_created_at'] >= current_day:
         return []
 
     if vol['active_from'] != current_day and vol['active_to'] == current_day:
