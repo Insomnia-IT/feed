@@ -247,7 +247,7 @@ def get_abandoned_group_badge_anomalies(dtime_from, dtime_to, context=None):
             'direction_name': group_badge.direction and group_badge.direction.name or None,
             'direction_amount': group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
             'calculated_amount': None,
-            'real_amount': sum(data['real_amount_by_group_badge'].get(group_badge.id, []).values()),
+            'real_amount': sum(data['real_amount_by_group_badge'].get(group_badge.id, {}).values()),
             'problem': 'Бейдж не использовался на {0}'.format('/'.join(missing_meal_times)),
         })
 
@@ -334,7 +334,7 @@ def get_wrong_plan_group_badge_anomalies(dtime_from, dtime_to, context=None):
             'direction_name': group_badge and group_badge.direction and group_badge.direction.name or None,
             'direction_amount': group_badge and group_badge.direction_id and direction_amount_by_id.get(group_badge.direction_id) or None,
             'calculated_amount': calculated_amount,
-            'real_amount': sum(data['real_amount_by_group_badge'].get(group_badge_id, []).values()),
+            'real_amount': sum(data['real_amount_by_group_badge'].get(group_badge_id, {}).values()),
             'problem': 'Неверный план',
         })
 
