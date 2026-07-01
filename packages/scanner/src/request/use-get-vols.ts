@@ -35,16 +35,19 @@ export const useGetVols = (baseUrl: string, pin: string | null, setAuth: (auth: 
                     .then(async ({ data: { results } }) => {
                         setFetching(false);
 
+                        const deletedVolunteerIds = results.filter(({ deleted_at }) => deleted_at).map(({ id }) => id);
                         const volunteers = results.filter(
                             (volunteer): volunteer is ServerVolunteer & { qr: string } => {
-                                return Boolean(volunteer.qr);
+                                return !volunteer.deleted_at && Boolean(volunteer.qr);
                             }
                         );
 
-                        const skippedVolunteerIds = results.filter(({ qr }) => !qr).map(({ id }) => id);
+                        const skippedVolunteerIds = results
+                            .filter(({ deleted_at, qr }) => !deleted_at && !qr)
+                            .map(({ id }) => id);
 
                         try {
-                            await db.volunteers.bulkDelete(skippedVolunteerIds);
+                            await db.volunteers.bulkDelete([...deletedVolunteerIds, ...skippedVolunteerIds]);
                             await db.volunteers.bulkPut(volunteers);
                         } catch (e) {
                             console.error(e);

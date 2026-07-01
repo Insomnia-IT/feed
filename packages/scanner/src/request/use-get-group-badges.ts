@@ -30,7 +30,13 @@ export const useGetGroupBadges = (baseUrl: string, pin: string | null, setAuth: 
                         setFetching(false);
 
                         try {
-                            await db.groupBadges.bulkPut(results);
+                            const deletedGroupBadgeIds = results
+                                .filter(({ deleted_at }) => deleted_at)
+                                .map(({ id }) => id);
+                            const activeGroupBadges = results.filter(({ deleted_at }) => !deleted_at);
+
+                            await db.groupBadges.bulkDelete(deletedGroupBadgeIds);
+                            await db.groupBadges.bulkPut(activeGroupBadges);
                         } catch (error) {
                             console.error(error);
                             rej(error);

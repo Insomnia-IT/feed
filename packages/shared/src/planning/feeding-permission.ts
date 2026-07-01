@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import type { PlanningArrival, PlanningPaidArrival, PlanningVolunteer } from './types';
 import { FeedTypeCode } from './types';
 
-export const ACTIVATED_ARRIVAL_STATUSES = ['ARRIVED', 'STARTED', 'JOINED'] as const;
+export const ACTIVATED_ARRIVAL_STATUSES = ['ARRIVED', 'STARTED', 'JOINED', 'COMPLETE'] as const;
 
 export type ActivatedArrivalStatus = (typeof ACTIVATED_ARRIVAL_STATUSES)[number];
 
