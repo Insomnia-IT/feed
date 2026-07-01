@@ -56,6 +56,7 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                     });
                     const groupBadgesPromise = groupBadgesSend({
                         updated_at__from: updatedAtFrom,
+                        is_deleted: 'all',
                         limit: '1000'
                     });
                     const syncTransactionsPromise = syncTransactionsSend({ kitchenId });

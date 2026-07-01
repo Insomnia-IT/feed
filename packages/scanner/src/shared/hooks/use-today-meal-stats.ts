@@ -28,7 +28,7 @@ export const useTodayMealStats = () => {
                 .toArray()
                 .then((value) =>
                     value
-                        .filter((b) => !b.is_disabled)
+                        .filter((b) => !b.is_disabled && !b.deleted_at)
                         .filter(
                             (groupBadge) =>
                                 groupBadge.kitchen === kitchenId || (groupBadge.kitchen === null && kitchenId === 1)
