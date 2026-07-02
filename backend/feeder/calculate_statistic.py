@@ -84,7 +84,7 @@ class StatStore:
         return self._data.values()
 
     def filter_exclude_dates(self, exclude_dates):
-        return [item for item in self._data.values() if item['date'] not in exclude_dates]
+        return [item for item in self._data.values() if item['date'] not in exclude_dates and item['type'] != StatisticType.PREDICT_RAW]
 
 
 class VolunteerHistory:
@@ -346,17 +346,20 @@ def calculate_group_badge_predict(store, current_day, prev_day, volunteers, plan
                 )
 
                 if apply_predict_alg_to_group_badge:
-                    prev_fact = store.get_amount(
-                        prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT,
-                        meal_time, is_vegan, kitchen_id, True
-                    )
+                    predict_amount = predict_raw_amount
 
-                    prev_predict_raw = store.get_amount(
-                        prev_day.format(STAT_DATE_FORMAT), StatisticType.PREDICT_RAW,
-                        meal_time, is_vegan, kitchen_id, True
-                    )
+                    if prev_day:
+                        prev_fact = store.get_amount(
+                            prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT,
+                            meal_time, is_vegan, kitchen_id, True
+                        )
 
-                    predict_amount = predict_raw_amount if prev_predict_raw == 0 else predict_raw_amount * prev_fact / prev_predict_raw
+                        prev_predict_raw = store.get_amount(
+                            prev_day.format(STAT_DATE_FORMAT), StatisticType.PREDICT_RAW,
+                            meal_time, is_vegan, kitchen_id, True
+                        )
+
+                        predict_amount = predict_raw_amount if prev_predict_raw == 0 else predict_raw_amount * prev_fact / prev_predict_raw
 
                     store.add(
                         date=current_date_str,
