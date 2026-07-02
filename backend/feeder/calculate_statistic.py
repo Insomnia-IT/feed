@@ -21,6 +21,7 @@ ALLOWED_HOSTS = {"grist.insomniafest.ru"}
 
 class StatisticType(str, Enum):
     PREDICT = 'predict'
+    PREDICT_RAW = 'predict_raw'
     PLAN = 'plan'
     FACT = 'fact'
 
@@ -98,7 +99,7 @@ class VolunteerHistory:
 
 
 def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None, 
-                       prediction_alg=PredictAlgo.TREND_ADJUSTED.value, apply_history=False):
+                       prediction_alg=PredictAlgo.TREND_ADJUSTED.value, apply_history=False, apply_predict_alg_to_group_badge=False):
     start_time = time.time()
     store = StatStore()
 
@@ -145,7 +146,7 @@ def calculate_statistics(date_from, date_to, anonymous=None, group_badge=None,
     print(f'Plan calculated: {time.time() - start_time:.2f}s')
 
     # 3. Прогноз
-    calculate_predict(store, date_range, group_badge, prediction_alg, volunteers, planning_cells_cache)
+    calculate_predict(store, date_range, group_badge, prediction_alg, volunteers, planning_cells_cache, apply_predict_alg_to_group_badge)
     print(f'Predict calculated: {time.time() - start_time:.2f}s')
 
     # 4. Фильтрация
@@ -265,14 +266,14 @@ def add_group_badge_excess_to_regular_plan(
             )
 
 
-def calculate_predict(store, date_range, group_badge, prediction_alg, volunteers, planning_cells_cache):
+def calculate_predict(store, date_range, group_badge, prediction_alg, volunteers, planning_cells_cache, apply_predict_alg_to_group_badge):
     prev_day = None
     prev_prev_day = None
     group_badge_kitchens = load_group_badge_kitchens()
 
     for current_day in date_range:
         if group_badge is not False:
-            calculate_group_badge_predict(store, current_day, volunteers, planning_cells_cache, group_badge_kitchens)
+            calculate_group_badge_predict(store, current_day, prev_day, volunteers, planning_cells_cache, group_badge_kitchens, apply_predict_alg_to_group_badge)
 
         if group_badge is not True:
             calculate_regular_predict(store, current_day, prev_day, prev_prev_day, prediction_alg)
@@ -281,7 +282,7 @@ def calculate_predict(store, date_range, group_badge, prediction_alg, volunteers
         prev_day = current_day
 
 
-def calculate_group_badge_predict(store, current_day, volunteers, planning_cells_cache, group_badge_kitchens):
+def calculate_group_badge_predict(store, current_day, prev_day, volunteers, planning_cells_cache, group_badge_kitchens, apply_predict_alg_to_group_badge):
     """
     Прогноз для групповых бейджей.
     Приоритет: planning_cells > подсчёт волонтёров > 0
@@ -330,29 +331,43 @@ def calculate_group_badge_predict(store, current_day, volunteers, planning_cells
                 predict_meat = sum(1 for v in vols if not v['is_vegan'])
                 predict_vegan = sum(1 for v in vols if v['is_vegan'])
 
-            # Добавляем meat
-            store.add(
-                date=current_date_str,
-                stat_type=StatisticType.PREDICT,
-                meal_time=meal_time,
-                is_vegan=False,
-                kitchen_id=kitchen_id,
-                group_badge=True,
-                amount=predict_meat,
-                group_badge_id=badge_id
-            )
+            for is_vegan in [False, True]:
+                predict_raw_amount = predict_vegan if is_vegan else predict_meat
 
-            # Добавляем vegan
-            store.add(
-                date=current_date_str,
-                stat_type=StatisticType.PREDICT,
-                meal_time=meal_time,
-                is_vegan=True,
-                kitchen_id=kitchen_id,
-                group_badge=True,
-                amount=predict_vegan,
-                group_badge_id=badge_id
-            )
+                store.add(
+                    date=current_date_str,
+                    stat_type=StatisticType.PREDICT if not apply_predict_alg_to_group_badge else StatisticType.PREDICT_RAW,
+                    meal_time=meal_time,
+                    is_vegan=is_vegan,
+                    kitchen_id=kitchen_id,
+                    group_badge=True,
+                    amount=predict_raw_amount,
+                    group_badge_id=badge_id
+                )
+
+                if apply_predict_alg_to_group_badge:
+                    prev_fact = store.get_amount(
+                        prev_day.format(STAT_DATE_FORMAT), StatisticType.FACT,
+                        meal_time, is_vegan, kitchen_id, True
+                    )
+
+                    prev_predict_raw = store.get_amount(
+                        prev_day.format(STAT_DATE_FORMAT), StatisticType.PREDICT_RAW,
+                        meal_time, is_vegan, kitchen_id, True
+                    )
+
+                    predict_amount = predict_raw_amount if prev_predict_raw == 0 else predict_raw_amount * prev_fact / prev_predict_raw
+
+                    store.add(
+                        date=current_date_str,
+                        stat_type=StatisticType.PREDICT,
+                        meal_time=meal_time,
+                        is_vegan=is_vegan,
+                        kitchen_id=kitchen_id,
+                        group_badge=True,
+                        amount=predict_amount,
+                        group_badge_id=badge_id
+                    )
 
 
 def calculate_regular_predict(store, current_day, prev_day, prev_prev_day, algo):
