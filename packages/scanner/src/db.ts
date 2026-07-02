@@ -153,12 +153,15 @@ export interface GroupBadge extends TimeStampedEntity {
     id: number;
     name: string;
     qr: string;
+    kitchen: number | null;
     planning_cells: Array<MealPlanCell>;
     comment: string | null;
+    kitchen_name?: string | null;
     role: string | null;
     volunteer_count: number;
     deleted_at: string | null;
     direction: VolunteerDirection | null;
+    is_disabled?: boolean;
 }
 
 export class MySubClassedDexie extends Dexie {
@@ -308,6 +311,7 @@ const FEED_TYPE_CODE_BY_ID = new Map<FeedType, FeedTypeCode>([
 ]);
 
 const toPlanningVolunteer = (vol: Volunteer): PlanningVolunteer => ({
+    qr: vol.qr ?? '-',
     is_blocked: vol.is_blocked,
     is_vegan: vol.is_vegan,
     arrivals: vol.arrivals,
@@ -331,7 +335,7 @@ export function getVolsOnField(statsDate: string): Promise<Array<Volunteer>> {
     return db.volunteers
         .filter((vol) => {
             return (
-                vol.kitchen?.toString() === kitchenId &&
+                (vol.kitchen?.toString() === kitchenId || vol.group_badge !== null) &&
                 !vol.is_blocked &&
                 getFeedingPermissionForDate(vol, statsDate).allowed
             );

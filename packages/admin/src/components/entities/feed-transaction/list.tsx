@@ -71,14 +71,14 @@ const anomalyModalColumns: ColumnsType<FeedTransactionAnomaly> = [
         ellipsis: true,
         render: (v: string) => v || '—'
     },
-    { dataIndex: 'direction_amount', title: 'Размер службы', width: 120 },
+    { dataIndex: 'direction_amount', title: 'Размер службы', width: 100 },
     {
         dataIndex: 'calculated_amount',
         title: 'Ожидаемое кол-во порций',
-        width: 160,
+        width: 100,
         render: (v: number | null) => (v != null ? v : '—')
     },
-    { dataIndex: 'real_amount', title: 'Выданное кол-во порций', width: 160 },
+    { dataIndex: 'real_amount', title: 'Выданное кол-во порций', width: 100 },
     { dataIndex: 'problem', title: 'Проблема', ellipsis: true }
 ];
 
@@ -183,9 +183,8 @@ export const FeedTransactionList: FC = () => {
     const [anomaliesModalOpen, setAnomaliesModalOpen] = useState(false);
 
     const [anomaliesRange, setAnomaliesRange] = useState<[Dayjs, Dayjs]>(() => {
-        const to = dayjsExtended();
-        const from = to.subtract(24, 'hour');
-        return [from, to];
+        const d = dayjsExtended().subtract(1, 'day');
+        return [d.startOf('day'), d.endOf('day')];
     });
 
     const { searchFormProps, tableProps, filters } = useTable<FeedTransactionEntity, HttpError, SearchFormValues>({
@@ -476,16 +475,9 @@ export const FeedTransactionList: FC = () => {
             <Modal
                 title="Аномалии"
                 open={anomaliesModalOpen}
-                afterOpenChange={(open) => {
-                    if (!open) return;
-                    const to = dayjsExtended();
-                    const from = to.subtract(24, 'hour');
-                    setAnomaliesRange([from, to]);
-                    setAnomalyPage(1);
-                }}
                 onCancel={() => setAnomaliesModalOpen(false)}
                 footer={null}
-                width={isCompactAnomalies ? 'min(calc(100vw - 16px), 900px)' : 900}
+                width="min(calc(100vw - 16px), 1200px)"
                 style={{ maxWidth: '100vw' }}
                 centered
                 styles={{

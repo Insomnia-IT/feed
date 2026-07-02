@@ -10,6 +10,7 @@ export const IssuancesTab: React.FC = () => {
 
     const { tableProps: issuancesTableProps } = useTable<IssuanceEntity>({
         resource: 'storage-issuances',
+        syncWithLocation: false,
         filters: {
             initial: [
                 {

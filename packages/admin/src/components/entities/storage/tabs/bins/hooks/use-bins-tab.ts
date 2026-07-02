@@ -15,6 +15,7 @@ export const useBinsTab = ({ storage, filters }: UseBinsTabParams) => {
         tableQuery: { refetch: binsRefetch }
     } = useTable<BinEntity>({
         resource: 'storage-bins',
+        syncWithLocation: false,
         filters: {
             initial: filters
         },

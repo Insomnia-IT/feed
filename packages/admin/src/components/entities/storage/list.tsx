@@ -7,6 +7,7 @@ import type { StorageEntity } from 'interfaces';
 export const StorageList: React.FC = () => {
     const navigate = useNavigate();
     const { tableProps, sorters } = useTable<StorageEntity>({
+        syncWithLocation: false,
         pagination: {
             mode: 'server'
         }

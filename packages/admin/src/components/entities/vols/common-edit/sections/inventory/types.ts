@@ -6,6 +6,7 @@ export interface InventoryRow extends VolunteerInventoryEntity {
 
 export interface TransferFormValues {
     from: number;
+    to: number;
     position: number;
     count: number;
 }
@@ -18,6 +19,12 @@ export interface InventorySectionProps {
 
 export interface StorageIssueFormValues {
     storage: number;
+    position: number;
+    count: number;
+    notes?: string;
+}
+
+export interface StorageReturnFormValues {
     position: number;
     count: number;
     notes?: string;

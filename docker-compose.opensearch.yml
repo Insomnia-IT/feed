@@ -8,6 +8,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_backend
+      pull: false
       args:
         SYNC_URL:
         SYNC_LOGIN:
@@ -29,6 +30,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile_front
+      pull: false
       args:
         NEW_API_URL: /feedapi/v1
     restart: always

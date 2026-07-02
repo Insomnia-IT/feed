@@ -47,6 +47,7 @@ export const GroupBadgeShow = () => {
         setPageSize
     } = useTable<VolWithDirections>({
         resource: 'volunteers',
+        syncWithLocation: false,
         filters: {
             initial: [
                 {

@@ -100,7 +100,11 @@ export const CommonEdit = () => {
         pagination: { mode: 'off' }
     });
     const { options: transportsOptions } = useSelect<TransportEntity>({ resource: 'transports', optionLabel: 'name' });
-    const { options: statusesOptions } = useSelect<StatusEntity>({ resource: 'statuses', optionLabel: 'name' });
+    const { options: statusesOptions } = useSelect<StatusEntity>({
+        resource: 'statuses',
+        optionLabel: 'name',
+        pagination: { pageSize: 100 }
+    });
 
     const containerRef = useRef<HTMLDivElement | null>(null);
     const { qrDuplicateVolunteer, setQrDuplicateVolunteer, handleDuplicateQRChange, clearDuplicateQR } =

@@ -22,7 +22,6 @@ export const ItemsTab: React.FC = () => {
 
     const columns: ColumnsType<ItemEntity> = [
         { dataIndex: 'name', title: 'Название' },
-        { dataIndex: 'sku', title: 'Артикул / SKU' },
         { dataIndex: 'storage_name', title: 'Склад' },
         {
             dataIndex: 'is_unique',

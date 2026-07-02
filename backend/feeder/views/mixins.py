@@ -166,7 +166,6 @@ class SoftDeleteViewSetMixin(ModelViewSet):
     # def perform_hard_destroy(self, instance: SoftDeleteModelMixin):
     #     instance.hard_delete()
 
-
 def get_request_user_id(user):
     if hasattr(user, "uuid"):
         return user.uuid

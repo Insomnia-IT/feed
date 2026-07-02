@@ -75,7 +75,12 @@ export const ScanProvider = ({ children }: { children: ReactNode }) => {
             }
 
             if (groupBadge) {
-                setView('post-scan-group-badge');
+                if (groupBadge.is_disabled) {
+                    setView('error');
+                    setErrorMessage('Бейдж выключен, иди в БЮРО');
+                } else {
+                    setView('post-scan-group-badge');
+                }
                 return;
             }
 

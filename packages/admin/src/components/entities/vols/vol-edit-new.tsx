@@ -91,7 +91,7 @@ const VolEditContent = ({
     const isNarrowMobile = !breakpoint.sm;
     const [activeKey, setActiveKey] = useState('1');
 
-    const { form, formProps, saveButtonProps, formLoading } = useForm<VolEntity>({
+    const { form, formProps, saveButtonProps, formLoading, mutation } = useForm<VolEntity>({
         redirect: false,
         onMutationSuccess: async (e) => {
             await onMutationSuccess(e);
@@ -100,6 +100,9 @@ const VolEditContent = ({
         },
         warnWhenUnsavedChanges: false
     });
+    const isSaving = mutation.isPending;
+    const isSaveButtonDisabled = Boolean(saveButtonProps.disabled) && !isSaving;
+    const volunteerSaveButtonClassName = isSaving ? styles.volunteerSaveButtonSaving : undefined;
     const { onClick, onMutationSuccess, renderModal } = useSaveConfirm(form, saveButtonProps, { feedTypes });
     const isBaselineReady = useVolunteerFormBaselineReady({
         formLoading,
@@ -150,6 +153,7 @@ const VolEditContent = ({
         const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
         return fullName || volunteerName;
     }, [firstName, lastName, volunteerName]);
+    const showStackedMobileTitle = !isDesktop && showHeaderPhoto && Boolean(firstName || lastName);
 
     return (
         <Edit
@@ -170,7 +174,14 @@ const VolEditContent = ({
             breadcrumb={false}
             title={
                 <div className={styles.pageTitleMain}>
-                    <span className={styles.pageTitleText}>{pageHeading}</span>
+                    {showStackedMobileTitle ? (
+                        <span className={styles.pageTitleTextStacked}>
+                            {firstName ? <span className={styles.pageTitleLine}>{firstName}</span> : null}
+                            {lastName ? <span className={styles.pageTitleLine}>{lastName}</span> : null}
+                        </span>
+                    ) : (
+                        <span className={styles.pageTitleText}>{pageHeading}</span>
+                    )}
                     {isBlocked && (
                         <div className={styles.bannedWrap}>
                             <span className={styles.bannedDescr}>Заблокирован</span>
@@ -186,7 +197,10 @@ const VolEditContent = ({
             }
             saveButtonProps={{
                 ...saveButtonProps,
-                onClick
+                onClick,
+                loading: isSaving,
+                disabled: isSaveButtonDisabled,
+                className: [styles.volunteerSaveButton, volunteerSaveButtonClassName].filter(Boolean).join(' ')
             }}
             footerButtons={<> </>}
             contentProps={{
@@ -209,10 +223,18 @@ const VolEditContent = ({
             {showFloatingSave && (
                 <Button
                     type="primary"
+                    data-testid="volunteer-save-button"
                     icon={<SaveOutlined className={isMobile ? styles.floatingSaveButtonIcon : undefined} />}
-                    loading={saveButtonProps.loading}
-                    disabled={saveButtonProps.disabled}
-                    className={`${styles.floatingSaveButton} ${isMobile ? styles.floatingSaveButtonIconOnly : ''}`}
+                    loading={isSaving}
+                    disabled={isSaveButtonDisabled}
+                    className={[
+                        styles.floatingSaveButton,
+                        styles.volunteerSaveButton,
+                        isMobile ? styles.floatingSaveButtonIconOnly : '',
+                        volunteerSaveButtonClassName
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
                     onClick={onClick}
                     aria-label={isMobile ? 'Сохранить' : undefined}
                 >
