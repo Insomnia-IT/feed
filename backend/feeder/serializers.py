@@ -703,6 +703,7 @@ class FilterStatisticsSerializer(serializers.Serializer):
     group_badge = serializers.BooleanField(allow_null=True, default=None)
     prediction_alg = serializers.CharField(allow_null=True, default=None)
     apply_history = serializers.BooleanField(allow_null=True, default=None)
+    apply_predict_alg_to_group_badge = serializers.BooleanField(allow_null=True, default=None)
 
 class FeedTransactionAnomaliesFilterSerializer(serializers.Serializer):
     dtime_from = serializers.DateTimeField()
