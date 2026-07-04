@@ -359,7 +359,7 @@ def calculate_group_badge_predict(store, current_day, prev_day, volunteers, plan
                             meal_time, is_vegan, kitchen_id, True
                         )
 
-                        predict_amount = predict_raw_amount if prev_predict_raw == 0 else predict_raw_amount * (prev_fact ** 0.5 / prev_predict_raw ** 0.5)
+                        predict_amount = predict_raw_amount if prev_predict_raw == 0 or prev_fact == 0 else predict_raw_amount * (prev_fact ** 0.5 / prev_predict_raw ** 0.5)
 
                     store.add(
                         date=current_date_str,
