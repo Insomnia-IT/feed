@@ -94,7 +94,7 @@ export const useTodayMealStats = () => {
         return allGroupBadges.reduce((total, gb) => {
             const planCell = findPlanCell(gb.planning_cells, mealTime, today);
 
-            if (planCell) {
+            if (planCell && planCell.amount_meat !== null && planCell.amount_vegan !== null) {
                 return total + (planCell.amount_meat ?? 0) + (planCell.amount_vegan ?? 0);
             }
 

@@ -84,7 +84,7 @@ export const useGroupBadgePlanStats = () => {
             const planCell = findPlanCell(gb.planning_cells, mealTime, today);
 
             let plan: number;
-            if (planCell) {
+            if (planCell && planCell.amount_meat !== null && planCell.amount_vegan !== null) {
                 plan = (planCell.amount_meat ?? 0) + (planCell.amount_vegan ?? 0);
             } else {
                 plan = groupBadgeVolunteersCount.get(gb.id) ?? 0;
