@@ -6,13 +6,7 @@ import { ulid } from 'ulid';
 
 import type { FeedTransactionEntity, KitchenEntity, VolEntity } from 'interfaces';
 import { Rules } from 'components/form/rules';
-
-const mealTimeOptions = [
-    { value: 'breakfast', label: 'Завтрак' },
-    { value: 'lunch', label: 'Обед' },
-    { value: 'dinner', label: 'Ужин' },
-    { value: 'night', label: 'Дожор' }
-];
+import { MEAL_TIME_OPTIONS } from 'const';
 
 export const FeedTransactionCreate = () => {
     const { form, formProps, saveButtonProps } = useForm<FeedTransactionEntity>();
@@ -47,7 +41,7 @@ export const FeedTransactionCreate = () => {
                 </Form.Item>
 
                 <Form.Item label="Прием пищи" name="meal_time" rules={Rules.required}>
-                    <Select options={mealTimeOptions} />
+                    <Select options={MEAL_TIME_OPTIONS} />
                 </Form.Item>
                 <Form.Item label="Волонтер" name="volunteer">
                     <Select {...volSelectProps} />
