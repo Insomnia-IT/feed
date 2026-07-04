@@ -1,0 +1,20 @@
+.tableWrapper {
+    margin-top: 16px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table.loading {
+    opacity: 0.5;
+}
+
+.contentRow {
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.contentRow:last-child {
+    border-bottom: none;
+}
