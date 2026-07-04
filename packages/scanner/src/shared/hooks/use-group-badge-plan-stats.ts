@@ -51,8 +51,14 @@ export const useGroupBadgePlanStats = () => {
 
     const todayTxs = useLiveQuery(async () => getTodayTrans(), [mealTime, lastSyncStart], []) as Array<Transaction>;
 
-    const { groupBadgeVolunteersCount, groupBadgeFactMeatCount, groupBadgeFactVeganCount } = useMemo(() => {
-        const groupCounts = new Map<number, number>();
+    const {
+        groupBadgeVolunteersMeatCount,
+        groupBadgeVolunteersVeganCount,
+        groupBadgeFactMeatCount,
+        groupBadgeFactVeganCount
+    } = useMemo(() => {
+        const groupMeatCounts = new Map<number, number>();
+        const groupVeganCounts = new Map<number, number>();
         const factMeatCounts = new Map<number, number>();
         const factVeganCounts = new Map<number, number>();
         const groupBadgeById: Record<string, GroupBadge> = {};
@@ -63,7 +69,11 @@ export const useGroupBadgePlanStats = () => {
 
         volsOnField.forEach((v) => {
             if (v.group_badge !== null && groupBadgeById[v.group_badge]) {
-                groupCounts.set(v.group_badge, (groupCounts.get(v.group_badge) ?? 0) + 1);
+                if (v.is_vegan) {
+                    groupVeganCounts.set(v.group_badge, (groupVeganCounts.get(v.group_badge) ?? 0) + 1);
+                } else {
+                    groupMeatCounts.set(v.group_badge, (groupMeatCounts.get(v.group_badge) ?? 0) + 1);
+                }
             }
         });
 
@@ -78,7 +88,8 @@ export const useGroupBadgePlanStats = () => {
         });
 
         return {
-            groupBadgeVolunteersCount: groupCounts,
+            groupBadgeVolunteersMeatCount: groupMeatCounts,
+            groupBadgeVolunteersVeganCount: groupVeganCounts,
             groupBadgeFactMeatCount: factMeatCounts,
             groupBadgeFactVeganCount: factVeganCounts
         };
@@ -96,13 +107,16 @@ export const useGroupBadgePlanStats = () => {
 
             let planMeat: number;
             let planVegan: number;
-            if (planCell) {
-                planMeat = planCell.amount_meat ?? 0;
-                planVegan = planCell.amount_vegan ?? 0;
+            if (planCell && planCell.amount_meat !== null) {
+                planMeat = planCell.amount_meat;
             } else {
-                const volCount = groupBadgeVolunteersCount.get(gb.id) ?? 0;
-                planMeat = volCount;
-                planVegan = 0;
+                planMeat = groupBadgeVolunteersMeatCount.get(gb.id) ?? 0;
+            }
+
+            if (planCell && planCell.amount_vegan !== null) {
+                planVegan = planCell.amount_vegan;
+            } else {
+                planVegan = groupBadgeVolunteersVeganCount.get(gb.id) ?? 0;
             }
 
             const factMeat = groupBadgeFactMeatCount.get(gb.id) ?? 0;
@@ -127,7 +141,15 @@ export const useGroupBadgePlanStats = () => {
         result.sort((a, b) => a.name.localeCompare(b.name));
 
         return result;
-    }, [allGroupBadges, groupBadgeVolunteersCount, groupBadgeFactMeatCount, groupBadgeFactVeganCount, mealTime, today]);
+    }, [
+        allGroupBadges,
+        groupBadgeVolunteersMeatCount,
+        groupBadgeVolunteersVeganCount,
+        groupBadgeFactMeatCount,
+        groupBadgeFactVeganCount,
+        mealTime,
+        today
+    ]);
 
     return { stats };
 };
