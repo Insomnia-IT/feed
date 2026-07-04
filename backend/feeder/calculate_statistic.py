@@ -620,7 +620,7 @@ def get_meal_times_for_day(vol, current_day):
     all_meals = get_meal_times(is_paid)
 
     if vol['active_from'] == current_day and vol['active_to'] != current_day:
-        return [m.value for m in all_meals if m != MealTime.BREAKFAST]
+        return [m.value for m in all_meals if m in (MealTime.DINNER)]
     
     if not vol['activated'] and vol['group_badge_id'] and vol['group_badge_created_at'] <= current_day:
         return []
