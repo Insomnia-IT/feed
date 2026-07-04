@@ -722,6 +722,7 @@ class StatisticsSerializer(serializers.Serializer):
     date = serializers.DateField()
     type = serializers.ChoiceField(choices=[type.value for type in StatisticType])
     is_vegan = serializers.BooleanField(allow_null=True)
+    group_badge = serializers.BooleanField(allow_null=True)
     meal_time = serializers.CharField(max_length=10, validators=[models.validate_meal_time])
     amount = serializers.IntegerField(min_value=0)
     kitchen_id = serializers.IntegerField(allow_null=True)
