@@ -18,7 +18,7 @@ const findPlanCell = (cells: MealPlanCell[], mealTime: string, today: string): M
 };
 
 export const useTodayMealStats = () => {
-    const { lastSyncStart, mealTime, kitchenId } = useApp();
+    const { lastSyncStart, mealTime, kitchenId, predict } = useApp();
 
     const volsOnField = useLiveQuery(async () => await getVolsOnField(getToday()), [mealTime, lastSyncStart], []);
 
@@ -103,15 +103,19 @@ export const useTodayMealStats = () => {
     }, [allGroupBadges, groupBadgeVolunteersCount, mealTime]);
 
     return {
+        predict,
         lastSyncStart,
 
         volsOnFieldCount: volsOnField.length,
 
         individualFedCount,
         // Из всех кто на поле, вычитаем тех, что планируется поесть по ГБ и тех, кто уже поел индивидуально
-        individualLeftCount: Math.max(volsOnField.length - groupPlannedCount - individualFedCount, 0),
+        individualLeftCount: Math.max(
+            (predict ? predict.individual : volsOnField.length - groupPlannedCount) - individualFedCount,
+            0
+        ),
 
         groupFedCount,
-        groupLeftCount: Math.max(groupPlannedCount - groupFedCount, 0)
+        groupLeftCount: Math.max((predict ? predict.group : groupPlannedCount) - groupFedCount, 0)
     };
 };

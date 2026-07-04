@@ -3,19 +3,32 @@ import { useTodayMealStats } from 'shared/hooks/use-today-meal-stats';
 import style from './main-screen-stats.module.css';
 
 export const ScanScreenStats = ({ isAfterScan = false }: { isAfterScan?: boolean }) => {
-    const { lastSyncStart, volsOnFieldCount, individualFedCount, individualLeftCount, groupFedCount, groupLeftCount } =
-        useTodayMealStats();
+    const {
+        lastSyncStart,
+        volsOnFieldCount,
+        individualFedCount,
+        individualLeftCount,
+        groupFedCount,
+        groupLeftCount,
+        predict
+    } = useTodayMealStats();
+
+    const leftPostfixText = predict ? 'прогноз' : 'всего';
 
     return (
         <div>
             <div className={isAfterScan ? style.mainScreenStatsAfterScan : style.mainScreenStats}>
                 {isAfterScan && <span>На поле: {volsOnFieldCount}</span>}
                 <span>Покормлено: {individualFedCount}</span>
-                <span>Осталось: {individualLeftCount}</span>
+                <span>
+                    Осталось {leftPostfixText}: {individualLeftCount}
+                </span>
             </div>
             <div className={isAfterScan ? style.mainScreenStatsAfterScan : style.mainScreenStats}>
                 <span>Покормлено по ГБ: {groupFedCount}</span>
-                <span>Осталось по ГБ: {groupLeftCount}</span>
+                <span>
+                    Осталось {leftPostfixText} по ГБ: {groupLeftCount}
+                </span>
             </div>
             {isAfterScan && !!lastSyncStart && <p>Обновилось: {formatDate(lastSyncStart)}</p>}
         </div>
