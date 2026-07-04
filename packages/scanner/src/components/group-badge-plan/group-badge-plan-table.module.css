@@ -18,3 +18,16 @@
 .contentRow:last-child {
     border-bottom: none;
 }
+
+.totalRow {
+    font-weight: bold;
+    border-top: 2px solid rgb(255 255 255 / 0.2);
+}
+
+.meat {
+    color: #ff4d4f;
+}
+
+.vegan {
+    color: #52c41a;
+}
