@@ -110,12 +110,10 @@ export const useTodayMealStats = () => {
 
         individualFedCount,
         // Из всех кто на поле, вычитаем тех, что планируется поесть по ГБ и тех, кто уже поел индивидуально
-        individualLeftCount: Math.max(
+        individualLeftCount:
             (predict ? predict.individual : volsOnField.length - groupPlannedCount) - individualFedCount,
-            0
-        ),
 
         groupFedCount,
-        groupLeftCount: Math.max((predict ? predict.group : groupPlannedCount) - groupFedCount, 0)
+        groupLeftCount: (predict ? predict.group : groupPlannedCount) - groupFedCount
     };
 };
