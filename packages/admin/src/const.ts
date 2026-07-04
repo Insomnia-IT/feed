@@ -34,5 +34,12 @@ export const MEAL_MAP: Record<string, string> = {
     night: 'Дожор'
 };
 
+export const MEAL_TIME_OPTIONS = [
+    { value: 'breakfast', label: 'Завтрак' },
+    { value: 'lunch', label: 'Обед' },
+    { value: 'dinner', label: 'Ужин' },
+    { value: 'night', label: 'Дожор' }
+];
+
 export const DATETIME_SHORT = 'DD.MM HH:mm';
 export const DATETIME_LONG = 'DD MMMM HH:mm:ss';

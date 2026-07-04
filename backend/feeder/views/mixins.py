@@ -36,6 +36,7 @@ class VolunteerExtraFilterMixin(ModelViewSet):
         custom_field_id = self.request.query_params.getlist('custom_field_id')
         custom_field_value = self.request.query_params.getlist('custom_field_value')
         feeded_date = self.request.query_params.get('feeded_date')
+        meal_time = self.request.query_params.get('meal_time')
         non_feeded_date = self.request.query_params.get('non_feeded_date')
         is_qr_empty = self.request.query_params.getlist('is_qr_empty')
 
@@ -123,6 +124,8 @@ class VolunteerExtraFilterMixin(ModelViewSet):
                     volunteer_id__isnull=False,
                     amount__gt=0
                 )
+            if meal_time:
+                feed_transactions_qs = feed_transactions_qs.filter(meal_time=meal_time)
             if feeded_date:
                 qs = qs.filter(id__in=feed_transactions_qs.values_list('volunteer_id', flat=True))
             if non_feeded_date:
