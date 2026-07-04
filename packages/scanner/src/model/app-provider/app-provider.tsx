@@ -1,9 +1,10 @@
-import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import type { MealTime } from 'db';
 import { useSync } from 'request';
 import { API_DOMAIN } from 'config';
 import { db } from 'db';
+import { useGetStat } from 'request/use-get-stat';
 
 interface IAppContext {
     appError: string | null;
@@ -20,6 +21,7 @@ interface IAppContext {
     setMealTime: (mealTime: MealTime | null) => void;
     kitchenId: number;
     setKitchenId: (kitchenId: number) => void;
+    predict: { individual: number; group: number } | null;
     isDev: boolean;
     debugMode: string | null;
     deoptimizedSync: string | null;
@@ -48,8 +50,45 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const [kitchenId, setKitchenId] = useState<number>(storedKitchenId);
     const [lastSyncStart, setLastSyncStart] = useState<number | null>(lastSyncStartLS ? +lastSyncStartLS : null);
     const [volCount, setVolCount] = useState<number>(0);
+    const [predict, setPredict] = useState<{ individual: number; group: number } | null>(null);
     const [autoSync, setAutoSync] = useState<boolean>(autoSyncLS ? autoSyncLS === '1' : true);
     const { error: syncError, fetching: syncFetching, send: syncSend } = useSync(API_DOMAIN, pin, setAuth);
+    const { send: statSend } = useGetStat(API_DOMAIN, pin, setAuth);
+
+    const currentDate = new Date().toISOString().slice(0, 10);
+
+    const doStat = useCallback(
+        async (currentDate: string): Promise<void> => {
+            try {
+                const stats = await statSend(currentDate);
+                const predictStats = stats.filter(
+                    (s) =>
+                        s.date === currentDate &&
+                        s.meal_time === mealTime &&
+                        s.kitchen_id === kitchenId &&
+                        s.type === 'predict'
+                );
+                const individual = predictStats.filter((s) => !s.group_badge).reduce((acc, s) => acc + s.amount, 0);
+                const group = predictStats.filter((s) => s.group_badge).reduce((acc, s) => acc + s.amount, 0);
+                setPredict({
+                    individual,
+                    group
+                });
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.log(e);
+            }
+        },
+        [kitchenId, mealTime, statSend]
+    );
+
+    useEffect(() => {
+        if (auth && kitchenId && mealTime && currentDate) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            doStat(currentDate);
+        }
+    }, [auth, kitchenId, mealTime, currentDate, doStat]);
+
     const toggleAutoSync = useCallback((): void => {
         setAutoSync((prev) => {
             localStorage.setItem('autoSync', !prev ? '1' : '0');
@@ -114,6 +153,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setMealTime,
             kitchenId,
             setKitchenId,
+            predict,
             isDev,
             debugMode: debugModeLS,
             deoptimizedSync: deoptimizedSyncLS,
@@ -121,7 +161,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             syncError: Boolean(syncError),
             doSync
         }),
-        [pin, auth, appError, lastSyncStart, volCount, autoSync, mealTime, kitchenId, syncFetching, doSync, syncError]
+        [
+            pin,
+            auth,
+            appError,
+            lastSyncStart,
+            volCount,
+            autoSync,
+            mealTime,
+            kitchenId,
+            syncFetching,
+            doSync,
+            syncError,
+            predict
+        ]
     );
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
