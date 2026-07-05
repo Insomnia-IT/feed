@@ -36,6 +36,14 @@ export const useInventoryTransfer = ({ volunteerId, reloadTargetInventory }: Use
             operator: 'eq',
             value
         })),
+        sorters: [
+            { field: 'last_name', order: 'asc' },
+            { field: 'first_name', order: 'asc' },
+            { field: 'name', order: 'asc' }
+        ],
+        pagination: {
+            mode: 'off'
+        },
         onSearch: (value: string) => [
             {
                 field: 'search',
