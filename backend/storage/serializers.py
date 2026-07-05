@@ -41,6 +41,7 @@ class IssuanceSerializer(serializers.ModelSerializer):
     volunteer_name = serializers.ReadOnlyField(source='volunteer.name')
     actor_name = serializers.ReadOnlyField(source='actor.name')
     item_name = serializers.ReadOnlyField(source='position.item.name')
+    storage_name = serializers.ReadOnlyField(source='position.storage.name')
 
     class Meta:
         model = Issuance
@@ -51,6 +52,7 @@ class ReceivingSerializer(serializers.ModelSerializer):
     volunteer_name = serializers.ReadOnlyField(source='volunteer.name')
     actor_name = serializers.ReadOnlyField(source='actor.name')
     item_name = serializers.ReadOnlyField(source='position.item.name')
+    storage_name = serializers.ReadOnlyField(source='position.storage.name')
 
     class Meta:
         model = Receiving
