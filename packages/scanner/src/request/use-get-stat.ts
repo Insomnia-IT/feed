@@ -20,7 +20,7 @@ export const useGetStat = (baseUrl: string, pin: string | null, setAuth: (auth: 
                         params: {
                             date_from: date,
                             date_to: date,
-                            prediction_alg: 3,
+                            prediction_alg: 1,
                             apply_predict_alg_to_group_badge: true
                         }
                     })
