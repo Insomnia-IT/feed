@@ -678,6 +678,28 @@ class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return models.FeedTransaction.objects.create(**validated_data)
 
+
+class SyncFeedTransactionListSerializer(serializers.ListSerializer):
+    def to_internal_value(self, data):
+        result = []
+        errors = []
+
+        for item in data:
+            try:
+                result.append(self.child.run_validation(item))
+                errors.append({})
+            except serializers.ValidationError as exc:
+                if hasattr(exc.detail, 'keys') and set(exc.detail.keys()) == {'volunteer'}:
+                    errors.append({})
+                    continue
+                errors.append(exc.detail)
+
+        if any(errors):
+            raise serializers.ValidationError(errors)
+
+        return result
+
+
 class SyncFeedTransactionSerializer(serializers.ModelSerializer):
     """Сериализатор для операции синхронизации, который не проверяет уникальность ulid"""
     ulid = serializers.CharField(max_length=255)
@@ -685,6 +707,7 @@ class SyncFeedTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FeedTransaction
         fields = '__all__'
+        list_serializer_class = SyncFeedTransactionListSerializer
         extra_kwargs = {
             'ulid': {'validators': []}
         }
