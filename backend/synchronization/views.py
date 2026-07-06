@@ -36,19 +36,15 @@ class SyncStatus(APIView):
             .values_list("date", flat=True)
             .first()
         )
-        last_attempts_by_direction = [
-            syncs.filter(direction=direction)
+        last_sync_attempt = (
+            syncs
             .order_by("-date", "-id")
             .values_list("success", flat=True)
             .first()
-            for direction in (
-                SynchronizationSystemActions.DIRECTION_FROM_SYSTEM,
-                SynchronizationSystemActions.DIRECTION_TO_SYSTEM,
-            )
-        ]
+        )
 
         serializer = SyncStatusSerializer({
             "lastSyncDate": last_successful_date,
-            "isError": any(attempt is False for attempt in last_attempts_by_direction),
+            "isError": last_sync_attempt is False,
         })
         return Response(serializer.data)
