@@ -1,4 +1,3 @@
-from django.db.models import Subquery
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
@@ -29,22 +28,27 @@ class SyncStatus(APIView):
     def get(self, request):
         syncs = SynchronizationSystemActions.objects.filter(
             system=SynchronizationSystemActions.SYSTEM_NOTION,
-            direction=SynchronizationSystemActions.DIRECTION_FROM_SYSTEM,
         )
+        incoming_syncs = syncs.filter(direction=SynchronizationSystemActions.DIRECTION_FROM_SYSTEM)
         last_successful_date = (
-            syncs.filter(success=True)
+            incoming_syncs.filter(success=True)
             .order_by("-date", "-id")
-            .values("date")[:1]
-        )
-        last_sync_attempt = (
-            syncs.annotate(last_successful_date=Subquery(last_successful_date))
-            .order_by("-date", "-id")
-            .values("success", "last_successful_date")
+            .values_list("date", flat=True)
             .first()
         )
+        last_attempts_by_direction = [
+            syncs.filter(direction=direction)
+            .order_by("-date", "-id")
+            .values_list("success", flat=True)
+            .first()
+            for direction in (
+                SynchronizationSystemActions.DIRECTION_FROM_SYSTEM,
+                SynchronizationSystemActions.DIRECTION_TO_SYSTEM,
+            )
+        ]
 
         serializer = SyncStatusSerializer({
-            "lastSyncDate": last_sync_attempt["last_successful_date"] if last_sync_attempt else None,
-            "isError": bool(last_sync_attempt and not last_sync_attempt["success"]),
+            "lastSyncDate": last_successful_date,
+            "isError": any(attempt is False for attempt in last_attempts_by_direction),
         })
         return Response(serializer.data)
