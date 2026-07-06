@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.urls import path, include
 from config.admin import admin_site
+from config.health import healthz
 
 urlpatterns = [
+    path('feedapi/v1/healthz', healthz),
     path('feedapi/v1/', include('feeder.urls')),
     path('feedapi/v1/', include('synchronization.urls')),
     path('feedapi/v1/', include('history.urls')),

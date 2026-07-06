@@ -21,6 +21,12 @@ services:
     volumes:
       - ${DB_DIR:-./db}:/app/db
       - ${PHOTO_STORAGE_PATH:-./db/photos}:/app/photos
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/feedapi/v1/healthz >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     # depends_on:
     #   - jaeger
 
@@ -38,6 +44,12 @@ services:
       - ${PORT:-80}:80
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost/healthz >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
 
 networks:
   internal:
