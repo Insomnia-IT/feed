@@ -55,7 +55,7 @@ const DEFAULT_FILTERS: FiltersState = {
     kitchenId: 'all',
     anonymous: 'all',
     groupBadge: 'all',
-    predictionAlg: '1',
+    predictionAlg: '2',
     applyHistory: 'false',
     applyPredictAlgToGroupBadge: 'true',
     selectedMealTime: 'breakfast'
