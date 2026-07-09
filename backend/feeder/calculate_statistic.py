@@ -565,7 +565,7 @@ def load_group_badge_kitchens():
 
 
 def load_volunteers(date_from, date_to, anonymous, group_badge):
-    queryset = models.Volunteer.objects.exclude(
+    queryset = models.Volunteer.objects.filter(deleted_at=None).exclude(
         Q(is_blocked=True) | Q(feed_type__code='FT4')
     ).prefetch_related(
         Prefetch(
@@ -576,7 +576,7 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
             ),
             to_attr='relevant_arrivals'
         )
-    ).select_related('kitchen', 'feed_type')
+    ).select_related('kitchen', 'feed_type', 'group_badge')
 
     result = []
     for vol in queryset:
@@ -600,8 +600,8 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
                 'is_paid': vol.feed_type.paid if vol.feed_type else False,
                 'is_vegan': vol.is_vegan,
                 'kitchen_id': vol.kitchen.id if vol.kitchen else None,
-                'group_badge_id': vol.group_badge_id if vol.group_badge and not vol.group_badge.is_disabled else None,
-                'group_badge_created_at': arrow.get(vol.group_badge.created_at).to(TZ).floor('day') if vol.group_badge and not vol.group_badge.is_disabled else None,
+                'group_badge_id': vol.group_badge_id if vol_group_badge else None,
+                'group_badge_created_at': arrow.get(vol.group_badge.created_at).to(TZ).floor('day') if vol_group_badge else None,
             })
 
     return result
