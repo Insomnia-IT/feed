@@ -1,15 +1,20 @@
 import dayjs from 'dayjs';
-import { useState, type JSX } from 'react';
+import { useCallback, useState, type JSX } from 'react';
 import { Modal, type ButtonProps, type FormInstance } from 'antd';
 
 import { dataProvider } from 'dataProvider';
-import type { VolCustomFieldValueEntity } from 'interfaces';
+import { useModalEnterSubmit } from 'shared/hooks';
+import type { FeedTypeEntity, VolCustomFieldValueEntity } from 'interfaces';
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+import { syncVolunteerFeedingFields } from './common-edit/sections/volunteer-feeding-form';
 
 const useSaveConfirm = (
     form: FormInstance,
     saveButtonProps: ButtonProps & {
         onClick: () => void;
+    },
+    options?: {
+        feedTypes?: FeedTypeEntity[];
     }
 ): {
     onClick: () => void;
@@ -20,17 +25,33 @@ const useSaveConfirm = (
         null
     );
 
-    const handleOk = () => {
-        setShowConfirmationModalReason(null);
-        saveButtonProps?.onClick();
-    };
+    const feedTypes = options?.feedTypes;
 
-    const handleCancel = () => {
+    const syncFeedingBeforeSave = useCallback(() => {
+        if (feedTypes?.length) {
+            syncVolunteerFeedingFields({ form, feedTypes });
+        }
+    }, [feedTypes, form]);
+
+    const handleOk = useCallback(() => {
         setShowConfirmationModalReason(null);
-    };
+        syncFeedingBeforeSave();
+        saveButtonProps?.onClick();
+    }, [saveButtonProps, syncFeedingBeforeSave]);
+
+    const handleCancel = useCallback(() => {
+        setShowConfirmationModalReason(null);
+    }, []);
+
+    useModalEnterSubmit({
+        open: showConfirmationModalReason !== null,
+        onSubmit: handleOk
+    });
 
     return {
         onClick: () => {
+            syncFeedingBeforeSave();
+
             const arrivals = form.getFieldValue('arrivals') ?? [];
             const activeFrom = form.getFieldValue(['arrivals', 0, 'arrival_date']);
             if (!arrivals.some(({ status }: { status: string }) => isVolunteerActivatedStatusValue(status))) {
@@ -98,7 +119,8 @@ const useSaveConfirm = (
                     open={showConfirmationModalReason !== null}
                     onOk={handleOk}
                     onCancel={handleCancel}
-                    okText="Сохранить"
+                    okText="Всё равно сохранить"
+                    okButtonProps={{ 'data-testid': 'volunteer-save-confirm' }}
                 >
                     {showConfirmationModalReason === 'is_active' && (
                         <>

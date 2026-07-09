@@ -12,8 +12,10 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate } from 'react-router';
 import {
+    LeftOutlined,
     LogoutOutlined,
     QrcodeOutlined,
+    RightOutlined,
     SmileOutlined,
     TeamOutlined,
     UnorderedListOutlined,
@@ -24,6 +26,8 @@ import { canAccessByRole } from 'acl';
 import { useScreen } from 'shared/providers';
 import { AppRoles, type UserData } from 'auth';
 import type { AccessRoleEntity } from 'interfaces';
+
+import SyncStatus from 'components/sync-status/sync-status';
 
 import styles from './sider.module.css';
 
@@ -52,8 +56,7 @@ const CustomSider = () => {
     const {
         result: { data: accessRoles = [] }
     } = useList<AccessRoleEntity>({
-        resource: 'access-roles',
-        queryOptions: { enabled: !breakpoint.xs }
+        resource: 'access-roles'
     });
 
     const accessRoleName = useMemo(() => {
@@ -178,27 +181,46 @@ const CustomSider = () => {
 
     if (breakpoint.xs) return renderMobileButtons();
 
+    const siderTrigger = collapsed ? <RightOutlined /> : <LeftOutlined />;
+    const showTabletBackdrop = !isDesktop && !collapsed;
+
     return (
-        <Layout.Sider
-            className={isDesktop ? styles.antLayoutSider : styles.antLayoutSiderMobile}
-            collapsible
-            collapsedWidth={isDesktop ? 80 : 0}
-            collapsed={collapsed}
-            breakpoint="lg"
-            onCollapse={setCollapsed}
-        >
-            <Menu
-                theme="dark"
-                mode="inline"
-                selectedKeys={selectedKey ? [selectedKey] : []}
-                defaultOpenKeys={defaultOpenKeys}
-                items={userMenuItems}
-                onClick={(info) => {
-                    if (!isDesktop) setCollapsed(true);
-                    if (info.key === 'logout') handleLogout();
-                }}
-            />
-        </Layout.Sider>
+        <>
+            {showTabletBackdrop && (
+                <button
+                    type="button"
+                    className={styles.siderBackdrop}
+                    aria-label="Закрыть меню"
+                    onClick={() => setCollapsed(true)}
+                />
+            )}
+            <Layout.Sider
+                className={isDesktop ? styles.antLayoutSider : styles.antLayoutSiderMobile}
+                collapsible
+                collapsedWidth={isDesktop ? 80 : 0}
+                collapsed={collapsed}
+                breakpoint="lg"
+                onCollapse={setCollapsed}
+                trigger={siderTrigger}
+            >
+                <div className={styles.siderShell}>
+                    <div className={styles.siderMenuArea}>
+                        <Menu
+                            theme="dark"
+                            mode="inline"
+                            selectedKeys={selectedKey ? [selectedKey] : []}
+                            defaultOpenKeys={defaultOpenKeys}
+                            items={userMenuItems}
+                            onClick={(info) => {
+                                if (!isDesktop) setCollapsed(true);
+                                if (info.key === 'logout') handleLogout();
+                            }}
+                        />
+                    </div>
+                    <SyncStatus collapsed={collapsed} />
+                </div>
+            </Layout.Sider>
+        </>
     );
 };
 

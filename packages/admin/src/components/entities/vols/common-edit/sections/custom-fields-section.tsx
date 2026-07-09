@@ -4,6 +4,7 @@ import { useList, useOne } from '@refinedev/core';
 
 import type { CustomFieldEntity, VolEntity } from 'interfaces';
 import styles from '../../common.module.css';
+import customFieldsStyles from './custom-fields-section.module.css';
 
 interface IProps {
     canBadgeEdit: boolean;
@@ -45,24 +46,33 @@ export const CustomFieldsSection = ({ canBadgeEdit, volunteerId }: IProps) => {
 
     return (
         <>
-            <p className={styles.formSection__title}>Кастомные Поля</p>
+            <div className={styles.formSection__title}>
+                <h4>Кастомные Поля</h4>
+            </div>
 
-            {customFields
-                .filter((item) => item.mobile || canBadgeEdit)
-                .map((item) => {
-                    const fieldName = ['updated_custom_fields', item.id.toString()];
+            <div className={customFieldsStyles.customFieldsGrid}>
+                {customFields
+                    .filter((item) => item.mobile || canBadgeEdit)
+                    .map((item) => {
+                        const fieldName = ['updated_custom_fields', item.id.toString()];
 
-                    // Для случая стирания поля, чтобы старое значение не "мигало"
-                    const isFieldTouched = form.isFieldTouched(fieldName);
-                    const valueFromAPI = isFieldTouched ? undefined : customFieldValuesById.get(item.id);
+                        // Для случая стирания поля, чтобы старое значение не "мигало"
+                        const isFieldTouched = form.isFieldTouched(fieldName);
+                        const valueFromAPI = isFieldTouched ? undefined : customFieldValuesById.get(item.id);
 
-                    // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
-                    return (
-                        <Form.Item key={item.id} label={item.name} name={fieldName}>
-                            <CustomFieldValueHandler type={item.type} valueFromAPI={valueFromAPI} />
-                        </Form.Item>
-                    );
-                })}
+                        // так как нет возможности указывать элемент массива с определенным id, используем "фиктивные" поля
+                        return (
+                            <Form.Item
+                                key={item.id}
+                                className={customFieldsStyles.customFieldsField}
+                                label={item.name}
+                                name={fieldName}
+                            >
+                                <CustomFieldValueHandler type={item.type} valueFromAPI={valueFromAPI} />
+                            </Form.Item>
+                        );
+                    })}
+            </div>
         </>
     );
 };

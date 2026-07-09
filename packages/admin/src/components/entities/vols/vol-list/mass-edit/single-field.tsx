@@ -152,7 +152,11 @@ const OptionValueChanger = ({
     resource: string;
     onChange: (value: string | undefined) => void;
 }) => {
-    const { options } = useSelect({ resource, optionLabel: 'name' });
+    const { options } = useSelect({
+        resource,
+        optionLabel: 'name',
+        pagination: resource === 'statuses' ? { pageSize: 100 } : undefined
+    });
 
     const canStatusArrivedAssign = useCanAccess({ action: 'status_arrived_assign', resource: 'volunteers' });
     const canStatusStartedAssign = useCanAccess({ action: 'status_started_assign', resource: 'volunteers' });

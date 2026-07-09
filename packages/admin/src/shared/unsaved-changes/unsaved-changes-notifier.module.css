@@ -1,0 +1,61 @@
+.modal :global(.ant-modal-content) {
+    min-width: 720px;
+}
+
+.footer {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.footerRight {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+.message {
+    margin: 0;
+}
+
+@media (width <= 768px) {
+    .modalWrap:global(.ant-modal-wrap) {
+        display: flex;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        padding: 0 24px 24px;
+    }
+
+    .modalWrap :global(.ant-modal) {
+        top: auto !important;
+        width: 100% !important;
+        max-width: 100%;
+        margin: 0;
+        padding-bottom: 0;
+    }
+
+    .modal :global(.ant-modal-content) {
+        min-width: 0;
+    }
+
+    .footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .footerRight {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .footer :global(.ant-btn),
+    .footerRight :global(.ant-btn) {
+        width: 100%;
+        margin: 0;
+    }
+}

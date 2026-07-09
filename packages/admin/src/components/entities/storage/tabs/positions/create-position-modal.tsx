@@ -12,6 +12,7 @@ interface CreatePositionModalProps {
     itemOptions: { label: string; value: number }[] | undefined;
     itemsData: ItemEntity[] | undefined;
     volunteerSelectProps: any;
+    actorId?: number;
     isVolunteerLoading: boolean;
     onOpenQrScanner: (form: FormInstance) => void;
 }
@@ -24,9 +25,14 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
     itemOptions,
     itemsData,
     volunteerSelectProps,
+    actorId,
     isVolunteerLoading,
     onOpenQrScanner
 }) => {
+    React.useEffect(() => {
+        formProps.form?.setFieldValue('actor', actorId);
+    }, [actorId, formProps.form]);
+
     return (
         <Modal {...modalProps} title="Создать позицию">
             <Form {...formProps} layout="vertical">
@@ -68,11 +74,7 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
                         const itemId = getFieldValue('item');
                         const selectedItem = itemsData?.find((item: ItemEntity) => item.id === itemId);
                         return (
-                            <Form.Item
-                                name="volunteer"
-                                label="Владелец"
-                                rules={[{ required: !selectedItem?.is_anonymous }]}
-                            >
+                            <Form.Item name="volunteer" label="От кого (из инвентаря)">
                                 <Select
                                     {...volunteerSelectProps}
                                     showSearch
@@ -99,6 +101,9 @@ export const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
                     <Input.TextArea />
                 </Form.Item>
                 <Form.Item name="storage" hidden initialValue={storageId}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="actor" hidden initialValue={actorId}>
                     <Input />
                 </Form.Item>
             </Form>

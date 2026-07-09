@@ -6,8 +6,17 @@ from django.utils import timezone
 from feeder import models
 from feeder.utils import StatisticType
 from feeder.views.mixins import get_request_user_id
+from feeder.volunteer_rules import (
+    get_direction_ids,
+    get_request_volunteer,
+    have_shared_direction,
+    is_direction_head,
+    validate_direction_head_changes,
+    validate_supervisor,
+)
 
 from history.models import History
+from storage.models import VolunteerInventory
 
 from uuid import UUID
 from datetime import date
@@ -139,6 +148,17 @@ class VolunteerListPaidArrivalSerializer(serializers.ModelSerializer):
         model = models.PaidArrival
         fields = ['id', 'arrival_date', 'departure_date', 'is_free']
 
+class VolunteerListInventory(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    class Meta:
+        model = VolunteerInventory
+        fields = ['name', 'count']
+
+    def get_name(self, obj):
+        position = getattr(obj, "position", None)
+        if position:
+            return position.item.name
+        return None
 
 class SortArrivalsMixin:
     def to_representation(self, instance):
@@ -157,6 +177,7 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     arrivals = VolunteerListArrivalSerializer(many=True)
     paid_arrivals = VolunteerListPaidArrivalSerializer(many=True)
     supervisor = serializers.SerializerMethodField()
+    inventory = VolunteerListInventory(source='storage_inventory', many=True)
 
     class Meta:
         model = models.Volunteer
@@ -169,9 +190,27 @@ class VolunteerListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
         return None
 
 
+class SupervisorCandidateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    directions = DirectionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.Volunteer
+        fields = [
+            "id",
+            "name",
+            "first_name",
+            "last_name",
+            "directions",
+            "main_role",
+            "access_role",
+        ]
+
+
 class VolunteerMobileListSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     arrivals = VolunteerListArrivalSerializer(many=True)
+    inventory = VolunteerListInventory(source='storage_inventory', many=True)
 
     class Meta:
         model = models.Volunteer
@@ -183,6 +222,7 @@ class VolunteerMobileListSerializer(SortArrivalsMixin, serializers.ModelSerializ
             'is_blocked',
             'direction_head_comment',
             'arrivals',
+            'inventory',
         ]
 
 class RetrieveVolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
@@ -233,6 +273,46 @@ class VolunteerSerializer(SortArrivalsMixin, serializers.ModelSerializer):
     class Meta:
         model = models.Volunteer
         exclude = ['person']
+
+    def validate(self, attrs):
+        instance = self.instance
+        request = self.context.get("request")
+
+        if instance and request:
+            validate_direction_head_changes(
+                user=request.user,
+                instance=instance,
+                attrs=attrs,
+            )
+
+        if "supervisor_id" in attrs:
+            supervisor = attrs["supervisor_id"]
+            supervisor_changed = not instance or supervisor != instance.supervisor_id
+
+            if supervisor and supervisor_changed:
+                directions = attrs.get("directions")
+                target_direction_ids = (
+                    {direction.id for direction in directions}
+                    if directions is not None
+                    else get_direction_ids(instance)
+                )
+
+                if request and is_direction_head(request.user):
+                    actor = get_request_volunteer(request.user)
+                    actor_direction_ids = get_direction_ids(actor)
+                    if not have_shared_direction(target_direction_ids, actor_direction_ids):
+                        raise serializers.ValidationError(
+                            {"supervisor_id": "Нельзя назначать бригадира волонтёру из другой службы."}
+                        )
+                    target_direction_ids &= actor_direction_ids
+
+                validate_supervisor(
+                    supervisor,
+                    target_direction_ids,
+                    target_id=instance.pk if instance else None,
+                )
+
+        return super().validate(attrs)
 
     def update(self, instance, validated_data):
         validated_data.pop('approver', None)
@@ -598,6 +678,28 @@ class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return models.FeedTransaction.objects.create(**validated_data)
 
+
+class SyncFeedTransactionListSerializer(serializers.ListSerializer):
+    def to_internal_value(self, data):
+        result = []
+        errors = []
+
+        for item in data:
+            try:
+                result.append(self.child.run_validation(item))
+                errors.append({})
+            except serializers.ValidationError as exc:
+                if hasattr(exc.detail, 'keys') and set(exc.detail.keys()) == {'volunteer'}:
+                    errors.append({})
+                    continue
+                errors.append(exc.detail)
+
+        if any(errors):
+            raise serializers.ValidationError(errors)
+
+        return result
+
+
 class SyncFeedTransactionSerializer(serializers.ModelSerializer):
     """Сериализатор для операции синхронизации, который не проверяет уникальность ulid"""
     ulid = serializers.CharField(max_length=255)
@@ -605,6 +707,7 @@ class SyncFeedTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FeedTransaction
         fields = '__all__'
+        list_serializer_class = SyncFeedTransactionListSerializer
         extra_kwargs = {
             'ulid': {'validators': []}
         }
@@ -623,6 +726,7 @@ class FilterStatisticsSerializer(serializers.Serializer):
     group_badge = serializers.BooleanField(allow_null=True, default=None)
     prediction_alg = serializers.CharField(allow_null=True, default=None)
     apply_history = serializers.BooleanField(allow_null=True, default=None)
+    apply_predict_alg_to_group_badge = serializers.BooleanField(allow_null=True, default=None)
 
 class FeedTransactionAnomaliesFilterSerializer(serializers.Serializer):
     dtime_from = serializers.DateTimeField()
@@ -641,6 +745,7 @@ class StatisticsSerializer(serializers.Serializer):
     date = serializers.DateField()
     type = serializers.ChoiceField(choices=[type.value for type in StatisticType])
     is_vegan = serializers.BooleanField(allow_null=True)
+    group_badge = serializers.BooleanField(allow_null=True)
     meal_time = serializers.CharField(max_length=10, validators=[models.validate_meal_time])
     amount = serializers.IntegerField(min_value=0)
     kitchen_id = serializers.IntegerField(allow_null=True)

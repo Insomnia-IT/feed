@@ -27,5 +27,6 @@ export const isVolunteerActivatedStatus = (status: VolunteerStatus): boolean => 
 export const isVolunteerActivatedStatusValue = (value: unknown): boolean =>
     isVolunteerStatus(value) && isVolunteerActivatedStatus(value);
 
-export const getVolunteerStatusOrder = (includeArrived: boolean) =>
-    includeArrived ? VOLUNTEER_STATUS_ORDER_WITH_ARRIVED : VOLUNTEER_STATUS_ORDER_BASE;
+export function getVolunteerStatusOrder(includeArrived: boolean): readonly VolunteerStatus[] {
+    return includeArrived ? VOLUNTEER_STATUS_ORDER_WITH_ARRIVED : VOLUNTEER_STATUS_ORDER_BASE;
+}

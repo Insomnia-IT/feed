@@ -1,11 +1,9 @@
-import { useSelect } from '@refinedev/antd';
-import { Form, Input, InputNumber, Modal, Select } from 'antd';
+import { Button, Form, Input, InputNumber, Modal, Select } from 'antd';
 
-import type { VolEntity } from 'interfaces';
-import { formatVolunteerLabel } from 'shared/utils/format-volunteer-label';
 import type { InventoryRow, TransferFormValues } from './types';
 
 import styles from '../../../common.module.css';
+import { QrcodeOutlined } from '@ant-design/icons';
 
 interface InventoryTransferModalProps {
     open: boolean;
@@ -13,10 +11,13 @@ interface InventoryTransferModalProps {
     volunteerName?: string | null;
     form: ReturnType<typeof Form.useForm<TransferFormValues>>[0];
     isTransferLoading: boolean;
-    sourceVolunteerId?: number;
+    targetVolunteerId?: number;
     sourceInventoryLoading: boolean;
     selectedSourceInventoryItem?: InventoryRow;
     itemOptions: Array<{ value: number; label: string }>;
+    volunteerSelectProps: Record<string, any>;
+    isVolunteerLoading: boolean;
+    onOpenQrScanner: () => void;
     onClose: () => void;
     onSubmit: () => void;
     onSourceChange: () => void;
@@ -29,28 +30,18 @@ export const InventoryTransferModal = ({
     volunteerName,
     form,
     isTransferLoading,
-    sourceVolunteerId,
+    targetVolunteerId,
     sourceInventoryLoading,
     selectedSourceInventoryItem,
     itemOptions,
+    volunteerSelectProps,
+    isVolunteerLoading,
+    onOpenQrScanner,
     onClose,
     onSubmit,
     onSourceChange,
     onPositionChange
 }: InventoryTransferModalProps) => {
-    const { selectProps: volunteerSelectProps } = useSelect<VolEntity>({
-        resource: 'volunteers',
-        optionLabel: formatVolunteerLabel,
-        onSearch: (value) => [
-            {
-                field: 'search',
-                operator: 'eq',
-                value
-            }
-        ],
-        defaultValue: sourceVolunteerId
-    });
-
     return (
         <Modal
             title="Передать предмет"
@@ -60,21 +51,21 @@ export const InventoryTransferModal = ({
             confirmLoading={isTransferLoading}
         >
             <Form form={form} layout="vertical">
-                <Form.Item label="Кому">
+                <Form.Item label="От кого">
                     <Input value={volunteerName || (volunteerId ? `ID ${volunteerId}` : '')} readOnly />
                 </Form.Item>
                 <Form.Item
-                    name="from"
-                    label="От кого"
+                    name="to"
+                    label="Кому"
                     rules={[
-                        { required: true, message: 'Выберите владельца' },
+                        { required: true, message: 'Выберите получателя' },
                         {
                             validator: (_, value) => {
-                                if (!volunteerId || !value || value !== volunteerId) {
+                                if (!value || value !== volunteerId) {
                                     return Promise.resolve();
                                 }
 
-                                return Promise.reject(new Error('Источник должен отличаться от получателя'));
+                                return Promise.reject(new Error('Получатель должен отличаться от отправителя'));
                             }
                         }
                     ]}
@@ -83,16 +74,18 @@ export const InventoryTransferModal = ({
                         {...volunteerSelectProps}
                         showSearch
                         filterOption={false}
-                        placeholder="Найти владельца"
+                        placeholder="Найти получателя"
                         onChange={onSourceChange}
+                        loading={isVolunteerLoading}
+                        suffixIcon={<Button type="text" icon={<QrcodeOutlined />} onClick={onOpenQrScanner} />}
                     />
                 </Form.Item>
                 <Form.Item name="position" label="Предмет" rules={[{ required: true, message: 'Выберите предмет' }]}>
                     <Select
                         options={itemOptions}
                         loading={sourceInventoryLoading}
-                        disabled={!sourceVolunteerId}
-                        placeholder={sourceVolunteerId ? 'Выберите предмет' : 'Сначала выберите владельца'}
+                        disabled={!targetVolunteerId}
+                        placeholder={targetVolunteerId ? 'Выберите предмет' : 'Сначала выберите владельца'}
                         showSearch
                         filterOption={(input, option) =>
                             ((option?.label as string) ?? '').toLowerCase().includes(input.toLowerCase())

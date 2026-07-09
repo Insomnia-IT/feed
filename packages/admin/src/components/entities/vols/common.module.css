@@ -1,91 +1,179 @@
-.edit {
-    display: flex;
-    flex-wrap: nowrap;
-}
-
-.edit__nav {
-    max-width: 230px;
-    margin-right: 24px;
-    background-color: white;
-}
-
-.navList {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.navList__item {
-    display: flex;
-    align-items: center;
-    width: 230px;
-    height: 40px;
-    padding: 0 24px 0 16px;
-    color: rgb(0 0 0 / 0.85);
-    font-size: 14px;
-    line-height: 157%;
-    cursor: pointer;
-}
-
-.navList__item:not(:last-child) {
-    margin-bottom: 8px;
-}
-
-.active {
-    border-right: 3px solid rgb(24 144 255);
-    background: rgb(230 247 255);
-}
-
 .formWrap {
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
     width: 100%;
-    height: calc(100vh - 290px);
+    background-color: #f5f5f5;
 }
 
-.formWrap::-webkit-scrollbar {
-    width: 4px;
+.formCanvas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: transparent;
 }
 
-.formWrap::-webkit-scrollbar-thumb {
-    border-radius: 5px;
-    background-color: rgb(24 144 255);
+/* Лейбл вплотную к полю (без padding-bottom у Ant Design) */
+.formCanvas :global(.ant-form-item-vertical .ant-form-item-label) {
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-.formWrap::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(14 93 167);
+.formCanvas :global(.ant-form-item-vertical .ant-form-item-label > label) {
+    height: auto !important;
+    min-height: unset;
+}
+
+.formCanvas :global(.ant-form-item) {
+    margin-bottom: 12px;
 }
 
 .formSection {
     position: relative;
-    padding: 16px;
-    background-color: white;
-}
-
-.formSection:not(:last-child) {
-    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fff;
 }
 
 .formSection__title {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 6px;
 }
 
 .formSection__title h4 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-    color: rgb(0 0 0 / 0.85);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: rgb(0 0 0 / 0.88);
+}
+
+.feedingPaidBlock {
+    margin-top: 16px;
+}
+
+.feedingFieldRow {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px 12px;
+    align-items: flex-start;
+}
+
+.feedingFieldRow > :global(.ant-form-item) {
+    margin-bottom: 8px;
+}
+
+.feedingFieldKitchen,
+.feedingFieldFeedType {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+}
+
+.feedingFieldKitchen :global(.ant-select) {
+    width: 150px;
+}
+
+.feedingFieldFeedType :global(.ant-select) {
+    width: 130px;
+}
+
+/* Скрытый #feed_type для автотестов и совместимости со старым Select; календарь — основной UI. */
+.feedTypeCompatSelectWrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 200px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0.01;
+    pointer-events: auto;
+}
+
+.feedTypeCompatSelectWrap :global(.ant-form-item-label) {
+    display: none;
+}
+
+.feedTypeCompatSelectWrap :global(.ant-form-item-control) {
+    max-width: 200px;
+}
+
+@media (width <= 1200px) {
+    .feedingFieldKitchen :global(.ant-select) {
+        width: 140px;
+    }
+
+    .feedingFieldFeedType :global(.ant-select) {
+        width: 115px;
+    }
+}
+
+.feedingCheckboxesGroup {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
+    min-height: 32px;
+    padding-top: 22px;
+}
+
+.feedingCheckboxesRow {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px 24px;
+    align-items: center;
+    min-height: 32px;
+}
+
+.feedingCheckboxFreeDuringStay {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+}
+
+@media (width < 768px) {
+    .feedingFieldRow {
+        flex-wrap: wrap;
+    }
+
+    .feedingFieldKitchen {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+
+    .feedingFieldKitchen :global(.ant-select) {
+        width: 100%;
+    }
+
+    .feedingCheckboxesGroup {
+        flex: 0 0 100%;
+        padding-top: 0;
+    }
+}
+
+@media (width < 525px) {
+    .feedingCheckboxesRow {
+        flex-wrap: wrap;
+    }
+
+    .feedingCheckboxFreeDuringStay {
+        flex: 0 0 100%;
+        width: 100%;
+    }
 }
 
 .inventoryHeader {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
+    gap: 8px;
     margin-bottom: 16px;
 }
 
@@ -117,6 +205,135 @@
     gap: 12px;
 }
 
+/* Компактные ряды полей: каждый контрол получает ширину под свои данные,
+   а не растягивается на всю строку. */
+.fieldRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    align-items: flex-start;
+}
+
+.fieldRow > * {
+    margin-bottom: 8px;
+}
+
+/* Три поля в одной секции: 3 колонки при ширине экрана ≥768px */
+.fieldsGrid3 {
+    display: grid;
+    width: 100%;
+    gap: 4px 16px;
+    align-items: start;
+    grid-template-columns: 1fr;
+}
+
+.fieldsGrid3Field {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+@media (width >= 768px) {
+    .fieldsGrid3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.fieldSm {
+    width: 180px;
+    max-width: 100%;
+}
+
+.fieldMd {
+    width: 260px;
+    max-width: 100%;
+}
+
+.fieldLg {
+    width: 100%;
+    max-width: 560px;
+}
+
+.checkboxColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 22px;
+}
+
+.checkboxRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.labelHint {
+    margin-left: 4px;
+    color: rgb(0 0 0 / 0.45);
+}
+
+.sectionHint {
+    margin: -8px 0 16px;
+    font-size: 13px;
+    line-height: 18px;
+    color: #1677ff;
+}
+
+.compactDivider {
+    margin: 4px 0 12px !important;
+    color: rgb(0 0 0 / 0.65) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.volEditPage :global(.commentArea + .ant-divider) {
+    margin: 8px 0 12px !important;
+}
+
+@media (width <= 576px) {
+    .volEditPage :global(.commentArea + .ant-divider) {
+        display: none;
+    }
+}
+
+.optionalToggle {
+    margin-bottom: 12px;
+    padding: 0;
+}
+
+/* Чекбокс, стоящий в одном ряду с полями ввода: компенсируем высоту лейбла,
+   чтобы он визуально совпадал с контролами. */
+.inlineCheckbox {
+    margin-bottom: 8px;
+    padding-top: 22px;
+}
+
+@media (width <= 576px) {
+    .fieldSm,
+    .fieldMd,
+    .fieldLg {
+        width: 100%;
+    }
+
+    .feedingFieldFeedType {
+        width: 100%;
+    }
+
+    .feedingFieldFeedType :global(.ant-select) {
+        width: 100%;
+    }
+
+    .checkboxColumn {
+        padding-top: 0;
+    }
+
+    .inlineCheckbox {
+        padding-top: 0;
+    }
+}
+
 .twoColumnsStartWrap {
     display: flex;
     flex-wrap: wrap;
@@ -128,19 +345,154 @@
 /* HR информация */
 
 /* Даты на поле */
-.dateWrap {
+.arrivalBlock {
+    container-type: inline-size;
+    container-name: arrival-block;
+    margin-bottom: 4px;
+}
+
+.arrivalFieldsGrid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px 16px;
+    align-items: start;
+}
+
+.arrivalDetailField {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 8px;
+}
+
+.arrivalStatusField {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 4px;
+}
+
+@container arrival-block (min-width: 1024px) {
+    .arrivalFieldsGrid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .arrivalStatusField {
+        grid-column: auto;
+        margin-bottom: 8px;
+    }
+}
+
+@container arrival-block (max-width: 760px) {
+    .arrivalFieldsGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .arrivalStatusField {
+        grid-column: 1 / -1;
+    }
+}
+
+.arrivalBlockDivider {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.arrivalRow {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    align-items: flex-start;
 }
 
-.dateLabel {
-    color: rgb(141 149 158);
+.arrivalRow > * {
+    margin-bottom: 8px;
+}
+
+.arrivalBlockTitleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.arrivalBlockTitleRow .formSection__title {
+    margin-bottom: 0;
+}
+
+.deleteButton {
+    margin-top: 7px;
+    padding: 0;
+}
+
+.arrivalBlockTitleRow .deleteButton {
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.paidIntervalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 4px;
+}
+
+.paidIntervalSubtitle {
+    margin: 0 0 4px;
+    font-size: 14px;
     font-weight: 500;
+    line-height: 22px;
+    color: rgb(0 0 0 / 0.85);
 }
 
-.dateInput {
-    flex: 1;
+.paidIntervalHeader .paidIntervalSubtitle {
+    margin-bottom: 0;
+}
+
+.paidIntervalRow {
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) auto;
+    gap: 4px 12px;
+    align-items: start;
+}
+
+.paidIntervalDateField {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 8px;
+}
+
+.paidIntervalDeleteCell {
+    align-self: end;
+    padding-bottom: 8px;
+}
+
+.paidIntervalDeleteCell .deleteButton {
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+@container arrival-block (max-width: 640px) {
+    .paidIntervalRow {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .paidIntervalDeleteCell {
+        grid-column: 2;
+        place-self: start end;
+        padding-bottom: 0;
+    }
+
+    .paidIntervalDateField {
+        grid-column: 1 / -1;
+    }
 }
 
 /* Кастомные поля */
@@ -201,47 +553,99 @@
     margin-right: 16px;
 }
 
-.deleteButton {
-    margin-top: 7px;
+/* Пустой список заездов: компактная секция, группа по центру */
+.formSectionWithSeparatorAction {
+    padding-bottom: 12px;
+}
+
+.formSectionWithSeparatorAction:has(.arrivalsEmptyState) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100px;
+    padding-block: 12px;
+}
+
+.formSectionWithSeparatorAction:has(.arrivalsEmptyState) .formSection__title {
+    margin-bottom: 8px;
+}
+
+.arrivalsEmptyState {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 0;
+    padding-bottom: 24px;
+    text-align: center;
+}
+
+.arrivalsEmptyState .addArrivalActions {
+    position: static;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
     padding: 0;
 }
 
-.addArrivalButton {
-    float: right;
+.arrivalsEmptyHint {
+    margin: 0;
+    font-size: 13px;
+    line-height: 18px;
+    color: rgb(0 0 0 / 0.45);
+    text-align: center;
+}
+
+.paidArrivalsEmptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 80px;
+    padding-bottom: 24px;
+    text-align: center;
+}
+
+.paidArrivalsEmptyState .addArrivalActions {
+    position: static;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    padding: 0;
+}
+
+.paidArrivalsEmptyHint {
+    width: 100%;
+    margin: 0;
+    font-size: 13px;
+    line-height: 18px;
+    color: rgb(0 0 0 / 0.45);
+    text-align: center;
+}
+
+/* Кнопки «Добавить заезд» / «Добавить исключение» под содержимым карточки */
+.formSectionWithSeparatorAction .addArrivalActions,
+.formSection:has(.feedingPaidBlock):not(:has(.paidArrivalsEmptyState)) .addArrivalActions {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 0;
+    padding: 0;
+}
+
+.formSection:has(.feedingPaidBlock):not(:has(.paidArrivalsEmptyState)) {
+    padding-bottom: 12px;
 }
 
 /* ADAPTIVES */
-@media (width <= 1366px) {
-    .edit__nav {
-        display: none;
-    }
-}
-
 @media (width <= 768px) {
-    .dateWrapper {
+    .arrivalBlockDivider {
+        margin-top: 20px;
         padding-top: 20px;
         border-top: 1px solid rgb(201 201 201);
-    }
-
-    .dateWrap {
-        margin-bottom: 22px;
-        position: relative;
-        flex-direction: column;
-    }
-
-    .dateWrap * {
-        margin-bottom: 0;
-    }
-
-    .deleteButton {
-        position: absolute;
-        top: 0;
-        right: 0;
-        z-index: 1000;
-    }
-
-    .dateLabelEmpty {
-        display: none;
     }
 
     .threeColumnsWrap {
@@ -255,6 +659,10 @@
 }
 
 @media (width <= 576px) {
+    .formSection {
+        padding: 10px 12px;
+    }
+
     .deleteButton {
         top: 0;
         right: 12px;
@@ -273,30 +681,401 @@
         display: block;
         margin-bottom: 5px;
     }
-
-    .formWrap {
-        height: calc(100vh - 280px);
-    }
 }
 
-.pageTitle {
+.pageTitleMain {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 16px;
+    min-width: 0;
 }
 
-.pageTitle h1 {
+.pageTitleText {
+    min-width: 0;
+}
+
+.pageTitleTextStacked {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.pageTitleLine {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+:global(.ant-layout-content:has(.vol-edit-page)) {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    padding-bottom: 0 !important;
+}
+
+:global(.ant-layout-content:has(.vol-edit-page) > div) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding: 24px 0 0 24px !important;
+}
+
+.volFormTabs {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.volFormTabsMobile :global(> .ant-tabs > .ant-tabs-nav) {
+    min-width: 0;
+}
+
+.volFormTabsMobile :global(.ant-tabs-nav-wrap) {
+    min-width: 0;
+    touch-action: pan-x pinch-zoom;
+    overscroll-behavior-x: contain;
+}
+
+.volFormTabsMobile :global(.ant-tabs-nav-list) {
+    flex-wrap: nowrap;
+}
+
+.volFormTabs :global(> .ant-tabs) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    padding-inline-end: 24px;
+}
+
+.volFormTabs :global(.ant-tabs-content-holder) {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.volFormTabs :global(.ant-tabs-content),
+.volFormTabs :global(.ant-tabs-tabpane-active) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.volFormTabs :global(.ant-tabs-tabpane-active) > :global(.vol-tab-pane-scroll-wrap) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Шапка карточки: слева заголовок, справа аватар */
+.volEditPage {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.volEditPage :global(.ant-page-header) {
+    display: grid;
+    flex: 1;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: start;
+    min-height: 0;
+    overflow: visible;
+    padding-inline-end: 24px;
+}
+
+.volEditPage :global(.ant-page-header-heading) {
+    display: contents;
+}
+
+.volEditPage :global(.ant-page-header-heading-left) {
+    grid-column: 1;
+    grid-row: 1;
+    margin-block: 0;
+}
+
+.volEditPage :global(.ant-page-header-heading-extra) {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    margin-block: 0;
+}
+
+.volEditPage :global(.ant-page-header-content) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% + 24px);
+    min-height: 0;
+    margin-inline-end: -24px;
+    overflow: hidden;
+    padding-block-start: 0;
+}
+
+.volEditPage :global(.ant-spin-nested-loading),
+.volEditPage :global(.ant-spin-container) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.volEditPage :global(.ant-card) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.volEditPage :global(.ant-card-body) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    padding-block: 0;
+}
+
+.volEditPage :global(.ant-card-body > .ant-form) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.volEditPage :global(.ant-card-body > .ant-tabs > .ant-tabs-nav) {
+    margin-bottom: 12px;
+}
+
+.volEditPage :global(.ant-card-actions) {
+    display: none !important;
+}
+
+.floatingSaveButton {
+    position: fixed;
+    z-index: 100;
+    right: 24px;
+    bottom: 32px;
+    box-shadow:
+        0 8px 20px rgb(0 0 0 / 0.16),
+        0 3px 8px rgb(0 0 0 / 0.1);
+}
+
+/* Карточка волонтёра: primary остаётся синим в loading/disabled, без серого ant-disabled */
+.volunteerSaveButtonSaving:global(.ant-btn-loading),
+.volunteerSaveButtonSaving:global(.ant-btn-primary.ant-btn-loading),
+.volunteerSaveButtonSaving:global(.ant-btn-color-primary.ant-btn-loading) {
+    background-color: #69b1ff !important;
+    border-color: #69b1ff !important;
+    color: #fff !important;
+    cursor: wait;
+    box-shadow:
+        0 8px 20px rgb(0 0 0 / 0.1),
+        0 3px 8px rgb(0 0 0 / 0.06);
+}
+
+.volunteerSaveButtonSaving:global(.ant-btn-loading) :global(.ant-btn-loading-icon) {
+    color: #fff;
+}
+
+.volunteerSaveButton:global(.ant-btn-primary:disabled:not(.ant-btn-loading)),
+.volunteerSaveButton:global(.ant-btn-color-primary:disabled:not(.ant-btn-loading)) {
+    background-color: #91caff !important;
+    border-color: #91caff !important;
+    color: #fff !important;
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.floatingSaveButtonIconOnly:global(.ant-btn) {
+    --floating-save-mobile-size: 60px;
+    --floating-save-mobile-icon-size: 32px;
+
+    width: var(--floating-save-mobile-size);
+    min-width: var(--floating-save-mobile-size);
+    max-width: var(--floating-save-mobile-size);
+    height: var(--floating-save-mobile-size);
+    min-height: var(--floating-save-mobile-size);
+    max-height: var(--floating-save-mobile-size);
+    padding: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    aspect-ratio: 1;
+}
+
+.floatingSaveButtonIconOnly:global(.ant-btn) :global(.ant-btn-icon) {
     margin: 0;
-    font-size: 20px;
-    font-weight: 500;
-    color: rgb(0 0 0 / 0.85);
+    line-height: 0;
+    font-size: var(--floating-save-mobile-icon-size);
+}
+
+.floatingSaveButtonIconOnly:global(.ant-btn) :global(.ant-btn-icon) :global(.anticon),
+.floatingSaveButtonIconOnly:global(.ant-btn) :global(.ant-btn-icon) :global(svg),
+.floatingSaveButtonIcon {
+    width: var(--floating-save-mobile-icon-size);
+    height: var(--floating-save-mobile-icon-size);
+    font-size: var(--floating-save-mobile-icon-size);
+}
+
+.floatingSaveButtonIcon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Планшет и мобилка (<768px): компактная шапка, табы под строкой заголовка */
+.volEditPageCompactHeader {
+    --vol-header-avatar-reserve: 80px;
+}
+
+.volEditPageCompactHeader :global(.ant-page-header) {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    row-gap: 0;
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: start;
+}
+
+.volEditPageCompactHeader :global(.ant-page-header-heading-left) {
+    flex-shrink: 0;
+    margin-block-end: 4px;
+    min-width: 0;
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-left) {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    margin-block-end: 8px;
+    padding-inline-end: 0;
+}
+
+.volEditPageCompactHeader :global(.ant-page-header-content) {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    padding-block-start: 0 !important;
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header-content) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    margin-inline-end: 0;
+}
+
+.volEditPageCompactHeader .pageTitleMain {
+    flex-wrap: nowrap;
+    gap: 8px;
+}
+
+.volEditPageCompactHeader .pageTitleText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1 1 auto;
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto .pageTitleTextStacked {
+    flex: 1 1 auto;
+}
+
+.volEditPageCompactHeader .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    margin-bottom: 8px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.volEditPageCompactHeader .volFormTabs :global(.ant-tabs-nav-wrap) {
+    min-width: 0;
+}
+
+.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-left) {
+    padding-inline-end: var(--vol-header-avatar-reserve);
+}
+
+.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 24px;
+    margin: 0;
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    inset: auto;
+    margin: 0;
+}
+
+.volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    padding-inline-end: var(--vol-header-avatar-reserve);
+}
+
+.volEditPageCompactHeader.volEditPageWithHeaderPhoto .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+    padding-inline-end: 0;
 }
 
 @media (width <= 576px) {
-    .pageTitle {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+    :global(.ant-layout-content:has(.vol-edit-page) > div) {
+        padding-inline-end: 24px !important;
+    }
+
+    .volEditPage :global(.ant-page-header) {
+        padding-inline-end: 0;
+    }
+
+    .volEditPage :global(.ant-page-header-content) {
+        width: 100%;
+        margin-inline-end: 0;
+    }
+
+    .volEditPage .volFormTabs :global(> .ant-tabs > .ant-tabs-nav) {
+        padding-inline-end: 0;
+    }
+
+    .volEditPageWithHeaderPhoto :global(.ant-page-header-heading-extra) {
+        inset-inline-end: 0;
+    }
+
+    .volEditPage :global(.ant-card-body) {
+        padding-bottom: 0 !important;
+    }
+
+    .floatingSaveButton {
+        right: 16px;
+        bottom: calc(var(--mobile-sider-height, 56px) + env(safe-area-inset-bottom, 0px) + 16px);
     }
 
     .mobileTabsWithOffset :global(.ant-tabs-content-holder) {

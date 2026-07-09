@@ -65,7 +65,10 @@ class create_user():
     ROLE_USER = "#main_role"
     DEPARTMENT = "#directions"
     QR_NUMBER = "#qr"
-    SAVE_BUTTON = "//button[span[text()='Сохранить']]"
+    SAVE_BUTTON = '[data-testid="volunteer-save-button"]'
+    SAVE_BUTTON_FALLBACK = "//button[span[text()='Сохранить']]"
+    CONFIRM_SAVE_BUTTON = '[data-testid="volunteer-save-confirm"]'
+    CONFIRM_SAVE_BUTTON_FALLBACK = "//button[span[text()='Всё равно сохранить']]"
 
     ADD_VISIT_BUTTON = "//button[span[text()='Добавить заезд']]"
     VISIT_STATUS = "#arrivals_0_status"
@@ -84,7 +87,7 @@ class create_user():
 
     APPROVER_INPUT = "input[id=approver]"
 
-    FIND_INPUT = "input[placeholder='Поиск по волонтерам, датам, службам']"
+    FIND_INPUT = "input[placeholder='Поиск по волонтерам']"
     FIND_TESTNAME = "ant-input.css-sphnl3"
 
     DELETE_USER_BUTTON = "//button[span[text()='Удалить волонтера']]"

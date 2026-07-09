@@ -52,6 +52,12 @@ class Statistics(APIView):
                 location=OpenApiParameter.QUERY,
                 required=False,
             ),
+            OpenApiParameter(
+                name='apply_predict_alg_to_group_badge',
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
         ],
         responses={
             200: serializers.StatisticsSerializer(many=True)
@@ -69,7 +75,8 @@ class Statistics(APIView):
             serializer.validated_data.get('anonymous'),
             serializer.validated_data.get('group_badge'),
             serializer.validated_data.get('prediction_alg'),
-            serializer.validated_data.get('apply_history')
+            serializer.validated_data.get('apply_history'),
+            serializer.validated_data.get('apply_predict_alg_to_group_badge'),
         )
 
         return Response(

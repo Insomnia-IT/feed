@@ -30,3 +30,38 @@ export const createInventoryMovement = (params: {
     to: number;
     actor?: number;
 }) => axios.post(`${NEW_API_URL}/storage-movements/`, params);
+
+export const getStoragePositions = async (storageId: number): Promise<StorageItemPositionEntity[]> => {
+    const { data } = await axios.get<{ results: StorageItemPositionEntity[] }>(
+        `${NEW_API_URL}/storage-positions/?storage=${storageId}&has_count=true`
+    );
+    return data.results;
+};
+
+export const issueFromStorage = (params: {
+    position: number;
+    count: number;
+    volunteer: number;
+    notes?: string;
+    actor?: number;
+}) =>
+    axios.post(`${NEW_API_URL}/storage-positions/${params.position}/issue/`, {
+        count: params.count,
+        volunteer: params.volunteer,
+        notes: params.notes,
+        actor: params.actor
+    });
+
+export const returnToStorage = (params: {
+    position: number;
+    count: number;
+    volunteer: number;
+    notes?: string;
+    actor?: number;
+}) =>
+    axios.post(`${NEW_API_URL}/storage-positions/${params.position}/receive/`, {
+        count: params.count,
+        volunteer: params.volunteer,
+        notes: params.notes,
+        actor: params.actor
+    });

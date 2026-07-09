@@ -22,6 +22,7 @@ import {
 } from 'components/entities/vols/vol-list/filters/filter-types';
 import { useLocalStorage } from 'shared/hooks';
 import { getSorter } from 'utils';
+import { MEAL_TIME_OPTIONS } from 'const';
 
 const SEARCH_TEXT_STORAGE_ITEM_NAME = 'volSearchText';
 const FILTERS_STORAGE_ITEM_NAME = 'volFilter';
@@ -280,6 +281,14 @@ export const useFilters = ({
             },
             { type: FilterFieldType.Date, name: 'feeded_date', title: 'Питался' },
             { type: FilterFieldType.Date, name: 'non_feeded_date', title: 'Не питался' },
+            {
+                type: FilterFieldType.Lookup,
+                name: 'meal_time',
+                title: 'Прием пищи',
+                skipNull: true,
+                single: true,
+                lookup: () => MEAL_TIME_OPTIONS.map(({ value, label }) => ({ id: value, name: label }))
+            },
             { type: FilterFieldType.String, name: 'name', title: 'Имя на бейдже' },
             { type: FilterFieldType.String, name: 'first_name', title: 'Имя' },
             { type: FilterFieldType.String, name: 'last_name', title: 'Фамилия' },
@@ -314,7 +323,7 @@ export const useFilters = ({
                 name: 'feed_type',
                 title: 'Тип питания',
                 skipNull: true,
-                single: true,
+                single: false,
                 lookup: () => feedTypesLookup
             },
             { type: FilterFieldType.Boolean, single: true, name: 'is_vegan', title: 'Веган' },

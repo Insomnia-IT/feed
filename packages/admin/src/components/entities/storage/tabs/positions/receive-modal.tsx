@@ -37,7 +37,7 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({
                         <InputNumber />
                     </Form.Item>
                 )}
-                <Form.Item name="volunteer" label="От кого" rules={[{ required: !position?.item_is_anonymous }]}>
+                <Form.Item name="volunteer" label="От кого (из инвентаря)">
                     <Select
                         {...volunteerSelectProps}
                         showSearch

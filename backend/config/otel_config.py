@@ -3,7 +3,7 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 from opentelemetry.instrumentation.django import DjangoInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
-from opentelemetry.instrumentation.sqlite3 import SQLite3Instrumentor
+# from opentelemetry.instrumentation.sqlite3 import SQLite3Instrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -12,9 +12,13 @@ import os
 
 OTEL_ENDPOINT = os.environ.get("OTEL_ENDPOINT") # http://localhost:4318/v1/traces
 
-
 def request_hook(span, request):
+    span.add_event(
+        name="headers",
+        attributes=dict(request.headers)
+    )
     span.add_event(request.body.decode("utf-8"))
+    span.set_attribute("auth", request.headers["Authorization"])
     pass
 
 def response_hook(span, request, response):
@@ -34,4 +38,4 @@ def configure_opentelemetry():
     DjangoInstrumentor().instrument(is_sql_commentor_enabled=True, response_hook=response_hook, request_hook=request_hook)
     RequestsInstrumentor().instrument()
     LoggingInstrumentor(log_level=logging.INFO).instrument()
-    SQLite3Instrumentor().instrument()
+    # SQLite3Instrumentor().instrument()

@@ -10,6 +10,7 @@ export const IssuancesTab: React.FC = () => {
 
     const { tableProps: issuancesTableProps } = useTable<IssuanceEntity>({
         resource: 'storage-issuances',
+        syncWithLocation: false,
         filters: {
             initial: [
                 {
@@ -27,7 +28,14 @@ export const IssuancesTab: React.FC = () => {
         { dataIndex: 'id', title: 'ID' },
         { dataIndex: 'item_name', title: 'Предмет' },
         { dataIndex: 'count', title: 'Кол-во' },
-        { dataIndex: 'volunteer_name', title: 'Кому' },
+        {
+            title: 'Кому',
+            render: (data: IssuanceEntity) => <a href={`/volunteers/edit/${data.volunteer}`}>{data.volunteer_name}</a>
+        },
+        {
+            title: 'Кем',
+            render: (data: IssuanceEntity) => <a href={`/volunteers/edit/${data.actor}`}>{data.actor_name}</a>
+        },
         { dataIndex: 'notes', title: 'Заметки' },
         {
             dataIndex: 'created_at',

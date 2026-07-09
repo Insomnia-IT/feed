@@ -1,7 +1,7 @@
 ﻿import { useCallback, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { Button, Space, Table, Tooltip, Typography, type TableProps } from 'antd';
-import { PlusSquareOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
+import { ExportOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { useList, type HttpError } from '@refinedev/core';
 import axios from 'axios';
 
@@ -17,7 +17,6 @@ import styles from './common-food.module.css';
 const CommonFood = () => {
     const { id: volId } = useParams<{ id: string }>();
 
-    const navigate = useNavigate();
     const { isMobile } = useScreen();
     const canCreate = useCanAccess({
         action: 'create',
@@ -108,9 +107,17 @@ const CommonFood = () => {
             <Space wrap align="center" className={styles.buttonsWrap}>
                 {!isMobile && (
                     <Button
-                        icon={<PlusSquareOutlined />}
-                        onClick={() => navigate('/feed-transaction/create')}
+                        htmlType="button"
+                        title="Добавить порцию в новой вкладке"
+                        icon={<ExportOutlined />}
                         disabled={!canCreate}
+                        onClick={() => {
+                            window.open(
+                                `${window.location.origin}/feed-transaction/create`,
+                                '_blank',
+                                'noopener,noreferrer'
+                            );
+                        }}
                     >
                         Добавить порцию
                     </Button>

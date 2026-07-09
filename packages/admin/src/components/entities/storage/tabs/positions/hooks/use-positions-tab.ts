@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useTable, useModalForm } from '@refinedev/antd';
+import { useGetIdentity } from '@refinedev/core';
 import { notification, type FormInstance } from 'antd';
 import axios from 'axios';
 import type { CrudFilter } from '@refinedev/core';
 import type { StorageItemPositionEntity, ItemEntity } from 'interfaces';
+import type { UserData } from 'auth';
 import { NEW_API_URL } from 'const';
 
 interface UsePositionsTabParams {
@@ -15,11 +17,14 @@ interface UsePositionsTabParams {
 }
 
 export const usePositionsTab = ({ storage, filters, actionForm, itemsData, search }: UsePositionsTabParams) => {
+    const { data: user } = useGetIdentity<UserData>();
+    const actorId = user?.id ? Number(user.id) : undefined;
     const {
         tableProps: positionsTableProps,
         tableQuery: { refetch: positionsRefetch }
     } = useTable<StorageItemPositionEntity>({
         resource: 'storage-positions',
+        syncWithLocation: false,
         filters: {
             permanent: filters.concat(
                 [{ field: 'has_count', operator: 'eq', value: true }],
@@ -49,7 +54,7 @@ export const usePositionsTab = ({ storage, filters, actionForm, itemsData, searc
             const itemId = positionFormProps.form?.getFieldValue('item');
             const selectedItem = itemsData?.find((item) => item.id === itemId);
 
-            if (selectedItem?.is_anonymous && createdPosition?.id) {
+            if (selectedItem?.is_unique && createdPosition?.id) {
                 setCreatedPositionId(createdPosition.id);
                 setIsSuccessModalVisible(true);
             }
@@ -62,7 +67,10 @@ export const usePositionsTab = ({ storage, filters, actionForm, itemsData, searc
         try {
             const values = await actionForm.validateFields();
 
-            await axios.post(`${NEW_API_URL}/storage-positions/${selectedPosition?.id}/${action}/`, values);
+            await axios.post(`${NEW_API_URL}/storage-positions/${selectedPosition?.id}/${action}/`, {
+                ...values,
+                actor: actorId
+            });
 
             notification.success({ message: 'Успешно' });
             setIsReceiveModalVisible(false);
@@ -109,6 +117,7 @@ export const usePositionsTab = ({ storage, filters, actionForm, itemsData, searc
         setSelectedPosition,
         positionModalProps,
         positionFormProps,
+        actorId,
         showPositionModal,
         handleAction,
         handleMove

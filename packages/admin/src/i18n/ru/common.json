@@ -22,7 +22,7 @@
         "clone": "Копия",
         "notAccessTitle": "Нет доступа"
     },
-    "warnWhenUnsavedChanges": "Внесенные данные будут утеряны. Вы уверены, что хотите выйти без сохранения?",
+    "warnWhenUnsavedChanges": "Вы не сохранили внесённые изменения. Они потеряются, если выйти из карточки. Что будем делать?",
     "notifications": {
         "success": "Успешно",
         "error": "Ошибка (status code: {{statusCode}})",

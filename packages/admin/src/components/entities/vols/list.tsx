@@ -23,6 +23,9 @@ import styles from './list-page.module.css';
 
 const LS_PAGE_INDEX = 'volPageIndex';
 const LS_PAGE_SIZE = 'volPageSize';
+const LS_BRIGADE_SCOPE = 'volBrigadeScope';
+
+const isBrigadeScope = (value: string | null): value is 'my' | 'all' => value === 'my' || value === 'all';
 
 const DesktopVolunteersContent = lazy(() =>
     import('./desktop-volunteers-content').then((module) => ({ default: module.DesktopVolunteersContent }))
@@ -66,7 +69,7 @@ const VolunteerSearchInput = ({
                 }
             >
                 <Input
-                    placeholder="Поиск по волонтерам, датам, службам"
+                    placeholder="Поиск по волонтерам"
                     value={searchInputValue}
                     onChange={(e) => {
                         const nextValue = e.target.value;
@@ -131,8 +134,19 @@ export const VolList = () => {
     const [customFields, setCustomFields] = useState<Array<CustomFieldEntity>>([]);
     const [customFieldsLoaded, setCustomFieldsLoaded] = useState(() => !isDesktop);
     const [hasMyBrigade, setHasMyBrigade] = useState(false);
-    const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>('all');
+    const [brigadeScope, setBrigadeScope] = useState<'my' | 'all'>(() => {
+        const stored = getItem(LS_BRIGADE_SCOPE);
+        return isBrigadeScope(stored) ? stored : 'all';
+    });
     const [mobileTotal, setMobileTotal] = useState(0);
+
+    const setBrigadeScopeWithStorage = useCallback(
+        (value: 'my' | 'all') => {
+            setBrigadeScope(value);
+            setItem(LS_BRIGADE_SCOPE, value);
+        },
+        [setItem]
+    );
 
     const syncPaginationState = useCallback(
         ({ nextPage, nextPageSize }: { nextPage: number; nextPageSize: number }) => {
@@ -203,7 +217,13 @@ export const VolList = () => {
 
                 const hasBrigade = total > 0;
                 setHasMyBrigade(hasBrigade);
-                setBrigadeScope(hasBrigade ? 'my' : 'all');
+
+                const storedScope = getItem(LS_BRIGADE_SCOPE);
+                if (!isBrigadeScope(storedScope)) {
+                    const defaultScope = hasBrigade ? 'my' : 'all';
+                    setBrigadeScope(defaultScope);
+                    setItem(LS_BRIGADE_SCOPE, defaultScope);
+                }
             })
             .catch(() => {
                 if (!alive) return;
@@ -215,7 +235,7 @@ export const VolList = () => {
         return () => {
             alive = false;
         };
-    }, [isDesktop, userId]);
+    }, [getItem, isDesktop, setItem, userId]);
 
     useEffect(() => {
         if (!isDesktop) {
@@ -299,7 +319,7 @@ export const VolList = () => {
                                 { label: 'Все', value: 'all' }
                             ]}
                             value={effectiveBrigadeScope}
-                            onChange={(value) => setBrigadeScope(value as 'my' | 'all')}
+                            onChange={(value) => setBrigadeScopeWithStorage(value as 'my' | 'all')}
                         />
                     )}
 

@@ -1,0 +1,25 @@
+.customFieldsGrid {
+    container-type: inline-size;
+    container-name: custom-fields;
+    display: grid;
+    gap: 4px 16px;
+    align-items: start;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.customFieldsField {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+@container custom-fields (max-width: 1023px) {
+    .customFieldsGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container custom-fields (max-width: 576px) {
+    .customFieldsGrid {
+        grid-template-columns: 1fr;
+    }
+}

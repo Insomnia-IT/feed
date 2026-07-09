@@ -3,6 +3,7 @@ import { MealTimeSelect } from 'components/meal-time-select';
 import { MainScreen } from 'screens/main-screen';
 import { HistoryScreen } from 'screens/history-screen/history-screen';
 import { StatsScreen } from 'screens/stats-screen/stats-screen';
+import { GroupBadgePlanScreen } from 'screens/group-badge-plan-screen';
 import { useApp } from 'model/app-provider';
 import { AppViews, useView } from 'model/view-provider';
 import { SettingsScreen } from 'screens/settings-screen/settings-screen';
@@ -21,6 +22,7 @@ export const Screens = () => {
                     {currentView === AppViews.MAIN && <MainScreen />}
                     {currentView === AppViews.HISTORY && <HistoryScreen />}
                     {currentView === AppViews.STATS && <StatsScreen />}
+                    {currentView === AppViews.GROUP_BADGE_PLAN && <GroupBadgePlanScreen />}
                     {currentView === AppViews.SETTINGS && <SettingsScreen />}
                 </>
             )}

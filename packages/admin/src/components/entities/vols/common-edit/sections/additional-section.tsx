@@ -46,14 +46,16 @@ export const AdditionalSection = ({
 
     return (
         <>
-            <p className={styles.formSection__title}>Дополнительно</p>
+            <div className={styles.formSection__title}>
+                <h4>Дополнительно</h4>
+            </div>
             <div className="commentArea">
                 <Form.Item
                     label={
                         <>
                             <span>Комментарий бюро</span>
                             <Tooltip title="заполняется в бюро, виден руководителю">
-                                <InfoCircleOutlined style={{ marginLeft: 4 }} />
+                                <InfoCircleOutlined className={styles.labelHint} />
                             </Tooltip>
                         </>
                     }
@@ -67,7 +69,7 @@ export const AdditionalSection = ({
                         <>
                             <span>Комментарий руководителя службы</span>
                             <Tooltip title="заполняется руководителем, виден в бюро">
-                                <InfoCircleOutlined style={{ marginLeft: 4 }} />
+                                <InfoCircleOutlined className={styles.labelHint} />
                             </Tooltip>
                         </>
                     }
@@ -81,7 +83,7 @@ export const AdditionalSection = ({
                         <>
                             <span>Сообщение для волонтера</span>
                             <Tooltip title="будет видно в кормителе">
-                                <InfoCircleOutlined style={{ marginLeft: 4 }} />
+                                <InfoCircleOutlined className={styles.labelHint} />
                             </Tooltip>
                         </>
                     }
