@@ -164,6 +164,17 @@ export interface GroupBadge extends TimeStampedEntity {
     is_disabled?: boolean;
 }
 
+export type StatisticType = 'plan' | 'fact' | 'predict';
+export interface StatisticItem {
+    date: string;
+    type: StatisticType;
+    is_vegan: boolean | null;
+    group_badge: boolean | null;
+    meal_time: MealTime;
+    amount: number;
+    kitchen_id: number | null;
+}
+
 export class MySubClassedDexie extends Dexie {
     groupBadges!: Table<GroupBadge>;
     transactions!: Table<Transaction>;

@@ -1,8 +1,9 @@
-import { Form, Input, InputNumber, Modal, Select } from 'antd';
+import { Button, Form, Input, InputNumber, Modal, Select } from 'antd';
 
 import type { InventoryRow, TransferFormValues } from './types';
 
 import styles from '../../../common.module.css';
+import { QrcodeOutlined } from '@ant-design/icons';
 
 interface InventoryTransferModalProps {
     open: boolean;
@@ -15,6 +16,8 @@ interface InventoryTransferModalProps {
     selectedSourceInventoryItem?: InventoryRow;
     itemOptions: Array<{ value: number; label: string }>;
     volunteerSelectProps: Record<string, any>;
+    isVolunteerLoading: boolean;
+    onOpenQrScanner: () => void;
     onClose: () => void;
     onSubmit: () => void;
     onSourceChange: () => void;
@@ -32,6 +35,8 @@ export const InventoryTransferModal = ({
     selectedSourceInventoryItem,
     itemOptions,
     volunteerSelectProps,
+    isVolunteerLoading,
+    onOpenQrScanner,
     onClose,
     onSubmit,
     onSourceChange,
@@ -71,6 +76,8 @@ export const InventoryTransferModal = ({
                         filterOption={false}
                         placeholder="Найти получателя"
                         onChange={onSourceChange}
+                        loading={isVolunteerLoading}
+                        suffixIcon={<Button type="text" icon={<QrcodeOutlined />} onClick={onOpenQrScanner} />}
                     />
                 </Form.Item>
                 <Form.Item name="position" label="Предмет" rules={[{ required: true, message: 'Выберите предмет' }]}>

@@ -19,7 +19,8 @@ export const AppViews = {
     MAIN: 'main',
     HISTORY: 'history',
     STATS: 'stats',
-    SETTINGS: 'settings'
+    SETTINGS: 'settings',
+    GROUP_BADGE_PLAN: 'group-badge-plan'
 } as const;
 
 export type AppViews = (typeof AppViews)[keyof typeof AppViews];

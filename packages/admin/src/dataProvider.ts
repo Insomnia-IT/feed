@@ -31,18 +31,21 @@ export const crudDataProvider = (
         const mode = pagination?.mode ?? 'server';
         const ordering = generateOrdering(sorters);
 
+        const params = new URLSearchParams();
+        filters?.forEach((filter) => {
+            if (isLogicalFilter(filter) && filter.value) {
+                params.append(filter.field, filter.value);
+            }
+        });
+
+        if (ordering) {
+            params.append('ordering', ordering);
+        }
+        params.append('limit', (mode === 'server' ? pageSize : 10000).toString());
+        params.append('offset', (mode === 'server' ? (currentPage - 1) * pageSize : 0).toString());
+
         const { data } = await httpClient[requestMethod](url, {
-            params: {
-                ...filters?.reduce((acc, filter) => {
-                    if (isLogicalFilter(filter) && filter.value) {
-                        return { ...acc, [filter.field]: filter.value };
-                    }
-                    return acc;
-                }, {}),
-                ...(ordering ? { ordering } : {}),
-                limit: mode === 'server' ? pageSize : 10000,
-                offset: mode === 'server' ? (currentPage - 1) * pageSize : 0
-            },
+            params: params,
             headers: headersFromMeta
         });
 

@@ -46,6 +46,7 @@ type FiltersState = {
     groupBadge: BooleanExtended;
     predictionAlg: PredictionAlg;
     applyHistory: BooleanExtended;
+    applyPredictAlgToGroupBadge: BooleanExtended;
     selectedMealTime: MealTime;
 };
 
@@ -54,8 +55,9 @@ const DEFAULT_FILTERS: FiltersState = {
     kitchenId: 'all',
     anonymous: 'all',
     groupBadge: 'all',
-    predictionAlg: '1',
+    predictionAlg: '2',
     applyHistory: 'false',
+    applyPredictAlgToGroupBadge: 'true',
     selectedMealTime: 'breakfast'
 };
 
@@ -147,9 +149,18 @@ export function PublicStatistic() {
             anonymous: filters.anonymous !== 'all' ? filters.anonymous : undefined,
             group_badge: filters.groupBadge !== 'all' ? filters.groupBadge : undefined,
             prediction_alg: filters.predictionAlg,
-            apply_history: filters.applyHistory
+            apply_history: filters.applyHistory,
+            apply_predict_alg_to_group_badge: filters.applyPredictAlgToGroupBadge
         };
-    }, [dateFrom, dateTo, filters.anonymous, filters.groupBadge, filters.predictionAlg, filters.applyHistory]);
+    }, [
+        dateFrom,
+        dateTo,
+        filters.anonymous,
+        filters.groupBadge,
+        filters.predictionAlg,
+        filters.applyHistory,
+        filters.applyPredictAlgToGroupBadge
+    ]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -332,6 +343,16 @@ export function PublicStatistic() {
                                 <InfoCircleOutlined />
                             </Tooltip>
                         </Radio.Button>
+                    </Radio.Group>
+                </FilterCard>
+
+                <FilterCard label="Применить алгоритм прогноза к ГБ">
+                    <Radio.Group
+                        value={filters.applyPredictAlgToGroupBadge}
+                        onChange={handleFilterChange('applyPredictAlgToGroupBadge')}
+                    >
+                        <Radio.Button value="true">Да</Radio.Button>
+                        <Radio.Button value="false">Нет</Radio.Button>
                     </Radio.Group>
                 </FilterCard>
 
