@@ -47,9 +47,7 @@ export const GroupBadgeList = () => {
     const { result: groupBadges } = useList<GroupBadgeEntity>({
         resource: 'group-badges',
         pagination: {
-            mode: 'server',
-            currentPage: isDesktop ? page : 1,
-            pageSize: isDesktop ? pageSize : 10000
+            mode: 'off'
         }
     });
     const { result: kitchensResult } = useList<KitchenEntity>({
@@ -74,12 +72,21 @@ export const GroupBadgeList = () => {
         }
     }, [isDesktop, groupBadges?.total, page, pageSize, setItem]);
 
+    const data =
+        groupBadges?.data.filter((item) => {
+            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
+        }) ?? [];
+
     const pagination: TablePaginationConfig = {
-        total: groupBadges?.total ?? 0,
-        showTotal: (total) => `Кол-во групповых бейджей: ${total}`,
+        total: data.length,
         current: page,
         pageSize,
         showSizeChanger: true,
+
+        showTotal: (_, range) => {
+            return `Кол-во групповых бейджей: ${range[1] - range[0] + 1}`;
+        },
+
         onChange: (newPage, newPageSize) => {
             setPage(newPage);
             setPageSize(newPageSize);
@@ -87,11 +94,6 @@ export const GroupBadgeList = () => {
             setItem(LS_SIZE_KEY, String(newPageSize));
         }
     };
-
-    const data =
-        groupBadges?.data.filter((item) => {
-            return !visibleDirections || (item.direction && visibleDirections.includes(item.direction.id));
-        }) ?? [];
 
     return (
         <List>
