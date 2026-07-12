@@ -52,6 +52,7 @@ export const useSync = (baseUrl: string, pin: string | null, setAuth: (auth: boo
                     const updatedAtFrom = new Date(lastSyncStart || 0).toISOString();
                     const volsPromise = volsSend({
                         updated_at__from: updatedAtFrom,
+                        is_deleted: 'all',
                         limit: '10000'
                     });
                     const groupBadgesPromise = groupBadgesSend({
