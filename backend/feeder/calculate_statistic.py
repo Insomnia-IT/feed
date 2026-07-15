@@ -360,7 +360,7 @@ def calculate_group_badge_predict(store, current_day, prev_day, volunteers, plan
                         )
 
                         if prev_predict_raw > 0 and prev_fact > 0:
-                            pow = 0.5 if predict_raw_amount > prev_predict_raw else 1
+                            pow = 0.5
                             predict_amount = predict_raw_amount * (prev_fact ** pow / prev_predict_raw ** pow)
 
                     store.add(
@@ -555,8 +555,9 @@ def load_planning_cells_cache():
                     last_valid = cell
             
             if last_valid:
+                current_datetime = arrow.get(current_date, tzinfo=TZ)
                 key = (badge_id, meal_time, current_date.strftime('%Y-%m-%d'))
-                if (last_valid['group_badge__is_disabled'] and last_valid['group_badge__updated_at'].date() < current_date) or (last_valid['group_badge__deleted_at'] and last_valid['group_badge__deleted_at'].date() < current_date):
+                if (last_valid['group_badge__is_disabled'] and last_valid['group_badge__updated_at'] < current_datetime) or (last_valid['group_badge__deleted_at'] and last_valid['group_badge__deleted_at'] < current_datetime):
                     planning_cells_cache[key] = {
                         'amount_meat': 0,
                         'amount_vegan': 0
