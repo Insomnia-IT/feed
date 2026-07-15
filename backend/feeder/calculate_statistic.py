@@ -524,11 +524,9 @@ def build_history_by_volunteer(history_queryset):
 
 def load_planning_cells_cache():
     planning_cells_cache = {}
-    cells = models.GroupBadgePlanningCells.objects.filter(
+    cells = models.GroupBadgePlanningCells.objects.select_related('group_badge').filter(
         date__range=(PLANNIG_DATE_FROM, PLANNIG_DATE_TO),
-        group_badge__is_disabled=False,
-        group_badge__deleted_at=None,
-    ).values('group_badge_id', 'meal_time', 'date', 'amount_meat', 'amount_vegan')
+    ).values('group_badge_id', 'meal_time', 'date', 'amount_meat', 'amount_vegan', 'group_badge__is_disabled', 'group_badge__deleted_at', 'group_badge__updated_at')
 
     grouped_cells = defaultdict(list)
     for cell in cells:
@@ -537,7 +535,10 @@ def load_planning_cells_cache():
         grouped_cells[group_key].append({
             'date': cell['date'],
             'amount_meat': cell['amount_meat'],
-            'amount_vegan': cell['amount_vegan']
+            'amount_vegan': cell['amount_vegan'],
+            'group_badge__is_disabled': cell['group_badge__is_disabled'],
+            'group_badge__deleted_at': cell['group_badge__deleted_at'],
+            'group_badge__updated_at': cell['group_badge__updated_at'],
         })
 
     for (badge_id, meal_time), cells in grouped_cells.items():
@@ -552,13 +553,19 @@ def load_planning_cells_cache():
                     last_valid = None
                 else:
                     last_valid = cell
-
+            
             if last_valid:
                 key = (badge_id, meal_time, current_date.strftime('%Y-%m-%d'))
-                planning_cells_cache[key] = {
-                    'amount_meat': last_valid['amount_meat'],
-                    'amount_vegan': last_valid['amount_vegan']
-                }
+                if (last_valid['group_badge__is_disabled'] and last_valid['group_badge__updated_at'].date() < current_date) or (last_valid['group_badge__deleted_at'] and last_valid['group_badge__deleted_at'].date() < current_date):
+                    planning_cells_cache[key] = {
+                        'amount_meat': 0,
+                        'amount_vegan': 0
+                    }
+                else:
+                    planning_cells_cache[key] = {
+                        'amount_meat': last_valid['amount_meat'],
+                        'amount_vegan': last_valid['amount_vegan']
+                    }
             current_date += timedelta(days=1)
 
     return planning_cells_cache
