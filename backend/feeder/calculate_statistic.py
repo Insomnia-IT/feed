@@ -555,7 +555,7 @@ def load_planning_cells_cache():
                     last_valid = cell
             
             if last_valid:
-                current_datetime = arrow.get(current_date, tzinfo=TZ)
+                current_datetime = arrow.get(current_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
                 key = (badge_id, meal_time, current_date.strftime('%Y-%m-%d'))
                 if (last_valid['group_badge__is_disabled'] and last_valid['group_badge__updated_at'] < current_datetime) or (last_valid['group_badge__deleted_at'] and last_valid['group_badge__deleted_at'] < current_datetime):
                     planning_cells_cache[key] = {
