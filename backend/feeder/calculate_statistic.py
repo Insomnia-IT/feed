@@ -525,7 +525,9 @@ def build_history_by_volunteer(history_queryset):
 def load_planning_cells_cache():
     planning_cells_cache = {}
     cells = models.GroupBadgePlanningCells.objects.filter(
-        date__range=(PLANNIG_DATE_FROM, PLANNIG_DATE_TO)
+        date__range=(PLANNIG_DATE_FROM, PLANNIG_DATE_TO),
+        group_badge__is_disabled=False,
+        group_badge__deleted_at=None,
     ).values('group_badge_id', 'meal_time', 'date', 'amount_meat', 'amount_vegan')
 
     grouped_cells = defaultdict(list)
