@@ -52,6 +52,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'config.observability.RequestObservabilityMiddleware',
+    'config.metrics.MetricsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -72,6 +74,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_HEADERS = [
     'authorization',
     'app-version',
+    'x-device-id',
+    'x-request-id',
+    'x-kitchen-id',
     'content-type',
 ]
 
@@ -182,7 +187,9 @@ if env_file.exists():
 
 SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
 if SENTRY_DSN:
+    import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
+    from config.observability import sentry_before_send
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
@@ -190,12 +197,23 @@ if SENTRY_DSN:
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
-        traces_sample_rate=1.0,
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
 
         # If you wish to associate users to errors (assuming you are using
         # django.contrib.auth) you may enable sending PII data.
-        send_default_pii=True
+        send_default_pii=False,
+        environment=os.environ.get("APP_ENVIRONMENT", "development"),
+        release=os.environ.get("APP_RELEASE", os.environ.get("COMMIT_SHA", "unknown")),
+        before_send=sentry_before_send,
     )
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"json": {"()": "config.observability.JsonFormatter"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "root": {"handlers": ["console"], "level": os.environ.get("LOG_LEVEL", "INFO")},
+}
 
 
 DEBUG = os.environ.get("DEBUG", "") == "True"
@@ -239,7 +257,8 @@ DATABASES = {
         'HOST': os.environ.get("DB_HOST", ""),
         'PORT': os.environ.get("DB_PORT", ""),
         'OPTIONS': {
-            'transaction_mode': 'IMMEDIATE'
+            'transaction_mode': 'IMMEDIATE',
+            'timeout': int(os.environ.get("SQLITE_TIMEOUT_SECONDS", "20")),
         },
     },
 }
@@ -264,4 +283,3 @@ if _email_backend:
 
 if os.path.exists(os.path.join(BASE_DIR, 'config', 'settings_local.py')):
     from config.settings_local import *
-

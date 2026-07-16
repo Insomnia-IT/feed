@@ -23,7 +23,7 @@ services:
             - ${DB_DIR:-./db}:/app/db
             - ${PHOTO_STORAGE_PATH:-./db/photos}:/app/photos
         healthcheck:
-            test: ["CMD-SHELL", "curl -fsS http://localhost:8000/feedapi/v1/healthz >/dev/null || exit 1"]
+            test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health/ready >/dev/null || exit 1"]
             interval: 10s
             timeout: 5s
             retries: 6

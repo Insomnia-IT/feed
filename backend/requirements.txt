@@ -20,3 +20,4 @@ opentelemetry-instrumentation-requests
 opentelemetry-instrumentation-logging
 opentelemetry-instrumentation-sqlite3
 opentelemetry-exporter-otlp-proto-http
+prometheus-client

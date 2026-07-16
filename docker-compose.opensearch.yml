@@ -27,9 +27,6 @@ services:
       timeout: 5s
       retries: 6
       start_period: 30s
-    depends_on:
-      - jaeger
-
   front:
     networks:
       - internal
@@ -79,7 +76,7 @@ services:
       # "--log-level=debug"
       ]
     ports:
-      - "0.0.0.0:16686:16686"
+      - "127.0.0.1:16686:16686"
     depends_on:
       prometheus:
         condition: service_started
@@ -115,7 +112,7 @@ services:
       - ${DB_DIR:-./db}/opensearch:/usr/share/opensearch/data
       # - ./certs:/usr/share/opensearch/config/certs
     ports:
-      - "0.0.0.0:9200:9200"
+      - "127.0.0.1:9200:9200"
 
   opensearch-init:
     networks:
@@ -141,7 +138,7 @@ services:
       - internal
     image: opensearchproject/opensearch-dashboards:latest
     ports:
-      - 0.0.0.0:5601:5601
+      - 127.0.0.1:5601:5601
     expose:
       - "5601"
     environment:
@@ -157,8 +154,9 @@ services:
     image: prom/prometheus:latest
     volumes:
       - "./jaeger/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./jaeger/feed-alert-rules.yml:/etc/prometheus/feed-alert-rules.yml"
     ports:
-      - "0.0.0.0:9090:9090"
+      - "127.0.0.1:9090:9090"
 
 networks:
   internal:

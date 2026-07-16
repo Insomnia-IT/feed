@@ -680,24 +680,11 @@ class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
 
 
 class SyncFeedTransactionListSerializer(serializers.ListSerializer):
-    def to_internal_value(self, data):
-        result = []
-        errors = []
+    """Reject the whole batch when any item is invalid.
 
-        for item in data:
-            try:
-                result.append(self.child.run_validation(item))
-                errors.append({})
-            except serializers.ValidationError as exc:
-                if hasattr(exc.detail, 'keys') and set(exc.detail.keys()) == {'volunteer'}:
-                    errors.append({})
-                    continue
-                errors.append(exc.detail)
-
-        if any(errors):
-            raise serializers.ValidationError(errors)
-
-        return result
+    A partial 200 response would make the scanner acknowledge transactions that
+    were never persisted. DRF's default list validation is deliberately atomic.
+    """
 
 
 class SyncFeedTransactionSerializer(serializers.ModelSerializer):

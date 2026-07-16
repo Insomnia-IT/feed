@@ -16,10 +16,16 @@ Including another URLconf
 """
 from django.urls import path, include
 from config.admin import admin_site
-from config.health import healthz
+from config.health import dependencies, live, ready
+from config.metrics import metrics_view
 
 urlpatterns = [
-    path('feedapi/v1/healthz', healthz),
+    path('health/live', live),
+    path('health/ready', ready),
+    path('health/dependencies', dependencies),
+    path('feedapi/v1/healthz', ready),
+    path('feedapi/v1/health/live', live),
+    path('metrics', metrics_view),
     path('feedapi/v1/', include('feeder.urls')),
     path('feedapi/v1/', include('synchronization.urls')),
     path('feedapi/v1/', include('history.urls')),
