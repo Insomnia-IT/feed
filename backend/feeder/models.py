@@ -371,3 +371,6 @@ class GroupBadgePlanningCells(TimeMixin):
         constraints = [
             models.UniqueConstraint(fields=['group_badge', 'meal_time', 'date'], name='unique planning cell')
         ]
+# Client diagnostics are isolated from business tables; importing registers the
+# retention-only model without coupling it to feeding transactions.
+from feeder.client_diagnostics import ClientDiagnosticEvent  # noqa: E402,F401

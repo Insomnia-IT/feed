@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 
 class SynchronizationSystemActions(models.Model):
@@ -21,6 +22,20 @@ class SynchronizationSystemActions(models.Model):
     partial_offset = models.IntegerField(null=True, blank=True)
     success = models.BooleanField(default=True)
     error = models.CharField(max_length=512, null=True, blank=True)
+    sync_run_id = models.UUIDField(default=uuid.uuid4, db_index=True)
+    trigger = models.CharField(max_length=32, default="manual")
+    started_at = models.DateTimeField(null=True)
+    finished_at = models.DateTimeField(null=True)
+    duration_ms = models.PositiveIntegerField(default=0)
+    cursor_before = models.DateTimeField(null=True)
+    cursor_after = models.DateTimeField(null=True)
+    received_count = models.PositiveIntegerField(default=0)
+    processed_count = models.PositiveIntegerField(default=0)
+    skipped_count = models.PositiveIntegerField(default=0)
+    error_count = models.PositiveIntegerField(default=0)
+    retry_count = models.PositiveIntegerField(default=0)
+    error_category = models.CharField(max_length=64, null=True)
+    consecutive_failure_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = "Синхронизация"

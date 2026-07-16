@@ -47,6 +47,18 @@ export interface ServerTransaction {
     updated_at?: string;
 }
 
+export interface DiagnosticEvent {
+    event_id: string;
+    event_type: string;
+    occurred_at: string;
+    state: 'ok' | 'degraded' | 'critical';
+    details: Record<string, unknown>;
+    attempts: number;
+    next_attempt_at: number;
+    expires_at: number;
+    dedupe_key: string;
+}
+
 export interface TransactionJoined extends Transaction {
     vol?: Volunteer;
 }
@@ -179,9 +191,10 @@ export class MySubClassedDexie extends Dexie {
     groupBadges!: Table<GroupBadge>;
     transactions!: Table<Transaction>;
     volunteers!: Table<Volunteer>;
+    diagnostics!: Table<DiagnosticEvent>;
 
     constructor() {
-        super('yclins');
+        super('yclins', { autoOpen: false });
         this.version(20)
             .stores({
                 transactions: '&&ulid, vol_id, ts',
@@ -209,19 +222,67 @@ export class MySubClassedDexie extends Dexie {
                 groupBadges: 'id, &qr'
             })
             .upgrade(() => {
-                // eslint-disable-next-line no-console
-                console.log('upgrade');
-                setTimeout(() => {
-                    // eslint-disable-next-line no-console
-                    console.log('reset and reload');
-                    localStorage.removeItem('lastSyncStart');
-                    window.location.reload();
-                }, 1000);
+                localStorage.removeItem('lastSyncStart');
             });
+        this.version(23).stores({
+            transactions: '&&ulid, vol_id, ts',
+            volunteers: 'id, &qr, group_badge',
+            groupBadges: 'id, &qr',
+            diagnostics: '&event_id, dedupe_key, next_attempt_at, expires_at'
+        });
     }
 }
 
 export const db = new MySubClassedDexie();
+
+const upgradeBackup = new Dexie('yclins-upgrade-backup', { autoOpen: false });
+upgradeBackup.version(1).stores({ transactions: '&&ulid' });
+
+const readPendingTransactionsBeforeUpgrade = async (): Promise<Array<Transaction>> =>
+    new Promise((resolve, reject) => {
+        const request = indexedDB.open('yclins');
+        request.onerror = () => reject(request.error);
+        request.onupgradeneeded = () => {
+            request.transaction?.abort();
+            resolve([]);
+        };
+        request.onsuccess = () => {
+            const database = request.result;
+            if (!database.objectStoreNames.contains('transactions')) {
+                database.close();
+                resolve([]);
+                return;
+            }
+            const transaction = database.transaction('transactions', 'readonly');
+            const getAll = transaction.objectStore('transactions').getAll();
+            getAll.onerror = () => reject(getAll.error);
+            getAll.onsuccess = () => {
+                database.close();
+                resolve((getAll.result as Array<Transaction>).filter(({ is_new }) => is_new));
+            };
+        };
+    });
+
+export const prepareDatabase = async (): Promise<void> => {
+    await upgradeBackup.open();
+    try {
+        const backupTable = upgradeBackup.table<Transaction>('transactions');
+        let pending = await backupTable.toArray();
+        if (!pending.length) {
+            pending = await readPendingTransactionsBeforeUpgrade();
+            if (pending.length) {
+                await backupTable.bulkPut(pending);
+            }
+        }
+        await db.open();
+        if (pending.length) {
+            await db.transactions.bulkPut(pending);
+            await backupTable.clear();
+        }
+    } finally {
+        upgradeBackup.close();
+    }
+};
 
 export const addTransaction = async ({
     amount,

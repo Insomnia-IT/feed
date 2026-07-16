@@ -4,7 +4,7 @@ from crontab import CronTab
 
 def get_crontab_tasks():
     cron = CronTab(user="root")
-    command = "python /app/cron_tasks/auto_sync.py"
+    command = "python /app/backend/manage.py run_external_sync --trigger cron"
     cron.remove_all(command=command)
     job = cron.new(command=command)
     frequency = int(os.environ.get("NOTION_SYNC_PERIOD", 15))

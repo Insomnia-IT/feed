@@ -12,7 +12,6 @@ services:
         SYNC_URL:
         SYNC_LOGIN:
         SYNC_PASSWORD:
-    container_name: feed_backend
     restart: always
     environment:
       # OTEL_ENDPOINT: http://jaeger:4318/v1/traces
@@ -21,6 +20,12 @@ services:
     volumes:
       - ${DB_DIR:-./db}:/app/db
       - ${PHOTO_STORAGE_PATH:-./db/photos}:/app/photos
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health/ready >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     # depends_on:
     #   - jaeger
 
@@ -32,12 +37,18 @@ services:
       dockerfile: ./Dockerfile_front
       args:
         NEW_API_URL: /feedapi/v1
-    container_name: feed_front
     restart: always
     ports:
       - ${PORT:-80}:80
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost/healthz >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
 
 networks:
   internal:

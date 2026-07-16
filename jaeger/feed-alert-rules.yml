@@ -1,0 +1,17 @@
+groups:
+  - name: feed-field-operations
+    rules:
+      - alert: FeedBackendDown
+        expr: up{job="feed-backend"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "Feed backend is unavailable"}
+      - alert: FeedHttp5xxGrowth
+        expr: sum(rate(feed_http_requests_total{status=~"5.."}[5m])) > 0.2
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "HTTP 5xx rate is elevated"}
+      - alert: FeedCronMissing
+        expr: time() - feed_cron_last_success_timestamp_seconds > 1800
+        labels: {severity: warning}
+        annotations: {summary: "Sync cron heartbeat is missing"}
