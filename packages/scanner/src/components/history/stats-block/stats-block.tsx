@@ -17,6 +17,15 @@ export const StatsBlock = () => {
             >
                 Статистика кормлений
             </Button>
+            <Button
+                variant="secondary"
+                className={css.statsButton}
+                onClick={() => {
+                    setCurrentView(AppViews.GROUP_BADGE_PLAN);
+                }}
+            >
+                План по групповым бейджам
+            </Button>
             <VolAndUpdateInfo />
         </div>
     );

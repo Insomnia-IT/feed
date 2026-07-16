@@ -207,6 +207,9 @@ export interface IssuanceEntity {
     volunteer_name?: string;
     actor_name?: string;
     item_name?: string;
+    storage_name?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface ReceivingEntity {
@@ -219,12 +222,16 @@ export interface ReceivingEntity {
     volunteer_name?: string;
     actor_name?: string;
     item_name?: string;
+    storage_name?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface MovementEntity {
     id: number;
     position: number;
-    item_name: number;
+    item_name?: string;
+    storage_name?: string;
     count: number;
     from?: number;
     from_name?: string;

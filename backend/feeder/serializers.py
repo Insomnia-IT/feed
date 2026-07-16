@@ -678,6 +678,28 @@ class FeedTransactionDisplaySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return models.FeedTransaction.objects.create(**validated_data)
 
+
+class SyncFeedTransactionListSerializer(serializers.ListSerializer):
+    def to_internal_value(self, data):
+        result = []
+        errors = []
+
+        for item in data:
+            try:
+                result.append(self.child.run_validation(item))
+                errors.append({})
+            except serializers.ValidationError as exc:
+                if hasattr(exc.detail, 'keys') and set(exc.detail.keys()) == {'volunteer'}:
+                    errors.append({})
+                    continue
+                errors.append(exc.detail)
+
+        if any(errors):
+            raise serializers.ValidationError(errors)
+
+        return result
+
+
 class SyncFeedTransactionSerializer(serializers.ModelSerializer):
     """Сериализатор для операции синхронизации, который не проверяет уникальность ulid"""
     ulid = serializers.CharField(max_length=255)
@@ -685,6 +707,7 @@ class SyncFeedTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FeedTransaction
         fields = '__all__'
+        list_serializer_class = SyncFeedTransactionListSerializer
         extra_kwargs = {
             'ulid': {'validators': []}
         }
@@ -703,6 +726,7 @@ class FilterStatisticsSerializer(serializers.Serializer):
     group_badge = serializers.BooleanField(allow_null=True, default=None)
     prediction_alg = serializers.CharField(allow_null=True, default=None)
     apply_history = serializers.BooleanField(allow_null=True, default=None)
+    apply_predict_alg_to_group_badge = serializers.BooleanField(allow_null=True, default=None)
 
 class FeedTransactionAnomaliesFilterSerializer(serializers.Serializer):
     dtime_from = serializers.DateTimeField()
@@ -721,6 +745,7 @@ class StatisticsSerializer(serializers.Serializer):
     date = serializers.DateField()
     type = serializers.ChoiceField(choices=[type.value for type in StatisticType])
     is_vegan = serializers.BooleanField(allow_null=True)
+    group_badge = serializers.BooleanField(allow_null=True)
     meal_time = serializers.CharField(max_length=10, validators=[models.validate_meal_time])
     amount = serializers.IntegerField(min_value=0)
     kitchen_id = serializers.IntegerField(allow_null=True)

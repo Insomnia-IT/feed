@@ -9,6 +9,7 @@ import { useInventoryTransfer } from './use-inventory-transfer';
 import { useVolunteerInventory } from './use-volunteer-inventory';
 import { useStorageIssue } from './use-storage-issue';
 import { useStorageReturn } from './use-storage-return';
+import { QRScannerModal } from 'shared/components/qr-scanner-modal';
 
 import styles from '../../../common.module.css';
 import { useState } from 'react';
@@ -93,10 +94,18 @@ export const InventorySection = ({ volunteerId, volunteerName, isCreationProcess
                 selectedSourceInventoryItem={transfer.selectedSourceInventoryItem}
                 itemOptions={transfer.itemOptions}
                 volunteerSelectProps={transfer.volunteerSelectProps}
+                isVolunteerLoading={transfer.isVolunteerLoading}
+                onOpenQrScanner={transfer.handleOpenQrScanner}
                 onClose={transfer.closeTransferModal}
                 onSubmit={transfer.handleTransfer}
                 onSourceChange={transfer.handleSourceChange}
                 onPositionChange={transfer.handlePositionChange}
+            />
+
+            <QRScannerModal
+                open={transfer.isQrModalOpen}
+                onClose={transfer.handleCloseQrScanner}
+                onScan={transfer.handleQrScan}
             />
 
             <StorageIssueModal
