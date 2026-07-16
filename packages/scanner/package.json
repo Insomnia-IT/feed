@@ -17,7 +17,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@ant-design/icons": "^5.6.1",
+        "@ant-design/icons": "^6.3.2",
         "@feed/shared": "*",
         "axios": "^1.18.1",
         "classnames": "^2.5.1",
