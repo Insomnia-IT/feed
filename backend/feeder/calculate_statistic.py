@@ -359,7 +359,9 @@ def calculate_group_badge_predict(store, current_day, prev_day, volunteers, plan
                             meal_time, is_vegan, kitchen_id, True
                         )
 
-                        predict_amount = predict_raw_amount if prev_predict_raw == 0 or prev_fact == 0 else predict_raw_amount * (prev_fact ** 0.5 / prev_predict_raw ** 0.5)
+                        if prev_predict_raw > 0 and prev_fact > 0:
+                            pow = 0.5
+                            predict_amount = predict_raw_amount * (prev_fact ** pow / prev_predict_raw ** pow)
 
                     store.add(
                         date=current_date_str,
@@ -522,9 +524,9 @@ def build_history_by_volunteer(history_queryset):
 
 def load_planning_cells_cache():
     planning_cells_cache = {}
-    cells = models.GroupBadgePlanningCells.objects.filter(
-        date__range=(PLANNIG_DATE_FROM, PLANNIG_DATE_TO)
-    ).values('group_badge_id', 'meal_time', 'date', 'amount_meat', 'amount_vegan')
+    cells = models.GroupBadgePlanningCells.objects.select_related('group_badge').filter(
+        date__range=(PLANNIG_DATE_FROM, PLANNIG_DATE_TO),
+    ).values('group_badge_id', 'meal_time', 'date', 'amount_meat', 'amount_vegan', 'group_badge__is_disabled', 'group_badge__deleted_at', 'group_badge__updated_at')
 
     grouped_cells = defaultdict(list)
     for cell in cells:
@@ -533,7 +535,10 @@ def load_planning_cells_cache():
         grouped_cells[group_key].append({
             'date': cell['date'],
             'amount_meat': cell['amount_meat'],
-            'amount_vegan': cell['amount_vegan']
+            'amount_vegan': cell['amount_vegan'],
+            'group_badge__is_disabled': cell['group_badge__is_disabled'],
+            'group_badge__deleted_at': cell['group_badge__deleted_at'],
+            'group_badge__updated_at': cell['group_badge__updated_at'],
         })
 
     for (badge_id, meal_time), cells in grouped_cells.items():
@@ -548,13 +553,20 @@ def load_planning_cells_cache():
                     last_valid = None
                 else:
                     last_valid = cell
-
+            
             if last_valid:
+                current_datetime = arrow.get(current_date, tzinfo=TZ).shift(hours=+DAY_START_HOUR)
                 key = (badge_id, meal_time, current_date.strftime('%Y-%m-%d'))
-                planning_cells_cache[key] = {
-                    'amount_meat': last_valid['amount_meat'],
-                    'amount_vegan': last_valid['amount_vegan']
-                }
+                if (last_valid['group_badge__is_disabled'] and last_valid['group_badge__updated_at'] < current_datetime) or (last_valid['group_badge__deleted_at'] and last_valid['group_badge__deleted_at'] < current_datetime):
+                    planning_cells_cache[key] = {
+                        'amount_meat': 0,
+                        'amount_vegan': 0
+                    }
+                else:
+                    planning_cells_cache[key] = {
+                        'amount_meat': last_valid['amount_meat'],
+                        'amount_vegan': last_valid['amount_vegan']
+                    }
             current_date += timedelta(days=1)
 
     return planning_cells_cache
@@ -565,7 +577,7 @@ def load_group_badge_kitchens():
 
 
 def load_volunteers(date_from, date_to, anonymous, group_badge):
-    queryset = models.Volunteer.objects.exclude(
+    queryset = models.Volunteer.objects.filter(deleted_at=None).exclude(
         Q(is_blocked=True) | Q(feed_type__code='FT4')
     ).prefetch_related(
         Prefetch(
@@ -576,7 +588,7 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
             ),
             to_attr='relevant_arrivals'
         )
-    ).select_related('kitchen', 'feed_type')
+    ).select_related('kitchen', 'feed_type', 'group_badge')
 
     result = []
     for vol in queryset:
@@ -600,8 +612,8 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
                 'is_paid': vol.feed_type.paid if vol.feed_type else False,
                 'is_vegan': vol.is_vegan,
                 'kitchen_id': vol.kitchen.id if vol.kitchen else None,
-                'group_badge_id': vol.group_badge_id if vol.group_badge and not vol.group_badge.is_disabled else None,
-                'group_badge_created_at': arrow.get(vol.group_badge.created_at).to(TZ).floor('day') if vol.group_badge and not vol.group_badge.is_disabled else None,
+                'group_badge_id': vol.group_badge_id if vol_group_badge else None,
+                'group_badge_created_at': arrow.get(vol.group_badge.created_at).to(TZ).floor('day') if vol_group_badge else None,
             })
 
     return result
