@@ -90,9 +90,6 @@ export function applyChildFeedingToggle(params: {
     return null;
 }
 
-/** @deprecated Виртуальное поле больше не используется — состояние в feed_type, как у «Ребёнок». */
-export const FREE_DURING_STAY_FORM_FIELD = 'free_during_stay';
-
 type VolunteerFormValues = VolEntity;
 
 /** Снимок полей питания из формы (надёжнее, чем только аргумент onFinish). */

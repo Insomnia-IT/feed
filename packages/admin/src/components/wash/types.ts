@@ -1,11 +1,6 @@
-import type { VolEntity, WashEntity } from 'interfaces';
+import type { VolEntity } from 'interfaces';
 
 export interface VolunteersResponse {
     count: number;
     results: VolEntity[];
-}
-
-export interface WashesResponse {
-    count: number;
-    results: WashEntity[];
 }

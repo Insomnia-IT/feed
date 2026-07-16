@@ -6,8 +6,6 @@ export type CompletedVolunteerStatus = (typeof VOLUNTEER_COMPLETED_STATUSES)[num
 /** Нейтральные статусы заезда (без ✅, внизу списка). */
 export const VOLUNTEER_NEUTRAL_STATUSES = ['PLANNED', 'SKIPPED', 'LEFT'] as const;
 
-export type NeutralVolunteerStatus = (typeof VOLUNTEER_NEUTRAL_STATUSES)[number];
-
 export const VOLUNTEER_STATUSES = [...VOLUNTEER_COMPLETED_STATUSES, ...VOLUNTEER_NEUTRAL_STATUSES] as const;
 
 export type VolunteerStatus = (typeof VOLUNTEER_STATUSES)[number];
