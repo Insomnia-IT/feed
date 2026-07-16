@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import dayjs from 'dayjs';
 
-import { calculatePlannedCountsByDate, getPlannedCountsForDate } from './calculate-planned-counts-by-date';
+import {
+    calculatePlannedCountsByDate,
+    getPlannedCountsForDate,
+    type PlannedDayCounts
+} from './calculate-planned-counts-by-date';
 import { FeedTypeCode, type PlanningArrival, type PlanningPaidArrival, type PlanningVolunteer } from './types';
 
 // Конкретный год здесь не имеет бизнес-смысла: production-код сравнивает только календарные даты
@@ -38,24 +42,31 @@ const createVolunteer = (params: {
     feed_type_code?: string | null;
     arrivals?: PlanningArrival[];
     paid_arrivals?: PlanningPaidArrival[];
+    qr?: string;
 }): PlanningVolunteer => ({
     is_vegan: params.is_vegan ?? false,
     is_blocked: params.is_blocked ?? false,
     feed_type_code: params.feed_type_code ?? FeedTypeCode.Free,
     arrivals: params.arrivals ?? [],
-    paid_arrivals: params.paid_arrivals ?? []
+    paid_arrivals: params.paid_arrivals ?? [],
+    qr: params.qr ?? 'test-qr'
+});
+
+const toCount = (counts: PlannedDayCounts): { meat: number; vegan: number } => ({
+    meat: counts.meat.length,
+    vegan: counts.vegan.length
 });
 
 describe('getPlannedCountsForDate', () => {
     // getPlannedCountsForDate -- маленький helper для безопасного чтения из Map:
     // если на дату ничего не рассчитано, UI должен получить 0/0 вместо undefined
     it('returns 0/0 for missing date', () => {
-        expect(getPlannedCountsForDate(new Map(), TEST_DATE.FIRST_DAY)).toEqual({ meat: 0, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(new Map(), TEST_DATE.FIRST_DAY))).toEqual({ meat: 0, vegan: 0 });
     });
 
     it('returns stored value when present', () => {
-        const map = new Map([[TEST_DATE.FIRST_DAY, { meat: 3, vegan: 1 }]]);
-        expect(getPlannedCountsForDate(map, TEST_DATE.FIRST_DAY)).toEqual({ meat: 3, vegan: 1 });
+        const map = new Map([[TEST_DATE.FIRST_DAY, { meat: ['m1', 'm2', 'm3'], vegan: ['v1'] }]]);
+        expect(toCount(getPlannedCountsForDate(map, TEST_DATE.FIRST_DAY))).toEqual({ meat: 3, vegan: 1 });
     });
 });
 
@@ -77,10 +88,10 @@ describe('calculatePlannedCountsByDate', () => {
         });
         const result = calculatePlannedCountsByDate({ volunteers: [vol] });
 
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY)).toEqual({ meat: 0, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY))).toEqual({ meat: 0, vegan: 0 });
     });
 
     it('ignores arrivals without activated status', () => {
@@ -110,7 +121,7 @@ describe('calculatePlannedCountsByDate', () => {
             })
         ];
         const result = calculatePlannedCountsByDate({ volunteers: vols });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 3, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 3, vegan: 0 });
     });
 
     it('separates vegan and meat eaters', () => {
@@ -135,7 +146,7 @@ describe('calculatePlannedCountsByDate', () => {
             })
         ];
         const result = calculatePlannedCountsByDate({ volunteers: vols });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 1, vegan: 2 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 1, vegan: 2 });
     });
 
     it('excludes blocked volunteers', () => {
@@ -172,10 +183,10 @@ describe('calculatePlannedCountsByDate', () => {
         });
         const result = calculatePlannedCountsByDate({ volunteers: [vol] });
 
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 0, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY)).toEqual({ meat: 0, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY)).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 0, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY))).toEqual({ meat: 0, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY))).toEqual({ meat: 1, vegan: 0 });
     });
 
     it('counts FREE volunteer by either arrivals or paid_arrivals', () => {
@@ -189,11 +200,11 @@ describe('calculatePlannedCountsByDate', () => {
         });
         const result = calculatePlannedCountsByDate({ volunteers: [vol] });
 
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIFTH_DAY)).toEqual({ meat: 0, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIFTH_DAY))).toEqual({ meat: 0, vegan: 0 });
     });
 
     it('aggregates multiple volunteers across overlapping dates', () => {
@@ -231,11 +242,11 @@ describe('calculatePlannedCountsByDate', () => {
         ];
         const result = calculatePlannedCountsByDate({ volunteers: vols });
 
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY)).toEqual({ meat: 1, vegan: 1 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY)).toEqual({ meat: 2, vegan: 1 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY)).toEqual({ meat: 1, vegan: 1 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIFTH_DAY)).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY))).toEqual({ meat: 1, vegan: 1 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY))).toEqual({ meat: 2, vegan: 1 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY))).toEqual({ meat: 1, vegan: 1 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIFTH_DAY))).toEqual({ meat: 1, vegan: 0 });
     });
 
     it('counts overlapping arrival and paid_arrival of the same volunteer only once per date', () => {
@@ -253,10 +264,10 @@ describe('calculatePlannedCountsByDate', () => {
         });
         const result = calculatePlannedCountsByDate({ volunteers: [vol] });
 
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY)).toEqual({ meat: 1, vegan: 0 });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY)).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.SECOND_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.THIRD_DAY))).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FOURTH_DAY))).toEqual({ meat: 1, vegan: 0 });
     });
 
     it('handles missing feed_type_code as FREE-like', () => {
@@ -267,6 +278,6 @@ describe('calculatePlannedCountsByDate', () => {
             ]
         });
         const result = calculatePlannedCountsByDate({ volunteers: [vol] });
-        expect(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY)).toEqual({ meat: 1, vegan: 0 });
+        expect(toCount(getPlannedCountsForDate(result, TEST_DATE.FIRST_DAY))).toEqual({ meat: 1, vegan: 0 });
     });
 });
