@@ -168,11 +168,6 @@ export function formatFeedingDateKey(date: dayjs.Dayjs): string {
     return date.format('YYYY-MM-DD');
 }
 
-export function isFeedingSummerDate(dateKey: string, year: number): boolean {
-    const date = dayjs(dateKey);
-    return date.year() === year && (FEEDING_SUMMER_MONTHS as readonly number[]).includes(date.month());
-}
-
 export function expandIntervalToDateKeys(interval: { arrival_date: string; departure_date: string }): string[] {
     const start = dayjs(interval.arrival_date).startOf('day');
     const end = dayjs(interval.departure_date).startOf('day');

@@ -16,7 +16,6 @@ interface IScanContext {
 }
 
 type MainViewTypes = 'scan' | 'loading' | 'error' | 'post-scan' | 'post-scan-group-badge';
-export const postScanStatuses = ['anon', 'vol-warning', 'vol-error', 'child', 'group-badge'];
 
 const ScanContext = createContext<IScanContext | null>(null);
 
