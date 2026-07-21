@@ -3,7 +3,6 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import babel from '@rolldown/plugin-babel';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
-// import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
     plugins: [
@@ -11,7 +10,6 @@ export default defineConfig({
         babel({
             presets: [reactCompilerPreset()]
         }),
-        // visualizer({ open: true }), // Uncomment to visualize bundle size
         VitePWA({
             disable: true,
             registerType: 'autoUpdate',
@@ -59,6 +57,7 @@ export default defineConfig({
         })
     ],
     resolve: {
+        dedupe: ['react', 'react-dom', 'react-router'],
         alias: {
             utils: path.resolve(__dirname, './src/utils.ts'),
             auth: path.resolve(__dirname, './src/auth.ts'),

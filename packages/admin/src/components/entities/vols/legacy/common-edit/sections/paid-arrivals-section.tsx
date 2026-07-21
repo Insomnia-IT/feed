@@ -1,12 +1,11 @@
 import { Button, Checkbox, DatePicker, Form } from 'antd';
 import { useCallback } from 'react';
 import dayjs from 'dayjs';
-import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined, PlusSquareOutlined } from '@ant-design/icons';
 
 import { Rules } from 'components/form';
 import { MobileDateDrawer } from 'shared/components/mobile-date-drawer/mobile-date-drawer';
-import { formDateFormat } from 'shared/lib';
+import { createClientId, formDateFormat } from 'shared/lib';
 import { useScreen } from 'shared/providers';
 
 import styles from '../../common.module.css';
@@ -100,7 +99,7 @@ export const PaidArrivalsSection = ({ visible }: { visible: boolean }) => {
                 {(paidArrivalFields, { add, remove }) => {
                     const addPaidArrival = () => {
                         add({
-                            id: uuidv4(),
+                            id: createClientId(),
                             is_free: false
                         });
                     };
