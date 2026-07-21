@@ -592,7 +592,7 @@ def load_volunteers(date_from, date_to, anonymous, group_badge):
 
     result = []
     for vol in queryset:
-        vol_group_badge = vol.group_badge and not vol.group_badge.is_disabled
+        vol_group_badge = vol.group_badge and not vol.group_badge.is_disabled and not vol.group_badge.deleted_at
         if group_badge is True and not vol_group_badge:
             continue
         if group_badge is False and vol_group_badge:

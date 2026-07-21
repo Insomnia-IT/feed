@@ -38,7 +38,7 @@ class SyncWithFeeder(APIView):
                 defaults=tx
             )
 
-        last_tx = models.FeedTransaction.objects.order_by('created_at').last()
+        last_tx = models.FeedTransaction.objects.filter(kitchen_id=kitchen_id).order_by('created_at').last()
 
         result = {}
         result['transactions'] = new_server_txs
