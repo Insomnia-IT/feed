@@ -29,7 +29,7 @@ class SyncWithFeeder(APIView):
         kitchen_id = serializer.validated_data.get('kitchen_id')
 
         # Выбираем новые транзакции для Кормителя
-        new_server_txs = list(models.FeedTransaction.objects.filter(created_at__gt=last_updated, kitchen_id=kitchen_id))
+        new_server_txs = list(models.FeedTransaction.objects.filter(updated_at__gt=last_updated, kitchen_id=kitchen_id))
 
         # Обрабатываем новые клиентские транзакции
         for tx in new_client_txs:
