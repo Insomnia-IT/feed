@@ -7,8 +7,8 @@
 - **Install dependencies**: `npm install`
 - **Build all packages**: `npm run build`
 - **Lint all**: `npm run lint`
-- **Fix linting**: `npm run lint-fix`
-- **Run type checking**: `npm run tc`
+- **Fix linting**: `npm run lint:fix`
+- **Run type checking**: `npm run typecheck`
 
 ### Backend (Django)
 

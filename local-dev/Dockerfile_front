@@ -13,6 +13,7 @@ COPY ./package-lock.json /app/package-lock.json
 
 COPY ./packages/admin/package.json /app/packages/admin/package.json
 COPY ./packages/scanner/package.json /app/packages/scanner/package.json
+COPY ./packages/shared/package.json /app/packages/shared/package.json
 
 RUN --mount=type=cache,sharing=locked,target=/root/.npm \
     npm ci

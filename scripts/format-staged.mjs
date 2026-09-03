@@ -15,11 +15,20 @@ const run = (command, args, options = {}) =>
         ...options
     });
 
+const exitWithCommandError = (result) => {
+    if (result.error) {
+        console.error(result.error);
+    }
+    if (result.stderr) {
+        process.stderr.write(result.stderr);
+    }
+    process.exit(result.status && result.status !== 0 ? result.status : 1);
+};
+
 const stagedResult = run('git', ['diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z']);
 
 if (stagedResult.status !== 0) {
-    process.stderr.write(stagedResult.stderr);
-    process.exit(stagedResult.status ?? 1);
+    exitWithCommandError(stagedResult);
 }
 
 const stagedFiles = stagedResult.stdout.split('\0').filter(Boolean);
@@ -31,8 +40,7 @@ const formattedFiles = [];
 for (const file of targetFiles) {
     const stagedContentResult = run('git', ['show', `:${file}`], { encoding: null });
     if (stagedContentResult.status !== 0) {
-        process.stderr.write(stagedContentResult.stderr);
-        process.exit(stagedContentResult.status ?? 1);
+        exitWithCommandError(stagedContentResult);
     }
 
     const stagedContent = stagedContentResult.stdout;
@@ -47,18 +55,13 @@ for (const file of targetFiles) {
     });
 
     if (formatResult.error || formatResult.status !== 0) {
-        if (formatResult.error) {
-            console.error(formatResult.error);
-        }
-        process.stderr.write(formatResult.stderr ?? '');
-        process.exit(formatResult.status ?? 1);
+        exitWithCommandError(formatResult);
     }
 
     const indexEntryResult = run('git', ['ls-files', '-s', '--', file]);
     const mode = indexEntryResult.stdout.match(/^(\d+)\s/u)?.[1];
     if (indexEntryResult.status !== 0 || !mode) {
-        process.stderr.write(indexEntryResult.stderr);
-        process.exit(indexEntryResult.status ?? 1);
+        exitWithCommandError(indexEntryResult);
     }
 
     formattedFiles.push({
@@ -75,15 +78,13 @@ for (const { file, mode, original, formatted } of formattedFiles) {
         encoding: 'utf8'
     });
     if (hashResult.status !== 0) {
-        process.stderr.write(hashResult.stderr);
-        process.exit(hashResult.status ?? 1);
+        exitWithCommandError(hashResult);
     }
 
     const hash = hashResult.stdout.trim();
     const updateResult = run('git', ['update-index', '--cacheinfo', mode, hash, file]);
     if (updateResult.status !== 0) {
-        process.stderr.write(updateResult.stderr);
-        process.exit(updateResult.status ?? 1);
+        exitWithCommandError(updateResult);
     }
 
     try {

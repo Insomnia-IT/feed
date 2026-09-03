@@ -8,16 +8,18 @@
         "./planning": "./src/planning/index.ts"
     },
     "scripts": {
-        "tc": "tsc --noemit --emitDeclarationOnly false",
+        "typecheck": "tsc -b",
         "test": "vitest",
         "test:run": "vitest run",
-        "lint:js": "eslint .",
-        "lint-fix:js": "eslint . --fix"
+        "lint": "npm run lint:code",
+        "lint:fix": "npm run lint:code:fix",
+        "lint:code": "oxlint src --report-unused-disable-directives",
+        "lint:code:fix": "oxlint src --report-unused-disable-directives --fix"
     },
     "dependencies": {
-        "dayjs": "^1.11.13"
+        "dayjs": "^1.11.23"
     },
     "devDependencies": {
-        "vitest": "^4.1.10"
+        "vitest": "^4.1.11"
     }
 }

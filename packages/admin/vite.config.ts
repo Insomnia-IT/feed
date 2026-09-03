@@ -59,18 +59,18 @@ export default defineConfig({
     resolve: {
         dedupe: ['react', 'react-dom', 'react-router'],
         alias: {
-            utils: path.resolve(__dirname, './src/utils.ts'),
-            auth: path.resolve(__dirname, './src/auth.ts'),
-            authProvider: path.resolve(__dirname, './src/authProvider.ts'),
-            const: path.resolve(__dirname, './src/const.ts'),
-            components: path.resolve(__dirname, './src/components'),
-            interfaces: path.resolve(__dirname, './src/interfaces'),
-            shared: path.resolve(__dirname, './src/shared'),
-            acl: path.resolve(__dirname, './src/acl.ts'),
-            dataProvider: path.resolve(__dirname, './src/dataProvider.ts'),
-            assets: path.resolve(__dirname, './src/assets'),
-            '@feed/shared/planning': path.resolve(__dirname, '../shared/src/planning/index.ts'),
-            '@feed/shared': path.resolve(__dirname, '../shared/src/index.ts')
+            utils: path.resolve(import.meta.dirname, './src/utils.ts'),
+            auth: path.resolve(import.meta.dirname, './src/auth.ts'),
+            authProvider: path.resolve(import.meta.dirname, './src/authProvider.ts'),
+            const: path.resolve(import.meta.dirname, './src/const.ts'),
+            components: path.resolve(import.meta.dirname, './src/components'),
+            interfaces: path.resolve(import.meta.dirname, './src/interfaces'),
+            shared: path.resolve(import.meta.dirname, './src/shared'),
+            acl: path.resolve(import.meta.dirname, './src/acl.ts'),
+            dataProvider: path.resolve(import.meta.dirname, './src/dataProvider.ts'),
+            assets: path.resolve(import.meta.dirname, './src/assets'),
+            '@feed/shared/planning': path.resolve(import.meta.dirname, '../shared/src/planning/index.ts'),
+            '@feed/shared': path.resolve(import.meta.dirname, '../shared/src/index.ts')
         }
     },
     server: {

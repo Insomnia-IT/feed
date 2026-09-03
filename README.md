@@ -92,7 +92,7 @@ admin / Kolombina25
 # Запуск линтера с автофиксом (если линтер упал на PR-е)
 
 ```bash
-npm run lint-fix:js
+npm run lint:fix
 ```
 
 # Сборка
