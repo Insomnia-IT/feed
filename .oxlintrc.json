@@ -1,0 +1,18 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "ignorePatterns": ["**/dist", "**/dev-dist", "**/build", "**/.nx", "**/.turbo", "**/node_modules"],
+    "plugins": ["typescript", "react", "react-hooks", "react-perf", "oxc"],
+    "categories": {
+        "correctness": "error"
+    },
+    "env": {
+        "browser": true,
+        "node": true
+    },
+    "rules": {
+        "eslint/no-console": ["error", { "allow": ["error"] }],
+        "typescript/no-explicit-any": "warn",
+        "react-hooks/exhaustive-deps": "warn",
+        "react/void-dom-elements-no-children": "warn"
+    }
+}

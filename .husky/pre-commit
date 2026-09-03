@@ -1,1 +1,1 @@
-npx lint-staged
+node scripts/format-staged.mjs

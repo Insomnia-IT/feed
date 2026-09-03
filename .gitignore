@@ -11,6 +11,7 @@
 
 # dependencies
 /node_modules
+packages/*/.tmp/
 /.pnp
 .pnp.js
 

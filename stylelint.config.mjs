@@ -1,13 +1,9 @@
 export default {
     root: true,
 
-    plugins: ['@stylistic/stylelint-plugin'],
     extends: ['stylelint-config-standard'],
 
     rules: {
-        '@stylistic/indentation': 4,
-        '@stylistic/string-quotes': 'single',
-
         'selector-class-pattern': null,
         'property-no-vendor-prefix': null,
         'alpha-value-notation': null,

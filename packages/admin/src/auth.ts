@@ -1,7 +1,7 @@
-import Cookies from 'js-cookie';
 import axios from 'axios';
 
 import { NEW_API_URL } from 'const';
+import { getCookie, removeCookie, setCookie } from 'shared/lib';
 
 export const AppRoles = {
     ADMIN: 'ADMIN',
@@ -40,7 +40,7 @@ export const AUTH_DATA_COOKIE_NAME = 'authData';
 type UserDataReturn<T extends boolean> = T extends true ? UserData | null : string | null;
 
 export const getUserData = async <T extends true | false>(decode: T): Promise<UserDataReturn<T>> => {
-    const token = Cookies.get(AUTH_COOKIE_NAME);
+    const token = getCookie(AUTH_COOKIE_NAME);
 
     if (!token) {
         return null as UserDataReturn<T>;
@@ -67,8 +67,10 @@ export const getUserData = async <T extends true | false>(decode: T): Promise<Us
 };
 
 export const setUserData = (token: string): void => {
-    Cookies.set(AUTH_COOKIE_NAME, token, {
-        expires: 30,
+    setCookie({
+        name: AUTH_COOKIE_NAME,
+        value: token,
+        expiresInDays: 30,
         path: '/'
     });
     userRequest = undefined;
@@ -79,8 +81,10 @@ export const setUserData = (token: string): void => {
 };
 
 export const setUserInfo = (user: UserData): void => {
-    Cookies.set(AUTH_DATA_COOKIE_NAME, JSON.stringify(user), {
-        expires: 30,
+    setCookie({
+        name: AUTH_DATA_COOKIE_NAME,
+        value: JSON.stringify(user),
+        expiresInDays: 30,
         path: '/'
     });
 };
@@ -88,7 +92,7 @@ export const setUserInfo = (user: UserData): void => {
 let userRequest: { token: string; promise: Promise<UserData | undefined> } | undefined;
 
 export const getUserInfo = async (token: string): Promise<UserData | undefined> => {
-    const authData = Cookies.get(AUTH_DATA_COOKIE_NAME);
+    const authData = getCookie(AUTH_DATA_COOKIE_NAME);
     if (authData) {
         userRequest = undefined;
         return JSON.parse(authData) as UserData;
@@ -157,12 +161,12 @@ export const getUserInfo = async (token: string): Promise<UserData | undefined> 
 };
 
 export const clearUserData = (): void => {
-    Cookies.remove(AUTH_COOKIE_NAME);
+    removeCookie({ name: AUTH_COOKIE_NAME });
     userRequest = undefined;
     axios.defaults.headers.common = {};
     clearUserInfo();
 };
 
 export const clearUserInfo = (): void => {
-    Cookies.remove(AUTH_DATA_COOKIE_NAME);
+    removeCookie({ name: AUTH_DATA_COOKIE_NAME });
 };
