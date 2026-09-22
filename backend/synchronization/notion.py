@@ -128,13 +128,9 @@ class NotionSync:
         return serializers.get(obj_name)
 
     @staticmethod
-    def is_missing_volunteer_error(error):
-        return "Volunteer not found" in str(error)
-
-    @staticmethod
-    def save_data_item(serializer_class, data):
+    def save_data_item(serializer_class, data, partial=False):
         try:
-            serializer = serializer_class(data=data)
+            serializer = serializer_class(data=data, partial=partial)
             serializer.is_valid(raise_exception=True)
             serializer.save()
         except Exception as error:
@@ -142,25 +138,50 @@ class NotionSync:
 
         return None
 
+    @staticmethod
+    def split_badge_relation_data(data):
+        relation_fields = ("responsible_id", "supervisor_id")
+        badge_data = data.copy()
+        relation_data = {"id": data.get("id")}
+
+        for field in relation_fields:
+            if field in badge_data:
+                relation_data[field] = badge_data.pop(field)
+
+        return badge_data, relation_data
+
+    def save_badges_from_notion(self, data_list):
+        serializer_class = self.get_serializer("badges")
+        relation_data_list = []
+
+        for data in data_list:
+            badge_data, relation_data = self.split_badge_relation_data(data)
+            error = self.save_data_item(serializer_class, badge_data)
+            if error:
+                self.error_sync.append(f"badges - {data.get('id')}: {error}")
+                continue
+
+            if len(relation_data) > 1:
+                relation_data_list.append(relation_data)
+
+        for relation_data in relation_data_list:
+            error = self.save_data_item(serializer_class, relation_data, partial=True)
+            if error:
+                self.error_sync.append(f"badges - {relation_data.get('id')}: {error}")
+
     def save_data_from_notion(self, data_list, obj_name):
+        if obj_name == "badges":
+            self.save_badges_from_notion(list(data_list))
+            return
+
         serializer_class = self.get_serializer(obj_name)
-        delayed_badges = []
 
         for data in data_list:
             error = self.save_data_item(serializer_class, data)
             if not error:
                 continue
 
-            if obj_name == "badges" and self.is_missing_volunteer_error(error):
-                delayed_badges.append(data)
-                continue
-
             self.error_sync.append(f"{obj_name} - {data.get('id')}: {error}")
-
-        for data in delayed_badges:
-            error = self.save_data_item(serializer_class, data)
-            if error:
-                self.error_sync.append(f"{obj_name} - {data.get('id')}: {error}")
 
     def sync_from_notion(self, skip_badges=[], skip_arrivals=[]):
         direction = SyncModel.DIRECTION_FROM_SYSTEM
