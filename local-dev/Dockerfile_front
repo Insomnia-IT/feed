@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:24.21.0-alpine3.24
 
 ENV NODE_OPTIONS="--max_old_space_size=4000"
 
