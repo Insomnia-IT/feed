@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
-import { v4 as uuidv4 } from 'uuid';
 
 import { isVolunteerActivatedStatusValue } from 'shared/helpers/volunteer-status';
+import { createClientId } from 'shared/lib';
 
 /** Июнь, июль, август (0-based month index в dayjs). */
 export const FEEDING_SUMMER_MONTHS = [5, 6, 7] as const;
@@ -233,7 +233,7 @@ function mergeSortedDateKeysToIntervals(params: {
     const pushRange = () => {
         const rangeKey = `${rangeStart}:${rangeEnd}`;
         intervals.push({
-            id: existingIdByRange.get(rangeKey) ?? uuidv4(),
+            id: existingIdByRange.get(rangeKey) ?? createClientId(),
             arrival_date: rangeStart,
             departure_date: rangeEnd,
             is_free: isFree

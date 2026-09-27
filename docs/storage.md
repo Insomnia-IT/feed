@@ -316,7 +316,7 @@ Positions (inventory) are managed on the "Positions" tab:
 ### Verification already completed
 
 - `backend/venv/bin/python backend/manage.py check`
-- `npm run tc --workspace @feed/admin`
+- `npm run typecheck --workspace @feed/admin`
 
 ---
 

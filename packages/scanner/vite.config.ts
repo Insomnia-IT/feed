@@ -64,16 +64,16 @@ export default defineConfig({
 
     resolve: {
         alias: {
-            components: path.resolve(__dirname, './src/components'),
-            shared: path.resolve(__dirname, './src/shared'),
-            model: path.resolve(__dirname, './src/model'),
-            screens: path.resolve(__dirname, './src/screens'),
-            request: path.resolve(__dirname, './src/request'),
-            db: path.resolve(__dirname, './src/db.ts'),
-            config: path.resolve(__dirname, './src/config.ts'),
-            'request-local-db': path.resolve(__dirname, './src/request-local-db'),
-            '@feed/shared/planning': path.resolve(__dirname, '../shared/src/planning/index.ts'),
-            '@feed/shared': path.resolve(__dirname, '../shared/src/index.ts')
+            components: path.resolve(import.meta.dirname, './src/components'),
+            shared: path.resolve(import.meta.dirname, './src/shared'),
+            model: path.resolve(import.meta.dirname, './src/model'),
+            screens: path.resolve(import.meta.dirname, './src/screens'),
+            request: path.resolve(import.meta.dirname, './src/request'),
+            db: path.resolve(import.meta.dirname, './src/db.ts'),
+            config: path.resolve(import.meta.dirname, './src/config.ts'),
+            'request-local-db': path.resolve(import.meta.dirname, './src/request-local-db'),
+            '@feed/shared/planning': path.resolve(import.meta.dirname, '../shared/src/planning/index.ts'),
+            '@feed/shared': path.resolve(import.meta.dirname, '../shared/src/index.ts')
         }
     },
 
