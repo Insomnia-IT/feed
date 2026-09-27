@@ -18,8 +18,5 @@
     },
     "dependencies": {
         "dayjs": "^1.11.23"
-    },
-    "devDependencies": {
-        "vitest": "^5.0.1"
     }
 }
